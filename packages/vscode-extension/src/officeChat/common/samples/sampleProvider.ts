@@ -114,11 +114,21 @@ export class SampleProvider {
         classNamesListTemp.unshift(candidate[0]);
         methodsOrProperties = methodsOrPropertiesTemp.map((value) => value);
         methodsOrPropertiesTemp.unshift(...candidate[1]);
-
+        // group the methods or properties by class name
+        const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<
+          string,
+          SampleData[]
+        >();
+        for (const methodOrProperty of methodsOrPropertiesTemp) {
+          if (!groupedMethodsOrProperties.has(methodOrProperty.definition)) {
+            groupedMethodsOrProperties.set(methodOrProperty.definition, []);
+          }
+          groupedMethodsOrProperties.get(methodOrProperty.definition)?.push(methodOrProperty);
+        }
         getMoreRelevantMethodsOrPropertiesPrompt = getMostRelevantMethodPropertyPrompt(
           codeSpec,
           classNamesList,
-          methodsOrPropertiesTemp,
+          groupedMethodsOrProperties,
           sample
         );
         sampleMessage = new LanguageModelChatUserMessage(getMoreRelevantMethodsOrPropertiesPrompt);
@@ -128,10 +138,19 @@ export class SampleProvider {
         // For class that has huge amount of methods or properties, we have to skip it.
         continue;
       }
+      // group the methods or properties by class name
+      const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+      for (const methodOrProperty of methodsOrProperties) {
+        if (!groupedMethodsOrProperties.has(methodOrProperty.definition)) {
+          groupedMethodsOrProperties.set(methodOrProperty.definition, []);
+        }
+        groupedMethodsOrProperties.get(methodOrProperty.definition)?.push(methodOrProperty);
+      }
+
       getMoreRelevantMethodsOrPropertiesPrompt = getMostRelevantMethodPropertyPrompt(
         codeSpec,
         classNamesList,
-        methodsOrProperties,
+        groupedMethodsOrProperties,
         sample
       );
       sampleMessage = new LanguageModelChatUserMessage(getMoreRelevantMethodsOrPropertiesPrompt);

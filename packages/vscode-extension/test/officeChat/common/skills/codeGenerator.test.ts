@@ -24,12 +24,15 @@ describe("codeGenerator", () => {
         codeSnippet: "some code",
         codeExplanation: "some explanation",
         codeTaskBreakdown: ["task1", "task2"],
+        codeSample: "",
+        apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
         complexity: 0,
+        shouldContinue: false,
       };
 
       const model: LanguageModelChatUserMessage = {
@@ -80,6 +83,8 @@ describe("codeGenerator", () => {
       codeSnippet: "Some code snippet",
       codeExplanation: "Some code explanation",
       codeTaskBreakdown: ["task1", "task2"],
+      codeSample: "",
+      apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
         properties: {
@@ -92,41 +97,34 @@ describe("codeGenerator", () => {
         },
       },
       complexity: 3,
+      shouldContinue: false,
     };
 
     const result = codeGenerator.canInvoke(spec);
     chai.assert.isTrue(result);
   });
 
-  it("userInputBreakdownTaskAsync returns null", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    const codeGenerator = new CodeGenerator();
-
-    sandbox.stub(utils, "getCopilotResponseAsString").resolves(undefined);
-
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
-
-    chai.expect(result).to.equal(null);
-  });
-
-  it("userInputBreakdownTaskAsync returns null with error", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    const codeGenerator = new CodeGenerator();
-
-    const getCopilotResponseAsStringStub = sandbox
-      .stub(utils, "getCopilotResponseAsString")
-      .resolves("not valid JSON");
-
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
-
-    chai.expect(result).to.equal(null);
-  });
-
-  it("userInputBreakdownTaskAsync with LLM provided json should not continue, json detected", async () => {
+  it("userAskPreScanningAsync provided empty string, null returned", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
 
     sandbox.stub(console, "log");
+    sandbox.stub(console, "error");
+
+    const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseStub.resolves("");
+
+    const result = await codeGenerator.userAskPreScanningAsync(spec, fakeToken);
+
+    chai.expect(result).to.equal(null);
+  });
+
+  it("userAskPreScanningAsync provided json object, json detected", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "error");
 
     const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseStub.resolves(
@@ -135,7 +133,6 @@ describe("codeGenerator", () => {
         shouldContinue: false,
         customFunctions: true,
         complexity: 1,
-        data: ["fakeData1", "fakeData2"],
       })
     );
     const jsonParseStub = sandbox.stub(JSON, "parse");
@@ -144,24 +141,24 @@ describe("codeGenerator", () => {
       shouldContinue: false,
       customFunctions: true,
       complexity: 1,
-      data: ["fakeData1", "fakeData2"],
     };
     jsonParseStub.returns(parserResult);
 
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
+    const result = await codeGenerator.userAskPreScanningAsync(spec, fakeToken);
 
     chai.expect(result).to.equal(parserResult);
   });
 
-  it("userInputBreakdownTaskAsync with LLM provided json should not continue, json detected_", async () => {
+  it("userAskPreScanningAsync provided json with markdown syntax, json detected", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
 
     sandbox.stub(console, "log");
+    sandbox.stub(console, "error");
 
     const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseStub.resolves(
-      '```json\n{"host": "fakeHost", "shouldContinue": false, "customFunctions": true, "complexity": 1, "data": ["fakeData1", "fakeData2"]}\n```'
+      '```json\n{"host": "fakeHost", "shouldContinue": false, "customFunctions": true, "complexity": 1}\n```'
     );
     const jsonParseStub = sandbox.stub(JSON, "parse");
     const parserResult = {
@@ -169,213 +166,177 @@ describe("codeGenerator", () => {
       shouldContinue: false,
       customFunctions: true,
       complexity: 1,
-      data: ["fakeData1", "fakeData2"],
     };
     jsonParseStub.returns(parserResult);
 
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
+    const result = await codeGenerator.userAskPreScanningAsync(spec, fakeToken);
 
     chai.expect(result).to.equal(parserResult);
   });
 
-  it("userInputBreakdownTaskAsync with LLM provided json should not continue, json not detected", async () => {
+  it("userAskPreScanningAsync with invalid json string should not continue, json not detected", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
 
     sandbox.stub(console, "log");
-
-    const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseStub.resolves("some random string that is not a JSON object");
-    const jsonParseStub = sandbox.stub(JSON, "parse");
-    const jsonParseResult = {
-      host: "fakeHost",
-      shouldContinue: false,
-      customFunctions: true,
-      complexity: 1,
-      data: ["fakeData1", "fakeData2"],
-    };
-    jsonParseStub.returns(jsonParseResult);
-
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
-
-    chai.expect(result).to.equal(jsonParseResult);
-  });
-
-  it("userInputBreakdownTaskAsync with LLM provided json should not continue, error", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    const codeGenerator = new CodeGenerator();
-
-    sandbox.stub(console, "log");
+    sandbox.stub(console, "error");
 
     const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseStub.resolves("some random string that is not a JSON object");
 
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
+    const result = await codeGenerator.userAskPreScanningAsync(spec, fakeToken);
 
     chai.expect(result).to.equal(null);
   });
 
-  it("userInputBreakdownTaskAsync with LLM provided json should continue, is not customFunctions", async () => {
+  it("userAskBreakdownAsync returns null", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
 
-    sandbox.stub(console, "log");
+    sandbox.stub(utils, "getCopilotResponseAsString").resolves(undefined);
 
-    const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseStub.resolves("some random string that is not a JSON object");
-    const jsonParseStub = sandbox.stub(JSON, "parse");
-    const jsonParseResult = {
-      host: "fakeHost",
-      shouldContinue: true,
-      customFunctions: false,
-      complexity: 1,
-      data: ["fakeData1", "fakeData2"],
-    };
-    jsonParseStub.returns(jsonParseResult);
-
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
-
-    jsonParseResult.data.push(
-      "Create an entry function named 'main'. This function doesn't take any parameters and will call other functions in the list in right order. The function should be declared as 'async function'."
+    const result = await codeGenerator.userAskBreakdownAsync(
+      fakeToken,
+      spec.appendix.complexity,
+      spec.appendix.isCustomFunction,
+      spec.appendix.host,
+      spec.userInput,
+      ""
     );
 
-    chai.expect(result).to.equal(jsonParseResult);
+    chai.expect(result).to.equal(null);
   });
 
-  it("userInputBreakdownTaskAsync with LLM provided json should continue, is customFunctions", async () => {
+  it("userAskBreakdownAsync returns null with error", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
 
-    sandbox.stub(console, "log");
+    const getCopilotResponseAsStringStub = sandbox
+      .stub(utils, "getCopilotResponseAsString")
+      .resolves("not valid JSON");
+    sandbox.stub(console, "error");
+
+    const result = await codeGenerator.userAskBreakdownAsync(
+      fakeToken,
+      spec.appendix.complexity,
+      spec.appendix.isCustomFunction,
+      spec.appendix.host,
+      spec.userInput,
+      ""
+    );
+
+    chai.expect(result).to.equal(null);
+  });
+
+  it("userAskBreakdownAsync with LLM provided json should continue, is customFunctions", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+
+    sandbox.stub(console, "error");
 
     const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseStub.resolves(
-      '```json\n{"host": "fakeHost", "shouldContinue": false, "customFunctions": true, "complexity": 1, "data": ["fakeData1", "entry function named \'main\'"]}\n```'
-    );
+    getCopilotResponseStub.resolves('```json\n{"spec": "fakeSpec", "funcs": ["fakeData1"]}\n```');
     const jsonParseStub = sandbox.stub(JSON, "parse");
     const jsonParseResult = {
-      host: "fakeHost",
-      shouldContinue: true,
-      customFunctions: true,
-      complexity: 1,
-      data: ["fakeData1", "fakeData2", "entry function named 'main'"],
+      spec: "fakeSpec",
+      funcs: ["fakeData1"],
     };
     jsonParseStub.returns(jsonParseResult);
 
-    const result = await codeGenerator.userInputBreakdownTaskAsync(spec, fakeToken);
+    const result = await codeGenerator.userAskBreakdownAsync(
+      fakeToken,
+      spec.appendix.complexity,
+      spec.appendix.isCustomFunction,
+      spec.appendix.host,
+      spec.userInput,
+      ""
+    );
 
-    jsonParseResult.data.filter((task: string) => {
-      return !task.includes("entry function named 'main'");
+    jsonParseResult.funcs.filter((task: string) => {
+      return !task.includes("'main'");
     });
 
     chai.expect(result).to.equal(jsonParseResult);
   });
 
+  it("userAskBreakdownAsync with LLM provided json should continue - complex task, is customFunctions", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+
+    sandbox.stub(console, "error");
+
+    const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseStub.resolves('```json\n{"spec": "fakeSpec", "funcs": ["fakeData1"]}\n```');
+    const jsonParseStub = sandbox.stub(JSON, "parse");
+    const jsonParseResult = {
+      spec: "fakeSpec",
+      funcs: ["fakeData1"],
+    };
+    jsonParseStub.returns(jsonParseResult);
+
+    const result = await codeGenerator.userAskBreakdownAsync(
+      fakeToken,
+      100,
+      spec.appendix.isCustomFunction,
+      spec.appendix.host,
+      spec.userInput,
+      ""
+    );
+
+    jsonParseResult.funcs.filter((task: string) => {
+      return !task.includes("'main'");
+    });
+
+    chai.expect(result).to.equal(jsonParseResult);
+  });
+
+  it("userAskBreakdownAsync with LLM provided json should continue, not a  customFunctions", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+
+    sandbox.stub(console, "error");
+
+    const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseStub.resolves('```json\n{"spec": "fakeSpec", "funcs": ["fakeData1"]}\n```');
+    const jsonParseStub = sandbox.stub(JSON, "parse");
+    const jsonParseResult = {
+      spec: "fakeSpec",
+      funcs: ["fakeData1"],
+    };
+    jsonParseStub.returns(jsonParseResult);
+
+    const result = await codeGenerator.userAskBreakdownAsync(
+      fakeToken,
+      spec.appendix.complexity,
+      false,
+      spec.appendix.host,
+      spec.userInput,
+      ""
+    );
+
+    const mainFunc =
+      jsonParseResult.funcs.find((task: string) => {
+        return task.includes("'main'");
+      }) || "";
+    chai.expect(mainFunc).not.empty;
+  });
+
   it("generateCode - Excel - isCustomFunctions", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const host = "Excel";
-    const suggestedFunction = ["function1", "function2"];
+    const codeSpec = "codeSpec";
     const isCustomFunctions = true;
-    const codeGenerator = new CodeGenerator();
-    sandbox.stub(console, "log");
-    sandbox.stub(console, "debug");
-    const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
-    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
-      SampleProvider.prototype,
-      "getTopKMostRelevantScenarioSampleCodesLLM"
-    );
-
-    const scenarioSamples = new Map<string, SampleData>();
-    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
-
-    // Act
-    const result = await codeGenerator.generateCode(
-      fakeToken,
-      host,
-      isCustomFunctions,
-      suggestedFunction,
-      spec
-    );
-
-    // Assert
-    chai.expect(result).to.exist; // Replace with more specific assertions
-  });
-
-  it("generateCode - Excel - not CustomFunctions", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    const host = "Excel";
     const suggestedFunction = ["function1", "function2"];
-    const isCustomFunctions = false;
+    const fakeSampleCode = "fakeSampleCode";
     const codeGenerator = new CodeGenerator();
     sandbox.stub(console, "log");
     sandbox.stub(console, "debug");
+    sandbox.stub(console, "error");
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
-    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
       SampleProvider.prototype,
-      "getTopKMostRelevantScenarioSampleCodesLLM"
-    );
-    const scenarioSamples = new Map<string, SampleData>();
-    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
-
-    // Act
-    const result = await codeGenerator.generateCode(
-      fakeToken,
-      host,
-      isCustomFunctions,
-      suggestedFunction,
-      spec
-    );
-
-    // Assert
-    chai.expect(result).to.exist; // Replace with more specific assertions
-  });
-
-  it("generateCode - not Excel - isCustomFunctions", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    const host = "Word";
-    const suggestedFunction = ["function1", "function2"];
-    const isCustomFunctions = true;
-    const codeGenerator = new CodeGenerator();
-    sandbox.stub(console, "log");
-    sandbox.stub(console, "debug");
-    const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
-    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
-      SampleProvider.prototype,
-      "getTopKMostRelevantScenarioSampleCodesLLM"
-    );
-    const scenarioSamples = new Map<string, SampleData>();
-    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
-
-    // Act
-    const result = await codeGenerator.generateCode(
-      fakeToken,
-      host,
-      isCustomFunctions,
-      suggestedFunction,
-      spec
-    );
-
-    // Assert
-    chai.expect(result).to.exist; // Replace with more specific assertions
-  });
-
-  it("generateCode - Excel - isCustomFunctions - valid scenarioSample", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    const host = "Excel";
-    const suggestedFunction = ["function1", "function2"];
-    const isCustomFunctions = true;
-    const codeGenerator = new CodeGenerator();
-    sandbox.stub(console, "log");
-    sandbox.stub(console, "debug");
-    const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
-
-    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
-      SampleProvider.prototype,
-      "getTopKMostRelevantScenarioSampleCodesLLM"
+      "getMostRelevantDeclarationsUsingLLM"
     );
 
     const scenarioSamples = new Map<string, SampleData>();
@@ -384,64 +345,117 @@ describe("codeGenerator", () => {
       new SampleData(
         "Sample Name",
         "https://docs.example.com",
-        'const example = "Hello, world!";',
-        "This is a sample description.",
-        "This is a sample definition.",
-        "This is a sample usage."
+        "sample code",
+        "description",
+        "definition",
+        "usage"
       )
     );
-    scenarioSamples.set(
-      "sample2",
-      new SampleData(
-        "Sample Name",
-        "https://docs.example.com",
-        'const example = "Hi, world!";',
-        "This is a sample description.",
-        "This is a sample definition.",
-        "This is a sample usage."
-      )
-    );
-
-    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
 
     // Act
     const result = await codeGenerator.generateCode(
       fakeToken,
       host,
+      spec,
+      codeSpec,
       isCustomFunctions,
       suggestedFunction,
-      spec
+      fakeSampleCode
     );
 
     // Assert
     chai.expect(result).to.exist; // Replace with more specific assertions
   });
 
-  it("generateCode - Excel - isCustomFunctions - return null", async () => {
+  it("generateCode - Excel - not a CustomFunctions", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const host = "Excel";
+    const codeSpec = "codeSpec";
+    const isCustomFunctions = false;
     const suggestedFunction = ["function1", "function2"];
-    const isCustomFunctions = true;
+    const fakeSampleCode = "fakeSampleCode";
     const codeGenerator = new CodeGenerator();
     sandbox.stub(console, "log");
     sandbox.stub(console, "debug");
     sandbox.stub(console, "error");
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
-    getCopilotResponseAsStringStub.returns(Promise.resolve("..."));
-    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+    getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
       SampleProvider.prototype,
-      "getTopKMostRelevantScenarioSampleCodesLLM"
+      "getMostRelevantDeclarationsUsingLLM"
     );
+
     const scenarioSamples = new Map<string, SampleData>();
-    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
 
     // Act
     const result = await codeGenerator.generateCode(
       fakeToken,
       host,
+      spec,
+      codeSpec,
       isCustomFunctions,
       suggestedFunction,
-      spec
+      fakeSampleCode
+    );
+
+    // Assert
+    chai.expect(result).to.exist; // Replace with more specific assertions
+  });
+
+  it("generateCode - Excel - invalid return", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const host = "Excel";
+    const codeSpec = "codeSpec";
+    const isCustomFunctions = false;
+    const suggestedFunction = ["function1", "function2"];
+    const fakeSampleCode = "fakeSampleCode";
+    const codeGenerator = new CodeGenerator();
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "debug");
+    sandbox.stub(console, "error");
+    const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseAsStringStub.returns(Promise.resolve("some text"));
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getMostRelevantDeclarationsUsingLLM"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
+
+    // Act
+    const result = await codeGenerator.generateCode(
+      fakeToken,
+      host,
+      spec,
+      codeSpec,
+      isCustomFunctions,
+      suggestedFunction,
+      fakeSampleCode
     );
 
     // Assert
@@ -454,7 +468,9 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "log");
     sandbox.stub(console, "debug");
 
-    sandbox.stub(codeGenerator, "userInputBreakdownTaskAsync").resolves(null);
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves(null);
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
     chai.expect((await result).result).to.equal(ExecutionResultEnum.Failure);
   });
@@ -465,11 +481,12 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "log");
     sandbox.stub(console, "debug");
 
-    sandbox.stub(codeGenerator, "userInputBreakdownTaskAsync").resolves({
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves({
       host: "some host",
       shouldContinue: false,
       customFunctions: false,
-      data: ["some data"],
       complexity: 5,
     });
 
@@ -483,14 +500,43 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "log");
     sandbox.stub(console, "debug");
 
-    sandbox.stub(codeGenerator, "userInputBreakdownTaskAsync").resolves({
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    spec.appendix.codeSample = "";
+    spec.appendix.codeTaskBreakdown = [];
+    spec.appendix.codeExplanation = "";
+
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves({
       host: "some host",
       shouldContinue: true,
       customFunctions: false,
-      data: ["some data"],
-      complexity: 5,
+      complexity: 60,
+    });
+
+    sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
+      spec: "some host",
+      funcs: ["some data"],
     });
     sandbox.stub(codeGenerator, "generateCode").resolves(null);
+
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesBM25"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
 
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -503,35 +549,43 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "log");
     sandbox.stub(console, "debug");
 
-    sandbox.stub(codeGenerator, "userInputBreakdownTaskAsync").resolves({
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    spec.appendix.codeSample = "";
+    spec.appendix.codeTaskBreakdown = [];
+    spec.appendix.codeExplanation = "";
+
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves({
       host: "some host",
       shouldContinue: true,
       customFunctions: false,
-      data: ["some data"],
-      complexity: 5,
+      complexity: 60,
     });
-    sandbox.stub(codeGenerator, "generateCode").resolves("Some code");
 
-    const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
-
-    chai.expect((await result).result).to.equal(ExecutionResultEnum.Success);
-  });
-
-  it("Invoke Success with complexity > 50", async () => {
-    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-    spec.appendix.complexity = 51;
-    const codeGenerator = new CodeGenerator();
-    sandbox.stub(console, "log");
-    sandbox.stub(console, "debug");
-
-    sandbox.stub(codeGenerator, "userInputBreakdownTaskAsync").resolves({
-      host: "some host",
-      shouldContinue: true,
-      customFunctions: false,
-      data: ["some data"],
-      complexity: 51,
+    sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
+      spec: "some host",
+      funcs: ["some data"],
     });
-    sandbox.stub(codeGenerator, "generateCode").resolves("Some code");
+    sandbox.stub(codeGenerator, "generateCode").resolves("code sample");
+
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesBM25"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
 
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -545,13 +599,12 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "debug");
     spec.appendix.telemetryData.measurements["CodeGenExecutionTimeInTotalSec"] = 1;
 
-    sandbox.stub(codeGenerator, "userInputBreakdownTaskAsync").resolves({
-      host: "some host",
-      shouldContinue: true,
-      customFunctions: false,
-      data: ["some data"],
-      complexity: 5,
-    });
+    spec.appendix.host = "Excel";
+    spec.appendix.complexity = 50;
+    spec.appendix.shouldContinue = true;
+    spec.appendix.codeSample = "sample code";
+    spec.appendix.codeTaskBreakdown = ["task1", "task2"];
+    spec.appendix.codeExplanation = "some explanation";
     sandbox.stub(codeGenerator, "generateCode").resolves("Some code");
 
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);

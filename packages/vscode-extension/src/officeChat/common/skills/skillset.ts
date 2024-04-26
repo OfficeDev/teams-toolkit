@@ -36,7 +36,7 @@ export class SkillSet implements ISkill {
     if (!this.skills) {
       return { result: ExecutionResultEnum.Success, spec: spec };
     }
-    const specCopy = new Spec("");
+    let specCopy = new Spec("");
     specCopy.clone(spec);
     let retried = 0;
     let isSuccessed = true;
@@ -65,7 +65,7 @@ export class SkillSet implements ISkill {
         if (result === ExecutionResultEnum.Success) {
           isSuccessed = true;
         }
-        specCopy.clone(newSpec);
+        specCopy = newSpec;
       }
 
       if (isSuccessed) {

@@ -17,10 +17,7 @@ import { ExecutionResultEnum } from "./executionResultEnum";
 import {
   MeasurementCodeGenAttemptCount,
   MeasurementCodeGenExecutionTimeInTotalSec,
-  MeasurementScenarioBasedSampleMatchedCount,
-  PropertySystemCodeGenIsCustomFunction,
   PropertySystemCodeGenResult,
-  PropertySystemCodeGenTargetedOfficeHostApplication,
   MeasurementSystemCodegenTaskBreakdownAttemptFailedCount,
 } from "../telemetryConsts";
 import {
@@ -36,7 +33,6 @@ import {
   getGenerateCodeDeclarationPrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
-import { SampleData } from "../samples/sampleData";
 import { getTokenLimitation } from "../../consts";
 
 export class CodeGenerator implements ISkill {
@@ -106,8 +102,9 @@ export class CodeGenerator implements ISkill {
         spec.appendix.codeSample
       );
 
+      console.debug(`functional spec: ${breakdownResult?.spec || ""}`);
       console.debug(breakdownResult?.funcs.map((task) => `- ${task}`).join("\n"));
-      if (!breakdownResult) {
+      if (!breakdownResult || !breakdownResult.spec || breakdownResult.funcs.length === 0) {
         if (
           !spec.appendix.telemetryData.measurements[
             MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
@@ -250,7 +247,7 @@ export class CodeGenerator implements ISkill {
     }
 
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+      "copilot-gpt-3.5-turbo", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );

@@ -21,6 +21,8 @@ import {
 import {
   customFunctionSystemPrompt,
   excelSystemPrompt,
+  getCodeSamplePrompt,
+  getDeclarationsPrompt,
   getFixIssueDefaultSystemPrompt,
   getFixIssueUserPrompt,
   getGenerateCodeSamplePrompt,
@@ -98,14 +100,14 @@ export class CodeIssueCorrector implements ISkill {
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
-    let samplesPrompt = getGenerateCodeSamplePrompt();
+    let setDeclartionPrompt = getDeclarationsPrompt();
 
     if (spec.appendix.apiDeclarationsReference.size > 0) {
       const codeSnippets: string[] = [];
       spec.appendix.apiDeclarationsReference.forEach((sample, api) => {
-        console.debug(`[Code corrector] Sample matched: ${sample.description}`);
+        console.debug(`[Code corrector] Declaration matched: ${sample.description}`);
         codeSnippets.push(`
-- ${sample.description}:
+- [Description] ${sample.description}:
 \`\`\`typescript
 ${sample.codeSample}
 \`\`\`\n
@@ -113,12 +115,18 @@ ${sample.codeSample}
       });
 
       if (codeSnippets.length > 0) {
-        samplesPrompt = samplesPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
+        setDeclartionPrompt = setDeclartionPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
       }
     }
-    const sampleMessage: LanguageModelChatSystemMessage = new LanguageModelChatSystemMessage(
-      samplesPrompt
-    );
+    const declarationMessage: LanguageModelChatSystemMessage | null =
+      spec.appendix.apiDeclarationsReference.size > 0
+        ? new LanguageModelChatSystemMessage(setDeclartionPrompt)
+        : null;
+
+    const sampleMessage: LanguageModelChatSystemMessage | null =
+      spec.appendix.codeSample.length > 0
+        ? new LanguageModelChatSystemMessage(getCodeSamplePrompt(spec.appendix.codeSample))
+        : null;
 
     let fixedCode: string | null = codeSnippet;
     const historicalErrors: string[] = [];
@@ -149,6 +157,7 @@ ${sample.codeSample}
         historicalErrors,
         additionalInfo,
         model,
+        declarationMessage,
         sampleMessage
       );
       if (!fixedCode) {
@@ -244,7 +253,8 @@ ${sample.codeSample}
     historicalErrors: string[],
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
-    sampleMessage: LanguageModelChatSystemMessage
+    declarationMessage: LanguageModelChatSystemMessage | null,
+    sampleMessage: LanguageModelChatSystemMessage | null
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
@@ -277,9 +287,17 @@ ${sample.codeSample}
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatUserMessage(tempUserInput),
       new LanguageModelChatSystemMessage(defaultSystemPrompt),
-      sampleMessage,
-      new LanguageModelChatSystemMessage(referenceUserPrompt),
     ];
+
+    if (!!sampleMessage) {
+      messages.push(sampleMessage);
+    }
+
+    if (!!declarationMessage) {
+      messages.push(declarationMessage);
+    }
+
+    messages.push(new LanguageModelChatSystemMessage(referenceUserPrompt));
 
     let msgCount = countMessagesTokens(messages);
     while (msgCount > getTokenLimitation(model)) {

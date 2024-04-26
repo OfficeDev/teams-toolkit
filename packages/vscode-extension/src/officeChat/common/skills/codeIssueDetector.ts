@@ -362,7 +362,7 @@ export class CodeIssueDetector {
               })
               .filter((rating) => rating.rating > 0.35)
               .sort((a, b) => b.rating - a.rating)
-              .slice(0, 5)
+              .slice(0, 2)
               .map((rating) => rating.target);
             const foundCandidate: boolean =
               sortedSimilarStringsGlobal.find((name) => {

@@ -339,9 +339,9 @@ export function getUserComplexAskBreakdownTaskSystemPrompt(userInput: string): s
   - funcs. value is a array of string.
 
   # Your tasks:
-  Analyze the user input: ${userInput}, understand the intentions, and how Office JavaScript API could help to address that ask. Reference sample code snippet if it provided, deduce your think result to two parts:
+  Analyze the user input: ${userInput}, understand the intentions, and how Office JavaScript API could help to address that ask. Read the sample code snippet if it provided, make it as reference on steps on similar scenario. Then deduce your think result to two parts:
   1. You need to write a detail functional spec on how to step by step to achieve the user's ask, especially those parts that need to interact with Office applications. The function spec should not include code snippet or suggestion on APIs, but should include the explanation on what need to do. Let me repeat that, you should tell perform what action, rather than tell use what API. The spec It should be clear, concise, and easy to understand. Add that spec to the "spec" field of the output JSON object.
-  2. According to the spec, break the ask down into up to three steps present as TypeScript functions. For each function, give a one line function description, that should have description of the function intention, what parameters it should take, and what it should return. Do not break the description into multiple sub items. Add those function descriptions to the "funcs" field of the output JSON object.
+  2. According to the spec, break the ask down into a few TypeScript functions. For each function, give a one line function description, that should have detail description of the function intention. Do not break the description into multiple sub items. Add those function descriptions to the "funcs" field of the output JSON object.
   - bypass step like "create a new Office Add-ins project" or "create a new Excel workbook" or "create a new Word document" or "create a new PowerPoint presentation".
   - bypass step like "open the workbook" or "open the document" or "open the presentation".
   - bypass step like "save the workbook" or "save the document" or "save the presentation".
@@ -396,7 +396,7 @@ export function getCodeSamplePrompt(codeSample: string): string {
   return `
   The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-  # There're some samples relevant to the user's ask, you must read and repeat following samples before generate code. And then use the content and coding styles as your reference when you generate code:
+  # There're some samples relevant to the user's ask, read it through and think why the sample write like that, and how it could be used in your task.:
   \`\`\`typescript
   ${codeSample}
   \`\`\`
@@ -463,6 +463,14 @@ export function getGenerateCodeSamplePrompt(): string {
   The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
   # There're some samples relevant to the user's ask, you must read and repeat following samples before generate code. And then use the content and coding styles as your reference when you generate code:
+  `;
+}
+
+export function getDeclarationsPrompt(): string {
+  return `
+  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+  # There're some method or property declarations relevant to the user's ask, read the description above each declaration, and repeat by yourself. Make sure you understand that before go to the task:
   `;
 }
 
@@ -603,12 +611,7 @@ export function getFixSuggestionPropertyDoesNotExistOnTypeFoundGeneralSuggestion
 '${invalidProperty}' is invalid property or method of the type '${className}'. 
 Based on the purpose of that line of code, you can refer potential possible relevant properties or method below. It may need more than one intermediate steps to get there, using your knownledge and the list below to find the path.
 
-${suggestions.join("\n")}
-
-You may able to use the property or method of the type '${className}' as the start of the intermediate steps. The class indicates the type of the object, and the property or method indicates the action or the property of the object.
-\`\`\`typescript
-${memberNames.join("\n")}
-\`\`\`\n`;
+${suggestions.join("\n")}`;
 }
 
 export function getFixSuggestionNoFunctionReturnOrNoimplementation() {
@@ -796,9 +799,18 @@ export function getMostRelevantClassPrompt(
 export function getMostRelevantMethodPropertyPrompt(
   codeSpec: string,
   classNamesList: string[],
-  methodsOrPropertiesCandidates: SampleData[],
+  methodsOrPropertiesCandidatesByClassName: Map<string, SampleData[]>,
   sampleCode: string
 ) {
+  let tempClassDeclaration = "";
+  methodsOrPropertiesCandidatesByClassName.forEach((methodsOrPropertiesCandidates, className) => {
+    tempClassDeclaration += `
+class ${className} extends OfficeExtension.ClientObject {
+  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+}
+\n\n
+    `;
+  });
   return `
   # Role:
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
@@ -818,7 +830,9 @@ export function getMostRelevantMethodPropertyPrompt(
   )}', after understand the possible solution, you should able to pick some of the most relevant method and property declarations from the given list of method and property declaration below. Those picked method and property declarations should be used to complete the code it represent the user's ask. A sample code snippet may be offered below as reference, combine with the user's actual ask and the sample code, you should understand those methods and properties be used in similar scenario, then picked up declarations. You should pick the declaration from the below list, not from the given sample code. Then put the whole method or property declaration into an array of string. If you don't find any relevant declarations, you should return an empty array. For the array of string, it should be the value of the key 'picked' in the return object.
 
   # The method and property declarations:
-  - ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n- ")}
+  \`\`\`typescript
+  ${tempClassDeclaration}
+  \`\`\`
 
   # Sample code:
   \`\`\`typescript

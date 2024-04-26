@@ -106,31 +106,6 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("createProjectOptions - need to adjust options when feature flag is enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "false",
-        [FeatureFlags.CustomizeGpt.name]: "true",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-
-      const filteredQuestionNames = [QuestionNames.CustomizeGptWithPluginStart.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => filteredQuestionNames.includes(o.name)).length === 1
-      );
-      const res = await getCreateCommand().handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
     it("core return error", async () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));

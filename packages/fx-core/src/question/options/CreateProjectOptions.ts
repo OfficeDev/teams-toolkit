@@ -53,8 +53,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
-      "customize-gpt-basic",
-      "customize-gpt-with-plugin",
+      "basic-declarative-copilot",
+      "declarative-copilot-with-plugin-from-scratch",
       "json-taskpane",
       "office-content-addin",
       "word-taskpane",
@@ -121,12 +121,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-folder",
     type: "string",
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
-  },
-  {
-    name: "customize-gpt-with-plugin-start",
-    type: "string",
-    description: "Copilot Plugin.",
-    choices: ["copilot-plugin-new-api", "copilot-plugin-existing-api"],
   },
   {
     name: "me-architecture",

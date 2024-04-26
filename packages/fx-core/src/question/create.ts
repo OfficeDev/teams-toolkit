@@ -2183,10 +2183,13 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     staticOptions: [],
     validation: {
       validFunc: (input: string[], inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
         if (
           input.length < 1 ||
           (input.length > 10 &&
-            inputs?.[QuestionNames.CustomCopilotRag] != CustomCopilotRagOptions.customApi().id)
+            inputs[QuestionNames.CustomCopilotRag] != CustomCopilotRagOptions.customApi().id)
         ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
@@ -2194,7 +2197,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
             10
           );
         }
-        const operations: ApiOperation[] = inputs?.supportedApisFromApiSpec as ApiOperation[];
+        const operations: ApiOperation[] = inputs.supportedApisFromApiSpec as ApiOperation[];
 
         const authNames: Set<string> = new Set();
         const serverUrls: Set<string> = new Set();
@@ -2220,6 +2223,11 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
             "core.createProjectQuestion.apiSpec.operation.multipleServer",
             Array.from(serverUrls).join(", ")
           );
+        }
+
+        const authApi = operations.find((api) => !!api.data.authName && input.includes(api.id));
+        if (authApi) {
+          inputs.apiAuthData = authApi.data;
         }
       },
     },

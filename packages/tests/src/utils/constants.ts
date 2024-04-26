@@ -64,6 +64,7 @@ export enum TemplateProjectFolder {
   ContactExporter = "graph-toolkit-contact-exporter",
   HelloWorldBotSSO = "bot-sso",
   BotSSODocker = "bot-sso-docker",
+  TabDocker = "hello-world-tab-docker",
   TodoListSpfx = "todo-list-SPFx",
   MyFirstMetting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",
@@ -162,6 +163,7 @@ export enum Capability {
   // v3 only
   AiBot = "custom-copilot-basic",
   RAG = "custom-copilot-rag",
+  Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
 }
 

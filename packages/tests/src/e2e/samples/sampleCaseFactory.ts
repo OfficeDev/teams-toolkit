@@ -217,7 +217,8 @@ export abstract class CaseFactory {
             await bot.validateDeploy();
           }
           if (validate.includes("aca")) {
-            await ContainerAppValidator.validateContainerAppStatus();
+            const aca = new ContainerAppValidator(context);
+            await aca.validateContainerAppStatus();
           }
         }
 

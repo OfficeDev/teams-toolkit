@@ -165,6 +165,7 @@ export class ManifestUpdater {
             if (operationItem) {
               const operationId = operationItem.operationId!;
               const description = operationItem.description ?? "";
+              const summary = operationItem.summary;
               const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
               const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
 
@@ -268,8 +269,12 @@ export class ManifestUpdater {
 
               functions.push(funcObj);
               functionNames.push(operationId);
-              if (description) {
-                conversationStarters.push(description);
+              const conversationStarterStr = (summary ?? description).slice(
+                0,
+                ConstantString.ConversationStarterMaxLens
+              );
+              if (conversationStarterStr) {
+                conversationStarters.push(conversationStarterStr);
               }
             }
           }

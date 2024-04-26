@@ -1845,6 +1845,21 @@ describe("scaffold question", () => {
           );
         });
 
+        it("validate operations error: missing inputs", async () => {
+          const question = apiOperationQuestion();
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+
+          let hasError = false;
+          try {
+            await validationSchema.validFunc!(["operation1", "operation2"], undefined);
+          } catch (e) {
+            hasError = true;
+          }
+
+          assert.isTrue(hasError);
+        });
+
         it(" validate operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1857,6 +1872,7 @@ describe("scaffold question", () => {
                 groupName: "1",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
               {
@@ -1865,6 +1881,7 @@ describe("scaffold question", () => {
                 groupName: "2",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
             ],
@@ -1873,6 +1890,10 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
+          assert.deepEqual(inputs.apiAuthData, {
+            serverUrl: "https://server1",
+            authName: "oauth2",
+          });
           assert.isUndefined(res);
         });
 
@@ -2381,7 +2402,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2401,7 +2422,7 @@ describe("scaffold question", () => {
             {
               id: "get operation3",
               label: "get operation3",
-              detail: "OAuth",
+              detail: "OAuth(Auth code flow)",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
@@ -2467,7 +2488,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",

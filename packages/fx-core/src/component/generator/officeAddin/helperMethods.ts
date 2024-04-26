@@ -5,15 +5,10 @@
  * @author darrmill@microsoft.com, yefuwang@microsoft.com
  */
 import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
-import fs from "fs";
 import fse from "fs-extra";
 import * as path from "path";
-import * as unzip from "unzipper";
+import { ReadFileError } from "../../../error/common";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import fetch from "node-fetch";
-import { AccessGithubError, ReadFileError } from "../../../error/common";
-
-const zipFile = "project.zip";
 
 export class HelperMethods {
   static copyAddinFiles(fromFolder: string, toFolder: string): void {

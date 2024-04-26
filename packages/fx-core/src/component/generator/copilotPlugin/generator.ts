@@ -112,11 +112,6 @@ export class CopilotPluginGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
-    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
-      (api) => !!api.data.authName && apiOperations.includes(api.id)
-    );
-
     const templateName = fromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
@@ -129,7 +124,7 @@ export class CopilotPluginGenerator {
       templateName,
       componentName,
       false,
-      authApi?.data
+      inputs.apiAuthData
     );
   }
 
@@ -147,11 +142,6 @@ export class CopilotPluginGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
-    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
-      (api) => !!api.data.authName && apiOperations.includes(api.id)
-    );
-
     const templateName =
       inputs[QuestionNames.CustomizeGptWithPluginStart] ===
       CapabilityOptions.copilotPluginApiSpec().id
@@ -168,7 +158,7 @@ export class CopilotPluginGenerator {
       templateName,
       componentName,
       true,
-      authApi?.data
+      inputs.apiAuthData
     );
   }
 

@@ -118,6 +118,7 @@ export class ConstantString {
   static readonly FullDescriptionMaxLens = 4000;
   static readonly CommandDescriptionMaxLens = 128;
   static readonly ParameterDescriptionMaxLens = 128;
+  static readonly ConversationStarterMaxLens = 50;
   static readonly CommandTitleMaxLens = 32;
   static readonly ParameterTitleMaxLens = 32;
   static readonly SMERequiredParamsMaxNum = 5;

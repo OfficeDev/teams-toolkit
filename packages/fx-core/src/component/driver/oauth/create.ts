@@ -106,12 +106,12 @@ export class CreateOauthDriver implements StepDriver {
         );
         outputs.set(
           outputEnvVarNames.get(OutputKeys.configurationId)!,
-          oauthRegistrationRes.configurationId.oAuthConfigId
+          oauthRegistrationRes.configurationRegistrationId.oAuthConfigId
         );
 
         const summary = getLocalizedString(
           logMessageKeys.successCreateOauth,
-          oauthRegistrationRes.configurationId.oAuthConfigId
+          oauthRegistrationRes.configurationRegistrationId.oAuthConfigId
         );
         context.logProvider?.info(summary);
         summaries.push(summary);

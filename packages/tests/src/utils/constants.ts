@@ -429,9 +429,9 @@ export class Notification {
     "Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary.";
   static readonly Upgrade_dicarded =
     "Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit. The auto-upgrade process will generate backups in case an error occurs.";
-  static readonly ProvisionSucceeded = "Successfully executed";
-  static readonly DeploySucceeded = "Successfully executed";
-  static readonly PublishSucceeded = "Successfully executed";
+  static readonly ProvisionSucceeded = "successfully";
+  static readonly DeploySucceeded = "successfully";
+  static readonly PublishSucceeded = "successfully";
   static readonly UnresolvedPlaceholderError =
     "MissingEnvironmentVariablesError";
   static readonly ZipAppPackageSucceeded = "successfully built";

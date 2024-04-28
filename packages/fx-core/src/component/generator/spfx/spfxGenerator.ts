@@ -1006,20 +1006,34 @@ export class SPFxGeneratorImport extends DefaultTemplateGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
-    await SPFxGenerator.updateSPFxTemplate(spfxFolder, destinationPath, this.importDetails);
-    this.importDetails.push(
-      getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
-    );
-    await context.logProvider.logInFile(LogLevel.Info, this.importDetails.join(EOL));
-    void context.logProvider.info(
-      getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
-    );
-    void context.userInteraction.showMessage(
-      "info",
-      getLocalizedString("plugins.spfx.import.success", destinationPath),
-      false
-    );
-    return ok(undefined);
+    try {
+      const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
+      await SPFxGenerator.updateSPFxTemplate(spfxFolder, destinationPath, this.importDetails);
+      this.importDetails.push(
+        getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
+      );
+      await context.logProvider.logInFile(LogLevel.Info, this.importDetails.join(EOL));
+      void context.logProvider.info(
+        getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
+      );
+      void context.userInteraction.showMessage(
+        "info",
+        getLocalizedString("plugins.spfx.import.success", destinationPath),
+        false
+      );
+      return ok(undefined);
+    } catch (error) {
+      this.importDetails.push(
+        getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
+      );
+      await context.logProvider.logInFile(LogLevel.Info, this.importDetails.join(EOL));
+      void context.logProvider.error(
+        getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
+      );
+      if (error instanceof UserError || error instanceof SystemError) {
+        return err(error);
+      }
+      return err(ImportSPFxSolutionError(error as any));
+    }
   }
 }

@@ -1247,4 +1247,52 @@ describe("SPFxGeneratorImport", () => {
       chai.expect(res.isErr()).to.be.true;
     });
   });
+
+  describe("post", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(SPFxGenerator, "updateSPFxTemplate").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.post(context, inputs, "");
+      chai.expect(res.isOk()).to.be.true;
+    });
+
+    it("throw error", async () => {
+      sandbox.stub(SPFxGenerator, "updateSPFxTemplate").rejects(new Error());
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.post(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+
+    it("throw FxError", async () => {
+      sandbox.stub(SPFxGenerator, "updateSPFxTemplate").rejects(new UserCancelError());
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.post(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+  });
 });

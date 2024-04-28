@@ -282,6 +282,7 @@ export abstract class CaseFactory {
       let azSqlHelper: AzSqlHelper | undefined;
       let devtunnelProcess: ChildProcessWithoutNullStreams;
       let debugProcess: ChildProcessWithoutNullStreams;
+      let dockerProcess: ChildProcessWithoutNullStreams;
       let successFlag = true;
       let envContent = "";
       let botFlag = false;
@@ -409,7 +410,7 @@ export abstract class CaseFactory {
                   options.dockerFolder || ""
                 );
 
-                await CliHelper.dockerRun(
+                dockerProcess = await CliHelper.dockerRun(
                   sampledebugContext.projectPath,
                   options.dockerFolder || ""
                 );
@@ -438,7 +439,8 @@ export abstract class CaseFactory {
                     successFlag = false;
                     expect.fail(errorMsg);
                   }
-                }
+                },
+                options.container
               );
               await new Promise((resolve) =>
                 setTimeout(resolve, 2 * 60 * 1000)
@@ -475,6 +477,7 @@ export abstract class CaseFactory {
               // kill process
               await Executor.closeProcess(debugProcess);
               if (botFlag) await Executor.closeProcess(devtunnelProcess);
+              if (dockerProcess) await Executor.closeProcess(dockerProcess);
               await initDebugPort();
             }
 

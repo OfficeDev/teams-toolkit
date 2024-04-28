@@ -17,7 +17,7 @@ import path from "path";
 import * as chai from "chai";
 import { Executor } from "../utils/executor";
 import * as os from "os";
-import { ChildProcess } from "child_process";
+import { ChildProcess, ChildProcessWithoutNullStreams } from "child_process";
 
 export class CliHelper {
   static async addEnv(
@@ -623,7 +623,7 @@ export class CliHelper {
     path = "./",
     processEnv: NodeJS.ProcessEnv = process.env,
     delay: number = 3 * 60 * 1000
-  ): Promise<ChildProcess> {
+  ): Promise<ChildProcessWithoutNullStreams> {
     console.log(`[start] docker build ... `);
     const timeout = timeoutPromise(delay);
     const childProcess = spawnCommand(
@@ -652,9 +652,9 @@ export class CliHelper {
     projectPath: string,
     folder: string,
     processEnv: NodeJS.ProcessEnv = process.env,
-    delay: number = 3 * 60 * 1000
-  ): Promise<ChildProcess> {
-    console.log(`[start] docker build ... `);
+    delay: number = 30 * 1000
+  ): Promise<ChildProcessWithoutNullStreams> {
+    console.log(`[start] docker run ... `);
     const timeout = timeoutPromise(delay);
     const childProcess = spawnCommand(
       "docker",
@@ -674,7 +674,7 @@ export class CliHelper {
       }
     );
     await Promise.all([timeout, childProcess]);
-    console.log("[success] docker build successfully !!!");
+    console.log("[success] docker run successfully !!!");
     return childProcess;
   }
 }

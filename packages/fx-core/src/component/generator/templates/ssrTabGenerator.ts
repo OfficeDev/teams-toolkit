@@ -24,7 +24,8 @@ export class SsrTabGenerator extends DefaultTemplateGenerator {
   }
   override getTemplateInfos(
     context: Context,
-    inputs: Inputs
+    inputs: Inputs,
+    destinationPath: string
   ): Promise<Result<TemplateInfo[], FxError>> {
     return Promise.resolve(
       ok([

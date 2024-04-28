@@ -238,6 +238,7 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
   public async getTemplateInfos(
     context: Context,
     inputs: Inputs,
+    destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
     const projectType = inputs[QuestionNames.ProjectType];

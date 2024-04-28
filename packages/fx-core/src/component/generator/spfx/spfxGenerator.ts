@@ -20,11 +20,10 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { camelCase } from "lodash";
+import { camelCase, replace, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import * as util from "util";
-import { merge } from "lodash";
 import { cpUtils } from "../../../common/deps-checker";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, UserCancelError } from "../../../error";
@@ -50,12 +49,18 @@ import {
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import { SPFxVersionOptionIds } from "../../../question/create";
+import {
+  CapabilityOptions,
+  ProgrammingLanguage,
+  SPFxVersionOptionIds,
+} from "../../../question/create";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
 import semver from "semver";
 import { jsonUtils } from "../../../common/jsonUtils";
 import { telemetryHelper } from "./utils/telemetry-helper";
+import { DefaultTemplateGenerator } from "../templates/templateGenerator";
+import { TemplateInfo } from "../templates/templateInfo";
 
 export class SPFxGenerator {
   @hooks([
@@ -632,7 +637,7 @@ export class SPFxGenerator {
     }
   }
 
-  private static async copySPFxSolution(src: string, dest: string) {
+  public static async copySPFxSolution(src: string, dest: string) {
     try {
       await fs.ensureDir(dest);
       await fs.copy(src, dest, {
@@ -647,7 +652,7 @@ export class SPFxGenerator {
     }
   }
 
-  private static async getWebpartManifest(spfxFolder: string): Promise<any | undefined> {
+  public static async getWebpartManifest(spfxFolder: string): Promise<any | undefined> {
     const webpartsDir = path.join(spfxFolder, "src", "webparts");
     if (await fs.pathExists(webpartsDir)) {
       const webparts = (await fs.readdir(webpartsDir)).filter((file) =>
@@ -683,7 +688,7 @@ export class SPFxGenerator {
     return undefined;
   }
 
-  private static async updateSPFxTemplate(
+  public static async updateSPFxTemplate(
     spfxFolder: string,
     destinationPath: string,
     importDetails: string[]
@@ -849,7 +854,7 @@ export class SPFxGenerator {
     }
   }
 
-  private static async getNodeVersion(solutionPath: string, context: Context): Promise<string> {
+  public static async getNodeVersion(solutionPath: string, context: Context): Promise<string> {
     const packageJsonPath = path.join(solutionPath, Constants.PACKAGE_JSON_FILE);
 
     if (await fs.pathExists(packageJsonPath)) {
@@ -889,5 +894,145 @@ export class SPFxGenerator {
     }
 
     return Constants.DEFAULT_NODE_VERSION;
+  }
+}
+
+export class SPFxGeneratorNew extends DefaultTemplateGenerator {
+  public activate(context: Context, inputs: Inputs): boolean {
+    const capability = inputs[QuestionNames.Capabilities] as string;
+    const spfxSolution = inputs[QuestionNames.SPFxSolution];
+    return capability === CapabilityOptions.SPFxTab().id && spfxSolution === "new";
+  }
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const spfxSolution = inputs[QuestionNames.SPFxSolution];
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.SPFxSolution]: spfxSolution,
+    });
+    const yeomanRes = await SPFxGenerator.doYeomanScaffold(context, inputs, destinationPath);
+    if (yeomanRes.isErr()) return err(yeomanRes.error);
+    return ok([
+      {
+        templateName: Constants.TEMPLATE_NAME,
+        language: ProgrammingLanguage.TS,
+        replaceMap: context.templateVariables || {},
+      },
+    ]);
+  }
+}
+
+export class SPFxGeneratorImport extends DefaultTemplateGenerator {
+  importDetails: string[] = [];
+
+  public activate(context: Context, inputs: Inputs): boolean {
+    const capability = inputs[QuestionNames.Capabilities] as string;
+    const spfxSolution = inputs[QuestionNames.SPFxSolution];
+    return capability === CapabilityOptions.SPFxTab().id && spfxSolution !== "new";
+  }
+
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    this.importDetails = [];
+    try {
+      const spfxSolution = inputs[QuestionNames.SPFxSolution];
+      merge(actionContext?.telemetryProps, {
+        [TelemetryProperty.SPFxSolution]: spfxSolution,
+      });
+      const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
+      const destSpfxFolder = path.join(destinationPath, "src");
+      this.importDetails.push(
+        EOL +
+          `(.) Processing: Copying existing SPFx solution from ${spfxFolder} to ${destSpfxFolder}...`
+      );
+      await SPFxGenerator.copySPFxSolution(spfxFolder, destSpfxFolder);
+      this.importDetails.push(`(√) Done: Succeeded to copy existing SPFx solution.`);
+      this.importDetails.push(`(.) Processing: Reading web part manifest in SPFx solution...`);
+      const webpartManifest = await SPFxGenerator.getWebpartManifest(spfxFolder);
+      if (
+        !webpartManifest ||
+        !webpartManifest["id"] ||
+        !webpartManifest["preconfiguredEntries"][0].title.default
+      ) {
+        this.importDetails.push(
+          `(×) Error: Failed to Read web part manifest due to invalid ${
+            !webpartManifest
+              ? "web part manifest"
+              : !webpartManifest["id"]
+              ? "web part manifest id"
+              : "preconfiguredEntries title in web part manifest file"
+          }!`
+        );
+        throw RetrieveSPFxInfoError();
+      }
+      this.importDetails.push(
+        `(√) Done: Succeeded to retrieve web part manifest in SPFx solution.`
+      );
+      if (!context.templateVariables) {
+        context.templateVariables = Generator.getDefaultVariables(inputs[QuestionNames.AppName]);
+      }
+      const nodeVersion = await SPFxGenerator.getNodeVersion(destSpfxFolder, context);
+      context.templateVariables["SpfxNodeVersion"] = nodeVersion;
+      context.templateVariables["componentId"] = webpartManifest["id"];
+      context.templateVariables["webpartName"] =
+        webpartManifest["preconfiguredEntries"][0].title.default;
+      this.importDetails.push(
+        `(.) Processing: Generating SPFx project templates with app name: ${
+          inputs[QuestionNames.AppName] as string
+        }, component id: ${webpartManifest["id"] as string}, web part name: ${
+          webpartManifest["preconfiguredEntries"][0].title.default as string
+        }`
+      );
+      return ok([
+        {
+          templateName: Constants.TEMPLATE_NAME,
+          language: ProgrammingLanguage.TS,
+          replaceMap: context.templateVariables,
+        },
+      ]);
+    } catch (error) {
+      this.importDetails.push(
+        getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
+      );
+      await context.logProvider.logInFile(LogLevel.Info, this.importDetails.join(EOL));
+      void context.logProvider.error(
+        getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())
+      );
+
+      if (error instanceof UserError || error instanceof SystemError) {
+        return err(error);
+      }
+      return err(ImportSPFxSolutionError(error as any));
+    }
+  }
+
+  public async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
+    await SPFxGenerator.updateSPFxTemplate(spfxFolder, destinationPath, this.importDetails);
+    this.importDetails.push(
+      getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
+    );
+    await context.logProvider.logInFile(LogLevel.Info, this.importDetails.join(EOL));
+    void context.logProvider.info(
+      getLocalizedString("plugins.spfx.import.log.success", context.logProvider?.getLogFilePath())
+    );
+    void context.userInteraction.showMessage(
+      "info",
+      getLocalizedString("plugins.spfx.import.success", destinationPath),
+      false
+    );
+    return ok(undefined);
   }
 }

@@ -41,7 +41,7 @@ export class DefaultTemplateGenerator implements IGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const preResult = await this.getTemplateInfos(context, inputs, actionContext);
+    const preResult = await this.getTemplateInfos(context, inputs, destinationPath, actionContext);
     if (preResult.isErr()) return err(preResult.error);
 
     const templateInfos = preResult.value;
@@ -60,6 +60,7 @@ export class DefaultTemplateGenerator implements IGenerator {
   public getTemplateInfos(
     context: Context,
     inputs: Inputs,
+    destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
     const templateName = getTemplateName(inputs);

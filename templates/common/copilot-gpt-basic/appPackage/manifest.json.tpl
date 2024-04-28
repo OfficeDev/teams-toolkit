@@ -28,9 +28,11 @@
         "identity",
         "messageTeamMembers"
     ],
-    "copilotGpts" [
-        "id": "declarativeCopilot",
-        "file": "declarativeCopilot.json"
+    "copilotGpts": [
+        {
+            "id": "declarativeCopilot",
+            "file": "declarativeCopilot.json"
+        }
     ],
     "validDomains": []
 }

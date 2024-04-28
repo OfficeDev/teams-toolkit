@@ -1629,17 +1629,19 @@ export function folderQuestion(): FolderQuestion {
 
 export const AppNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
-async function getSolutionName(spfxFolder: string): Promise<string | undefined> {
+
+export async function getSolutionName(spfxFolder: string): Promise<string | undefined> {
   const yoInfoPath = path.join(spfxFolder, Constants.YO_RC_FILE);
   if (await fs.pathExists(yoInfoPath)) {
     const yoInfo = await fs.readJson(yoInfoPath);
     if (yoInfo["@microsoft/generator-sharepoint"]) {
       return yoInfo["@microsoft/generator-sharepoint"][Constants.YO_RC_SOLUTION_NAME];
+    } else {
+      return undefined;
     }
   } else {
     throw new FileNotFoundError(Constants.PLUGIN_NAME, yoInfoPath, Constants.IMPORT_HELP_LINK);
   }
-  return undefined;
 }
 export function appNameQuestion(): TextInputQuestion {
   const question: TextInputQuestion = {

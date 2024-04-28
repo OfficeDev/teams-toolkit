@@ -201,8 +201,8 @@ export class ProjectTypeOptions {
   static customizeGpt(): OptionItem {
     return {
       id: "customize-gpt-type",
-      label: "Customize GPT", // TODO: localize until we have an idea for naming
-      detail: "Author a Copilot GPT",
+      label: "Declarative Copilot", // TODO: localize until we have an idea for naming
+      detail: "Author a Declarative Copilot",
       groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }

@@ -138,25 +138,24 @@ export async function initPage(
       page.click("input.button[type='submit']"),
       page.waitForNavigation(),
     ]);
+    // input password
+    console.log(`fill in password`);
+    await page.fill("input.input[type='password'][name='passwd']", password);
+
+    // sign in
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+
+    // stay signed in confirm page
+    console.log(`stay signed confirm`);
+    await Promise.all([
+      page.click("input.button[type='submit'][value='Yes']"),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   });
-
-  // input password
-  console.log(`fill in password`);
-  await page.fill("input.input[type='password'][name='passwd']", password);
-
-  // sign in
-  await Promise.all([
-    page.click("input.button[type='submit']"),
-    page.waitForNavigation(),
-  ]);
-
-  // stay signed in confirm page
-  console.log(`stay signed confirm`);
-  await Promise.all([
-    page.click("input.button[type='submit'][value='Yes']"),
-    page.waitForNavigation(),
-  ]);
-  await page.waitForTimeout(Timeout.shortTimeLoading);
 
   // add app
   await RetryHandler.retry(async (retries: number) => {
@@ -1476,6 +1475,11 @@ export async function validateBot(
             await popup.click("input.button[type='submit'][value='Accept']");
           }
         } catch (error) {
+          console.log(error);
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("sending_message_after"),
+            fullPage: true,
+          });
           console.log("reopen skip step");
         }
         await RetryHandler.retry(async () => {

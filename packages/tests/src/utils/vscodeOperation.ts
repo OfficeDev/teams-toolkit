@@ -665,6 +665,7 @@ export async function createNewProject(
       scaffoldingTime = scaffoldingSpfxTime;
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
+      await input.setText("SPFx");
       await input.selectQuickPick("SPFx");
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
@@ -689,6 +690,7 @@ export async function createNewProject(
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
+      await input.setText("SPFx");
       await input.selectQuickPick("SPFx");
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
@@ -713,6 +715,7 @@ export async function createNewProject(
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
+      await input.setText("SPFx");
       await input.selectQuickPick("SPFx");
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
@@ -735,6 +738,7 @@ export async function createNewProject(
     case "gspfxreact": {
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
+      await input.setText("SPFx");
       await input.selectQuickPick("SPFx");
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);

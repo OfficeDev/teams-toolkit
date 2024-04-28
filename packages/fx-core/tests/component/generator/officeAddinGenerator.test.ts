@@ -1011,7 +1011,7 @@ describe("OfficeAddinGeneratorNew", () => {
       };
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
       inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
-      const res = await generator.getTemplateInfos(context, inputs);
+      const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         const templates = res.value;
@@ -1030,7 +1030,7 @@ describe("OfficeAddinGeneratorNew", () => {
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
       inputs[QuestionNames.Capabilities] = "some";
       inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
-      const res = await generator.getTemplateInfos(context, inputs);
+      const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         const templates = res.value;

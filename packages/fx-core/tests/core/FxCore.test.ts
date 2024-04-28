@@ -3714,7 +3714,7 @@ describe("copilotPlugin", async () => {
   });
 });
 
-describe("addPlugin", async () => {
+describe.only("addPlugin", async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -4072,7 +4072,7 @@ describe("addPlugin", async () => {
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
       .resolves(ok({} as CopilotGptManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
-    sinon.stub(SpecParser.prototype, "generateForCopilot").throws(new Error("fakeError"));
+    sandbox.stub(SpecParser.prototype, "generateForCopilot").throws(new Error("fakeError"));
     const core = new FxCore(tools);
     const result = await core.addPlugin(inputs);
     assert.isTrue(result.isErr());
@@ -4102,7 +4102,7 @@ describe("addPlugin", async () => {
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
       .resolves(ok({} as CopilotGptManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
-    sinon
+    sandbox
       .stub(SpecParser.prototype, "generateForCopilot")
       .throws(new SpecParserError("fakeError", ErrorType.SpecNotValid));
     const core = new FxCore(tools);

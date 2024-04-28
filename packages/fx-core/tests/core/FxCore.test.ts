@@ -3714,7 +3714,7 @@ describe("copilotPlugin", async () => {
   });
 });
 
-describe.only("addPlugin", async () => {
+describe("addPlugin", async () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

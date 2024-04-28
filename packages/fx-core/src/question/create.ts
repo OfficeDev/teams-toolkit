@@ -2150,8 +2150,8 @@ export function apiOperationQuestion(
         : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
     },
     cliDescription: isAddPlugin
-      ? "Select Operation(s) Copilot Can Interact with."
-      : "Select Operation(s) Teams Can Interact with.",
+      ? "Select operation(s) Copilot can interact with."
+      : "Select operation(s) Teams can interact with.",
     cliShortName: "o",
     placeholder: (inputs: Inputs) => {
       const isPlugin =

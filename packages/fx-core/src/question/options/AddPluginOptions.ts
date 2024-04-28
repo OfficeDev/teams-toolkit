@@ -17,7 +17,7 @@ export const AddPluginOptions: CLICommandOption[] = [
     type: "string",
     shortName: "t",
     description:
-      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specify the path for Teams app manifest template. It can be either absolute path or relative path to the project root folder, with default at './appPackage/manifest.json'",
     required: true,
     default: "./appPackage/manifest.json",
   },
@@ -39,7 +39,7 @@ export const AddPluginOptions: CLICommandOption[] = [
     name: "api-operation",
     type: "array",
     shortName: "o",
-    description: "Select Operation(s) Copilot Can Interact with.",
+    description: "Select operation(s) Copilot can interact with.",
     required: true,
   },
 ];

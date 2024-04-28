@@ -273,7 +273,7 @@ export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     cliName: "teams-manifest-file",
     cliShortName: "t",
     cliDescription:
-      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specify the path for Teams app manifest template. It can be either absolute path or relative path to the project root folder, with default at './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -978,7 +978,7 @@ export class PluginAvailabilityOptions {
 export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.PluginAvailability,
-    title: "Select plugin availability",
+    title: "Select Plugin Availability",
     cliDescription: "Select plugin availability.",
     type: "singleSelect",
     staticOptions: PluginAvailabilityOptions.all(),

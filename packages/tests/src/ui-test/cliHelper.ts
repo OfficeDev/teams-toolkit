@@ -677,4 +677,20 @@ export class CliHelper {
     console.log("[success] docker run successfully !!!");
     return childProcess;
   }
+
+  static async stopAllDocker() {
+    console.log(`[start] docker stop all ... `);
+    let cmd = "";
+    if (os.type() === "Windows_NT") {
+      cmd = "docker ps -q | ForEach-Object { docker stop $_ }";
+    } else {
+      cmd = "docker stop $(docker ps -q)";
+    }
+    const { stderr, stdout } = await execAsync(cmd);
+    if (stderr) {
+      console.log(stderr);
+    }
+    console.log(stdout);
+    console.log("[success] docker stop all successfully !!!");
+  }
 }

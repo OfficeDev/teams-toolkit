@@ -477,7 +477,10 @@ export abstract class CaseFactory {
               // kill process
               await Executor.closeProcess(debugProcess);
               if (botFlag) await Executor.closeProcess(devtunnelProcess);
-              if (dockerProcess) await Executor.closeProcess(dockerProcess);
+              if (dockerProcess) {
+                await Executor.closeProcess(dockerProcess);
+                await CliHelper.stopAllDocker();
+              }
               await initDebugPort();
             }
 

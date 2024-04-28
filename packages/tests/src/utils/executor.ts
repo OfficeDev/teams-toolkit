@@ -600,6 +600,8 @@ export class Executor {
       } catch (error) {
         console.log(error);
       }
+    } else {
+      console.log(childProcess);
     }
   }
 }

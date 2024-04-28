@@ -101,6 +101,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.LargeScaleBot]: async () => {
     await startDebugging();
   },
+  [TemplateProject.BotSSODocker]: async () => {
+    await startDebugging("Debug in Docker (Chrome)");
+  },
 };
 
 export async function initPage(

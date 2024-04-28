@@ -32,6 +32,7 @@ import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { initDebugPort } from "../../utils/commonUtils";
+import { CliHelper } from "../cliHelper";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -118,6 +119,8 @@ export abstract class CaseFactory {
     debug?: "cli" | "ttk";
     botFlag?: boolean;
     repoPath?: string;
+    container?: boolean;
+    dockerFolder?: string;
   };
 
   public constructor(
@@ -139,6 +142,8 @@ export abstract class CaseFactory {
       debug?: "cli" | "ttk";
       botFlag?: boolean;
       repoPath?: string;
+      container?: boolean;
+      dockerFolder?: string;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -392,11 +397,23 @@ export abstract class CaseFactory {
                 "local"
               );
               expect(provisionSuccess).to.be.true;
-              const { success: deploySuccess } = await Executor.deploy(
-                sampledebugContext.projectPath,
-                "local"
-              );
-              expect(deploySuccess).to.be.true;
+              if (!options.container) {
+                const { success: deploySuccess } = await Executor.deploy(
+                  sampledebugContext.projectPath,
+                  "local"
+                );
+                expect(deploySuccess).to.be.true;
+              } else {
+                await CliHelper.dockerBuild(
+                  sampledebugContext.projectPath,
+                  options.dockerFolder || ""
+                );
+
+                await CliHelper.dockerRun(
+                  sampledebugContext.projectPath,
+                  options.dockerFolder || ""
+                );
+              }
               const teamsAppId = await sampledebugContext.getTeamsAppId(env);
               expect(teamsAppId).to.not.be.empty;
 

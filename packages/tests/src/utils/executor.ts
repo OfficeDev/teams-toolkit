@@ -197,7 +197,8 @@ export class Executor {
     v3 = true,
     processEnv: NodeJS.ProcessEnv = process.env,
     onData?: (data: string) => void,
-    onError?: (data: string) => void
+    onError?: (data: string) => void,
+    openOnly?: boolean
   ) {
     console.log(`[start] ${env} debug ... `);
     const childProcess = spawn(
@@ -208,7 +209,12 @@ export class Executor {
         : v3
         ? "teamsapp"
         : "teamsfx",
-      ["preview", v3 ? "--env" : "", v3 ? `${env}` : `--${env}`],
+      [
+        "preview",
+        v3 ? "--env" : "",
+        v3 ? `${env}` : `--${env}`,
+        openOnly ? "--open-only" : "",
+      ],
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,

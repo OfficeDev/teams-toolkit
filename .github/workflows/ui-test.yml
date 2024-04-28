@@ -456,6 +456,10 @@ jobs:
         run: |
           mkdir -p $HOME/.vscode
           echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode/argv.json
+
+      - name: docker test
+        run: |
+          docker --version
           
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'

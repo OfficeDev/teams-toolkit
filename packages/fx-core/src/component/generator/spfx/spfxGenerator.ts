@@ -20,47 +20,47 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { camelCase, replace, merge } from "lodash";
+import { camelCase, merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
+import semver from "semver";
 import * as util from "util";
 import { cpUtils } from "../../../common/deps-checker";
+import { jsonUtils } from "../../../common/jsonUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, UserCancelError } from "../../../error";
+import {
+  CapabilityOptions,
+  ProgrammingLanguage,
+  SPFxVersionOptionIds,
+} from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
 import { SPFxQuestionNames } from "../../constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { envUtil } from "../../utils/envUtil";
 import { Generator } from "../generator";
+import { DefaultTemplateGenerator } from "../templates/templateGenerator";
+import { TemplateInfo } from "../templates/templateInfo";
 import { GeneratorChecker } from "./depsChecker/generatorChecker";
 import { YoChecker } from "./depsChecker/yoChecker";
 import {
+  CannotFindPropertyfromJsonError,
   CopyExistingSPFxSolutionError,
   ImportSPFxSolutionError,
   LatestPackageInstallError,
+  PackageTargetVersionInstallError,
   RetrieveSPFxInfoError,
   ScaffoldError,
   SolutionVersionMissingError,
   UpdateSPFxTemplateError,
   YoGeneratorScaffoldError,
-  PackageTargetVersionInstallError,
-  CannotFindPropertyfromJsonError,
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
-import {
-  CapabilityOptions,
-  ProgrammingLanguage,
-  SPFxVersionOptionIds,
-} from "../../../question/create";
+import { telemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
-import semver from "semver";
-import { jsonUtils } from "../../../common/jsonUtils";
-import { telemetryHelper } from "./utils/telemetry-helper";
-import { DefaultTemplateGenerator } from "../templates/templateGenerator";
-import { TemplateInfo } from "../templates/templateInfo";
 
 export class SPFxGenerator {
   @hooks([
@@ -418,19 +418,6 @@ export class SPFxGenerator {
       await progressHandler?.end(false);
       return err(ScaffoldError(error as Error));
     }
-  }
-
-  public static async getSolutionName(spfxFolder: string): Promise<string | undefined> {
-    const yoInfoPath = path.join(spfxFolder, Constants.YO_RC_FILE);
-    if (await fs.pathExists(yoInfoPath)) {
-      const yoInfo = await fs.readJson(yoInfoPath);
-      if (yoInfo["@microsoft/generator-sharepoint"]) {
-        return yoInfo["@microsoft/generator-sharepoint"][Constants.YO_RC_SOLUTION_NAME];
-      }
-    } else {
-      throw new FileNotFoundError(Constants.PLUGIN_NAME, yoInfoPath, Constants.IMPORT_HELP_LINK);
-    }
-    return undefined;
   }
 
   private static async getSolutionVersion(yoInfoPath: string): Promise<string> {

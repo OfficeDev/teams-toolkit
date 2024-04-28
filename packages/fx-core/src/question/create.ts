@@ -24,14 +24,14 @@ import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
 import {
+  FeatureFlags,
+  featureFlagManager,
   isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
+  isChatParticipantEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
   isTdpTemplateCliTestEnabled,
-  isChatParticipantEnabled,
-  featureFlagManager,
-  FeatureFlags,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -52,11 +52,10 @@ import {
   getOfficeAddinTemplateConfig,
 } from "../component/generator/officeXMLAddin/projectConfig";
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
-import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
-import { EmptyOptionError, assembleError } from "../error";
+import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
   capabilitiesHavePythonOption,
   copilotPluginApiSpecOptionId,
@@ -1630,7 +1629,18 @@ export function folderQuestion(): FolderQuestion {
 
 export const AppNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
-
+async function getSolutionName(spfxFolder: string): Promise<string | undefined> {
+  const yoInfoPath = path.join(spfxFolder, Constants.YO_RC_FILE);
+  if (await fs.pathExists(yoInfoPath)) {
+    const yoInfo = await fs.readJson(yoInfoPath);
+    if (yoInfo["@microsoft/generator-sharepoint"]) {
+      return yoInfo["@microsoft/generator-sharepoint"][Constants.YO_RC_SOLUTION_NAME];
+    }
+  } else {
+    throw new FileNotFoundError(Constants.PLUGIN_NAME, yoInfoPath, Constants.IMPORT_HELP_LINK);
+  }
+  return undefined;
+}
 export function appNameQuestion(): TextInputQuestion {
   const question: TextInputQuestion = {
     type: "text",
@@ -1643,7 +1653,7 @@ export function appNameQuestion(): TextInputQuestion {
       if (inputs.teamsAppFromTdp?.appName) {
         defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
       } else if (inputs[QuestionNames.SPFxSolution] == "import") {
-        defaultName = await SPFxGenerator.getSolutionName(inputs[QuestionNames.SPFxFolder]);
+        defaultName = await getSolutionName(inputs[QuestionNames.SPFxFolder]);
       } else if (inputs.openAIPluginManifest) {
         defaultName = inputs.openAIPluginManifest.name_for_human;
       }

@@ -57,6 +57,7 @@ export enum TemplateProject {
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
   LargeScaleBot = "Large Scale Notification Bot",
+  BotSSODocker = "Containerized Bot App with SSO Enabled",
 }
 
 export enum TemplateProjectFolder {
@@ -128,6 +129,7 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
     [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
+    [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
   };
 
 export enum Resource {

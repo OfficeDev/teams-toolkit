@@ -438,6 +438,12 @@ jobs:
         run: |
           npm run build
 
+      - name: Install docker extension
+        if: contains(matrix.test-case,  'docker')
+        working-directory: packages/tests
+        run: |
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker
+
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
         working-directory: packages/tests
@@ -456,10 +462,6 @@ jobs:
         run: |
           mkdir -p $HOME/.vscode
           echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode/argv.json
-
-      - name: docker test
-        run: |
-          docker --version
           
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'

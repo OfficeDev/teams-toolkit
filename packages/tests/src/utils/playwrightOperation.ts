@@ -1433,17 +1433,17 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
 
-    if (options?.botCommand === "show") {
-      try {
-        console.log("sending message ", options?.botCommand);
-        await executeBotSuggestionCommand(page, frame, options?.botCommand);
-        await frame?.click('button[name="send"]');
-      } catch (e: any) {
-        console.log(
-          `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
-        );
-      }
-      await RetryHandler.retry(async () => {
+    await RetryHandler.retry(async () => {
+      if (options?.botCommand === "show") {
+        try {
+          console.log("sending message ", options?.botCommand);
+          await executeBotSuggestionCommand(page, frame, options?.botCommand);
+          await frame?.click('button[name="send"]');
+        } catch (e: any) {
+          console.log(
+            `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
+          );
+        }
         try {
           // wait for alert message to show
           const btn = await frame?.waitForSelector(
@@ -1482,29 +1482,27 @@ export async function validateBot(
           });
           console.log("reopen skip step");
         }
+
+        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+        console.log("verify bot successfully!!!");
+        console.log(`${options?.expected}`);
+      } else {
         await RetryHandler.retry(async () => {
-          await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+          console.log("sending message ", options?.botCommand);
+          await executeBotSuggestionCommand(
+            page,
+            frame,
+            options?.botCommand || "welcome"
+          );
+          await frame?.click('button[name="send"]');
+          await frame?.waitForSelector(
+            `p:has-text("${options?.expected || ValidationContent.Bot}")`
+          );
           console.log("verify bot successfully!!!");
         }, 2);
         console.log(`${options?.expected}`);
-      }, 2);
-      console.log(`${options?.expected}`);
-    } else {
-      await RetryHandler.retry(async () => {
-        console.log("sending message ", options?.botCommand);
-        await executeBotSuggestionCommand(
-          page,
-          frame,
-          options?.botCommand || "welcome"
-        );
-        await frame?.click('button[name="send"]');
-        await frame?.waitForSelector(
-          `p:has-text("${options?.expected || ValidationContent.Bot}")`
-        );
-        console.log("verify bot successfully!!!");
-      }, 2);
-      console.log(`${options?.expected}`);
-    }
+      }
+    }, 2);
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({

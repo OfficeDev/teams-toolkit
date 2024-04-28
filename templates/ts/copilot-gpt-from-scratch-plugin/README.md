@@ -1,8 +1,8 @@
 # Overview of the Declarative Copilot template
 
-## Build a Declarative Copilot from a new API with Azure Functions
+## Build a declarative copilot from a new API with Azure Functions
 
-With Declarative Copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Declarative Copilot can be used to create a grocery list based on a meal plan that you send to the Declarative Copilot.
+With declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping declarative copilot can be used to create a grocery list based on a meal plan that you send to the declarative copilot.
 
 ## Get started with the template
 
@@ -39,7 +39,7 @@ The following files can be customized and demonstrate an example implementation 
 | `src/repairsData.json`                       | The data source for the repair API.                                                                    |
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                                    |
 | `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your copilot plugin and declarative copilot.      |
-| `appPackage/ai-plugin.json`                  | The manifest file for your Declarative Copilot that contains information for your API and used by LLM. |
+| `appPackage/ai-plugin.json`                  | The manifest file for your declarative copilot that contains information for your API and used by LLM. |
 | `appPackage/repairDeclarativeCopilot.json`   | Define the behaviour and configurations of the declarative copilot.                                    |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.

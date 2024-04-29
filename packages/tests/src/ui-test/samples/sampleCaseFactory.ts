@@ -375,6 +375,9 @@ export abstract class CaseFactory {
                   sampledebugContext.appName,
                   sampledebugContext.projectPath
                 );
+                if (options?.container) {
+                  await Executor.login();
+                }
                 await sampledebugContext.deployProject(
                   sampledebugContext.projectPath,
                   Timeout.botDeploy

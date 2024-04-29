@@ -24,5 +24,7 @@ new BotSSODockerTestCase(
   TemplateProject.BotSSODocker,
   27852471,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  undefined,
+  { container: true }
 ).test();

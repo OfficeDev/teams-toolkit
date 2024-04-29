@@ -66,6 +66,7 @@
     "test:telemetry": "nyc mocha \"tests/common/telemetry.test.ts\"",
     "test:stringUtils": "nyc mocha \"tests/common/stringUtils.test.ts\"",
     "test:generatorUtils": "nyc mocha \"tests/component/generatorUtils.test.ts\"",
+    "test:spfxGenerator": "nyc mocha \"tests/component/generator/spfxGenerator.test.ts\"",
     "clean": "rm -rf build",
     "prebuild": "npm run gen:cli",
     "build": "rimraf build && npx tsc -p ./",

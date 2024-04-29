@@ -54,6 +54,7 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  getSolutionName,
   officeAddinFrameworkQuestion,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
@@ -64,6 +65,7 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
+import { FileNotFoundError } from "../../src/error";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -4092,6 +4094,40 @@ describe("scaffold question", () => {
         );
         assert.isUndefined(customizeGptOption);
       }
+    });
+  });
+
+  describe("getSolutionName", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({
+        "@microsoft/generator-sharepoint": {
+          solutionName: "testSolutionName",
+        },
+      });
+      const res = await getSolutionName("");
+      assert.equal(res, "testSolutionName");
+    });
+
+    it("FileNotFoundError", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      try {
+        await getSolutionName(".");
+        assert.fail("should throw");
+      } catch (e) {
+        assert.isTrue(e instanceof FileNotFoundError);
+      }
+    });
+
+    it("undefined", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({});
+      const res = await getSolutionName("");
+      assert.isUndefined(res);
     });
   });
 });

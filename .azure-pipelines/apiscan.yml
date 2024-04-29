@@ -6,8 +6,7 @@ schedules:
     include:
     - dev
 
-pool:
-  vmImage: windows-2019
+pool: "1ESPtTfsAgentBuildPool1"
 
 steps:
 - task: UseDotNet@2
@@ -33,7 +32,7 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId=d318cba7-db4d-4fb3-99e1-01879cb74e91'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=436f0323-6f6d-45c8-8e3c-e3fa9f5bef56'
 
 - task: APIScan@2
   displayName: 'Run APIScan on Microsoft.TeamsFx'
@@ -44,4 +43,4 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId=d318cba7-db4d-4fb3-99e1-01879cb74e91'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=436f0323-6f6d-45c8-8e3c-e3fa9f5bef56'

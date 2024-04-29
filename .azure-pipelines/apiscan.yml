@@ -24,7 +24,7 @@ steps:
     arguments: '/p:Configuration=Release'
 
 # Remove files that won't be released
-- task: APIScan@3
+- task: APIScan@2
   displayName: 'Run APIScan'
   inputs:
     softwareFolder: 'packages/function-extension/src/bin/Release/netcoreapp3.1'
@@ -35,7 +35,7 @@ steps:
   env:
     AzureServicesAuthConnectionString: 'RunAs=App;AppId=d318cba7-db4d-4fb3-99e1-01879cb74e91'
 
-- task: APIScan@3
+- task: APIScan@2
   displayName: 'Run APIScan on Microsoft.TeamsFx'
   inputs:
     softwareFolder: packages/dotnet-sdk/src/TeamsFx/bin/Release/net6.0

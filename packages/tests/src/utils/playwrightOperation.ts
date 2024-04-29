@@ -1476,13 +1476,13 @@ export async function validateBot(
           }
         } catch (error) {
           console.log(error);
-          await page.screenshot({
-            path: getPlaywrightScreenshotPath("sending_message_after"),
-            fullPage: true,
-          });
+          // reopen skip login
+          await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
           console.log("reopen skip step");
+          console.log("verify bot successfully!!!");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          return;
         }
-
         await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
         console.log("verify bot successfully!!!");
         console.log(`${options?.expected}`);

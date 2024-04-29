@@ -27,6 +27,16 @@ import {
   IsChatParticipantEnabled,
   chatParticipantId,
 } from "./chat/consts";
+import {
+  officeChatParticipantId,
+  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+} from "./officeChat/consts";
+import {
+  officeChatRequestHandler,
+  chatCreateOfficeProjectCommandHandler,
+  handleOfficeFeedback,
+  handleOfficeUserAction,
+} from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
   chatExecuteCommandHandler,
@@ -114,6 +124,8 @@ export async function activate(context: vscode.ExtensionContext) {
   registerInternalCommands(context);
 
   registerChatParticipant(context);
+
+  registerOfficeChatParticipant(context);
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -435,6 +447,30 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
     () => Correlator.run(officeDevHandlers.generateManifestGUID)
   );
   context.subscriptions.push(generateManifestGUID);
+}
+
+/**
+ * Copilot Chat Participant for Office Add-in
+ */
+function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
+  const participant = vscode.chat.createChatParticipant(officeChatParticipantId, (...args) =>
+    Correlator.run(officeChatRequestHandler, ...args)
+  );
+  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
+  participant.followupProvider = followupProvider;
+  participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
+  participant.onDidPerformAction((...args) => Correlator.run(handleOfficeUserAction, ...args));
+
+  context.subscriptions.push(
+    participant,
+    vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
+      Correlator.run(officeDevHandlers.openDocumentHandler, args)
+    ),
+    vscode.commands.registerCommand(
+      CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+      chatCreateOfficeProjectCommandHandler
+    )
+  );
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
@@ -810,12 +846,6 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  const openOfficeDevDocumentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openOfficeDevDocument",
-    (...args) => Correlator.run(officeDevHandlers.openDocumentHandler, args)
-  );
-  context.subscriptions.push(openOfficeDevDocumentLinkCmd);
-
   const openGetStartedLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openGetStarted",
     (...args) => Correlator.run(officeDevHandlers.openGetStartedLinkHandler, args)
@@ -1103,9 +1133,7 @@ async function runBackgroundAsyncTasks(
   const releaseNote = new ReleaseNote(context);
   await releaseNote.show();
 
-  if (!isOfficeAddInProject) {
-    await openWelcomePageAfterExtensionInstallation();
-  }
+  await openWelcomePageAfterExtensionInstallation();
 
   if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();

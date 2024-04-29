@@ -51,7 +51,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/src/app.py",
             "cwd": "${workspaceFolder}/src",
-            "console": "integratedTerminal",
+            "console": "integratedTerminal"
         },
         {
             "name": "Start Test Tool",

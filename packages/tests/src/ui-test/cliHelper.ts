@@ -17,6 +17,7 @@ import path from "path";
 import * as chai from "chai";
 import { Executor } from "../utils/executor";
 import * as os from "os";
+import { ChildProcess, ChildProcessWithoutNullStreams } from "child_process";
 
 export class CliHelper {
   static async addEnv(
@@ -614,5 +615,82 @@ export class CliHelper {
       console.log(`close port 9239 failed, cause by: `, error);
     }
     console.log("[success] debug successfully !!!");
+  }
+
+  static async dockerBuild(
+    projectPath: string,
+    folder: string,
+    path = "./",
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 3 * 60 * 1000
+  ): Promise<ChildProcessWithoutNullStreams> {
+    console.log(`[start] docker build ... `);
+    const timeout = timeoutPromise(delay);
+    const childProcess = spawnCommand(
+      "docker",
+      ["build", "-t", folder, path],
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      },
+      (data) => {
+        console.log(data);
+      },
+      (error) => {
+        console.log(error);
+        if (error.includes("Error:")) {
+          chai.assert.fail(error);
+        }
+      }
+    );
+    await Promise.all([timeout, childProcess]);
+    console.log("[success] docker build successfully !!!");
+    return childProcess;
+  }
+
+  static async dockerRun(
+    projectPath: string,
+    folder: string,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 30 * 1000
+  ): Promise<ChildProcessWithoutNullStreams> {
+    console.log(`[start] docker run ... `);
+    const timeout = timeoutPromise(delay);
+    const childProcess = spawnCommand(
+      "docker",
+      ["run", "-p", "3978:80", "--env-file", ".localConfigs", folder],
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      },
+      (data) => {
+        console.log(data);
+      },
+      (error) => {
+        console.log(error);
+        if (error.includes("Error:")) {
+          chai.assert.fail(error);
+        }
+      }
+    );
+    await Promise.all([timeout, childProcess]);
+    console.log("[success] docker run successfully !!!");
+    return childProcess;
+  }
+
+  static async stopAllDocker() {
+    console.log(`[start] docker stop all ... `);
+    let cmd = "";
+    if (os.type() === "Windows_NT") {
+      cmd = "docker ps -q | ForEach-Object { docker stop $_ }";
+    } else {
+      cmd = "docker stop $(docker ps -q)";
+    }
+    const { stderr, stdout } = await execAsync(cmd);
+    if (stderr) {
+      console.log(stderr);
+    }
+    console.log(stdout);
+    console.log("[success] docker stop all successfully !!!");
   }
 }

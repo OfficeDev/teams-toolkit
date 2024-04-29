@@ -101,6 +101,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.LargeScaleBot]: async () => {
     await startDebugging();
   },
+  [TemplateProject.BotSSODocker]: async () => {
+    await startDebugging("Debug in Docker (Chrome)");
+  },
 };
 
 export async function initPage(
@@ -135,25 +138,24 @@ export async function initPage(
       page.click("input.button[type='submit']"),
       page.waitForNavigation(),
     ]);
+    // input password
+    console.log(`fill in password`);
+    await page.fill("input.input[type='password'][name='passwd']", password);
+
+    // sign in
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+
+    // stay signed in confirm page
+    console.log(`stay signed confirm`);
+    await Promise.all([
+      page.click("input.button[type='submit'][value='Yes']"),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   });
-
-  // input password
-  console.log(`fill in password`);
-  await page.fill("input.input[type='password'][name='passwd']", password);
-
-  // sign in
-  await Promise.all([
-    page.click("input.button[type='submit']"),
-    page.waitForNavigation(),
-  ]);
-
-  // stay signed in confirm page
-  console.log(`stay signed confirm`);
-  await Promise.all([
-    page.click("input.button[type='submit'][value='Yes']"),
-    page.waitForNavigation(),
-  ]);
-  await page.waitForTimeout(Timeout.shortTimeLoading);
 
   // add app
   await RetryHandler.retry(async (retries: number) => {
@@ -1431,17 +1433,17 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
 
-    if (options?.botCommand === "show") {
-      try {
-        console.log("sending message ", options?.botCommand);
-        await executeBotSuggestionCommand(page, frame, options?.botCommand);
-        await frame?.click('button[name="send"]');
-      } catch (e: any) {
-        console.log(
-          `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
-        );
-      }
-      await RetryHandler.retry(async () => {
+    await RetryHandler.retry(async () => {
+      if (options?.botCommand === "show") {
+        try {
+          console.log("sending message ", options?.botCommand);
+          await executeBotSuggestionCommand(page, frame, options?.botCommand);
+          await frame?.click('button[name="send"]');
+        } catch (e: any) {
+          console.log(
+            `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
+          );
+        }
         try {
           // wait for alert message to show
           const btn = await frame?.waitForSelector(
@@ -1473,31 +1475,34 @@ export async function validateBot(
             await popup.click("input.button[type='submit'][value='Accept']");
           }
         } catch (error) {
-          console.log("reopen skip step");
-        }
-        await RetryHandler.retry(async () => {
+          console.log(error);
+          // reopen skip login
           await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+          console.log("reopen skip step");
+          console.log("verify bot successfully!!!");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          return;
+        }
+        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+        console.log("verify bot successfully!!!");
+        console.log(`${options?.expected}`);
+      } else {
+        await RetryHandler.retry(async () => {
+          console.log("sending message ", options?.botCommand);
+          await executeBotSuggestionCommand(
+            page,
+            frame,
+            options?.botCommand || "welcome"
+          );
+          await frame?.click('button[name="send"]');
+          await frame?.waitForSelector(
+            `p:has-text("${options?.expected || ValidationContent.Bot}")`
+          );
           console.log("verify bot successfully!!!");
         }, 2);
         console.log(`${options?.expected}`);
-      }, 2);
-      console.log(`${options?.expected}`);
-    } else {
-      await RetryHandler.retry(async () => {
-        console.log("sending message ", options?.botCommand);
-        await executeBotSuggestionCommand(
-          page,
-          frame,
-          options?.botCommand || "welcome"
-        );
-        await frame?.click('button[name="send"]');
-        await frame?.waitForSelector(
-          `p:has-text("${options?.expected || ValidationContent.Bot}")`
-        );
-        console.log("verify bot successfully!!!");
-      }, 2);
-      console.log(`${options?.expected}`);
-    }
+      }
+    }, 2);
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({

@@ -6,7 +6,7 @@ schedules:
     include:
     - dev
 
-pool: "VSEngSS-MicroBuild2022-1ES"
+pool: "$(POOLAGENT)"
 
 steps:
 - task: UseDotNet@2

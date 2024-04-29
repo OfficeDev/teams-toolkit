@@ -33,7 +33,7 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId={335a8848-d80e-4963-93c7-a471d627936f of user-assigned identity}'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=d318cba7-db4d-4fb3-99e1-01879cb74e91'
 
 - task: APIScan@3
   displayName: 'Run APIScan on Microsoft.TeamsFx'
@@ -44,4 +44,4 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId={f3b77a44-7963-4341-8e1f-b47e83ed007c of user-assigned identity}'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=d318cba7-db4d-4fb3-99e1-01879cb74e91'

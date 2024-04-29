@@ -382,6 +382,7 @@ export enum LocalDebugTaskLabel {
   Azurite = "Start Azurite emulator",
   Compile = "Compile typescript",
   StartWebServer = "Start web server",
+  DockerRun = "docker-run: debug",
 }
 
 export class LocalDebugTaskResult {
@@ -396,6 +397,7 @@ export class LocalDebugTaskResult {
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
+  static readonly DockerRunFinish = "press any key to close it";
 }
 
 export enum LocalDebugTaskLabel2 {

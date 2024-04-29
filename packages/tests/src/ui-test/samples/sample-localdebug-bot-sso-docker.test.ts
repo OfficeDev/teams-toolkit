@@ -31,5 +31,5 @@ new BotSSODockerTestCase(
   26577671,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.DockerRun]
 ).test();

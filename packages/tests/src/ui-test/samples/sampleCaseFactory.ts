@@ -98,6 +98,12 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
       LocalDebugTaskResult.WebServerSuccess
     );
   },
+  [LocalDebugTaskLabel.DockerRun]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.DockerRun,
+      LocalDebugTaskResult.WebServerSuccess
+    );
+  },
 };
 
 export abstract class CaseFactory {

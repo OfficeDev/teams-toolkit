@@ -101,6 +101,11 @@ export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
 
+export const defaultApiSpecFolderName = "apiSpecificationFile";
+export const defaultApiSpecYamlFileName = "openapi.yaml";
+export const defaultApiSpecJsonFileName = "openapi.json";
+export const defaultPluginManifestFileName = "ai-plugin.json";
+
 export interface ErrorResult {
   /**
    * The type of error.

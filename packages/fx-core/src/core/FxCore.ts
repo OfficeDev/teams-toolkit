@@ -84,11 +84,16 @@ import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   OpenAIPluginManifestHelper,
+  defaultApiSpecFolderName,
+  defaultApiSpecJsonFileName,
+  defaultApiSpecYamlFileName,
   convertSpecParserErrorToFxError,
   copilotPluginParserOptions,
   generateScaffoldingSummary,
+  isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
+  defaultPluginManifestFileName,
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
@@ -119,6 +124,7 @@ import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import {
   HubTypes,
+  PluginAvailabilityOptions,
   TeamsAppValidationOptions,
   isAadMainifestContainsPlaceholder,
 } from "../question/other";
@@ -140,6 +146,9 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
+import { AppStudioError } from "../component/driver/teamsApp/errors";
+import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1534,5 +1543,187 @@ export class FxCore {
     fillinProjectTypeProperties(props, projectTypeRes);
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, props);
     return ok(projectTypeRes);
+  }
+
+  /**
+   * Add plugin
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "addPlugin" }),
+    ErrorHandlerMW,
+    QuestionMW("addPlugin"),
+    ConcurrentLockerMW,
+  ])
+  async addPlugin(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (!inputs.projectPath) {
+      throw new Error("projectPath is undefined"); // should never happen
+    }
+    const operations = inputs[QuestionNames.ApiOperation] as string[];
+    const url = inputs[QuestionNames.ApiSpecLocation];
+    const manifestPath = inputs[QuestionNames.ManifestPath];
+    const appPackageFolder = path.dirname(manifestPath);
+    const apiSpecFolder = path.join(appPackageFolder, defaultApiSpecFolderName);
+    const needAddAction =
+      inputs[QuestionNames.PluginAvailability] === PluginAvailabilityOptions.action().id ||
+      inputs[QuestionNames.PluginAvailability] ===
+        PluginAvailabilityOptions.copilotPluginAndAction().id;
+    const needAddCopilotPlugin =
+      inputs[QuestionNames.PluginAvailability] === PluginAvailabilityOptions.copilotPlugin().id ||
+      inputs[QuestionNames.PluginAvailability] ===
+        PluginAvailabilityOptions.copilotPluginAndAction().id;
+
+    // validate the project is valid for adding plugin
+    const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    const teamsManifest = manifestRes.value;
+    if (!teamsManifest.copilotGpts?.[0].file) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message("copilotGpts", manifestPath)
+        )
+      );
+    }
+    const gptManifestFilePath = path.join(appPackageFolder, teamsManifest.copilotGpts[0].file);
+    const gptManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
+      gptManifestFilePath
+    );
+    if (gptManifestRes.isErr()) {
+      return err(gptManifestRes.error);
+    }
+
+    const gptManifest = gptManifestRes.value;
+
+    const context = createContextV3();
+
+    // confirm
+    const confirmRes = await context.userInteraction.showMessage(
+      "warn",
+      getLocalizedString(
+        "core.addApi.confirm",
+        path.relative(inputs.projectPath, appPackageFolder)
+      ),
+      true,
+      getLocalizedString("core.addApi.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.addApi.continue")) {
+      return err(new UserCancelError());
+    }
+
+    // generate file path
+    let isYaml: boolean;
+    try {
+      isYaml = await isYamlSpecFile(url);
+    } catch (e) {
+      isYaml = false;
+    }
+    await fs.ensureDir(apiSpecFolder);
+
+    let openApiSpecFileName = isYaml ? defaultApiSpecYamlFileName : defaultApiSpecJsonFileName;
+    const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
+    const openApiSpecFileType = openApiSpecFileName.split(".")[1];
+    let apiSpecFileNameSuffix = 1;
+    while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
+      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix++}.${openApiSpecFileType}`;
+    }
+    const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
+
+    let pluginManifestName = defaultPluginManifestFileName;
+    const pluginManifestNamePrefix = defaultPluginManifestFileName.split(".")[0];
+    let pluginFileNameSuffix = 1;
+    while (await fs.pathExists(path.join(appPackageFolder, pluginManifestName))) {
+      pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix++}.json`;
+    }
+    const pluginManifestFilePath = path.join(appPackageFolder, pluginManifestName);
+
+    // generate plugin related files
+    const specParser = new SpecParser(url, { ...copilotPluginParserOptions, isGptPlugin: true });
+    try {
+      const generateResult = await specParser.generateForCopilot(
+        manifestPath,
+        operations,
+        openApiSpecFilePath,
+        pluginManifestFilePath
+      );
+
+      // Send SpecParser.generate() warnings
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+      });
+
+      if (generateResult.warnings && generateResult.warnings.length > 0) {
+        const warnSummary = generateScaffoldingSummary(
+          generateResult.warnings,
+          manifestRes.value,
+          path.relative(inputs.projectPath, openApiSpecFilePath)
+        );
+        context.logProvider.info(warnSummary);
+      }
+    } catch (e) {
+      let error: FxError;
+      if (e instanceof SpecParserError) {
+        error = convertSpecParserErrorToFxError(e);
+      } else {
+        error = assembleError(e);
+      }
+      return err(error);
+    }
+
+    // update Teams manifest
+    if (needAddCopilotPlugin) {
+      teamsManifest.plugins = teamsManifest.plugins || [];
+      teamsManifest.plugins.push({
+        id: "plugin_1", // Teams manifest can have only one plugin.
+        file: pluginManifestName,
+      });
+      const updateManifestRes = await manifestUtils._writeAppManifest(teamsManifest, manifestPath);
+      if (updateManifestRes.isErr()) {
+        return err(updateManifestRes.error);
+      }
+    }
+
+    // update GPT manifest
+    let actionId = "";
+    if (needAddAction) {
+      let suffix = 1;
+      actionId = `action_${suffix}`;
+      const existingActionIds = gptManifest.actions?.map((action) => action.id);
+      while (existingActionIds?.includes(actionId)) {
+        suffix += 1;
+        actionId = `action_${suffix}`;
+      }
+      const addActionRes = await copilotGptManifestUtils.addAction(
+        gptManifestFilePath,
+        actionId,
+        pluginManifestName
+      );
+      if (addActionRes.isErr()) {
+        return err(addActionRes.error);
+      }
+    }
+
+    // TODO: localize string below.
+    let successMessage = "";
+    if (needAddAction && needAddCopilotPlugin) {
+      successMessage = `Action \"${actionId}\" and plugin "plugin_1" have been successfully added to project.`;
+    } else if (needAddAction) {
+      successMessage = `Action \"${actionId}\" has been successfully added to project.`;
+    } else if (needAddCopilotPlugin) {
+      successMessage = `Plugin \"plugin_1\" has been successfully added to project.`;
+    }
+
+    void context.userInteraction.showMessage("info", successMessage, false);
+
+    return ok(undefined);
   }
 }

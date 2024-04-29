@@ -9,12 +9,14 @@ import {
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
+  ManifestUtil,
   MultiSelectQuestion,
   OptionItem,
   Platform,
   SingleFileQuestion,
   SingleSelectQuestion,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -36,6 +38,10 @@ import {
 } from "./create";
 import { QuestionNames } from "./questionNames";
 import { isAsyncAppValidationEnabled } from "../common/featureFlags";
+import { getAbsolutePath } from "../component/utils/common";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
+import { AppStudioError } from "../component/driver/teamsApp/errors";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -267,7 +273,7 @@ export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     cliName: "teams-manifest-file",
     cliShortName: "t",
     cliDescription:
-      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specify the path for Teams app manifest template. It can be either absolute path or relative path to the project root folder, with default at './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -934,6 +940,89 @@ export function resourceGroupQuestionNode(
             data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
           },
         ],
+      },
+    ],
+  };
+}
+
+export class PluginAvailabilityOptions {
+  // TODO: localize the label
+  static action(): OptionItem {
+    return {
+      id: "action",
+      label: "Declarative Copilot",
+    };
+  }
+  static copilotPlugin(): OptionItem {
+    return {
+      id: "copilot-plugin",
+      label: "Copilot for Microsoft 365",
+    };
+  }
+  static copilotPluginAndAction(): OptionItem {
+    return {
+      id: "copilot-plugin-and-action",
+      label: "Both declarative Copilot and Copilot for Microsoft 365",
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [
+      PluginAvailabilityOptions.copilotPlugin(),
+      PluginAvailabilityOptions.action(),
+      PluginAvailabilityOptions.copilotPluginAndAction(),
+    ];
+  }
+}
+
+export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.PluginAvailability,
+    title: "Select Plugin Availability",
+    cliDescription: "Select plugin availability.",
+    type: "singleSelect",
+    staticOptions: PluginAvailabilityOptions.all(),
+    dynamicOptions: async (inputs: Inputs) => {
+      const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
+      const absolutePath = getAbsolutePath(teamsManifestPath, inputs.projectPath!);
+      const manifestRes = await manifestUtils._readAppManifest(absolutePath);
+      if (manifestRes.isErr()) {
+        throw manifestRes.error;
+      }
+      const commonProperties = ManifestUtil.parseCommonProperties(manifestRes.value);
+      if (!commonProperties.capabilities.includes("copilotGpt")) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "copilotGpts",
+            teamsManifestPath
+          )
+        );
+      }
+
+      if (commonProperties.capabilities.includes("plugin")) {
+        // A project can have only one plugin.
+        return [PluginAvailabilityOptions.action()];
+      } else {
+        return PluginAvailabilityOptions.all();
+      }
+    },
+  };
+}
+
+// add Plugin to a declarative Copilot project
+export function addPluginQuestionNode(): IQTreeNode {
+  return {
+    data: selectTeamsAppManifestQuestion(),
+    children: [
+      {
+        data: selectPluginAvailabilityQuestion(),
+      },
+      {
+        data: apiSpecLocationQuestion(),
+      },
+      {
+        data: apiOperationQuestion(true, true),
       },
     ],
   };

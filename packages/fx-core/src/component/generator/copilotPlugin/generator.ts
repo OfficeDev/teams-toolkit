@@ -40,6 +40,10 @@ import {
   copilotPluginParserOptions,
   updateForCustomApi,
   getEnvName,
+  defaultApiSpecFolderName,
+  defaultApiSpecYamlFileName,
+  defaultApiSpecJsonFileName,
+  defaultPluginManifestFileName,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -65,11 +69,6 @@ const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
 const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
-const apiSpecFolderName = "apiSpecificationFile";
-const apiSpecYamlFileName = "openapi.yaml";
-const apiSpecJsonFileName = "openapi.json";
-const pluginManifestFileName = "ai-plugin.json";
-
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
@@ -225,7 +224,11 @@ export class CopilotPluginGenerator {
         ManifestTemplateFileName
       );
 
-      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
+      const apiSpecFolderPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        defaultApiSpecFolderName
+      );
 
       let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
       url = url.trim();
@@ -237,7 +240,7 @@ export class CopilotPluginGenerator {
         isYaml = false;
       }
 
-      const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
+      const openapiSpecFileName = isYaml ? defaultApiSpecYamlFileName : defaultApiSpecJsonFileName;
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
       if (authData?.authName) {
@@ -250,7 +253,7 @@ export class CopilotPluginGenerator {
           {
             authName: authData.authName,
             openapiSpecPath: normalizePath(
-              path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
+              path.join(AppPackageFolderName, defaultApiSpecFolderName, openapiSpecFileName)
             ),
             registrationIdEnvName: envName,
             authType: authData.authType,
@@ -344,7 +347,7 @@ export class CopilotPluginGenerator {
         const pluginManifestPath = path.join(
           destinationPath,
           AppPackageFolderName,
-          pluginManifestFileName
+          defaultPluginManifestFileName
         );
         generateResult = await specParser.generateForCopilot(
           manifestPath,

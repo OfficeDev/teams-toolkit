@@ -10,16 +10,7 @@
 
 import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
-export const PreviewTeamsAppOptions: CLICommandOption[] = [
-  {
-    name: "m365-host",
-    type: "string",
-    shortName: "m",
-    description: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
-    required: true,
-    default: "teams",
-    choices: ["teams", "outlook", "office"],
-  },
+export const AddPluginOptions: CLICommandOption[] = [
   {
     name: "teams-manifest-file",
     questionName: "manifest-path",
@@ -30,5 +21,26 @@ export const PreviewTeamsAppOptions: CLICommandOption[] = [
     required: true,
     default: "./appPackage/manifest.json",
   },
+  {
+    name: "plugin-availability",
+    type: "string",
+    description: "Select plugin availability.",
+    required: true,
+    choices: ["copilot-plugin", "action", "copilot-plugin-and-action"],
+  },
+  {
+    name: "openapi-spec-location",
+    type: "string",
+    shortName: "a",
+    description: "OpenAPI description document location.",
+    required: true,
+  },
+  {
+    name: "api-operation",
+    type: "array",
+    shortName: "o",
+    description: "Select operation(s) Copilot can interact with.",
+    required: true,
+  },
 ];
-export const PreviewTeamsAppArguments: CLICommandArgument[] = [];
+export const AddPluginArguments: CLICommandArgument[] = [];

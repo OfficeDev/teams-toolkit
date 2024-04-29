@@ -10,7 +10,13 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 
-export interface SelectTeamsManifestInputs extends Inputs {
+export interface AddPluginInputs extends Inputs {
   /** @description Select Teams manifest.json File */
   "manifest-path"?: string;
+  /** @description Select Plugin Availability */
+  "plugin-availability"?: "copilot-plugin" | "action" | "copilot-plugin-and-action";
+  /** @description OpenAPI Description Document */
+  "openapi-spec-location"?: string;
+  /** @description Select Operation(s) Copilot Can Interact with */
+  "api-operation"?: string[];
 }

@@ -78,6 +78,7 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
+  PluginAvailability = "plugin-availability",
 }
 
 export enum CliQuestionName {

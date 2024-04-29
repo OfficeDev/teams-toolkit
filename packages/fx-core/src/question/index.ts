@@ -8,6 +8,7 @@ import {
   createSampleProjectQuestionNode,
 } from "./create";
 import {
+  addPluginQuestionNode,
   addWebPartQuestionNode,
   apiSpecApiKeyQuestion,
   copilotPluginAddAPIQuestionNode,
@@ -70,6 +71,9 @@ export class QuestionNodes {
   }
   oauth(): IQTreeNode {
     return oauthQuestion();
+  }
+  addPlugin(): IQTreeNode {
+    return addPluginQuestionNode();
   }
 }
 

@@ -468,7 +468,7 @@
     "teamstoolkit.chatParticipants.nextStep.whatsNext": "What should I do next?",
     "teamstoolkit.chatParticipants.create.sample": "Scaffold this sample",
     "teamstoolkit.chatParticipants.create.template": "Create this template",
-    "teamstoolkit.chatParticipants.create.tooGeneric": "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying 'create a chat bot', you could specify 'create a chat bot that answers FAQs for customer support.'",
+    "teamstoolkit.chatParticipants.create.tooGeneric": "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying 'create a bot', you could specify 'create a bot template' or 'create a notification bot that sends user about stock updates'",
     "teamstoolkit.chatParticipants.create.oneMatched": "We've found 1 project that matches your description. Take a look at it below.\n\n",
     "teamstoolkit.chatParticipants.create.multipleMatched": "We've found %d projects that match your description. Take a look at them below.\n",
     "teamstoolkit.chatParticipants.create.noMatched": "I cannot find any matching templates or samples. Refine your app description or explore other templates.",

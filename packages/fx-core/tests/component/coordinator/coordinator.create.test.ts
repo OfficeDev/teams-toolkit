@@ -28,6 +28,7 @@ import { InputValidationError, MissingRequiredInputError } from "../../../src/er
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
+  CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   OfficeAddinHostOptions,
@@ -227,9 +228,6 @@ const V3Version = MetadataV3.projectVersion;
       }
     });
     it("create project for new office XML Addin MissingRequiredInputError missing App name", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
@@ -243,12 +241,8 @@ const V3Version = MetadataV3.projectVersion;
       if (res.isErr()) {
         assert.isTrue(res.error instanceof MissingRequiredInputError);
       }
-      mockedEnvRestoreLocal();
     });
     it("create project for new office XML Addin InputValidationError invalid App name", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
@@ -263,7 +257,6 @@ const V3Version = MetadataV3.projectVersion;
       if (res.isErr()) {
         assert.isTrue(res.error instanceof InputValidationError);
       }
-      mockedEnvRestoreLocal();
     });
     it("create project for new office JSON Addin MissingRequiredInputError missing App name", async () => {
       const inputs: Inputs = {
@@ -843,6 +836,63 @@ const V3Version = MetadataV3.projectVersion;
         : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
     });
 
+    it("create custom copilot rag custom api with azure open ai success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: "typescript",
+        [QuestionNames.SafeProjectName]: "safeprojectname",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+        [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+        [QuestionNames.ApiSpecLocation]: "spec",
+        [QuestionNames.ApiOperation]: "test",
+        [QuestionNames.LLMService]: "llm-service-azure-openai",
+        [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
+        [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
+        [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
+      };
+      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+      const fxCore = new FxCore(tools);
+      const res = await fxCore.createProject(inputs);
+
+      assert.isTrue(res.isOk());
+      newGeneratorFlag
+        ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotRagCustomApi)
+        : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
+    });
+
+    it("create custom agent api with azure open ai success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: "typescript",
+        [QuestionNames.SafeProjectName]: "safeprojectname",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotAssistant().id,
+        [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.new().id,
+        [QuestionNames.ApiSpecLocation]: "spec",
+        [QuestionNames.ApiOperation]: "test",
+        [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
+        [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
+        [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
+      };
+      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+      const fxCore = new FxCore(tools);
+      const res = await fxCore.createProject(inputs);
+
+      assert.isTrue(res.isOk());
+      newGeneratorFlag
+        ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotAssistantNew)
+        : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotAssistantNew);
+    });
+
     it("create custom copilot rag custom api failed", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -874,15 +924,12 @@ const V3Version = MetadataV3.projectVersion;
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "false",
-    });
   });
 
   afterEach(() => {
@@ -965,15 +1012,12 @@ describe("Office Addin", async () => {
 describe("Office XML Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "true",
-    });
   });
 
   afterEach(() => {
@@ -1048,15 +1092,12 @@ describe("Office XML Addin", async () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "false",
-    });
   });
 
   afterEach(() => {

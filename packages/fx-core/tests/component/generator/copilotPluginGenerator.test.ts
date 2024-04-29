@@ -57,6 +57,8 @@ import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/util
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
 import { format } from "util";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
+import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -155,7 +157,12 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generateMeFromApiSpec(
       context,
       inputs,
-      "projectPath"
+      "projectPath",
+      {
+        telemetryProps: {
+          "project-id": "test",
+        },
+      }
     );
 
     assert.isTrue(result.isOk());
@@ -173,6 +180,10 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["operation2"],
       supportedApisFromApiSpec: apiOperations,
+      apiAuthData: {
+        authType: "apiKey",
+        serverUrl: "",
+      },
     };
     const context = createContextV3();
     sandbox
@@ -193,7 +204,7 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isOk());
-    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api-api-key");
+    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
@@ -522,7 +533,7 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
     const context = createContextV3();
@@ -669,6 +680,51 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isErr() && result.error.message === "test");
+  });
+
+  it("generate for oauth: success", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.AppName]: "test",
+      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+            authName: "auth",
+            authType: "oauth2",
+          },
+        },
+      ] as ApiOperation[],
+    };
+    const context = createContextV3();
+
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generateForCopilot")
+      .resolves({ allSuccess: true, warnings: [] });
+    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generatePluginFromApiSpec(
+      context,
+      inputs,
+      "projectPath"
+    );
+    assert.isTrue(result.isOk());
+    assert.equal(downloadTemplate.args[0][2], "api-plugin-existing-api");
+    assert.isTrue(downloadTemplate.calledOnce);
+    assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 });
 

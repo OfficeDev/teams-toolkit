@@ -14,8 +14,10 @@ import {
   CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
+  FeatureFlags,
   MeArchitectureOptions,
   QuestionNames,
+  featureFlagManager,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -43,6 +45,7 @@ function adjustOptions(options: CLICommandOption[]) {
       break;
     }
   }
+
   return options;
 }
 

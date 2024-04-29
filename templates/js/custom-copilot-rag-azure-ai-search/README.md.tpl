@@ -1,19 +1,16 @@
-# Overview of the AI Search Bot template
+# Overview of the Chat With Your Data (Using Azure AI Search) template
 
-This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library).
-It showcases how to build an basic RAG bot in Teams capable of chatting with users but with context provided by Azure AI Search data source.
+This app template showcases how to build one of the most powerful applications enabled by LLM - sophisticated question-answering (Q&A) chat bots that can answer questions about specific source information right in the Microsoft Teams.
+This app template also demonstrates usage of techniques like: 
+- [Retrieval Augmented Generation](https://python.langchain.com/docs/use_cases/question_answering/#what-is-rag), or RAG.
+- [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search)
+- [Teams AI Library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview)
 
-- [Overview of the AI Search Bot template](#overview-of-the-ai-search-bot-template)
-  - [Get started with the AI Search Bot template](#get-started-with-the-ai-search-bot-template)
-  - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Search Bot template with more AI capabilities](#extend-the-ai-search-bot-template-with-more-ai-capabilities)
-  - [Additional information and references](#additional-information-and-references)
-
-## Get started with the AI Search Bot template
+## Get started with the template
 
 > **Prerequisites**
 >
-> To run the AI Search bot template in your local dev machine, you will need:
+> To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
@@ -23,6 +20,8 @@ It showcases how to build an basic RAG bot in Teams capable of chatting with use
 {{#useAzureOpenAI}}
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource and [Azure AI Search](https://azure.microsoft.com/en-us/products/ai-services/ai-search).
 {{/useAzureOpenAI}}
+
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#useOpenAI}}
@@ -73,18 +72,14 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Search bot template with more AI capabilities
+## Extend the template
 
-You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities, like:
-- [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)
-- [Customize user input](https://aka.ms/teamsfx-basic-ai-chatbot#customize-user-input)
-- [Customize conversation history](https://aka.ms/teamsfx-basic-ai-chatbot#customize-conversation-history)
-- [Customize model type](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-type)
-- [Customize model parameters](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-parameters)
-- [Handle messages with image](https://aka.ms/teamsfx-basic-ai-chatbot#handle-messages-with-image)
+- Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
+- Follow [Build a RAG Bot in Teams](https://aka.ms/teamsfx-rag-bot) to extend the template with more RAG capabilities.
+- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#microsoft-365-as-data-source).
 
 ## Additional information and references
-- [Teams AI library](https://aka.ms/teams-ai-library)
+
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

@@ -44,4 +44,4 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId={335a8848-d80e-4963-93c7-a471d627936f of user-assigned identity}'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId={f3b77a44-7963-4341-8e1f-b47e83ed007c of user-assigned identity}'

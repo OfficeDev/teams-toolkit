@@ -63,6 +63,14 @@ export enum TelemetryProperty {
   RscDelegated = "rsc-delegated",
 
   AadManifest = "aad-manifest",
+
+  CustomCopilotAgent = "custom-copilot-agent",
+  CustomCopilotRAG = "custom-copilot-rag",
+  LlmService = "llm-service",
+  HasAzureOpenAIKey = "has-azure-openai-key",
+  HasAzureOpenAIEndpoint = "has-azure-openai-endpoint",
+  HasAzureOpenAIDeploymentName = "has-azure-openai-deployment-name",
+  HasOpenAIKey = "has-openai-key",
 }
 
 export enum TelemetryEvent {

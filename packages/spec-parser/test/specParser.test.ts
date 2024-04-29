@@ -2485,6 +2485,152 @@ describe("SpecParser", () => {
       });
     });
 
+    it("should return correct auth information when auth is in the spec root", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            aad_auth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://authorize",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+            api_key1: {
+              type: "apiKey",
+              name: "api_key1",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        security: [
+          { api_key1: [], api_key2: [], aad_auth: ["write:pets"] },
+          { api_key2: [], api_key1: [], aad_auth: ["write:pets"] },
+          { api_key1: [] },
+          { api_key2: [] },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal({
+        APIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
+            operationId: "getUserById",
+            isValid: true,
+            reason: [],
+          },
+          {
+            api: "POST /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
+            operationId: "postUserById",
+            isValid: true,
+            reason: [],
+          },
+        ],
+        allAPICount: 2,
+        validAPICount: 2,
+      });
+    });
+
     it("should allow multiple parameters if allowMultipleParameters is true", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMultipleParameters: true });

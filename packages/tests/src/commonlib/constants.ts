@@ -171,4 +171,7 @@ export class EnvConstants {
   static readonly AZURE_CONTAINER_APP_NAME = "AZURE_CONTAINER_APP_NAME";
   static readonly AZURE_CONTAINER_APP_RESOURCE_ID =
     "AZURE_CONTAINER_APP_RESOURCE_ID";
+  // Tab
+  static readonly BACKEND_APP_NAME = "BACKEND_APP_NAME";
+  static readonly FRONTEND_APP_NAME = "FRONTEND_APP_NAME";
 }

@@ -63,6 +63,7 @@
   ],
   "enabledApiProposals": [
     "chatParticipant",
+    "chatParticipantAdditions",
     "chatProvider",
     "chatVariableResolver",
     "languageModels"
@@ -1529,6 +1530,7 @@
     "kill-port-process": "^3.0.1",
     "lint-staged": "^11.2.6",
     "lodash": "^4.17.21",
+    "mermaid": "^10.9.0",
     "mocha": "^10.0.0",
     "mocha-multi-reporters": "^1.5.1",
     "mock-fs": "^5.2.0",
@@ -1562,9 +1564,8 @@
   },
   "dependencies": {
     "@azure/arm-resources-subscriptions": "^2.1.0",
-    "@azure/identity": "^3.1.3",
+    "@azure/identity": "^4.1.0",
     "@azure/ms-rest-azure-env": "^2.0.0",
-    "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^2.6.6",
     "@microsoft/dev-tunnels-connections": "1.1.9",
     "@microsoft/dev-tunnels-contracts": "1.1.9",
@@ -1578,7 +1579,7 @@
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "async-mutex": "^0.3.1",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "dotenv": "^8.2.0",
     "dree": "^4.7.0",
     "express": "^4.19.2",

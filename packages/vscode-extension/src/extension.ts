@@ -90,6 +90,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
+import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -218,6 +219,9 @@ function activateOfficeDevRegistration(context: vscode.ExtensionContext) {
   if (vscode.workspace.isTrusted) {
     registerOfficeDevCodeLensProviders(context);
   }
+
+  // Register task and debug event handlers, as well as sending telemetries
+  registerOfficeTaskAndDebugEvents();
 }
 
 /**

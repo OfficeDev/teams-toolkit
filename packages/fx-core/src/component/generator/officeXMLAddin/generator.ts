@@ -20,6 +20,7 @@ import { Generator } from "../generator";
 import { HelperMethods } from "../officeAddin/helperMethods";
 import { getOfficeAddinTemplateConfig } from "./projectConfig";
 import { convertToLangKey } from "../utils";
+import { fetchAndUnzip } from "../../utils";
 
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
@@ -85,8 +86,14 @@ export class OfficeXMLAddinGenerator {
         // [Condition]: Project have remote repo (not manifest-only proj)
 
         // -> Step: Download the project from GitHub
-        await HelperMethods.downloadProjectTemplateZipFile(destinationPath, projectLink);
-
+        const fetchRes = await fetchAndUnzip(
+          "office-xml-addin-generator",
+          projectLink,
+          destinationPath
+        );
+        if (fetchRes.isErr()) {
+          return err(fetchRes.error);
+        }
         // -> Step: Convert to single Host
         await OfficeXMLAddinGenerator.childProcessExec(
           `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`

@@ -49,13 +49,13 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -82,16 +82,16 @@ enum OpenAIPluginManifestErrorType {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: false,
+  allowBearerTokenAuth: isCopilotAuthEnabled(),
   allowMultipleParameters: true,
-  allowOauth2: false,
+  allowOauth2: isCopilotAuthEnabled(),
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  // Will enable below two options once they are ready to consume.
-  // allowResponseSemantics: true,
-  // allowConversationStarters: true
+  allowResponseSemantics: true,
+  allowConversationStarters: true,
+  allowConfirmation: true,
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
@@ -100,6 +100,11 @@ export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
+
+export const defaultApiSpecFolderName = "apiSpecificationFile";
+export const defaultApiSpecYamlFileName = "openapi.yaml";
+export const defaultApiSpecJsonFileName = "openapi.json";
+export const defaultPluginManifestFileName = "ai-plugin.json";
 
 export interface ErrorResult {
   /**
@@ -189,8 +194,6 @@ export async function listOperations(
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
   try {
-    const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
-    const allowMultipleParameters = isPlugin || isMultipleParametersEnabled();
     const specParser = new SpecParser(
       apiSpecUrl as string,
       isPlugin
@@ -200,8 +203,9 @@ export async function listOperations(
             projectType: ProjectType.TeamsAi,
           }
         : {
-            allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters,
+            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+            allowMultipleParameters: true,
+            allowOauth2: isCopilotAuthEnabled(),
           }
     );
     const validationRes = await specParser.validate();
@@ -291,18 +295,28 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       id: operation.api,
       label: operation.api,
       groupName: arr[0],
+      detail: !operation.auth
+        ? getLocalizedString("core.copilotPlugin.api.noAuth")
+        : Utils.isBearerTokenAuth(operation.auth.authScheme)
+        ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
+        : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
+        ? getLocalizedString("core.copilotPlugin.api.oauth")
+        : "",
       data: {
         serverUrl: operation.server,
       },
     };
 
-    if (
-      operation.auth &&
-      operation.auth.authScheme.type === "http" &&
-      operation.auth.authScheme.scheme === "bearer"
-    ) {
-      result.data.authName = operation.auth.name;
+    if (operation.auth) {
+      if (Utils.isBearerTokenAuth(operation.auth.authScheme)) {
+        result.data.authType = "apiKey";
+        result.data.authName = operation.auth.name;
+      } else if (Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)) {
+        result.data.authType = "oauth2";
+        result.data.authName = operation.auth.name;
+      }
     }
+
     operationsWithSeparator.push(result);
   }
 
@@ -752,6 +766,7 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
         const messages = [];
         const invalidAPIInfo = error.data as InvalidAPIInfo[];
         for (const info of invalidAPIInfo) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           const mes = `${info.api}: ${info.reason.map(mapInvalidReasonToMessage).join(", ")}`;
           messages.push(mes);
         }
@@ -901,7 +916,7 @@ async function updateActionForCustomApi(
 
       actions.push({
         name: item.item.operationId,
-        description: item.item.description,
+        description: item.item.description ?? item.item.summary,
         parameters: parameters,
       });
     }
@@ -1018,4 +1033,13 @@ export async function updateForCustomApi(
 
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
+}
+
+const EnvNameMapping: { [authType: string]: string } = {
+  apiKey: "REGISTRATION_ID",
+  oauth2: "CONFIGURATION_ID",
+};
+
+export function getEnvName(authName: string, authType?: string): string {
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
 }

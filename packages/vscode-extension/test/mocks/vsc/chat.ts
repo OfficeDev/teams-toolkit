@@ -16,6 +16,16 @@ export class LanguageModelChatUserMessage {
   }
 }
 
+export class LanguageModelChatAssistantMessage {
+  content: string;
+  name: string | undefined;
+
+  constructor(content: string, name?: string) {
+    this.content = content;
+    this.name = name;
+  }
+}
+
 export enum ChatLocation {
   /**
    * The chat panel

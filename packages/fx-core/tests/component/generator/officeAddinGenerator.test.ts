@@ -1,4 +1,3 @@
-import { Capability } from "./../../../../tests/src/utils/constants";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -18,34 +17,29 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as childProcess from "child_process";
-import EventEmitter from "events";
 import fs from "fs";
 import fse from "fs-extra";
 import "mocha";
 import mockfs from "mock-fs";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import * as fetch from "node-fetch";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
 import proxyquire from "proxyquire";
 import * as sinon from "sinon";
-import * as unzip from "unzipper";
 import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
 import {
+  getHost,
   OfficeAddinGenerator,
   OfficeAddinGeneratorNew,
-  getHost,
 } from "../../../src/component/generator/officeAddin/generator";
-import {
-  HelperMethods,
-  unzipErrorHandler,
-} from "../../../src/component/generator/officeAddin/helperMethods";
+import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import * as componentUtils from "../../../src/component/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
-import { AccessGithubError, UserCancelError } from "../../../src/error";
+import { UserCancelError } from "../../../src/error";
 import {
   CapabilityOptions,
   OfficeAddinHostOptions,
@@ -195,7 +189,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -215,7 +209,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -234,7 +228,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(new UserCancelError());
+    sinon.stub(componentUtils, "fetchAndUnzip").rejects(new UserCancelError());
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -416,7 +410,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
   });
 });
 
-describe("helperMethods", async () => {
+describe("HelperMethods", async () => {
   describe("updateManifest", () => {
     const sandbox = sinon.createSandbox();
     const manifestPath = "manifestPath";
@@ -471,172 +465,6 @@ describe("helperMethods", async () => {
       await HelperMethods.updateManifest("", manifestPath);
 
       chai.assert.isUndefined(writePathResult, "writeToPath should not be called");
-    });
-  });
-
-  describe("downloadProjectTemplateZipFile", async () => {
-    const sandbox = sinon.createSandbox();
-    class ResponseData extends EventEmitter {
-      pipe(ws: fs.WriteStream) {
-        return this;
-      }
-    }
-
-    class MockedWriteStream {
-      on(event: string, cb: () => void) {
-        return this;
-      }
-    }
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-    it("should fetch fail", async () => {
-      const resp = new ResponseData();
-      sandbox.stub(fetch, "default").rejects(new Error());
-      const mockedStream = new MockedWriteStream();
-      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      try {
-        await HelperMethods.downloadProjectTemplateZipFile("", "");
-        chai.assert.fail("should not reach here");
-      } catch (e) {
-        chai.assert.isTrue(e instanceof AccessGithubError);
-      }
-    });
-    it("should download project template zip file", async () => {
-      const resp = new ResponseData();
-      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
-      const mockedStream = new MockedWriteStream();
-      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
-      // manully wait for the close event to be registered
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      resp.emit("close");
-      await promise;
-      chai.assert.isTrue(unzipStub.calledOnce);
-    });
-
-    it("unzipProjectTemplate error", async () => {
-      const resp = new ResponseData();
-      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
-      const mockedStream = new MockedWriteStream();
-      sandbox.stub(HelperMethods, "unzipProjectTemplate").rejects(new Error());
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
-      // manully wait for the close event to be registered
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      resp.emit("close");
-      try {
-        await promise;
-        chai.assert.fail("should throw error");
-      } catch (e) {}
-    });
-
-    it("download error", async () => {
-      const resp = new ResponseData();
-      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
-      const mockedStream = new MockedWriteStream();
-      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
-      // manully wait for the close event to be registered
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      resp.emit("error", new Error());
-      try {
-        await promise;
-        chai.assert.fail("should throw error");
-      } catch (e) {}
-      chai.assert.isTrue(unzipStub.notCalled);
-    });
-
-    it("Response body is null.", async () => {
-      sandbox.stub(fetch, "default").resolves({ body: null } as any);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
-      try {
-        await promise;
-        chai.assert.fail("should throw error");
-      } catch (e) {
-        chai.assert.isTrue(e instanceof AccessGithubError);
-      }
-    });
-  });
-
-  describe("unzipProjectTemplate", () => {
-    const sandbox = sinon.createSandbox();
-
-    class MockedReadStream {
-      on(event: string, cb: () => void) {
-        return this;
-      }
-
-      pipe(ws: fs.WriteStream) {
-        return this;
-      }
-    }
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("work as expected", async () => {
-      sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
-      sandbox.stub<any, any>(unzip, "Extract").returns({});
-      try {
-        HelperMethods.unzipProjectTemplate("");
-      } catch (err) {
-        chai.assert.fail(err);
-      } finally {
-        sandbox.restore();
-      }
-    });
-
-    it("unzipErrorHandler", async () => {
-      let i = 0;
-      const reject = () => {
-        i++;
-      };
-      unzipErrorHandler("", reject, new Error());
-      chai.assert.equal(i, 1);
-    });
-    it("unzipErrorHandler 2", async () => {
-      let i = 0;
-      const reject = () => {
-        i++;
-      };
-      unzipErrorHandler("", reject, new Error("test"));
-      chai.assert.equal(i, 1);
-    });
-  });
-
-  describe("moveUnzippedFiles", () => {
-    const projectRoot = "/home/user/teamsapp";
-
-    beforeEach(() => {
-      mockfs({
-        "/home/user/teamsapp/project.zip": "xxx",
-        "/home/user/teamsapp/project": {
-          file1: "xxx",
-          file2: "yyy",
-        },
-      });
-    });
-
-    afterEach(() => {
-      mockfs.restore();
-    });
-
-    it("should remove zip file and unzipped folder and copy files", async () => {
-      try {
-        HelperMethods.moveUnzippedFiles(projectRoot);
-        chai.assert.equal(fs.existsSync("/home/user/teamsapp/project.zip"), false);
-        chai.assert.equal(fs.existsSync("/home/user/teamsapp/project"), false);
-        chai.assert.equal(fs.existsSync("/home/user/teamsapp/file1"), true);
-        chai.assert.equal(fs.existsSync("/home/user/teamsapp/file2"), true);
-      } catch (err) {
-        chai.assert.fail(err);
-      }
     });
   });
 
@@ -754,11 +582,11 @@ describe("helperMethods", async () => {
 describe("OfficeAddinGenerator for Office Addin", function () {
   const testFolder = path.resolve("./tmp");
   let context: Context;
-  let mockedEnvRestore: RestoreFn;
+  let mockedEnvRestore: RestoreFn = () => {};
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
+    mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3();
@@ -855,7 +683,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -874,7 +702,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -894,7 +722,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     inputs[QuestionNames.OfficeAddinFramework] = "default";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(new UserCancelError());
+    sinon.stub(componentUtils, "fetchAndUnzip").rejects(new UserCancelError());
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -1144,29 +972,11 @@ describe("OfficeAddinGenerator for Office Addin", function () {
       result.isOk() && stub.calledWith(context, testFolder, "office-json-addin", "js")
     );
   });
-
-  // it("should scaffold taskpane successfully on happy path if capability is office-content-addin", async () => {
-  //   const inputs: Inputs = {
-  //     platform: Platform.CLI,
-  //     projectPath: testFolder,
-  //     "project-type": ProjectTypeOptions.officeAddin().id,
-  //     "app-name": "office-addin-test",
-  //     "office-addin-framework-type": "default",
-  //   };
-  //   inputs[QuestionNames.Capabilities] = CapabilityOptions.officeContentAddin().id;
-  //   inputs[QuestionNames.OfficeAddinFolder] = undefined;
-  //   inputs[QuestionNames.ProgrammingLanguage] = "typescript";
-
-  //   sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-  //   sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
-  //   sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-  //   const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
-  //   chai.expect(result.isOk()).to.eq(true);
-  // });
 });
 
 describe("OfficeAddinGeneratorNew", () => {
+  const gtools = new MockTools();
+  setTools(gtools);
   const generator = new OfficeAddinGeneratorNew();
   const context = createContextV3();
   describe("active()", () => {
@@ -1201,7 +1011,7 @@ describe("OfficeAddinGeneratorNew", () => {
       };
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
       inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
-      const res = await generator.getTemplateInfos(context, inputs);
+      const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         const templates = res.value;
@@ -1220,7 +1030,7 @@ describe("OfficeAddinGeneratorNew", () => {
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
       inputs[QuestionNames.Capabilities] = "some";
       inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
-      const res = await generator.getTemplateInfos(context, inputs);
+      const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         const templates = res.value;

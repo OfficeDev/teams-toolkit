@@ -49,9 +49,10 @@ export class Utils {
   ): AuthInfo[][] {
     const result: AuthInfo[][] = [];
     const securitySchemas = spec.components?.securitySchemes;
-    if (securities && securitySchemas) {
-      for (let i = 0; i < securities.length; i++) {
-        const security = securities[i];
+    const securitiesArr = securities ?? spec.security;
+    if (securitiesArr && securitySchemas) {
+      for (let i = 0; i < securitiesArr.length; i++) {
+        const security = securitiesArr[i];
 
         const authArray: AuthInfo[] = [];
         for (const name in security) {

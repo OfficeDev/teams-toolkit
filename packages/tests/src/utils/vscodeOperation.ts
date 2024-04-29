@@ -51,9 +51,16 @@ export async function ensureExtensionActivated(): Promise<void> {
           const sidebar = await driver.findElement(
             By.id("workbench.parts.sidebar")
           );
-          const welcomeView = await sidebar.findElement(
-            By.className("welcome-view-content")
-          );
+          let welcomeView: WebElement;
+          try {
+            welcomeView = await sidebar.findElement(
+              By.className("welcome-view-content")
+            );
+          } catch (error) {
+            welcomeView = await sidebar.findElement(
+              By.className("split-view-container")
+            );
+          }
           if (welcomeView) {
             const welcomeContent = await welcomeView.getText();
             if (welcomeContent.includes(Extension.sidebarWelcomeContentName)) {
@@ -658,7 +665,9 @@ export async function createNewProject(
       scaffoldingTime = scaffoldingSpfxTime;
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
@@ -682,7 +691,9 @@ export async function createNewProject(
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
@@ -706,7 +717,9 @@ export async function createNewProject(
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
@@ -728,7 +741,9 @@ export async function createNewProject(
     case "gspfxreact": {
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check
@@ -750,7 +765,9 @@ export async function createNewProject(
     case "gspfxnone": {
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check

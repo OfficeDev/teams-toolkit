@@ -51,7 +51,7 @@
             "program": "${workspaceFolder}/src/app.py",
             "request": "launch",
             "cwd": "${workspaceFolder}/src/",
-            "console": "integratedTerminal",
+            "console": "integratedTerminal"
         },
         {
             "name": "Start Test Tool",
@@ -68,7 +68,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug (Edge)",
+            "name": "Debug in Teams (Edge)",
             "configurations": [
                 "Launch App (Edge)",
                 "Start Python"
@@ -89,7 +89,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug (Chrome)",
+            "name": "Debug in Teams (Chrome)",
             "configurations": [
                 "Launch App (Chrome)",
                 "Start Python"

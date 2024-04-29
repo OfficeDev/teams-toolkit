@@ -4,8 +4,13 @@ import {
   ConditionFunc,
   FuncValidation,
   Inputs,
+  ManifestUtil,
+  MultiSelectQuestion,
+  OptionItem,
   Platform,
   Question,
+  SingleSelectQuestion,
+  TeamsAppManifest,
   TextInputQuestion,
   UserError,
   UserInteraction,
@@ -23,6 +28,7 @@ import { CollaborationUtil } from "../../src/core/collaborator";
 import { setTools } from "../../src/core/globalVars";
 import { QuestionNames, SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
+  PluginAvailabilityOptions,
   TeamsAppValidationOptions,
   apiSpecApiKeyQuestion,
   createNewEnvQuestionNode,
@@ -30,10 +36,12 @@ import {
   isAadMainifestContainsPlaceholder,
   newEnvNameValidation,
   newResourceGroupOption,
+  oauthQuestion,
   resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
   selectAadManifestQuestion,
   selectLocalTeamsAppManifestQuestion,
+  selectPluginAvailabilityQuestion,
   selectTeamsAppManifestQuestion,
   validateResourceGroupName,
 } from "../../src/question/other";
@@ -42,6 +50,8 @@ import { callFuncs } from "./create.test";
 import { MockedAzureTokenProvider } from "../core/other.test";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import { FeatureFlagName } from "../../src/common/constants";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 const ui = new MockUserInteraction();
 
@@ -1018,5 +1028,343 @@ describe("apiKeyQuestion", async () => {
       result,
       "Client secret is invalid. The length of secret should be >= 10 and <= 128"
     );
+  });
+});
+
+describe("oauthQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("will pop up question for client id, client secret and confirm", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, true);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, true);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, true);
+  });
+
+  it("will pop up question for client id, and confirm", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientSecret: "fakeClientSecret",
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, true);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, false);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, true);
+  });
+
+  it("will pop up question for client secret, and confirm", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientId: "fakeClientId",
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, false);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, true);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, true);
+  });
+
+  it("will not pop up question since client id, client secret exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientId: "fakeClientId",
+      clientSecret: "fakeClientSecret",
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, false);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, false);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, false);
+  });
+
+  it("will not pop up question due to registrationId exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    inputs.outputEnvVarNames.set("configurationId", "configurationId");
+    mockedEnvRestore = mockedEnv({
+      configurationId: "fake-id",
+    });
+    const question = oauthQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("client secret validation passed", async () => {
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientSecret");
+    assert.equal(result, undefined);
+  });
+
+  it("client secret validation failed due to length", async () => {
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("abc");
+    assert.equal(
+      result,
+      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
+    );
+  });
+
+  it("client id additionalValidationOnAccept passed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion().children![0];
+    const validation = (question.data as TextInputQuestion).additionalValidationOnAccept;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientId", inputs);
+    assert.equal(result, undefined);
+  });
+
+  it("client secret additionalValidationOnAccept passed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).additionalValidationOnAccept;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientSecret", inputs);
+    assert.equal(result, undefined);
+  });
+});
+
+describe("addPluginQuestionNode", async () => {
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.CustomizeGpt]: "true",
+    });
+  });
+
+  it("success: can add a plugin or an action", async () => {
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
+    sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
+      capabilities: ["copilotGpt"],
+      isApiME: false,
+      isSPFx: false,
+      id: "1",
+      version: "1",
+      manifestVersion: "",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "./test",
+    };
+
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs);
+      if (QuestionNames.TeamsAppManifestFilePath) {
+        return ok({
+          type: "success",
+          result: "manifest.json",
+        });
+      } else if (QuestionNames.PluginAvailability) {
+        const select = question as SingleSelectQuestion;
+        const options = await select.dynamicOptions!(inputs);
+        assert.isTrue(options.length === 3);
+        return ok({ type: "success", result: PluginAvailabilityOptions.action().id });
+      } else if (question.name === QuestionNames.ApiSpecLocation) {
+        return ok({ type: "success", result: "test.yaml" });
+      } else if (question.name === QuestionNames.ApiOperation) {
+        return ok({ type: "success", result: "[GET /repairs]" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    const node = questionNodes.addPlugin();
+
+    await traverse(node, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [
+      QuestionNames.TeamsAppManifestFilePath,
+      QuestionNames.PluginAvailability,
+      QuestionNames.ApiSpecLocation,
+      QuestionNames.ApiOperation,
+    ]);
+  });
+
+  it("success: can add an action only", async () => {
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.CustomizeGpt]: "true",
+    });
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
+    sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
+      capabilities: ["copilotGpt", "plugin"],
+      isApiME: false,
+      isSPFx: false,
+      id: "1",
+      version: "1",
+      manifestVersion: "",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "./test",
+    };
+
+    const questionNames: string[] = [];
+    const visitor: QuestionTreeVisitor = async (
+      question: Question,
+      ui: UserInteraction,
+      inputs: Inputs,
+      step?: number,
+      totalSteps?: number
+    ) => {
+      questionNames.push(question.name);
+      await callFuncs(question, inputs);
+      if (QuestionNames.TeamsAppManifestFilePath) {
+        return ok({
+          type: "success",
+          result: "manifest.json",
+        });
+      } else if (QuestionNames.PluginAvailability) {
+        const select = question as SingleSelectQuestion;
+        const options = await select.dynamicOptions!(inputs);
+        assert.isTrue(options.length === 1);
+        assert.isTrue((options[0] as OptionItem).id === PluginAvailabilityOptions.action().id);
+        return ok({ type: "success", result: PluginAvailabilityOptions.action().id });
+      } else if (question.name === QuestionNames.ApiSpecLocation) {
+        return ok({ type: "success", result: "test.yaml" });
+      } else if (question.name === QuestionNames.ApiOperation) {
+        const select = question as MultiSelectQuestion;
+        const cliDescription = select.cliDescription;
+        assert.isTrue(cliDescription?.includes("Copilot"));
+        return ok({ type: "success", result: "[GET /repairs]" });
+      }
+      return ok({ type: "success", result: undefined });
+    };
+    const node = questionNodes.addPlugin();
+
+    await traverse(node, inputs, ui, undefined, visitor);
+    assert.deepEqual(questionNames, [
+      QuestionNames.TeamsAppManifestFilePath,
+      QuestionNames.PluginAvailability,
+      QuestionNames.ApiSpecLocation,
+      QuestionNames.ApiOperation,
+    ]);
+  });
+
+  describe("selectPluginAvailabilityQuestion", async () => {
+    it("error: cannot add as the project is not declarative Copilot", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
+        capabilities: [],
+        isApiME: false,
+        isSPFx: false,
+        id: "1",
+        version: "1",
+        manifestVersion: "",
+      });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
+
+      const question = selectPluginAvailabilityQuestion();
+      let error;
+      try {
+        await question.dynamicOptions!(inputs);
+      } catch (e) {
+        error = e;
+      }
+
+      console.log(error);
+      assert.isTrue(error !== undefined);
+    });
+
+    it("error: readManifestError", async () => {
+      sandbox
+        .stub(manifestUtils, "_readAppManifest")
+        .resolves(err(new UserError("error", "error", "error", "error")));
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./test",
+      };
+
+      const question = selectPluginAvailabilityQuestion();
+      let error;
+      try {
+        await question.dynamicOptions!(inputs);
+      } catch (e) {
+        error = e;
+      }
+
+      console.log(error);
+      assert.isTrue(error !== undefined);
+    });
   });
 });

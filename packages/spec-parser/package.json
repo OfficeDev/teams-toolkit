@@ -94,7 +94,6 @@
     "has-symbols": "1.0.3",
     "has-tostringtag": "1.0.2",
     "has-property-descriptors": "1.0.1",
-    "http": "^0.0.1-security",
     "https-browserify": "^1.0.0",
     "is-arguments": "1.1.1",
     "is-generator-function": "1.0.10",

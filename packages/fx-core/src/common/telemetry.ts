@@ -61,6 +61,7 @@ export enum TelemetryProperty {
   GraphPermissionRoles = "graph-permission-roles",
   RscApplication = "rsc-application",
   RscDelegated = "rsc-delegated",
+  WebApplicationId = "web-application-id",
 
   AadManifest = "aad-manifest",
 
@@ -195,6 +196,12 @@ export enum CustomizeSubscriptionType {
 export enum ProjectMigratorStatus {
   OK = "ok",
   Cancel = "cancel",
+}
+
+export enum WebApplicationIdValue {
+  None = "none",
+  Default = "default",
+  Customized = "customized",
 }
 
 export enum ProjectMigratorGuideStatus {

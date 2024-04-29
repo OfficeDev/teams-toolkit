@@ -885,6 +885,7 @@ export class SPFxGenerator {
 }
 
 export class SPFxGeneratorNew extends DefaultTemplateGenerator {
+  componentName = "spfx-new-generator";
   public activate(context: Context, inputs: Inputs): boolean {
     const capability = inputs[QuestionNames.Capabilities] as string;
     const spfxSolution = inputs[QuestionNames.SPFxSolution];
@@ -913,8 +914,8 @@ export class SPFxGeneratorNew extends DefaultTemplateGenerator {
 }
 
 export class SPFxGeneratorImport extends DefaultTemplateGenerator {
+  componentName = "spfx-import-generator";
   importDetails: string[] = [];
-
   public activate(context: Context, inputs: Inputs): boolean {
     const capability = inputs[QuestionNames.Capabilities] as string;
     const spfxSolution = inputs[QuestionNames.SPFxSolution];

@@ -263,7 +263,9 @@ export class SampledebugContext extends TestContext {
       path.resolve(this.projectPath, "appPackage", "manifest.json") ??
       path.resolve(this.projectPath, "appManifest", "manifest.json");
     const manifest = await fs.readJSON(manifestFile);
-    manifest.name.short = this.appName + "${{APP_NAME_SUFFIX}}";
+    // manifest name can't be longer than 15 characters
+    manifest.name.short =
+      this.appName.substring(0, 10) + "${{APP_NAME_SUFFIX}}";
     fs.writeJSON(manifestFile, manifest, { spaces: 4 });
     console.log(
       "[finish] update manifest file successfully, appName: ",

@@ -25,7 +25,7 @@ class HelloWorldTabDockerTestCase extends CaseFactory {
 
 new HelloWorldTabDockerTestCase(
   TemplateProject.HelloWorldTabDocker,
-  12684063,
+  27852473,
   "v-ivanchen@microsoft.com",
   "dev",
   undefined,

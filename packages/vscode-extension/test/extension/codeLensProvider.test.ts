@@ -321,7 +321,8 @@ describe("Api plugin CodeLensProvider", () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "test.json",
+        file: "test.json",
+        id: "plugin1",
       },
     ];
     const openApiObject = {

@@ -17,7 +17,7 @@ import { SpecParserError } from "./specParserError";
 export class AdaptiveCardGenerator {
   static generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): [AdaptiveCard, string] {
     try {
-      const json = Utils.getResponseJson(operationItem);
+      const { json } = Utils.getResponseJson(operationItem);
 
       let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
 

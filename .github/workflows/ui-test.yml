@@ -60,18 +60,27 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
       TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
-      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
-      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      DEVTUNNEL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+      DEVTUNNEL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
     steps:
       - name: Init GitHub CLI
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+      
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: bvt (dispatch)
         id: bvt
@@ -158,6 +167,7 @@ jobs:
         run: |
           pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
+          echo "Testplan id is $testplanid"
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
@@ -171,7 +181,7 @@ jobs:
       - name: clean devtunnel
         run: |
           curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
           ~/bin/devtunnel delete-all -f
 
     outputs:
@@ -188,9 +198,12 @@ jobs:
   main:
     name: ${{ matrix.test-case }}|${{ matrix.os }}|node ${{ matrix.node-version }}|${{ github.ref_name }}
     needs: setup
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     timeout-minutes: 50
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       CI_ENABLED: true
       NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
       TARGET_CLI_VERSION: ${{ needs.setup.outputs.target_cli_version }}
@@ -198,8 +211,9 @@ jobs:
       CLEAN_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
       CLEAN_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
-      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
+      DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      DEVTUNNEL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+      DEVTUNNEL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
       M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
       M365_USERNAME: "test14@xxbdw.onmicrosoft.com"
@@ -224,6 +238,12 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
+
       - name: Set m365 account (unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -270,7 +290,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: |
           curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
   
       - name: Install devtunnel (windows)
         if: matrix.os == 'windows-latest'
@@ -280,7 +300,7 @@ jobs:
           $currentDirectory = (Get-Location).Path
           $executablePath = Join-Path $currentDirectory "devtunnel.exe"
           [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
-          ./devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ./devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
       
       - name: Downgrade PowerShell (win)
         if: matrix.os == 'windows-latest'
@@ -357,7 +377,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -372,30 +392,40 @@ jobs:
           ref: main
           path: ./packages/tests/resource
 
+      - name: Download samples chef bot
+        if: contains(matrix.test-case, 'chef-bot')
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/teams-ai
+          ref: main
+          path: ./packages/tests/resource
+
       - name: Get VSCode & chromedriver
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
-          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
-
+          npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
+          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1
+          cd .test-resources
+          ls
+  
       - name: Extract VSCode & chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-linux64.zip" -o".test-resources" -y
           tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
 
       - name: Extract VSCode & chromedriver(mac)
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
           7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
 
       - name: M365 Login
@@ -403,16 +433,16 @@ jobs:
         run: | # rm -r -f ~/.fx/account
           npx ts-node src/scripts/m365Login.ts -- '${{ env.M365_ACCOUNT_NAME }}' '${{ env.M365_ACCOUNT_PASSWORD }}'
 
-      - name: Azure Login(win)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
-        run: |
-          npx ts-node src/scripts/azureLogin.ts -- '${{ env.AZURE_ACCOUNT_NAME }}' '${{ env.AZURE_ACCOUNT_PASSWORD }}'
-
       - name: Build
         working-directory: packages/tests
         run: |
           npm run build
+
+      - name: Install docker extension
+        if: contains(matrix.test-case,  'docker')
+        working-directory: packages/tests
+        run: |
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker
 
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
@@ -428,6 +458,11 @@ jobs:
           $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
           npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
+      - name: proposal api support
+        run: |
+          mkdir -p $HOME/.vscode
+          echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode/argv.json
+          
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests
@@ -435,14 +470,14 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
-
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+     
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
-
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+      
       - name: Upload test result json file
         uses: actions/upload-artifact@v3
         if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}
@@ -564,7 +599,7 @@ jobs:
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
-              emails="$emails;$email;zhendr@microsoft.com"
+              emails="$emails;$email;zhendr@microsoft.com;ccdevexperiencefc@microsoft.com"
             fi
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`

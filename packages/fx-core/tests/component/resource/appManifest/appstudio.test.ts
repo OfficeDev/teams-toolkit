@@ -447,8 +447,6 @@ describe("App-manifest Component - v3", () => {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
     };
-
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox
       .stub(Container, "get")
       .withArgs(sandbox.match("teamsApp/zipAppPackage"))

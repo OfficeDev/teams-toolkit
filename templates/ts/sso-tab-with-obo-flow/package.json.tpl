@@ -2,12 +2,12 @@
   "name": "{{SafeProjectNameLowerCase}}",
   "version": "0.1.0",
   "engines": {
-    "node": "16 || 18"
+    "node": "18 || 20"
   },
   "private": true,
   "dependencies": {
     "@fluentui/react-components": "^9.18.0",
-    "@microsoft/teams-js": "^2.13.0",
+    "@microsoft/teams-js": "^2.19.0",
     "@microsoft/teamsfx": "^2.2.0",
     "@microsoft/teamsfx-react": "^3.0.0",
     "axios": "^0.21.1",
@@ -17,7 +17,7 @@
     "react-scripts": "^5.0.1"
   },
   "devDependencies": {
-    "@types/node": "^14.0.0",
+    "@types/node": "^18.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",

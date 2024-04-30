@@ -30,11 +30,17 @@ import {
   WarningType,
   SpecParserError,
   AdaptiveCardGenerator,
+  ProjectType,
 } from "@microsoft/m365-spec-parser";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
-import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../src/question";
+import {
+  CapabilityOptions,
+  copilotPluginApiSpecOptionId,
+  ProgrammingLanguage,
+  QuestionNames,
+} from "../../../src/question";
 import {
   generateScaffoldingSummary,
   OpenAIPluginManifestHelper,
@@ -50,6 +56,9 @@ import { ErrorResult } from "@microsoft/m365-spec-parser";
 import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
+import { format } from "util";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
+import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -148,7 +157,12 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generateMeFromApiSpec(
       context,
       inputs,
-      "projectPath"
+      "projectPath",
+      {
+        telemetryProps: {
+          "project-id": "test",
+        },
+      }
     );
 
     assert.isTrue(result.isOk());
@@ -166,6 +180,10 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["operation2"],
       supportedApisFromApiSpec: apiOperations,
+      apiAuthData: {
+        authType: "apiKey",
+        serverUrl: "",
+      },
     };
     const context = createContextV3();
     sandbox
@@ -186,7 +204,7 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isOk());
-    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api-api-key");
+    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
@@ -515,7 +533,7 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
     const context = createContextV3();
@@ -662,6 +680,51 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isErr() && result.error.message === "test");
+  });
+
+  it("generate for oauth: success", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.AppName]: "test",
+      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+            authName: "auth",
+            authType: "oauth2",
+          },
+        },
+      ] as ApiOperation[],
+    };
+    const context = createContextV3();
+
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generateForCopilot")
+      .resolves({ allSuccess: true, warnings: [] });
+    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generatePluginFromApiSpec(
+      context,
+      inputs,
+      "projectPath"
+    );
+    assert.isTrue(result.isOk());
+    assert.equal(downloadTemplate.args[0][2], "api-plugin-existing-api");
+    assert.isTrue(downloadTemplate.calledOnce);
+    assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 });
 
@@ -955,6 +1018,39 @@ describe("formatValidationErrors", () => {
       {
         type: ErrorType.NoSupportedApi,
         content: "test",
+        data: [],
+      },
+      {
+        type: ErrorType.NoSupportedApi,
+        content: "test",
+        data: [
+          {
+            api: "GET /api",
+            reason: [
+              ErrorType.AuthTypeIsNotSupported,
+              ErrorType.MissingOperationId,
+              ErrorType.PostBodyContainMultipleMediaTypes,
+              ErrorType.ResponseContainMultipleMediaTypes,
+              ErrorType.ResponseJsonIsEmpty,
+              ErrorType.PostBodySchemaIsNotJson,
+              ErrorType.MethodNotAllowed,
+              ErrorType.UrlPathNotExist,
+            ],
+          },
+          {
+            api: "GET /api2",
+            reason: [
+              ErrorType.PostBodyContainsRequiredUnsupportedSchema,
+              ErrorType.ParamsContainRequiredUnsupportedSchema,
+              ErrorType.ParamsContainsNestedObject,
+              ErrorType.RequestBodyContainsNestedObject,
+              ErrorType.ExceededRequiredParamsLimit,
+              ErrorType.NoParameter,
+              ErrorType.NoAPIInfo,
+            ],
+          },
+          { api: "GET /api3", reason: ["unknown"] },
+        ],
       },
       {
         type: ErrorType.NoExtraAPICanBeAdded,
@@ -973,12 +1069,20 @@ describe("formatValidationErrors", () => {
         content: "test",
       },
       {
+        type: ErrorType.SpecVersionNotSupported,
+        content: "test",
+        data: "3.1.0",
+      },
+      {
         type: ErrorType.Unknown,
         content: "unknown",
       },
     ];
 
-    const res = formatValidationErrors(errors);
+    const res = formatValidationErrors(errors, {
+      platform: Platform.VSCode,
+      [QuestionNames.ManifestPath]: "testmanifest.json",
+    });
 
     expect(res[0].content).equals("test");
     expect(res[1].content).includes(getLocalizedString("core.common.ErrorFetchApiSpec"));
@@ -988,12 +1092,133 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.UrlProtocolNotSupported", "http")
     );
     expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
-    expect(res[6].content).equals(getLocalizedString("core.common.NoSupportedApi"));
-    expect(res[7].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
-    expect(res[8].content).equals("resolveurl");
-    expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
-    expect(res[10].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[11].content).equals("unknown");
+    expect(res[6].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApi",
+        getLocalizedString("core.common.invalidReason.NoAPIs")
+      )
+    );
+
+    const errorMessage1 = [
+      getLocalizedString("core.common.invalidReason.AuthTypeIsNotSupported"),
+      getLocalizedString("core.common.invalidReason.MissingOperationId"),
+      getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
+      getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
+      getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
+      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
+      getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
+      getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
+    ];
+    const errorMessage2 = [
+      getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
+      getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
+      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
+      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
+      getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
+      getLocalizedString("core.common.invalidReason.NoParameter"),
+      getLocalizedString("core.common.invalidReason.NoAPIInfo"),
+    ];
+
+    expect(res[7].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApi",
+        "GET /api: " +
+          errorMessage1.join(", ") +
+          "\n" +
+          "GET /api2: " +
+          errorMessage2.join(", ") +
+          "\n" +
+          "GET /api3: unknown"
+      )
+    );
+    expect(res[8].content).equals(getLocalizedString("error.apime.noExtraAPICanBeAdded"));
+    expect(res[9].content).equals("resolveurl");
+    expect(res[10].content).equals(getLocalizedString("core.common.CancelledMessage"));
+    expect(res[11].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
+    expect(res[12].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
+    );
+    expect(res[13].content).equals("unknown");
+  });
+
+  it("format validation errors from spec parser: copilot", () => {
+    const errors: ErrorResult[] = [
+      {
+        type: ErrorType.NoSupportedApi,
+        content: "test",
+        data: [
+          {
+            api: "GET /api",
+            reason: [
+              ErrorType.AuthTypeIsNotSupported,
+              ErrorType.MissingOperationId,
+              ErrorType.PostBodyContainMultipleMediaTypes,
+              ErrorType.ResponseContainMultipleMediaTypes,
+              ErrorType.ResponseJsonIsEmpty,
+              ErrorType.PostBodySchemaIsNotJson,
+              ErrorType.MethodNotAllowed,
+              ErrorType.UrlPathNotExist,
+            ],
+          },
+          {
+            api: "GET /api2",
+            reason: [
+              ErrorType.PostBodyContainsRequiredUnsupportedSchema,
+              ErrorType.ParamsContainRequiredUnsupportedSchema,
+              ErrorType.ParamsContainsNestedObject,
+              ErrorType.RequestBodyContainsNestedObject,
+              ErrorType.ExceededRequiredParamsLimit,
+              ErrorType.NoParameter,
+              ErrorType.NoAPIInfo,
+            ],
+          },
+          { api: "GET /api3", reason: ["unknown"] },
+        ],
+      },
+      {
+        type: ErrorType.NoExtraAPICanBeAdded,
+        content: "test",
+      },
+    ];
+
+    const res = formatValidationErrors(errors, {
+      platform: Platform.VSCode,
+      [QuestionNames.Capabilities]: copilotPluginApiSpecOptionId,
+    });
+
+    const errorMessage1 = [
+      getLocalizedString("core.common.invalidReason.AuthTypeIsNotSupported"),
+      getLocalizedString("core.common.invalidReason.MissingOperationId"),
+      getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
+      getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
+      getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
+      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
+      getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
+      getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
+    ];
+    const errorMessage2 = [
+      getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
+      getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
+      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
+      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
+      getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
+      getLocalizedString("core.common.invalidReason.NoParameter"),
+      getLocalizedString("core.common.invalidReason.NoAPIInfo"),
+    ];
+
+    expect(res[0].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApiCopilot",
+        "GET /api: " +
+          errorMessage1.join(", ") +
+          "\n" +
+          "GET /api2: " +
+          errorMessage2.join(", ") +
+          "\n" +
+          "GET /api3: unknown"
+      )
+    );
+    expect(res[1].content).equals(getLocalizedString("error.copilot.noExtraAPICanBeAdded"));
   });
 });
 
@@ -1002,7 +1227,8 @@ describe("listPluginExistingOperations", () => {
     ...teamsManifest,
     plugins: [
       {
-        pluginFile: "resources/plugin.json",
+        file: "resources/plugin.json",
+        id: "plugin1",
       },
     ],
   };
@@ -1020,18 +1246,26 @@ describe("listPluginExistingOperations", () => {
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
-    sandbox.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api1",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api1",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
     const res = await listPluginExistingOperations(
       teamsManifestWithPlugin,
       "manifestPath",
@@ -1068,34 +1302,6 @@ describe("listPluginExistingOperations", () => {
       hasException = true;
       expect(e.source).equal("listPluginExistingOperations");
       expect(e.name).equal("api-spec-not-used-in-plugin");
-    }
-    expect(hasException).to.be.true;
-  });
-
-  it("invalid openapi spec", async () => {
-    sandbox
-      .stub(PluginManifestUtils.prototype, "getApiSpecFilePathFromTeamsManifest")
-      .resolves(ok(["openapi.yaml"]));
-
-    sandbox.stub(SpecParser.prototype, "validate").resolves({
-      status: ValidationStatus.Error,
-      warnings: [],
-      errors: [
-        {
-          type: ErrorType.NoServerInformation,
-          content: "content",
-        },
-      ],
-    });
-
-    let hasException = false;
-
-    try {
-      await listPluginExistingOperations(teamsManifestWithPlugin, "manifestPath", "openapi.yaml");
-    } catch (e) {
-      hasException = true;
-      expect(e.source).equal("listPluginExistingOperations");
-      expect(e.name).equal("invalid-api-spec");
     }
     expect(hasException).to.be.true;
   });
@@ -1404,5 +1610,203 @@ describe("updateForCustomApi", async () => {
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(newSpec, "typescript", "path", "openapi.yaml");
+  });
+
+  it("happy path with spec with auth", async () => {
+    const authSpec = {
+      openapi: "3.0.0",
+      info: {
+        title: "My API",
+        version: "1.0.0",
+      },
+      description: "test",
+      paths: {
+        "/hello": {
+          get: {
+            operationId: "getHello",
+            summary: "Returns a greeting",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "A greeting message",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+            security: [
+              {
+                api_key: [],
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        securitySchemes: {
+          api_key: {
+            type: "apiKey",
+            name: "api_key",
+            in: "header",
+          },
+        },
+      },
+    } as OpenAPIV3.Document;
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(authSpec, "typescript", "path", "openapi.yaml");
+  });
+});
+
+describe("listOperations", async () => {
+  const context = createContextV3();
+  const sandbox = sinon.createSandbox();
+  const inputs = {
+    "custom-copilot-rag": "custom-copilot-rag-customApi",
+    platform: Platform.VSCode,
+  };
+  const spec = {
+    openapi: "3.0.0",
+    info: {
+      title: "My API",
+      version: "1.0.0",
+    },
+    description: "test",
+    paths: {
+      "/hello": {
+        get: {
+          operationId: "getHello",
+          summary: "Returns a greeting",
+          parameters: [
+            {
+              name: "query",
+              in: "query",
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "A greeting message",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+          security: [
+            {
+              api_key: [],
+            },
+          ],
+        },
+        post: {
+          operationId: "createPet",
+          summary: "Create a pet",
+          description: "Create a new pet in the store",
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name"],
+                  properties: {
+                    name: {
+                      type: "string",
+                      description: "Name of the pet",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      securitySchemes: {
+        api_key: {
+          type: "apiKey",
+          name: "api_key",
+          in: "header",
+        },
+      },
+    },
+  } as OpenAPIV3.Document;
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("allow auth for teams ai project", async () => {
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+    });
+    sandbox
+      .stub(SpecParser.prototype, "list")
+      .resolves({ APIs: [], allAPICount: 1, validAPICount: 0 });
+
+    const res = await CopilotPluginHelper.listOperations(
+      context,
+      undefined,
+      "",
+      inputs,
+      true,
+      false,
+      ""
+    );
+    expect(res.isOk()).to.be.true;
   });
 });

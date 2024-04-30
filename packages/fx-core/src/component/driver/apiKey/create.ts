@@ -4,14 +4,11 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { SpecParser } from "@microsoft/m365-spec-parser";
 import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { InvalidActionInputError, assembleError } from "../../../error";
 import { QuestionNames } from "../../../question";
 import { QuestionMW } from "../../middleware/questionMW";
-import { getAbsolutePath } from "../../utils/common";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -25,17 +22,11 @@ import {
 } from "../teamsApp/interfaces/ApiSecretRegistration";
 import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
-import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
-import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
-import {
-  logMessageKeys,
-  maxDomainPerApiKey,
-  maxSecretLength,
-  minSecretLength,
-} from "./utility/constants";
+import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
+import { getDomain, loadStateFromEnv, validateDomain } from "./utility/utility";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -61,7 +52,7 @@ export class CreateApiKeyDriver implements StepDriver {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
 
-      const state = this.loadStateFromEnv(outputEnvVarNames) as CreateApiKeyOutputs;
+      const state = loadStateFromEnv(outputEnvVarNames) as CreateApiKeyOutputs;
       const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,
       });
@@ -95,8 +86,8 @@ export class CreateApiKeyDriver implements StepDriver {
 
         this.validateArgs(args);
 
-        const domains = await this.getDomain(args, context);
-        this.validateDomain(domains);
+        const domains = await getDomain(args, context);
+        validateDomain(domains, actionName);
 
         const apiKey = await this.mapArgsToApiSecretRegistration(
           context.m365TokenProvider,
@@ -144,17 +135,6 @@ export class CreateApiKeyDriver implements StepDriver {
     }
   }
 
-  // Needs to validate the parameters outside of the function
-  private loadStateFromEnv(
-    outputEnvVarNames: Map<string, string>
-  ): Record<string, string | undefined> {
-    const result: Record<string, string | undefined> = {};
-    for (const [propertyName, envVarName] of outputEnvVarNames) {
-      result[propertyName] = process.env[envVarName];
-    }
-    return result;
-  }
-
   private loadClientSecret(): string | undefined {
     const clientSecret = process.env[QuestionNames.ApiSpecApiKey];
     return clientSecret;
@@ -170,37 +150,6 @@ export class CreateApiKeyDriver implements StepDriver {
     }
 
     return true;
-  }
-
-  // TODO: need to add logic to read domain from env if need to support non-lifecycle commands
-  private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
-    const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
-    const parser = new SpecParser(absolutePath, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
-    const operations = await parser.list();
-    const domains = operations
-      .filter((value) => {
-        return value.auth?.type === "apiKey" && value.auth?.name === args.name;
-      })
-      .map((value) => {
-        return value.server;
-      })
-      .filter((value, index, self) => {
-        return self.indexOf(value) === index;
-      });
-    return domains;
-  }
-
-  private validateDomain(domain: string[]): void {
-    if (domain.length > maxDomainPerApiKey) {
-      throw new ApiKeyDomainInvalidError(actionName);
-    }
-
-    if (domain.length === 0) {
-      throw new ApiKeyFailedToGetDomainError(actionName);
-    }
   }
 
   private validateArgs(args: CreateApiKeyArgs): void {
@@ -227,6 +176,22 @@ export class CreateApiKeyDriver implements StepDriver {
 
     if (typeof args.apiSpecPath !== "string" || !args.apiSpecPath) {
       invalidParameters.push("apiSpecPath");
+    }
+
+    if (
+      args.applicableToApps &&
+      args.applicableToApps !== ApiSecretRegistrationAppType.AnyApp &&
+      args.applicableToApps !== ApiSecretRegistrationAppType.SpecificApp
+    ) {
+      invalidParameters.push("applicableToApps");
+    }
+
+    if (
+      args.targetAudience &&
+      args.targetAudience !== ApiSecretRegistrationTargetAudience.AnyTenant &&
+      args.targetAudience !== ApiSecretRegistrationTargetAudience.HomeTenant
+    ) {
+      invalidParameters.push("targetAudience");
     }
 
     if (invalidParameters.length > 0) {
@@ -265,12 +230,20 @@ export class CreateApiKeyDriver implements StepDriver {
       return clientSecret;
     });
 
+    const targetAudience: ApiSecretRegistrationTargetAudience = args.targetAudience
+      ? (args.targetAudience as ApiSecretRegistrationTargetAudience)
+      : ApiSecretRegistrationTargetAudience.AnyTenant;
+    const applicableToApps: ApiSecretRegistrationAppType = args.applicableToApps
+      ? (args.applicableToApps as ApiSecretRegistrationAppType)
+      : ApiSecretRegistrationAppType.AnyApp;
+
     const apiKey: ApiSecretRegistration = {
       description: args.name,
       targetUrlsShouldStartWith: domain,
-      applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
-      specificAppId: args.appId,
-      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+      applicableToApps: applicableToApps,
+      specificAppId:
+        applicableToApps === ApiSecretRegistrationAppType.SpecificApp ? args.appId : "",
+      targetAudience: targetAudience,
       clientSecrets: clientSecrets,
       manageableByUsers: [
         {

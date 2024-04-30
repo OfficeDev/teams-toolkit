@@ -6,8 +6,7 @@ schedules:
     include:
     - dev
 
-pool:
-  vmImage: windows-2019
+pool: "$(POOLAGENT)"
 
 steps:
 - task: UseDotNet@2
@@ -33,7 +32,7 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: '$(AzureServicesAuthConnectionString)'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=$(ApiScanClientId)'
 
 - task: APIScan@2
   displayName: 'Run APIScan on Microsoft.TeamsFx'
@@ -44,4 +43,4 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: '$(AzureServicesAuthConnectionString)'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=$(ApiScanClientId)'

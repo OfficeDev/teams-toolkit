@@ -103,6 +103,11 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
 (mockedVSCode as any).CancellationError = vscodeMocks.vscMockExtHostedTypes.CancellationError;
 (mockedVSCode as any).LSPCancellationError = vscodeMocks.vscMockExtHostedTypes.LSPCancellationError;
 mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
+mockedVSCode.LanguageModelChatSystemMessage = vscodeMocks.chat.LanguageModelChatSystemMessage;
+mockedVSCode.LanguageModelChatUserMessage = vscodeMocks.chat.LanguageModelChatUserMessage;
+mockedVSCode.LanguageModelChatAssistantMessage = vscodeMocks.chat.LanguageModelChatAssistantMessage;
+mockedVSCode.ChatLocation = vscodeMocks.chat.ChatLocation;
+(mockedVSCode as any).version = "test";
 
 // Setup window APIs
 (mockedVSCode as any).window = {
@@ -120,6 +125,7 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
     return await task({ report: () => {} }, new vscodeMocks.CancellationToken());
   },
   createQuickPick: () => {},
+  showQuickPick: () => {},
   showOpenDialog: () => {},
   showTextDocument: () => {},
   createTerminal: () => {},
@@ -171,6 +177,13 @@ mockedVSCode.commands = {
   getText: () => {
     return "";
   },
+};
+
+// Setup chat APIs
+(mockedVSCode as any).lm = {
+  sendChatRequest: () => {},
+  languageModels: [],
+  onDidChangeLanguageModels: undefined as any,
 };
 
 function generateNotebookMocks() {

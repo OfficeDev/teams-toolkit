@@ -80,7 +80,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ChefBot]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.GraphConnectorBot]: async () => {
     await startDebugging();
@@ -100,6 +100,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   },
   [TemplateProject.LargeScaleBot]: async () => {
     await startDebugging();
+  },
+  [TemplateProject.BotSSODocker]: async () => {
+    await startDebugging("Debug in Docker (Chrome)");
   },
 };
 
@@ -135,25 +138,24 @@ export async function initPage(
       page.click("input.button[type='submit']"),
       page.waitForNavigation(),
     ]);
+    // input password
+    console.log(`fill in password`);
+    await page.fill("input.input[type='password'][name='passwd']", password);
+
+    // sign in
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+
+    // stay signed in confirm page
+    console.log(`stay signed confirm`);
+    await Promise.all([
+      page.click("input.button[type='submit'][value='Yes']"),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   });
-
-  // input password
-  console.log(`fill in password`);
-  await page.fill("input.input[type='password'][name='passwd']", password);
-
-  // sign in
-  await Promise.all([
-    page.click("input.button[type='submit']"),
-    page.waitForNavigation(),
-  ]);
-
-  // stay signed in confirm page
-  console.log(`stay signed confirm`);
-  await Promise.all([
-    page.click("input.button[type='submit'][value='Yes']"),
-    page.waitForNavigation(),
-  ]);
-  await page.waitForTimeout(Timeout.shortTimeLoading);
 
   // add app
   await RetryHandler.retry(async (retries: number) => {
@@ -209,6 +211,11 @@ export async function initPage(
           popup.waitForNavigation(),
         ]);
         await popup.click("input.button[type='submit'][value='Accept']");
+        try {
+          await popup?.close();
+        } catch (error) {
+          console.log("popup is closed");
+        }
       }
     } else {
       await addBtn?.click();
@@ -358,6 +365,11 @@ export async function reopenPage(
             popup.waitForNavigation(),
           ]);
           await popup.click("input.button[type='submit'][value='Accept']");
+          try {
+            await popup?.close();
+          } catch (error) {
+            console.log("popup is closed");
+          }
         }
       } else {
         await addBtn?.click();
@@ -1010,10 +1022,16 @@ export async function validateReactTab(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
         }
       });
-
+      await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(
         'pre:has-text("receivedHTTPRequestBody")'
@@ -1075,9 +1093,16 @@ export async function validateReactOutlookTab(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
         }
       });
+      await page.waitForTimeout(Timeout.shortTimeLoading);
 
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(
@@ -1408,17 +1433,17 @@ export async function validateBot(
       console.log("no message to dismiss");
     }
 
-    if (options?.botCommand === "show") {
-      try {
-        console.log("sending message ", options?.botCommand);
-        await executeBotSuggestionCommand(page, frame, options?.botCommand);
-        await frame?.click('button[name="send"]');
-      } catch (e: any) {
-        console.log(
-          `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
-        );
-      }
-      await RetryHandler.retry(async () => {
+    await RetryHandler.retry(async () => {
+      if (options?.botCommand === "show") {
+        try {
+          console.log("sending message ", options?.botCommand);
+          await executeBotSuggestionCommand(page, frame, options?.botCommand);
+          await frame?.click('button[name="send"]');
+        } catch (e: any) {
+          console.log(
+            `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
+          );
+        }
         try {
           // wait for alert message to show
           const btn = await frame?.waitForSelector(
@@ -1450,31 +1475,34 @@ export async function validateBot(
             await popup.click("input.button[type='submit'][value='Accept']");
           }
         } catch (error) {
-          console.log("reopen skip step");
-        }
-        await RetryHandler.retry(async () => {
+          console.log(error);
+          // reopen skip login
           await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+          console.log("reopen skip step");
+          console.log("verify bot successfully!!!");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          return;
+        }
+        await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+        console.log("verify bot successfully!!!");
+        console.log(`${options?.expected}`);
+      } else {
+        await RetryHandler.retry(async () => {
+          console.log("sending message ", options?.botCommand);
+          await executeBotSuggestionCommand(
+            page,
+            frame,
+            options?.botCommand || "welcome"
+          );
+          await frame?.click('button[name="send"]');
+          await frame?.waitForSelector(
+            `p:has-text("${options?.expected || ValidationContent.Bot}")`
+          );
           console.log("verify bot successfully!!!");
         }, 2);
         console.log(`${options?.expected}`);
-      }, 2);
-      console.log(`${options?.expected}`);
-    } else {
-      await RetryHandler.retry(async () => {
-        console.log("sending message ", options?.botCommand);
-        await executeBotSuggestionCommand(
-          page,
-          frame,
-          options?.botCommand || "welcome"
-        );
-        await frame?.click('button[name="send"]');
-        await frame?.waitForSelector(
-          `p:has-text("${options?.expected || ValidationContent.Bot}")`
-        );
-        console.log("verify bot successfully!!!");
-      }, 2);
-      console.log(`${options?.expected}`);
-    }
+      }
+    }, 2);
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({
@@ -2225,7 +2253,6 @@ export async function validateGraphConnector(
     );
     const frame = await frameElementHandle?.contentFrame();
     try {
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
       await RetryHandler.retry(async () => {
         console.log("Before popup");
         const [popup] = await Promise.all([
@@ -2239,24 +2266,49 @@ export async function validateGraphConnector(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          startBtn?.click(),
+          frame?.click('button:has-text("Start")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
         ]);
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("popup_before"),
+            fullPage: true,
+          });
           await popup
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("popup_after"),
+            fullPage: true,
+          });
         }
-
-        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
+        }
       });
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       page.waitForTimeout(1000);
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("error"),
+        fullPage: true,
+      });
+      throw e;
     }
 
     await page.waitForTimeout(Timeout.shortTimeLoading);

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -6,7 +9,7 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
+  provisionProject,
   runPublish,
 } from "./remotedebugContext";
 import {
@@ -62,7 +65,7 @@ describe("Remote debug Tests", function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
       await createNewProject("tab", appName);
-      await runProvision(appName);
+      await provisionProject(appName, projectPath);
       await runPublish();
       await runPublish(true);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(

@@ -7,6 +7,7 @@
 import "./teamsApp/create";
 import "./teamsApp/validate";
 import "./teamsApp/validateAppPackage";
+import "./teamsApp/validateTestCases";
 import "./teamsApp/configure";
 import "./teamsApp/copyAppPackageToSPFx";
 import "./teamsApp/publishAppPackage";
@@ -31,3 +32,6 @@ import "./botFramework/createOrUpdateBot";
 import "./m365/acquire";
 import "./add/addWebPart";
 import "./apiKey/create";
+import "./apiKey/update";
+import "./oauth/create";
+import "./oauth/update";

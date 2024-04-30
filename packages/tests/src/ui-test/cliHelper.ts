@@ -13,11 +13,11 @@ import {
   ResourceToDeploy,
   Capability,
 } from "../utils/constants";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import * as chai from "chai";
 import { Executor } from "../utils/executor";
 import * as os from "os";
+import { ChildProcess, ChildProcessWithoutNullStreams } from "child_process";
 
 export class CliHelper {
   static async addEnv(
@@ -25,7 +25,7 @@ export class CliHelper {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsapp env add ${env} --env dev`;
+    const command = `teamsapp env add ${env} --env dev --telemetry false`;
     const timeout = 100000;
 
     try {
@@ -58,9 +58,6 @@ export class CliHelper {
     processEnv: NodeJS.ProcessEnv = process.env,
     delay: number = 10 * 60 * 1000
   ) {
-    if (!isV3Enabled() && env === "local") {
-      chai.assert.fail("local env is not supported in v2");
-    }
     console.log(`[Provision] ${projectPath}`);
     const timeout = timeoutPromise(delay);
     let command = "";
@@ -82,7 +79,15 @@ export class CliHelper {
     if (v3) {
       const childProcess = spawnCommand(
         os.type() === "Windows_NT" ? "npx.cmd" : "npx",
-        ["teamsapp", "provision", "--env", env, "--verbose"],
+        [
+          "teamsapp",
+          "provision",
+          "--env",
+          env,
+          "--verbose",
+          "--telemetry",
+          "false",
+        ],
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
@@ -130,6 +135,69 @@ export class CliHelper {
     }
   }
 
+  static async provisionProject2(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsapp provision --env ${env} --interactive false --verbose ${option} --telemetry false`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      }
+    );
+
+    if (result.stderr) {
+      console.error(
+        `[Failed] provision ${projectPath}. Error message: ${result.stderr}`
+      );
+    } else {
+      console.log(`[Successfully] provision ${projectPath}`);
+    }
+  }
+
+  static async showVersion(
+    projectPath: string,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const result = await execAsyncWithRetry(`teamsapp --version`, {
+      cwd: projectPath,
+      env: processEnv ? processEnv : process.env,
+      timeout: 0,
+    });
+
+    console.log(`Cli Version: ${result.stdout}`);
+  }
+
+  static async deployAll(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsapp deploy --env ${env} --interactive false --verbose ${option} --telemetry false`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
+    const message = `deploy all resources for ${projectPath}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] ${message}`);
+    }
+  }
+
   static async publishProject(
     projectPath: string,
     env: "local" | "dev" = "local",
@@ -138,7 +206,7 @@ export class CliHelper {
   ) {
     console.log(`[publish] ${projectPath}`);
     const result = await execAsyncWithRetry(
-      `teamsapp publish --env ${env} --verbose  ${option}`,
+      `teamsapp publish --env ${env} --verbose  ${option} --telemetry false`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -174,7 +242,7 @@ export class CliHelper {
     newCommand?: string
   ) {
     const result = await execAsyncWithRetry(
-      `tamsapp entra-app update ${option} --interactive false`,
+      `tamsapp entra-app update ${option} --interactive false --telemetry false`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -198,9 +266,6 @@ export class CliHelper {
     processEnv: NodeJS.ProcessEnv = process.env,
     delay: number = 10 * 60 * 1000
   ) {
-    if (!isV3Enabled() && env === "local") {
-      chai.assert.fail(`[error] provision local only support in V3 project`);
-    }
     console.log(`[Deploy] ${projectPath}`);
     const timeout = timeoutPromise(delay);
 
@@ -223,7 +288,15 @@ export class CliHelper {
     if (v3) {
       const childProcess = spawnCommand(
         os.type() === "Windows_NT" ? "npx.cmd" : "npx",
-        ["teamsapp", "deploy", "--env", env, "--verbose"],
+        [
+          "teamsapp",
+          "deploy",
+          "--env",
+          env,
+          "--verbose",
+          "--telemetry",
+          "false",
+        ],
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
@@ -275,26 +348,7 @@ export class CliHelper {
     retries?: number,
     newCommand?: string
   ) {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const result = await execAsyncWithRetry(
-        `teamsapp deploy ${resourceToDeploy} ${option}`,
-        {
-          cwd: projectPath,
-          env: processEnv ? processEnv : process.env,
-          timeout: 0,
-        },
-        retries,
-        newCommand
-      );
-      const message = `deploy ${resourceToDeploy} for ${projectPath}`;
-      if (result.stderr) {
-        console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    }
+    console.log("add command is not supported in v3");
   }
 
   static async createDotNetProject(
@@ -304,7 +358,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {
-    const command = `teamsapp new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}`;
+    const command = `teamsapp new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options} --telemetry false`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -339,8 +393,7 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + isV3Enabled());
-    const command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
+    const command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
     const timeout = 100000;
     try {
       await Executor.execute("teamsapp -v", testFolder);
@@ -368,22 +421,11 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + isV3Enabled());
-    let command;
-    if (isV3Enabled()) {
-      command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
-    } else {
-      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
-    }
+    const command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
     const timeout = 100000;
     try {
-      if (isV3Enabled()) {
-        const { stdout } = await Executor.execute("teamsapp -v", testFolder);
-        console.log(stdout);
-      } else {
-        const { stdout } = await Executor.execute("teamsfx -v", testFolder);
-        console.log(stdout);
-      }
+      const { stdout } = await Executor.execute("teamsapp -v", testFolder);
+      console.log(stdout);
       await Executor.execute(command, testFolder);
       const message = `scaffold project to ${path.resolve(
         testFolder,
@@ -412,7 +454,7 @@ export class CliHelper {
     console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
     console.log(await Executor.execute("teamsapp -v", testFolder));
 
-    const command = `teamsapp new sample ${template} --interactive false `;
+    const command = `teamsapp new sample ${template} --interactive false --telemetry false`;
     const timeout = 100000;
     try {
       const result = await Executor.execute(command, testFolder);
@@ -518,7 +560,9 @@ export class CliHelper {
         : v3
         ? "teamsapp"
         : "teamsfx",
-      v3 ? ["preview", "--env", env] : ["preview", `--${env}`],
+      v3
+        ? ["preview", "--env", env, "--telemetry", "false"]
+        : ["preview", `--${env}`],
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -571,5 +615,82 @@ export class CliHelper {
       console.log(`close port 9239 failed, cause by: `, error);
     }
     console.log("[success] debug successfully !!!");
+  }
+
+  static async dockerBuild(
+    projectPath: string,
+    folder: string,
+    path = "./",
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 3 * 60 * 1000
+  ): Promise<ChildProcessWithoutNullStreams> {
+    console.log(`[start] docker build ... `);
+    const timeout = timeoutPromise(delay);
+    const childProcess = spawnCommand(
+      "docker",
+      ["build", "-t", folder, path],
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      },
+      (data) => {
+        console.log(data);
+      },
+      (error) => {
+        console.log(error);
+        if (error.includes("Error:")) {
+          chai.assert.fail(error);
+        }
+      }
+    );
+    await Promise.all([timeout, childProcess]);
+    console.log("[success] docker build successfully !!!");
+    return childProcess;
+  }
+
+  static async dockerRun(
+    projectPath: string,
+    folder: string,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 30 * 1000
+  ): Promise<ChildProcessWithoutNullStreams> {
+    console.log(`[start] docker run ... `);
+    const timeout = timeoutPromise(delay);
+    const childProcess = spawnCommand(
+      "docker",
+      ["run", "-p", "3978:80", "--env-file", ".localConfigs", folder],
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      },
+      (data) => {
+        console.log(data);
+      },
+      (error) => {
+        console.log(error);
+        if (error.includes("Error:")) {
+          chai.assert.fail(error);
+        }
+      }
+    );
+    await Promise.all([timeout, childProcess]);
+    console.log("[success] docker run successfully !!!");
+    return childProcess;
+  }
+
+  static async stopAllDocker() {
+    console.log(`[start] docker stop all ... `);
+    let cmd = "";
+    if (os.type() === "Windows_NT") {
+      cmd = "docker ps -q | ForEach-Object { docker stop $_ }";
+    } else {
+      cmd = "docker stop $(docker ps -q)";
+    }
+    const { stderr, stdout } = await execAsync(cmd);
+    if (stderr) {
+      console.log(stderr);
+    }
+    console.log(stdout);
+    console.log("[success] docker stop all successfully !!!");
   }
 }

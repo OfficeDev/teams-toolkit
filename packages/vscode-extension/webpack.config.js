@@ -124,6 +124,14 @@ const config = {
           from: "./node_modules/dompurify/dist/purify.min.js",
           to: "../resource/purify.min.js",
         },
+        {
+          from: "./node_modules/mermaid/dist/mermaid.min.js",
+          to: "../resource/mermaid.min.js",
+        },
+        {
+          from: "./src/chat/cl100k_base.tiktoken",
+          to: "../src/cl100k_base.tiktoken",
+        },
       ],
     }),
   ],

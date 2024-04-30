@@ -2,12 +2,13 @@
 // Licensed under the MIT license.
 import { CLICommand, Inputs } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../activate";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EntraAppManifestFileOption, EnvOption, ProjectFolderOption } from "../common";
 
 export const entraAppUpdateCommand: CLICommand = {
   name: "update",
-  description: "Update the Microsoft Entra app in the current application.",
+  description: commands["entra-app.update"].description,
   options: [EntraAppManifestFileOption, EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.UpdateAadApp,
@@ -24,6 +25,6 @@ export const entraAppUpdateCommand: CLICommand = {
 
 export const entraAppCommand: CLICommand = {
   name: "entra-app",
-  description: "Manage the Microsoft Entra app in the current application.",
+  description: commands["entra-app"].description,
   commands: [entraAppUpdateCommand],
 };

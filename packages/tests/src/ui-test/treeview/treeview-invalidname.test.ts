@@ -22,7 +22,7 @@ describe("New project Tests", function () {
   let testRootFolder: string;
   let nodeVersion: string | null;
   const warnMsg =
-    "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.";
+    "App name needs to begin with letters, include minimum two letters or digits, and exclude certain special characters.";
 
   beforeEach(async function () {
     // ensure workbench is ready
@@ -97,8 +97,9 @@ describe("New project Tests", function () {
       // if exist click it
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      // Choose Tab(SPFx)
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check

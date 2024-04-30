@@ -51,13 +51,7 @@ describe("LaunchHelper", () => {
           },
         })
       );
-      const result = await launchHelper.getLaunchUrl(
-        HubTypes.teams,
-        "test-id",
-        ["MessageExtension"],
-        true,
-        true
-      );
+      const result = await launchHelper.getLaunchUrl(HubTypes.teams, "test-id", ["plugin"], true);
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
@@ -79,7 +73,6 @@ describe("LaunchHelper", () => {
         HubTypes.teams,
         "test-id",
         ["MessageExtension", "staticTab"],
-        true,
         true
       );
       chai.assert(result.isOk());
@@ -103,7 +96,6 @@ describe("LaunchHelper", () => {
         HubTypes.teams,
         "test-id",
         ["MessageExtension", "configurableTab"],
-        true,
         true
       );
       chai.assert(result.isOk());
@@ -126,8 +118,7 @@ describe("LaunchHelper", () => {
       const result = await launchHelper.getLaunchUrl(
         HubTypes.teams,
         "test-id",
-        ["MessageExtension", "Bot"],
-        true,
+        ["MessageExtension", "Bot", "plugin"],
         true
       );
       chai.assert(result.isOk());

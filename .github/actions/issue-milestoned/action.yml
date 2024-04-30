@@ -7,9 +7,6 @@ inputs:
   milestone-prefix:
     description: 'the specific milestones prefix to create work item'
     required: true
-  devops-token:
-    description: 'the token to create work item'
-    required: true
   devops-org:
     description: 'the org to create work item'
     required: true

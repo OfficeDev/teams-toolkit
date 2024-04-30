@@ -20,6 +20,8 @@ A bot interaction can be a quick question and answer, or it can be a complex con
 {{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
 2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
@@ -38,7 +40,7 @@ A bot interaction can be a quick question and answer, or it can be a complex con
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![basic bot](https://github.com/OfficeDev/TeamsFx/assets/25220706/8f5645ed-1cd9-43fd-9513-b0c9697d7dc0)
+![basic bot](https://github.com/OfficeDev/TeamsFx/assets/25220706/170096d2-b353-4d4e-b55a-2c8ae4d97514)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template
@@ -79,5 +81,5 @@ Following documentation will help you to extend the Basic Bot template.
 - [Collaborate on app development](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
 - [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
-- [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
+- [Develop with Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli/debug)
 - [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)

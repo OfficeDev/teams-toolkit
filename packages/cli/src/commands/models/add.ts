@@ -1,10 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand } from "@microsoft/teamsfx-api";
+import { commands } from "../../resource";
 import { addSPFxWebpartCommand } from "./addSPFxWebpart";
+import { addPluginCommand } from "./addPlugin";
+import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
 
-export const addCommand: CLICommand = {
-  name: "add",
-  description: "Add feature to your Microsoft Teams application.",
-  commands: [addSPFxWebpartCommand],
+const adjustCommands = (): CLICommand[] => {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
+    return [addSPFxWebpartCommand, addPluginCommand];
+  } else {
+    return [addSPFxWebpartCommand];
+  }
 };
+export function addCommand(): CLICommand {
+  return {
+    name: "add",
+    description: commands.add.description,
+    commands: adjustCommands(),
+  };
+}

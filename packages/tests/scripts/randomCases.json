@@ -10,7 +10,8 @@
                 "node-18": []
             },
             "macos-latest": {
-                "node-16": []
+                "node-16": [],
+                "node-18": []
             }
         },
         "cases": [
@@ -39,7 +40,6 @@
         },
         "cases": [
             "sample-localdebug-npm-search",
-            "sample-localdebug-large-scale-notification",
             "sample-localdebug-proactive-message"
         ]
     },
@@ -90,7 +90,6 @@
         },
         "cases": [
             "sample-localdebug-todo-list-with-m365",
-            "sample-localdebug-todo-list-sql",
             "sample-localdebug-hello-world-tab-with-backend",
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
@@ -115,12 +114,10 @@
             "sample-remotedebug-hello-world-tab-with-backend",
             "sample-remotedebug-npm-search",
             "sample-remotedebug-hello-world-meeting",
-            "sample-remotedebug-todo-list-sql",
             "sample-remotedebug-todo-list-with-m365",
             "sample-remotedebug-one-productivity-hub",
             "sample-remotedebug-stock-update",
             "sample-remotedebug-query-org",
-            "sample-remotedebug-share-now",
             "sample-remotedebug-proactive-message",
             "sample-remotedebug-assistant-dashboard",
             "sample-remotedebug-hello-world-tab-outlook",
@@ -136,6 +133,16 @@
         "os": {
             "windows-latest": {
                 "node-16": []
+            }
+        },
+        "cases": [
+            "sample-remotedebug-chef-bot"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
+                "node-18": []
             }
         },
         "cases": [
@@ -158,7 +165,28 @@
             "sample-localdebug-dashboard",
             "sample-localdebug-hello-world-tab-outlook",
             "sample-localdebug-one-productivity-hub",
-            "sample-localdebug-assistant-dashboard"
+            "sample-localdebug-assistant-dashboard",
+            "sample-localdebug-large-scale-notification",
+            "sample-localdebug-todo-list-sql",
+            "sample-remotedebug-share-now",
+            "sample-remotedebug-todo-list-sql",
+            "sample-remotedebug-large-scale-notification"
+        ]
+    },
+    {
+        "os": {
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "macos-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-bot-sso-docker",
+            "sample-remotedebug-bot-sso-docker"
         ]
     }
 ]

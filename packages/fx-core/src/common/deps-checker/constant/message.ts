@@ -16,7 +16,8 @@ export const Messages = {
     getLocalizedString("depChecker.portableFuncNodeNotMatched")
       .replace("@NodeVersion", nodeVersion)
       .replace("@FuncVersion", funcVersion),
-  symlinkDirAlreadyExist: () => getLocalizedString("depChecker.symlinkDirAlreadyExist"),
+  symlinkDirAlreadyExist: (linkFilePath: string) =>
+    getLocalizedString("depChecker.symlinkDirAlreadyExist", linkFilePath),
   invalidFuncVersion: (version: string) =>
     getLocalizedString("depChecker.invalidFuncVersion", version),
   noSentinelFile: () => getLocalizedString("depChecker.noSentinelFile"),

@@ -8,14 +8,13 @@
     <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
 {{^isNewProjectTypeEnabled}}
+  <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
-{{/isNewProjectTypeEnabled}}
     <ProjectCapability Include="APIME" />
   </ItemGroup>
+{{/isNewProjectTypeEnabled}}
 
-{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <None Include="appPackage/**/*" />
     <None Include="infra/**/*" />

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, Stage, UserError, Void } from "@microsoft/teamsfx-api";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import { assert } from "chai";
 import "mocha";
@@ -452,7 +452,7 @@ describe("serverConnections", () => {
 
   it("copilotPluginListOperations fail", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(err([{ content: "error1" }, { content: "error2" }]));
+    const fake = sandbox.fake.resolves(err(new UserError("source", "name", "", "")));
     sandbox.replace(connection["core"], "copilotPluginListOperations", fake);
     const res = await connection.listOpenAPISpecOperationsRequest(
       {} as Inputs,
@@ -460,7 +460,7 @@ describe("serverConnections", () => {
     );
     assert.isTrue(res.isErr());
     if (res.isErr()) {
-      assert.equal(res.error.message, "error1\nerror2");
+      assert.equal(res.error.source, "source");
     }
   });
 
@@ -522,5 +522,21 @@ describe("serverConnections", () => {
     );
     assert.isFalse(res.isOk());
     assert.match(res._unsafeUnwrapErr().message, /MockError/);
+  });
+
+  it("listPluginApiSpecs fail", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err("error"));
+    sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
+    const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isErr());
+  });
+
+  it("listPluginApiSpecsRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok(undefined));
+    sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
+    const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
   });
 });

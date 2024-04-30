@@ -1,6 +1,7 @@
 import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import {
   CollaborationStateResult,
+  FeatureFlags,
   FuncToolChecker,
   FxCore,
   ListCollaboratorResult,
@@ -25,6 +26,7 @@ import {
   accountLogoutCommand,
   accountShowCommand,
   accountUtils,
+  addCommand,
   addSPFxWebpartCommand,
   createSampleCommand,
   deployCommand,
@@ -44,8 +46,6 @@ import {
   previewCommand,
   provisionCommand,
   publishCommand,
-  updateAadAppCommand,
-  updateTeamsAppCommand,
   upgradeCommand,
   validateCommand,
 } from "../../src/commands/models";
@@ -64,6 +64,7 @@ import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSett
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 import { envResetCommand } from "../../src/commands/models/envReset";
+import { addPluginCommand } from "../../src/commands/models/addPlugin";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -86,30 +87,7 @@ describe("CLI commands", () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "false",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
-      );
-      const res = await getCreateCommand().handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CustomizeGpt.name]: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -258,6 +236,42 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
   });
+
+  describe("addPluginCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "addPlugin").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...addPluginCommand, fullName: "add copilot-plugin" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await addPluginCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("getAddCommand", async () => {
+    it("customize GPT is not enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlags.CustomizeGpt.name]: "false",
+      });
+
+      const commands = addCommand();
+      assert.isTrue(commands.commands?.length === 1);
+    });
+
+    it("customize GPT is enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlags.CustomizeGpt.name]: "true",
+      });
+
+      const commands = addCommand();
+      assert.isTrue(commands.commands?.length === 2);
+    });
+  });
+
   describe("deployCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "deployArtifacts").resolves(ok(undefined));
@@ -534,24 +548,6 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
   });
-  describe("updateAadAppCommand", async () => {
-    it("success", async () => {
-      sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: {
-          env: "local",
-          projectPath: "./",
-          "manifest-file-path": "./aad.manifest.json",
-        },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await updateAadAppCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-  });
   describe("entraAppUpdateCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
@@ -568,36 +564,6 @@ describe("CLI commands", () => {
       };
       const res = await entraAppUpdateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-    });
-  });
-  describe("updateTeamsAppCommand", async () => {
-    it("success", async () => {
-      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await updateTeamsAppCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("MissingRequiredOptionError", async () => {
-      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await updateTeamsAppCommand.handler!(ctx);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.equal(res.error.name, MissingRequiredOptionError.name);
-      }
     });
   });
   describe("upgradeCommand", async () => {
@@ -1334,7 +1300,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and custom app upload permission is enabled");
+        assert.include(account, "is signed in and custom app upload permission is enabled");
       });
       it("checkM365Account - error", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
@@ -1343,7 +1309,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "You have not logged in");
+        assert.include(account, "You've not signed into your Microsoft 365 account yet.");
       });
       it("checkM365Account - error2", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").rejects(new Error("test"));
@@ -1378,7 +1344,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and custom app upload permission is enabled");
+        assert.include(account, "is signed in and custom app upload permission is enabled");
       });
 
       it("checkM365Account - no custom app upload permission", async () => {

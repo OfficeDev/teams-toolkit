@@ -16,7 +16,7 @@
         "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
         "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
-        "build": "tsc --build && shx cp -r ./src/prompts ./lib/src",
+        "build": "tsc --build && shx cp -r ./src/prompts ./lib/src && shx cp -r ./appPackage ./lib/appPackage && shx cp -r src/adaptiveCards ./lib/src",
         "start": "node ./lib/src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "nodemon --exec \"npm run start\""
@@ -36,7 +36,7 @@
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

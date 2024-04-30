@@ -7,10 +7,11 @@ import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
 import * as path from "path";
+import { commands } from "../../resource";
 
 export const validateCommand: CLICommand = {
   name: "validate",
-  description: "Validate the Microsoft Teams app using manifest schema or validation rules.",
+  description: commands.validate.description,
   options: [...ValidateTeamsAppOptions, EnvOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ValidateManifest,

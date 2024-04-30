@@ -24,7 +24,7 @@
       "value": "${{AZURE_OPENAI_ENDPOINT}}"
     },
     "azureOpenAIDeployment": {
-      "value": "${{AZURE_OPENAI_DEPLOYMENT}}
+      "value": "${{AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}"
     },
     {{/useAzureOpenAI}}
     "webAppSKU": {

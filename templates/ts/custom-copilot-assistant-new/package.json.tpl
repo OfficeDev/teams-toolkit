@@ -28,11 +28,12 @@
     "dependencies": {
         "@microsoft/teams-ai": "^1.1.0",
         "botbuilder": "^4.20.0",
+        "openai": "~4.28.4",
         "restify": "^10.0.0"
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

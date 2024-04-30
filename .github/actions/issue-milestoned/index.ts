@@ -6,11 +6,11 @@ import { context } from '@actions/github';
 import { getInput } from '@actions/core';
 import { getEmail, sendAlert } from '../teamsfx-utils/utils';
 import * as WorkItemTrackingInterfaces from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
+import { AzureCliCredential } from "@azure/identity";
 
 
 const githubToken = getRequiredInput('token');
 const milestonePrefix = getRequiredInput('milestone-prefix');
-const devopsToken = getRequiredInput('devops-token');
 const org = getRequiredInput('devops-org');
 const projectId = getRequiredInput('devops-projectId');
 const titlePreix = getRequiredInput('title-prefix');
@@ -81,8 +81,11 @@ class Milestoned extends Action {
 	}
 
 	private async createClient() {
+		let credential = new AzureCliCredential();
+		const devopsToken = await credential.getToken("https://app.vssps.visualstudio.com/.default");
+
 		let client = new DevopsClient(
-			devopsToken,
+			devopsToken.token,
 			org,
 			projectId,
 			bugArea,

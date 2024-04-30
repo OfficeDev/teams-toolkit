@@ -186,7 +186,9 @@
         },
         "cases": [
             "sample-localdebug-bot-sso-docker",
-            "sample-remotedebug-bot-sso-docker"
+            "sample-remotedebug-bot-sso-docker",
+            "sample-localdebug-hello-world-tab-docker.test",
+            "sample-remotedebug-hello-world-tab-docker.test"
         ]
     }
 ]

@@ -32,6 +32,7 @@ import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { initDebugPort } from "../../utils/commonUtils";
+import { CliHelper } from "../cliHelper";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -97,6 +98,12 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
       LocalDebugTaskResult.WebServerSuccess
     );
   },
+  [LocalDebugTaskLabel.DockerRun]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.DockerRun,
+      LocalDebugTaskResult.WebServerSuccess
+    );
+  },
 };
 
 export abstract class CaseFactory {
@@ -118,6 +125,8 @@ export abstract class CaseFactory {
     debug?: "cli" | "ttk";
     botFlag?: boolean;
     repoPath?: string;
+    container?: boolean;
+    dockerFolder?: string;
   };
 
   public constructor(
@@ -139,6 +148,8 @@ export abstract class CaseFactory {
       debug?: "cli" | "ttk";
       botFlag?: boolean;
       repoPath?: string;
+      container?: boolean;
+      dockerFolder?: string;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -277,6 +288,7 @@ export abstract class CaseFactory {
       let azSqlHelper: AzSqlHelper | undefined;
       let devtunnelProcess: ChildProcessWithoutNullStreams;
       let debugProcess: ChildProcessWithoutNullStreams;
+      let dockerProcess: ChildProcessWithoutNullStreams;
       let successFlag = true;
       let envContent = "";
       let botFlag = false;
@@ -363,6 +375,9 @@ export abstract class CaseFactory {
                   sampledebugContext.appName,
                   sampledebugContext.projectPath
                 );
+                if (options?.container) {
+                  await Executor.login();
+                }
                 await sampledebugContext.deployProject(
                   sampledebugContext.projectPath,
                   Timeout.botDeploy
@@ -392,11 +407,23 @@ export abstract class CaseFactory {
                 "local"
               );
               expect(provisionSuccess).to.be.true;
-              const { success: deploySuccess } = await Executor.deploy(
-                sampledebugContext.projectPath,
-                "local"
-              );
-              expect(deploySuccess).to.be.true;
+              if (!options.container) {
+                const { success: deploySuccess } = await Executor.deploy(
+                  sampledebugContext.projectPath,
+                  "local"
+                );
+                expect(deploySuccess).to.be.true;
+              } else {
+                await CliHelper.dockerBuild(
+                  sampledebugContext.projectPath,
+                  options.dockerFolder || ""
+                );
+
+                dockerProcess = await CliHelper.dockerRun(
+                  sampledebugContext.projectPath,
+                  options.dockerFolder || ""
+                );
+              }
               const teamsAppId = await sampledebugContext.getTeamsAppId(env);
               expect(teamsAppId).to.not.be.empty;
 
@@ -421,7 +448,8 @@ export abstract class CaseFactory {
                     successFlag = false;
                     expect.fail(errorMsg);
                   }
-                }
+                },
+                options.container
               );
               await new Promise((resolve) =>
                 setTimeout(resolve, 2 * 60 * 1000)
@@ -458,6 +486,10 @@ export abstract class CaseFactory {
               // kill process
               await Executor.closeProcess(debugProcess);
               if (botFlag) await Executor.closeProcess(devtunnelProcess);
+              if (dockerProcess) {
+                await Executor.closeProcess(dockerProcess);
+                await CliHelper.stopAllDocker();
+              }
               await initDebugPort();
             }
 

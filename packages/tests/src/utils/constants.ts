@@ -57,6 +57,7 @@ export enum TemplateProject {
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
   LargeScaleBot = "Large Scale Notification Bot",
+  BotSSODocker = "Containerized Bot App with SSO Enabled",
 }
 
 export enum TemplateProjectFolder {
@@ -128,6 +129,7 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
     [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
+    [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
   };
 
 export enum Resource {
@@ -380,6 +382,7 @@ export enum LocalDebugTaskLabel {
   Azurite = "Start Azurite emulator",
   Compile = "Compile typescript",
   StartWebServer = "Start web server",
+  DockerRun = "docker-run: debug",
 }
 
 export class LocalDebugTaskResult {
@@ -394,6 +397,7 @@ export class LocalDebugTaskResult {
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
+  static readonly DockerRunFinish = "press any key to close it";
 }
 
 export enum LocalDebugTaskLabel2 {

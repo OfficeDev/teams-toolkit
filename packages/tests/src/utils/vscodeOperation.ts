@@ -220,6 +220,7 @@ export async function execCommandIfExist(
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
   await VSBrowser.instance.waitForWorkbench();
+  console.log("[start] run vsc command: ", commandName);
   if (os.type() === "Darwin") {
     // command + P
     await driver.actions().keyDown(Key.COMMAND).keyDown("P").perform();
@@ -245,6 +246,7 @@ export async function execCommandIfExist(
       if (timeout) {
         await driver.sleep(timeout);
       }
+      console.log("[finish] run vsc command successfully");
       return;
     }
   }

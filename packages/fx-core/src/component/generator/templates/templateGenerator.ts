@@ -56,7 +56,7 @@ export class DefaultTemplateGenerator implements IGenerator {
     return ok(undefined);
   }
 
-  // override this method to provide information of templates to be generated
+  // override this method to 1) do pre-step before template download and 2) provide information of templates to be downloaded
   public getTemplateInfos(
     context: Context,
     inputs: Inputs,
@@ -68,7 +68,7 @@ export class DefaultTemplateGenerator implements IGenerator {
     return Promise.resolve(ok([{ templateName, language }]));
   }
 
-  // override this method to do post process
+  // override this method to do post-step after template download
   public post(
     context: Context,
     inputs: Inputs,

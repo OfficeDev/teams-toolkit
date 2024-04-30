@@ -24,7 +24,7 @@ export async function repairs(
   const res: HttpResponseInit = {
     status: 200,
     jsonBody: {
-      results: [],
+      results: repairRecords,
     },
   };
 

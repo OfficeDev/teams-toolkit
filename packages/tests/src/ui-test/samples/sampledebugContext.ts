@@ -257,6 +257,17 @@ export class SampledebugContext extends TestContext {
     );
   }
 
+  public async updateManifestAppName(): Promise<void> {
+    console.log("update manifest file");
+    const manifestFile =
+      path.resolve(this.projectPath, "appPackage", "manifest.json") ??
+      path.resolve(this.projectPath, "appManifest", "manifest.json");
+    const manifest = await fs.readJSON(manifestFile);
+    manifest.name.short = this.appName + "${{APP_NAME_SUFFIX}}";
+    fs.writeJSON(manifestFile, manifest, { spaces: 4 });
+    console.log("update manifest file successfully");
+  }
+
   public async openExistFolder(path: string): Promise<void> {
     await openExistingProject(path);
   }

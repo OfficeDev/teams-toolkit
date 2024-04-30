@@ -336,6 +336,8 @@ export abstract class CaseFactory {
           try {
             // create project
             await sampledebugContext.openResourceFolder();
+            // update manifest app name
+            await sampledebugContext.updateManifestAppName();
             // use 1st middleware to process typical sample
             await onAfterCreate(sampledebugContext, env, azSqlHelper);
 

@@ -12,11 +12,15 @@ const { app } = require("@azure/functions");
  */
 async function repairs(req, context) {
   context.log("HTTP trigger function processed a request.");
+
+  // Get the repair records from the data.json file.
+  const repairRecords = require("../repairsData.json");
+
   // Initialize response.
   const res = {
     status: 200,
     jsonBody: {
-      results: [],
+      results: repairRecords,
     },
   };
 
@@ -27,9 +31,6 @@ async function repairs(req, context) {
   if (!assignedTo) {
     return res;
   }
-
-  // Get the repair records from the data.json file.
-  const repairRecords = require("../repairsData.json");
 
   // Filter the repair records by the assignedTo query parameter.
   const repairs = repairRecords.filter((item) => {

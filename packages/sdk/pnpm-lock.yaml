@@ -158,8 +158,8 @@ devDependencies:
     specifier: ^4.0.0
     version: 4.0.0(eslint@8.1.0)(prettier@2.4.1)
   get-func-name:
-    specifier: ^2.0.0
-    version: 2.0.0
+    specifier: ^3.0.0
+    version: 3.0.0
   got:
     specifier: ^11.8.5
     version: 11.8.5
@@ -2200,7 +2200,7 @@ packages:
       assertion-error: 1.1.0
       check-error: 1.0.3
       deep-eql: 3.0.1
-      get-func-name: 2.0.0
+      get-func-name: 2.0.2
       pathval: 1.1.1
       type-detect: 4.0.8
     dev: true
@@ -3462,12 +3462,13 @@ packages:
     engines: {node: 6.* || 8.* || >= 10.*}
     dev: true
 
-  /get-func-name@2.0.0:
-    resolution: {integrity: sha512-Hm0ixYtaSZ/V7C8FJrtZIuBBI+iSgL+1Aq82zSu8VQNB4S3Gk8e7Qs3VwBDJAhmRZcFqkl3tQu36g/Foh5I5ig==}
-    dev: true
-
   /get-func-name@2.0.2:
     resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
+    dev: true
+
+  /get-func-name@3.0.0:
+    resolution: {integrity: sha512-6lB4zp64YzgT5KVoAuY0vBXQXNObRmelzfVCpx2dHkGVskX8WwjxTVd/kGUsVzxuOpSEF9BcD54ChSKMVjSsfQ==}
+    engines: {node: '>= 12'}
     dev: true
 
   /get-intrinsic@1.2.2:

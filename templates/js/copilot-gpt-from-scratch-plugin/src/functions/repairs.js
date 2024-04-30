@@ -10,7 +10,7 @@ const { app } = require("@azure/functions");
  * @param context - The Azure Functions context object.
  * @returns A promise that resolves with the HTTP response containing the repair information.
  */
-async function repair(req, context) {
+async function repairs(req, context) {
   context.log("HTTP trigger function processed a request.");
   // Initialize response.
   const res = {
@@ -44,8 +44,8 @@ async function repair(req, context) {
   return res;
 }
 
-app.http("repair", {
+app.http("repairs", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: repair,
+  handler: repairs,
 });

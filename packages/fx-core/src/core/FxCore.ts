@@ -109,8 +109,6 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import {
   FileNotFoundError,
-  InjectAPIKeyActionFailedError,
-  InjectOAuthActionFailedError,
   InputValidationError,
   InvalidProjectError,
   MissingRequiredInputError,
@@ -151,7 +149,7 @@ import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types"
 import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { AppStudioError } from "../component/driver/teamsApp/errors";
 import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
-import { ActionInjector } from "../component/configManager/ActionInjector";
+import { ActionInjector } from "../component/configManager/actionInjector";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 

@@ -35,7 +35,7 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                         | Contents                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `src/functions/repairs.js`                    | The main file of a function in Azure Functions.                                                        |
+| `src/functions/repairs.js`                   | The main file of a function in Azure Functions.                                                        |
 | `src/repairsData.json`                       | The data source for the repair API.                                                                    |
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                                    |
 | `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your copilot plugin and declarative copilot.      |

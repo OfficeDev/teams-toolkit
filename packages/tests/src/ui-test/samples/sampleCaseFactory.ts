@@ -101,7 +101,13 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.DockerRun]: async () => {
     await waitForTerminal(
       LocalDebugTaskLabel.DockerRun,
-      LocalDebugTaskResult.WebServerSuccess
+      LocalDebugTaskResult.DockerFinish
+    );
+  },
+  [LocalDebugTaskLabel.DockerTask]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.DockerTask,
+      LocalDebugTaskResult.DockerFinish
     );
   },
 };

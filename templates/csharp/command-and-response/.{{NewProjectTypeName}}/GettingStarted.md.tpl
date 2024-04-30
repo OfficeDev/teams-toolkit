@@ -18,6 +18,11 @@
 6. In the message input field, type and send "helloWorld" to your app to get a response
 {{/enableTestToolByDefault}}
 
+{{^enableTestToolByDefault}}
+## Debug in Test Tool
+Teams App Test Tool allows Teams app developers to test and debug bots in local easily and eliminates the necessity for prerequisites such as Microsoft 365 accounts, develop tunnels, or Teams app and bot registration. See https://github.com/OfficeDev/TeamsFx/wiki/Debug-with-Multiple-Profiles-in-Teams-Toolkit-for-Visual-Studio#start-the-app-in-teams-app-test-tool for more details.
+{{/enableTestToolByDefault}}
+
 ## Run the app on other platforms
 
 The Teams app can run in other platforms like Outlook and Microsoft 365 app. See https://aka.ms/vs-ttk-debug-multi-profiles for more details.

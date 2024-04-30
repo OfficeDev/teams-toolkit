@@ -17,6 +17,11 @@
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
+{{^enableTestToolByDefault}}
+## Debug in Test Tool
+Teams App Test Tool allows Teams app developers to test and debug bots in local easily and eliminates the necessity for prerequisites such as Microsoft 365 accounts, develop tunnels, or Teams app and bot registration. See https://github.com/OfficeDev/TeamsFx/wiki/Debug-with-Multiple-Profiles-in-Teams-Toolkit-for-Visual-Studio#start-the-app-in-teams-app-test-tool for more details.
+{{/enableTestToolByDefault}}
+
 ## Get more info
 
 New to Teams app development or Teams Toolkit? Explore Teams app manifests, cloud deployment, and much more in the https://aka.ms/teams-toolkit-vs-docs.

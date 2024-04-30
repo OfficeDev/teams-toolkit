@@ -64,7 +64,7 @@ export function isChatParticipantEnabled(): boolean {
 }
 
 export function isCopilotAuthEnabled(): boolean {
-  return true;
+  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

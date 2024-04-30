@@ -1,27 +1,19 @@
 /* This code sample provides a starter kit to implement server side logic for your Teams App in TypeScript,
- * refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference for complete Azure Functions
- * developer guide.
+ * refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference for
+ * complete Azure Functions developer guide.
  */
-
-import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-
-import repairRecords from "../repairsData.json";
-
+const { app } = require("@azure/functions");
 /**
  * This function handles the HTTP request and returns the repair information.
  *
- * @param {HttpRequest} req - The HTTP request.
- * @param {InvocationContext} context - The Azure Functions context object.
- * @returns {Promise<Response>} - A promise that resolves with the HTTP response containing the repair information.
+ * @param req - The HTTP request.
+ * @param context - The Azure Functions context object.
+ * @returns A promise that resolves with the HTTP response containing the repair information.
  */
-export async function repair(
-  req: HttpRequest,
-  context: InvocationContext
-): Promise<HttpResponseInit> {
+async function repairs(req, context) {
   context.log("HTTP trigger function processed a request.");
-
   // Initialize response.
-  const res: HttpResponseInit = {
+  const res = {
     status: 200,
     jsonBody: {
       results: [],
@@ -31,15 +23,18 @@ export async function repair(
   // Get the assignedTo query parameter.
   const assignedTo = req.query.get("assignedTo");
 
-  // If the assignedTo query parameter is not provided, return the response.
+  // If the assignedTo query parameter is not provided, return all repair records.
   if (!assignedTo) {
     return res;
   }
 
-  // Filter the repair information by the assignedTo query parameter.
+  // Get the repair records from the data.json file.
+  const repairRecords = require("../repairsData.json");
+
+  // Filter the repair records by the assignedTo query parameter.
   const repairs = repairRecords.filter((item) => {
-    const fullName = item.assignedTo.toLowerCase();
     const query = assignedTo.trim().toLowerCase();
+    const fullName = item.assignedTo.toLowerCase();
     const [firstName, lastName] = fullName.split(" ");
     return fullName === query || firstName === query || lastName === query;
   });
@@ -49,8 +44,8 @@ export async function repair(
   return res;
 }
 
-app.http("repair", {
+app.http("repairs", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: repair,
+  handler: repairs,
 });

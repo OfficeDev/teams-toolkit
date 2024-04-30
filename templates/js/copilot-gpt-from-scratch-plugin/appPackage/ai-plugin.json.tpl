@@ -1,12 +1,13 @@
 {
   "schema_version": "v2.1",
-  "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
+  "namespace": "repairs",
+  "name_for_human": "ttk-plugin-copilot${{APP_NAME_SUFFIX}}",
   "description_for_human": "Track your repair records",
   "description_for_model": "Plugin for searching a repair list, you can search by who's assigned to the repair.",
   "functions": [
     {
-      "name": "repair",
-      "description": "Search for repairs",
+      "name": "listRepairs",
+      "description": "Returns a list of repairs with their details and images",
       "parameters": {
         "type": "object",
         "properties": {
@@ -14,10 +15,7 @@
             "type": "string",
             "description": "The person assigned to the repair"
           }
-        },
-        "required": [
-          "assignedTo"
-        ]
+        }
       }
     }    
   ],
@@ -31,7 +29,7 @@
         "url": "apiSpecificationFile/repair.yml",
         "progress_style": "ShowUsageWithInputAndOutput"
       },
-      "run_for_functions": ["repair"]
+      "run_for_functions": ["listRepairs"]
     }
   ]
 }

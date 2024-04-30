@@ -151,6 +151,7 @@ import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types"
 import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { AppStudioError } from "../component/driver/teamsApp/errors";
 import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
+import { ActionInjector } from "../component/configManager/ActionInjector";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1242,140 +1243,6 @@ export class FxCore {
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 
-  hasActionWithName(provisionNode: any, action: string, name: string): any {
-    const hasAuthAction = provisionNode.items.some(
-      (item: any) => item.get("uses") === action && item.get("with")?.get("name") === name
-    );
-    return hasAuthAction;
-  }
-
-  getTeamsAppIdEnvName(provisionNode: any): string | undefined {
-    for (const item of provisionNode.items) {
-      if (item.get("uses") === "teamsApp/create") {
-        return item.get("writeToEnvironmentFile")?.get("teamsAppId") as string;
-      }
-    }
-
-    return undefined;
-  }
-
-  generateAuthAction(
-    actionName: string,
-    authName: string,
-    teamsAppIdEnvName: string,
-    specRelativePath: string,
-    envName: string,
-    flow?: string
-  ): any {
-    const result: any = {
-      uses: actionName,
-      with: {
-        name: `${authName}`,
-        appId: `\${{${teamsAppIdEnvName}}}`,
-        apiSpecPath: specRelativePath,
-      },
-    };
-
-    if (flow) {
-      result.with.flow = flow;
-      result.writeToEnvironmentFile = {
-        configurationId: envName,
-      };
-    } else {
-      result.writeToEnvironmentFile = {
-        registrationId: envName,
-      };
-    }
-
-    return result;
-  }
-
-  async injectCreateOAuthAction(
-    ymlPath: string,
-    authName: string,
-    specRelativePath: string
-  ): Promise<void> {
-    const ymlContent = await fs.readFile(ymlPath, "utf-8");
-    const actionName = "oauth/register";
-
-    const document = parseDocument(ymlContent);
-    const provisionNode = document.get("provision") as any;
-    if (provisionNode) {
-      const hasOAuthAction = this.hasActionWithName(provisionNode, actionName, authName);
-      if (!hasOAuthAction) {
-        provisionNode.items = provisionNode.items.filter(
-          (item: any) => item.get("uses") !== actionName && item.get("uses") !== "apiKey/register"
-        );
-        const teamsAppIdEnvName = this.getTeamsAppIdEnvName(provisionNode);
-        if (teamsAppIdEnvName) {
-          const index: number = provisionNode.items.findIndex(
-            (item: any) => item.get("uses") === "teamsApp/create"
-          );
-          const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_CONFIGURATION_ID`);
-          const flow = "authorizationCode";
-          const action = this.generateAuthAction(
-            actionName,
-            authName,
-            teamsAppIdEnvName,
-            specRelativePath,
-            envName,
-            flow
-          );
-          provisionNode.items.splice(index + 1, 0, action);
-        } else {
-          throw new InjectOAuthActionFailedError();
-        }
-
-        await fs.writeFile(ymlPath, document.toString(), "utf8");
-      }
-    } else {
-      throw new InjectOAuthActionFailedError();
-    }
-  }
-
-  async injectCreateAPIKeyAction(
-    ymlPath: string,
-    authName: string,
-    specRelativePath: string
-  ): Promise<void> {
-    const ymlContent = await fs.readFile(ymlPath, "utf-8");
-    const actionName = "apiKey/register";
-
-    const document = parseDocument(ymlContent);
-    const provisionNode = document.get("provision") as any;
-
-    if (provisionNode) {
-      const hasApiKeyAction = this.hasActionWithName(provisionNode, actionName, authName);
-
-      if (!hasApiKeyAction) {
-        provisionNode.items = provisionNode.items.filter(
-          (item: any) => item.get("uses") !== actionName && item.get("uses") !== "oauth/register"
-        );
-        const teamsAppIdEnvName = this.getTeamsAppIdEnvName(provisionNode);
-        if (teamsAppIdEnvName) {
-          const index: number = provisionNode.items.findIndex(
-            (item: any) => item.get("uses") === "teamsApp/create"
-          );
-          const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_REGISTRATION_ID`);
-          const action = this.generateAuthAction(
-            actionName,
-            authName,
-            teamsAppIdEnvName,
-            specRelativePath,
-            envName
-          );
-          provisionNode.items.splice(index + 1, 0, action);
-        } else {
-          throw new InjectAPIKeyActionFailedError();
-        }
-
-        await fs.writeFile(ymlPath, document.toString(), "utf8");
-      }
-    } else {
-      throw new InjectAPIKeyActionFailedError();
-    }
-  }
-
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginAddAPI" }),
     ErrorHandlerMW,
@@ -1486,16 +1353,20 @@ export class FxCore {
           "./" + path.relative(inputs.projectPath!, outputApiSpecPath).replace(/\\/g, "/");
 
         if (Utils.isBearerTokenAuth(authScheme)) {
-          await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
+          await ActionInjector.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
 
           if (await fs.pathExists(localYamlPath)) {
-            await this.injectCreateAPIKeyAction(localYamlPath, authName, relativeSpecPath);
+            await ActionInjector.injectCreateAPIKeyAction(
+              localYamlPath,
+              authName,
+              relativeSpecPath
+            );
           }
         } else if (Utils.isOAuthWithAuthCodeFlow(authScheme)) {
-          await this.injectCreateOAuthAction(ymlPath, authName, relativeSpecPath);
+          await ActionInjector.injectCreateOAuthAction(ymlPath, authName, relativeSpecPath);
 
           if (await fs.pathExists(localYamlPath)) {
-            await this.injectCreateOAuthAction(localYamlPath, authName, relativeSpecPath);
+            await ActionInjector.injectCreateOAuthAction(localYamlPath, authName, relativeSpecPath);
           }
         }
       }

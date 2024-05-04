@@ -4,8 +4,7 @@
 import ts = require("typescript");
 import { fetchRawFileContent } from "./utils";
 import { SampleData } from "./samples/sampleData";
-import { DocComment, DocNode, DocParagraph, DocPlainText, TSDocParser } from "@microsoft/tsdoc";
-import { CancellationToken } from "vscode";
+import { DocLinkTag, DocParagraph, DocPlainText, TSDocParser } from "@microsoft/tsdoc";
 
 export class DeclarationFinder {
   private static DECLARATION_FILE_NAME = "office-js.d.ts";
@@ -129,6 +128,14 @@ export class DeclarationFinder {
   }
 
   private getDocCommentAndSummary(node: ts.Node): { docComment: string; summary: string } {
+    // For the comments, we'd like to get the summary section of the comments. For example:
+    // /**
+    // * Sets multiple properties of an object at the same time. You can pass either a plain object with the appropriate properties, or another API object of the same type.
+    // * @param properties A JavaScript object with properties that are structured isomorphically to the properties of the object on which the method is called.
+    // * @param options Provides an option to suppress errors if the properties object tries to set any read-only properties.
+    // */
+    // We expect to get the summary section of the comments, like:
+    // "Sets multiple properties of an object at the same time. You can pass either a plain object with the appropriate properties, or another API object of the same type."
     const sourceFile = this.definionFile;
     const commentRanges = ts.getLeadingCommentRanges(sourceFile!.text, node.pos);
     const comments: string | undefined = commentRanges
@@ -145,9 +152,19 @@ export class DeclarationFinder {
       while (!summarySectionNext.done) {
         const node = summarySectionNext.value;
         if (node.kind === "PlainText") {
+          // Deal with the plain text in the summary section. Like:
+          // "Gets the first note item in this collection. Throws an `ItemNotFound` error if this collection is empty."
           description += (node as DocPlainText).text.trim().replace("`", "'") + " ";
         }
+        if (node.kind === "LinkTag") {
+          const link = node as DocLinkTag;
+          if (link.linkText) {
+            description += " " + link.linkText + " ";
+          }
+        }
         if (node.kind === "Paragraph") {
+          // dealing with comments has extra content beyond pure text (link, for example), like:
+          // "Contains a collection of {@link Word.NoteItem} objects."
           const paragraph = node as DocParagraph;
           const paragraphIterator = paragraph.nodes.values();
           let paragraphNext = paragraphIterator.next();
@@ -155,6 +172,22 @@ export class DeclarationFinder {
             const paragraphNode = paragraphNext.value;
             if (paragraphNode.kind === "PlainText") {
               description += (paragraphNode as DocPlainText).text.trim().replace("`", "'") + " ";
+            }
+            // dealing with links in the paragraph, like:
+            // "{@link Word.NoteItem}"
+            // It will get the Word.NoteItem from the link.
+            if (paragraphNode.kind === "LinkTag") {
+              const link = paragraphNode as DocLinkTag;
+              let plainText = "";
+              if (link.codeDestination) {
+                const parts = link.codeDestination.memberReferences.map(
+                  (memberReference) => memberReference.memberIdentifier?.identifier
+                );
+                plainText += parts.join(".");
+              } else {
+                plainText += link.linkText || "";
+              }
+              description += ` ${plainText} `;
             }
             paragraphNext = paragraphIterator.next();
           }

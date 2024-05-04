@@ -34,6 +34,7 @@ import {
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
+import { SampleData } from "../samples/sampleData";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -122,7 +123,6 @@ export class CodeGenerator implements ISkill {
       spec.appendix.codeTaskBreakdown = breakdownResult.funcs;
       spec.appendix.codeExplanation = breakdownResult.spec;
     }
-
     if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
       spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;
     }
@@ -184,8 +184,8 @@ export class CodeGenerator implements ISkill {
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
       new LanguageModelChatUserMessage(userPrompt),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
@@ -210,7 +210,11 @@ export class CodeGenerator implements ISkill {
       } else {
         copilotRet = JSON.parse(codeSnippetRet[1].trim());
       }
-      console.log(`The complexity score: ${copilotRet.complexity}`);
+      console.debug(
+        `Custom functions: ${copilotRet.customFunctions ? "true" : "false"}, Complexity score: ${
+          copilotRet.complexity
+        }`
+      );
     } catch (error) {
       console.error("[User task scanning] Failed to parse the response from Copilot:", error);
       return null;
@@ -230,24 +234,21 @@ export class CodeGenerator implements ISkill {
     spec: string;
     funcs: string[];
   }> {
-    const userPrompt = getUserInputBreakdownTaskUserPrompt(userInput);
-    const defaultSystemPrompt =
-      complexity >= 50
-        ? getUserComplexAskBreakdownTaskSystemPrompt(userInput)
-        : getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+    let userPrompt = getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+    if (isCustomFunctions) {
+      userPrompt = `This is a task about Excel custom functions, pay attention if this is a regular custom functions or streaming custom functions:\n\n ${userPrompt}`;
+    }
+    userPrompt += "\nThink about that step by step.";
 
     // Perform the desired operation
-    const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
-    ];
+    const messages: LanguageModelChatMessage[] = [new LanguageModelChatUserMessage(userPrompt)];
 
     if (sampleCode.length > 0) {
       messages.push(new LanguageModelChatSystemMessage(getCodeSamplePrompt(sampleCode)));
     }
 
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+      "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
@@ -307,40 +308,73 @@ export class CodeGenerator implements ISkill {
         break;
     }
 
-    const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
-      token,
-      host,
-      codeSpec,
-      sampleCode
-    );
+    if (Object.keys(spec.appendix.apiDeclarationsReference).length === 0) {
+      const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+        token,
+        host,
+        codeSpec, // codeSpec + "\n" + suggestedFunction.filter(funcDesc => funcDesc.indexOf("'main'") < 0).join("\n"), //codeSpec,
+        "" //sampleCode
+      );
 
-    spec.appendix.apiDeclarationsReference = declarations;
-
-    let declarationPrompt = getGenerateCodeDeclarationPrompt();
-    if (declarations.size > 0) {
-      declarationPrompt += Array.from(declarations.values())
-        .map((declaration) => `- ${declaration.definition}`)
-        .join("\n");
+      spec.appendix.apiDeclarationsReference = declarations;
     }
 
-    let samplePrompt = getGenerateCodeSamplePrompt();
+    let declarationPrompt = getGenerateCodeDeclarationPrompt();
+    if (spec.appendix.apiDeclarationsReference.size > 0) {
+      const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+      spec.appendix.apiDeclarationsReference.forEach((declaration) => {
+        if (!groupedMethodsOrProperties.has(declaration.definition)) {
+          groupedMethodsOrProperties.set(declaration.definition, []);
+        }
+        groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+      });
+
+      let tempClassDeclaration = "\n```typescript\n";
+      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+        tempClassDeclaration += `
+class ${className} extends OfficeExtension.ClientObject {
+  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+}
+\n
+      `;
+      });
+      tempClassDeclaration += "```\n";
+
+      declarationPrompt += tempClassDeclaration;
+      console.debug(`API declarations: \n${declarationPrompt}`);
+    }
+    const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";
+    let msgCount = 0;
+
+    // Perform the desired operation
+    // The order in array is matter, don't change it unless you know what you are doing
+    const messages: LanguageModelChatMessage[] = [new LanguageModelChatUserMessage(userPrompt)];
     if (sampleCode.length > 0) {
+      let samplePrompt = getGenerateCodeSamplePrompt();
       samplePrompt += `
+      \n
       \`\`\`typescript
       ${sampleCode}
       \`\`\`
+
+      Let's think step by step.
       `;
+      messages.push(new LanguageModelChatSystemMessage(samplePrompt));
     }
-    // Perform the desired operation
-    // The order in array is matter, don't change it unless you know what you are doing
-    const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatSystemMessage(declarationPrompt),
-      new LanguageModelChatSystemMessage(samplePrompt),
-      new LanguageModelChatSystemMessage(referenceUserPrompt),
-    ];
-    const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";
-    let msgCount = countMessagesTokens(messages);
+    // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
+    if (isCustomFunctions) {
+      messages.push(
+        new LanguageModelChatSystemMessage(referenceUserPrompt),
+        new LanguageModelChatSystemMessage(declarationPrompt)
+      );
+    } else {
+      messages.push(
+        new LanguageModelChatSystemMessage(declarationPrompt),
+        new LanguageModelChatSystemMessage(referenceUserPrompt)
+      );
+    }
+    // Because of the token window limitation, we have to cut off the messages if it exceeds the limitation
+    msgCount = countMessagesTokens(messages);
     while (msgCount > getTokenLimitation(model)) {
       messages.pop();
       msgCount = countMessagesTokens(messages);

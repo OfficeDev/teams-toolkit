@@ -120,6 +120,40 @@ describe("select prompt", () => {
     expect(await answer).equal("id1");
   });
 
+  it("allow setting the page size larger than choices length", async () => {
+    const { answer, events, getScreen } = await render(select, {
+      message: "Select a string",
+      choices,
+      pageSize: 14,
+    });
+
+    expect(getScreen()).equal(
+      trimOutput(`
+        ? Select a string
+        (*) title 1  detail 1
+        ( ) title 2  detail 2
+        ( ) title 3  detail 3
+        ( ) title 4  detail 4
+        ( ) title 5  detail 5
+        ( ) title 6  detail 6
+        ( ) title 7  detail 7
+        ( ) title 8  detail 8
+        ( ) title 9  detail 9
+        ( ) title 10 detail 10
+        ( ) title 11 detail 11
+        ( ) title 12 detail 12`)
+    );
+    events.keypress("down");
+    events.keypress("down");
+    events.keypress("down");
+    events.keypress("down");
+    events.keypress("down");
+    events.keypress("down");
+
+    events.keypress("enter");
+    expect(await answer).equal("id7");
+  });
+
   it("cycles through options", async () => {
     const { answer, events, getScreen } = await render(select, {
       message: "Select a string",

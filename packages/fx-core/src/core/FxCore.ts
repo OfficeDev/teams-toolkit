@@ -1712,7 +1712,6 @@ export class FxCore {
       }
     }
 
-    // TODO: localize string below.
     let successMessage = "";
     if (needAddAction && needAddCopilotPlugin) {
       successMessage = getLocalizedString("core.addActionAndPlugin.success", actionId, "plugin_1");

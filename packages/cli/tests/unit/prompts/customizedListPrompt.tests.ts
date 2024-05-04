@@ -116,8 +116,12 @@ describe("select prompt", () => {
         (Use arrow keys to reveal more choices)`)
     );
 
+    for (let i = 0; i < 8; i++) {
+      events.keypress("down");
+    }
+
     events.keypress("enter");
-    expect(await answer).equal("id1");
+    expect(await answer).equal("id9");
   });
 
   it("allow setting the page size larger than choices length", async () => {
@@ -143,12 +147,10 @@ describe("select prompt", () => {
         ( ) title 11 detail 11
         ( ) title 12 detail 12`)
     );
-    events.keypress("down");
-    events.keypress("down");
-    events.keypress("down");
-    events.keypress("down");
-    events.keypress("down");
-    events.keypress("down");
+
+    for (let i = 0; i < 6; i++) {
+      events.keypress("down");
+    }
 
     events.keypress("enter");
     expect(await answer).equal("id7");

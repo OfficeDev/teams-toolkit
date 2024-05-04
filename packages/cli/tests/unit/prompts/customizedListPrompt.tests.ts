@@ -148,12 +148,12 @@ describe("select prompt", () => {
         ( ) title 12 detail 12`)
     );
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       events.keypress("down");
     }
 
     events.keypress("enter");
-    expect(await answer).equal("id7");
+    expect(await answer).equal("id8");
   });
 
   it("cycles through options", async () => {

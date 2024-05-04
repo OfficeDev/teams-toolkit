@@ -200,8 +200,8 @@ export class ProjectTypeOptions {
   static customizeGpt(): OptionItem {
     return {
       id: "customize-gpt-type",
-      label: "Declarative Copilot", // TODO: localize until we have an idea for naming
-      detail: "Author a Declarative Copilot",
+      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.title"),
       groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
@@ -864,17 +864,24 @@ export class CapabilityOptions {
   static customizeGptBasic(): OptionItem {
     return {
       id: "basic-declarative-copilot",
-      label: "Basic Declarative Copilot",
-      detail: "A declarative Copilot skeleton you can author without any plugin",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.declarativeCopilotBasic.title"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.declarativeCopilotBasic.detail"
+      ),
     };
   }
 
   static customizeGptWithPlugin(): OptionItem {
     return {
       id: "declarative-copilot-with-plugin-from-scratch",
-      label: "Declarative Copilot with a plugin using Azure Functions",
-      detail:
-        "A declarative Copilot containing a Copilot plugin with a new API from Azure Functions",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.declarativeCopilotWithPlugin.title"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.declarativeCopilotWithPlugin.detail"
+      ),
     };
   }
 }
@@ -921,7 +928,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
         case ProjectTypeOptions.customizeGpt().id:
-          return "Choose Declarative Copilot type";
+          return getLocalizedString("core.createProjectQuestion.declarativeCopilotType.title");
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }

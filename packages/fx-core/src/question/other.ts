@@ -946,23 +946,22 @@ export function resourceGroupQuestionNode(
 }
 
 export class PluginAvailabilityOptions {
-  // TODO: localize the label
   static action(): OptionItem {
     return {
       id: "action",
-      label: "Declarative Copilot",
+      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
     };
   }
   static copilotPlugin(): OptionItem {
     return {
       id: "copilot-plugin",
-      label: "Copilot for Microsoft 365",
+      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
     };
   }
   static copilotPluginAndAction(): OptionItem {
     return {
       id: "copilot-plugin-and-action",
-      label: "Both declarative Copilot and Copilot for Microsoft 365",
+      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
     };
   }
 
@@ -978,7 +977,7 @@ export class PluginAvailabilityOptions {
 export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.PluginAvailability,
-    title: "Select Plugin Availability",
+    title: getLocalizedString("core.question.pluginAvailability.title"),
     cliDescription: "Select plugin availability.",
     type: "singleSelect",
     staticOptions: PluginAvailabilityOptions.all(),

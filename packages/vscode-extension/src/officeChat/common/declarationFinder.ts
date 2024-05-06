@@ -171,7 +171,8 @@ export class DeclarationFinder {
           while (!paragraphNext.done) {
             const paragraphNode = paragraphNext.value;
             if (paragraphNode.kind === "PlainText") {
-              description += (paragraphNode as DocPlainText).text.trim().replace("`", "'") + " ";
+              description +=
+                (paragraphNode as unknown as DocPlainText).text.trim().replace("`", "'") + " ";
             }
             // dealing with links in the paragraph, like:
             // "{@link Word.NoteItem}"

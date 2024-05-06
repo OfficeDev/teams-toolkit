@@ -100,7 +100,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "get-func-name": "^2.0.0",
+    "get-func-name": "^3.0.0",
     "got": "^11.8.5",
     "isomorphic-fetch": "^3.0.0",
     "jwt-builder": "^1.1.0",

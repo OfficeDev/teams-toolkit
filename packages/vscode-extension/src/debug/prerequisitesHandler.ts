@@ -61,6 +61,7 @@ import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ProgressHelper } from "./progressHelper";
 import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
+import { ErrorCategory } from "@microsoft/teamsfx-core";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -411,13 +412,13 @@ function ensureM365Account(
       }
       if (token === undefined) {
         // corner case but need to handle
-        return err(
-          new SystemError(
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesNoM365AccountError,
-            "No Microsoft 365 account login"
-          )
+        const e = new SystemError(
+          ExtensionSource,
+          ExtensionErrors.PrerequisitesNoM365AccountError,
+          "No Microsoft 365 account login"
         );
+        e.categories = [ErrorCategory.Internal];
+        return err(e);
       }
       const loginHint = typeof upn === "string" ? upn : undefined;
       const tenantId = typeof tid === "string" ? tid : undefined;

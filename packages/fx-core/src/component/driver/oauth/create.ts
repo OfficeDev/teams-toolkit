@@ -106,12 +106,12 @@ export class CreateOauthDriver implements StepDriver {
         );
         outputs.set(
           outputEnvVarNames.get(OutputKeys.configurationId)!,
-          oauthRegistrationRes.configurationId.oAuthConfigId
+          oauthRegistrationRes.configurationRegistrationId.oAuthConfigId
         );
 
         const summary = getLocalizedString(
           logMessageKeys.successCreateOauth,
-          oauthRegistrationRes.configurationId.oAuthConfigId
+          oauthRegistrationRes.configurationRegistrationId.oAuthConfigId
         );
         context.logProvider?.info(summary);
         summaries.push(summary);
@@ -241,12 +241,13 @@ export class CreateOauthDriver implements StepDriver {
       tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,
       tokenRefreshEndpoint: args.refreshUrl ?? authInfo.tokenRefreshEndpoint,
       scopes: authInfo.scopes,
-      manageableByUsers: [
-        {
-          userId: userId,
-          accessType: OauthRegistrationUserAccessType.ReadWrite,
-        },
-      ],
+      // TODO: add this part back after TDP update
+      // manageableByUsers: [
+      //   {
+      //     userId: userId,
+      //     accessType: OauthRegistrationUserAccessType.ReadWrite,
+      //   },
+      // ],
     } as OauthRegistration;
   }
 }

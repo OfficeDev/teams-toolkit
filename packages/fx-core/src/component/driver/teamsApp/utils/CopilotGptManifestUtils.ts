@@ -39,7 +39,7 @@ export class CopilotGptManifestUtils {
     return ok(undefined);
   }
 
-  public async addPlugin(
+  public async addAction(
     copilotGptPath: string,
     id: string,
     pluginFile: string

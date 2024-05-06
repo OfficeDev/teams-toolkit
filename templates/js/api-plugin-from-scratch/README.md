@@ -31,7 +31,7 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 
 ## What's included in the template
 
-| Folder       | Contents                                                                                                    |
+| Folder       | Contents                                                                                    |
 | ------------ | ------------------------------------------------------------------------------------------- |
 | `.vscode`    | VSCode files for debugging                                                                  |
 | `appPackage` | Templates for the Teams application manifest, the plugin manifest and the API specification |
@@ -43,7 +43,7 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                         | Contents                                                                                          |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `src/functions/repair.js`                    | The main file of a function in Azure Functions.                                                   |
+| `src/functions/repairs.js`                   | The main file of a function in Azure Functions.                                                   |
 | `src/repairsData.json`                       | The data source for the repair API.                                                               |
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                               |
 | `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.          |

@@ -61,8 +61,17 @@ export enum TelemetryProperty {
   GraphPermissionRoles = "graph-permission-roles",
   RscApplication = "rsc-application",
   RscDelegated = "rsc-delegated",
+  WebApplicationId = "web-application-id",
 
   AadManifest = "aad-manifest",
+
+  CustomCopilotAgent = "custom-copilot-agent",
+  CustomCopilotRAG = "custom-copilot-rag",
+  LlmService = "llm-service",
+  HasAzureOpenAIKey = "has-azure-openai-key",
+  HasAzureOpenAIEndpoint = "has-azure-openai-endpoint",
+  HasAzureOpenAIDeploymentName = "has-azure-openai-deployment-name",
+  HasOpenAIKey = "has-openai-key",
 }
 
 export enum TelemetryEvent {
@@ -187,6 +196,12 @@ export enum CustomizeSubscriptionType {
 export enum ProjectMigratorStatus {
   OK = "ok",
   Cancel = "cancel",
+}
+
+export enum WebApplicationIdValue {
+  None = "none",
+  Default = "default",
+  Customized = "customized",
 }
 
 export enum ProjectMigratorGuideStatus {

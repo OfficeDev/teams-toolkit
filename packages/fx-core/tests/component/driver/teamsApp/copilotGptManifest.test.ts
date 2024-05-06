@@ -26,7 +26,7 @@ describe("copilotGptManifestUtils", () => {
     sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
     sandbox.stub(fs, "writeFile").resolves();
 
-    const res = await copilotGptManifestUtils.addPlugin("testPath", "testId", "testFile");
+    const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
 
     chai.assert.isTrue(res.isOk());
     if (res.isOk()) {
@@ -40,7 +40,7 @@ describe("copilotGptManifestUtils", () => {
 
   it("add plugin error: read manifest error", async () => {
     sandbox.stub(fs, "pathExists").resolves(false);
-    const res = await copilotGptManifestUtils.addPlugin("testPath", "testId", "testFile");
+    const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
     chai.assert.isTrue(res.isErr());
     if (res.isErr()) {
       chai.assert.isTrue(res.error instanceof FileNotFoundError);
@@ -51,7 +51,7 @@ describe("copilotGptManifestUtils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
     sandbox.stub(fs, "writeFile").throws("some error");
-    const res = await copilotGptManifestUtils.addPlugin("testPath", "testId", "testFile");
+    const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
     chai.assert.isTrue(res.isErr());
     if (res.isErr()) {
       chai.assert.isTrue(res.error instanceof WriteFileError);

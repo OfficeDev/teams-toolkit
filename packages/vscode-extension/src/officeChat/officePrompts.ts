@@ -839,7 +839,6 @@ class ${className} extends OfficeExtension.ClientObject {
   Pay attention to the section of "The format of output" below, and make sure you follow the format.
 
   # The list of Office JavaScript API:
-
   \`\`\`typescript
   ${tempClassDeclaration}
   \`\`\`

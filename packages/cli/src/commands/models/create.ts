@@ -45,13 +45,7 @@ function adjustOptions(options: CLICommandOption[]) {
       break;
     }
   }
-  if (!featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
-    //skip customize GPT questions if customize GPT is not enabled.
-    const customizeGptQuestionNames = [QuestionNames.CustomizeGptWithPluginStart];
-    options = options.filter(
-      (option) => !customizeGptQuestionNames.includes(option.name as QuestionNames)
-    );
-  }
+
   return options;
 }
 

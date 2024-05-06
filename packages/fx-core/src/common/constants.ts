@@ -51,6 +51,6 @@ export class FeatureFlagName {
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
   static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
-  static readonly CopilotAuth = "TEAMSFX_COPILOT_AUTH";
-  static readonly CustomizeGpt = "TEAMSFX_CUSTOMIZE_GPT";
+  static readonly CopilotAuth = "API_COPILOT_PLUGIN_AUTH";
+  static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
 }

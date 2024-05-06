@@ -41,30 +41,6 @@ describe("LaunchHelper", () => {
       );
     });
 
-    it("getLaunchUrl: Teams, signed in, API ME", async () => {
-      sinon.stub(m365TokenProvider, "getStatus").resolves(
-        ok({
-          status: "",
-          accountInfo: {
-            tid: "test-tid",
-            upn: "test-upn",
-          },
-        })
-      );
-      const result = await launchHelper.getLaunchUrl(
-        HubTypes.teams,
-        "test-id",
-        ["MessageExtension"],
-        true,
-        true
-      );
-      chai.assert(result.isOk());
-      chai.assert.equal(
-        (result as any).value,
-        "https://teams.microsoft.com/?appTenantId=test-tid&login_hint=test-upn"
-      );
-    });
-
     it("getLaunchUrl: Teams, signed in, copilot plugin", async () => {
       sinon.stub(m365TokenProvider, "getStatus").resolves(
         ok({
@@ -75,13 +51,7 @@ describe("LaunchHelper", () => {
           },
         })
       );
-      const result = await launchHelper.getLaunchUrl(
-        HubTypes.teams,
-        "test-id",
-        ["plugin"],
-        true,
-        true
-      );
+      const result = await launchHelper.getLaunchUrl(HubTypes.teams, "test-id", ["plugin"], true);
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
@@ -103,7 +73,6 @@ describe("LaunchHelper", () => {
         HubTypes.teams,
         "test-id",
         ["MessageExtension", "staticTab"],
-        true,
         true
       );
       chai.assert(result.isOk());
@@ -127,7 +96,6 @@ describe("LaunchHelper", () => {
         HubTypes.teams,
         "test-id",
         ["MessageExtension", "configurableTab"],
-        true,
         true
       );
       chai.assert(result.isOk());
@@ -150,8 +118,7 @@ describe("LaunchHelper", () => {
       const result = await launchHelper.getLaunchUrl(
         HubTypes.teams,
         "test-id",
-        ["MessageExtension", "Bot"],
-        true,
+        ["MessageExtension", "Bot", "plugin"],
         true
       );
       chai.assert(result.isOk());

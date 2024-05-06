@@ -451,6 +451,9 @@ async function batchGenerate() {
 
   await generateCliOptions(questionNodes.deployAadManifest(), "DeployAadManifest");
   await generateInputs(questionNodes.deployAadManifest(), "DeployAadManifest");
+
+  await generateCliOptions(questionNodes.addPlugin(), "AddPlugin");
+  await generateInputs(questionNodes.addPlugin(), "AddPlugin");
 }
 
 void batchGenerate();

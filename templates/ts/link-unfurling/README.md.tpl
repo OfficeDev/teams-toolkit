@@ -19,6 +19,8 @@ This template showcases an app that unfurls a link into an adaptive card when UR
 {{/enableMETestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-toolkit-cli)
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableMETestToolByDefault}}
 2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.

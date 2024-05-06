@@ -61,6 +61,8 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
 {{#enableTestToolByDefault}}
 ![ai chat bot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
 {{/enableTestToolByDefault}}

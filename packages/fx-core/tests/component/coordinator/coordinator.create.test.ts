@@ -28,6 +28,7 @@ import { InputValidationError, MissingRequiredInputError } from "../../../src/er
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
+  CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   OfficeAddinHostOptions,
@@ -833,6 +834,63 @@ const V3Version = MetadataV3.projectVersion;
       newGeneratorFlag
         ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotRagCustomApi)
         : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
+    });
+
+    it("create custom copilot rag custom api with azure open ai success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: "typescript",
+        [QuestionNames.SafeProjectName]: "safeprojectname",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+        [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+        [QuestionNames.ApiSpecLocation]: "spec",
+        [QuestionNames.ApiOperation]: "test",
+        [QuestionNames.LLMService]: "llm-service-azure-openai",
+        [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
+        [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
+        [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
+      };
+      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+      const fxCore = new FxCore(tools);
+      const res = await fxCore.createProject(inputs);
+
+      assert.isTrue(res.isOk());
+      newGeneratorFlag
+        ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotRagCustomApi)
+        : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
+    });
+
+    it("create custom agent api with azure open ai success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: "typescript",
+        [QuestionNames.SafeProjectName]: "safeprojectname",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotAssistant().id,
+        [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.new().id,
+        [QuestionNames.ApiSpecLocation]: "spec",
+        [QuestionNames.ApiOperation]: "test",
+        [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
+        [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
+        [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
+      };
+      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+      const fxCore = new FxCore(tools);
+      const res = await fxCore.createProject(inputs);
+
+      assert.isTrue(res.isOk());
+      newGeneratorFlag
+        ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotAssistantNew)
+        : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotAssistantNew);
     });
 
     it("create custom copilot rag custom api failed", async () => {

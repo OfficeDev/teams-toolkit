@@ -57,6 +57,8 @@ import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/util
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
 import { format } from "util";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
+import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -155,7 +157,12 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generateMeFromApiSpec(
       context,
       inputs,
-      "projectPath"
+      "projectPath",
+      {
+        telemetryProps: {
+          "project-id": "test",
+        },
+      }
     );
 
     assert.isTrue(result.isOk());
@@ -173,6 +180,10 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["operation2"],
       supportedApisFromApiSpec: apiOperations,
+      apiAuthData: {
+        authType: "apiKey",
+        serverUrl: "",
+      },
     };
     const context = createContextV3();
     sandbox
@@ -193,7 +204,7 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isOk());
-    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api-api-key");
+    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
@@ -522,7 +533,7 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
     const context = createContextV3();
@@ -669,6 +680,51 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isErr() && result.error.message === "test");
+  });
+
+  it("generate for oauth: success", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.AppName]: "test",
+      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+            authName: "auth",
+            authType: "oauth2",
+          },
+        },
+      ] as ApiOperation[],
+    };
+    const context = createContextV3();
+
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generateForCopilot")
+      .resolves({ allSuccess: true, warnings: [] });
+    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generatePluginFromApiSpec(
+      context,
+      inputs,
+      "projectPath"
+    );
+    assert.isTrue(result.isOk());
+    assert.equal(downloadTemplate.args[0][2], "api-plugin-existing-api");
+    assert.isTrue(downloadTemplate.calledOnce);
+    assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 });
 
@@ -943,6 +999,10 @@ describe("formatValidationErrors", () => {
         content: "ResolverError: Error downloading",
       },
       {
+        type: ErrorType.SpecNotValid,
+        content: "RangeError: Maximum call stack size exceeded",
+      },
+      {
         type: ErrorType.RemoteRefNotSupported,
         content: "test",
       },
@@ -1030,13 +1090,16 @@ describe("formatValidationErrors", () => {
 
     expect(res[0].content).equals("test");
     expect(res[1].content).includes(getLocalizedString("core.common.ErrorFetchApiSpec"));
-    expect(res[2].content).equals("test");
-    expect(res[3].content).equals(getLocalizedString("core.common.NoServerInformation"));
-    expect(res[4].content).equals(
+    expect(res[2].content).includes(
+      getLocalizedString("core.common.CircularReferenceNotSupported")
+    );
+    expect(res[3].content).equals("test");
+    expect(res[4].content).equals(getLocalizedString("core.common.NoServerInformation"));
+    expect(res[5].content).equals(
       getLocalizedString("core.common.UrlProtocolNotSupported", "http")
     );
-    expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
-    expect(res[6].content).equals(
+    expect(res[6].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
+    expect(res[7].content).equals(
       getLocalizedString(
         "core.common.NoSupportedApi",
         getLocalizedString("core.common.invalidReason.NoAPIs")
@@ -1063,7 +1126,7 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.invalidReason.NoAPIInfo"),
     ];
 
-    expect(res[7].content).equals(
+    expect(res[8].content).equals(
       getLocalizedString(
         "core.common.NoSupportedApi",
         "GET /api: " +
@@ -1075,14 +1138,14 @@ describe("formatValidationErrors", () => {
           "GET /api3: unknown"
       )
     );
-    expect(res[8].content).equals(getLocalizedString("error.apime.noExtraAPICanBeAdded"));
-    expect(res[9].content).equals("resolveurl");
-    expect(res[10].content).equals(getLocalizedString("core.common.CancelledMessage"));
-    expect(res[11].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[12].content).equals(
-      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
+    expect(res[9].content).equals(getLocalizedString("error.apime.noExtraAPICanBeAdded"));
+    expect(res[10].content).equals("resolveurl");
+    expect(res[11].content).equals(getLocalizedString("core.common.CancelledMessage"));
+    expect(res[12].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
+    expect(res[13].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[13].data)
     );
-    expect(res[13].content).equals("unknown");
+    expect(res[14].content).equals("unknown");
   });
 
   it("format validation errors from spec parser: copilot", () => {

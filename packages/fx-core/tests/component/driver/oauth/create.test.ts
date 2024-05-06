@@ -76,7 +76,7 @@ describe("CreateOauthDriver", () => {
         );
         expect(oauthRegistration.specificAppId).to.equal("");
         return {
-          configurationId: {
+          configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
         };
@@ -145,7 +145,7 @@ describe("CreateOauthDriver", () => {
         );
         expect(oauthRegistration.specificAppId).to.equal("");
         return {
-          configurationId: {
+          configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
         };
@@ -217,7 +217,7 @@ describe("CreateOauthDriver", () => {
         );
         expect(oauthRegistration.specificAppId).to.equal("");
         return {
-          configurationId: {
+          configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
         };
@@ -287,7 +287,7 @@ describe("CreateOauthDriver", () => {
           OauthRegistrationTargetAudience.HomeTenant
         );
         return {
-          configurationId: {
+          configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
         };

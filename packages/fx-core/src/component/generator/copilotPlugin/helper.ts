@@ -55,6 +55,7 @@ import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -81,16 +82,16 @@ enum OpenAIPluginManifestErrorType {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: false,
+  allowBearerTokenAuth: isCopilotAuthEnabled(),
   allowMultipleParameters: true,
-  allowOauth2: false,
+  allowOauth2: isCopilotAuthEnabled(),
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  // Will enable below two options once they are ready to consume.
-  // allowResponseSemantics: true,
-  // allowConversationStarters: true
+  allowResponseSemantics: true,
+  allowConversationStarters: true,
+  allowConfirmation: true,
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
@@ -99,6 +100,11 @@ export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
+
+export const defaultApiSpecFolderName = "apiSpecificationFile";
+export const defaultApiSpecYamlFileName = "openapi.yaml";
+export const defaultApiSpecJsonFileName = "openapi.json";
+export const defaultPluginManifestFileName = "ai-plugin.json";
 
 export interface ErrorResult {
   /**
@@ -199,6 +205,7 @@ export async function listOperations(
         : {
             allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: true,
+            allowOauth2: isCopilotAuthEnabled(),
           }
     );
     const validationRes = await specParser.validate();
@@ -293,20 +300,23 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
         : Utils.isBearerTokenAuth(operation.auth.authScheme)
         ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
         : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
-        ? "OAuth"
+        ? getLocalizedString("core.copilotPlugin.api.oauth")
         : "",
       data: {
         serverUrl: operation.server,
       },
     };
 
-    if (
-      operation.auth &&
-      operation.auth.authScheme.type === "http" &&
-      operation.auth.authScheme.scheme === "bearer"
-    ) {
-      result.data.authName = operation.auth.name;
+    if (operation.auth) {
+      if (Utils.isBearerTokenAuth(operation.auth.authScheme)) {
+        result.data.authType = "apiKey";
+        result.data.authName = operation.auth.name;
+      } else if (Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)) {
+        result.data.authType = "oauth2";
+        result.data.authName = operation.auth.name;
+      }
     }
+
     operationsWithSeparator.push(result);
   }
 
@@ -740,6 +750,8 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
             .map((o) => o.trim())
             .join(". ");
           content = `${content}. ${getLocalizedString("core.common.ErrorFetchApiSpec")}`;
+        } else if (error.content.startsWith("RangeError: Maximum call stack size exceeded")) {
+          content = getLocalizedString("core.common.CircularReferenceNotSupported");
         }
         return content;
       }
@@ -1023,4 +1035,13 @@ export async function updateForCustomApi(
 
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
+}
+
+const EnvNameMapping: { [authType: string]: string } = {
+  apiKey: "REGISTRATION_ID",
+  oauth2: "CONFIGURATION_ID",
+};
+
+export function getEnvName(authName: string, authType?: string): string {
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
 }

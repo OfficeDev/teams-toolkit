@@ -49,3 +49,4 @@ export * from "./question";
 export * from "./component/generator/copilotPlugin/helper";
 export * from "./question/util";
 export * from "./common/projectTypeChecker";
+export { DefaultTemplateGenerator } from "./component/generator/templates/templateGenerator";

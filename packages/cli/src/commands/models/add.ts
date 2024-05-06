@@ -3,8 +3,20 @@
 import { CLICommand } from "@microsoft/teamsfx-api";
 import { commands } from "../../resource";
 import { addSPFxWebpartCommand } from "./addSPFxWebpart";
-export const addCommand: CLICommand = {
-  name: "add",
-  description: commands.add.description,
-  commands: [addSPFxWebpartCommand],
+import { addPluginCommand } from "./addPlugin";
+import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
+
+const adjustCommands = (): CLICommand[] => {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
+    return [addSPFxWebpartCommand, addPluginCommand];
+  } else {
+    return [addSPFxWebpartCommand];
+  }
 };
+export function addCommand(): CLICommand {
+  return {
+    name: "add",
+    description: commands.add.description,
+    commands: adjustCommands(),
+  };
+}

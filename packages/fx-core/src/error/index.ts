@@ -10,3 +10,4 @@ export * from "./m365";
 export * from "./script";
 export * from "./upgrade";
 export * from "./yml";
+export * from "./types";

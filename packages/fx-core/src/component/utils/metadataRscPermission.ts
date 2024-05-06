@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs-extra";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { ProjectModel } from "../configManager/interface";
-import { ProjectTypeProps, TelemetryProperty } from "../../common/telemetry";
+import { ProjectTypeProps, TelemetryProperty, WebApplicationIdValue } from "../../common/telemetry";
 import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
 import { TeamsAppManifest } from "../../../../manifest/build/manifest";
 
@@ -42,6 +42,9 @@ class MetadataRscPermissionUtil {
       if (result.isErr()) {
         return;
       }
+      const webApplicationApp = result.value.webApplicationInfo?.id;
+      props[TelemetryProperty.WebApplicationId] = getWebApplicationIdStatus(webApplicationApp);
+
       const manifest = result.value;
       const summary = this.summary(manifest);
       if (summary) {
@@ -77,4 +80,13 @@ class MetadataRscPermissionUtil {
   }
 }
 
+export function getWebApplicationIdStatus(id: string | undefined): string {
+  if (!id) {
+    return WebApplicationIdValue.None;
+  }
+  if (id === "${{AAD_APP_CLIENT_ID}}") {
+    return WebApplicationIdValue.Default;
+  }
+  return WebApplicationIdValue.Customized;
+}
 export const metadataRscPermissionUtil = new MetadataRscPermissionUtil();

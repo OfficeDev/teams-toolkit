@@ -12,8 +12,15 @@ import { DriverContext } from "../../../src/component/driver/interface/commonArg
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";
-import { ProjectTypeProps, TelemetryProperty } from "../../../src/common/telemetry";
-import { metadataRscPermissionUtil } from "../../../src/component/utils/metadataRscPermission";
+import {
+  ProjectTypeProps,
+  TelemetryProperty,
+  WebApplicationIdValue,
+} from "../../../src/common/telemetry";
+import {
+  getWebApplicationIdStatus,
+  metadataRscPermissionUtil,
+} from "../../../src/component/utils/metadataRscPermission";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
@@ -197,5 +204,14 @@ describe("metadata rsc permission util", () => {
     const props: any = {};
     await metadataRscPermissionUtil.parseManifest(ymlPath, mockProjectModel, props);
     assert(props[ProjectTypeProps.TeamsManifestVersion] === undefined);
+  });
+
+  it("get Web ApplicationIdStatus", async () => {
+    const resNone = getWebApplicationIdStatus("");
+    assert(resNone === WebApplicationIdValue.None);
+    const resDefault = getWebApplicationIdStatus("${{AAD_APP_CLIENT_ID}}");
+    assert(resDefault === WebApplicationIdValue.Default);
+    const resCustomized = getWebApplicationIdStatus("00000000-0000-0000-0000-000000000000");
+    assert(resCustomized === WebApplicationIdValue.Customized);
   });
 });

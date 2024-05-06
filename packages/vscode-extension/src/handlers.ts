@@ -88,6 +88,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
   AzurePortalUrl,
+  CommandKey,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
@@ -144,6 +145,7 @@ import {
 } from "./debug/constants";
 import { openOfficeDevFolder } from "./officeDevHandlers";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
+import { updateProjectStatus } from "./utils/projectStatusUtils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -385,6 +387,10 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     return result;
   }
   const projectPathUri = Uri.file(res.projectPath);
+  // If it is triggered in @office /create for code gen, then do no open the temp folder.
+  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.agent === "office") {
+    return result;
+  }
   // show local debug button by default
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
@@ -1296,7 +1302,8 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
-    await openReadMeHandler([TelemetryTriggerFrom.Auto]);
+    await openReadMeHandler(TelemetryTriggerFrom.Auto);
+    await updateProjectStatus(globalVariables.workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
     await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);

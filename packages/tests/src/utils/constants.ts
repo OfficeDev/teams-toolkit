@@ -57,6 +57,8 @@ export enum TemplateProject {
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
   LargeScaleBot = "Large Scale Notification Bot",
+  BotSSODocker = "Containerized Bot App with SSO Enabled",
+  HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
 }
 
 export enum TemplateProjectFolder {
@@ -64,6 +66,7 @@ export enum TemplateProjectFolder {
   ContactExporter = "graph-toolkit-contact-exporter",
   HelloWorldBotSSO = "bot-sso",
   BotSSODocker = "bot-sso-docker",
+  TabDocker = "hello-world-tab-docker",
   TodoListSpfx = "todo-list-SPFx",
   MyFirstMetting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",
@@ -89,6 +92,7 @@ export enum TemplateProjectFolder {
   RetailDashboard = "react-retail-dashboard",
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
+  HelloWorldTabDocker = "hello-world-tab-docker",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -127,6 +131,9 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
     [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
+    [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
+    [TemplateProject.HelloWorldTabDocker]:
+      TemplateProjectFolder.HelloWorldTabDocker,
   };
 
 export enum Resource {
@@ -162,6 +169,7 @@ export enum Capability {
   // v3 only
   AiBot = "custom-copilot-basic",
   RAG = "custom-copilot-rag",
+  Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
 }
 
@@ -378,6 +386,8 @@ export enum LocalDebugTaskLabel {
   Azurite = "Start Azurite emulator",
   Compile = "Compile typescript",
   StartWebServer = "Start web server",
+  DockerRun = "docker-run: debug",
+  DockerTask = "docker",
 }
 
 export class LocalDebugTaskResult {
@@ -392,6 +402,7 @@ export class LocalDebugTaskResult {
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
+  static readonly DockerFinish = "press any key to close it";
 }
 
 export enum LocalDebugTaskLabel2 {
@@ -427,9 +438,9 @@ export class Notification {
     "Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary.";
   static readonly Upgrade_dicarded =
     "Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit. The auto-upgrade process will generate backups in case an error occurs.";
-  static readonly ProvisionSucceeded = "Successfully executed";
-  static readonly DeploySucceeded = "Successfully executed";
-  static readonly PublishSucceeded = "Successfully executed";
+  static readonly ProvisionSucceeded = "successfully";
+  static readonly DeploySucceeded = "successfully";
+  static readonly PublishSucceeded = "successfully";
   static readonly UnresolvedPlaceholderError =
     "MissingEnvironmentVariablesError";
   static readonly ZipAppPackageSucceeded = "successfully built";

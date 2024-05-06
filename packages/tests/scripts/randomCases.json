@@ -10,7 +10,8 @@
                 "node-18": []
             },
             "macos-latest": {
-                "node-16": []
+                "node-16": [],
+                "node-18": []
             }
         },
         "cases": [
@@ -170,6 +171,24 @@
             "sample-remotedebug-share-now",
             "sample-remotedebug-todo-list-sql",
             "sample-remotedebug-large-scale-notification"
+        ]
+    },
+    {
+        "os": {
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "macos-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-bot-sso-docker",
+            "sample-remotedebug-bot-sso-docker",
+            "sample-localdebug-hello-world-tab-docker.test",
+            "sample-remotedebug-hello-world-tab-docker.test"
         ]
     }
 ]

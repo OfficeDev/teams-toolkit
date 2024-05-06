@@ -159,6 +159,21 @@ class Coordinator {
         [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
+      if (projectType === ProjectTypeOptions.customCopilot().id) {
+        merge(actionContext?.telemetryProps, {
+          [TelemetryProperty.CustomCopilotRAG]: inputs["custom-copilot-rag"] ?? "",
+          [TelemetryProperty.CustomCopilotAgent]: inputs["custom-copilot-agent"] ?? "",
+          [TelemetryProperty.LlmService]: inputs["llm-service"] ?? "",
+          [TelemetryProperty.HasAzureOpenAIKey]: inputs["azure-openai-key"] ? "true" : "false",
+          [TelemetryProperty.HasAzureOpenAIEndpoint]: inputs["azure-openai-endpoint"]
+            ? "true"
+            : "false",
+          [TelemetryProperty.HasAzureOpenAIDeploymentName]: inputs["azure-openai-deployment-name"]
+            ? "true"
+            : "false",
+          [TelemetryProperty.HasOpenAIKey]: inputs["openai-key"] ? "true" : "false",
+        });
+      }
 
       if (isNewGeneratorEnabled()) {
         // refactored generator

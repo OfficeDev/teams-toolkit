@@ -54,6 +54,7 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  getSolutionName,
   officeAddinFrameworkQuestion,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
@@ -64,6 +65,7 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
+import { FileNotFoundError } from "../../src/error";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -1845,6 +1847,21 @@ describe("scaffold question", () => {
           );
         });
 
+        it("validate operations error: missing inputs", async () => {
+          const question = apiOperationQuestion();
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+
+          let hasError = false;
+          try {
+            await validationSchema.validFunc!(["operation1", "operation2"], undefined);
+          } catch (e) {
+            hasError = true;
+          }
+
+          assert.isTrue(hasError);
+        });
+
         it(" validate operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1857,6 +1874,7 @@ describe("scaffold question", () => {
                 groupName: "1",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
               {
@@ -1865,6 +1883,7 @@ describe("scaffold question", () => {
                 groupName: "2",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
             ],
@@ -1873,6 +1892,10 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
+          assert.deepEqual(inputs.apiAuthData, {
+            serverUrl: "https://server1",
+            authName: "oauth2",
+          });
           assert.isUndefined(res);
         });
 
@@ -2381,11 +2404,12 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
@@ -2400,10 +2424,12 @@ describe("scaffold question", () => {
             {
               id: "get operation3",
               label: "get operation3",
-              detail: "OAuth",
+              detail: "OAuth(Auth code flow)",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
+                authType: "oauth2",
+                authName: "authName",
               },
             },
             {
@@ -2464,11 +2490,12 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
@@ -3221,7 +3248,7 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 2);
             const title =
               typeof question.title === "function" ? await question.title(inputs) : question.title;
-            assert.equal(title, "Choose the GPT type");
+            assert.equal(title, "Choose Declarative Copilot type");
             return ok({ type: "success", result: CapabilityOptions.customizeGptBasic().id });
           } else if (question.name === QuestionNames.AppName) {
             return ok({ type: "success", result: "test001" });
@@ -3265,13 +3292,7 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
 
-            return ok({ type: "success", result: CapabilityOptions.cusomizeGptWithPlugin().id });
-          } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
+            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
@@ -3285,64 +3306,7 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.CustomizeGptWithPluginStart,
           QuestionNames.ProgrammingLanguage,
-          QuestionNames.Folder,
-          QuestionNames.AppName,
-        ]);
-      });
-
-      it("customize GPT with plugin from existing API", async () => {
-        const inputs: Inputs = {
-          platform: Platform.VSCode,
-        };
-        const questions: string[] = [];
-        const visitor: QuestionTreeVisitor = async (
-          question: Question,
-          ui: UserInteraction,
-          inputs: Inputs,
-          step?: number,
-          totalSteps?: number
-        ) => {
-          questions.push(question.name);
-
-          await callFuncs(question, inputs);
-
-          if (question.name === QuestionNames.ProjectType) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.customizeGpt().id });
-          } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
-
-            return ok({ type: "success", result: CapabilityOptions.cusomizeGptWithPlugin().id });
-          } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginApiSpec().id });
-          } else if (question.name === QuestionNames.ApiSpecLocation) {
-            return ok({ type: "success", result: "https://test.com" });
-          } else if (question.name === QuestionNames.ApiOperation) {
-            return ok({ type: "success", result: ["testOperation1"] });
-          } else if (question.name === QuestionNames.AppName) {
-            return ok({ type: "success", result: "test001" });
-          } else if (question.name === QuestionNames.Folder) {
-            return ok({ type: "success", result: "./" });
-          }
-          return ok({ type: "success", result: undefined });
-        };
-        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
-        assert.deepEqual(questions, [
-          QuestionNames.ProjectType,
-          QuestionNames.Capabilities,
-          QuestionNames.CustomizeGptWithPluginStart,
-          QuestionNames.ApiSpecLocation,
-          QuestionNames.ApiOperation,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
@@ -4130,6 +4094,40 @@ describe("scaffold question", () => {
         );
         assert.isUndefined(customizeGptOption);
       }
+    });
+  });
+
+  describe("getSolutionName", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({
+        "@microsoft/generator-sharepoint": {
+          solutionName: "testSolutionName",
+        },
+      });
+      const res = await getSolutionName("");
+      assert.equal(res, "testSolutionName");
+    });
+
+    it("FileNotFoundError", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      try {
+        await getSolutionName(".");
+        assert.fail("should throw");
+      } catch (e) {
+        assert.isTrue(e instanceof FileNotFoundError);
+      }
+    });
+
+    it("undefined", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({});
+      const res = await getSolutionName("");
+      assert.isUndefined(res);
     });
   });
 });

@@ -25,6 +25,8 @@
    4. Send a message to Copilot to find an NuGet package information. For example: Find the NuGet package info on Microsoft.CSharp.
       > Note: This prompt may not always make Copilot include a response from your message extension. If it happens, try some other prompts or leave a feedback to us by thumbing down the Copilot response and leave a message tagged with [MessageExtension].
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
 ## Learn more
 
 - [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)

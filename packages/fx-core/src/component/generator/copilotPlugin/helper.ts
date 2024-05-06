@@ -750,6 +750,8 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
             .map((o) => o.trim())
             .join(". ");
           content = `${content}. ${getLocalizedString("core.common.ErrorFetchApiSpec")}`;
+        } else if (error.content.startsWith("RangeError: Maximum call stack size exceeded")) {
+          content = getLocalizedString("core.common.CircularReferenceNotSupported");
         }
         return content;
       }

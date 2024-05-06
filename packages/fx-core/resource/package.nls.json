@@ -519,6 +519,7 @@
   "core.common.SwaggerNotSupported": "Swagger 2.0 is not supported. Convert it to OpenAPI 3.0 first.",
   "core.common.SpecVersionNotSupported": "OpenAPI version %s is not supported. Use version 3.0.x.",
   "core.common.NoServerInformation": "No server information is found in the OpenAPI description document.",
+  "core.common.CircularReferenceNotSupported": "Circular reference inside the OpenAPI description document is not supported",
   "core.common.RemoteRefNotSupported": "Remote reference is not supported: %s.",
   "core.common.MissingOperationId": "Missing operationIds: %s.",
   "core.common.NoSupportedApi": "No supported API found in the OpenAPI document.\nFor more information visit: \"https://aka.ms/build-api-based-message-extension\". \nReasons for API incompatibility are listed below:\n%s",

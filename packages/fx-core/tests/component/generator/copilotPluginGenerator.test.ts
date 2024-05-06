@@ -1143,7 +1143,7 @@ describe("formatValidationErrors", () => {
     expect(res[11].content).equals(getLocalizedString("core.common.CancelledMessage"));
     expect(res[12].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
     expect(res[13].content).equals(
-      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[13].data)
     );
     expect(res[14].content).equals("unknown");
   });

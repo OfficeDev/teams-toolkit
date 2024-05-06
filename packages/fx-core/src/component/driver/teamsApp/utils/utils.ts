@@ -177,7 +177,7 @@ const includeGroupChatScope = (scopes: string[]): boolean => {
 export enum CommandScope {
   Team = "team",
   Personal = "personal",
-  GroupChat = "groupchat",
+  GroupChat = "groupChat",
 }
 
 export enum MeetingsContext {

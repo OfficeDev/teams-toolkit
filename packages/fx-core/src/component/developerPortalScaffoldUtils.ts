@@ -137,6 +137,7 @@ async function updateManifest(
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
 
+  // upgrade todo: remove this decapitalize
   // Adding a feature with groupChat scope in TDP won't pass validation for extendToM365 action.
   if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
     if (manifest.configurableTabs[0].scopes) {

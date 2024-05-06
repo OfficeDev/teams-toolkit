@@ -63,7 +63,7 @@ describe("metadata rsc permission util", () => {
             "scopes": [
                 "personal",
                 "team",
-                "groupchat"
+                "groupChat"
             ],
             "supportsFiles": false,
             "isNotificationOnly": false,
@@ -72,7 +72,7 @@ describe("metadata rsc permission util", () => {
                     "scopes": [
                         "personal",
                         "team",
-                        "groupchat"
+                        "groupChat"
                     ],
                     "commands": [
                         {

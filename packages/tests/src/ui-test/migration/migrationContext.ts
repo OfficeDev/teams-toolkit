@@ -8,6 +8,7 @@ import {
   Trigger,
   Framework,
   TestFilePath,
+  Timeout,
 } from "../../utils/constants";
 import { TestContext } from "../testContext";
 import { CliHelper } from "../cliHelper";
@@ -18,9 +19,10 @@ import {
   cleanAppStudio,
   cleanTeamsApp,
   GraphApiCleanHelper,
+  createResourceGroup,
 } from "../../utils/cleanHelper";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
+import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
 export class MigrationTestContext extends TestContext {
   public testName: Capability;
@@ -130,30 +132,17 @@ export class MigrationTestContext extends TestContext {
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {
-    if (isV3Enabled()) {
-      const userDataFile = path.join(
-        TestFilePath.configurationFolder,
-        `.env.${env}`
-      );
-      const configFilePath = path.resolve(this.projectPath, userDataFile);
-      const context = dotenvUtil.deserialize(
-        await fs.readFile(configFilePath, { encoding: "utf8" })
-      );
-      const result = context.obj.TEAMS_APP_ID as string;
-      console.log(`TEAMS APP ID: ${result}`);
-      return result;
-    } else {
-      const userDataFile = path.join(".fx", "states", `state.${env}.json`);
-      const configFilePath = path.resolve(
-        this.testRootFolder,
-        this.appName,
-        userDataFile
-      );
-      const context = await fs.readJSON(configFilePath);
-      const result = context["fx-resource-appstudio"]["teamsAppId"] as string;
-      console.log(`fx-resource-appstudio.teamsAppId: ${result}`);
-      return result;
-    }
+    const userDataFile = path.join(
+      TestFilePath.configurationFolder,
+      `.env.${env}`
+    );
+    const configFilePath = path.resolve(this.projectPath, userDataFile);
+    const context = dotenvUtil.deserialize(
+      await fs.readFile(configFilePath, { encoding: "utf8" })
+    );
+    const result = context.obj.TEAMS_APP_ID as string;
+    console.log(`TEAMS APP ID: ${result}`);
+    return result;
   }
 
   public async getAadObjectId(): Promise<string> {
@@ -251,5 +240,89 @@ export class MigrationTestContext extends TestContext {
     }
     await cleanTeamsApp(this.appName);
     await cleanAppStudio(this.appName);
+  }
+
+  public async provisionProject(
+    appName: string,
+    projectPath = "",
+    createRg = true,
+    tool: "ttk" | "cli" = "cli",
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    if (tool === "cli") {
+      await this.runCliProvision(
+        projectPath,
+        appName,
+        createRg,
+        option,
+        env,
+        processEnv
+      );
+    } else {
+      await runProvision(appName);
+    }
+  }
+
+  public async deployProject(
+    projectPath: string,
+    waitTime: number = Timeout.tabDeploy,
+    tool: "ttk" | "cli" = "cli",
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    if (tool === "cli") {
+      await this.runCliDeploy(
+        projectPath,
+        option,
+        env,
+        processEnv,
+        retries,
+        newCommand
+      );
+    } else {
+      await runDeploy(waitTime);
+    }
+  }
+
+  public async runCliProvision(
+    projectPath: string,
+    appName: string,
+    createRg = true,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    if (createRg) {
+      await createResourceGroup(appName, env, "westus");
+    }
+    const resourceGroupName = `${appName}-${env}-rg`;
+    await CliHelper.showVersion(projectPath, processEnv);
+    await CliHelper.provisionProject2(projectPath, option, env, {
+      ...process.env,
+      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+    });
+  }
+
+  public async runCliDeploy(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    await CliHelper.deployAll(
+      projectPath,
+      option,
+      env,
+      processEnv,
+      retries,
+      newCommand
+    );
   }
 }

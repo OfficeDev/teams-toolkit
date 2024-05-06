@@ -13,7 +13,8 @@ export class ConstantString {
 
   static readonly AdditionalPropertiesNotSupported =
     "'additionalProperties' is not supported, and will be ignored.";
-  static readonly SchemaNotSupported = "'oneOf', 'anyOf', and 'not' schema are not supported: %s.";
+  static readonly SchemaNotSupported =
+    "'oneOf', 'allOf', 'anyOf', and 'not' schema are not supported: %s.";
   static readonly UnknownSchema = "Unknown schema: %s.";
 
   static readonly UrlProtocolNotSupported =
@@ -49,9 +50,14 @@ export class ConstantString {
   static readonly AdaptiveCardSchema = "http://adaptivecards.io/schemas/adaptive-card.json";
   static readonly AdaptiveCardType = "AdaptiveCard";
   static readonly TextBlockType = "TextBlock";
+  static readonly ImageType = "Image";
   static readonly ContainerType = "Container";
-  static readonly RegistrationIdPostfix = "REGISTRATION_ID";
-  static readonly OAuthRegistrationIdPostFix = "OAUTH_REGISTRATION_ID";
+  static readonly RegistrationIdPostfix: { [key: string]: string } = {
+    apiKey: "REGISTRATION_ID",
+    oauth2: "CONFIGURATION_ID",
+    http: "REGISTRATION_ID",
+    openIdConnect: "REGISTRATION_ID",
+  };
   static readonly ResponseCodeFor20X = [
     "200",
     "201",
@@ -112,7 +118,9 @@ export class ConstantString {
   static readonly FullDescriptionMaxLens = 4000;
   static readonly CommandDescriptionMaxLens = 128;
   static readonly ParameterDescriptionMaxLens = 128;
+  static readonly ConversationStarterMaxLens = 50;
   static readonly CommandTitleMaxLens = 32;
   static readonly ParameterTitleMaxLens = 32;
   static readonly SMERequiredParamsMaxNum = 5;
+  static readonly DefaultPluginId = "plugin_1";
 }

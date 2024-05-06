@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const client_id = "415830ba-8ddd-4fac-8b24-f5c150a3a59e";
+export const client_id = "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0";
 
 export const AZURE_ACCOUNT_NAME = process.env.AZURE_ACCOUNT_NAME;
 export const AZURE_ACCOUNT_OBJECT_ID = process.env.AZURE_ACCOUNT_OBJECT_ID;

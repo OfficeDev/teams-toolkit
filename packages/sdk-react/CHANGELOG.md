@@ -26,3 +26,6 @@ Initial release of the SDK for React Hook.
 # 3.1.0-alpha
 
 - Add `loading` parameter to the return value of `useTeams` hook.
+
+# 3.1.2
+- Update peer dependency `@microsoft/teams-js` version to `^2.19.0`.

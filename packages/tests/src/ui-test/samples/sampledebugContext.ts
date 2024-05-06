@@ -30,7 +30,10 @@ import {
   cleanAppStudio,
   cleanUpLocalProject,
   cleanUpResourceGroup,
+  createResourceGroup,
 } from "../../utils/cleanHelper";
+import { Executor } from "../../utils/executor";
+import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -41,15 +44,18 @@ export class SampledebugContext extends TestContext {
   public env: "dev" | "local" = "dev";
   public originSample: TemplateProjectFolder;
   public rgName: string;
+  public readonly repoPath: string;
 
   constructor(
     sampleName: TemplateProject,
     originSample: TemplateProjectFolder,
-    testRootFolder = "./resource"
+    testRootFolder = "./resource",
+    repoPath = "./resource"
   ) {
     super(sampleName);
     this.sampleName = sampleName;
     this.originSample = originSample;
+    this.repoPath = repoPath;
     if (sampleName.length >= 20) {
       this.appName = getSampleAppName(
         sampleName
@@ -141,16 +147,12 @@ export class SampledebugContext extends TestContext {
 
   public async openResourceFolder(): Promise<void> {
     console.log("start to open project: ", this.sampleName);
-    // two repos have different sample path
-    const oldPath = path.resolve(
-      this.testRootFolder == "./resource/samples"
-        ? "./resource/samples"
-        : "./resource",
-      this.originSample
-    );
+    const oldPath = path.resolve(this.repoPath, this.originSample);
     // move old sample to project path
     await fs.mkdir(this.projectPath);
     try {
+      console.log("oldPath: ", oldPath);
+      console.log("newPath: ", this.projectPath);
       await fs.copy(oldPath, this.projectPath);
       await openExistingProject(this.projectPath);
       console.log(
@@ -160,6 +162,7 @@ export class SampledebugContext extends TestContext {
         this.projectPath
       );
     } catch (error) {
+      console.log(error);
       throw new Error(`Failed to open project: ${this.sampleName}`);
     }
   }
@@ -251,6 +254,22 @@ export class SampledebugContext extends TestContext {
       this.appName,
       " path: ",
       this.projectPath
+    );
+  }
+
+  public async updateManifestAppName(): Promise<void> {
+    console.log("[start] update manifest file");
+    const manifestFile =
+      path.resolve(this.projectPath, "appPackage", "manifest.json") ??
+      path.resolve(this.projectPath, "appManifest", "manifest.json");
+    const manifest = await fs.readJSON(manifestFile);
+    // manifest name can't be longer than 15 characters
+    manifest.name.short =
+      this.appName.substring(0, 10) + "${{APP_NAME_SUFFIX}}";
+    fs.writeJSON(manifestFile, manifest, { spaces: 4 });
+    console.log(
+      "[finish] update manifest file successfully, appName: ",
+      manifest.name.short
     );
   }
 
@@ -374,5 +393,128 @@ export class SampledebugContext extends TestContext {
     } catch (error) {
       console.log('Failed to edit ".env" file.');
     }
+  }
+
+  public async prepareDebug(tool: "npm" | "yarn"): Promise<void> {
+    {
+      console.log(`executor command: npm install yarn`);
+      const { stderr, stdout } = await Executor.execute(
+        `npm install yarn --force`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+    {
+      console.log(`executor command: corepack enable`);
+      const { stderr, stdout } = await Executor.execute(
+        `corepack enable`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+    {
+      console.log(`executor command: ${tool} install`);
+      const { stderr, stdout } = await Executor.execute(
+        `${tool} install`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+    {
+      console.log(`executor command: ${tool} build`);
+      const { stderr, stdout } = await Executor.execute(
+        `${tool} build`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+  }
+
+  public async provisionProject(
+    appName: string,
+    projectPath = "",
+    createRg = true,
+    tool: "ttk" | "cli" = "cli",
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    if (tool === "cli") {
+      await this.runCliProvision(
+        projectPath,
+        appName,
+        createRg,
+        option,
+        env,
+        processEnv
+      );
+    } else {
+      await runProvision(appName);
+    }
+  }
+
+  public async deployProject(
+    projectPath: string,
+    waitTime: number = Timeout.tabDeploy,
+    tool: "ttk" | "cli" = "cli",
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    if (tool === "cli") {
+      await this.runCliDeploy(
+        projectPath,
+        option,
+        env,
+        processEnv,
+        retries,
+        newCommand
+      );
+    } else {
+      await runDeploy(waitTime);
+    }
+  }
+
+  public async runCliProvision(
+    projectPath: string,
+    appName: string,
+    createRg = true,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    if (createRg) {
+      await createResourceGroup(appName, env, "westus");
+    }
+    const resourceGroupName = `${appName}-${env}-rg`;
+    await CliHelper.showVersion(projectPath, processEnv);
+    await CliHelper.provisionProject2(projectPath, option, env, {
+      ...process.env,
+      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+    });
+  }
+
+  public async runCliDeploy(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    await CliHelper.deployAll(
+      projectPath,
+      option,
+      env,
+      processEnv,
+      retries,
+      newCommand
+    );
   }
 }

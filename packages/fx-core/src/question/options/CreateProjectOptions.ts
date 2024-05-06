@@ -53,7 +53,10 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
+      "basic-declarative-copilot",
+      "declarative-copilot-with-plugin-from-scratch",
       "json-taskpane",
+      "office-content-addin",
       "word-taskpane",
       "word-sso",
       "word-react",
@@ -137,7 +140,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "api-operation",
     type: "array",
     shortName: "o",
-    description: "Select Operation(s) Teams Can Interact with.",
+    description: "Select operation(s) Teams can interact with.",
   },
   {
     name: "api-me-auth",
@@ -151,7 +154,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     description: "Chat With Your Data",
     default: "custom-copilot-rag-customize",
-    choices: ["custom-copilot-rag-azureAISearch"],
+    choices: [
+      "custom-copilot-rag-customize",
+      "custom-copilot-rag-azureAISearch",
+      "custom-copilot-rag-customApi",
+      "custom-copilot-rag-microsoft365",
+    ],
   },
   {
     name: "custom-copilot-agent",
@@ -186,6 +194,11 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Azure OpenAI Endpoint",
   },
   {
+    name: "azure-openai-deployment-name",
+    type: "string",
+    description: "Azure OpenAI Deployment Name",
+  },
+  {
     name: "openai-key",
     type: "string",
     description: "OpenAI Key",
@@ -195,7 +208,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     shortName: "f",
     description: "Framework for WXP extension.",
-    default: "default",
     choices: ["default", "react"],
   },
   {

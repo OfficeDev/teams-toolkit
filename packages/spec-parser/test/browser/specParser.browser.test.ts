@@ -11,6 +11,7 @@ import { ConstantString } from "../../src/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "../../src/utils";
 import SwaggerParser from "@apidevtools/swagger-parser";
+import { SMEValidator } from "../../src/validators/smeValidator";
 
 describe("SpecParser in Browser", () => {
   afterEach(() => {
@@ -189,85 +190,6 @@ describe("SpecParser in Browser", () => {
           description: "Get user by user id, balabala",
         },
       ]);
-    });
-
-    it("should reuse apiMap if listSupportedAPIInfo is called multiple times", async () => {
-      const specPath = "valid-spec.yaml";
-      const specParser = new SpecParser(specPath, { allowMissingId: false });
-      const spec = {
-        servers: [
-          {
-            url: "https://example.com",
-          },
-        ],
-        paths: {
-          "/user/{userId}": {
-            get: {
-              operationId: "getUserById",
-              description: "Get user by user id, balabala",
-              summary: "Get user by user id",
-              parameters: [
-                {
-                  name: "userId",
-                  in: "path",
-                  description: "User Id",
-                  schema: {
-                    type: "string",
-                  },
-                },
-              ],
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
-          },
-        },
-      };
-
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(specParser as any, "listSupportedAPIs");
-      let result = await specParser.listSupportedAPIInfo();
-      result = await specParser.listSupportedAPIInfo();
-      expect(result).to.deep.equal([
-        {
-          method: "GET",
-          path: "/user/{userId}",
-          title: "Get user by user id",
-          id: "getUserById",
-          parameters: [
-            {
-              name: "userId",
-              title: "UserId",
-              description: "User Id",
-            },
-          ],
-          description: "Get user by user id, balabala",
-        },
-      ]);
-      expect(listSupportedAPIsSyp.callCount).to.equal(1);
     });
 
     it("should not list api without operationId with allowMissingId is true", async () => {
@@ -469,7 +391,72 @@ describe("SpecParser in Browser", () => {
         warnings: [],
         errors: [
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return no supported API error with invalid api info", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://servers1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.NoSupportedApi,
+            content: ConstantString.NoSupportedApi,
+            data: [
+              {
+                api: "GET /pet",
+                reason: [ErrorType.MissingOperationId],
+              },
+            ],
+          },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -494,7 +481,7 @@ describe("SpecParser in Browser", () => {
             content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -523,7 +510,7 @@ describe("SpecParser in Browser", () => {
               },
             ],
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -542,7 +529,9 @@ describe("SpecParser in Browser", () => {
       expect(result).to.deep.equal({
         status: ValidationStatus.Error,
         warnings: [],
-        errors: [{ type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi }],
+        errors: [
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -760,7 +749,7 @@ describe("SpecParser in Browser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(SMEValidator.prototype, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");

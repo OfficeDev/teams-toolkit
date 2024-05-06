@@ -1,20 +1,13 @@
 # Overview of the Basic AI Chatbot template
 
-This template showcases a bot app that responds to user questions like ChatGPT. This enables your users to talk with the AI bot in Teams.
+This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library). 
+It showcases a bot app that responds to user questions like ChatGPT, which enables your users to talk with the AI bot in Teams.
 
-The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
-
-- [Overview of the Basic AI Chatbot template](#overview-of-the-basic-ai-chatbot-template)
-  - [Get started with the Basic AI Chatbot template](#get-started-with-the-basic-ai-chatbot-template)
-  - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the Basic AI Chatbot template with more AI capabilities](#extend-the-basic-ai-chatbot-template-with-more-ai-capabilities)
-  - [Additional information and references](#additional-information-and-references)
-
-## Get started with the Basic AI Chatbot template
+## Get started with the template
 
 > **Prerequisites**
 >
-> To run the Basic AI Chatbot template in your local dev machine, you will need:
+> To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18.
 {{^enableTestToolByDefault}}
@@ -27,6 +20,8 @@ The app template is built using the Teams AI library, which provides the capabil
 {{#useAzureOpenAI}}
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 {{/useAzureOpenAI}}
+
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
@@ -89,7 +84,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the Basic AI Chatbot template with more AI capabilities
+## Extend the template
 
 You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities, like:
 - [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)
@@ -100,7 +95,7 @@ You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-
 - [Handle messages with image](https://aka.ms/teamsfx-basic-ai-chatbot#handle-messages-with-image)
 
 ## Additional information and references
-- [Teams AI library](https://aka.ms/teams-ai-library)
+
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

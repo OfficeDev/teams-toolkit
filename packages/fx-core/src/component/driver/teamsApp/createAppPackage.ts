@@ -26,6 +26,7 @@ import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
 import { normalizePath } from "./utils/utils";
+import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -218,17 +219,33 @@ export class CreateAppPackageDriver implements StepDriver {
     }
 
     // API plugin
-    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].pluginFile) {
-      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].pluginFile);
-      const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
+    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].file) {
+      const addFilesRes = await this.addPlugin(
+        zip,
+        manifest.plugins[0].file,
+        appDirectory,
+        context
+      );
+      if (addFilesRes.isErr()) {
+        return err(addFilesRes.error);
+      }
+    }
+
+    // Copilot GPT
+    if (manifest.copilotGpts && manifest.copilotGpts.length > 0 && manifest.copilotGpts[0].file) {
+      const copilotGptManifestFile = path.resolve(appDirectory, manifest.copilotGpts[0].file);
+      const checkExistenceRes = await this.validateReferencedFile(
+        copilotGptManifestFile,
+        appDirectory
+      );
       if (checkExistenceRes.isErr()) {
         return err(checkExistenceRes.error);
       }
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.plugins[0].pluginFile,
-        pluginFile,
+        manifest.copilotGpts[0].file,
+        copilotGptManifestFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context
       );
@@ -236,14 +253,37 @@ export class CreateAppPackageDriver implements StepDriver {
         return err(addFileWithVariableRes.error);
       }
 
-      const addFilesRes = await this.addPluginRelatedFiles(
-        zip,
-        manifest.plugins[0].pluginFile,
-        appDirectory,
-        context
+      const getCopilotGptRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
+        copilotGptManifestFile
       );
-      if (addFilesRes.isErr()) {
-        return err(addFilesRes.error);
+
+      if (getCopilotGptRes.isOk()) {
+        if (getCopilotGptRes.value.actions) {
+          const pluginFiles = getCopilotGptRes.value.actions.map((action) => action.file);
+
+          for (const pluginFile of pluginFiles) {
+            const pluginFileAbsolutePath = path.resolve(
+              path.dirname(copilotGptManifestFile),
+              pluginFile
+            );
+
+            const pluginFileRelativePath = path.relative(appDirectory, pluginFileAbsolutePath);
+            const useForwardSlash = manifest.copilotGpts[0].file.concat(pluginFile).includes("/");
+
+            const addPluginRes = await this.addPlugin(
+              zip,
+              normalizePath(pluginFileRelativePath, useForwardSlash),
+              appDirectory,
+              context
+            );
+
+            if (addPluginRes.isErr()) {
+              return err(addPluginRes.error);
+            }
+          }
+        }
+      } else {
+        return err(getCopilotGptRes.error);
       }
     }
 
@@ -331,6 +371,58 @@ export class CreateAppPackageDriver implements StepDriver {
     return ok(undefined);
   }
 
+  /**
+   * Add plugin file and plugin related files to zip.
+   * @param zip zip
+   * @param pluginRelativePath plugin file path relative to app package folder
+   * @param appDirectory app package path
+   * @param context context
+   * @returns result of adding plugin file and plugin related files
+   */
+  private async addPlugin(
+    zip: AdmZip,
+    pluginRelativePath: string,
+    appDirectory: string,
+    context: WrapDriverContext
+  ): Promise<Result<undefined, FxError>> {
+    const pluginFile = path.resolve(appDirectory, pluginRelativePath);
+    const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
+    if (checkExistenceRes.isErr()) {
+      return err(checkExistenceRes.error);
+    }
+
+    const addFileWithVariableRes = await this.addFileWithVariable(
+      zip,
+      pluginRelativePath,
+      pluginFile,
+      TelemetryPropertyKey.customizedAIPluginKeys,
+      context
+    );
+    if (addFileWithVariableRes.isErr()) {
+      return err(addFileWithVariableRes.error);
+    }
+
+    const addFilesRes = await this.addPluginRelatedFiles(
+      zip,
+      pluginRelativePath,
+      appDirectory,
+      context
+    );
+    if (addFilesRes.isErr()) {
+      return err(addFilesRes.error);
+    } else {
+      return ok(undefined);
+    }
+  }
+
+  /**
+   * Add plugin related files (OpenAPI spec) to zip.
+   * @param zip zip.
+   * @param pluginFile plugin file path relative to app package folder.
+   * @param appDirectory app package folder.
+   * @param context context.
+   * @returns results whether add files related to plugin is successful.
+   */
   private async addPluginRelatedFiles(
     zip: AdmZip,
     pluginFile: string,

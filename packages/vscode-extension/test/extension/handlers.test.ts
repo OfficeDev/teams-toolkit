@@ -40,6 +40,7 @@ import {
   environmentManager,
   manifestUtils,
   pathUtils,
+  pluginManifestUtils,
 } from "@microsoft/teamsfx-core";
 import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
@@ -71,6 +72,8 @@ import { MockCore } from "../mocks/mockCore";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
+import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -307,6 +310,32 @@ describe("handlers", () => {
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
       clock.restore();
+    });
+
+    it("createNewProjectHandler - invoke Copilot", async () => {
+      const mockCore = new MockCore();
+      sinon
+        .stub(mockCore, "createProject")
+        .resolves(ok({ projectPath: "", shouldInvokeTeamsAgent: true }));
+      sinon.stub(handlers, "core").value(mockCore);
+      const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(globalVariables, "checkIsSPFx").returns(false);
+      sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
+      const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
+
+      await handlers.createNewProjectHandler();
+
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
+      );
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
+      );
+      chai.assert.equal(executeCommandStub.callCount, 2);
+      chai.assert.equal(executeCommandStub.args[0][0], "workbench.panel.chat.view.copilot.focus");
+      chai.assert.equal(executeCommandStub.args[1][0], "workbench.action.chat.open");
+      sinon.restore();
     });
 
     it("provisionHandler()", async () => {
@@ -565,6 +594,7 @@ describe("handlers", () => {
       });
 
       const res = await handlers.openConfigStateFile([]);
+      await fs.remove(tmpDir);
 
       if (res) {
         chai.assert.isTrue(res.isErr());
@@ -930,6 +960,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler", async () => {
+    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(false);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -939,6 +970,20 @@ describe("handlers", () => {
       executeCommands,
       "workbench.action.openWalkthrough",
       "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
+    );
+  });
+
+  it("openWelcomeHandler with chat", async () => {
+    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.openWelcomeHandler();
+
+    sandbox.assert.calledOnceWithExactly(
+      executeCommands,
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
     );
   });
 
@@ -958,7 +1003,7 @@ describe("handlers", () => {
 
     await handlers.openSamplesHandler();
 
-    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, undefined);
+    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, []);
   });
 
   it("openReadMeHandler", async () => {
@@ -1363,6 +1408,43 @@ describe("handlers", () => {
     });
   });
 
+  describe("downloadSampleApp", function () {
+    this.beforeEach(() => {
+      sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
+      sandbox.stub(vscode.commands, "executeCommand");
+    });
+
+    this.afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const createProject = sandbox.spy(handlers.core, "createSampleProject");
+
+      await handlers.downloadSampleApp(extTelemetryEvents.TelemetryTriggerFrom.CopilotChat, "test");
+
+      chai.assert.isTrue(createProject.calledOnce);
+      chai.assert.isTrue(errorEventStub.notCalled);
+    });
+
+    it("has error", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
+      sandbox
+        .stub(handlers.core, "createSampleProject")
+        .rejects(err(new Error("Cannot get user login information")));
+
+      await handlers.downloadSampleApp(extTelemetryEvents.TelemetryTriggerFrom.CopilotChat, "test");
+
+      chai.assert.isTrue(errorEventStub.calledOnce);
+    });
+  });
+
   it("downloadSample", async () => {
     const inputs: Inputs = {
       scratch: "no",
@@ -1492,21 +1574,13 @@ describe("handlers", () => {
   ].forEach(({ type, buildError, buttonNum }) => {
     it(`showError - ${type} - recommend test tool`, async () => {
       sandbox.stub(localizeUtils, "localize").returns("");
-      const showErrorMessageStub = sandbox
-        .stub<any, any>(vscode.window, "showErrorMessage")
-        .callsFake((title: string, button: any) => {
-          return Promise.resolve(button);
-        });
+      const showErrorMessageStub = sandbox.stub<any, any>(vscode.window, "showErrorMessage");
       sandbox.stub(debugCommonUtils, "isTestToolEnabledProject").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(vscode.commands, "executeCommand");
       const error = buildError();
       await handlers.showError(error);
 
-      chai.assert.isTrue(
-        sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.MessageDebugInTestTool)
-      );
       chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
     });
   });
@@ -1591,7 +1665,7 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler([]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler();
 
       chai.assert.equal(res.isOk(), true);
       chai.assert.equal(createProgressBar.notCalled, true);
@@ -1709,7 +1783,7 @@ describe("handlers", () => {
       };
       sinon.stub(AppStudioClient, "getApp").resolves(appDefinition);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId", "testuser"]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler("appId", "testuser");
 
       chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.teamsAppId, "mock-id");
       chai.assert.isTrue(res.isOk());
@@ -2193,10 +2267,10 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       const openUrl = sandbox.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
 
-      await handlers.openDocumentHandler([
+      await handlers.openDocumentHandler(
         extTelemetryEvents.TelemetryTriggerFrom.SideBar,
-        "learnmore",
-      ]);
+        "learnmore"
+      );
 
       chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
@@ -2464,7 +2538,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
-  it("opens README and show warnings successfully", async () => {
+  it("opens README and show APIE ME warnings successfully", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
     const showMessageStub = sandbox
@@ -2495,8 +2569,6 @@ describe("autoOpenProjectHandler", () => {
       manifestVersion: "",
       isApiME: true,
       isSPFx: false,
-      isApiBasedMe: true,
-      isPlugin: false,
     };
     const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
     VsCodeLogInstance.outputChannel = {
@@ -2507,11 +2579,57 @@ describe("autoOpenProjectHandler", () => {
 
     await handlers.autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.called);
     chai.assert.isTrue(sendTelemetryStub.calledTwice);
     chai.assert.isTrue(parseManifestStub.called);
   });
 
+  it("opens README and show copilot plugin warnings successfully", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return JSON.stringify([{ type: "type", content: "content" }]);
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(path, "relative").returns("test");
+
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        name: { short: "short", full: "full" },
+        description: { short: "short", full: "" },
+        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+      } as any)
+    );
+    const parseRes = {
+      id: "",
+      version: "",
+      capabilities: ["plugin"],
+      manifestVersion: "",
+      isApiME: false,
+      isSPFx: false,
+    };
+    const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
+    const getApiSpecStub = sandbox
+      .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+      .resolves(ok(["test"]));
+    VsCodeLogInstance.outputChannel = {
+      show: () => {},
+      info: () => {},
+    } as unknown as vscode.OutputChannel;
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledTwice);
+    chai.assert.isTrue(parseManifestStub.called);
+    chai.assert.isTrue(getApiSpecStub.called);
+  });
   it("skip show warnings if parsing error", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
@@ -2564,6 +2682,60 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(sendErrorTelemetryStub.called);
   });
 
+  it("skip show warnings if get plugin api spec error", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return JSON.stringify([{ type: "type", content: "content" }]);
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        name: { short: "short", full: "full" },
+        description: { short: "short", full: "" },
+        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+      } as any)
+    );
+    const parseRes = {
+      id: "",
+      version: "",
+      capabilities: ["plugin"],
+      manifestVersion: "",
+      isApiME: false,
+      isSPFx: false,
+      isApiBasedMe: true,
+    };
+    sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
+    const getApiSpecStub = sandbox
+      .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+      .resolves(err(new SystemError("test", "test", "", "")));
+    VsCodeLogInstance.outputChannel = {
+      show: () => {},
+      info: () => {},
+    } as unknown as vscode.OutputChannel;
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const sendErrorTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendErrorTelemetryStub.called);
+    chai.assert.equal(
+      sendErrorTelemetryStub.args[0][0],
+      TelemetryEvent.ShowScaffoldingWarningSummaryError
+    );
+    chai.assert.isTrue(getApiSpecStub.called);
+  });
+
   it("auto install dependency", async () => {
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "teamsToolkit:autoInstallDependency") {
@@ -2612,7 +2784,7 @@ describe("autoOpenProjectHandler", () => {
     const result = await handlers.validateGetStartedPrerequisitesHandler();
 
     chai.assert.isTrue(sendTelemetryStub.called);
-    chai.assert.equal(result, "1");
+    chai.assert.isTrue(result.isErr());
   });
 
   it("registerAccountMenuCommands() - signedinM365", async () => {
@@ -2690,6 +2862,7 @@ describe("autoOpenProjectHandler", () => {
   it("showLocalDebugMessage()", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
@@ -2736,6 +2909,7 @@ describe("autoOpenProjectHandler", () => {
   describe("acpInstalled()", () => {
     afterEach(() => {
       mockfs.restore();
+      sandbox.restore();
     });
 
     it("already installed", async () => {
@@ -2798,7 +2972,7 @@ describe("autoOpenProjectHandler", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
 
-    await handlers.debugInTestToolHandler("treeview");
+    await handlers.debugInTestToolHandler("treeview")();
 
     chai.assert.isTrue(
       executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug Debug in Test Tool")
@@ -2811,7 +2985,7 @@ describe("autoOpenProjectHandler", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
 
-    await handlers.debugInTestToolHandler("message");
+    await handlers.debugInTestToolHandler("message")();
 
     chai.assert.isTrue(
       executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug Debug in Test Tool")

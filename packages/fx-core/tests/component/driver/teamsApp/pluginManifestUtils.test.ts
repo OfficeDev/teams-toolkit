@@ -9,6 +9,7 @@ import { pluginManifestUtils } from "../../../../src/component/driver/teamsApp/u
 import { PluginManifestSchema, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 import { FileNotFoundError, JSONSyntaxError } from "../../../../src";
 import path from "path";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 
 describe("pluginManifestUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -24,7 +25,7 @@ describe("pluginManifestUtils", () => {
     runtimes: [
       {
         type: "OpenApi",
-        auth: { type: "none" },
+        auth: { type: "None" },
         spec: {
           url: "openapi.yaml",
         },
@@ -73,7 +74,8 @@ describe("pluginManifestUtils", () => {
     validDomains: [],
     plugins: [
       {
-        pluginFile: "resources/plugin.json",
+        file: "resources/plugin.json",
+        id: "plugin1",
       },
     ],
   };
@@ -140,6 +142,62 @@ describe("pluginManifestUtils", () => {
     }
   });
 
+  it("getApiSpecFilePathFromTeamsManifest error: invalid plugin node case 1", async () => {
+    const testManifest = {
+      ...teamsManifest,
+      plugins: [],
+    };
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
+    const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+      testManifest,
+      "/test/path"
+    );
+    chai.assert.isTrue(res.isErr());
+
+    if (res.isErr()) {
+      chai.assert.equal(res.error.name, AppStudioError.TeamsAppRequiredPropertyMissingError.name);
+    }
+  });
+
+  it("getApiSpecFilePathFromTeamsManifest error: invalid plugin node case 2", async () => {
+    const testManifest = {
+      $schema:
+        "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
+      manifestVersion: "1.9",
+      version: "1.0.0",
+      id: "test",
+      packageName: "test",
+      developer: {
+        name: "test",
+        websiteUrl: "https://test.com",
+        privacyUrl: "https://test.com/privacy",
+        termsOfUseUrl: "https://test.com/termsofuse",
+      },
+      icons: {
+        color: "icon-color.png",
+        outline: "icon-outline.png",
+      },
+      name: {
+        short: "test",
+        full: "test",
+      },
+      description: {
+        short: "test",
+        full: "test",
+      },
+    };
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
+    const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+      testManifest as unknown as TeamsAppManifest,
+      "/test/path"
+    );
+    chai.assert.isTrue(res.isErr());
+
+    if (res.isErr()) {
+      chai.assert.equal(res.error.name, AppStudioError.TeamsAppRequiredPropertyMissingError.name);
+    }
+  });
+
   it("getApiSpecFilePathFromTeamsManifest error: spec file not exist", async () => {
     sandbox.stub(fs, "pathExists").callsFake(async (testPath) => {
       if (testPath === path.resolve("/test/resources/openapi.yaml")) {
@@ -166,7 +224,7 @@ describe("pluginManifestUtils", () => {
       runtimes: [
         {
           type: "OpenApi",
-          auth: { type: "none" },
+          auth: { type: "None" },
           spec: {
             url: "",
           },

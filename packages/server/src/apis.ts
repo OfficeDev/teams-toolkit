@@ -170,7 +170,7 @@ export interface IServerConnection {
   copilotPluginAddAPIRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<undefined, FxError>>;
+  ) => Promise<Result<string, FxError>>;
   loadOpenAIPluginManifestRequest: (
     inputs: Inputs,
     token: CancellationToken
@@ -183,6 +183,10 @@ export interface IServerConnection {
     options: TestToolInstallOptions & { correlationId: string },
     token: CancellationToken
   ) => Promise<Result<DependencyStatusRPC, FxError>>;
+  listPluginApiSpecs: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<string[], FxError>>;
 }
 
 /**

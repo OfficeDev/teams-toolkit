@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
+import { AzureCliCredential, AccessToken } from "@azure/identity";
 
 /**
  * this is a lib for Azure DevOps TestPlan API.
@@ -127,11 +128,15 @@ class ADOTestPlanClient {
     baseURL: BaseURL,
     timeout: 1000 * 100,
     headers: CommonHeaders,
-    auth: {
-      username: "",
-      password: process.env.ADO_TOKEN ?? "",
-    },
   });
+
+  public static async getToken(): Promise<AccessToken> {
+    const credential = new AzureCliCredential();
+    const devopsToken = await credential.getToken(
+      "https://app.vssps.visualstudio.com/.default"
+    );
+    return devopsToken;
+  }
 
   public static async reportTestResult(
     points: TestPoint[],
@@ -196,6 +201,10 @@ class ADOTestPlanClient {
     continuationToken?: string
   ): Promise<TestPointPagenation> {
     try {
+      const token = await ADOTestPlanClient.getToken();
+      ADOTestPlanClient.client.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${token.token}`;
       const response = await ADOTestPlanClient.client.get(
         `/Plans/${planID}/Suites/${suiteID}/TestPoint`,
         {
@@ -235,6 +244,10 @@ class ADOTestPlanClient {
     continuationToken?: string
   ) {
     try {
+      const token = await ADOTestPlanClient.getToken();
+      ADOTestPlanClient.client.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${token.token}`;
       const response = await ADOTestPlanClient.client.get(
         `/Plans/${planID}/Suites/${suiteID}/TestCase`,
         {
@@ -285,6 +298,10 @@ class ADOTestPlanClient {
     continuationToken?: string
   ): Promise<TestSuitePagenation> {
     try {
+      const token = await ADOTestPlanClient.getToken();
+      ADOTestPlanClient.client.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${token.token}`;
       const response = await ADOTestPlanClient.client.get(
         `/Plans/${planID}/suites`,
         {
@@ -316,6 +333,10 @@ class ADOTestPlanClient {
       argus.push({ id: testPoints[i].id, results: testPoints[i].results! });
     }
     try {
+      const token = await ADOTestPlanClient.getToken();
+      ADOTestPlanClient.client.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${token.token}`;
       const response = await ADOTestPlanClient.client.patch(
         `/Plans/${planID}/Suites/${suiteID}/TestPoint`,
         argus,
@@ -362,6 +383,10 @@ class ADOTestPlanClient {
     continuationToken?: string
   ): Promise<TestPlanPagenation> {
     try {
+      const token = await ADOTestPlanClient.getToken();
+      ADOTestPlanClient.client.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${token.token}`;
       const response = await ADOTestPlanClient.client.get("/plans", {
         params: {
           filterActivePlans: true,
@@ -389,6 +414,10 @@ class ADOTestPlanClient {
     }
 
     try {
+      const token = await ADOTestPlanClient.getToken();
+      ADOTestPlanClient.client.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${token.token}`;
       const response = await ADOTestPlanClient.client.post(
         "/Plans/CloneOperation",
         {
@@ -421,6 +450,10 @@ class ADOTestPlanClient {
       name: name,
     };
   }
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -456,9 +489,10 @@ async function main() {
       }
 
       const testPlan = await ADOTestPlanClient.CloneTestPlan(tpn);
+      // wait for a short time to complete clone
+      await sleep(30 * 1000);
       console.log(testPlan.id);
-
-      break;
+      return testPlan.id;
     }
 
     case "archive": {

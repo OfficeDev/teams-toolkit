@@ -76,7 +76,7 @@ This app template also demonstrates usage of techniques like:
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 {{/enableTestToolByDefault}}
 {{#enableTestToolByDefault}}
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 {{/enableTestToolByDefault}}
 1. You will receive a welcome message from the bot, or send any message to get a response.
 

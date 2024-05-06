@@ -102,7 +102,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug in Test Tool (Preview)",
+            "name": "Debug in Test Tool",
             "configurations": [
                 "Attach to Local Service"
             ],

@@ -302,9 +302,21 @@ export class SampleProvider {
         .split(";")
         .map((part) => part.trim())
         .filter((part) => part.length > 0);
-      if (parts.length < 2) {
+      if (parts.length == 0) {
         // The return from copilot is not valid, we have to skip it.
         return;
+      } else if (parts.length == 1) {
+        // Sometimes the return in the format of "method1;" without class name
+        let methodPropertyDeclaration = parts[0].trim();
+        methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
+          ? methodPropertyDeclaration
+          : methodPropertyDeclaration + ";";
+        const sampleData = methodsOrProperties.find(
+          (sample) => sample.codeSample.trim() === methodPropertyDeclaration
+        );
+        if (sampleData) {
+          pickedDeclarations.set(sampleData.description, sampleData);
+        }
       } else if (parts.length > 2) {
         // Sometimes the return in the format of "class: className; method1; method2; ...; methodN;"
         const className = parts[0].replace("class:", "").trim();

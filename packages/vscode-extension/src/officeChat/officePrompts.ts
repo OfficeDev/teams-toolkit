@@ -237,65 +237,6 @@ export function getUserAskPreScanningSystemPrompt(): string {
   `;
 }
 
-export function getUserComplexAskBreakdownTaskSystemPrompt(userInput: string): string {
-  return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
-
-  # Role:
-  You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
-
-  # Context:
-  The input is:
-
-  \`\`\`text
-  ${userInput}
-  \`\`\`
-
-  The output must be a JSON object wrapped into a markdown json block, and it will contain the following keys:
-  - spec. value is a string.
-  - funcs. value is a array of string.
-
-  # Your tasks:
-  Read the input, understand the intention and request of the ask, and think about how Office JavaScript API could help to address them. Then deduce your think result to two parts:
-  1. Write a clear and detailed functional specification that explains how you will step by step address the given ask, especially for parts that interact with Office applications.
-  - The specification should talk about actions, not APIs, and be concise and easy to understand.
-  - The specification should only contains content of request explicitly asked by user.
-  - The specification should use the term been widely used in the software developing world.
-  - The specification should use the term been widely used in the context of Microsoft Office application depends on the ask.
-  - The specification should use the term been widely used in the context of Office JavaScript Add-in development.
-  Add the specification to the "spec" field of the output JSON object. 
-  2. Based on the specification, think about how to write the code, multiple TypeScript functions allowed, but as few as possible. Provide a one-line description for each function that explains its intention in detail. Do not break the description into sub-items. Add the function descriptions to the "funcs" field of the output JSON object.
-  - bypass step like "create a new Office Add-ins project" or "create a new Excel workbook" or "create a new Word document" or "create a new PowerPoint presentation".
-  - bypass step like "open the workbook" or "open the document" or "open the presentation".
-  - bypass step like "save the workbook" or "save the document" or "save the presentation".
-  - bypass step like the "generate Addins Code" or "generate xxx Code".
-  - bypass step like "Use the Office JavaScript Add-ins API to perform the required operations".
-  - bypass step like "Register the xxx function".
-
-  # Example of specification:
-
-  \`\`\`text
-  To retrieve the content of the initial footnote in a Word document using Office JavaScript APIs, you can follow these steps:
-  1. Get the current selection in the document.
-  2. Check if the selection contains any footnotes.
-  3. Retrieve the first footnote in the collection.
-  4. Fetch the content of the footnote.
-  5. Process the retrieved content as needed.
-  \`\`\`
-
-  # Example of one line function description:
-  - Create a function named 'createTrendlineChart'. This function should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. 
-
-  # The format of output:
-  Beyond the JSON object. You should not add anything else to the output.
-  The example of output you must to follow: 
-  { 
-    spec: "The functional spec",
-    funcs: ["function1 description", "function2 description"] 
-  }
-  `;
-}
-
 export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): string {
   return `
   The following content written using Markdown syntax, using "Bold" style to highlight the key information.

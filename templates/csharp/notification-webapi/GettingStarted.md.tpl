@@ -27,7 +27,7 @@ to install the app to
 
 {{^enableTestToolByDefault}}
 ## Debug in Test Tool
-Teams App Test Tool allows Teams app developers to test and debug bots in local easily and eliminates the necessity for prerequisites such as Microsoft 365 accounts, develop tunnels, or Teams app and bot registration. See https://github.com/OfficeDev/TeamsFx/wiki/Debug-with-Multiple-Profiles-in-Teams-Toolkit-for-Visual-Studio#start-the-app-in-teams-app-test-tool for more details.
+Teams App Test Tool allows developers test and debug bots locally without needing Microsoft 365 accounts, development tunnels, or Teams app and bot registration. See https://aka.ms/teams-toolkit-vs-test-tool for more details.
 {{/enableTestToolByDefault}}
 
 ## Learn more

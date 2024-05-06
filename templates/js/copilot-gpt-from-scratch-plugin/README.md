@@ -1,8 +1,8 @@
-# Overview of the Declarative Copilot template
+# Overview of the declarative copilot template
 
 ## Build a declarative copilot from a new API with Azure Functions
 
-With the declarative copilot, you can build a custom version of copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping declarative copilot can be used to create a grocery list based on a meal plan that you send to the declarative copilot.
+With the declarative copilot, you can build a custom version of copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping declarative copilot can be used to create a grocery list based on a meal API that you integrate with your declarative copilot.
 
 ## Get started with the template
 
@@ -35,7 +35,7 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                         | Contents                                                                                               |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `src/functions/repair.js`                    | The main file of a function in Azure Functions.                                                        |
+| `src/functions/repairs.js`                   | The main file of a function in Azure Functions.                                                        |
 | `src/repairsData.json`                       | The data source for the repair API.                                                                    |
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                                    |
 | `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your copilot plugin and declarative copilot.      |

@@ -1048,13 +1048,11 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          const pattern = /^(\w){10,128}/g;
-          const match = pattern.test(input);
+          if (input.length < 10 || input.length > 128) {
+            return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          }
 
-          const result = match
-            ? undefined
-            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-          return result;
+          return undefined;
         },
       },
       additionalValidationOnAccept: {
@@ -1155,13 +1153,11 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): string | undefined => {
-        const pattern = /^(\w){10,128}/g;
-        const match = pattern.test(input);
+        if (input.length < 10 || input.length > 128) {
+          return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+        }
 
-        const result = match
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-        return result;
+        return undefined;
       },
     },
     additionalValidationOnAccept: {

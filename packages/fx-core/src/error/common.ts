@@ -121,6 +121,17 @@ export class InjectAPIKeyActionFailedError extends UserError {
   }
 }
 
+export class InjectOAuthActionFailedError extends UserError {
+  constructor() {
+    super({
+      message: getDefaultString("core.copilot.addAPI.InjectOAuthActionFailed"),
+      displayMessage: getLocalizedString("core.copilot.addAPI.InjectOAuthActionFailed"),
+      source: "coordinator",
+      categories: [ErrorCategory.Internal],
+    });
+  }
+}
+
 export class JSONSyntaxError extends UserError {
   constructor(filePathOrContent: string, error: any, source?: string) {
     super({

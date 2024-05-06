@@ -14,7 +14,7 @@ import repairRecords from "../repairsData.json";
  * @param {InvocationContext} context - The Azure Functions context object.
  * @returns {Promise<Response>} - A promise that resolves with the HTTP response containing the repair information.
  */
-export async function repair(
+export async function repairs(
   req: HttpRequest,
   context: InvocationContext
 ): Promise<HttpResponseInit> {
@@ -24,7 +24,7 @@ export async function repair(
   const res: HttpResponseInit = {
     status: 200,
     jsonBody: {
-      results: [],
+      results: repairRecords,
     },
   };
 
@@ -49,8 +49,8 @@ export async function repair(
   return res;
 }
 
-app.http("repair", {
+app.http("repairs", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: repair,
+  handler: repairs,
 });

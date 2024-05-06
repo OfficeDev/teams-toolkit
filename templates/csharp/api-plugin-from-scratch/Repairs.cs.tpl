@@ -4,16 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace {{SafeProjectName}}
 {
-    public class Repair
+    public class Repairs
     {
         private readonly ILogger _logger;
 
-        public Repair(ILoggerFactory loggerFactory)
+        public Repairs(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger<Repair>();
+            _logger = loggerFactory.CreateLogger<Repairs>();
         }
 
-        [Function("repair")]
+        [Function("repairs")]
         public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
             // Log that the HTTP trigger function received a request.
@@ -24,6 +24,14 @@ namespace {{SafeProjectName}}
 
             // Get the repair records.
             var repairRecords = RepairData.GetRepairs();
+
+            // If the assignedTo query parameter is not provided, return all repair records.
+            if (string.IsNullOrEmpty(assignedTo))
+            {
+                var response = req.CreateResponse();
+                await response.WriteAsJsonAsync(new { results = repairRecords });
+                return response;
+            }
 
             // Filter the repair records by the assignedTo query parameter.
             var repairs = repairRecords.Where(r =>

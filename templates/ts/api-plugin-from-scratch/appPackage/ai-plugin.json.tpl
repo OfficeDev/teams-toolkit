@@ -10,7 +10,7 @@
       "description": "Returns a list of repairs with their details and images",
       "capabilities": {
         "response_semantics": {
-          "data_path": "$",
+          "data_path": "$.results",
           "properties": {
             "title": "$.title",
             "subtitle": "$.description",

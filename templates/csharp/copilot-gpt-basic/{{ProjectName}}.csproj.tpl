@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

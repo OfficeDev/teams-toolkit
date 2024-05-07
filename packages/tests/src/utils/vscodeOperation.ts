@@ -935,6 +935,7 @@ export async function createNewProject(
       await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
       await input.selectQuickPick("Custom Search Results");
       await input.selectQuickPick("Start with a new API");
+      await input.selectQuickPick("None");
       await driver.sleep(Timeout.input);
       // Choose programming language
       if (lang) {
@@ -949,7 +950,8 @@ export async function createNewProject(
         "https://piercerepairsapi.azurewebsites.net/openapi.yml";
       await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
       await input.selectQuickPick("Custom Search Results");
-      await input.selectQuickPick("Start with an OpenAPI Description Document");
+      await input.setText("Start with an OpenAPI Description Document");
+      await input.confirm();
       await input.selectQuickPick(
         "Enter OpenAPI Description Document Location"
       );

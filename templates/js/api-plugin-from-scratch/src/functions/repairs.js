@@ -10,13 +10,17 @@ const { app } = require("@azure/functions");
  * @param context - The Azure Functions context object.
  * @returns A promise that resolves with the HTTP response containing the repair information.
  */
-async function repair(req, context) {
+async function repairs(req, context) {
   context.log("HTTP trigger function processed a request.");
+
+  // Get the repair records from the data.json file.
+  const repairRecords = require("../repairsData.json");
+
   // Initialize response.
   const res = {
     status: 200,
     jsonBody: {
-      results: [],
+      results: repairRecords,
     },
   };
 
@@ -27,9 +31,6 @@ async function repair(req, context) {
   if (!assignedTo) {
     return res;
   }
-
-  // Get the repair records from the data.json file.
-  const repairRecords = require("../repairsData.json");
 
   // Filter the repair records by the assignedTo query parameter.
   const repairs = repairRecords.filter((item) => {
@@ -44,8 +45,8 @@ async function repair(req, context) {
   return res;
 }
 
-app.http("repair", {
+app.http("repairs", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: repair,
+  handler: repairs,
 });

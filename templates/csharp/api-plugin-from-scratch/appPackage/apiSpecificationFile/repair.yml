@@ -7,11 +7,11 @@ servers:
   - url: ${{OPENAPI_SERVER_URL}}/api
     description: The repair api server
 paths:
-  /repair:
+  /repairs:
     get:
-      operationId: repair
-      summary: Search for repairs
-      description: Search for repairs info with its details and image
+      operationId: listRepairs
+      summary: List all repairs
+      description: Returns a list of repairs with their details and images
       parameters:
         - name: assignedTo
           in: query

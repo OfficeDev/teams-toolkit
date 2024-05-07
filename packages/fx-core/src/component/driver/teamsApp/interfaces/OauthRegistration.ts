@@ -19,7 +19,7 @@ export interface OauthRegistration {
   /**
    * Teams app Id associated with the OauthRegistration, should be required if applicableToApps === "SpecificType"
    */
-  specificAppId?: string;
+  m365AppId?: string;
   applicableToApps: OauthRegistrationAppType;
   /**
    * Default to be "HomeTenant"

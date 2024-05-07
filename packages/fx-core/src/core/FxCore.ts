@@ -30,6 +30,7 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import { OpenAPIV3 } from "openapi-types";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
@@ -108,7 +109,6 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import {
   FileNotFoundError,
-  InjectAPIKeyActionFailedError,
   InputValidationError,
   InvalidProjectError,
   MissingRequiredInputError,
@@ -149,6 +149,7 @@ import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types"
 import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { AppStudioError } from "../component/driver/teamsApp/errors";
 import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
+import { ActionInjector } from "../component/configManager/actionInjector";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1240,61 +1241,6 @@ export class FxCore {
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 
-  async injectCreateAPIKeyAction(
-    ymlPath: string,
-    authName: string,
-    specRelativePath: string
-  ): Promise<void> {
-    const ymlContent = await fs.readFile(ymlPath, "utf-8");
-
-    const document = parseDocument(ymlContent);
-    const provisionNode = document.get("provision") as any;
-
-    if (provisionNode) {
-      const hasApiKeyAction = provisionNode.items.some(
-        (item: any) =>
-          item.get("uses") === "apiKey/register" && item.get("with")?.get("name") === authName
-      );
-
-      if (!hasApiKeyAction) {
-        provisionNode.items = provisionNode.items.filter(
-          (item: any) => item.get("uses") !== "apiKey/register"
-        );
-        let added = false;
-        for (let i = 0; i < provisionNode.items.length; i++) {
-          const item = provisionNode.items[i];
-          if (item.get("uses") === "teamsApp/create") {
-            const teamsAppId = item.get("writeToEnvironmentFile")?.get("teamsAppId") as string;
-            if (teamsAppId) {
-              const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_REGISTRATION_ID`);
-              provisionNode.items.splice(i + 1, 0, {
-                uses: "apiKey/register",
-                with: {
-                  name: `${authName}`,
-                  appId: `\${{${teamsAppId}}}`,
-                  apiSpecPath: specRelativePath,
-                },
-                writeToEnvironmentFile: {
-                  registrationId: envName,
-                },
-              });
-              added = true;
-              break;
-            }
-          }
-        }
-
-        if (!added) {
-          throw new InjectAPIKeyActionFailedError();
-        }
-
-        await fs.writeFile(ymlPath, document.toString(), "utf8");
-      }
-    } else {
-      throw new InjectAPIKeyActionFailedError();
-    }
-  }
-
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginAddAPI" }),
     ErrorHandlerMW,
@@ -1371,43 +1317,54 @@ export class FxCore {
     );
 
     try {
-      // TODO: type b will support auth
-      if (!isPlugin) {
-        const authNames: Set<string> = new Set();
-        const serverUrls: Set<string> = new Set();
-        for (const api of operations) {
-          const operation = apiResultList.find((op) => op.api === api);
-          if (
-            operation &&
-            operation.auth &&
-            (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
-              Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))
-          ) {
-            authNames.add(operation.auth.name);
-            serverUrls.add(operation.server);
-          }
+      const authNames: Set<string> = new Set();
+      const serverUrls: Set<string> = new Set();
+      let authScheme: OpenAPIV3.SecuritySchemeObject | undefined = undefined;
+      for (const api of operations) {
+        const operation = apiResultList.find((op) => op.api === api);
+        if (
+          operation &&
+          operation.auth &&
+          (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
+            Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))
+        ) {
+          authNames.add(operation.auth.name);
+          serverUrls.add(operation.server);
+          authScheme = operation.auth.authScheme;
         }
+      }
 
-        if (authNames.size > 1) {
-          throw new MultipleAuthError(authNames);
-        }
+      if (authNames.size > 1) {
+        throw new MultipleAuthError(authNames);
+      }
 
-        if (serverUrls.size > 1) {
-          throw new MultipleServerError(serverUrls);
-        }
+      if (serverUrls.size > 1) {
+        throw new MultipleServerError(serverUrls);
+      }
 
-        if (authNames.size === 1) {
-          const ymlPath = path.join(inputs.projectPath!, MetadataV3.configFile);
-          const localYamlPath = path.join(inputs.projectPath!, MetadataV3.localConfigFile);
-          const authName = [...authNames][0];
+      if (authNames.size === 1 && authScheme) {
+        const ymlPath = path.join(inputs.projectPath!, MetadataV3.configFile);
+        const localYamlPath = path.join(inputs.projectPath!, MetadataV3.localConfigFile);
+        const authName = [...authNames][0];
 
-          const relativeSpecPath =
-            "./" + path.relative(inputs.projectPath!, outputApiSpecPath).replace(/\\/g, "/");
+        const relativeSpecPath =
+          "./" + path.relative(inputs.projectPath!, outputApiSpecPath).replace(/\\/g, "/");
 
-          await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
+        if (Utils.isBearerTokenAuth(authScheme)) {
+          await ActionInjector.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
 
           if (await fs.pathExists(localYamlPath)) {
-            await this.injectCreateAPIKeyAction(localYamlPath, authName, relativeSpecPath);
+            await ActionInjector.injectCreateAPIKeyAction(
+              localYamlPath,
+              authName,
+              relativeSpecPath
+            );
+          }
+        } else if (Utils.isOAuthWithAuthCodeFlow(authScheme)) {
+          await ActionInjector.injectCreateOAuthAction(ymlPath, authName, relativeSpecPath);
+
+          if (await fs.pathExists(localYamlPath)) {
+            await ActionInjector.injectCreateOAuthAction(localYamlPath, authName, relativeSpecPath);
           }
         }
       }
@@ -1712,14 +1669,13 @@ export class FxCore {
       }
     }
 
-    // TODO: localize string below.
     let successMessage = "";
     if (needAddAction && needAddCopilotPlugin) {
-      successMessage = `Action \"${actionId}\" and plugin "plugin_1" have been successfully added to the project.`;
+      successMessage = getLocalizedString("core.addActionAndPlugin.success", actionId, "plugin_1");
     } else if (needAddAction) {
-      successMessage = `Action \"${actionId}\" has been successfully added to the project.`;
+      successMessage = getLocalizedString("core.addAction.success", actionId);
     } else if (needAddCopilotPlugin) {
-      successMessage = `Plugin \"plugin_1\" has been successfully added to the project.`;
+      successMessage = getLocalizedString("core.addPlugin.success", "plugin_1");
     }
 
     void context.userInteraction.showMessage("info", successMessage, false);

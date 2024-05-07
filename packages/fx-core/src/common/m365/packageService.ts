@@ -239,6 +239,9 @@ export class PackageService {
               "Activities",
               "MeetingExtensionDefinition",
               "OpenAIPlugins",
+              "Gpts",
+              "DeclarativeCopilots ",
+              "Plugins",
             ],
           },
         },
@@ -310,7 +313,7 @@ export class PackageService {
           params: {
             SupportedElementTypes:
               // eslint-disable-next-line no-secrets/no-secrets
-              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition,OpenAIPlugins",
+              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition,OpenAIPlugins,Gpts,DeclarativeCopilots,Plugins",
           },
           headers: {
             Authorization: `Bearer ${token}`,

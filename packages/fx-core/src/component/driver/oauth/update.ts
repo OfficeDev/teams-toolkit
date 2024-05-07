@@ -180,7 +180,7 @@ export class UpdateOauthDriver implements StepDriver {
     if (input.applicableToApps && current.applicableToApps !== input.applicableToApps) {
       let msg = `applicableToApps: ${current.applicableToApps} => ${input.applicableToApps}`;
       if (input.applicableToApps === "SpecificApp") {
-        msg += `, specificAppId: ${input.appId}`;
+        msg += `, m365AppId: ${input.appId}`;
       }
       diffMsgs.push(msg);
     }
@@ -230,7 +230,7 @@ export class UpdateOauthDriver implements StepDriver {
       description: args.name,
       targetUrlsShouldStartWith: domain,
       applicableToApps: applicableToApps,
-      specificAppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
+      m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
     } as OauthRegistration;
   }

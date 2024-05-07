@@ -233,7 +233,7 @@ export class CreateOauthDriver implements StepDriver {
       description: args.name,
       targetUrlsShouldStartWith: authInfo.domain,
       applicableToApps: applicableToApps,
-      specificAppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
+      m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
       clientId: args.clientId,
       clientSecret: args.clientSecret ?? "",

@@ -147,7 +147,7 @@ describe("pluginManifestUtils", () => {
   it("getApiSpecFilePathFromTeamsManifest error: invalid plugin node case 1", async () => {
     const testManifest = {
       ...teamsManifest,
-      plugins: [],
+      copilotExtensions: { plugins: [] },
     };
     sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(

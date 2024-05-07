@@ -288,11 +288,23 @@ jobs:
           sudo apt-get install azure-functions-core-tools-4
 
       - name: Install devtunnel (ubuntu)
-        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
-          chmod 777 ./devtunnel
-          ./devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
+          chmod +x ./devtunnel
+          ln -s ./devtunnel ~/bin/devtunnel
+          path=~/bin:$PATH
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
+
+      - name: Install devtunnel (mac)
+        if: matrix.os == 'macos-latest'
+        run: |
+          curl https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/osx-x64-devtunnel-zip -o ./devtunnel.zip 
+          unzip ./devtunnel.zip
+          chmod +x ./devtunnel
+          ln -s ./devtunnel ~/bin/devtunnel
+          path=~/bin:$PATH
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
   
       - name: Install devtunnel (windows)
         if: matrix.os == 'windows-latest'

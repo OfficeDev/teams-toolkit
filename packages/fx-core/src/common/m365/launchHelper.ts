@@ -32,10 +32,14 @@ export class LaunchHelper {
       ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
       : undefined;
     let url: URL;
+    const copilotCapabilities = ["plugin", "copilotGpt"];
     switch (hub) {
       case HubTypes.teams: {
         let installAppPackage = true;
-        if (capabilities.length === 1 && capabilities.includes("plugin")) {
+        if (
+          capabilities.length > 0 &&
+          capabilities.filter((capability) => !copilotCapabilities.includes(capability)).length == 0
+        ) {
           installAppPackage = false;
         }
         const baseUrl = installAppPackage

@@ -124,7 +124,7 @@ export class ManifestUtil {
     if (manifest.bots && manifest.bots.length > 0) {
       capabilities.push("Bot");
     }
-    if (manifest.composeExtensions) {
+    if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
       capabilities.push("MessageExtension");
     }
 

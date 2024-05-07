@@ -72,12 +72,14 @@ describe("pluginManifestUtils", () => {
     staticTabs: [],
     permissions: [],
     validDomains: [],
-    plugins: [
-      {
-        file: "resources/plugin.json",
-        id: "plugin1",
-      },
-    ],
+    copilotExtensions: {
+      plugins: [
+        {
+          file: "resources/plugin.json",
+          id: "plugin1",
+        },
+      ],
+    },
   };
 
   it("readPluginManifestFile success", async () => {
@@ -145,7 +147,7 @@ describe("pluginManifestUtils", () => {
   it("getApiSpecFilePathFromTeamsManifest error: invalid plugin node case 1", async () => {
     const testManifest = {
       ...teamsManifest,
-      plugins: [],
+      copilotExtensions: { plugins: [] },
     };
     sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
@@ -248,7 +250,7 @@ describe("pluginManifestUtils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
 
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
-      { ...teamsManifest, plugins: [] },
+      { ...teamsManifest, copilotExtensions: {} },
       "/test/path"
     );
     chai.assert.isTrue(res.isErr());

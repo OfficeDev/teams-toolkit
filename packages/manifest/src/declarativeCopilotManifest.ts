@@ -3,7 +3,7 @@
 
 import { ConversationStarter } from "./pluginManifest";
 
-export interface CopilotGptManifestSchema {
+export interface DeclarativeCopilotManifestSchema {
   id?: string;
   name: string;
   description: string;

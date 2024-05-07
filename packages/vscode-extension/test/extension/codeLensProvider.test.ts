@@ -319,12 +319,14 @@ describe("Api plugin CodeLensProvider", () => {
 
   it("Add API", async () => {
     const manifest = new TeamsAppManifest();
-    manifest.plugins = [
-      {
-        file: "test.json",
-        id: "plugin1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      plugins: [
+        {
+          file: "test.json",
+          id: "plugin1",
+        },
+      ],
+    };
     const openApiObject = {
       openapi: "3.0",
     };
@@ -430,7 +432,7 @@ describe("Api plugin CodeLensProvider", () => {
 
   it("Do not show codelens for if not API plugin project", async () => {
     const manifest = new TeamsAppManifest();
-    manifest.plugins = [];
+    manifest.copilotExtensions = {};
     const openApiObject = {
       openapi: "3.0",
     };

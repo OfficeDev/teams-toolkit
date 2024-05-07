@@ -218,22 +218,20 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
+    const plugins = manifest.copilotExtensions?.plugins;
     // API plugin
-    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].file) {
-      const addFilesRes = await this.addPlugin(
-        zip,
-        manifest.plugins[0].file,
-        appDirectory,
-        context
-      );
+    if (plugins?.length && plugins[0].file) {
+      const addFilesRes = await this.addPlugin(zip, plugins[0].file, appDirectory, context);
       if (addFilesRes.isErr()) {
         return err(addFilesRes.error);
       }
     }
 
+    const declarativeCopilots = manifest.copilotExtensions?.declarativeCopilots;
+
     // Copilot GPT
-    if (manifest.copilotGpts && manifest.copilotGpts.length > 0 && manifest.copilotGpts[0].file) {
-      const copilotGptManifestFile = path.resolve(appDirectory, manifest.copilotGpts[0].file);
+    if (declarativeCopilots?.length && declarativeCopilots[0].file) {
+      const copilotGptManifestFile = path.resolve(appDirectory, declarativeCopilots[0].file);
       const checkExistenceRes = await this.validateReferencedFile(
         copilotGptManifestFile,
         appDirectory
@@ -244,7 +242,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.copilotGpts[0].file,
+        declarativeCopilots[0].file,
         copilotGptManifestFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context
@@ -268,7 +266,7 @@ export class CreateAppPackageDriver implements StepDriver {
             );
 
             const pluginFileRelativePath = path.relative(appDirectory, pluginFileAbsolutePath);
-            const useForwardSlash = manifest.copilotGpts[0].file.concat(pluginFile).includes("/");
+            const useForwardSlash = declarativeCopilots[0].file.concat(pluginFile).includes("/");
 
             const addPluginRes = await this.addPlugin(
               zip,

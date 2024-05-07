@@ -292,6 +292,7 @@ jobs:
         run: |
           wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
           chmod +x ./devtunnel
+          mkdir -p ~/bin
           ln -s ./devtunnel ~/bin/devtunnel
           path=~/bin:$PATH
           ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
@@ -302,6 +303,7 @@ jobs:
           curl https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/osx-x64-devtunnel-zip -o ./devtunnel.zip 
           unzip ./devtunnel.zip
           chmod +x ./devtunnel
+          mkdir -p ~/bin
           ln -s ./devtunnel ~/bin/devtunnel
           path=~/bin:$PATH
           ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}

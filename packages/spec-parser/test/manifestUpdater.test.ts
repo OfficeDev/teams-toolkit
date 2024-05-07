@@ -62,12 +62,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -186,12 +188,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -345,12 +349,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -490,12 +496,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -625,12 +633,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -765,12 +775,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtension: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {
@@ -893,12 +905,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -1050,12 +1064,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -1202,12 +1218,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {
@@ -1321,12 +1339,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -1502,12 +1522,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -1653,12 +1675,14 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        plugins: [
-          {
-            file: "ai-plugin.json",
-            id: "plugin_1",
-          },
-        ],
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
       };
 
       const expectedPlugins: PluginManifestSchema = {
@@ -1806,12 +1830,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {
@@ -2111,12 +2137,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {
@@ -2274,12 +2302,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {
@@ -2402,12 +2432,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {
@@ -2486,12 +2518,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {

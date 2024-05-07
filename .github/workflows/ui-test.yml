@@ -435,7 +435,11 @@ jobs:
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
+          if [[ $(uname -m) == "x86_64" ]]; then
+            7z x "chromedriver-mac-x64.zip" -o".test-resources" -y
+          elif [[ $(uname -m) == "arm64" ]]; then
+            7z x "chromedriver-mac-arm64.zip" -o".test-resources" -y
+          fi
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'

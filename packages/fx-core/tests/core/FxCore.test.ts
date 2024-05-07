@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import {
-  CopilotGptManifestSchema,
+  DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
   Inputs,
@@ -4136,8 +4136,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4196,8 +4198,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4256,8 +4260,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4388,7 +4394,7 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Cancel"));
     const core = new FxCore(tools);
     const result = await core.addPlugin(inputs);
@@ -4422,7 +4428,7 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox
       .stub(tools.ui, "showMessage")
       .resolves(err(new SystemError("uiError", "uiError", "", "")));
@@ -4458,7 +4464,7 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     sandbox.stub(SpecParser.prototype, "generateForCopilot").throws(new Error("fakeError"));
     const core = new FxCore(tools);
@@ -4490,7 +4496,7 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     sandbox
       .stub(SpecParser.prototype, "generateForCopilot")
@@ -4542,8 +4548,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4602,7 +4610,7 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox
       .stub(copilotGptManifestUtils, "addAction")
       .resolves(err(new SystemError("addActionError", "addActionError", "", "")));

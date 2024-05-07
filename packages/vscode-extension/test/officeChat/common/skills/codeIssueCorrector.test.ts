@@ -79,7 +79,7 @@ describe("CodeIssueCorrector", () => {
     chai.assert.equal(codeIssueCorrector.capability, "Fix code issues");
   });
 
-  it("canInvoke returns true", () => {
+  it("canInvoke returns true", async () => {
     const corrector = new CodeIssueCorrector();
     const spec = new Spec("Some user input");
     spec.taskSummary = "Some task summary";
@@ -108,7 +108,7 @@ describe("CodeIssueCorrector", () => {
       shouldContinue: false,
     };
 
-    const result = corrector.canInvoke(spec);
+    const result = await corrector.canInvoke(spec);
     chai.assert.isTrue(result);
   });
 
@@ -338,6 +338,10 @@ describe("CodeIssueCorrector", () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
 
     spec.appendix.complexity = 10;
+    spec.appendix.apiDeclarationsReference.set(
+      "definition",
+      new SampleData("key1", "docLink", "sample", "description", "definition", "usage")
+    );
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -436,6 +440,10 @@ describe("CodeIssueCorrector", () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
 
     spec.appendix.complexity = 80;
+    spec.appendix.apiDeclarationsReference.set(
+      "definition",
+      new SampleData("key1", "docLink", "sample", "description", "definition", "usage")
+    );
     sandbox.stub(corrector, "fixIssueAsync").returns(Promise.resolve(null));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);

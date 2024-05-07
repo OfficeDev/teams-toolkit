@@ -754,9 +754,9 @@ export function getMostRelevantMethodPropertyPrompt(
   methodsOrPropertiesCandidatesByClassName.forEach((methodsOrPropertiesCandidates, className) => {
     tempClassDeclaration += `
 class ${className} extends OfficeExtension.ClientObject {
-  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
 }
-\n\n
+\n
     `;
   });
   const formattedCodespec = codeSpec.replace(/`/g, '"').replace(/'/g, '"');
@@ -776,7 +776,7 @@ class ${className} extends OfficeExtension.ClientObject {
   Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not repeat the ask, do not ask questions, do not explain, do not provide additional context, do not add any other information to the output.
 
   # Your tasks:
-  Analyze each mentioned steps in the input, for any portion of those steps, and think what Office JavaScript Office API methods and properties should be used to fulfill those asks. A few Office JavaScript classes contains methods or properties declarations listed below as candidate for you. You should use them as your reference, pick those Office JavaScript API methods/properties will be used, including method or property in the intermediate step (for example, method or property in the chaining invoke), put those picked methods/properties into an array to return. Or return an empty list if no relevant strings are found. The list should be the value of the key 'picked' in the return object.
+  Analyze each mentioned steps in the input, for any portion of those steps, and think what Office JavaScript Office API methods and properties should be used to fulfill those asks. A few Office JavaScript classes contains methods or properties declarations listed below as candidate for you. You should use them as your reference, pick those Office JavaScript API methods/properties will be used, including method or property in the intermediate step (for example, method or property in the chaining invoke), put those picked methods/properties into an array to return. Or return an empty list if no relevant strings are found. For each item in the array, it format should like "class: %name of the class%; %method or property declaration%". The list should be the value of the key 'picked' in the return object.
   Pay attention to the section of "The format of output" below, and make sure you follow the format.
 
   # The list of Office JavaScript API:
@@ -803,8 +803,10 @@ class ${className} extends OfficeExtension.ClientObject {
   \`\`\`
   
   Then the return object could be like:
+  \`\`\`json
   {
     "picked": ["class: NoteItem; readonly reference: Word.Range;", "class: NoteItemCollection; getFirst(): Word.NoteItem;"]
   }
+  \`\`\`
   `;
 }

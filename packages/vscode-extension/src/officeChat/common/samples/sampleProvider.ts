@@ -304,6 +304,7 @@ export class SampleProvider {
         .filter((part) => part.length > 0);
       if (parts.length == 0) {
         // The return from copilot is not valid, we have to skip it.
+        console.debug("[parts.length == 0]: " + value || "empty");
         return;
       } else if (parts.length == 1) {
         // Sometimes the return in the format of "method1;" without class name
@@ -316,6 +317,8 @@ export class SampleProvider {
         );
         if (sampleData) {
           pickedDeclarations.set(sampleData.description, sampleData);
+        } else {
+          console.debug("[parts.length == 1]: " + methodPropertyDeclaration);
         }
       } else if (parts.length > 2) {
         // Sometimes the return in the format of "class: className; method1; method2; ...; methodN;"

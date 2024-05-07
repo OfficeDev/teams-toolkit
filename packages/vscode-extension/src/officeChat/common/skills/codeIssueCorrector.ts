@@ -102,21 +102,11 @@ export class CodeIssueCorrector implements ISkill {
 
     let setDeclartionPrompt = getDeclarationsPrompt();
 
-    if (spec.appendix.apiDeclarationsReference.size > 0) {
-      //       const codeSnippets: string[] = [];
-      //       spec.appendix.apiDeclarationsReference.forEach((sample, api) => {
-      //         console.debug(`[Code corrector] Declaration matched: ${sample.description}`);
-      //         codeSnippets.push(`
-      // - [Description] ${sample.description}:
-      // \`\`\`typescript
-      // ${sample.codeSample}
-      // \`\`\`\n
-      // `);
-      //       });
-
-      //       if (codeSnippets.length > 0) {
-      //         setDeclartionPrompt = setDeclartionPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
-      //       }
+    if (
+      !!spec.appendix.apiDeclarationsReference &&
+      !!spec.appendix.apiDeclarationsReference.size &&
+      spec.appendix.apiDeclarationsReference.size > 0
+    ) {
       const groupedMethodsOrProperties = new Map<string, SampleData[]>();
       for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
         if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
@@ -138,7 +128,7 @@ class ${className} extends OfficeExtension.ClientObject {
       setDeclartionPrompt += `
       
       \`\`\`typescript
-      tempClassDeclaration;
+      ${tempClassDeclaration};
       \`\`\`
 
       Let's think step by step.

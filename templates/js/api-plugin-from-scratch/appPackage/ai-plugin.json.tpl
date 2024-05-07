@@ -75,5 +75,13 @@
       },
       "run_for_functions": ["listRepairs"]
     }
-  ]
+  ],
+  "capabilities": {
+    "localization": {},
+    "conversation_starters": [
+      {
+        "text": "List all repairs"
+      }
+    ]
+  }
 }

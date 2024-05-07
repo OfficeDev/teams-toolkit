@@ -293,8 +293,8 @@ jobs:
           wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
           chmod +x ./devtunnel
           mkdir -p ~/bin
-          ln -s ./devtunnel ~/bin/devtunnel
-          path=~/bin:$PATH
+          mv ./devtunnel ~/bin/devtunnel
+          PATH=~/bin:$PATH
           ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
 
       - name: Install devtunnel (mac)
@@ -304,8 +304,8 @@ jobs:
           unzip ./devtunnel.zip
           chmod +x ./devtunnel
           mkdir -p ~/bin
-          ln -s ./devtunnel ~/bin/devtunnel
-          path=~/bin:$PATH
+          mv ./devtunnel ~/bin/devtunnel
+          PATH=~/bin:$PATH
           ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
   
       - name: Install devtunnel (windows)

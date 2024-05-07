@@ -475,7 +475,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(HttpServerError)
       .and.property("message")
       .equals(
-        'A http server error occurrred while performing the aadApp/update task. Try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+        'A http server error occurred while performing the aadApp/update task. Try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
       );
   });
 

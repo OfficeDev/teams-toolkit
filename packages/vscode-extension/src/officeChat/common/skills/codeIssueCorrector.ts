@@ -102,15 +102,11 @@ export class CodeIssueCorrector implements ISkill {
 
     let setDeclartionPrompt = getDeclarationsPrompt();
 
-    if (
-      !!spec.appendix.apiDeclarationsReference &&
-      !!spec.appendix.apiDeclarationsReference.size &&
-      spec.appendix.apiDeclarationsReference.size > 0
-    ) {
+    if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
       const groupedMethodsOrProperties = new Map<string, SampleData[]>();
       for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
         if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
-          groupedMethodsOrProperties.set(methodOrProperty[1].definition, []);
+          groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
         }
         groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
       }

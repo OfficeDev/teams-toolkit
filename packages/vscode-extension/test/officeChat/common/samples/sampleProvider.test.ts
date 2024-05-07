@@ -130,12 +130,55 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     // Add more assertions based on what you expect the topKSamples to be
   });
 
+  it("token overload", async () => {
+    sandbox.stub(utils, "getCopilotResponseAsString").resolves('{"picked":[]}');
+    const sample = "a fake code sample";
+    const scenario = "insert annotation into document";
+    const host = "Excel";
+    sandbox
+      .stub(utils, "countMessagesTokens")
+      .onFirstCall()
+      .returns(4000)
+      .onSecondCall()
+      .returns(4000);
+    const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+      null as any,
+      host,
+      scenario,
+      sample
+    );
+
+    expect(topKSamples).to.exist;
+    expect(topKSamples).to.be.an("map");
+    expect(topKSamples).to.have.lengthOf(0);
+    // Add more assertions based on what you expect the topKSamples to be
+  });
+
   it("no methods or properties relevant to scenario sample codes LLM", async () => {
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub
       .onCall(0)
       .returns(Promise.resolve('{"picked":["Workbook", "Worksheet", "Range", "Chart", "Shape"]}'));
     getCopilotResponseAsStringStub.onCall(1).returns(Promise.resolve('{"picked":[]}'));
+    const sample = "a fake code sample";
+    const scenario = "insert annotation into document";
+    const host = "Excel";
+    const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+      null as any,
+      host,
+      scenario,
+      sample
+    );
+
+    expect(topKSamples).to.exist;
+    expect(topKSamples).to.be.an("map");
+    expect(topKSamples).to.have.lengthOf(0);
+    // Add more assertions based on what you expect the topKSamples to be
+  });
+
+  it("no class returned from LLM", async () => {
+    const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseAsStringStub.onCall(0).returns(Promise.resolve('{"picked":[]}'));
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
@@ -246,13 +289,27 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
           '{"picked":["class: Functions; arabic(text: string | Excel.Range | Excel.RangeReference | Excel.FunctionResult<any>): FunctionResult<number>;"]}'
         )
       );
-    getCopilotResponseAsStringStub.onCall(3).returns(Promise.resolve('{"picked":["3"]}'));
-    getCopilotResponseAsStringStub.onCall(4).returns(Promise.resolve('{"picked":["4"]}'));
-    getCopilotResponseAsStringStub.onCall(5).returns(Promise.resolve('{"picked":["5"]}'));
-    getCopilotResponseAsStringStub.onCall(6).returns(Promise.resolve('{"picked":["6"]}'));
-    getCopilotResponseAsStringStub.onCall(7).returns(Promise.resolve('{"picked":["7"]}'));
-    getCopilotResponseAsStringStub.onCall(8).returns(Promise.resolve('{"picked":["8"]}'));
-    getCopilotResponseAsStringStub.onCall(9).returns(Promise.resolve('{"picked":["9"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(3)
+      .returns(Promise.resolve('{"picked":["class: 3; method 1;"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(4)
+      .returns(Promise.resolve('{"picked":["class: 3; method 2;"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(5)
+      .returns(Promise.resolve('{"picked":["class: 3; method 3;"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(6)
+      .returns(Promise.resolve('{"picked":["class: 3; method 4;"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(7)
+      .returns(Promise.resolve('{"picked":["class: 3; method 5;"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(8)
+      .returns(Promise.resolve('{"picked":["class: 3; method 6;"]}'));
+    getCopilotResponseAsStringStub
+      .onCall(9)
+      .returns(Promise.resolve('{"picked":["class: 3; method 7;"]}'));
 
     const sample = "";
     const scenario =

@@ -307,11 +307,7 @@ export class CodeGenerator implements ISkill {
         break;
     }
 
-    if (
-      !spec.appendix.apiDeclarationsReference ||
-      !spec.appendix.apiDeclarationsReference.size ||
-      spec.appendix.apiDeclarationsReference.size === 0
-    ) {
+    if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
       const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
         token,
         host,

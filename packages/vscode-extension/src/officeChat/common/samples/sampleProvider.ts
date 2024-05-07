@@ -104,9 +104,6 @@ export class SampleProvider {
     const returnObject: { picked: string[] } = JSON.parse(
       copilotResponse.replace("```json", "").replace("```", "").replace(/\\n/g, "")
     );
-    if (returnObject.picked.length === 0) {
-      return pickedDeclarations;
-    }
     const classNames: string[] = returnObject.picked.map((value) => value.replace("- ", "").trim());
 
     if (classNames.length === 0) {
@@ -302,16 +299,12 @@ export class SampleProvider {
         .split(";")
         .map((part) => part.trim())
         .filter((part) => part.length > 0);
-      if (parts.length == 0) {
-        // The return from copilot is not valid, we have to skip it.
-        console.debug("[parts.length == 0]: " + value || "empty");
-        return;
-      } else if (parts.length == 1) {
+      if (parts.length == 1) {
         // Sometimes the return in the format of "method1;" without class name
-        let methodPropertyDeclaration = parts[0].trim();
-        methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
-          ? methodPropertyDeclaration
-          : methodPropertyDeclaration + ";";
+        const methodPropertyDeclaration = parts[0].trim() + ";";
+        // methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
+        //   ? methodPropertyDeclaration
+        //   : methodPropertyDeclaration + ";";
         const sampleData = methodsOrProperties.find(
           (sample) => sample.codeSample.trim() === methodPropertyDeclaration
         );
@@ -324,10 +317,10 @@ export class SampleProvider {
         // Sometimes the return in the format of "class: className; method1; method2; ...; methodN;"
         const className = parts[0].replace("class:", "").trim();
         for (let i = 1; i < parts.length - 1; i++) {
-          let methodPropertyDeclaration = parts[i].trim();
-          methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
-            ? methodPropertyDeclaration
-            : methodPropertyDeclaration + ";";
+          const methodPropertyDeclaration = parts[i].trim() + ";";
+          // methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
+          //   ? methodPropertyDeclaration
+          //   : methodPropertyDeclaration + ";";
           const sampleData = methodsOrProperties.find(
             (sample) =>
               sample.definition.trim() === className &&
@@ -340,10 +333,10 @@ export class SampleProvider {
       } else if (parts.length === 2) {
         // in the format of "class: className; methodOrPropertyDeclaration;"
         const className = parts[0].replace("class:", "").trim();
-        let methodPropertyDeclaration = parts[1].trim();
-        methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
-          ? methodPropertyDeclaration
-          : methodPropertyDeclaration + ";";
+        const methodPropertyDeclaration = parts[1].trim() + ";";
+        // methodPropertyDeclaration = methodPropertyDeclaration.endsWith(";")
+        //   ? methodPropertyDeclaration
+        //   : methodPropertyDeclaration + ";";
         const sampleData = methodsOrProperties.find(
           (sample) =>
             sample.definition.trim() === className &&

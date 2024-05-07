@@ -72,12 +72,14 @@ describe("pluginManifestUtils", () => {
     staticTabs: [],
     permissions: [],
     validDomains: [],
-    plugins: [
-      {
-        file: "resources/plugin.json",
-        id: "plugin1",
-      },
-    ],
+    copilotExtensions: {
+      plugins: [
+        {
+          file: "resources/plugin.json",
+          id: "plugin1",
+        },
+      ],
+    },
   };
 
   it("readPluginManifestFile success", async () => {
@@ -248,7 +250,7 @@ describe("pluginManifestUtils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
 
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
-      { ...teamsManifest, plugins: [] },
+      { ...teamsManifest, copilotExtensions: {} },
       "/test/path"
     );
     chai.assert.isTrue(res.isErr());

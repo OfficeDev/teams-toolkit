@@ -775,7 +775,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtension: {
+      copilotExtensions: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2004,12 +2004,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      plugins: [
-        {
-          file: "ai-plugin.json",
-          id: "plugin_1",
-        },
-      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
     };
 
     const expectedPlugins: PluginManifestSchema = {

@@ -38,9 +38,9 @@ export class ManifestUpdater {
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
+    manifest.copilotExtensions = manifest.copilotExtensions || {};
     // Insert plugins in manifest.json if it is plugin for Copilot.
     if (!options.isGptPlugin) {
-      manifest.copilotExtensions = manifest.copilotExtensions || {};
       manifest.copilotExtensions.plugins = [
         {
           file: apiPluginRelativePath,

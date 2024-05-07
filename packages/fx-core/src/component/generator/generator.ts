@@ -48,7 +48,12 @@ export class Generator {
     safeProjectNameFromVS?: string,
     targetFramework?: string,
     placeProjectFileInSolutionDir?: boolean,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
+    authData?: {
+      authName: string;
+      openapiSpecPath: string;
+      registrationIdEnvName: string;
+      authType?: string;
+    },
     llmServiceData?: {
       llmService?: string;
       openAIKey?: string;
@@ -60,7 +65,7 @@ export class Generator {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
     const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
-      apiKeyAuthData?.registrationIdEnvName ?? ""
+      authData?.registrationIdEnvName ?? ""
     );
 
     return {
@@ -70,9 +75,11 @@ export class Generator {
       PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthName: authData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
-      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      ApiSpecPath: authData?.openapiSpecPath ?? "",
+      ApiKey: authData?.authType === "apiKey" ? "true" : "",
+      OAuth: authData?.authType === "oauth2" ? "true" : "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
       enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
       useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",
@@ -172,7 +179,7 @@ export class Generator {
     return ok(undefined);
   }
 
-  private static async generate(
+  public static async generate(
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {

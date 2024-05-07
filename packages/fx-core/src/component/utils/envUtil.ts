@@ -386,15 +386,3 @@ class DotenvUtil {
 }
 
 export const dotenvUtil = new DotenvUtil();
-
-export function maskSecretValues(stdout: string): string {
-  for (const key of Object.keys(process.env)) {
-    if (key.startsWith("SECRET_")) {
-      const value = process.env[key];
-      if (value) {
-        stdout = stdout.replace(value, "***");
-      }
-    }
-  }
-  return stdout;
-}

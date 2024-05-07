@@ -51,7 +51,7 @@
             "program": "${workspaceFolder}/src/app.py",
             "request": "launch",
             "cwd": "${workspaceFolder}/src/",
-            "console": "integratedTerminal",
+            "console": "integratedTerminal"
         },
         {
             "name": "Start Test Tool",
@@ -110,7 +110,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug in Test Tool (Preview)",
+            "name": "Debug in Test Tool",
             "configurations": [
                 "Start Python",
                 "Start Test Tool",

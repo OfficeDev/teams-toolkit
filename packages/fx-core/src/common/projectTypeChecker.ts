@@ -273,6 +273,9 @@ export function getCapabilities(manifest: any): string[] {
   if (manifest.plugins && manifest.plugins.length > 0) {
     capabilities.push("plugin");
   }
+  if (manifest.copilotGpts && manifest.copilotGpts.length > 0) {
+    capabilities.push("copilotGpt");
+  }
   return capabilities;
 }
 export const projectTypeChecker = new ProjectTypeChecker();

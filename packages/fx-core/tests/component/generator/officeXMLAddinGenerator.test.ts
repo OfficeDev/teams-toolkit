@@ -5,7 +5,7 @@
  * @author zyun@microsoft.com
  */
 
-import { Context, Inputs, ok, Platform, err, SystemError } from "@microsoft/teamsfx-api";
+import { Context, Inputs, Platform, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as childProcess from "child_process";
 import fs from "fs";
@@ -19,13 +19,12 @@ import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
 import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
+import * as componentUtils from "../../../src/component/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { OfficeAddinHostOptions, ProjectTypeOptions, QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import { FeatureFlagName } from "../../../src/common/constants";
-import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
 
 describe("OfficeXMLAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -34,10 +33,7 @@ describe("OfficeXMLAddinGenerator", function () {
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv(
-      { TEAMSFX_V3: "true", [FeatureFlagName.OfficeXMLAddin]: "true" },
-      { clear: true }
-    );
+    mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3();
@@ -89,7 +85,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -129,7 +125,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
 

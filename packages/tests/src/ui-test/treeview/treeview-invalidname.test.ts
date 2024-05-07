@@ -97,8 +97,9 @@ describe("New project Tests", function () {
       // if exist click it
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
-      // Choose Tab(SPFx)
-      await input.selectQuickPick("SPFx");
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
       // Wait for Node version check

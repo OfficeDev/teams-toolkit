@@ -19,10 +19,11 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > **Note**
 >
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
-2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 3. The browser will pop up to open Teams App Test Tool.
 4. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
 5. In the response from the bot, select the **DoStuff** button.

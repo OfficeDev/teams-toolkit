@@ -53,6 +53,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
+      "basic-declarative-copilot",
+      "declarative-copilot-with-plugin-from-scratch",
       "json-taskpane",
       "office-content-addin",
       "word-taskpane",
@@ -138,7 +140,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "api-operation",
     type: "array",
     shortName: "o",
-    description: "Select Operation(s) Teams Can Interact with.",
+    description: "Select operation(s) Teams can interact with.",
   },
   {
     name: "api-me-auth",

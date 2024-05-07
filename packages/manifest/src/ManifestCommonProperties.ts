@@ -3,7 +3,7 @@
 
 export interface ManifestCommonProperties {
   /**
-   * Capabilities, e.g. "staticTab" | "configurableTab" | "MessageExtension" | "WebApplicationInfo"
+   * Capabilities, e.g. "staticTab" | "configurableTab" | "MessageExtension" | "WebApplicationInfo" | "plugin" | "copilotGpt"
    */
   capabilities: string[];
   /**
@@ -26,8 +26,4 @@ export interface ManifestCommonProperties {
    * Whether it's SPFx Teams app
    */
   isSPFx: boolean;
-  /**
-   * Whether it's an API plugin
-   */
-  isPlugin: boolean;
 }

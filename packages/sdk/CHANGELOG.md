@@ -1,3 +1,6 @@
+# 2.3.2
+- Update peer dependency `@microsoft/teams-js` version to `^2.19.0`.
+
 # 2.3.0
 
 - Add an optional parameter `validationEnabled` to `getPagedInstallations` to enable or disable installation validation.

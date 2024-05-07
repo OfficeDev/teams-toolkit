@@ -18,7 +18,7 @@
 
 {{/isNewProjectTypeEnabled}}
   <ItemGroup>
-    <PackageReference Include="Azure.Identity" Version="1.11.1" />
+    <PackageReference Include="Azure.Identity" Version="1.11.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.38.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.5.0" />

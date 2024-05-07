@@ -117,6 +117,8 @@ export enum TelemetryEvent {
   M365LaunchInfo = "m365-launch-info",
 
   Doctor = "doctor",
+
+  AddCopilotPlugin = "add-copilot-plugin",
 }
 
 export enum TelemetryProperty {

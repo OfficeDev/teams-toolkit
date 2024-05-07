@@ -16,10 +16,11 @@ import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script"
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { ProgressMessages } from "../../messages";
 import { getSystemEncoding } from "../../utils/charsetUtils";
-import { DotenvOutput, maskSecretValues } from "../../utils/envUtil";
+import { DotenvOutput } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { maskSecretValues } from "../../../common/stringUtils";
 
 const ACTION_NAME = "script";
 

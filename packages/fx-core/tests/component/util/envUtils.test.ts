@@ -4,11 +4,11 @@
  * @author Siglud <siglud@gmail.com>
  */
 
-import { maskSecretValues } from "../../../src/component/utils/envUtil";
 import "mocha";
 import { assert } from "chai";
+import { maskSecretValues } from "../../../src/common/stringUtils";
 
-describe("envUtil.maskSecretValues", () => {
+describe("stringUtils.maskSecretValues", () => {
   afterEach(() => {
     delete process.env["SECRET_KEY"];
     delete process.env["NON_SECRET_KEY"];

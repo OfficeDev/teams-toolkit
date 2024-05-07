@@ -45,7 +45,7 @@ export const rootCommand: CLICommand = {
   commands: [
     accountCommand,
     getCreateCommand(),
-    addCommand,
+    addCommand(),
     provisionCommand,
     deployCommand,
     previewCommand,

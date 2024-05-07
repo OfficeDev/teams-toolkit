@@ -45,6 +45,8 @@ export interface CreateProjectInputs extends Inputs {
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
+    | "basic-declarative-copilot"
+    | "declarative-copilot-with-plugin-from-scratch"
     | "json-taskpane"
     | "office-content-addin"
     | "word-taskpane"

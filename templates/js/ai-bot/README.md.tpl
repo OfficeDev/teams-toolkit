@@ -24,10 +24,12 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:

@@ -1669,14 +1669,13 @@ export class FxCore {
       }
     }
 
-    // TODO: localize string below.
     let successMessage = "";
     if (needAddAction && needAddCopilotPlugin) {
-      successMessage = `Action \"${actionId}\" and plugin "plugin_1" have been successfully added to the project.`;
+      successMessage = getLocalizedString("core.addActionAndPlugin.success", actionId, "plugin_1");
     } else if (needAddAction) {
-      successMessage = `Action \"${actionId}\" has been successfully added to the project.`;
+      successMessage = getLocalizedString("core.addAction.success", actionId);
     } else if (needAddCopilotPlugin) {
-      successMessage = `Plugin \"plugin_1\" has been successfully added to the project.`;
+      successMessage = getLocalizedString("core.addPlugin.success", "plugin_1");
     }
 
     void context.userInteraction.showMessage("info", successMessage, false);

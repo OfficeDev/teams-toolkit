@@ -40,7 +40,8 @@ export class ManifestUpdater {
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
     // Insert plugins in manifest.json if it is plugin for Copilot.
     if (!options.isGptPlugin) {
-      manifest.plugins = [
+      manifest.copilotExtensions = manifest.copilotExtensions || {};
+      manifest.copilotExtensions.plugins = [
         {
           file: apiPluginRelativePath,
           id: ConstantString.DefaultPluginId,

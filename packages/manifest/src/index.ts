@@ -13,7 +13,7 @@ import fetch from "node-fetch";
 export * from "./manifest";
 export * as devPreview from "./devPreviewManifest";
 export * from "./pluginManifest";
-export * from "./copilotGptManifest";
+export * from "./declarativeCopilotManifest";
 
 export type TeamsAppManifestJSONSchema = JSONSchemaType<TeamsAppManifest>;
 export type DevPreviewManifestJSONSchema = JSONSchemaType<DevPreviewSchema>;
@@ -155,13 +155,13 @@ export class ManifestUtil {
       properties.isSPFx = true;
     }
 
-    if ((manifest as TeamsAppManifest).plugins) {
-      const apiPlugins = (manifest as TeamsAppManifest).plugins;
+    if ((manifest as TeamsAppManifest).copilotExtensions?.plugins) {
+      const apiPlugins = (manifest as TeamsAppManifest).copilotExtensions?.plugins;
       if (apiPlugins && apiPlugins.length > 0 && apiPlugins[0].file) capabilities.push("plugin");
     }
 
-    if ((manifest as TeamsAppManifest).copilotGpts) {
-      const copilotGpts = (manifest as TeamsAppManifest).copilotGpts;
+    if ((manifest as TeamsAppManifest).copilotExtensions?.declarativeCopilots) {
+      const copilotGpts = (manifest as TeamsAppManifest).copilotExtensions?.declarativeCopilots;
       if (copilotGpts && copilotGpts.length > 0) capabilities.push("copilotGpt");
     }
 

@@ -751,7 +751,7 @@
       {
         "command": "fx-extension.localdebug",
         "title": "%teamstoolkit.commands.localDebug.title%",
-        "enablement": "!fx-extension.commandLocked && !fx-extension.isOfficeAddIn || fx-extension.isOfficeAddIn && !fx-extension.isManifestOnlyOfficeAddIn",
+        "enablement": "!fx-extension.commandLocked && !fx-extension.isManifestOnlyOfficeAddIn",
         "category": "Teams"
       },
       {

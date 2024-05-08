@@ -29,12 +29,14 @@
       "id": "plugin_1"
     }
   ],
-  "copilotGpts": [
-    {
+  "copilotExtensions": {
+    "declarativeCopilots": [
+      {
         "id": "repairDeclarativeCopilot",
         "file": "repairDeclarativeCopilot.json"
-    }
-  ],
+      }
+    ]
+  },  
   "permissions": [
     "identity",
     "messageTeamMembers"

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, CopilotGptManifestSchema } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, DeclarativeCopilotManifestSchema } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { FileNotFoundError, JSONSyntaxError, WriteFileError } from "../../../../error/common";
 import stripBom from "strip-bom";
@@ -9,7 +9,7 @@ import stripBom from "strip-bom";
 export class CopilotGptManifestUtils {
   public async readCopilotGptManifestFile(
     path: string
-  ): Promise<Result<CopilotGptManifestSchema, FxError>> {
+  ): Promise<Result<DeclarativeCopilotManifestSchema, FxError>> {
     if (!(await fs.pathExists(path))) {
       return err(new FileNotFoundError("CopilotGptManifestUtils", path));
     }
@@ -19,7 +19,7 @@ export class CopilotGptManifestUtils {
     content = stripBom(content);
 
     try {
-      const manifest = JSON.parse(content) as CopilotGptManifestSchema;
+      const manifest = JSON.parse(content) as DeclarativeCopilotManifestSchema;
       return ok(manifest);
     } catch (e) {
       return err(new JSONSyntaxError(path, e, "CopilotGptManifestUtils"));
@@ -27,7 +27,7 @@ export class CopilotGptManifestUtils {
   }
 
   public async writeCopilotGptManifestFile(
-    manifest: CopilotGptManifestSchema,
+    manifest: DeclarativeCopilotManifestSchema,
     path: string
   ): Promise<Result<undefined, FxError>> {
     const content = JSON.stringify(manifest, undefined, 4);
@@ -43,7 +43,7 @@ export class CopilotGptManifestUtils {
     copilotGptPath: string,
     id: string,
     pluginFile: string
-  ): Promise<Result<CopilotGptManifestSchema, FxError>> {
+  ): Promise<Result<DeclarativeCopilotManifestSchema, FxError>> {
     const gptManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(copilotGptPath);
     if (gptManifestRes.isErr()) {
       return err(gptManifestRes.error);

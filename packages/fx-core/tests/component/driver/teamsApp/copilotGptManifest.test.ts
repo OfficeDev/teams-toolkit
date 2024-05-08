@@ -5,7 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
-import { CopilotGptManifestSchema } from "@microsoft/teamsfx-api";
+import { DeclarativeCopilotManifestSchema } from "@microsoft/teamsfx-api";
 import { copilotGptManifestUtils } from "../../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import { FileNotFoundError, WriteFileError } from "../../../../src/error";
 
@@ -16,7 +16,7 @@ describe("copilotGptManifestUtils", () => {
     sandbox.restore();
   });
 
-  const gptManifest: CopilotGptManifestSchema = {
+  const gptManifest: DeclarativeCopilotManifestSchema = {
     name: "name",
     description: "description",
   };

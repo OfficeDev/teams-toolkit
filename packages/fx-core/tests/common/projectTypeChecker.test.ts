@@ -110,7 +110,7 @@ describe("ProjectTypeChecker", () => {
         extensions: [1],
         copilotExtensions: {
           plugins: [1],
-          copilotGpts: [1],
+          declarativeCopilots: [1],
         },
       };
       const capabilities = getCapabilities(manifest);

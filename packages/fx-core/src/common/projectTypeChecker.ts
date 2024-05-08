@@ -270,7 +270,7 @@ export function getCapabilities(manifest: any): string[] {
   if (manifest.extensions && manifest.extensions.length > 0) {
     capabilities.push("extension");
   }
-  if (manifest.copilotExtensions?.plugin && manifest.copilotExtensions.plugins.length > 0) {
+  if (manifest.copilotExtensions?.plugins && manifest.copilotExtensions.plugins.length > 0) {
     capabilities.push("plugin");
   }
   if (

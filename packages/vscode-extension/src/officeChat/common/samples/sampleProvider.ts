@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CancellationToken, LanguageModelChatUserMessage } from "vscode";
+import { CancellationToken, LanguageModelChatMessage, LanguageModelChatMessageRole } from "vscode";
 import { BM25, BMDocument } from "../../retrievalUtil/BM25";
 import { OfficeTemplateModelPorvider, WXPAppName } from "./officeTemplateModelPorvider";
 import { SampleData } from "./sampleData";
@@ -80,12 +80,14 @@ export class SampleProvider {
     }
 
     // It is possible that with the increase of the number of classes, the token count of the message will exceed the limitation. So if the token count exceeds the limitation, we will use the prompt that only contains the class name rather than the class's description to reduce the token count.
-    let sampleMessage: LanguageModelChatUserMessage = new LanguageModelChatUserMessage(
+    let sampleMessage: LanguageModelChatMessage = new LanguageModelChatMessage(
+      LanguageModelChatMessageRole.User,
       getMostRelevantClassPrompt(codeSpec, classSummaries, sample)
     );
     let msgCount = countMessagesTokens([sampleMessage]);
     if (msgCount > getTokenLimitation(model)) {
-      sampleMessage = new LanguageModelChatUserMessage(
+      sampleMessage = new LanguageModelChatMessage(
+        LanguageModelChatMessageRole.User,
         getMostRelevantClassUsingNameOnlyPrompt(codeSpec, classSummaries, sample)
       );
       msgCount = countMessagesTokens([sampleMessage]);
@@ -162,7 +164,10 @@ export class SampleProvider {
           groupedMethodsOrProperties,
           sample
         );
-        sampleMessage = new LanguageModelChatUserMessage(getMoreRelevantMethodsOrPropertiesPrompt);
+        sampleMessage = new LanguageModelChatMessage(
+          LanguageModelChatMessageRole.User,
+          getMoreRelevantMethodsOrPropertiesPrompt
+        );
         msgCount = countMessagesTokens([sampleMessage]);
       }
       if (msgCount > getTokenLimitation(model)) {
@@ -222,7 +227,8 @@ export class SampleProvider {
               groupedMethodsOrProperties,
               sample
             );
-            sampleMessage = new LanguageModelChatUserMessage(
+            sampleMessage = new LanguageModelChatMessage(
+              LanguageModelChatMessageRole.User,
               getMoreRelevantMethodsOrPropertiesPrompt
             );
             msgCount = countMessagesTokens([sampleMessage]);
@@ -277,7 +283,8 @@ export class SampleProvider {
       groupedMethodsOrProperties,
       sample
     );
-    const sampleMessage = new LanguageModelChatUserMessage(
+    const sampleMessage = new LanguageModelChatMessage(
+      LanguageModelChatMessageRole.User,
       getMoreRelevantMethodsOrPropertiesPrompt
     );
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);

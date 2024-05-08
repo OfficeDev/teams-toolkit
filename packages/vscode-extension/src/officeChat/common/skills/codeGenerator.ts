@@ -5,8 +5,7 @@ import {
   CancellationToken,
   ChatResponseStream,
   LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { correctPropertyLoadSpelling } from "../utils";
 import { SampleProvider } from "../samples/sampleProvider";
@@ -49,7 +48,7 @@ export class CodeGenerator implements ISkill {
   }
 
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
@@ -183,8 +182,8 @@ export class CodeGenerator implements ISkill {
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
@@ -240,10 +239,17 @@ export class CodeGenerator implements ISkill {
     userPrompt += "\nThink about that step by step.";
 
     // Perform the desired operation
-    const messages: LanguageModelChatMessage[] = [new LanguageModelChatUserMessage(userPrompt)];
+    const messages: LanguageModelChatMessage[] = [
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
+    ];
 
     if (sampleCode.length > 0) {
-      messages.push(new LanguageModelChatSystemMessage(getCodeSamplePrompt(sampleCode)));
+      messages.push(
+        new LanguageModelChatMessage(
+          LanguageModelChatMessageRole.System,
+          getCodeSamplePrompt(sampleCode)
+        )
+      );
     }
 
     const copilotResponse = await getCopilotResponseAsString(
@@ -347,7 +353,9 @@ class ${className} extends OfficeExtension.ClientObject {
 
     // Perform the desired operation
     // The order in array is matter, don't change it unless you know what you are doing
-    const messages: LanguageModelChatMessage[] = [new LanguageModelChatUserMessage(userPrompt)];
+    const messages: LanguageModelChatMessage[] = [
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
+    ];
     if (sampleCode.length > 0) {
       let samplePrompt = getGenerateCodeSamplePrompt();
       samplePrompt += `
@@ -358,18 +366,20 @@ class ${className} extends OfficeExtension.ClientObject {
 
       Let's think step by step.
       `;
-      messages.push(new LanguageModelChatSystemMessage(samplePrompt));
+      messages.push(
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, samplePrompt)
+      );
     }
     // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
     if (isCustomFunctions) {
       messages.push(
-        new LanguageModelChatSystemMessage(referenceUserPrompt),
-        new LanguageModelChatSystemMessage(declarationPrompt)
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt),
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
       );
     } else {
       messages.push(
-        new LanguageModelChatSystemMessage(declarationPrompt),
-        new LanguageModelChatSystemMessage(referenceUserPrompt)
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt),
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
       );
     }
     // Because of the token window limitation, we have to cut off the messages if it exceeds the limitation

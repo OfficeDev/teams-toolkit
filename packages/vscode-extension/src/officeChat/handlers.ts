@@ -9,7 +9,8 @@ import {
   ChatResponseStream,
   ChatResultFeedback,
   ChatUserActionEvent,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
   ProviderResult,
   Uri,
   commands,
@@ -68,7 +69,10 @@ async function officeDefaultHandler(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
-  const messages = [defaultOfficeSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+  const messages = [
+    defaultOfficeSystemPrompt(),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+  ];
   officeChatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 

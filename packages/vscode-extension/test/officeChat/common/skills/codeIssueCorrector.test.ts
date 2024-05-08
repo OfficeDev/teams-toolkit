@@ -10,8 +10,8 @@ import {
 import {
   CancellationToken,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
-  LanguageModelChatSystemMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { SampleProvider } from "../../../../src/officeChat/common/samples/sampleProvider";
@@ -43,7 +43,8 @@ describe("CodeIssueCorrector", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };
@@ -121,11 +122,15 @@ describe("CodeIssueCorrector", () => {
     Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
-    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: sampleCodeLong,
+      name: undefined,
     };
     sandbox
       .stub(utils, "countMessagesTokens")
@@ -163,11 +168,15 @@ describe("CodeIssueCorrector", () => {
     Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
-    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: sampleCodeLong,
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -215,11 +224,15 @@ describe("CodeIssueCorrector", () => {
     Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
-    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: sampleCodeLong,
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -267,11 +280,15 @@ describe("CodeIssueCorrector", () => {
     Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
-    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: sampleCodeLong,
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -312,8 +329,10 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync error with code length reduced too much", async () => {
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -350,8 +369,10 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync return newCodeStr", async () => {
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");

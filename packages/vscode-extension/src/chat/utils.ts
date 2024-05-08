@@ -50,7 +50,11 @@ export function countMessageTokens(message: LanguageModelChatMessage): number {
     if (!value) {
       continue;
     }
-    numTokens += tokenizer.tokenLength(value);
+    if (key === "role") {
+      numTokens += tokenizer.tokenLength(value.toString());
+    } else {
+      numTokens += tokenizer.tokenLength(value);
+    }
     if (key === "name") {
       numTokens += BaseTokensPerName;
     }

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teams-manifest",
-  "version": "0.1.4-rc-hotfix.0",
+  "version": "0.1.4-rc-hotfix.1",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",

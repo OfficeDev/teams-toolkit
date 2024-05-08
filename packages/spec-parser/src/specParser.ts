@@ -292,8 +292,8 @@ export class SpecParser {
         authInfo
       );
 
-      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
-      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 2 });
+      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 4 });
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 4 });
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;

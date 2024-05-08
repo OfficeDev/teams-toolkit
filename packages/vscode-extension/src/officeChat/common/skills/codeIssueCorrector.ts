@@ -28,6 +28,7 @@ import {
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
+import { SampleData } from "../samples/sampleData";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -101,21 +102,33 @@ export class CodeIssueCorrector implements ISkill {
 
     let setDeclartionPrompt = getDeclarationsPrompt();
 
-    if (spec.appendix.apiDeclarationsReference.size > 0) {
-      const codeSnippets: string[] = [];
-      spec.appendix.apiDeclarationsReference.forEach((sample, api) => {
-        console.debug(`[Code corrector] Declaration matched: ${sample.description}`);
-        codeSnippets.push(`
-- [Description] ${sample.description}:
-\`\`\`typescript
-${sample.codeSample}
-\`\`\`\n
-`);
+    if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
+      const groupedMethodsOrProperties = new Map<string, SampleData[]>();
+      for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
+        if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
+          groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
+        }
+        groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
+      }
+
+      let tempClassDeclaration = "";
+      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+        tempClassDeclaration += `
+class ${className} extends OfficeExtension.ClientObject {
+  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+}
+\n\n
+        `;
       });
 
-      if (codeSnippets.length > 0) {
-        setDeclartionPrompt = setDeclartionPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
-      }
+      setDeclartionPrompt += `
+      
+      \`\`\`typescript
+      ${tempClassDeclaration};
+      \`\`\`
+
+      Let's think step by step.
+      `;
     }
     const declarationMessage: LanguageModelChatSystemMessage | null =
       spec.appendix.apiDeclarationsReference.size > 0

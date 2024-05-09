@@ -1869,26 +1869,24 @@ describe("CopilotGenerator", async () => {
         platform: Platform.CLI,
         projectPath: "./",
         [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+        [QuestionNames.AppName]: "testapp",
       };
-      let res = await generator.activate(context, inputs);
-      let templateInfos = await generator.getTemplateInfos(context, inputs, ".");
-      assert.isTrue(res);
-      // assert.equal(templateName, "api-plugin-existing-api");
-
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginOpenAIPlugin().id;
-      templateInfos = await generator.getTemplateInfos(context, inputs, ".");
-      assert.isTrue(res);
+      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
+      inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
+      let res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+      }
 
       delete inputs[QuestionNames.Capabilities];
+      delete inputs.apiAuthData;
       inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
-      templateInfos = await generator.getTemplateInfos(context, inputs, ".");
-      assert.isTrue(res);
-
-      delete inputs[QuestionNames.MeArchitectureType];
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.customCopilotRag().id;
-      inputs[QuestionNames.CustomCopilotRag] = CustomCopilotRagOptions.customApi().id;
-      res = generator.activate(context, inputs);
-      templateInfos = await generator.getTemplateInfos(context, inputs, ".");
+      res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+      }
     });
   });
 });

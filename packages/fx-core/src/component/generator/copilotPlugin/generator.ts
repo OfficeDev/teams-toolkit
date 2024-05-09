@@ -294,164 +294,169 @@ export class CopilotPluginGenerator {
         [telemetryProperties.authType]: authData?.authName ?? "None",
       });
 
-      // validate API spec
-      const specParser = new SpecParser(
-        url,
-        isPlugin
-          ? copilotPluginParserOptions
-          : {
-              allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-              allowMultipleParameters: true,
-              projectType: type,
-              allowOauth2: isCopilotAuthEnabled(),
-            }
-      );
-      const validationRes = await specParser.validate();
-      const warnings = validationRes.warnings;
-      const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
-      if (operationIdWarning && operationIdWarning.data) {
-        const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
-          filters.includes(api)
-        );
-        if (apisMissingOperationId.length > 0) {
-          operationIdWarning.content = util.format(
-            getLocalizedString("core.common.MissingOperationId"),
-            apisMissingOperationId.join(", ")
-          );
-          delete operationIdWarning.data;
-        } else {
-          warnings.splice(warnings.indexOf(operationIdWarning), 1);
-        }
-      }
+      const newGenerator = new CopilotGenerator();
+      newGenerator.isYaml = isYaml;
+      const res = await newGenerator.post(context, inputs, destinationPath);
+      return res;
 
-      const specVersionWarning = warnings.find(
-        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
-      );
-      if (specVersionWarning) {
-        specVersionWarning.content = ""; // We don't care content of this warning
-      }
+      // // validate API spec
+      // const specParser = new SpecParser(
+      //   url,
+      //   isPlugin
+      //     ? copilotPluginParserOptions
+      //     : {
+      //         allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+      //         allowMultipleParameters: true,
+      //         projectType: type,
+      //         allowOauth2: isCopilotAuthEnabled(),
+      //       }
+      // );
+      // const validationRes = await specParser.validate();
+      // const warnings = validationRes.warnings;
+      // const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+      // if (operationIdWarning && operationIdWarning.data) {
+      //   const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+      //     filters.includes(api)
+      //   );
+      //   if (apisMissingOperationId.length > 0) {
+      //     operationIdWarning.content = util.format(
+      //       getLocalizedString("core.common.MissingOperationId"),
+      //       apisMissingOperationId.join(", ")
+      //     );
+      //     delete operationIdWarning.data;
+      //   } else {
+      //     warnings.splice(warnings.indexOf(operationIdWarning), 1);
+      //   }
+      // }
 
-      if (validationRes.status === ValidationStatus.Error) {
-        logValidationResults(validationRes.errors, warnings, context, true, false, true);
-        const errorMessage =
-          inputs.platform === Platform.VSCode
-            ? getLocalizedString(
-                "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
-              )
-            : getLocalizedString(
-                "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
-              );
-        return err(
-          new UserError(componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
-        );
-      }
+      // const specVersionWarning = warnings.find(
+      //   (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      // );
+      // if (specVersionWarning) {
+      //   specVersionWarning.content = ""; // We don't care content of this warning
+      // }
 
-      // generate files
-      await fs.ensureDir(apiSpecFolderPath);
+      // if (validationRes.status === ValidationStatus.Error) {
+      //   logValidationResults(validationRes.errors, warnings, context, true, false, true);
+      //   const errorMessage =
+      //     inputs.platform === Platform.VSCode
+      //       ? getLocalizedString(
+      //           "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+      //         )
+      //       : getLocalizedString(
+      //           "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+      //         );
+      //   return err(
+      //     new UserError(componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
+      //   );
+      // }
 
-      let generateResult;
+      // // generate files
+      // await fs.ensureDir(apiSpecFolderPath);
 
-      if (isPlugin) {
-        const pluginManifestPath = path.join(
-          destinationPath,
-          AppPackageFolderName,
-          defaultPluginManifestFileName
-        );
-        generateResult = await specParser.generateForCopilot(
-          manifestPath,
-          filters,
-          openapiSpecPath,
-          pluginManifestPath
-        );
-      } else {
-        const responseTemplateFolder = path.join(
-          destinationPath,
-          AppPackageFolderName,
-          ResponseTemplatesFolderName
-        );
-        generateResult = await specParser.generate(
-          manifestPath,
-          filters,
-          openapiSpecPath,
-          type === ProjectType.TeamsAi ? undefined : responseTemplateFolder
-        );
-      }
+      // let generateResult;
 
-      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [telemetryProperties.generateType]: type.toString(),
-        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
-        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
-          .map((w) => w.type.toString() + ": " + w.content)
-          .join(";"),
-      });
+      // if (isPlugin) {
+      //   const pluginManifestPath = path.join(
+      //     destinationPath,
+      //     AppPackageFolderName,
+      //     defaultPluginManifestFileName
+      //   );
+      //   generateResult = await specParser.generateForCopilot(
+      //     manifestPath,
+      //     filters,
+      //     openapiSpecPath,
+      //     pluginManifestPath
+      //   );
+      // } else {
+      //   const responseTemplateFolder = path.join(
+      //     destinationPath,
+      //     AppPackageFolderName,
+      //     ResponseTemplatesFolderName
+      //   );
+      //   generateResult = await specParser.generate(
+      //     manifestPath,
+      //     filters,
+      //     openapiSpecPath,
+      //     type === ProjectType.TeamsAi ? undefined : responseTemplateFolder
+      //   );
+      // }
 
-      if (generateResult.warnings.length > 0) {
-        generateResult.warnings.find((o) => {
-          if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
-            o.content = ""; // We don't care content of this warning
-          }
-        });
-        warnings.push(...generateResult.warnings);
-      }
+      // context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+      //   [telemetryProperties.generateType]: type.toString(),
+      //   [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+      //   [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+      //     .map((w) => w.type.toString() + ": " + w.content)
+      //     .join(";"),
+      // });
 
-      // update manifest based on openAI plugin manifest
-      const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+      // if (generateResult.warnings.length > 0) {
+      //   generateResult.warnings.find((o) => {
+      //     if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+      //       o.content = ""; // We don't care content of this warning
+      //     }
+      //   });
+      //   warnings.push(...generateResult.warnings);
+      // }
 
-      if (manifestRes.isErr()) {
-        return err(manifestRes.error);
-      }
+      // // update manifest based on openAI plugin manifest
+      // const manifestRes = await manifestUtils._readAppManifest(manifestPath);
 
-      const teamsManifest = manifestRes.value;
-      if (inputs.openAIPluginManifest) {
-        const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
-          inputs.openAIPluginManifest,
-          teamsManifest,
-          manifestPath
-        );
-        if (updateManifestRes.isErr()) return err(updateManifestRes.error);
-      }
+      // if (manifestRes.isErr()) {
+      //   return err(manifestRes.error);
+      // }
 
-      if (componentName === forCustomCopilotRagCustomApi) {
-        const specs = await specParser.getFilteredSpecs(filters);
-        const spec = specs[1];
-        try {
-          await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
-        } catch (error: any) {
-          throw new SystemError(
-            componentName,
-            failedToUpdateCustomApiTemplateErrorName,
-            error.message,
-            error.message
-          );
-        }
-      }
+      // const teamsManifest = manifestRes.value;
+      // if (inputs.openAIPluginManifest) {
+      //   const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
+      //     inputs.openAIPluginManifest,
+      //     teamsManifest,
+      //     manifestPath
+      //   );
+      //   if (updateManifestRes.isErr()) return err(updateManifestRes.error);
+      // }
 
-      // log warnings
-      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
-        const warnSummary = generateScaffoldingSummary(
-          warnings,
-          teamsManifest,
-          path.relative(destinationPath, openapiSpecPath)
-        );
+      // if (componentName === forCustomCopilotRagCustomApi) {
+      //   const specs = await specParser.getFilteredSpecs(filters);
+      //   const spec = specs[1];
+      //   try {
+      //     await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
+      //   } catch (error: any) {
+      //     throw new SystemError(
+      //       componentName,
+      //       failedToUpdateCustomApiTemplateErrorName,
+      //       error.message,
+      //       error.message
+      //     );
+      //   }
+      // }
 
-        if (warnSummary) {
-          void context.logProvider.info(warnSummary);
-        }
-      }
+      // // log warnings
+      // if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
+      //   const warnSummary = generateScaffoldingSummary(
+      //     warnings,
+      //     teamsManifest,
+      //     path.relative(destinationPath, openapiSpecPath)
+      //   );
 
-      if (inputs.platform === Platform.VSCode) {
-        return ok({
-          warnings: warnings.map((warning) => {
-            return {
-              type: warning.type,
-              content: warning.content,
-              data: warning.data,
-            };
-          }),
-        });
-      } else {
-        return ok({ warnings: undefined });
-      }
+      //   if (warnSummary) {
+      //     void context.logProvider.info(warnSummary);
+      //   }
+      // }
+
+      // if (inputs.platform === Platform.VSCode) {
+      //   return ok({
+      //     warnings: warnings.map((warning) => {
+      //       return {
+      //         type: warning.type,
+      //         content: warning.content,
+      //         data: warning.data,
+      //       };
+      //     }),
+      //   });
+      // } else {
+      //   return ok({ warnings: undefined });
+      // }
     } catch (e) {
       let error: FxError;
       if (e instanceof SpecParserError) {

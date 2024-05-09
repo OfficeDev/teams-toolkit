@@ -32,12 +32,17 @@ import {
   AdaptiveCardGenerator,
   ProjectType,
 } from "@microsoft/m365-spec-parser";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import {
+  CopilotGenerator,
+  CopilotPluginGenerator,
+} from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
 import {
   CapabilityOptions,
   copilotPluginApiSpecOptionId,
+  CustomCopilotRagOptions,
+  MeArchitectureOptions,
   ProgrammingLanguage,
   QuestionNames,
 } from "../../../src/question";
@@ -1815,5 +1820,44 @@ describe("listOperations", async () => {
       ""
     );
     expect(res.isOk()).to.be.true;
+  });
+});
+
+describe("CopilotGenerator", async () => {
+  describe("activate", async () => {
+    it("should activate and get correct template name", async () => {
+      const generator = new CopilotGenerator();
+      const context = createContextV3();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      };
+      let res = await generator.activate(context, inputs);
+      let templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "api-plugin-existing-api");
+
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginOpenAIPlugin().id;
+      res = generator.activate(context, inputs);
+      templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "copilot-plugin-from-oai-plugin");
+
+      delete inputs[QuestionNames.Capabilities];
+      inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
+      res = generator.activate(context, inputs);
+      templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "copilot-plugin-existing-api");
+
+      delete inputs[QuestionNames.MeArchitectureType];
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.customCopilotRag().id;
+      inputs[QuestionNames.CustomCopilotRag] = CustomCopilotRagOptions.customApi().id;
+      res = generator.activate(context, inputs);
+      templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "custom-copilot-rag-custom-api");
+    });
   });
 });

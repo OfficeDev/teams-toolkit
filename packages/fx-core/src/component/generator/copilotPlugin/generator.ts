@@ -7,69 +7,68 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
+  ProjectType,
+  SpecParser,
+  SpecParserError,
+  ValidationStatus,
+  WarningType,
+} from "@microsoft/m365-spec-parser";
+import {
+  AppPackageFolderName,
+  AuthInfo,
   Context,
-  err,
   FxError,
+  GeneratorResult,
   Inputs,
   ManifestTemplateFileName,
-  ok,
   Platform,
-  Result,
-  UserError,
   ResponseTemplatesFolderName,
-  AppPackageFolderName,
-  Warning,
-  AuthInfo,
+  Result,
   SystemError,
-  GeneratorResult,
+  UserError,
+  Warning,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { Generator } from "../generator";
+import * as fs from "fs-extra";
+import { merge } from "lodash";
 import path from "path";
-import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
-import { QuestionNames } from "../../../question/questionNames";
-import {
-  convertSpecParserErrorToFxError,
-  generateScaffoldingSummary,
-  logValidationResults,
-  OpenAIPluginManifestHelper,
-  specParserGenerateResultAllSuccessTelemetryProperty,
-  specParserGenerateResultTelemetryEvent,
-  specParserGenerateResultWarningsTelemetryProperty,
-  isYamlSpecFile,
-  invalidApiSpecErrorName,
-  copilotPluginParserOptions,
-  updateForCustomApi,
-  getEnvName,
-  defaultApiSpecFolderName,
-  defaultApiSpecYamlFileName,
-  defaultApiSpecJsonFileName,
-  defaultPluginManifestFileName,
-} from "./helper";
+import * as util from "util";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
 } from "../../../question/create";
-import * as fs from "fs-extra";
-import { UnhandledError, assembleError } from "../../../error";
-import {
-  SpecParserError,
-  SpecParser,
-  ValidationStatus,
-  WarningType,
-  ProjectType,
-} from "@microsoft/m365-spec-parser";
-import * as util from "util";
+import { QuestionNames } from "../../../question/questionNames";
 import { isValidHttpUrl } from "../../../question/util";
-import { merge, template } from "lodash";
-import { isCopilotAuthEnabled } from "../../../common/featureFlags";
+import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { Generator } from "../generator";
+import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
-import { InvalidInputError } from "../../../core/error";
+import {
+  OpenAIPluginManifestHelper,
+  convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
+  defaultApiSpecFolderName,
+  defaultApiSpecJsonFileName,
+  defaultApiSpecYamlFileName,
+  defaultPluginManifestFileName,
+  generateScaffoldingSummary,
+  getEnvName,
+  invalidApiSpecErrorName,
+  isYamlSpecFile,
+  logValidationResults,
+  specParserGenerateResultAllSuccessTelemetryProperty,
+  specParserGenerateResultTelemetryEvent,
+  specParserGenerateResultWarningsTelemetryProperty,
+  updateForCustomApi,
+} from "./helper";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -465,8 +464,8 @@ export class CopilotPluginGenerator {
   }
 }
 
-export class CopilotPluginGeneratorNew extends DefaultTemplateGenerator {
-  componentName = "copilot-plugin-generator";
+export class CopilotGenerator extends DefaultTemplateGenerator {
+  componentName = "copilot-generator";
   isYaml = false;
 
   // activation condition

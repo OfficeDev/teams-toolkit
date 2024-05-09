@@ -21,6 +21,7 @@ import {
   Warning,
   AuthInfo,
   SystemError,
+  GeneratorResult,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -47,9 +48,13 @@ import {
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { ProgrammingLanguage } from "../../../question/create";
+import {
+  CapabilityOptions,
+  MeArchitectureOptions,
+  ProgrammingLanguage,
+} from "../../../question/create";
 import * as fs from "fs-extra";
-import { assembleError } from "../../../error";
+import { UnhandledError, assembleError } from "../../../error";
 import {
   SpecParserError,
   SpecParser,
@@ -59,8 +64,11 @@ import {
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
-import { merge } from "lodash";
+import { merge, template } from "lodash";
 import { isCopilotAuthEnabled } from "../../../common/featureFlags";
+import { DefaultTemplateGenerator } from "../templates/templateGenerator";
+import { TemplateInfo } from "../templates/templateInfo";
+import { InvalidInputError } from "../../../core/error";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -411,6 +419,313 @@ export class CopilotPluginGenerator {
         } catch (error: any) {
           throw new SystemError(
             componentName,
+            failedToUpdateCustomApiTemplateErrorName,
+            error.message,
+            error.message
+          );
+        }
+      }
+
+      // log warnings
+      if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
+        const warnSummary = generateScaffoldingSummary(
+          warnings,
+          teamsManifest,
+          path.relative(destinationPath, openapiSpecPath)
+        );
+
+        if (warnSummary) {
+          void context.logProvider.info(warnSummary);
+        }
+      }
+
+      if (inputs.platform === Platform.VSCode) {
+        return ok({
+          warnings: warnings.map((warning) => {
+            return {
+              type: warning.type,
+              content: warning.content,
+              data: warning.data,
+            };
+          }),
+        });
+      } else {
+        return ok({ warnings: undefined });
+      }
+    } catch (e) {
+      let error: FxError;
+      if (e instanceof SpecParserError) {
+        error = convertSpecParserErrorToFxError(e);
+      } else {
+        error = assembleError(e);
+      }
+      return err(error);
+    }
+  }
+}
+
+export class CopilotPluginGeneratorNew extends DefaultTemplateGenerator {
+  componentName = "copilot-plugin-generator";
+  isYaml = false;
+
+  // activation condition
+  public activate(context: Context, inputs: Inputs): boolean {
+    const capability = inputs.capabilities as string;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    return (
+      capability === CapabilityOptions.copilotPluginApiSpec().id ||
+      capability === CapabilityOptions.copilotPluginOpenAIPlugin().id ||
+      meArchitecture === MeArchitectureOptions.apiSpec().id
+    );
+  }
+
+  getTemplateName(inputs: Inputs): string {
+    const capability = inputs.capabilities as string;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    let templateName = "";
+    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      templateName = apiPluginFromApiSpecTemplateName;
+    } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+      templateName = fromApiSpecTemplateName;
+    } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
+      templateName = fromOpenAIPluginTemplateName;
+    }
+    return templateName;
+  }
+
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const capability = inputs.capabilities as string;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    const templateName = this.getTemplateName(inputs);
+    let isPlugin = false;
+    let authData = undefined;
+    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      isPlugin = true;
+      authData = inputs.apiAuthData;
+    } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+      authData = inputs.apiAuthData;
+    }
+    merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
+    const appName = inputs[QuestionNames.AppName];
+    const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+    const safeProjectNameFromVS =
+      language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+    const type =
+      templateName === forCustomCopilotRagCustomApi
+        ? ProjectType.TeamsAi
+        : isPlugin
+        ? ProjectType.Copilot
+        : ProjectType.SME;
+    let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    url = url.trim();
+
+    let isYaml: boolean;
+    try {
+      isYaml = await isYamlSpecFile(url);
+    } catch (e) {
+      isYaml = false;
+    }
+
+    this.isYaml = isYaml;
+
+    const openapiSpecFileName = isYaml ? defaultApiSpecYamlFileName : defaultApiSpecJsonFileName;
+    if (authData?.authName) {
+      const envName = getEnvName(authData.authName, authData.authType);
+      context.templateVariables = Generator.getDefaultVariables(
+        appName,
+        safeProjectNameFromVS,
+        inputs.targetFramework,
+        inputs.placeProjectFileInSolutionDir === "true",
+        {
+          authName: authData.authName,
+          openapiSpecPath: normalizePath(
+            path.join(AppPackageFolderName, defaultApiSpecFolderName, openapiSpecFileName)
+          ),
+          registrationIdEnvName: envName,
+          authType: authData.authType,
+        }
+      );
+    } else {
+      context.templateVariables = Generator.getDefaultVariables(
+        appName,
+        safeProjectNameFromVS,
+        inputs.targetFramework,
+        inputs.placeProjectFileInSolutionDir === "true"
+      );
+    }
+    context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
+      [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+      [telemetryProperties.generateType]: type.toString(),
+      [telemetryProperties.authType]: authData?.authName ?? "None",
+    });
+    return ok([
+      { templateName: templateName, language: language, replaceMap: context.templateVariables },
+    ]);
+  }
+
+  public async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    try {
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
+      const capability = inputs.capabilities as string;
+      const isPlugin = capability === CapabilityOptions.copilotPluginApiSpec().id;
+      const templateName = this.getTemplateName(inputs);
+      const type =
+        templateName === forCustomCopilotRagCustomApi
+          ? ProjectType.TeamsAi
+          : isPlugin
+          ? ProjectType.Copilot
+          : ProjectType.SME;
+      // validate API spec
+      const specParser = new SpecParser(
+        url,
+        isPlugin
+          ? copilotPluginParserOptions
+          : {
+              allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+              allowMultipleParameters: true,
+              projectType: type,
+              allowOauth2: isCopilotAuthEnabled(),
+            }
+      );
+      const validationRes = await specParser.validate();
+      const warnings = validationRes.warnings;
+      const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+      const filters = inputs[QuestionNames.ApiOperation] as string[];
+      if (operationIdWarning && operationIdWarning.data) {
+        const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+          filters.includes(api)
+        );
+        if (apisMissingOperationId.length > 0) {
+          operationIdWarning.content = util.format(
+            getLocalizedString("core.common.MissingOperationId"),
+            apisMissingOperationId.join(", ")
+          );
+          delete operationIdWarning.data;
+        } else {
+          warnings.splice(warnings.indexOf(operationIdWarning), 1);
+        }
+      }
+
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
+      }
+
+      if (validationRes.status === ValidationStatus.Error) {
+        logValidationResults(validationRes.errors, warnings, context, true, false, true);
+        const errorMessage =
+          inputs.platform === Platform.VSCode
+            ? getLocalizedString(
+                "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+              )
+            : getLocalizedString(
+                "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+              );
+        return err(
+          new UserError(this.componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
+        );
+      }
+      const manifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+      const apiSpecFolderPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        defaultApiSpecFolderName
+      );
+      const openapiSpecFileName = this.isYaml
+        ? defaultApiSpecYamlFileName
+        : defaultApiSpecJsonFileName;
+      const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+      // generate files
+      await fs.ensureDir(apiSpecFolderPath);
+
+      let generateResult;
+
+      if (isPlugin) {
+        const pluginManifestPath = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          defaultPluginManifestFileName
+        );
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          filters,
+          openapiSpecPath,
+          pluginManifestPath
+        );
+      } else {
+        const responseTemplateFolder = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          ResponseTemplatesFolderName
+        );
+        generateResult = await specParser.generate(
+          manifestPath,
+          filters,
+          openapiSpecPath,
+          type === ProjectType.TeamsAi ? undefined : responseTemplateFolder
+        );
+      }
+
+      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+        [telemetryProperties.generateType]: type.toString(),
+        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+          .map((w) => w.type.toString() + ": " + w.content)
+          .join(";"),
+      });
+
+      if (generateResult.warnings.length > 0) {
+        generateResult.warnings.find((o) => {
+          if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+            o.content = ""; // We don't care content of this warning
+          }
+        });
+        warnings.push(...generateResult.warnings);
+      }
+
+      // update manifest based on openAI plugin manifest
+      const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+
+      const teamsManifest = manifestRes.value;
+      if (inputs.openAIPluginManifest) {
+        const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
+          inputs.openAIPluginManifest,
+          teamsManifest,
+          manifestPath
+        );
+        if (updateManifestRes.isErr()) return err(updateManifestRes.error);
+      }
+
+      if (templateName === forCustomCopilotRagCustomApi) {
+        const specs = await specParser.getFilteredSpecs(filters);
+        const spec = specs[1];
+        try {
+          const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+          await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
+        } catch (error: any) {
+          throw new SystemError(
+            this.componentName,
             failedToUpdateCustomApiTemplateErrorName,
             error.message,
             error.message

@@ -11,7 +11,6 @@ import {
   BaseTokensPerCompletion,
   BaseTokensPerMessage,
   BaseTokensPerName,
-  BaseTokensPerRole,
 } from "../../src/chat/consts";
 
 chai.use(chaiPromised);
@@ -128,7 +127,7 @@ describe("chat utils", () => {
         ""
       );
       const result = utils.countMessageTokens(message);
-      chai.assert.equal(result, BaseTokensPerMessage + BaseTokensPerRole);
+      chai.assert.equal(result, BaseTokensPerMessage);
     });
 
     it("count message without name", () => {
@@ -137,7 +136,7 @@ describe("chat utils", () => {
         "testContent1"
       );
       const result = utils.countMessageTokens(message);
-      chai.assert.equal(result, BaseTokensPerMessage + "testContent1".length + BaseTokensPerRole);
+      chai.assert.equal(result, BaseTokensPerMessage + "testContent1".length);
     });
 
     it("count message with name", () => {
@@ -149,11 +148,7 @@ describe("chat utils", () => {
       const result = utils.countMessageTokens(message);
       chai.assert.equal(
         result,
-        BaseTokensPerMessage +
-          "testContent2".length +
-          "testName2".length +
-          BaseTokensPerName +
-          BaseTokensPerRole
+        BaseTokensPerMessage + "testContent2".length + "testName2".length + BaseTokensPerName
       );
     });
   });
@@ -192,12 +187,10 @@ describe("chat utils", () => {
         result,
         BaseTokensPerMessage +
           "testContent1".length +
-          BaseTokensPerRole +
           BaseTokensPerMessage +
           "testContent2".length +
           "testName2".length +
           BaseTokensPerName +
-          BaseTokensPerRole +
           BaseTokensPerCompletion
       );
     });

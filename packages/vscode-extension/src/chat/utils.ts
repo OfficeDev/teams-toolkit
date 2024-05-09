@@ -47,14 +47,10 @@ export function countMessageTokens(message: LanguageModelChatMessage): number {
   let numTokens = BaseTokensPerMessage;
   const tokenizer = Tokenizer.getInstance();
   for (const [key, value] of Object.entries(message)) {
-    if (!value) {
+    if (!value || key === "role") {
       continue;
     }
-    if (key === "role") {
-      numTokens += tokenizer.tokenLength(value.toString());
-    } else {
-      numTokens += tokenizer.tokenLength(value);
-    }
+    numTokens += tokenizer.tokenLength(value);
     if (key === "name") {
       numTokens += BaseTokensPerName;
     }

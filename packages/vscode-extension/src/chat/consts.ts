@@ -35,6 +35,4 @@ export const BaseTokensPerMessage = 3;
  */
 export const BaseTokensPerName = 1;
 
-export const BaseTokensPerRole = 1;
-
 export const IsChatParticipantEnabled = true;

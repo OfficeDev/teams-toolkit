@@ -1466,7 +1466,7 @@
           },
           {
             "name": "nextstep",
-            "description": "%teamstoolkit.chatParticipants.nextStep.description%"
+            "description": "%teamstoolkit.chatParticipants.officeAddIn.nextStep.description%"
           }
         ]
       }

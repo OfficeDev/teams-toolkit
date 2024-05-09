@@ -50,6 +50,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import {
   CapabilityOptions,
+  CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
 } from "../../../question/create";
@@ -475,7 +476,9 @@ export class CopilotPluginGeneratorNew extends DefaultTemplateGenerator {
     return (
       capability === CapabilityOptions.copilotPluginApiSpec().id ||
       capability === CapabilityOptions.copilotPluginOpenAIPlugin().id ||
-      meArchitecture === MeArchitectureOptions.apiSpec().id
+      meArchitecture === MeArchitectureOptions.apiSpec().id ||
+      (capability === CapabilityOptions.customCopilotRag().id &&
+        inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
     );
   }
 
@@ -489,6 +492,11 @@ export class CopilotPluginGeneratorNew extends DefaultTemplateGenerator {
       templateName = fromApiSpecTemplateName;
     } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
       templateName = fromOpenAIPluginTemplateName;
+    } else if (
+      capability === CapabilityOptions.customCopilotRag().id &&
+      inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+    ) {
+      templateName = forCustomCopilotRagCustomApi;
     }
     return templateName;
   }

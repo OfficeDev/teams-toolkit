@@ -43,9 +43,9 @@ This update, marking a minor version increment of the Teams Toolkit, incorporate
 
 ### Bug Fixes
 
-- Fixed an issue in the `teamsapp` CLI has been resolved, where scrolling down would result in an error when selecting an item of a large index from a list. ([#11521](https://github.com/OfficeDev/TeamsFx/pull/11521))
-- Fixed a bug in API-based message extension app templates has been fixed, where the launch URL pointed to the home page instead of the app installation page. ([#11461](https://github.com/OfficeDev/TeamsFx/pull/11461))
-- Fixed a vulnerability issue introduced by the `axios` package has been addressed. ([#11449](https://github.com/OfficeDev/TeamsFx/pull/11449))
+- Fixed an issue in the `teamsapp` CLI, where scrolling down would result in an error when selecting an item of a large index from a list. ([#11521](https://github.com/OfficeDev/TeamsFx/pull/11521))
+- Fixed a bug in API-based message extension app templates, where the launch URL pointed to the home page instead of the app installation page. ([#11461](https://github.com/OfficeDev/TeamsFx/pull/11461))
+- Fixed a vulnerability issue introduced by the `axios` package. ([#11449](https://github.com/OfficeDev/TeamsFx/pull/11449))
 
 ## 5.6.0 - Mar 12, 2024
 

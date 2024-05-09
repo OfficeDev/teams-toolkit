@@ -25,7 +25,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
-import { normalizePath } from "./utils/utils";
+import { getResolvedManifest, normalizePath } from "./utils/utils";
 import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 
 export const actionName = "teamsApp/zipAppPackage";
@@ -309,18 +309,7 @@ export class CreateAppPackageDriver implements StepDriver {
     telemetryKey: TelemetryPropertyKey
   ): Promise<Result<string, FxError>> {
     const content = await fs.readFile(filePath, "utf8");
-    const vars = getEnvironmentVariables(content);
-    ctx.addTelemetryProperties({
-      [telemetryKey]: vars.join(";"),
-    });
-    const result = expandEnvironmentVariable(content);
-    const notExpandedVars = getEnvironmentVariables(result);
-    if (notExpandedVars.length > 0) {
-      return err(
-        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), filePath)
-      );
-    }
-    return ok(result);
+    return getResolvedManifest(content, filePath, telemetryKey, ctx);
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {

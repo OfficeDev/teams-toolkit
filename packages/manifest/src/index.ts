@@ -5,10 +5,14 @@ import { TeamsAppManifest, IComposeExtension } from "./manifest";
 import fs from "fs-extra";
 import Ajv from "ajv-draft-04";
 import { JSONSchemaType } from "ajv";
+import addFormats from "ajv-formats";
+import Ajv2020 from "ajv/dist/2020";
 import { DevPreviewSchema } from "./devPreviewManifest";
 import { ManifestCommonProperties } from "./ManifestCommonProperties";
 import { SharePointAppId } from "./constants";
 import fetch from "node-fetch";
+import { DeclarativeCopilotManifestSchema } from "./declarativeCopilotManifest";
+import { PluginManifestSchema } from "./pluginManifest";
 
 export * from "./manifest";
 export * as devPreview from "./devPreviewManifest";
@@ -55,12 +59,23 @@ export class ManifestUtil {
    * @param schema - teams-app-manifest schema
    * @returns An empty array if it passes validation, or an array of error string otherwise.
    */
-  static validateManifestAgainstSchema<T extends Manifest = TeamsAppManifest>(
-    manifest: T,
-    schema: JSONSchemaType<T>
-  ): Promise<string[]> {
-    const ajv = new Ajv({ formats: { uri: true }, allErrors: true, strictTypes: false });
-    const validate = ajv.compile(schema);
+  static validateManifestAgainstSchema<
+    T extends Manifest | DeclarativeCopilotManifestSchema | PluginManifestSchema = TeamsAppManifest
+  >(manifest: T, schema: JSONSchemaType<T>): Promise<string[]> {
+    let validate;
+    if (schema.$schema?.includes("2020-12")) {
+      const ajv = new Ajv2020({
+        //formats: { uri: true, email: true },
+        allErrors: true,
+        strictTypes: false,
+      });
+      addFormats(ajv, ["uri", "email", "regex"]);
+      validate = ajv.compile(schema);
+    } else {
+      const ajv = new Ajv({ formats: { uri: true }, allErrors: true, strictTypes: false });
+      validate = ajv.compile(schema);
+    }
+
     const valid = validate(manifest);
     if (!valid && validate.errors) {
       return Promise.resolve(
@@ -71,21 +86,25 @@ export class ManifestUtil {
     }
   }
 
-  static async fetchSchema<T extends Manifest = TeamsAppManifest>(
-    manifest: T
+  static async fetchSchema<
+    T extends Manifest | DeclarativeCopilotManifestSchema | PluginManifestSchema = TeamsAppManifest
+  >(
+    manifest: T,
+    url?: string // if manifest does not have $schema, use this url
   ): Promise<JSONSchemaType<T>> {
-    if (!manifest.$schema) {
-      throw new Error("Manifest does not have a $schema property");
+    const schemaUrl = (manifest.$schema as string) || url;
+    if (!schemaUrl) {
+      throw new Error("Manifest does not have a $schema property or schema url is not provided.");
     }
     let result: JSONSchemaType<T>;
     try {
-      const res = await fetch(manifest.$schema);
+      const res = await fetch(schemaUrl);
       result = (await res.json()) as JSONSchemaType<T>;
     } catch (e: unknown) {
       if (e instanceof Error) {
-        throw new Error(`Failed to get manifest at url ${manifest.$schema} due to: ${e.message}`);
+        throw new Error(`Failed to get manifest at url ${schemaUrl} due to: ${e.message}`);
       } else {
-        throw new Error(`Failed to get manifest at url ${manifest.$schema} due to: unknown error`);
+        throw new Error(`Failed to get manifest at url ${schemaUrl} due to: unknown error`);
       }
     }
     return result;
@@ -95,15 +114,16 @@ export class ManifestUtil {
    * Validate manifest against {@link TeamsAppManifest#$schema}.
    *
    * @param manifest - Manifest object to be validated
-   * @throws Will throw if {@link TeamsAppManifest#$schema} is undefined, not valid
+   * @param url - The url to fetch the schema from if manifest does not have $schema.
+   * @throws Will throw if {@link TeamsAppManifest#$schema} or {@link url} is undefined, not valid
    *         or there is any network failure when getting the schema.
    *
    * @returns An empty array if schema validation passes, or an array of error string otherwise.
    */
-  static async validateManifest<T extends Manifest = TeamsAppManifest>(
-    manifest: T
-  ): Promise<string[]> {
-    const schema = await this.fetchSchema(manifest);
+  static async validateManifest<
+    T extends Manifest | DeclarativeCopilotManifestSchema | PluginManifestSchema = TeamsAppManifest
+  >(manifest: T, url?: string): Promise<string[]> {
+    const schema = await this.fetchSchema(manifest, url);
     return ManifestUtil.validateManifestAgainstSchema(manifest, schema);
   }
 

@@ -1,4 +1,5 @@
-{
+  {
+  "$schema": "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/schemas/pluginSchema.json",
   "schema_version": "v2.1",
   "namespace": "repairs",
   "name_for_human": "ttk-plugin-copilot${{APP_NAME_SUFFIX}}",

@@ -1860,4 +1860,35 @@ describe("CopilotGenerator", async () => {
       assert.equal(templateName, "custom-copilot-rag-custom-api");
     });
   });
+
+  describe("getTempalteInfos", async () => {
+    it("happy path", async () => {
+      const generator = new CopilotGenerator();
+      const context = createContextV3();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      };
+      let res = await generator.activate(context, inputs);
+      let templateInfos = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res);
+      // assert.equal(templateName, "api-plugin-existing-api");
+
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginOpenAIPlugin().id;
+      templateInfos = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res);
+
+      delete inputs[QuestionNames.Capabilities];
+      inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
+      templateInfos = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res);
+
+      delete inputs[QuestionNames.MeArchitectureType];
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.customCopilotRag().id;
+      inputs[QuestionNames.CustomCopilotRag] = CustomCopilotRagOptions.customApi().id;
+      res = generator.activate(context, inputs);
+      templateInfos = await generator.getTemplateInfos(context, inputs, ".");
+    });
+  });
 });

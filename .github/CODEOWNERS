@@ -267,6 +267,8 @@
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 
+/schemas/* @yuqizhou77 @huimiu
+
 /templates/* @hund030 @eriolchan @huimiu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu

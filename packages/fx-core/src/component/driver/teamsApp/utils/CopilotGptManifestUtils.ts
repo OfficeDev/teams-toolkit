@@ -21,10 +21,7 @@ import { getResolvedManifest } from "./utils";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import {
-  DeclarativeCopilotManifestValidationResult,
-  PluginManifestValidationResult,
-} from "../interfaces/ValidationResult";
+import { DeclarativeCopilotManifestValidationResult } from "../interfaces/ValidationResult";
 import path from "path";
 import { pluginManifestUtils } from "./PluginManifestUtils";
 import { SummaryConstant } from "../../../configManager/constant";

@@ -88,11 +88,8 @@ export class ManifestUtil {
 
   static async fetchSchema<
     T extends Manifest | DeclarativeCopilotManifestSchema | PluginManifestSchema = TeamsAppManifest
-  >(
-    manifest: T,
-    url?: string // if manifest does not have $schema, use this url
-  ): Promise<JSONSchemaType<T>> {
-    const schemaUrl = (manifest.$schema as string) || url;
+  >(manifest: T): Promise<JSONSchemaType<T>> {
+    const schemaUrl = manifest.$schema as string;
     if (!schemaUrl) {
       throw new Error("Manifest does not have a $schema property or schema url is not provided.");
     }
@@ -114,16 +111,15 @@ export class ManifestUtil {
    * Validate manifest against {@link TeamsAppManifest#$schema}.
    *
    * @param manifest - Manifest object to be validated
-   * @param url - The url to fetch the schema from if manifest does not have $schema.
-   * @throws Will throw if {@link TeamsAppManifest#$schema} or {@link url} is undefined, not valid
+   * @throws Will throw if {@link TeamsAppManifest#$schema} is undefined, not valid
    *         or there is any network failure when getting the schema.
    *
    * @returns An empty array if schema validation passes, or an array of error string otherwise.
    */
   static async validateManifest<
     T extends Manifest | DeclarativeCopilotManifestSchema | PluginManifestSchema = TeamsAppManifest
-  >(manifest: T, url?: string): Promise<string[]> {
-    const schema = await this.fetchSchema(manifest, url);
+  >(manifest: T): Promise<string[]> {
+    const schema = await this.fetchSchema(manifest);
     return ManifestUtil.validateManifestAgainstSchema(manifest, schema);
   }
 

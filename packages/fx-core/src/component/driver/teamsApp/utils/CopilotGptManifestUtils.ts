@@ -91,7 +91,7 @@ export class CopilotGptManifestUtils {
   public async validateAgainstSchema(
     declaraitveCopilot: IDeclarativeCopilot,
     manifestPath: string,
-    context: WrapDriverContext
+    context?: WrapDriverContext
   ): Promise<Result<DeclarativeCopilotManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(manifestPath, context);
     if (manifestRes.isErr()) {
@@ -178,7 +178,15 @@ export class CopilotGptManifestUtils {
   ): string | Array<{ content: string; color: Colors }> {
     const validationErrors = validationRes.validationResult;
     const filePath = validationRes.filePath;
-    if (validationErrors.length === 0) {
+    let hasError = validationErrors.length > 0;
+
+    for (const actionValidationRes of validationRes.actionValidationResult) {
+      if (actionValidationRes.validationResult.length > 0) {
+        hasError = true;
+        break;
+      }
+    }
+    if (!hasError) {
       return "";
     }
 
@@ -228,14 +236,16 @@ export class CopilotGptManifestUtils {
       });
 
       for (const actionValidationRes of validationRes.actionValidationResult) {
-        const actionValidationMessage = pluginManifestUtils.logValidationErrors(
-          actionValidationRes,
-          platform
-        );
-        if (actionValidationMessage) {
-          outputMessage.push(
-            ...(actionValidationMessage as Array<{ content: string; color: Colors }>)
+        if (pluginPath && actionValidationRes.filePath !== pluginPath) {
+          const actionValidationMessage = pluginManifestUtils.logValidationErrors(
+            actionValidationRes,
+            platform
           );
+          if (actionValidationMessage) {
+            outputMessage.push(
+              ...(actionValidationMessage as Array<{ content: string; color: Colors }>)
+            );
+          }
         }
       }
 

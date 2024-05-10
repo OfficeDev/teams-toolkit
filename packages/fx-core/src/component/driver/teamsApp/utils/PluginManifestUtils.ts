@@ -79,7 +79,7 @@ export class PluginManifestUtils {
   public async validateAgainstSchema(
     plugin: IPlugin,
     path: string,
-    context: WrapDriverContext
+    context?: WrapDriverContext
   ): Promise<Result<PluginManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(path, context);
     if (manifestRes.isErr()) {

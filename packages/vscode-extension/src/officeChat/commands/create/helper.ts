@@ -10,10 +10,11 @@ import * as vscode from "vscode";
 import {
   ChatRequest,
   CancellationToken,
-  LanguageModelChatUserMessage,
   ChatResponseStream,
   ChatResponseFileTree,
   Uri,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { IChatTelemetryData } from "../../../chat/types";
 import { ProjectMetadata } from "../../../chat/commands/create/types";
@@ -38,7 +39,7 @@ export async function matchOfficeProject(
   ];
   const messages = [
     getOfficeProjectMatchSystemPrompt(allOfficeProjectMetadata),
-    new LanguageModelChatUserMessage(request.prompt),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
   ];
   telemetryMetadata.chatMessages.push(...messages);
   const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);

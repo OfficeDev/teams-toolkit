@@ -484,6 +484,7 @@
   "teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.label": "Select Folder",
   "teamstoolkit.chatParticipants.officeAddIn.create.successfullyCreated": "Project successfully created in current workspace.",
   "teamstoolkit.chatParticipants.officeAddIn.create.failToCreate": "Unable to create the project.",
+  "teamstoolkit.chatParticipants.officeAddIn.nextStep.description": "Use this command to move to the next step at any stage of your Office Add-ins development.",
   "teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer": "This command provides guidance on your next steps based on your workspace.\n\nE.g. If you're unsure what to do after creating a project, simply ask Copilot by using @office /nextstep.",
   "teamstoolkit.chatParticipants.officeAddIn.generateCode.description": "Use this command to generate code for the Office Add-ins.",
   "teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer": "Use this command to provide description and other details about the code snippets you want to try.\n\nE.g. @office /generatecode I want to insert a content control in a Word document.\n\n@office /generatecode I want to insert a chart for the selected cells in Excel.",

@@ -5,8 +5,7 @@ import {
   CancellationToken,
   ChatResponseStream,
   LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { CodeIssueDetector, DetectionResult } from "./codeIssueDetector";
 import { ISkill } from "./iSkill"; // Add the missing import statement
@@ -50,7 +49,7 @@ export class CodeIssueCorrector implements ISkill {
   }
 
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
@@ -130,14 +129,17 @@ class ${className} extends OfficeExtension.ClientObject {
       Let's think step by step.
       `;
     }
-    const declarationMessage: LanguageModelChatSystemMessage | null =
+    const declarationMessage: LanguageModelChatMessage | null =
       spec.appendix.apiDeclarationsReference.size > 0
-        ? new LanguageModelChatSystemMessage(setDeclartionPrompt)
+        ? new LanguageModelChatMessage(LanguageModelChatMessageRole.System, setDeclartionPrompt)
         : null;
 
-    const sampleMessage: LanguageModelChatSystemMessage | null =
+    const sampleMessage: LanguageModelChatMessage | null =
       spec.appendix.codeSample.length > 0
-        ? new LanguageModelChatSystemMessage(getCodeSamplePrompt(spec.appendix.codeSample))
+        ? new LanguageModelChatMessage(
+            LanguageModelChatMessageRole.System,
+            getCodeSamplePrompt(spec.appendix.codeSample)
+          )
         : null;
 
     let fixedCode: string | null = codeSnippet;
@@ -265,8 +267,8 @@ class ${className} extends OfficeExtension.ClientObject {
     historicalErrors: string[],
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
-    declarationMessage: LanguageModelChatSystemMessage | null,
-    sampleMessage: LanguageModelChatSystemMessage | null
+    declarationMessage: LanguageModelChatMessage | null,
+    sampleMessage: LanguageModelChatMessage | null
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
@@ -297,8 +299,8 @@ class ${className} extends OfficeExtension.ClientObject {
     // Perform the desired operation
     // The order in array is matter, don't change it unless you know what you are doing
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(tempUserInput),
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, tempUserInput),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
 
     if (!!sampleMessage) {
@@ -309,7 +311,9 @@ class ${className} extends OfficeExtension.ClientObject {
       messages.push(declarationMessage);
     }
 
-    messages.push(new LanguageModelChatSystemMessage(referenceUserPrompt));
+    messages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    );
 
     let msgCount = countMessagesTokens(messages);
     while (msgCount > getTokenLimitation(model)) {

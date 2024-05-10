@@ -1,7 +1,12 @@
 import * as chai from "chai";
 import sinon from "ts-sinon";
 import { Spec } from "../../../../src/officeChat/common/skills/spec";
-import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
+import {
+  CancellationToken,
+  ChatResponseStream,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
+} from "vscode";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { SkillSet } from "../../../../src/officeChat/common/skills/skillset";
 import { ISkill } from "../../../../src/officeChat/common/skills/iSkill";
@@ -34,7 +39,8 @@ describe("skillset", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };

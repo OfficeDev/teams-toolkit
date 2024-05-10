@@ -5,8 +5,7 @@ import {
   CancellationToken,
   ChatRequest,
   LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { buildDynamicPrompt } from "./dynamicPrompt";
 import { inputRai, outputRai } from "./dynamicPrompt/formats";
@@ -28,8 +27,8 @@ export async function purifyUserMessage(
   The rephrased message should be clear and concise for developer.
   `;
   const purifyUserMessage = [
-    new LanguageModelChatUserMessage(userMessagePrompt),
-    new LanguageModelChatSystemMessage(systemPrompt),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userMessagePrompt),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.System, systemPrompt),
   ];
   const purifiedResult = await getCopilotResponseAsString(
     "copilot-gpt-4",

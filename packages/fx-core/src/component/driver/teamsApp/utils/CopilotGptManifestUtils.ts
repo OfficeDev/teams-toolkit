@@ -174,7 +174,7 @@ export class CopilotGptManifestUtils {
   public logValidationErrors(
     validationRes: DeclarativeCopilotManifestValidationResult,
     platform: Platform,
-    pluginPath: string | undefined
+    pluginPath: string
   ): string | Array<{ content: string; color: Colors }> {
     const validationErrors = validationRes.validationResult;
     const filePath = validationRes.filePath;

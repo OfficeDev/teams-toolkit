@@ -98,7 +98,7 @@ export class ValidateManifestDriver implements StepDriver {
 
     let declarativeCopilotValidationResult;
     let pluginValidationResult;
-    let pluginPath;
+    let pluginPath = "";
     if (manifest.copilotExtensions) {
       // plugin
       const plugins = manifest.copilotExtensions.plugins;
@@ -144,26 +144,30 @@ export class ValidateManifestDriver implements StepDriver {
               .join(";");
 
           if (declarativeCopilotValidationResult.actionValidationResult.length > 0) {
+            let errors: string[] = [];
             for (
               let index = 0;
               index < declarativeCopilotValidationResult.actionValidationResult.length;
               index++
             ) {
-              telemetryProperties[`${TelemetryPropertyKey.gptActionValidationErrors}_${index}`] =
-                declarativeCopilotValidationResult.actionValidationResult[index].validationResult
-                  .map((r: string) => r.replace(/\//g, ""))
-                  .join(";");
+              errors = errors.concat(
+                declarativeCopilotValidationResult.actionValidationResult[
+                  index
+                ].validationResult.map((r: string) => index.toString() + ":" + r.replace(/\//g, ""))
+              );
             }
+
+            telemetryProperties[`${TelemetryPropertyKey.gptActionValidationErrors}`] =
+              errors.join(";");
           }
         }
       }
     }
 
     const actionErrorCount =
-      declarativeCopilotValidationResult?.actionValidationResult.reduce(
-        (acc, { validationResult }) => acc + validationResult.length,
-        0
-      ) ?? 0;
+      declarativeCopilotValidationResult?.actionValidationResult
+        .filter((o) => o.filePath !== pluginPath)
+        .reduce((acc, { validationResult }) => acc + validationResult.length, 0) ?? 0;
 
     const allErrorCount =
       manifestValidationResult.length +

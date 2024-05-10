@@ -98,7 +98,29 @@ export class ValidateManifestDriver implements StepDriver {
 
     let declarativeCopilotValidationResult;
     let pluginValidationResult;
+    let pluginPath;
     if (manifest.copilotExtensions) {
+      // plugin
+      const plugins = manifest.copilotExtensions.plugins;
+      if (plugins?.length && plugins[0].file) {
+        pluginPath = path.join(path.dirname(manifestPath), plugins[0].file);
+
+        const pluginValidationRes = await pluginManifestUtils.validateAgainstSchema(
+          plugins[0],
+          pluginPath,
+          context
+        );
+        if (pluginValidationRes.isErr()) {
+          return err(pluginValidationRes.error);
+        } else {
+          pluginValidationResult = pluginValidationRes.value;
+          telemetryProperties[TelemetryPropertyKey.pluginValidationErrors] =
+            pluginValidationResult?.validationResult
+              .map((r: string) => r.replace(/\//g, ""))
+              .join(";");
+        }
+      }
+
       // Declarative Copilot
       const declaraitveCopilots = manifest.copilotExtensions.declarativeCopilots;
       if (declaraitveCopilots?.length && declaraitveCopilots[0].file) {
@@ -127,33 +149,12 @@ export class ValidateManifestDriver implements StepDriver {
               index < declarativeCopilotValidationResult.actionValidationResult.length;
               index++
             ) {
-              telemetryProperties[`${TelemetryPropertyKey.gptValidationErrors}_${index}`] =
+              telemetryProperties[`${TelemetryPropertyKey.gptActionValidationErrors}_${index}`] =
                 declarativeCopilotValidationResult.actionValidationResult[index].validationResult
                   .map((r: string) => r.replace(/\//g, ""))
                   .join(";");
             }
           }
-        }
-      }
-
-      // plugin
-      const plugins = manifest.copilotExtensions.plugins;
-      if (plugins?.length && plugins[0].file) {
-        const pluginPath = path.join(path.dirname(manifestPath), plugins[0].file);
-
-        const pluginValidationRes = await pluginManifestUtils.validateAgainstSchema(
-          plugins[0],
-          pluginPath,
-          context
-        );
-        if (pluginValidationRes.isErr()) {
-          return err(pluginValidationRes.error);
-        } else {
-          pluginValidationResult = pluginValidationRes.value;
-          telemetryProperties[TelemetryPropertyKey.pluginValidationErrors] =
-            pluginValidationResult?.validationResult
-              .map((r: string) => r.replace(/\//g, ""))
-              .join(";");
         }
       }
     }
@@ -208,7 +209,8 @@ export class ValidateManifestDriver implements StepDriver {
         if (declarativeCopilotValidationResult) {
           const validationMessage = copilotGptManifestUtils.logValidationErrors(
             declarativeCopilotValidationResult,
-            context.platform
+            context.platform,
+            pluginPath
           );
           if (validationMessage) {
             outputMessage.push(...(validationMessage as Array<{ content: string; color: Colors }>));
@@ -250,7 +252,8 @@ export class ValidateManifestDriver implements StepDriver {
         if (declarativeCopilotValidationResult) {
           const validationMessage = copilotGptManifestUtils.logValidationErrors(
             declarativeCopilotValidationResult,
-            context.platform
+            context.platform,
+            pluginPath
           ) as string;
           if (validationMessage) {
             outputMessage += EOL + validationMessage;

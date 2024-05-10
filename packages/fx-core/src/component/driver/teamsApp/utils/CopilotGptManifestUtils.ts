@@ -115,6 +115,7 @@ export class CopilotGptManifestUtils {
         // action
         for (const action of manifest.actions) {
           const actionPath = path.join(path.dirname(manifestPath), action.file);
+
           const actionValidationRes = await pluginManifestUtils.validateAgainstSchema(
             action,
             actionPath,
@@ -175,7 +176,8 @@ export class CopilotGptManifestUtils {
 
   public logValidationErrors(
     validationRes: DeclarativeCopilotManifestValidationResult,
-    platform: Platform
+    platform: Platform,
+    pluginPath: string | undefined
   ): string | Array<{ content: string; color: Colors }> {
     const validationErrors = validationRes.validationResult;
     const filePath = validationRes.filePath;
@@ -198,12 +200,15 @@ export class CopilotGptManifestUtils {
         errors;
 
       for (const actionValidationRes of validationRes.actionValidationResult) {
-        const actionValidationMessage = pluginManifestUtils.logValidationErrors(
-          actionValidationRes,
-          platform
-        ) as string;
-        if (actionValidationMessage) {
-          outputMessage += EOL + actionValidationMessage;
+        if (pluginPath && actionValidationRes.filePath !== pluginPath) {
+          // do not output validation result of the Declarative Copilot if same file has been validated when validating plugin manifest.
+          const actionValidationMessage = pluginManifestUtils.logValidationErrors(
+            actionValidationRes,
+            platform
+          ) as string;
+          if (actionValidationMessage) {
+            outputMessage += EOL + actionValidationMessage;
+          }
         }
       }
 

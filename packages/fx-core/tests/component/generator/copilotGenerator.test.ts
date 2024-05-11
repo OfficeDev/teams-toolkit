@@ -1893,35 +1893,4 @@ describe("CopilotGenerator", async () => {
       }
     });
   });
-
-  // describe("post", async () => {
-  //   const sandbox = sinon.createSandbox();
-  //   afterEach(async () => {
-  //     sandbox.restore();
-  //   });
-  //   it("happy path", async () => {
-  //     const generator = new CopilotGenerator();
-  //     generator.isYaml = true;
-  //     sandbox
-  //     .stub(SpecParser.prototype, "validate")
-  //     .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-  //   sandbox.stub(fs, "ensureDir").resolves();
-  //     const context = createContextV3();
-  //     const inputs: Inputs = {
-  //       platform: Platform.CLI,
-  //       projectPath: "./",
-  //       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
-  //       [QuestionNames.AppName]: "testapp",
-  //       [QuestionNames.ApiOperation]: ["operation1"],
-  //     };
-  //     inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
-  //     inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
-  //     let res = await generator.post(context, inputs, ".");
-  //     assert.isTrue(res.isOk());
-  //     delete inputs[QuestionNames.Capabilities];
-  //     delete inputs.apiAuthData;
-  //     inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
-  //     res = await generator.post(context, inputs, ".");
-  //   });
-  // });
 });

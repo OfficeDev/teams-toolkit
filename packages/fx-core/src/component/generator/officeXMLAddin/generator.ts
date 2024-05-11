@@ -223,7 +223,7 @@ export class OfficeXmlAddinGeneratorNew extends DefaultTemplateGenerator {
     });
     templates.push({
       templateName: TEMPLATE_COMMON_NAME,
-      language: TEMPLATE_COMMON_LANG as ProgrammingLanguage,
+      language: ProgrammingLanguage.None,
     });
     return ok(templates);
   }

@@ -66,7 +66,6 @@ import {
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
-  isOfficeAddInProject,
   isOfficeManifestOnlyProject,
   setUriEventHandler,
   unsetIsTeamsFxProject,

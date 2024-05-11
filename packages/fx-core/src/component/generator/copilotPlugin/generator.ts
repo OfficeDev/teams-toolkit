@@ -355,7 +355,10 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
     }
     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: this.templateName });
     const appName = inputs[QuestionNames.AppName];
-    const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+    let language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage | undefined;
+    if (this.templateName !== forCustomCopilotRagCustomApi) {
+      language = language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined;
+    }
     const safeProjectNameFromVS =
       language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
     this.type =

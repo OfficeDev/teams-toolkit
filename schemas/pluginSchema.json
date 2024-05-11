@@ -385,7 +385,7 @@
         "localization-object": {
             "type": "object",
             "patternProperties": {
-                "^(?i)[a-z]{2,3}(-[a-z]{2})?(?-i)$": {
+                "/^[a-z]{2,3}(-[a-z]{2})?$/ui": {
                     "type": "object",
                     "patternProperties": {
                         "^[A-Za-z_][A-Za-z0-9_]*$": {

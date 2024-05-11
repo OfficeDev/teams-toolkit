@@ -198,11 +198,7 @@ export class OfficeXmlAddinGeneratorNew extends DefaultTemplateGenerator {
       // [Condition]: Project have remote repo (not manifest-only proj)
 
       // -> Step: Download the project from GitHub
-      const fetchRes = await fetchAndUnzip(
-        "office-xml-addin-generator",
-        projectLink,
-        destinationPath
-      );
+      const fetchRes = await fetchAndUnzip(this.componentName, projectLink, destinationPath);
       if (fetchRes.isErr()) {
         return err(fetchRes.error);
       }

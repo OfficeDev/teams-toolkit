@@ -153,10 +153,9 @@ export class PluginManifestUtils {
     } else {
       const outputMessage = [];
       outputMessage.push({
-        content: getDefaultString(
-          "driver.teamsApp.summary.validatePluginManifest.checkPath",
-          filePath
-        ),
+        content:
+          getDefaultString("driver.teamsApp.summary.validatePluginManifest.checkPath", filePath) +
+          "\n",
         color: Colors.BRIGHT_WHITE,
       });
       validationErrors.map((error: string) => {

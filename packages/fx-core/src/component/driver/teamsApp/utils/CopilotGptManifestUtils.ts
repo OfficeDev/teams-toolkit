@@ -221,10 +221,11 @@ export class CopilotGptManifestUtils {
     } else {
       const outputMessage = [];
       outputMessage.push({
-        content: getDefaultString(
-          "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
-          filePath
-        ),
+        content:
+          getDefaultString(
+            "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
+            filePath
+          ) + "\n",
         color: Colors.BRIGHT_WHITE,
       });
       validationErrors.map((error: string) => {

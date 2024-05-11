@@ -196,10 +196,11 @@ export class ValidateManifestDriver implements StepDriver {
 
         if (manifestValidationResult.length > 0) {
           outputMessage.push({
-            content: getDefaultString(
-              "driver.teamsApp.summary.validateTeamsManifest.checkPath",
-              args.manifestPath
-            ),
+            content:
+              getDefaultString(
+                "driver.teamsApp.summary.validateTeamsManifest.checkPath",
+                args.manifestPath
+              ) + "\n",
             color: Colors.BRIGHT_WHITE,
           });
           manifestValidationResult.map((error: string) => {

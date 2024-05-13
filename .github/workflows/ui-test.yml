@@ -419,8 +419,8 @@ jobs:
       - name: Get VSCode & chromedriver
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
-          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1
+          npx extest get-vscode --storage .test-resources --type insider --code_version 1.89.0-insider
+          npx extest get-chromedriver --storage .test-resources --type insider --code_version 1.89.0-insider
           cd .test-resources
           ls
   
@@ -429,7 +429,7 @@ jobs:
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver-linux64.zip" -o".test-resources" -y
-          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+          tar xzvf ".test-resources/insider.tar.gz" --directory ".test-resources"
 
       - name: Extract VSCode & chromedriver(mac)
         if: matrix.os == 'macos-latest' 
@@ -446,7 +446,7 @@ jobs:
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
-          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
+          7z x ".test-resources/insider.zip" -o".test-resources/VSCode-win32-x64-archive-insider" -y
 
       - name: M365 Login
         working-directory: packages/tests

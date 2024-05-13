@@ -423,27 +423,25 @@ jobs:
 
       - name: Get chromedriver (linux)
         if: matrix.os == 'ubuntu-latest'
-        working-directory: packages/tests
+        working-directory: packages/tests/.test-resources
         run: |
           curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/linux64/chromedriver-linux64.zip
-          cd .test-resources
           ls
 
       - name: Get chromedriver (mac)
         if: matrix.os == 'macos-latest'
-        working-directory: packages/tests
+        working-directory: packages/tests/.test-resources
         run: |
           if [[ $(uname -m) == "x86_64" ]]; then
             curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-x64/chromedriver-mac-x64.zip
           elif [[ $(uname -m) == "arm64" ]]; then
             curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-arm64/chromedriver-mac-arm64.zip
           fi
-          cd .test-resources
           ls
 
       - name: Get chromedriver (windows)
         if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
+        working-directory: packages/tests/.test-resources
         run: |
             powershell -Command "Invoke-WebRequest -Uri 'https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win32/chromedriver-win32.zip'"
             cd .test-resources

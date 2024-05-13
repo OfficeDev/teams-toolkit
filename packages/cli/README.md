@@ -43,6 +43,9 @@ There are many ways in which you can participate in the project, for example:
 
 - [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
 - Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
+- Ask a question on [Stack Overflow](https://stackoverflow.com/questions/tagged/teams-toolkit)
+- Send an email to ttkfeedback@microsoft.com to chat with the product team
+- Report security issues and bugs to the Microsoft Security Response Center (MSRC) via secure@microsoft.com. Further information can be found in the [Security TechCenter](https://www.microsoft.com/msrc/faqs-report-an-issue?rtc=1).
 
 If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
 

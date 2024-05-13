@@ -45,8 +45,8 @@ TARGET_CLI_VERSION=
 CI_ENABLED=true
 ```
 
-- (**Required**) Run `npx extest get-vscode --storage .test-resources --type insider --code_version 1.89.0-insider` to download vscode
-- (**Required**) Run `npx extest get-chromedriver --storage .test-resources --type insider --code_version 1.89.0-insider` to download chromedriver
+- (**Required**) Run `npx extest get-vscode --storage .test-resources --type insider --code_version 1.90.0-insider` to download vscode
+- (**Required**) Run `npx extest get-chromedriver --storage .test-resources --type insider --code_version 1.90.0-insider` to download chromedriver
 - (**Required**) Download TeamsFx vsix file to this project root folder. You can download it from the [artifacts of TeamsFx CD action](https://github.com/OfficeDev/TeamsFx/actions/workflows/cd.yml). Remember to unzip.
 - (**Required**) Run `npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file ${{ YOUR VSIX FILE NAME }} ` to install Teams Toolkit
 - (**OPTIONAL**) If local test docker cases, Run `npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker` to install docker extension.

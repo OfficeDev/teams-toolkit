@@ -443,7 +443,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests/.test-resources
         run: |
-            powershell Invoke-WebRequest -Uri https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win32/chromedriver-win32.zip -OutFile chromedriver-win32.zip
+            powershell Invoke-WebRequest -Uri https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win64/chromedriver-win64.zip -OutFile chromedriver-win64.zip
             ls
   
       - name: Extract VSCode & chromedriver(unix)
@@ -467,7 +467,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver-win32.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
           7z x ".test-resources/insider.zip" -o".test-resources/VSCode-win32-x64-archive-insider" -y
 
       - name: M365 Login

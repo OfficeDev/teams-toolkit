@@ -49,6 +49,12 @@ There are many ways in which you can participate in the project, for example:
 
 If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
 
+## Additional References
+
+* [Source code](https://github.com/OfficeDev/teamsapp/tree/dev/packages/cli)
+* [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsapp-cli)
+* [Official Documentation](https://aka.ms/teamsfx-toolkit-cli)
+
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.

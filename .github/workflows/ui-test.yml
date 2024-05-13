@@ -444,7 +444,6 @@ jobs:
         working-directory: packages/tests/.test-resources
         run: |
             powershell -Command "Invoke-WebRequest -Uri 'https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win32/chromedriver-win32.zip'"
-            cd .test-resources
             ls
   
       - name: Extract VSCode & chromedriver(unix)
@@ -503,7 +502,7 @@ jobs:
 
       - name: proposal api support
         run: |
-          mkdir -p $HOME/.vscode
+          mkdir -p $HOME/.vscode-insiders
           echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode/argv.json
           
       - name: Run UI Test(ubuntu)

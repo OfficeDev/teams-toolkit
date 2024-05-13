@@ -124,5 +124,5 @@ export class ConstantString {
   static readonly SMERequiredParamsMaxNum = 5;
   static readonly DefaultPluginId = "plugin_1";
   static readonly PluginManifestSchema =
-    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/schemas/pluginSchema.json";
+    "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json";
 }

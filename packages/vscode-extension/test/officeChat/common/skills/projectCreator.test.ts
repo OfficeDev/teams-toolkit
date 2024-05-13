@@ -1,9 +1,7 @@
 import * as chai from "chai";
 import sinon from "ts-sinon";
-import { Explainer } from "../../../../src/officeChat/common/skills/codeExplainer";
 import { Spec } from "../../../../src/officeChat/common/skills/spec";
-import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
-import * as utils from "../../../../src/chat/utils";
+import { CancellationToken, LanguageModelChatMessage, LanguageModelChatMessageRole } from "vscode";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { projectCreator } from "../../../../src/officeChat/common/skills/projectCreator";
 import path = require("path");
@@ -39,7 +37,8 @@ describe("projectCreator", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };

@@ -3,12 +3,7 @@
 
 import { promises } from "fs";
 import { join } from "path";
-import {
-  LanguageModelChatAssistantMessage,
-  LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
-} from "vscode";
+import { LanguageModelChatMessage, LanguageModelChatMessageRole } from "vscode";
 import { buildDynamicPrompt } from "../../../../src/officeChat/dynamicPrompt";
 import { loadConfig } from "./loadConfig";
 import { LocalTuningScenarioHandler } from "./types";
@@ -71,11 +66,11 @@ export const promptTuning: LocalTuningScenarioHandler = async (
 };
 
 function getMessageType(message: LanguageModelChatMessage) {
-  if (message instanceof LanguageModelChatSystemMessage) {
+  if (message.role === LanguageModelChatMessageRole.System) {
     return "system";
-  } else if (message instanceof LanguageModelChatUserMessage) {
+  } else if (message.role === LanguageModelChatMessageRole.User) {
     return "user";
-  } else if (message instanceof LanguageModelChatAssistantMessage) {
+  } else if (message.role === LanguageModelChatMessageRole.Assistant) {
     return "assistant";
   } else {
     return "unknown";

@@ -20,6 +20,9 @@ import { HelpLinks } from "../../../common/constants";
 import { getAbsolutePath } from "../../utils/common";
 import { SummaryConstant } from "../../configManager/constant";
 import { InvalidActionInputError } from "../../../error/common";
+import path from "path";
+import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
+import { pluginManifestUtils } from "./utils/PluginManifestUtils";
 
 const actionName = "teamsApp/validateManifest";
 
@@ -51,19 +54,21 @@ export class ValidateManifestDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
-    const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestPath, context.projectPath),
-      context
-    );
+    const manifestPath = getAbsolutePath(args.manifestPath, context.projectPath);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, context);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
     const manifest = manifestRes.value;
 
-    let validationResult;
+    let manifestValidationResult;
+    const telemetryProperties: Record<string, string> = {};
     if (manifest.$schema) {
       try {
-        validationResult = await ManifestUtil.validateManifest(manifest);
+        manifestValidationResult = await ManifestUtil.validateManifest(manifest);
+        telemetryProperties[TelemetryPropertyKey.validationErrors] = manifestValidationResult
+          .map((r: string) => r.replace(/\//g, ""))
+          .join(";");
       } catch (e: any) {
         return err(
           AppStudioResultFactory.UserError(
@@ -91,65 +96,191 @@ export class ValidateManifestDriver implements StepDriver {
       );
     }
 
-    if (validationResult.length > 0) {
+    let declarativeCopilotValidationResult;
+    let pluginValidationResult;
+    let pluginPath = "";
+    if (manifest.copilotExtensions) {
+      // plugin
+      const plugins = manifest.copilotExtensions.plugins;
+      if (plugins?.length && plugins[0].file) {
+        pluginPath = path.join(path.dirname(manifestPath), plugins[0].file);
+
+        const pluginValidationRes = await pluginManifestUtils.validateAgainstSchema(
+          plugins[0],
+          pluginPath,
+          context
+        );
+        if (pluginValidationRes.isErr()) {
+          return err(pluginValidationRes.error);
+        } else {
+          pluginValidationResult = pluginValidationRes.value;
+          telemetryProperties[TelemetryPropertyKey.pluginValidationErrors] =
+            pluginValidationResult?.validationResult
+              .map((r: string) => r.replace(/\//g, ""))
+              .join(";");
+        }
+      }
+
+      // Declarative Copilot
+      const declaraitveCopilots = manifest.copilotExtensions.declarativeCopilots;
+      if (declaraitveCopilots?.length && declaraitveCopilots[0].file) {
+        const declarativeCopilotPath = path.join(
+          path.dirname(manifestPath),
+          declaraitveCopilots[0].file
+        );
+
+        const declarativeCopilotValidationRes = await copilotGptManifestUtils.validateAgainstSchema(
+          declaraitveCopilots[0],
+          declarativeCopilotPath,
+          context
+        );
+        if (declarativeCopilotValidationRes.isErr()) {
+          return err(declarativeCopilotValidationRes.error);
+        } else {
+          declarativeCopilotValidationResult = declarativeCopilotValidationRes.value;
+          telemetryProperties[TelemetryPropertyKey.gptValidationErrors] =
+            declarativeCopilotValidationResult?.validationResult
+              .map((r: string) => r.replace(/\//g, ""))
+              .join(";");
+
+          if (declarativeCopilotValidationResult.actionValidationResult.length > 0) {
+            let errors: string[] = [];
+            for (
+              let index = 0;
+              index < declarativeCopilotValidationResult.actionValidationResult.length;
+              index++
+            ) {
+              errors = errors.concat(
+                declarativeCopilotValidationResult.actionValidationResult[
+                  index
+                ].validationResult.map((r: string) => index.toString() + ":" + r.replace(/\//g, ""))
+              );
+            }
+
+            telemetryProperties[`${TelemetryPropertyKey.gptActionValidationErrors}`] =
+              errors.join(";");
+          }
+        }
+      }
+    }
+
+    const actionErrorCount =
+      declarativeCopilotValidationResult?.actionValidationResult
+        .filter((o) => o.filePath !== pluginPath)
+        .reduce((acc, { validationResult }) => acc + validationResult.length, 0) ?? 0;
+
+    const allErrorCount =
+      manifestValidationResult.length +
+      (declarativeCopilotValidationResult?.validationResult.length ?? 0) +
+      (pluginValidationResult?.validationResult.length ?? 0) +
+      actionErrorCount;
+
+    if (allErrorCount > 0) {
       const summaryStr = getLocalizedString(
         "driver.teamsApp.summary.validate.failed",
-        validationResult.length
+        allErrorCount
       );
 
       if (context.platform === Platform.CLI) {
         const outputMessage: Array<{ content: string; color: Colors }> = [
           {
-            content: "Teams Toolkit has checked manifest with its schema:\n\nSummary: \n",
+            content:
+              "Teams Toolkit has checked manifest(s) with corresponding schema:\n\nSummary: \n",
             color: Colors.BRIGHT_WHITE,
           },
           {
-            content: `${validationResult.length} failed.\n`,
+            content: `${allErrorCount} failed.\n`,
             color: Colors.BRIGHT_RED,
           },
-          {
-            content: getDefaultString(
-              "driver.teamsApp.summary.validateManifest.checkPath",
-              args.manifestPath
-            ),
-            color: Colors.BRIGHT_WHITE,
-          },
         ];
-        validationResult.map((error: string) => {
-          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+
+        if (manifestValidationResult.length > 0) {
           outputMessage.push({
-            content: `${error}\n`,
+            content:
+              getDefaultString(
+                "driver.teamsApp.summary.validateTeamsManifest.checkPath",
+                args.manifestPath
+              ) + "\n",
             color: Colors.BRIGHT_WHITE,
           });
-        });
+          manifestValidationResult.map((error: string) => {
+            outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+            outputMessage.push({
+              content: `${error}\n`,
+              color: Colors.BRIGHT_WHITE,
+            });
+          });
+        }
+        if (declarativeCopilotValidationResult) {
+          const validationMessage = copilotGptManifestUtils.logValidationErrors(
+            declarativeCopilotValidationResult,
+            context.platform,
+            pluginPath
+          );
+          if (validationMessage) {
+            outputMessage.push(...(validationMessage as Array<{ content: string; color: Colors }>));
+          }
+        }
+
+        if (pluginValidationResult) {
+          const validationMessage = pluginManifestUtils.logValidationErrors(
+            pluginValidationResult,
+            context.platform
+          );
+          if (validationMessage) {
+            outputMessage.push(...(validationMessage as Array<{ content: string; color: Colors }>));
+          }
+        }
+
         context.ui?.showMessage("info", outputMessage, false);
       } else {
         // logs in output window
-        const errors = validationResult
+        const teamsManifestErrors = manifestValidationResult
           .map((error: string) => {
             return `${SummaryConstant.Failed} ${error}`;
           })
           .join(EOL);
-        const outputMessage =
-          EOL +
-          getLocalizedString(
-            "driver.teamsApp.summary.validateManifest",
-            summaryStr,
+        let outputMessage =
+          EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr);
+
+        if (teamsManifestErrors.length > 0) {
+          outputMessage +=
+            EOL +
             getLocalizedString(
-              "driver.teamsApp.summary.validateManifest.checkPath",
+              "driver.teamsApp.summary.validateTeamsManifest.checkPath",
               args.manifestPath
-            ),
-            errors
-          );
+            ) +
+            EOL +
+            teamsManifestErrors;
+        }
+
+        if (declarativeCopilotValidationResult) {
+          const validationMessage = copilotGptManifestUtils.logValidationErrors(
+            declarativeCopilotValidationResult,
+            context.platform,
+            pluginPath
+          ) as string;
+          if (validationMessage) {
+            outputMessage += EOL + validationMessage;
+          }
+        }
+
+        if (pluginValidationResult) {
+          const validationMessage = pluginManifestUtils.logValidationErrors(
+            pluginValidationResult,
+            context.platform
+          ) as string;
+          if (validationMessage) {
+            outputMessage += EOL + validationMessage;
+          }
+        }
+
+        outputMessage += EOL;
 
         context.logProvider?.info(outputMessage);
       }
 
-      merge(context.telemetryProperties, {
-        [TelemetryPropertyKey.validationErrors]: validationResult
-          .map((r: string) => r.replace(/\//g, ""))
-          .join(";"),
-      });
+      merge(context.telemetryProperties, telemetryProperties);
 
       return err(
         AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [

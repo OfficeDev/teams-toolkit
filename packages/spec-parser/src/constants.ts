@@ -123,4 +123,6 @@ export class ConstantString {
   static readonly ParameterTitleMaxLens = 32;
   static readonly SMERequiredParamsMaxNum = 5;
   static readonly DefaultPluginId = "plugin_1";
+  static readonly PluginManifestSchema =
+    "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/schemas/pluginSchema.json";
 }

@@ -235,6 +235,7 @@ export class ManifestUpdater {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
     } else {
       apiPlugin = {
+        $schema: ConstantString.PluginManifestSchema,
         schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",

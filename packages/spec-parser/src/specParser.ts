@@ -283,14 +283,17 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
-        manifestPath,
-        outputSpecPath,
-        pluginFilePath,
-        newSpec,
-        this.options,
-        authInfo
-      );
+      const [updatedManifest, apiPlugin, warnings] =
+        await ManifestUpdater.updateManifestWithAiPlugin(
+          manifestPath,
+          outputSpecPath,
+          pluginFilePath,
+          newSpec,
+          this.options,
+          authInfo
+        );
+
+      result.warnings.push(...warnings);
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 4 });
       await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 4 });

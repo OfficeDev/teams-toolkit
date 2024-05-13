@@ -419,8 +419,8 @@ jobs:
       - name: Get VSCode & chromedriver
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type insider 
-          npx extest get-chromedriver --storage .test-resources --type insider 
+          npx extest get-vscode --storage .test-resources --type insider --code_version 1.89.0-insider
+          npx extest get-chromedriver --storage .test-resources --type insider --code_version 1.89.0-insider
           cd .test-resources
           ls
   
@@ -490,13 +490,13 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider  --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.89.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
      
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider  --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.89.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
       
       - name: Upload test result json file
         uses: actions/upload-artifact@v3

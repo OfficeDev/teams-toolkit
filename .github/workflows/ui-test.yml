@@ -503,6 +503,7 @@ jobs:
       - name: proposal api support
         run: |
           mkdir -p $HOME/.vscode-insiders
+          cat $HOME/.vscode/argv.json
           echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode/argv.json
           
       - name: Run UI Test(ubuntu)

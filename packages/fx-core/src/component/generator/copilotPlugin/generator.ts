@@ -386,6 +386,19 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
     const openapiSpecFileName = getTemplateInfosState.isYaml
       ? defaultApiSpecYamlFileName
       : defaultApiSpecJsonFileName;
+    const llmService: string | undefined = inputs[QuestionNames.LLMService];
+    const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
+    const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
+    const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
+    const azureOpenAIDeploymentName: string | undefined =
+      inputs[QuestionNames.AzureOpenAIDeploymentName];
+    const llmServiceData = {
+      llmService,
+      openAIKey,
+      azureOpenAIKey,
+      azureOpenAIEndpoint,
+      azureOpenAIDeploymentName,
+    };
     if (authData?.authName) {
       const envName = getEnvName(authData.authName, authData.authType);
       context.templateVariables = Generator.getDefaultVariables(
@@ -400,14 +413,17 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
           ),
           registrationIdEnvName: envName,
           authType: authData.authType,
-        }
+        },
+        llmServiceData
       );
     } else {
       context.templateVariables = Generator.getDefaultVariables(
         appName,
         safeProjectNameFromVS,
         inputs.targetFramework,
-        inputs.placeProjectFileInSolutionDir === "true"
+        inputs.placeProjectFileInSolutionDir === "true",
+        undefined,
+        llmServiceData
       );
     }
     context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {

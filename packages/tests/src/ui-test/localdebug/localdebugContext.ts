@@ -9,6 +9,7 @@ import { stopDebugging } from "../../utils/vscodeOperation";
 import { TestContext } from "../testContext";
 import { dotenvUtil } from "../../utils/envUtil";
 import { TestFilePath } from "../../utils/constants";
+import { VSBrowser } from "vscode-extension-tester";
 
 export type LocalDebugTestName =
   | "tab"
@@ -53,6 +54,7 @@ export class LocalDebugTestContext extends TestContext {
   public async before() {
     await super.before();
     await this.createProject();
+    await VSBrowser.instance.driver.sleep(30000);
     await this.disableDebugConsole();
     const testFolder = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(testFolder);

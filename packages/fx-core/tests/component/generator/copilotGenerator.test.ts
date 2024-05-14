@@ -32,12 +32,17 @@ import {
   AdaptiveCardGenerator,
   ProjectType,
 } from "@microsoft/m365-spec-parser";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import {
+  CopilotGenerator,
+  CopilotPluginGenerator,
+} from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
 import {
   CapabilityOptions,
   copilotPluginApiSpecOptionId,
+  CustomCopilotRagOptions,
+  MeArchitectureOptions,
   ProgrammingLanguage,
   QuestionNames,
 } from "../../../src/question";
@@ -672,7 +677,9 @@ describe("copilotPluginGenerator", function () {
       .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
+    sandbox
+      .stub(CopilotGenerator.prototype, "getTemplateName")
+      .returns("custom-copilot-rag-custom-api");
     const result = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
       context,
       inputs,
@@ -690,6 +697,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
       supportedApisFromApiSpec: [
         {
           id: "operation1",
@@ -711,6 +719,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotGenerator.prototype, "getTemplateName").returns("api-plugin-existing-api");
     const generateBasedOnSpec = sandbox
       .stub(SpecParser.prototype, "generateForCopilot")
       .resolves({ allSuccess: true, warnings: [] });
@@ -1815,5 +1824,73 @@ describe("listOperations", async () => {
       ""
     );
     expect(res.isOk()).to.be.true;
+  });
+});
+
+describe("CopilotGenerator", async () => {
+  describe("activate", async () => {
+    it("should activate and get correct template name", async () => {
+      const generator = new CopilotGenerator();
+      const context = createContextV3();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      };
+      let res = await generator.activate(context, inputs);
+      let templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "api-plugin-existing-api");
+
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginOpenAIPlugin().id;
+      res = generator.activate(context, inputs);
+      templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "copilot-plugin-from-oai-plugin");
+
+      delete inputs[QuestionNames.Capabilities];
+      inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
+      res = generator.activate(context, inputs);
+      templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "copilot-plugin-existing-api");
+
+      delete inputs[QuestionNames.MeArchitectureType];
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.customCopilotRag().id;
+      inputs[QuestionNames.CustomCopilotRag] = CustomCopilotRagOptions.customApi().id;
+      res = generator.activate(context, inputs);
+      templateName = generator.getTemplateName(inputs);
+      assert.isTrue(res);
+      assert.equal(templateName, "custom-copilot-rag-custom-api");
+    });
+  });
+
+  describe("getTempalteInfos", async () => {
+    it("happy path", async () => {
+      const generator = new CopilotGenerator();
+      const context = createContextV3();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+        [QuestionNames.AppName]: "testapp",
+      };
+      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
+      inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
+      let res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+      }
+
+      delete inputs[QuestionNames.Capabilities];
+      delete inputs.apiAuthData;
+      inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
+      res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+      }
+    });
   });
 });

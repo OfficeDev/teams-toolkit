@@ -9,6 +9,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   Context,
   FxError,
+  GeneratorResult,
   Inputs,
   ManifestUtil,
   Result,
@@ -258,7 +259,9 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    return await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+    if (res.isErr()) return err(res.error);
+    return ok({});
   }
 }

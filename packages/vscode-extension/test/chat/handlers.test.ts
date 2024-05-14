@@ -54,7 +54,7 @@ describe("chat handlers", () => {
       const request: ChatRequest = {
         prompt: "fakePrompt",
         command: TeamsChatCommand.Create,
-        variables: [],
+        references: [],
         location: ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -82,7 +82,7 @@ describe("chat handlers", () => {
       const request: ChatRequest = {
         prompt: "fakePrompt",
         command: TeamsChatCommand.NextStep,
-        variables: [],
+        references: [],
         location: ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -111,7 +111,7 @@ describe("chat handlers", () => {
       const request: ChatRequest = {
         prompt: "fakePrompt",
         command: "",
-        variables: [],
+        references: [],
         location: ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,

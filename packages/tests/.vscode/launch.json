@@ -19,7 +19,7 @@
         "1.90.0-insider",
         "--code_settings",
         "./settings.json",
-        "./out/ui-test/**/localdebug-bot.test.js"
+        "./out/ui-test/**/${{ YOUR_TEST_CASE }}.test.js"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

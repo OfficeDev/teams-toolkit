@@ -138,6 +138,8 @@ export async function openExistingProject(folder: string): Promise<void> {
     }
     const input = await InputBox.create();
     await inputFolderPath(driver, input, folder);
+    // single comfirm only add / to the end of the path, double confirm will open the folder
+    await input.confirm();
     await input.confirm();
 
     // wait for window ready
@@ -485,7 +487,8 @@ async function inputFolderPath(
     }
     await driver.sleep(Timeout.input);
 
-    if (isWsl && (await setInputTextWsl(driver, input, folder))) {
+    // windows also has auto-correct issue
+    if (await setInputTextWsl(driver, input, folder)) {
       break;
     }
   }

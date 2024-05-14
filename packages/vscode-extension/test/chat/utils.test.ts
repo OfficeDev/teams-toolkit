@@ -52,6 +52,16 @@ describe("chat utils", () => {
         token
       );
       chai.assert.isTrue(response.markdown.calledOnceWith("result"));
+
+      await chai.assert.isRejected(
+        utils.verbatimCopilotInteraction(
+          "copilot-gpt-4",
+          [],
+          response as unknown as vscode.ChatResponseStream,
+          token
+        ),
+        "No chat models available for the specified family"
+      );
     });
   });
 
@@ -84,6 +94,11 @@ describe("chat utils", () => {
 
       const result = await utils.getCopilotResponseAsString("copilot-gpt-3.5-turbo", [], token);
       chai.assert.equal(result, "result");
+
+      await chai.assert.isRejected(
+        utils.getCopilotResponseAsString("copilot-gpt-4", [], token),
+        "No chat models available for the specified family"
+      );
     });
   });
 

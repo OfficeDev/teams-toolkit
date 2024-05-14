@@ -7,7 +7,8 @@ import {
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
   ProviderResult,
   Uri,
   commands,
@@ -64,7 +65,10 @@ async function defaultHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+  const messages = [
+    defaultSystemPrompt(),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+  ];
   chatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 

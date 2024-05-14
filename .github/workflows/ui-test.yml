@@ -180,9 +180,10 @@ jobs:
       
       - name: clean devtunnel
         run: |
-          curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
-          ~/bin/devtunnel delete-all -f
+          wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
+          chmod 777 ./devtunnel
+          ./devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
+          ./devtunnel delete-all -f
 
     outputs:
       npm-tag: ${{ steps.bvt.outputs.npm-tag || steps.pvt.outputs.npm-tag }}
@@ -287,16 +288,31 @@ jobs:
           sudo apt-get install azure-functions-core-tools-4
 
       - name: Install devtunnel (ubuntu)
-        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          curl -sL https://aka.ms/DevTunnelCliInstall | bash
+          wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
+          chmod +x ./devtunnel
+          mkdir -p ~/bin
+          mv ./devtunnel ~/bin/devtunnel
+          PATH=~/bin:$PATH
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
+
+      - name: Install devtunnel (mac)
+        if: matrix.os == 'macos-latest'
+        run: |
+          curl https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/osx-x64-devtunnel-zip -o ./devtunnel.zip 
+          unzip ./devtunnel.zip
+          chmod +x ./devtunnel
+          mkdir -p ~/bin
+          mv ./devtunnel ~/bin/devtunnel
+          PATH=~/bin:$PATH
           ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
   
       - name: Install devtunnel (windows)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
-          powershell Invoke-WebRequest -Uri https://aka.ms/TunnelsCliDownload/win-x64 -OutFile devtunnel.exe
+          powershell Invoke-WebRequest -Uri https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/devtunnel.exe -OutFile devtunnel.exe
           $currentDirectory = (Get-Location).Path
           $executablePath = Join-Path $currentDirectory "devtunnel.exe"
           [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
@@ -419,7 +435,11 @@ jobs:
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
+          if [[ $(uname -m) == "x86_64" ]]; then
+            7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
+          elif [[ $(uname -m) == "arm64" ]]; then
+            7z x ".test-resources/chromedriver-mac-arm64.zip" -o".test-resources" -y
+          fi
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'

@@ -5,8 +5,7 @@ import {
   CancellationToken,
   ChatResponseStream,
   LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { CodeIssueDetector, DetectionResult } from "./codeIssueDetector";
 import { ISkill } from "./iSkill"; // Add the missing import statement
@@ -28,6 +27,7 @@ import {
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
+import { SampleData } from "../samples/sampleData";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -49,7 +49,7 @@ export class CodeIssueCorrector implements ISkill {
   }
 
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
@@ -101,30 +101,45 @@ export class CodeIssueCorrector implements ISkill {
 
     let setDeclartionPrompt = getDeclarationsPrompt();
 
-    if (spec.appendix.apiDeclarationsReference.size > 0) {
-      const codeSnippets: string[] = [];
-      spec.appendix.apiDeclarationsReference.forEach((sample, api) => {
-        console.debug(`[Code corrector] Declaration matched: ${sample.description}`);
-        codeSnippets.push(`
-- [Description] ${sample.description}:
-\`\`\`typescript
-${sample.codeSample}
-\`\`\`\n
-`);
+    if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
+      const groupedMethodsOrProperties = new Map<string, SampleData[]>();
+      for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
+        if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
+          groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
+        }
+        groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
+      }
+
+      let tempClassDeclaration = "";
+      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+        tempClassDeclaration += `
+class ${className} extends OfficeExtension.ClientObject {
+  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+}
+\n\n
+        `;
       });
 
-      if (codeSnippets.length > 0) {
-        setDeclartionPrompt = setDeclartionPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
-      }
+      setDeclartionPrompt += `
+      
+      \`\`\`typescript
+      ${tempClassDeclaration};
+      \`\`\`
+
+      Let's think step by step.
+      `;
     }
-    const declarationMessage: LanguageModelChatSystemMessage | null =
+    const declarationMessage: LanguageModelChatMessage | null =
       spec.appendix.apiDeclarationsReference.size > 0
-        ? new LanguageModelChatSystemMessage(setDeclartionPrompt)
+        ? new LanguageModelChatMessage(LanguageModelChatMessageRole.System, setDeclartionPrompt)
         : null;
 
-    const sampleMessage: LanguageModelChatSystemMessage | null =
+    const sampleMessage: LanguageModelChatMessage | null =
       spec.appendix.codeSample.length > 0
-        ? new LanguageModelChatSystemMessage(getCodeSamplePrompt(spec.appendix.codeSample))
+        ? new LanguageModelChatMessage(
+            LanguageModelChatMessageRole.System,
+            getCodeSamplePrompt(spec.appendix.codeSample)
+          )
         : null;
 
     let fixedCode: string | null = codeSnippet;
@@ -252,8 +267,8 @@ ${sample.codeSample}
     historicalErrors: string[],
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
-    declarationMessage: LanguageModelChatSystemMessage | null,
-    sampleMessage: LanguageModelChatSystemMessage | null
+    declarationMessage: LanguageModelChatMessage | null,
+    sampleMessage: LanguageModelChatMessage | null
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
@@ -284,8 +299,8 @@ ${sample.codeSample}
     // Perform the desired operation
     // The order in array is matter, don't change it unless you know what you are doing
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(tempUserInput),
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, tempUserInput),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
 
     if (!!sampleMessage) {
@@ -296,7 +311,9 @@ ${sample.codeSample}
       messages.push(declarationMessage);
     }
 
-    messages.push(new LanguageModelChatSystemMessage(referenceUserPrompt));
+    messages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    );
 
     let msgCount = countMessagesTokens(messages);
     while (msgCount > getTokenLimitation(model)) {

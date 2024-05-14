@@ -103,10 +103,9 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
 (mockedVSCode as any).CancellationError = vscodeMocks.vscMockExtHostedTypes.CancellationError;
 (mockedVSCode as any).LSPCancellationError = vscodeMocks.vscMockExtHostedTypes.LSPCancellationError;
 mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
-mockedVSCode.LanguageModelChatSystemMessage = vscodeMocks.chat.LanguageModelChatSystemMessage;
-mockedVSCode.LanguageModelChatUserMessage = vscodeMocks.chat.LanguageModelChatUserMessage;
-mockedVSCode.LanguageModelChatAssistantMessage = vscodeMocks.chat.LanguageModelChatAssistantMessage;
+mockedVSCode.LanguageModelChatMessage = vscodeMocks.chat.LanguageModelChatMessage;
 mockedVSCode.ChatLocation = vscodeMocks.chat.ChatLocation;
+mockedVSCode.LanguageModelChatMessageRole = vscodeMocks.chat.LanguageModelChatMessageRole;
 (mockedVSCode as any).version = "test";
 
 // Setup window APIs

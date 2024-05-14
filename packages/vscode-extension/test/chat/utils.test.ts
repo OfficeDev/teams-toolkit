@@ -28,9 +28,19 @@ describe("chat utils", () => {
         yield "result";
       })();
       const token = new CancellationToken();
-      sandbox.stub(vscode.lm, "sendChatRequest").resolves({
-        stream: asyncIterator,
-      });
+      const chatModel: vscode.LanguageModelChat = {
+        sendRequest: sandbox.stub().resolves({
+          stream: asyncIterator,
+        }),
+        id: "",
+        vendor: "",
+        name: "",
+        family: "gpt-3.5-turbo",
+        version: "",
+        contextSize: 0,
+        countTokens: sandbox.stub(),
+      };
+      sandbox.stub(vscode.lm, "selectChatModels").resolves([chatModel]);
       const response = {
         markdown: sandbox.stub(),
       };
@@ -55,9 +65,19 @@ describe("chat utils", () => {
         yield "result";
       })();
       const token = new CancellationToken();
-      sandbox.stub(vscode.lm, "sendChatRequest").resolves({
-        stream: asyncIterator,
-      });
+      const chatModel: vscode.LanguageModelChat = {
+        sendRequest: sandbox.stub().resolves({
+          stream: asyncIterator,
+        }),
+        id: "",
+        vendor: "",
+        name: "",
+        family: "gpt-3.5-turbo",
+        version: "",
+        contextSize: 0,
+        countTokens: sandbox.stub(),
+      };
+      sandbox.stub(vscode.lm, "selectChatModels").resolves([chatModel]);
       const response = {
         markdown: sandbox.stub(),
       };

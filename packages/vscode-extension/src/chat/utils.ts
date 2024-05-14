@@ -13,7 +13,13 @@ export async function verbatimCopilotInteraction(
   response: ChatResponseStream,
   token: CancellationToken
 ) {
-  const chatRequest = await lm.sendChatRequest(model, messages, {}, token);
+  const [vendor, family] = model.split(/-(.*)/s);
+  const chatModels = await lm.selectChatModels({ vendor, family });
+  const familyMatch = chatModels?.find((chatModel) => chatModel.family === family);
+  if (!familyMatch) {
+    throw new Error("No chat models available for the specified family");
+  }
+  const chatRequest = await familyMatch.sendRequest(messages, {}, token);
   for await (const fragment of chatRequest.stream) {
     response.markdown(fragment);
   }
@@ -24,7 +30,13 @@ export async function getCopilotResponseAsString(
   messages: LanguageModelChatMessage[],
   token: CancellationToken
 ): Promise<string> {
-  const chatRequest = await lm.sendChatRequest(model, messages, {}, token);
+  const [vendor, family] = model.split(/-(.*)/s);
+  const chatModels = await lm.selectChatModels({ vendor, family });
+  const familyMatch = chatModels?.find((chatModel) => chatModel.family === family);
+  if (!familyMatch) {
+    throw new Error("No chat models available for the specified family");
+  }
+  const chatRequest = await familyMatch.sendRequest(messages, {}, token);
   let response = "";
   for await (const fragment of chatRequest.stream) {
     response += fragment;

@@ -180,7 +180,7 @@ mockedVSCode.commands = {
 
 // Setup chat APIs
 (mockedVSCode as any).lm = {
-  sendChatRequest: () => {},
+  selectChatModels: () => {},
   languageModels: [],
   onDidChangeLanguageModels: undefined as any,
 };

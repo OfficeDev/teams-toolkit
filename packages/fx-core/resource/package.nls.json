@@ -529,6 +529,7 @@
   "core.common.OutlookDesktopClientName": "Outlook desktop client id",
   "core.common.OutlookWebClientName1": "Outlook web access client id 1",
   "core.common.OutlookWebClientName2": "Outlook web access client id 2",
+  "core.common.OutlookMobileClientName": "Outlook mobile client id",
   "core.common.CancelledMessage": "Operation is canceled.",
   "core.common.SwaggerNotSupported": "Swagger 2.0 is not supported. Convert it to OpenAPI 3.0 first.",
   "core.common.SpecVersionNotSupported": "OpenAPI version %s is not supported. Use version 3.0.x.",

@@ -7,6 +7,7 @@ import Fuse from "fuse.js";
 import * as React from "react";
 
 import { Icon, Link } from "@fluentui/react";
+import { isChatParticipantEnabled } from "@microsoft/teamsfx-core";
 
 import { GlobalKey } from "../../constants";
 import {
@@ -21,7 +22,6 @@ import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
 import SampleListItem from "./sampleListItem";
-import { IsChatParticipantEnabled } from "../../chat/consts";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   private samples: SampleInfo[] = [];
@@ -62,7 +62,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         </div>
         <div className="title">
           <h1>Samples</h1>
-          {IsChatParticipantEnabled ? (
+          {isChatParticipantEnabled() ? (
             <h3>
               Explore our sample gallery filled with solutions that work seamlessly with Teams
               Toolkit. Need help choosing? Let{" "}

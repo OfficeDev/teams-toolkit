@@ -1,18 +1,20 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
-
-declare module "vscode" {
+declare module 'vscode' {
 
 	export namespace chat {
 
 		/**
 		 * Register a variable which can be used in a chat request to any participant.
+		 * @param id A unique ID for the variable.
 		 * @param name The name of the variable, to be used in the chat input as `#name`.
 		 * @param description A description of the variable for the chat input suggest widget.
 		 * @param resolver Will be called to provide the chat variable's value when it is used.
 		 */
-		export function registerChatVariableResolver(name: string, description: string, resolver: ChatVariableResolver): Disposable;
+		export function registerChatVariableResolver(id: string, name: string, userDescription: string, modelDescription: string | undefined, resolver: ChatVariableResolver): Disposable;
 	}
 
 	export interface ChatVariableValue {

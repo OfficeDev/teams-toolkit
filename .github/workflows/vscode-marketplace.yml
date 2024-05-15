@@ -20,6 +20,10 @@ jobs:
   publish-to-vscode-marketplace:
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      id-token: write
+      actions: read
+      contents: write
 
     steps:
       - name: Setup node
@@ -60,14 +64,18 @@ jobs:
           custom_tag: ${{ steps.vsc_ver.outputs.vsc_ver }}
           tag_prefix: ""
 
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.PUBLISHER_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.PUBLISHER_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.PUBLISHER_AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
       - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}
-        env:
-          PAT: ${{ secrets.VSCE_PAT }}
-        run: vsce publish --pre-release --pat $PAT --packagePath *.vsix
+        run: vsce publish --pre-release --azure-credential --packagePath *.vsix
 
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
-        run: vsce publish --pat $PAT --packagePath *.vsix
-        env:
-          PAT: ${{ secrets.VSCE_PAT }}
+        run: vsce publish --azure-credential --packagePath *.vsix

@@ -23,9 +23,20 @@ export abstract class Validator {
   options!: ParseOptions;
 
   private apiMap: APIMap | undefined;
+  private hasCircularReference = false;
 
   abstract validateAPI(method: string, path: string): APIValidationResult;
   abstract validateSpec(): SpecValidationResult;
+
+  protected checkCircularReference(): void {
+    try {
+      JSON.stringify(this.spec);
+    } catch (e) {
+      if ((e as Error).message.includes("Converting circular structure to JSON")) {
+        this.hasCircularReference = true;
+      }
+    }
+  }
 
   listAPIs(): APIMap {
     if (this.apiMap) {
@@ -137,6 +148,23 @@ export abstract class Validator {
       result.isValid = false;
       result.reason.push(ErrorType.UrlPathNotExist);
       return result;
+    }
+
+    return result;
+  }
+
+  protected validateCircularReference(method: string, path: string): APIValidationResult {
+    const result: APIValidationResult = { isValid: true, reason: [] };
+    if (this.hasCircularReference) {
+      const operationObject = (this.spec.paths[path] as any)[method] as OpenAPIV3.OperationObject;
+      try {
+        JSON.stringify(operationObject);
+      } catch (e) {
+        if ((e as Error).message.includes("Converting circular structure to JSON")) {
+          result.isValid = false;
+          result.reason.push(ErrorType.CircularReferenceNotSupported);
+        }
+      }
     }
 
     return result;

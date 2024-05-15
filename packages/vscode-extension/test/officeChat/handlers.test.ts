@@ -41,7 +41,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: OfficeChatCommand.Create,
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -60,7 +60,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: OfficeChatCommand.GenerateCode,
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -79,7 +79,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: OfficeChatCommand.NextStep,
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -101,7 +101,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: "",
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,

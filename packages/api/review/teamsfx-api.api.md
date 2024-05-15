@@ -382,6 +382,12 @@ export interface FxError extends Error {
     userData?: any;
 }
 
+// @public (undocumented)
+export interface GeneratorResult {
+    // (undocumented)
+    warnings?: Warning[];
+}
+
 // @public
 export interface Group {
     // (undocumented)
@@ -395,7 +401,7 @@ export interface IGenerator {
     // (undocumented)
     componentName: string;
     // (undocumented)
-    run(context: Context, inputs: Inputs, destinationPath: string): Promise<Result<undefined, FxError>>;
+    run(context: Context, inputs: Inputs, destinationPath: string): Promise<Result<GeneratorResult, FxError>>;
 }
 
 // @public

@@ -317,13 +317,13 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.CustomCopilotRagAzureAISearch,
   ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
-      [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
-    },
-    TemplateNames.CustomCopilotRagCustomApi,
-  ],
+  // [
+  //   {
+  //     [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+  //     [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+  //   },
+  //   TemplateNames.CustomCopilotRagCustomApi,
+  // ],
   [
     {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,

@@ -733,6 +733,8 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
       return getLocalizedString("core.common.invalidReason.MethodNotAllowed");
     case ErrorType.UrlPathNotExist:
       return getLocalizedString("core.common.invalidReason.UrlPathNotExist");
+    case ErrorType.CircularReferenceNotSupported:
+      return getLocalizedString("core.common.invalidReason.CircularReference");
     default:
       return reason.toString();
   }
@@ -750,8 +752,6 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
             .map((o) => o.trim())
             .join(". ");
           content = `${content}. ${getLocalizedString("core.common.ErrorFetchApiSpec")}`;
-        } else if (error.content.startsWith("RangeError: Maximum call stack size exceeded")) {
-          content = getLocalizedString("core.common.CircularReferenceNotSupported");
         }
         return content;
       }

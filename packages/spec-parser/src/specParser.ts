@@ -84,7 +84,12 @@ export class SpecParser {
     try {
       try {
         await this.loadSpec();
-        await this.parser.validate(this.spec!);
+        if (!this.parser.$refs.circular) {
+          await this.parser.validate(this.spec!);
+        } else {
+          const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
+          await this.parser.validate(clonedUnResolveSpec);
+        }
       } catch (e) {
         return {
           status: ValidationStatus.Error,
@@ -241,7 +246,8 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+      const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
+      const newSpec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
       return [newUnResolvedSpec, newSpec];
     } catch (err) {
       if (err instanceof SpecParserError) {

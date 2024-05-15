@@ -838,6 +838,14 @@
             "appPackagePath": {
               "type": "string",
               "description": "Path to zipped Teams app package file."
+            },
+            "showMessage": {
+              "type": "boolean",
+              "description": "Show message or not."
+            },
+            "showProgressBar": {
+              "type": "boolean",
+              "description": "Show progress bar or not."
             }
           }
         }

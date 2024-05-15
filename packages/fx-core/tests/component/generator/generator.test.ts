@@ -1028,6 +1028,7 @@ describe("render template", () => {
       sandbox.replace(templateConfig, "useLocalTemplate", false);
       sandbox.replace(templateConfig, "localVersion", "9.9.9");
       sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+      sandbox.stub(generatorUtils, "getTemplateLatestTag").resolves("9.0.0");
       sandbox
         .stub(generatorUtils, "getTemplateZipUrlByTag")
         .resolves("fooUrl/templates@0.1.0/test.zip");

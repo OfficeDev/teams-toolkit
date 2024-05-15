@@ -73,12 +73,6 @@ jobs:
       - name: Init GitHub CLI
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-      
-      - uses: azure/login@v1
-        with:
-          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
-          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
-          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: bvt (dispatch)
         id: bvt
@@ -537,6 +531,7 @@ jobs:
           client-id: ${{secrets.DEVOPS_CLIENT_ID}}
           tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
           subscription-id: ${{secrets.DEVOPS_SUB_ID}}
+          enable-AzPSSession: true
 
       - name: Archive Test Plan
         run: |

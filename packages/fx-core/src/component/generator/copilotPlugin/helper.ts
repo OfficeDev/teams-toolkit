@@ -25,7 +25,6 @@ import {
   Inputs,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
-import { sendRequestWithRetry } from "../utils";
 import {
   SpecParser,
   ErrorType as ApiSpecErrorType,
@@ -53,9 +52,10 @@ import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
-import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
 import { isCopilotAuthEnabled } from "../../../common/featureFlags";
+import { sendRequestWithRetry } from "../../../common/requestUtils";
+import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question/create";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";

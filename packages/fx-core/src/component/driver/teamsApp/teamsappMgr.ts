@@ -18,7 +18,6 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
 import { resolveString } from "../../configManager/lifecycle";
-import { createDriverContext } from "../../utils";
 import { envUtil } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
@@ -42,6 +41,7 @@ import { ValidateManifestDriver } from "./validate";
 import { ValidateAppPackageDriver } from "./validateAppPackage";
 import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import { ValidateWithTestCasesDriver } from "./validateTestCases";
+import { createDriverContext } from "../util/utils";
 
 class TeamsAppMgr {
   async ensureAppPackageFile(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {

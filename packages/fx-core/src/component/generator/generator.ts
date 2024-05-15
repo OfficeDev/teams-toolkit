@@ -6,7 +6,6 @@ import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { BaseComponentInnerError } from "../error/componentError";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -41,6 +40,7 @@ import {
   isNewProjectTypeEnabled,
 } from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 
 export class Generator {
   public static getDefaultVariables(

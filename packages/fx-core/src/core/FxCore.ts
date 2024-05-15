@@ -101,7 +101,7 @@ import {
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { createContextV3, createDriverContext } from "../component/utils";
+import { createContextV3 } from "../component/utils";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
@@ -150,6 +150,7 @@ import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { AppStudioError } from "../component/driver/teamsApp/errors";
 import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import { ActionInjector } from "../component/configManager/actionInjector";
+import { createDriverContext } from "../component/driver/util/utils";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 

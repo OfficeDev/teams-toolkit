@@ -22,11 +22,10 @@ import {
   isVideoFilterProject,
   listDevTunnels,
   setRegion,
-  deepCopy,
-  isUserCancelError,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
+import { isUserCancelError } from "../../src/error/common";
 
 chai.use(chaiAsPromised);
 
@@ -362,25 +361,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
       const result = await listDevTunnels(token);
       chai.assert.isTrue(result.isErr());
-    });
-  });
-
-  describe("deepCopy", async () => {
-    it("should deep copy", async () => {
-      const obj = {
-        a: "a",
-        b: {
-          c: "c",
-        },
-      };
-      const copy = deepCopy(obj);
-      chai.expect(copy).deep.equal(obj);
-      chai.expect(copy).not.equal(obj);
-    });
-    it("should not deep copy obj", async () => {
-      const obj = {};
-      const copy = deepCopy(obj);
-      chai.expect(copy).equal(obj);
     });
   });
 

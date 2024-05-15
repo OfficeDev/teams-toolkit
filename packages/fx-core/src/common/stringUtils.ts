@@ -132,3 +132,7 @@ export function maskSecretValues(stdout: string, replace = "***"): string {
   }
   return stdout;
 }
+
+export function convertToAlphanumericOnly(appName: string): string {
+  return appName.replace(/[^\da-zA-Z]/g, "");
+}

@@ -12,7 +12,7 @@ import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
   sendRequestWithRetry,
-} from "@microsoft/teamsfx-core/build/component/generator/utils";
+} from "@microsoft/teamsfx-core/build/common/requestUtils";
 import {
   CancellationToken,
   ChatRequest,

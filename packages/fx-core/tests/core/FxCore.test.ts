@@ -65,7 +65,7 @@ import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/va
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
-import { createDriverContext } from "../../src/component/utils";
+import { createDriverContext } from "../../src/component/driver/util/utils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";

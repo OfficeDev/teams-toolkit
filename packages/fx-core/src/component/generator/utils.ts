@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import AdmZip from "adm-zip";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import * as fs from "fs-extra";
+import { cloneDeep } from "lodash";
 import Mustache, { Context, Writer } from "mustache";
 import path from "path";
-import * as fs from "fs-extra";
+import semver from "semver";
+import { sendRequestWithRetry, sendRequestWithTimeout } from "../../common/requestUtils";
+import { SampleConfig, SampleUrlInfo, sampleProvider } from "../../common/samples";
+import templateConfig from "../../common/templates-config.json";
+import { InvalidInputError } from "../../core/error";
+import { ProgrammingLanguage } from "../../question/create";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
   oldPlaceholderDelimiters,
   placeholderDelimiters,
-  templateFileExt,
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
+  templateFileExt,
 } from "./constant";
-import { SampleConfig, sampleProvider } from "../../common/samples";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse, CancelToken } from "axios";
-import templateConfig from "../../common/templates-config.json";
-import semver from "semver";
-import { deepCopy } from "../../common/tools";
-import { InvalidInputError } from "../../core/error";
-import { ProgrammingLanguage } from "../../question";
-import { AxiosError } from "axios";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -34,56 +34,6 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
-}
-
-export async function sendRequestWithRetry<T>(
-  requestFn: () => Promise<AxiosResponse<T>>,
-  tryLimits: number
-): Promise<AxiosResponse<T>> {
-  // !status means network error, see https://github.com/axios/axios/issues/383
-  const canTry = (status: number | undefined) => !status || (status >= 500 && status < 600);
-
-  let status: number | undefined;
-  let error: Error;
-
-  for (let i = 0; i < tryLimits && canTry(status); i++) {
-    try {
-      const res = await requestFn();
-      if (res.status === 200 || res.status === 201) {
-        return res;
-      } else {
-        error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
-      }
-      status = res.status;
-    } catch (e: any) {
-      error = e;
-      status = e?.response?.status;
-    }
-  }
-
-  error ??= new Error(`RequestWithRetry got bad tryLimits: ${tryLimits}`);
-  throw error;
-}
-
-export async function sendRequestWithTimeout<T>(
-  requestFn: (cancelToken: CancelToken) => Promise<AxiosResponse<T>>,
-  timeoutInMs: number,
-  tryLimits = 1
-): Promise<AxiosResponse<T>> {
-  const source = axios.CancelToken.source();
-  const timeout = setTimeout(() => {
-    source.cancel();
-  }, timeoutInMs);
-  try {
-    const res = await sendRequestWithRetry(() => requestFn(source.token), tryLimits);
-    clearTimeout(timeout);
-    return res;
-  } catch (err: unknown) {
-    if (axios.isCancel(err)) {
-      throw new Error("Request timeout");
-    }
-    throw err;
-  }
 }
 
 async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number): Promise<string> {
@@ -188,7 +138,7 @@ function escapeEmptyVariable(
   tags: [string, string] = placeholderDelimiters
 ): string[][] {
   const parsed = Mustache.parse(template, tags) as string[][];
-  const tokens = deepCopy(parsed); // Mustache cache the parsed result. Modify the result in place may cause unexpected issue.
+  const tokens = cloneDeep(parsed); // Mustache cache the parsed result. Modify the result in place may cause unexpected issue.
   updateTokens(tokens, view, tags, 0);
   return tokens;
 }
@@ -263,13 +213,6 @@ export async function downloadDirectory(
   );
   return samplePaths;
 }
-
-export type SampleUrlInfo = {
-  owner: string;
-  repository: string;
-  ref: string;
-  dir: string;
-};
 
 type SampleFileInfo = {
   tree: {

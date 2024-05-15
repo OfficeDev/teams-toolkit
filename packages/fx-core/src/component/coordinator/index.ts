@@ -26,8 +26,6 @@ import * as xml2js from "xml2js";
 import { isNewGeneratorEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
 import { ObjectIsUndefinedError } from "../../core/error";
@@ -42,7 +40,6 @@ import {
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
   AppNamePattern,
-  CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   OfficeAddinHostOptions,
@@ -74,6 +71,9 @@ import { SummaryReporter } from "./summary";
 import { Generators } from "../generator/generatorProvider";
 import { Feature2TemplateName } from "../generator/templates/templateNames";
 import { convertToLangKey } from "../generator/utils";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
+import { getResourceGroupInPortal } from "../../common/constants";
+import { CapabilityOptions } from "../../question/capabilityOptions";
 
 const M365Actions = [
   "botAadApp/create",

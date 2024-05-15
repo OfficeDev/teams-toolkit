@@ -3,10 +3,12 @@
 "use strict";
 
 import "reflect-metadata";
+export * from "./common/azureUtils";
 export * from "./common/correlator";
 export * from "./common/deps-checker";
 export * from "./common/featureFlags";
 export * from "./common/globalState";
+export * from "./common/localizeUtils";
 export * from "./common/telemetry";
 export * from "./common/stringUtils";
 export { jsonUtils } from "./common/jsonUtils";
@@ -50,4 +52,4 @@ export * from "./component/generator/copilotPlugin/helper";
 export * from "./question/util";
 export * from "./common/projectTypeChecker";
 export { DefaultTemplateGenerator } from "./component/generator/templates/templateGenerator";
-export { fetchAndUnzip } from "./component/utils";
+export { HelperMethods } from "./component/generator/officeAddin/helperMethods";

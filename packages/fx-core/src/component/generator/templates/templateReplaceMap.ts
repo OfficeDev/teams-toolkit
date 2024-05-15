@@ -7,7 +7,7 @@ import {
   isNewProjectTypeEnabled,
 } from "../../../common/featureFlags";
 import { QuestionNames } from "../../../question";
-import { convertToAlphanumericOnly } from "../../../common/utils";
+import { convertToAlphanumericOnly } from "../../../common/stringUtils";
 
 export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string } {
   const appName = inputs[QuestionNames.AppName] as string;

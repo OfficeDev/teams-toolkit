@@ -6,14 +6,14 @@
  */
 
 import {
+  BotOrMeScopes,
   Context,
   FxError,
+  ICommandList,
   IStaticTab,
   Inputs,
   Result,
   TeamsAppManifest,
-  BotOrMeScopes,
-  ICommandList,
   UserError,
   err,
   ok,
@@ -22,7 +22,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
-import { CapabilityOptions } from "../question/create";
+import { QuestionNames } from "../question/questionNames";
 import { CoordinatorSource } from "./constants";
 import * as appStudio from "./driver/teamsApp/appStudio";
 import {
@@ -33,15 +33,8 @@ import {
 } from "./driver/teamsApp/constants";
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
-import {
-  isBot,
-  isBotAndBotBasedMessageExtension,
-  isBotBasedMessageExtension,
-  needTabAndBotCode,
-  needTabCode,
-} from "./driver/teamsApp/utils/utils";
 import { envUtil } from "./utils/envUtil";
-import { QuestionNames } from "../question/questionNames";
+import { getProjectTypeAndCapability } from "../question/create";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -325,43 +318,8 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
-export function getProjectTypeAndCapability(
-  teamsApp: AppDefinition
-): { projectType: string; templateId: string } | undefined {
-  // tab with bot, tab with message extension, tab with bot and message extension
-  if (needTabAndBotCode(teamsApp)) {
-    return { projectType: "tab-bot-type", templateId: CapabilityOptions.nonSsoTabAndBot().id };
-  }
-
-  // tab only
-  if (needTabCode(teamsApp)) {
-    return { projectType: "tab-type", templateId: CapabilityOptions.nonSsoTab().id };
-  }
-
-  // bot and message extension
-  if (isBotAndBotBasedMessageExtension(teamsApp)) {
-    return { projectType: "bot-me-type", templateId: CapabilityOptions.botAndMe().id };
-  }
-
-  // bot based message extension
-  if (isBotBasedMessageExtension(teamsApp)) {
-    return { projectType: "me-type", templateId: CapabilityOptions.me().id };
-  }
-
-  // bot
-  if (isBot(teamsApp)) {
-    return { projectType: "bot-type", templateId: CapabilityOptions.basicBot().id };
-  }
-
-  return undefined;
-}
-
 function decapitalizeScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
-}
-
-export function isFromDevPortal(inputs: Inputs | undefined): boolean {
-  return !!inputs?.teamsAppFromTdp;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

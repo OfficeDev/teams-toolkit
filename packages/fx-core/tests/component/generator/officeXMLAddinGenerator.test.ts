@@ -33,6 +33,7 @@ import {
   QuestionNames,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
+import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 
 describe("OfficeXMLAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -93,7 +94,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));

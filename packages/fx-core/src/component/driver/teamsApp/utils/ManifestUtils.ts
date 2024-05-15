@@ -24,7 +24,6 @@ import {
   JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../../error/common";
-import { CapabilityOptions } from "../../../../question/create";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
@@ -51,6 +50,8 @@ import { WrapDriverContext } from "../../util/wrapUtil";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "../../../../core/globalVars";
 import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
+import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
+import { CapabilityOptions } from "../../../../question/capabilityOptions";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {

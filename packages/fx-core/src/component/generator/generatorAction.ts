@@ -111,7 +111,7 @@ async function determineTemplateSource(context: GeneratorContext) {
       context.timeoutInMs
     );
     latestTag = latestTag.replace(templateConfig.tagPrefix, "").trim();
-    if (semver.gt(latestTag, templateConfig.localVersion)) {
+    if (semver.gt(latestTag, templateConfig.localVersion) || semver.prerelease(latestTag)) {
       // git tag version is higher than the local version, download template from github
       url = `${templateConfig.templateDownloadBaseURL}/${latestTag}/${context.language!}.zip`;
     }

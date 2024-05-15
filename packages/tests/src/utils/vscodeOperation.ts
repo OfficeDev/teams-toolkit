@@ -141,7 +141,7 @@ export async function openExistingProject(folder: string): Promise<void> {
     await driver.sleep(Timeout.input);
     if (os.type() === "Windows_NT") {
       await input.sendKeys("\\");
-    } else if (os.type() === "Linux") {
+    } else {
       await input.sendKeys("/");
     }
     await input.confirm();
@@ -911,6 +911,11 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       // input fake Azure OpenAI Endpoint
       await input.setText("https://test.com");
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      // input deployment name
+      await input.setText("dev");
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);

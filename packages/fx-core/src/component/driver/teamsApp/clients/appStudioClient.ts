@@ -637,7 +637,7 @@ export namespace AppStudioClient {
   export async function submitAppValidationRequest(
     teamsAppId: string,
     appStudioToken: string,
-    timeoutSeconds = 10
+    timeoutSeconds = 20
   ): Promise<AsyncAppValidationResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     requester.defaults.timeout = timeoutSeconds * 1000;
@@ -687,7 +687,7 @@ export namespace AppStudioClient {
   export async function getAppValidationById(
     appValidationId: string,
     appStudioToken: string,
-    timeoutSeconds = 10
+    timeoutSeconds = 20
   ): Promise<AsyncAppValidationResultsResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     requester.defaults.timeout = timeoutSeconds * 1000;

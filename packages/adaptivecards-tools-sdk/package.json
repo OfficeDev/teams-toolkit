@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/adaptivecards-tools",
-  "version": "1.3.4-rc-hotfix.0",
+  "version": "1.3.4",
   "description": "Microsoft sdk for Adaptive Cards",
   "main": "lib/index.js",
   "types": "types/index.d.ts",

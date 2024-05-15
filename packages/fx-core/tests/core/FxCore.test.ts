@@ -4106,16 +4106,16 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path.endsWith("openapi.json")) {
-        return true;
-      }
-      if (path.endsWith("ai-plugin.json")) {
-        return true;
-      }
       if (path.endsWith("openapi_1.json")) {
-        return false;
+        return true;
       }
       if (path.endsWith("ai-plugin_1.json")) {
+        return true;
+      }
+      if (path.endsWith("openapi_2.json")) {
+        return false;
+      }
+      if (path.endsWith("ai-plugin_2.json")) {
         return false;
       }
       return true;
@@ -4164,16 +4164,16 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path.endsWith("openapi.yaml")) {
-        return true;
-      }
-      if (path.endsWith("ai-plugin.json")) {
-        return true;
-      }
       if (path.endsWith("openapi_1.yaml")) {
-        return false;
+        return true;
       }
       if (path.endsWith("ai-plugin_1.json")) {
+        return true;
+      }
+      if (path.endsWith("openapi_2.yaml")) {
+        return false;
+      }
+      if (path.endsWith("ai-plugin_2.json")) {
         return false;
       }
       return true;
@@ -4222,16 +4222,16 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path.endsWith("openapi.json")) {
-        return true;
-      }
-      if (path.endsWith("ai-plugin.json")) {
-        return true;
-      }
       if (path.endsWith("openapi_1.json")) {
-        return false;
+        return true;
       }
       if (path.endsWith("ai-plugin_1.json")) {
+        return true;
+      }
+      if (path.endsWith("openapi_2.json")) {
+        return false;
+      }
+      if (path.endsWith("ai-plugin_2.json")) {
         return false;
       }
       return true;
@@ -4426,6 +4426,15 @@ describe("addPlugin", async () => {
         file: "test.json",
       },
     ];
+    sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+      if (path.endsWith("openapi_1.json")) {
+        return false;
+      }
+      if (path.endsWith("ai-plugin_1.json")) {
+        return false;
+      }
+      return true;
+    });
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
@@ -4456,6 +4465,15 @@ describe("addPlugin", async () => {
         file: "test.json",
       },
     ];
+    sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+      if (path.endsWith("openapi_1.json")) {
+        return false;
+      }
+      if (path.endsWith("ai-plugin_1.json")) {
+        return false;
+      }
+      return true;
+    });
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
@@ -4494,18 +4512,13 @@ describe("addPlugin", async () => {
       .stub(manifestUtils, "_writeAppManifest")
       .resolves(err(new SystemError("writeError", "writeError", "", "")));
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path.endsWith("openapi.json")) {
-        return true;
-      }
-      if (path.endsWith("ai-plugin.json")) {
-        return true;
-      }
       if (path.endsWith("openapi_1.json")) {
         return false;
       }
       if (path.endsWith("ai-plugin_1.json")) {
         return false;
       }
+
       return true;
     });
     sandbox
@@ -4552,12 +4565,6 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path.endsWith("openapi.json")) {
-        return true;
-      }
-      if (path.endsWith("ai-plugin.json")) {
-        return true;
-      }
       if (path.endsWith("openapi_1.json")) {
         return false;
       }

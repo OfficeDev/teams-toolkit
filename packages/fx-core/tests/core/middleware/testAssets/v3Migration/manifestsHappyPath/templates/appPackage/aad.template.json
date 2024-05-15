@@ -89,11 +89,11 @@
           ]
       },
       {
-        "appId": "27922004-5251-4030-b22d-91ecd9a37ea4",
-        "permissionIds": [
-            "${{state.fx-resource-aad-app-for-teams.oauth2PermissionScopeId}}"
-        ]
-    }
+          "appId": "27922004-5251-4030-b22d-91ecd9a37ea4",
+          "permissionIds": [
+              "{{state.fx-resource-aad-app-for-teams.oauth2PermissionScopeId}}"
+          ]
+      }
   ],
   "identifierUris": [
       "{{state.fx-resource-aad-app-for-teams.applicationIdUris}}"

@@ -11,7 +11,6 @@ import path from "path";
 import {
   APIInfo,
   APIMap,
-  AuthInfo,
   ErrorResult,
   ErrorType,
   GenerateResult,
@@ -42,7 +41,6 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: APIMap | undefined;
   private validator: Validator | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
@@ -56,7 +54,11 @@ export class SpecParser {
     allowMultipleParameters: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
+    allowConversationStarters: false,
+    allowResponseSemantics: false,
+    allowConfirmation: false,
     projectType: ProjectType.SME,
+    isGptPlugin: false,
   };
 
   /**
@@ -273,13 +275,9 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      let resultStr;
-      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
-        resultStr = jsyaml.dump(newUnResolvedSpec);
-      } else {
-        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
-      }
-      await fs.outputFile(outputSpecPath, resultStr);
+      const authInfo = Utils.getAuthInfo(newSpec);
+
+      await this.saveFilterSpec(outputSpecPath, newUnResolvedSpec);
 
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
@@ -290,7 +288,8 @@ export class SpecParser {
         outputSpecPath,
         pluginFilePath,
         newSpec,
-        this.options
+        this.options,
+        authInfo
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
@@ -327,42 +326,13 @@ export class SpecParser {
       const newSpecs = await this.getFilteredSpecs(filter, signal);
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
+      let authInfo = undefined;
 
-      let hasMultipleAuth = false;
-      let authInfo: AuthInfo | undefined = undefined;
-
-      for (const url in newSpec.paths) {
-        for (const method in newSpec.paths[url]) {
-          const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
-
-          const authArray = Utils.getAuthArray(operation.security, newSpec);
-
-          if (authArray && authArray.length > 0) {
-            const currentAuth = authArray[0][0];
-            if (!authInfo) {
-              authInfo = authArray[0][0];
-            } else if (authInfo.name !== currentAuth.name) {
-              hasMultipleAuth = true;
-              break;
-            }
-          }
-        }
+      if (this.options.projectType === ProjectType.SME) {
+        authInfo = Utils.getAuthInfo(newSpec);
       }
 
-      if (hasMultipleAuth && this.options.projectType !== ProjectType.TeamsAi) {
-        throw new SpecParserError(
-          ConstantString.MultipleAuthNotSupported,
-          ErrorType.MultipleAuthNotSupported
-        );
-      }
-
-      let resultStr;
-      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
-        resultStr = jsyaml.dump(newUnResolvedSpec);
-      } else {
-        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
-      }
-      await fs.outputFile(outputSpecPath, resultStr);
+      await this.saveFilterSpec(outputSpecPath, newUnResolvedSpec);
 
       if (adaptiveCardFolder) {
         for (const url in newSpec.paths) {
@@ -437,7 +407,6 @@ export class SpecParser {
   private getAPIs(spec: OpenAPIV3.Document): APIMap {
     const validator = this.getValidator(spec);
     const apiMap = validator.listAPIs();
-    this.apiMap = apiMap;
     return apiMap;
   }
 
@@ -448,5 +417,18 @@ export class SpecParser {
     const validator = ValidatorFactory.create(spec, this.options);
     this.validator = validator;
     return validator;
+  }
+
+  private async saveFilterSpec(
+    outputSpecPath: string,
+    unResolvedSpec: OpenAPIV3.Document
+  ): Promise<void> {
+    let resultStr;
+    if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+      resultStr = jsyaml.dump(unResolvedSpec);
+    } else {
+      resultStr = JSON.stringify(unResolvedSpec, null, 2);
+    }
+    await fs.outputFile(outputSpecPath, resultStr);
   }
 }

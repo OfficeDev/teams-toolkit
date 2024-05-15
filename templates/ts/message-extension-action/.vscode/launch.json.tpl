@@ -66,7 +66,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug in Test Tool (Preview)",
+            "name": "Debug in Test Tool",
             "configurations": [
                 "Attach to Local Service"
             ],
@@ -76,7 +76,7 @@
                 "group": "group 0: Teams App Test Tool",
 {{/enableMETestToolByDefault}}
 {{^enableMETestToolByDefault}}
-                "group": "group 3: Teams App Test Tool",
+                "group": "group 2: Teams App Test Tool",
 {{/enableMETestToolByDefault}}
                 "order": 1
             },
@@ -90,7 +90,7 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+                "group": "group 1: Teams",
                 "order": 1
             },
             "stopAll": true
@@ -103,7 +103,7 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+                "group": "group 1: Teams",
                 "order": 2
             },
             "stopAll": true

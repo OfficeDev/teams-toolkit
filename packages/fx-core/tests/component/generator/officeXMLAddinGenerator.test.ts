@@ -5,7 +5,7 @@
  * @author zyun@microsoft.com
  */
 
-import { Context, Inputs, ok, Platform, err, SystemError } from "@microsoft/teamsfx-api";
+import { Context, Inputs, Platform, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as childProcess from "child_process";
 import fs from "fs";
@@ -18,14 +18,21 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
-import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import {
+  OfficeXMLAddinGenerator,
+  OfficeXmlAddinGeneratorNew,
+} from "../../../src/component/generator/officeXMLAddin/generator";
+import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
+import * as componentUtils from "../../../src/component/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
-import { OfficeAddinHostOptions, ProjectTypeOptions, QuestionNames } from "../../../src/question";
+import {
+  OfficeAddinHostOptions,
+  ProgrammingLanguage,
+  ProjectTypeOptions,
+  QuestionNames,
+} from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import { FeatureFlagName } from "../../../src/common/constants";
-import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
 
 describe("OfficeXMLAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -34,10 +41,7 @@ describe("OfficeXMLAddinGenerator", function () {
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv(
-      { TEAMSFX_V3: "true", [FeatureFlagName.OfficeXMLAddin]: "true" },
-      { clear: true }
-    );
+    mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3();
@@ -89,7 +93,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -129,7 +133,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(undefined);
+    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
 
@@ -205,5 +209,92 @@ describe("getOfficeAddinTemplateConfig", () => {
       config["excel-react"].framework?.default?.typescript,
       "https://aka.ms/ccdevx-fx-react-ts"
     );
+  });
+});
+
+describe("OfficeXmlAddinGeneratorNew", () => {
+  const gtools = new MockTools();
+  setTools(gtools);
+  const generator = new OfficeXmlAddinGeneratorNew();
+  const context = createContextV3();
+  describe("active()", () => {
+    it(`should return true`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      };
+      const res = generator.activate(context, inputs);
+      chai.assert.isTrue(res);
+    });
+
+    it(`should return false`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.outlook().id,
+      };
+      const res = generator.activate(context, inputs);
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("getTemplateInfos()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path for word-taskpane", async () => {
+      sandbox.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+      sandbox.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.Capabilities]: "word-taskpane",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value.length, 2);
+      }
+    });
+    it("happy path for word-manifest", async () => {
+      sandbox.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+      sandbox.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.Capabilities]: "word-manifest",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value.length, 3);
+      }
+    });
+  });
+
+  describe("post()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      sandbox.stub(OfficeAddinManifest, "modifyManifestFile").resolves();
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+    });
   });
 });

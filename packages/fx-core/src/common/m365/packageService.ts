@@ -52,7 +52,7 @@ export class PackageService {
     this.logger = logger;
   }
   @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
-  private async getTitleServiceUrl(token: string): Promise<string> {
+  public async getTitleServiceUrl(token: string): Promise<string> {
     try {
       try {
         new URL(this.initEndpoint);
@@ -129,12 +129,12 @@ export class PackageService {
         throw new Error(`Unknown response code: ${uploadResponse.status}}`);
       }
     } catch (error: any) {
-      this.logger?.error("Sideloading failed.");
+      // this.logger?.error("Sideloading failed.");
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
+        // this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
       } else {
-        this.logger?.error(error.message);
+        // this.logger?.error(error.message);
       }
       throw assembleError(error, M365ErrorSource);
     }
@@ -202,12 +202,12 @@ export class PackageService {
         }
       } while (true);
     } catch (error: any) {
-      this.logger?.error("Sideloading failed.");
+      // this.logger?.error("Sideloading failed.");
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
+        // this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
       } else {
-        this.logger?.error(error.message);
+        // this.logger?.error(error.message);
       }
       throw assembleError(error, M365ErrorSource);
     }
@@ -239,6 +239,9 @@ export class PackageService {
               "Activities",
               "MeetingExtensionDefinition",
               "OpenAIPlugins",
+              "Gpts",
+              "DeclarativeCopilots ",
+              "Plugins",
             ],
           },
         },
@@ -255,13 +258,10 @@ export class PackageService {
     } catch (error: any) {
       this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
         if (error.response.status === 404) {
           throw new NotExtendedToM365Error(M365ErrorSource);
         }
         error = this.traceError(error);
-      } else {
-        this.logger?.error(error.message);
       }
       throw assembleError(error, M365ErrorSource);
     }
@@ -295,14 +295,9 @@ export class PackageService {
       });
       this.logger?.verbose("Unacquiring done.");
     } catch (error: any) {
-      this.logger?.error("Unacquire failed.");
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
-      } else {
-        this.logger?.error(error.message);
       }
-
       throw assembleError(error, M365ErrorSource);
     }
   }
@@ -318,7 +313,7 @@ export class PackageService {
           params: {
             SupportedElementTypes:
               // eslint-disable-next-line no-secrets/no-secrets
-              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition,OpenAIPlugins",
+              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition,OpenAIPlugins,Gpts,DeclarativeCopilots,Plugins",
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -328,14 +323,9 @@ export class PackageService {
       this.logger?.info(JSON.stringify(launchInfo.data));
       return launchInfo.data;
     } catch (error: any) {
-      this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
-      } else {
-        this.logger?.error(error.message);
       }
-
       throw assembleError(error, M365ErrorSource);
     }
   }
@@ -377,14 +367,9 @@ export class PackageService {
 
       return activeExperiences;
     } catch (error: any) {
-      this.logger?.error("Fail to get active experiences.");
       if (error.response) {
-        this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
-      } else {
-        this.logger?.error(error.message);
       }
-
       throw assembleError(error, M365ErrorSource);
     }
   }
@@ -426,21 +411,22 @@ export class PackageService {
 
   private traceError(error: any): any {
     // add error details and trace to message
-    const detail = JSON.stringify(error.response.data ?? {});
-    const tracingId = error.response.headers?.traceresponse ?? "";
-    const originalMessage = error.message;
-    error.message = JSON.stringify({
-      message: originalMessage,
-      detail: detail,
-      tracingId: tracingId,
-    });
+    const tracingId = (error.response.headers?.traceresponse ?? "") as string;
+    const originalMessage = error.message as string;
+    const innerError = error.response.data?.error || { code: "", message: "" };
+    const finalMessage = `${originalMessage} (tracingId: ${tracingId}) ${
+      innerError.code as string
+    }: ${innerError.message as string} `;
+
+    error.message = finalMessage;
 
     // HTTP 400 as user error due to invalid input
     if (error.response?.status === 400) {
       error = new UserError({
+        name: "PackageServiceError",
         error,
         source: M365ErrorSource,
-        message: error.message,
+        message: finalMessage,
       });
     }
 

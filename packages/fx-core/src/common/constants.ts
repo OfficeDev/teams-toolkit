@@ -38,34 +38,19 @@ export class OutlookClientId {
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
 }
 export class FeatureFlagName {
-  static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
-  // This will default to true and this environment is only for tests. It does not expose to user.
-  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly VSCallingCLI = "VS_CALLING_CLI";
-  static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
-  static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
-  static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
-  static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
-  static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
-  static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
-  static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
-  static readonly V3 = "TEAMSFX_V3";
-  static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
-  static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
-  static readonly OfficeXMLAddin = "TEAMSFX_OFFICE_XML_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
-  static readonly ApiKey = "API_COPILOT_API_KEY";
-  static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";
   static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
   static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
   static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
-  static readonly ApiMeSSO = "API_ME_SSO";
+  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
+  static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
+  static readonly CopilotAuth = "API_COPILOT_PLUGIN_AUTH";
+  static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
 }

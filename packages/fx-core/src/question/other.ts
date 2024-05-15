@@ -9,12 +9,14 @@ import {
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
+  ManifestUtil,
   MultiSelectQuestion,
   OptionItem,
   Platform,
   SingleFileQuestion,
   SingleSelectQuestion,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -36,6 +38,10 @@ import {
 } from "./create";
 import { QuestionNames } from "./questionNames";
 import { isAsyncAppValidationEnabled } from "../common/featureFlags";
+import { getAbsolutePath } from "../component/utils/common";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
+import { AppStudioError } from "../component/driver/teamsApp/errors";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -267,7 +273,7 @@ export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     cliName: "teams-manifest-file",
     cliShortName: "t",
     cliDescription:
-      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specify the path for Teams app manifest template. It can be either absolute path or relative path to the project root folder, with default at './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -939,6 +945,88 @@ export function resourceGroupQuestionNode(
   };
 }
 
+export class PluginAvailabilityOptions {
+  static action(): OptionItem {
+    return {
+      id: "action",
+      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
+    };
+  }
+  static copilotPlugin(): OptionItem {
+    return {
+      id: "copilot-plugin",
+      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
+    };
+  }
+  static copilotPluginAndAction(): OptionItem {
+    return {
+      id: "copilot-plugin-and-action",
+      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [
+      PluginAvailabilityOptions.copilotPlugin(),
+      PluginAvailabilityOptions.action(),
+      PluginAvailabilityOptions.copilotPluginAndAction(),
+    ];
+  }
+}
+
+export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.PluginAvailability,
+    title: getLocalizedString("core.question.pluginAvailability.title"),
+    cliDescription: "Select plugin availability.",
+    type: "singleSelect",
+    staticOptions: PluginAvailabilityOptions.all(),
+    dynamicOptions: async (inputs: Inputs) => {
+      const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
+      const absolutePath = getAbsolutePath(teamsManifestPath, inputs.projectPath!);
+      const manifestRes = await manifestUtils._readAppManifest(absolutePath);
+      if (manifestRes.isErr()) {
+        throw manifestRes.error;
+      }
+      const commonProperties = ManifestUtil.parseCommonProperties(manifestRes.value);
+      if (!commonProperties.capabilities.includes("copilotGpt")) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "copilotGpts",
+            teamsManifestPath
+          )
+        );
+      }
+
+      if (commonProperties.capabilities.includes("plugin")) {
+        // A project can have only one plugin.
+        return [PluginAvailabilityOptions.action()];
+      } else {
+        return PluginAvailabilityOptions.all();
+      }
+    },
+  };
+}
+
+// add Plugin to a declarative Copilot project
+export function addPluginQuestionNode(): IQTreeNode {
+  return {
+    data: selectTeamsAppManifestQuestion(),
+    children: [
+      {
+        data: selectPluginAvailabilityQuestion(),
+      },
+      {
+        data: apiSpecLocationQuestion(),
+      },
+      {
+        data: apiOperationQuestion(true, true),
+      },
+    ],
+  };
+}
+
 export function apiSpecApiKeyConfirmQestion(): ConfirmQuestion {
   return {
     name: QuestionNames.ApiSpecApiKeyConfirm,
@@ -959,13 +1047,11 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          const pattern = /^(\w){10,128}/g;
-          const match = pattern.test(input);
+          if (input.length < 10 || input.length > 128) {
+            return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          }
 
-          const result = match
-            ? undefined
-            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-          return result;
+          return undefined;
         },
       },
       additionalValidationOnAccept: {
@@ -992,5 +1078,96 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
         data: apiSpecApiKeyConfirmQestion(),
       },
     ],
+  };
+}
+
+export function oauthQuestion(): IQTreeNode {
+  return {
+    data: { type: "group" },
+    condition: (inputs: Inputs) => {
+      return (
+        inputs.outputEnvVarNames && !process.env[inputs.outputEnvVarNames.get("configurationId")]
+      );
+    },
+    children: [
+      {
+        data: oauthClientIdQuestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientId;
+        },
+      },
+      {
+        data: oauthClientSecretQuestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientSecret;
+        },
+      },
+      {
+        data: oauthConfirmQestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientSecret || !inputs.clientId;
+        },
+      },
+    ],
+  };
+}
+
+function oauthClientIdQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.OauthClientId,
+    cliShortName: "i",
+    title: getLocalizedString("core.createProjectQuestion.OauthClientId"),
+    cliDescription: "Oauth client id for OpenAPI spec.",
+    forgetLastValue: true,
+    additionalValidationOnAccept: {
+      validFunc: (input: string, inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+
+        process.env[QuestionNames.OauthClientId] = input;
+        return;
+      },
+    },
+  };
+}
+
+function oauthConfirmQestion(): ConfirmQuestion {
+  return {
+    name: QuestionNames.OauthConfirm,
+    title: getLocalizedString("core.createProjectQuestion.OauthClientSecretConfirm"),
+    type: "confirm",
+    default: true,
+  };
+}
+
+function oauthClientSecretQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.OauthClientSecret,
+    cliShortName: "c",
+    title: getLocalizedString("core.createProjectQuestion.OauthClientSecret"),
+    cliDescription: "Oauth client secret for OpenAPI spec.",
+    forgetLastValue: true,
+    validation: {
+      validFunc: (input: string): string | undefined => {
+        if (input.length < 10 || input.length > 128) {
+          return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+        }
+
+        return undefined;
+      },
+    },
+    additionalValidationOnAccept: {
+      validFunc: (input: string, inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+
+        process.env[QuestionNames.OauthClientSecret] = input;
+        return;
+      },
+    },
   };
 }

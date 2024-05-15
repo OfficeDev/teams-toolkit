@@ -153,6 +153,16 @@ class OfficeDevTreeViewManager {
           custom: false,
         }
       ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.promptLibraryTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.promptLibraryDescription"),
+        "fx-extension.openPromptLibraryLink",
+        undefined,
+        {
+          name: "repo",
+          custom: false,
+        }
+      ),
     ];
 
     return officeUtilityCommands;

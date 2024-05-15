@@ -45,6 +45,8 @@ export interface CreateProjectInputs extends Inputs {
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
+    | "basic-declarative-copilot"
+    | "declarative-copilot-with-plugin-from-scratch"
     | "json-taskpane"
     | "office-content-addin"
     | "word-taskpane"
@@ -90,6 +92,7 @@ export interface CreateProjectInputs extends Inputs {
   "custom-copilot-rag"?:
     | "custom-copilot-rag-customize"
     | "custom-copilot-rag-azureAISearch"
+    | "custom-copilot-rag-customApi"
     | "custom-copilot-rag-microsoft365";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
@@ -101,6 +104,8 @@ export interface CreateProjectInputs extends Inputs {
   "azure-openai-key"?: string;
   /** @description Azure OpenAI Endpoint */
   "azure-openai-endpoint"?: string;
+  /** @description Azure OpenAI Deployment Name */
+  "azure-openai-deployment-name"?: string;
   /** @description OpenAI Key */
   "openai-key"?: string;
   /** @description Framework */

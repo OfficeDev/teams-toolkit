@@ -21,6 +21,8 @@ import {
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { setTools } from "../../../../src/core/globalVars";
 import { SpecParser } from "@microsoft/m365-spec-parser";
+import * as visitor from "../../../../src/ui/visitor";
+import { UserCancelError } from "../../../../src/error";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -653,6 +655,47 @@ describe("CreateApiKeyDriver", () => {
       expect(result.result.error.name).to.equal("InvalidActionInputError");
       expect(result.result.error.message.includes("applicableToApps")).to.be.true;
       expect(result.result.error.message.includes("targetAudience")).to.be.true;
+    }
+  });
+
+  it("should throw error if user cancel", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").resolves({
+      id: "mockedRegistrationId",
+      clientSecrets: [],
+      targetUrlsShouldStartWith: [],
+      applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+    sinon.stub(visitor, "traverse").resolves(err(new UserCancelError("apikey")));
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.source).to.equal("apikey");
     }
   });
 });

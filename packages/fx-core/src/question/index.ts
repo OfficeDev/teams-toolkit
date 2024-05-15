@@ -8,6 +8,7 @@ import {
   createSampleProjectQuestionNode,
 } from "./create";
 import {
+  addPluginQuestionNode,
   addWebPartQuestionNode,
   apiSpecApiKeyQuestion,
   copilotPluginAddAPIQuestionNode,
@@ -15,6 +16,7 @@ import {
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
   listCollaboratorQuestionNode,
+  oauthQuestion,
   previewWithTeamsAppManifestQuestionNode,
   selectTeamsAppManifestQuestionNode,
   validateTeamsAppQuestionNode,
@@ -66,6 +68,12 @@ export class QuestionNodes {
   }
   apiKey(): IQTreeNode {
     return apiSpecApiKeyQuestion();
+  }
+  oauth(): IQTreeNode {
+    return oauthQuestion();
+  }
+  addPlugin(): IQTreeNode {
+    return addPluginQuestionNode();
   }
 }
 

@@ -51,7 +51,7 @@
     "@azure/msal-node": "^1.14.6",
     "@microsoft/adaptivecards-tools": "workspace:*",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "botbuilder": "^4.22.1",
     "botbuilder-dialogs": "^4.22.1",
     "botframework-connector": "^4.22.1",
@@ -61,7 +61,7 @@
     "uuid": "^8.3.2"
   },
   "peerDependencies": {
-    "@microsoft/teams-js": "^2.13.0"
+    "@microsoft/teams-js": "^2.19.0"
   },
   "devDependencies": {
     "@azure/core-auth": "^1.4.0",
@@ -100,7 +100,7 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
-    "get-func-name": "^2.0.0",
+    "get-func-name": "^3.0.0",
     "got": "^11.8.5",
     "isomorphic-fetch": "^3.0.0",
     "jwt-builder": "^1.1.0",

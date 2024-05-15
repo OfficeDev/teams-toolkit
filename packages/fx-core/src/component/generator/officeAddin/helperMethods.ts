@@ -5,93 +5,12 @@
  * @author darrmill@microsoft.com, yefuwang@microsoft.com
  */
 import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
-import fs from "fs";
 import fse from "fs-extra";
 import * as path from "path";
-import * as unzip from "unzipper";
+import { ReadFileError } from "../../../error/common";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import fetch from "node-fetch";
-import { AccessGithubError, ReadFileError } from "../../../error/common";
-
-const zipFile = "project.zip";
 
 export class HelperMethods {
-  static async downloadProjectTemplateZipFile(
-    projectFolder: string,
-    projectRepo: string
-  ): Promise<void> {
-    const projectTemplateZipFile = projectRepo;
-    let response: any;
-    try {
-      response = await fetch(projectTemplateZipFile, { method: "GET" });
-    } catch (e: any) {
-      throw new AccessGithubError(projectTemplateZipFile, "OfficeAddinGenerator", e);
-    }
-
-    return new Promise<void>((resolve, reject) => {
-      if (response.body) {
-        response.body
-          .pipe(fs.createWriteStream(path.resolve(projectFolder, zipFile)))
-          .on("error", (err: Error) => {
-            reject(new AccessGithubError(projectTemplateZipFile, "OfficeAddinGenerator", err));
-          })
-          .on("close", () => {
-            HelperMethods.unzipProjectTemplate(projectFolder)
-              .then(() => {
-                resolve();
-              })
-              .catch((err) => {
-                reject(err);
-              });
-          });
-      } else {
-        reject(
-          new AccessGithubError(
-            projectTemplateZipFile,
-            "OfficeAddinGenerator",
-            new Error(`Response body of GET "${projectTemplateZipFile}" is null.`)
-          )
-        );
-      }
-    });
-  }
-
-  static async unzipProjectTemplate(projectFolder: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // TODO: Verify file exists
-      const readStream = fs.createReadStream(path.resolve(`${projectFolder}/${zipFile}`));
-      readStream
-        .pipe(unzip.Extract({ path: projectFolder }))
-        .on("error", function (err: Error) {
-          unzipErrorHandler(projectFolder, reject, err);
-        })
-        .on("close", () => {
-          HelperMethods.moveUnzippedFiles(projectFolder);
-          resolve();
-        });
-    });
-  }
-
-  static moveUnzippedFiles(projectFolder: string): void {
-    // delete original zip file
-    const zipFilePath = path.resolve(`${projectFolder}/${zipFile}`);
-    if (fs.existsSync(zipFilePath)) {
-      fs.unlinkSync(zipFilePath);
-    }
-
-    // get path to unzipped folder
-    const unzippedFolder = fs.readdirSync(projectFolder).filter(function (file) {
-      return fs.statSync(`${projectFolder}/${file}`).isDirectory();
-    });
-
-    // construct paths to move files out of unzipped folder into project root folder
-    const fromFolder = path.resolve(`${projectFolder}/${unzippedFolder[0]}`);
-    HelperMethods.copyAddinFiles(fromFolder, projectFolder);
-
-    // delete project zipped folder
-    fs.rmSync(fromFolder, { recursive: true, force: true });
-  }
-
   static copyAddinFiles(fromFolder: string, toFolder: string): void {
     fse.copySync(fromFolder, toFolder, {
       filter: (path) => !path.includes("node_modules"),

@@ -2132,6 +2132,132 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
+    it("should return true response body is empty", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            get: {
+              parameters: [],
+              responses: {
+                "201": {
+                  description: "A successful response indicating that the repair was created",
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, true);
+    });
+
+    it("should return true if request body/response body contains multiple media types", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                  "application/xml": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                    "application/xml": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, true);
+    });
+
     it("should return true if parameter is in header and required for copilot", () => {
       const method = "GET";
       const path = "/users";
@@ -2190,7 +2316,7 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
-    it("should not support multiple required parameters count larger than 5 for copilot", () => {
+    it("should support multiple required parameters count larger than 5 for copilot", () => {
       const method = "POST";
       const path = "/users";
       const spec = {

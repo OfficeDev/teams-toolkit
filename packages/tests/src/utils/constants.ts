@@ -10,6 +10,8 @@ export class Extension {
   public static readonly sidebarWelcomeSectionName: string = "Teams Toolkit";
   public static readonly sidebarWelcomeContentName: string = "Create a New App";
   public static readonly sidebarCommandContentName: string = "Create New App";
+  public static readonly sidebarCommandContentNameOfficeDev: string =
+    "Preview Your Office Add-in (F5)";
   public static readonly settingsCategory: string = "Fx-extension";
   public static readonly settingsInsiderPreview: string = "Insider Preview";
 }
@@ -55,12 +57,16 @@ export enum TemplateProject {
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
   LargeScaleBot = "Large Scale Notification Bot",
+  BotSSODocker = "Containerized Bot App with SSO Enabled",
+  HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
 }
 
 export enum TemplateProjectFolder {
   HelloWorldTabBackEnd = "hello-world-tab-with-backend",
   ContactExporter = "graph-toolkit-contact-exporter",
   HelloWorldBotSSO = "bot-sso",
+  BotSSODocker = "bot-sso-docker",
+  TabDocker = "hello-world-tab-docker",
   TodoListSpfx = "todo-list-SPFx",
   MyFirstMetting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",
@@ -80,12 +86,13 @@ export enum TemplateProjectFolder {
   OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
-  ChefBot = "04.ai.a.teamsChefBot",
+  ChefBot = "a.teamsChefBot",
   GraphConnectorBot = "graph-connector-bot",
   SpfxProductivity = "spfx-productivity-dashboard",
   RetailDashboard = "react-retail-dashboard",
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
+  HelloWorldTabDocker = "hello-world-tab-docker",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -124,6 +131,9 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
     [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
+    [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
+    [TemplateProject.HelloWorldTabDocker]:
+      TemplateProjectFolder.HelloWorldTabDocker,
   };
 
 export enum Resource {
@@ -158,6 +168,8 @@ export enum Capability {
   Tab = "tab",
   // v3 only
   AiBot = "custom-copilot-basic",
+  RAG = "custom-copilot-rag",
+  Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
 }
 
@@ -266,6 +278,38 @@ export class TreeViewCommands {
     "Preview Your Teams App (F5)",
   ];
   public static readonly EnvSectionName: string = "ENVIRONMENT";
+
+  public static readonly OfficeDevDevelopmentSectionName: string =
+    "DEVELOPMENT";
+  public static readonly OfficeDevDevelopmentSectionItems: string[] = [
+    "Create a New App",
+    "View Samples",
+    "Check and Install Dependencies",
+    "Preview Your Office Add-in (F5)",
+    "Stop Previewing Your Office Add-in",
+  ];
+
+  public static readonly OfficeDevLifeCycleSectionName: string = "LIFECYCLE";
+  public static readonly OfficeDevLifeCycleSectionItems: string[] = [
+    "Deploy",
+    "Publish",
+  ];
+
+  public static readonly OfficeDevUtilitySectionName: string = "UTILITY";
+  public static readonly OfficeDevUtilitySectionItems: string[] = [
+    "Validate Manifest File",
+    "Script Lab",
+    "View Prompts for GitHub Copilot",
+  ];
+
+  public static readonly OfficeDevHelpAndFeedBackSectionName: string =
+    "HELP AND FEEDBACK";
+  public static readonly OfficeDevHelpAndFeedBackSectionItems: string[] = [
+    "Documentation",
+    "Get Started",
+    "Open Partner Center",
+    "Report Issues on GitHub",
+  ];
 }
 
 export class CommandPaletteCommands {
@@ -342,6 +386,8 @@ export enum LocalDebugTaskLabel {
   Azurite = "Start Azurite emulator",
   Compile = "Compile typescript",
   StartWebServer = "Start web server",
+  DockerRun = "docker-run: debug",
+  DockerTask = "docker",
 }
 
 export class LocalDebugTaskResult {
@@ -356,6 +402,7 @@ export class LocalDebugTaskResult {
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
+  static readonly DockerFinish = "press any key to close it";
 }
 
 export enum LocalDebugTaskLabel2 {
@@ -391,15 +438,16 @@ export class Notification {
     "Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary.";
   static readonly Upgrade_dicarded =
     "Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit. The auto-upgrade process will generate backups in case an error occurs.";
-  static readonly ProvisionSucceeded = "Successfully executed";
-  static readonly DeploySucceeded = "Successfully executed";
-  static readonly PublishSucceeded = "Successfully executed";
+  static readonly ProvisionSucceeded = "successfully";
+  static readonly DeploySucceeded = "successfully";
+  static readonly PublishSucceeded = "successfully";
   static readonly UnresolvedPlaceholderError =
     "MissingEnvironmentVariablesError";
   static readonly ZipAppPackageSucceeded = "successfully built";
 }
 
 export class CreateProjectQuestion {
+  static readonly CustomCopilot = "Custom Copilot";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";

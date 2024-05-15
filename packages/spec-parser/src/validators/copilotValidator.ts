@@ -11,7 +11,6 @@ import {
   SpecValidationResult,
 } from "../interfaces";
 import { Validator } from "./validator";
-import { Utils } from "../utils";
 
 export class CopilotValidator extends Validator {
   constructor(spec: OpenAPIV3.Document, options: ParseOptions) {
@@ -75,10 +74,6 @@ export class CopilotValidator extends Validator {
     // validate requestBody
     const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
     const requestJsonBody = requestBody?.content["application/json"];
-
-    if (Utils.containMultipleMediaTypes(requestBody)) {
-      result.reason.push(ErrorType.PostBodyContainMultipleMediaTypes);
-    }
 
     if (requestJsonBody) {
       const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;

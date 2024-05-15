@@ -554,11 +554,6 @@ jobs:
         with:
           path: ./packages/tests/mocha-results
 
-      - name: list all the artifacts
-        run: |
-          sudo apt install tree -y
-          tree ./packages/tests/mocha-results
-
       - name: Sync to Azure DevOps Test Plan
         working-directory: packages/tests
         run: |

@@ -13,7 +13,7 @@ It showcases how to build an AI agent in Teams capable of helping users accompli
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
-> - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 
 ### Configurations
 1. Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.

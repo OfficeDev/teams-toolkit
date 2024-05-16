@@ -80,7 +80,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/bot.py`| Handles business logics for the AI Agent.|
 |`src/config.py`| Defines the environment variables.|
 
-The following file is a script that help you to prepare an OpenAI assistant.
+The following file is a script that helps you to prepare an OpenAI assistant.
 
 | File                                 | Contents                                           |
 | - | - |

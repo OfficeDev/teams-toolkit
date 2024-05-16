@@ -4,11 +4,10 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { CreateSampleProjectInputs, validationUtils } from "../../../src";
 import * as FeatureFlags from "../../../src/common/featureFlags";
-import { FeatureFlagName } from "../../../src/common/constants";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
@@ -19,7 +18,10 @@ import {
   OfficeAddinGenerator,
   OfficeAddinGeneratorNew,
 } from "../../../src/component/generator/officeAddin/generator";
+import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
+import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
@@ -33,14 +35,11 @@ import {
   MeArchitectureOptions,
   OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../../src/question/create";
-import { QuestionNames } from "../../../src/question/questionNames";
+} from "../../../src/question/constants";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
-import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 
 const V3Version = MetadataV3.projectVersion;
 

@@ -7,12 +7,12 @@ import { includes } from "lodash";
 import * as path from "path";
 import * as tmp from "tmp";
 
-import { sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
+  sampleProvider,
   sendRequestWithRetry,
-} from "@microsoft/teamsfx-core/build/common/requestUtils";
+} from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   ChatRequest,

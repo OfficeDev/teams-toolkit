@@ -223,7 +223,7 @@ const ComponentConnections = {
   ],
   [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
 };
-function getComponent(projectSettings: any, resourceType: string): any | undefined {
+export function getComponent(projectSettings: any, resourceType: string): any | undefined {
   return projectSettings.components?.find((r: any) => r.name === resourceType);
 }
 enum Scenarios {
@@ -231,7 +231,7 @@ enum Scenarios {
   Bot = "Bot",
   Api = "Api",
 }
-function getComponentByScenario(
+export function getComponentByScenario(
   projectSetting: any,
   resourceType: string,
   scenario?: Scenarios

@@ -8,10 +8,10 @@ import { CoreSource } from "../../core/error";
 import { ErrorContextMW } from "../../core/globalVars";
 import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/constants";
-import { AppStudioScopes } from "../tools";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
+import { AppStudioScopes } from "../../component/driver/teamsApp/constants";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;

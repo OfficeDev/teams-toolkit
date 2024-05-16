@@ -20,7 +20,6 @@ export { PackageService } from "./common/m365/packageService";
 export * from "./common/m365/serviceConstant";
 export * from "./common/permissionInterface";
 export * from "./common/projectSettingsHelper";
-export * from "./common/projectSettingsHelperV3";
 export * from "./common/projectTypeChecker";
 export { SampleConfig, sampleProvider } from "./common/samples";
 export * from "./common/stringUtils";

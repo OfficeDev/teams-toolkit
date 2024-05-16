@@ -19,13 +19,13 @@ import {
   getSPFxToken,
   getCopilotStatus,
   getSideloadingStatus,
-  isVideoFilterProject,
   listDevTunnels,
   setRegion,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
 import { isUserCancelError } from "../../src/error/common";
+import { isVideoFilterProject } from "../../src/core/middleware/videoFilterAppBlocker";
 
 chai.use(chaiAsPromised);
 

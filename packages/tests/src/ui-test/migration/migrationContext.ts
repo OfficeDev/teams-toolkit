@@ -70,9 +70,9 @@ export class MigrationTestContext extends TestContext {
 
   public async createProjectCLI(V3: boolean): Promise<string> {
     if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
+      CliHelper.setV3Enable();
     } else {
-      process.env["TEAMSFX_V3"] = "false";
+      CliHelper.setV2Enable();
     }
     if (this.trigger) {
       await CliHelper.createProjectWithCapabilityMigration(

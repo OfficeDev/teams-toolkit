@@ -65,6 +65,12 @@ async function defaultHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
+  if (!request.prompt) {
+    throw new Error(`
+Please specify a question when using this command.
+
+Usage: @teams Ask questions about Teams Development"`);
+  }
   const messages = [
     defaultSystemPrompt(),
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),

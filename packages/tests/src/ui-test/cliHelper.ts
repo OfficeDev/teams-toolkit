@@ -423,14 +423,15 @@ export class CliHelper {
   ) {
     let command;
     console.log("cli version is V3 or not: " + CliHelper.getVersionFlag());
-    if (CliHelper.getVersionFlag()) {
+    const versionFlag = JSON.parse(CliHelper.getVersionFlag() as string);
+    if (versionFlag) {
       command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
     } else {
       command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
     }
     const timeout = 100000;
     try {
-      if (CliHelper.getVersionFlag()) {
+      if (versionFlag) {
         const { stdout } = await Executor.execute("teamsapp -v", testFolder);
         console.log(stdout);
       } else {

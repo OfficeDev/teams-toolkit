@@ -59,7 +59,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/devTools/teamsapptester/node_modules/@microsoft/teams-app-test-tool/cli.js",
             "args": [
-                "start"
+                "start",
             ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -78,7 +78,12 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
                 "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 1
             },
             "stopAll": true
@@ -94,7 +99,12 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
                 "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 2
             },
             "stopAll": true
@@ -103,14 +113,19 @@
             "name": "Debug in Test Tool",
             "configurations": [
                 "Start Python",
-                "Start Test Tool"
+                "Start Test Tool",
             ],
             "cascadeTerminateToConfigurations": [
                 "Start Test Tool"
             ],
             "preLaunchTask": "Deploy (Test Tool)",
             "presentation": {
+{{#enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
                 "group": "2-local",
+{{/enableTestToolByDefault}}
                 "order": 1
             },
             "stopAll": true

@@ -26,6 +26,8 @@ import {
   ScaffoldRemoteTemplateAction,
   fetchSampleInfoAction,
   TemplateActionSeq,
+  GeneratorContext,
+  ScaffoldLocalTemplateAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import * as requestUtils from "../../../src/common/requestUtils";
@@ -664,6 +666,23 @@ describe("Generator error", async () => {
     };
     const error = new DownloadSampleApiLimitError(url, mockError);
     assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
+  });
+
+  it("scaffold remote, missing key error: language", async () => {
+    try {
+      const ctx = { name: "bot", destination: tmpDir } as GeneratorContext;
+      await ScaffoldRemoteTemplateAction.run(ctx);
+    } catch (err: any) {
+      assert.equal(err?.name, "MissingKeyError");
+    }
+  });
+  it("scaffold local, missing key error: language", async () => {
+    try {
+      const ctx = { name: "bot", destination: tmpDir } as GeneratorContext;
+      await ScaffoldLocalTemplateAction.run(ctx);
+    } catch (err: any) {
+      assert.equal(err?.name, "MissingKeyError");
+    }
   });
 });
 

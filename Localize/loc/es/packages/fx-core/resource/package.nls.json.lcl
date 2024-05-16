@@ -2234,7 +2234,7 @@
             <Val><![CDATA[Su versión de TeamFx CLI se ha quedado obsoleta y no es compatible con el proyecto actual, actualice a la última versión con el siguiente comando:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[core]5D; Your Teams Toolkit CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+            <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

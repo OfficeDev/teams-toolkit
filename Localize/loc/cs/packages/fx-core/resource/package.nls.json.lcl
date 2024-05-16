@@ -2231,10 +2231,10 @@
         <Str Cat="Text">
           <Val><![CDATA[Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Vaše verze Teams Toolkit CLI je příliš stará na to, aby podporovala aktuální projekt, upgradujte ji prosím na nejnovější verzi pomocí následujícího příkazu:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+            <Val><![CDATA[Vaše verze TeamsFx CLI je příliš stará na to, aby podporovala aktuální projekt, upgradujte ji prosím na nejnovější verzi pomocí následujícího příkazu:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[core]5D; Your Teams Toolkit CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+            <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

@@ -36,7 +36,7 @@
   "core.migrationV3.manifestInvalid": "templates/appPackage/manifest.template.json が無効です。",
   "core.migrationV3.abandonedProject": "このプロジェクトはプレビュー専用であり、Teams ツールキットではサポートされません。新しいプロジェクトを作成して、Teams ツールキットをお試しください",
   "core.migrationV3.notAllowedMigration": "Teams ツールキットのプレリリース バージョンでは、新しいプロジェクト構成がサポートされており、以前のバージョンと互換性がありません。新しいプロジェクトを作成して試すか、\"teamsfx upgrade\" を実行して最初にプロジェクトをアップグレードしてください。",
-  "core.projectVersionChecker.cliUseNewVersion": "Teams Toolkit CLI が古いため、現在のプロジェクトをサポートしていません。以下のコマンドを使用して最新バージョンにアップグレードします:\nnpm install -g @microsoft/teamsfx-cli@latest",
+  "core.projectVersionChecker.cliUseNewVersion": "TeamsFx CLI が古いため、現在のプロジェクトをサポートしていません。以下のコマンドを使用して最新バージョンにアップグレードします:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.projectVersionChecker.incompatibleProject": "現在のプロジェクトは、インストールされているバージョンの Teams Toolkit と互換性がありません。",
   "core.projectVersionChecker.vs.incompatibleProject": "ソリューション内のプロジェクトは、Teams ツールキット プレビュー機能を使用して作成されます - Teams App Configuration の機能強化。続行するにはプレビュー機能を有効にしてください。",
   "core.deployArmTemplates.ActionSuccess": "ARM テンプレートが正常にデプロイされました。リソース グループ名: %s。デプロイ名: %s",

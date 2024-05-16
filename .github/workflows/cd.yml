@@ -189,11 +189,11 @@ jobs:
           git commit -m "build: replace sideloading placeholders"
 
       - name: disable chat participant environment variable
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid != 'alpha' || github.event.inputs.preid != 'beta') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid != 'alpha' && github.event.inputs.preid != 'beta') }}
         run: bash .github/scripts/chat-participant-disabled.sh
 
       - name: disable chat participant in package.json
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid != 'alpha' || github.event.inputs.preid != 'beta') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid != 'alpha' && github.event.inputs.preid != 'beta') }}
         uses: jossef/action-set-json-field@v2.1
         with:
           file: packages/vscode-extension/package.json

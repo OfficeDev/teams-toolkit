@@ -1539,15 +1539,19 @@ export class FxCore {
     }
 
     const teamsManifest = manifestRes.value;
-    if (!teamsManifest.copilotGpts?.[0].file) {
+    const declarativeGpt = teamsManifest.copilotExtensions?.declarativeCopilots?.[0];
+    if (!declarativeGpt?.file) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppRequiredPropertyMissingError.name,
-          AppStudioError.TeamsAppRequiredPropertyMissingError.message("copilotGpts", manifestPath)
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "declarativeCopilots",
+            manifestPath
+          )
         )
       );
     }
-    const gptManifestFilePath = path.join(appPackageFolder, teamsManifest.copilotGpts[0].file);
+    const gptManifestFilePath = path.join(appPackageFolder, declarativeGpt.file);
     const gptManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
       gptManifestFilePath
     );
@@ -1644,11 +1648,15 @@ export class FxCore {
 
     // update Teams manifest
     if (needAddCopilotPlugin) {
-      teamsManifest.plugins = teamsManifest.plugins || [];
-      teamsManifest.plugins.push({
+      const plugins = teamsManifest.copilotExtensions?.plugins || [];
+      plugins.push({
         id: "plugin_1", // Teams manifest can have only one plugin.
         file: pluginManifestName,
       });
+      teamsManifest.copilotExtensions = {
+        ...teamsManifest.copilotExtensions,
+        plugins,
+      };
       const updateManifestRes = await manifestUtils._writeAppManifest(teamsManifest, manifestPath);
       if (updateManifestRes.isErr()) {
         return err(updateManifestRes.error);

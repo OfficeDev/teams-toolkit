@@ -756,7 +756,7 @@ export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
         throw AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppRequiredPropertyMissingError.name,
           AppStudioError.TeamsAppRequiredPropertyMissingError.message(
-            "copilotGpts",
+            "declarativeCopilots",
             teamsManifestPath
           )
         );

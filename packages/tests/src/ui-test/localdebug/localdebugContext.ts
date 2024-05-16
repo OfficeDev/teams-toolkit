@@ -37,12 +37,12 @@ export type LocalDebugTestName =
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
-  public lang: "javascript" | "typescript" = "javascript";
+  public lang: "javascript" | "typescript" | "python" = "javascript";
   needMigrate: boolean | undefined;
 
   constructor(
     testName: LocalDebugTestName,
-    lang: "javascript" | "typescript" = "javascript",
+    lang: "javascript" | "typescript" | "python" = "javascript",
     needMigrate?: boolean
   ) {
     super(testName);
@@ -55,7 +55,7 @@ export class LocalDebugTestContext extends TestContext {
     await super.before();
     await this.createProject();
     await VSBrowser.instance.driver.sleep(30000);
-    await this.disableDebugConsole();
+    // await this.disableDebugConsole();
     const testFolder = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(testFolder);
   }

@@ -48,7 +48,7 @@ jobs:
           github_token: ${{ secrets.CD_PAT }}
           workflow: cd.yml
           path: .
-      
+
       - name: get VSC beta tag
         if: ${{ github.event.inputs.isPreview != 'no' }}
         id: vsc_ver
@@ -59,7 +59,7 @@ jobs:
 
       - uses: mathieudutour/github-tag-action@v6.0
         if: ${{ github.event.inputs.isPreview != 'no' }}
-        with: 
+        with:
           github_token: ${{ secrets.CD_PAT }}
           custom_tag: ${{ steps.vsc_ver.outputs.vsc_ver }}
           tag_prefix: ""
@@ -74,8 +74,8 @@ jobs:
 
       - name: release preview
         if: ${{ github.event.inputs.isPreview != 'no' }}
-        run: vsce publish --pre-release --azure-credential --packagePath *.vsix
+        run: vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
 
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
-        run: vsce publish --azure-credential --packagePath *.vsix
+        run: vsce publish --azure-credential --packagePath *.vsix --noVerify

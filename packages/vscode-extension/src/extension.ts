@@ -123,9 +123,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  registerChatParticipant(context);
-
-  registerOfficeChatParticipant(context);
+  if (IsChatParticipantEnabled) {
+    registerChatParticipant(context);
+    registerOfficeChatParticipant(context);
+  }
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);

@@ -63,7 +63,8 @@
       "localdebug-aichat-bot",
       "localdebug-aichat-bot-ts",
       "localdebug-aiassistant-bot",
-      "localdebug-aiassistant-bot-ts"
+      "localdebug-aiassistant-bot-ts",
+      "remotedebug-aichat-bot-py-win-only"
     ],
     "node-20": [
       "localdebug-obo-tab"
@@ -111,7 +112,8 @@
       "localdebug-link-unfurling",
       "localdebug-link-unfurling-ts",
       "localdebug-msg-newapi",
-      "localdebug-msg-newapi-ts"
+      "localdebug-msg-newapi-ts",
+      "localdebug-aichat-bot-py"
     ],
     "node-20": [
       "localdebug-obo-tab"

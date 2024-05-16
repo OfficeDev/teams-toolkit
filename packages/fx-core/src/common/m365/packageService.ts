@@ -238,7 +238,7 @@ export class PackageService {
               "MeetingExtensionDefinition",
               "OpenAIPlugins",
               "Gpts",
-              "DeclarativeCopilots ",
+              "DeclarativeCopilots",
               "Plugins",
             ],
           },

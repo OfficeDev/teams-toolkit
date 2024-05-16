@@ -121,8 +121,8 @@ describe("Generator utils", () => {
     sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     const templateName = "templateName";
-    const selectedTag = await generatorUtils.getTemplateLatestTag(templateName);
-    const url = generatorUtils.getTemplateZipUrlByTag(templateName, selectedTag);
+    const selectedTag = await generatorUtils.getTemplateLatestVersion();
+    const url = generatorUtils.getTemplateZipUrlByVersion(templateName, selectedTag);
     assert.isTrue(url.includes("0.0.0-rc"));
   });
 
@@ -134,7 +134,7 @@ describe("Generator utils", () => {
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     try {
-      await generatorUtils.getTemplateLatestTag("templateName");
+      await generatorUtils.getTemplateLatestVersion();
     } catch (e) {
       assert.exists(e);
       return;
@@ -153,8 +153,8 @@ describe("Generator utils", () => {
     sandbox.stub(templateConfig, "version").value("^2.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
     const templateName = "templateName";
-    const selectedTag = await generatorUtils.getTemplateLatestTag(templateName);
-    const url = generatorUtils.getTemplateZipUrlByTag(templateName, selectedTag);
+    const selectedTag = await generatorUtils.getTemplateLatestVersion();
+    const url = generatorUtils.getTemplateZipUrlByVersion(templateName, selectedTag);
     assert.isTrue(url.includes(tag));
   });
 
@@ -167,7 +167,7 @@ describe("Generator utils", () => {
     sandbox.stub(templateConfig, "version").value("^4.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
     try {
-      await generatorUtils.getTemplateLatestTag("templateName");
+      await generatorUtils.getTemplateLatestVersion();
     } catch (e) {
       assert.exists(e);
       return;
@@ -751,6 +751,7 @@ describe("render template", () => {
     const tmpDir = path.join(__dirname, "tmp");
     const templateName = TemplateNames.DefaultBot;
     const language = "ts";
+    let mockedEnvRestore: RestoreFn = () => {};
 
     async function buildFakeTemplateZip(templateName: string, mockFileName: string) {
       const mockFileData = "test data";
@@ -777,6 +778,7 @@ describe("render template", () => {
       if (await fs.pathExists(tmpDir)) {
         await fs.rm(tmpDir, { recursive: true });
       }
+      mockedEnvRestore();
     });
 
     it("external sample", async () => {
@@ -813,7 +815,7 @@ describe("render template", () => {
       const zip = new AdmZip();
       zip.addLocalFolder(inputDir);
       zip.writeZip(path.join(tmpDir, "test.zip"));
-      sandbox.stub(generatorUtils, "getTemplateZipUrlByTag").resolves("test.zip");
+      sandbox.stub(generatorUtils, "getTemplateZipUrlByVersion").resolves("test.zip");
       sandbox
         .stub(generatorUtils, "fetchZipFromUrl")
         .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
@@ -1031,7 +1033,7 @@ describe("render template", () => {
       sandbox.replace(templateConfig, "localVersion", "9.9.9");
       sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
       sandbox
-        .stub(generatorUtils, "getTemplateZipUrlByTag")
+        .stub(generatorUtils, "getTemplateZipUrlByVersion")
         .resolves("fooUrl/templates@0.1.0/test.zip");
 
       const result = newGeneratorFlag
@@ -1059,7 +1061,38 @@ describe("render template", () => {
       sandbox.replace(templateConfig, "useLocalTemplate", false);
       sandbox.replace(templateConfig, "localVersion", "0.1.0");
       sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
-      sandbox.stub(generatorUtils, "getTemplateLatestTag").resolves("templates@0.1.1");
+      sandbox.stub(generatorUtils, "getTemplateLatestVersion").resolves("0.1.1");
+      sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(zip);
+
+      const result = newGeneratorFlag
+        ? await new DefaultTemplateGenerator().run(context, inputs, tmpDir, actionContext)
+        : await Generator.generateTemplate(context, tmpDir, templateName, language, actionContext);
+
+      const isFallback = actionContext.telemetryProps?.fallback === "true";
+      if (isFallback === true) {
+        assert.fail("template should not be generated from remote to local");
+      }
+
+      if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+        assert.fail("local template creation failure");
+      }
+      assert.isTrue(result.isOk());
+    });
+
+    it("template from downloading when TEAMSFX_TEMPLATE_PRERELEASE feature flag is set", async () => {
+      const mockFileName = "test.txt";
+      const zip = await buildFakeTemplateZip(templateName, mockFileName);
+      const actionContext: ActionContext = {
+        telemetryProps: {},
+      };
+
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_TEMPLATE_PRERELEASE: "rc",
+      });
+      sandbox.replace(templateConfig, "useLocalTemplate", false);
+      sandbox.replace(templateConfig, "localVersion", "0.1.0");
+      sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+      sandbox.stub(generatorUtils, "getTemplateLatestVersion").resolves("0.1.1");
       sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(zip);
 
       const result = newGeneratorFlag

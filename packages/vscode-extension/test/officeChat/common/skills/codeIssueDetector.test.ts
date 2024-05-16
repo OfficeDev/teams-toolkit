@@ -677,6 +677,43 @@ describe("File: codeIssueDetector", () => {
         Reflect.set(detector, "program", backupProgram);
       });
 
+      it("error treatment: Argument Count Mismatch 4", async () => {
+        const detector = CodeIssueDetector.getInstance();
+        const backupProgram = Reflect.get(detector, "program");
+
+        sandbox.stub(ts, "getPreEmitDiagnostics").returns([
+          {
+            file: {
+              parent: null,
+              text: "text test",
+              getStart: () => 0,
+              getEnd: () => 1,
+              getLineStarts: () => 1,
+              getLineEndOfPosition: (x: number) => x,
+              getLineAndCharacterOfPosition: () => ({ line: 1, character: 1 }),
+            },
+            start: false,
+          } as any,
+        ]);
+        sandbox.stub(ts, "getPositionOfLineAndCharacter").returns(0);
+        sandbox.stub(ts, "flattenDiagnosticMessageText").returns("arguments, but got 1");
+        Reflect.set(detector, "program", {
+          getTypeChecker: () => ({
+            getSymbolAtLocation: () => ({ getDeclarations: () => [1, 2] }),
+            getSignatureFromDeclaration: () => ({
+              parameters: [1, 2],
+              getDeclaration: () => ({ getText: () => "text" }),
+            }),
+          }),
+        });
+        const isCallExpressionStub = sandbox.stub(ts, "isCallExpression");
+        isCallExpressionStub.onCall(0).returns(false);
+
+        const result = detector.getCompilationErrorsAsync("word", false, telemetryData);
+        chai.assert.isDefined(result);
+        Reflect.set(detector, "program", backupProgram);
+      });
+
       it("error treatment: Argument Type Mismatch", async () => {
         const detector = CodeIssueDetector.getInstance();
         const backupProgram = Reflect.get(detector, "program");

@@ -6,6 +6,7 @@ import {
   CreateProjectInputs,
   err,
   FxError,
+  GeneratorResult,
   IGenerator,
   Inputs,
   ok,
@@ -132,8 +133,8 @@ describe("FxCore.createProjectByCustomizedGenerator", () => {
       context: Context,
       inputs: Inputs,
       destinationPath: string
-    ): Promise<Result<undefined, FxError>> {
-      return Promise.resolve(ok(undefined));
+    ): Promise<Result<GeneratorResult, FxError>> {
+      return Promise.resolve(ok({}));
     }
   }
 

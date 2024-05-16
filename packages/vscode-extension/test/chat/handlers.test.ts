@@ -54,7 +54,7 @@ describe("chat handlers", () => {
       const request: ChatRequest = {
         prompt: "fakePrompt",
         command: TeamsChatCommand.Create,
-        variables: [],
+        references: [],
         location: ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -82,7 +82,7 @@ describe("chat handlers", () => {
       const request: ChatRequest = {
         prompt: "fakePrompt",
         command: TeamsChatCommand.NextStep,
-        variables: [],
+        references: [],
         location: ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -111,7 +111,7 @@ describe("chat handlers", () => {
       const request: ChatRequest = {
         prompt: "fakePrompt",
         command: "",
-        variables: [],
+        references: [],
         location: ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -139,6 +139,43 @@ describe("chat handlers", () => {
       );
 
       chai.expect(result).to.deep.equal(metaDataMock);
+    });
+
+    it("call defaultHandler - error", async () => {
+      const request: ChatRequest = {
+        prompt: "",
+        command: "",
+        references: [],
+        location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
+      };
+
+      const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const metaDataMock = { metadata: { command: undefined, requestId: undefined } };
+      sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(chatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      chatTelemetryDataMock.chatMessages = [];
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(util, "verbatimCopilotInteraction");
+      await chai.expect(
+        handler.chatRequestHandler(
+          request,
+          {} as unknown as ChatContext,
+          response as unknown as ChatResponseStream,
+          token
+        )
+      ).is.rejectedWith(`
+Please specify a question when using this command.
+
+Usage: @teams Ask questions about Teams Development"`);
     });
   });
 

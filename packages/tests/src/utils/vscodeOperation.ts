@@ -138,6 +138,12 @@ export async function openExistingProject(folder: string): Promise<void> {
     }
     const input = await InputBox.create();
     await inputFolderPath(driver, input, folder);
+    await driver.sleep(Timeout.input);
+    if (os.type() === "Windows_NT") {
+      await input.sendKeys("\\");
+    } else {
+      await input.sendKeys("/");
+    }
     await input.confirm();
 
     // wait for window ready
@@ -485,7 +491,7 @@ async function inputFolderPath(
     }
     await driver.sleep(Timeout.input);
 
-    if (isWsl && (await setInputTextWsl(driver, input, folder))) {
+    if (await setInputTextWsl(driver, input, folder)) {
       break;
     }
   }
@@ -908,6 +914,11 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
+      // input deployment name
+      await input.setText("dev");
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
       break;
     }
     case "aiassist": {
@@ -972,13 +983,23 @@ export async function createNewProject(
   console.log("choose project path: ", testRootFolder);
   await input.selectQuickPick("Browse...");
   await inputFolderPath(driver, input, testRootFolder);
+  await driver.sleep(Timeout.input);
+  if (os.type() === "Windows_NT") {
+    await input.sendKeys("\\");
+  } else if (os.type() === "Linux") {
+    await input.sendKeys("/");
+  }
   await input.confirm();
 
   // Input App Name
   console.log("input appName: ", appName);
-  await input.setText(appName);
-  await driver.sleep(Timeout.input);
-  await input.confirm();
+  if ((await input.getTitle()) === "Application Name") {
+    await input.setText(appName);
+    await driver.sleep(Timeout.input);
+    await input.confirm();
+  } else {
+    assert.fail("Failed to input app name");
+  }
 
   await driver.sleep(scaffoldingTime);
 

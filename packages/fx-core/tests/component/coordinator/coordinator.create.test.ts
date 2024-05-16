@@ -1287,7 +1287,7 @@ describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
   it("should scaffold by OfficeAddinGeneratorNew successfully", async () => {
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
-    sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok(undefined));
+    sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok({}));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",

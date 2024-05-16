@@ -15,14 +15,14 @@ import * as path from "path";
 import { Container } from "typedi";
 import * as util from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
 import { resolveString } from "../../configManager/lifecycle";
 import { envUtil } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
+import { createDriverContext } from "../util/utils";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
-import { Constants } from "./constants";
+import { AppStudioScopes, Constants } from "./constants";
 import {
   CreateAppPackageDriver,
   actionName as createAppPackageActionName,
@@ -32,6 +32,7 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import {
   actionName as PublishAppPackageActionName,
   PublishAppPackageDriver,
@@ -39,9 +40,7 @@ import {
 import { manifestUtils } from "./utils/ManifestUtils";
 import { ValidateManifestDriver } from "./validate";
 import { ValidateAppPackageDriver } from "./validateAppPackage";
-import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import { ValidateWithTestCasesDriver } from "./validateTestCases";
-import { createDriverContext } from "../util/utils";
 
 class TeamsAppMgr {
   async ensureAppPackageFile(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {

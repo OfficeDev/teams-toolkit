@@ -86,7 +86,6 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
@@ -371,7 +370,14 @@ async function loadProjectSettings(projectPath: string): Promise<any> {
     throw oldProjectSettings.error;
   }
 }
-
+export function isSPFxProject(projectSettings?: any): boolean {
+  const solutionSettings = projectSettings?.solutionSettings;
+  if (solutionSettings) {
+    const selectedPlugins = solutionSettings.activeResourcePlugins;
+    return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+  }
+  return false;
+}
 export async function manifestsMigration(context: MigrationContext): Promise<void> {
   // Check manifest existing
   const oldAppPackageFolderPath = path.join(getTemplateFolderPath(context), AppPackageFolderName);

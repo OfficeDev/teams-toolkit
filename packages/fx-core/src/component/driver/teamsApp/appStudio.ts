@@ -27,14 +27,13 @@ import { Container } from "typedi";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
 import { QuestionNames } from "../../../question/constants";
 import { envUtil } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
-import { Constants, supportedLanguageCodes } from "./constants";
+import { AppStudioScopes, Constants, supportedLanguageCodes } from "./constants";
 import {
   CreateAppPackageDriver,
   actionName as createAppPackageActionName,

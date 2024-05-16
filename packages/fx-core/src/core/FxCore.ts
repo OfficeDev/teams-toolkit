@@ -138,7 +138,7 @@ import {
 import { createProjectCliHelpNode } from "../question/create";
 import { ValidateTeamsAppInputs } from "../question/inputs/ValidateTeamsAppInputs";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
-import { CallbackRegistry } from "./callback";
+import { CallbackRegistry, CoreCallbackFunc } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
@@ -155,8 +155,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-
-export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
 export class FxCore {
   constructor(tools: Tools) {

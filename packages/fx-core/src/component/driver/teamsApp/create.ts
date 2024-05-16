@@ -30,9 +30,9 @@ import {
   DEFAULT_OUTLINE_PNG_FILENAME,
   COLOR_TEMPLATE,
   OUTLINE_TEMPLATE,
+  AppStudioScopes,
 } from "./constants";
 import { AppDefinition } from "../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getTemplatesFolder } from "../../../folder";
 import { InvalidActionInputError } from "../../../error/common";

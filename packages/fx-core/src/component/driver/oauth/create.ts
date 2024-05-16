@@ -5,7 +5,7 @@ import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { GraphScopes } from "../../../common/tools";
+import { GraphScopes } from "../../../common/constants";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { QuestionNames } from "../../../question/constants";
 import { QuestionMW } from "../../middleware/questionMW";

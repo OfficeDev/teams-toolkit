@@ -83,3 +83,9 @@ export function getResourceGroupInPortal(
     return undefined;
   }
 }
+
+export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
+export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
+export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
+export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];

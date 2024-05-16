@@ -1,45 +1,45 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
-import chai from "chai";
-import fs from "fs-extra";
 import {
   ManifestUtil,
+  Platform,
   SystemError,
+  TeamsAppManifest,
   err,
   ok,
-  Platform,
-  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "../../../../src/common/tools";
-import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
-import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
-import { IAppValidationNote } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
-import { AsyncAppValidationResultsResponse } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResultsResponse";
+import AdmZip from "adm-zip";
+import chai from "chai";
+import fs from "fs-extra";
+import "mocha";
+import * as sinon from "sinon";
+import * as commonTools from "../../../../src/common/utils";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import {
   AsyncAppValidationResponse,
   AsyncAppValidationStatus,
 } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
-import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
+import { AsyncAppValidationResultsResponse } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResultsResponse";
 import { ValidateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
-import { ValidateWithTestCasesDriver } from "../../../../src/component/driver/teamsApp/validateTestCases";
+import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
 import { ValidateWithTestCasesArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
-import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { IAppValidationNote } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
+import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
+import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../../../../src/component/driver/teamsApp/validateTestCases";
+import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
+import { setTools } from "../../../../src/core/globalVars";
+import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
+import { MockTools } from "../../../core/utils";
 import {
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import AdmZip from "adm-zip";
-import { Constants } from "../../../../src/component/driver/teamsApp/constants";
-import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
-import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
-import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
-import { setTools } from "../../../../src/core/globalVars";
-import { MockTools } from "../../../core/utils";
 
 describe("teamsApp/validateManifest", async () => {
   const teamsAppDriver = new ValidateManifestDriver();

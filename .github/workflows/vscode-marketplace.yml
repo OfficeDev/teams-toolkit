@@ -64,10 +64,10 @@ jobs:
         if: ${{ github.event.inputs.isPreview != 'no' }}
         env:
           PAT: ${{ secrets.VSCE_PAT }}
-        run: vsce publish --pre-release --pat $PAT --packagePath *.vsix
+        run: vsce publish --pre-release --pat $PAT --packagePath *.vsix --noVerify
 
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
-        run: vsce publish --pat $PAT --packagePath *.vsix
+        run: vsce publish --pat $PAT --packagePath *.vsix --noVerify
         env:
           PAT: ${{ secrets.VSCE_PAT }}

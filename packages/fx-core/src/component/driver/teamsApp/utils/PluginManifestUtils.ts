@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import {
+  Colors,
   FxError,
+  IPlugin,
+  ManifestUtil,
+  Platform,
   PluginManifestSchema,
   Result,
   TeamsAppManifest,
@@ -14,6 +18,15 @@ import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
 import stripBom from "strip-bom";
 import path from "path";
 import { manifestUtils } from "./ManifestUtils";
+import { WrapDriverContext } from "../../util/wrapUtil";
+import { getResolvedManifest } from "./utils";
+import { TelemetryPropertyKey } from "./telemetry";
+import { AppStudioResultFactory } from "../results";
+import { AppStudioError } from "../errors";
+import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { PluginManifestValidationResult } from "../interfaces/ValidationResult";
+import { SummaryConstant } from "../../../configManager/constant";
+import { EOL } from "os";
 
 export class PluginManifestUtils {
   public async readPluginManifestFile(
@@ -35,6 +48,67 @@ export class PluginManifestUtils {
     }
   }
 
+  /**
+   * Get plugin manifest with env value filled.
+   * @param path path of declaraitve Copilot
+   * @returns resolved manifest
+   */
+  public async getManifest(
+    path: string,
+    context?: WrapDriverContext
+  ): Promise<Result<PluginManifestSchema, FxError>> {
+    const manifestRes = await this.readPluginManifestFile(path);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+    // Add environment variable keys to telemetry
+    const resolvedManifestRes = getResolvedManifest(
+      JSON.stringify(manifestRes.value),
+      path,
+      TelemetryPropertyKey.customizedAIPluginKeys,
+      context
+    );
+
+    if (resolvedManifestRes.isErr()) {
+      return err(resolvedManifestRes.error);
+    }
+    const resolvedManifestString = resolvedManifestRes.value;
+    return ok(JSON.parse(resolvedManifestString));
+  }
+
+  public async validateAgainstSchema(
+    plugin: IPlugin,
+    path: string,
+    context?: WrapDriverContext
+  ): Promise<Result<PluginManifestValidationResult, FxError>> {
+    const manifestRes = await this.getManifest(path, context);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    try {
+      const res = await ManifestUtil.validateManifest(manifestRes.value);
+      return ok({
+        id: plugin.id,
+        filePath: path,
+        validationResult: res,
+      });
+    } catch (e: any) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message([
+            getLocalizedString(
+              "error.appstudio.validateFetchSchemaFailed",
+              manifestRes.value.$schema,
+              e.message
+            ),
+          ])
+        )
+      );
+    }
+  }
+
   public async getApiSpecFilePathFromTeamsManifest(
     manifest: TeamsAppManifest,
     manifestPath: string
@@ -53,6 +127,47 @@ export class PluginManifestUtils {
       pluginFilePath
     );
     return ok(apiSpecFiles);
+  }
+
+  public logValidationErrors(
+    validationRes: PluginManifestValidationResult,
+    platform: Platform
+  ): string | Array<{ content: string; color: Colors }> {
+    const validationErrors = validationRes.validationResult;
+    const filePath = validationRes.filePath;
+    if (validationErrors.length === 0) {
+      return "";
+    }
+
+    if (platform !== Platform.CLI) {
+      const errors = validationErrors
+        .map((error: string) => {
+          return `${SummaryConstant.Failed} ${error}`;
+        })
+        .join(EOL);
+      return (
+        getLocalizedString("driver.teamsApp.summary.validatePluginManifest.checkPath", filePath) +
+        EOL +
+        errors
+      );
+    } else {
+      const outputMessage = [];
+      outputMessage.push({
+        content:
+          getDefaultString("driver.teamsApp.summary.validatePluginManifest.checkPath", filePath) +
+          "\n",
+        color: Colors.BRIGHT_WHITE,
+      });
+      validationErrors.map((error: string) => {
+        outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+        outputMessage.push({
+          content: `${error}\n`,
+          color: Colors.BRIGHT_WHITE,
+        });
+      });
+
+      return outputMessage;
+    }
   }
 
   async getApiSpecFilePathFromPlugin(

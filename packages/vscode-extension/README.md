@@ -4,7 +4,7 @@
 
 The Teams Toolkit helps developers create and deploy Teams apps with integrated identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/microsoftteams/platform/build-your-first-app/build-bot) and [Microsoft 365](https://docs.microsoft.com/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a "zero-configuration" approach to the developer experience.
 
-![TTK GIF](https://user-images.githubusercontent.com/11220663/236783765-856c9f4e-5ee9-4a8e-ac12-37b88ebbaddd.gif)
+![TTK GIF](https://github.com/OfficeDev/TeamsFx/assets/11220663/fa963c9b-0957-4366-ab39-9ab03130e406)
 
 ## What are Teams app "Capabilities"?
 

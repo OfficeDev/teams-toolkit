@@ -3,14 +3,14 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 import {
   ApiMessageExtensionAuthOptions,
+  CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
-import { CapabilityOptions } from "../../../question/capabilityOptions";
+  QuestionNames,
+} from "../../../question/constants";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",

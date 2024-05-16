@@ -47,7 +47,7 @@ import {
 import { ActionContext } from "../../../src/component/middleware/actionExecutionMW";
 import * as featurefalgs from "../../../src/common/featureFlags";
 import { QuestionNames } from "../../../src/question";
-import { CapabilityOptions, ProgrammingLanguage } from "../../../src/question/create";
+import { CapabilityOptions, ProgrammingLanguage } from "../../../src/question";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";

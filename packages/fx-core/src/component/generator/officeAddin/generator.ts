@@ -26,20 +26,19 @@ import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
 import {
+  CapabilityOptions,
   OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
-  getOfficeAddinFramework,
-  getOfficeAddinTemplateConfig,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
+import { getOfficeAddinFramework, getOfficeAddinTemplateConfig } from "../../../question/create";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
-import { CapabilityOptions } from "../../../question/capabilityOptions";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";

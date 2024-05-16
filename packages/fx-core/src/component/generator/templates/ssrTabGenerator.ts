@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 
 import { Context, FxError, Inputs, Result, ok } from "@microsoft/teamsfx-api";
+import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../question/constants";
 import { DefaultTemplateGenerator } from "./templateGenerator";
 import { TemplateInfo } from "./templateInfo";
-import { ProgrammingLanguage, QuestionNames } from "../../../question";
 import { TemplateNames } from "./templateNames";
-import { CapabilityOptions } from "../../../question/capabilityOptions";
 
 // For the APS.NET server-side rendering tab
 export class SsrTabGenerator extends DefaultTemplateGenerator {

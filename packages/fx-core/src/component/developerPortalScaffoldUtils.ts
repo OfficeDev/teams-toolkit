@@ -22,7 +22,8 @@ import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
 import { ObjectIsUndefinedError } from "../core/error";
-import { QuestionNames } from "../question/questionNames";
+import { QuestionNames } from "../question/constants";
+import { getProjectTypeAndCapability } from "../question/create";
 import { CoordinatorSource } from "./constants";
 import * as appStudio from "./driver/teamsApp/appStudio";
 import {
@@ -34,7 +35,6 @@ import {
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "./utils/envUtil";
-import { getProjectTypeAndCapability } from "../question/create";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";

@@ -6,56 +6,59 @@
  */
 
 import {
-  Context,
-  FxError,
-  OpenAIManifestAuthType,
-  OpenAIPluginManifest,
-  Result,
-  UserError,
-  err,
-  ok,
-  TeamsAppManifest,
-  ApiOperation,
-  ManifestTemplateFileName,
-  Warning,
-  AppPackageFolderName,
-  ManifestUtil,
-  IMessagingExtensionCommand,
-  SystemError,
-  Inputs,
-} from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
-import {
-  SpecParser,
+  AdaptiveCardGenerator,
+  ErrorResult as ApiSpecErrorResult,
   ErrorType as ApiSpecErrorType,
+  ErrorType,
+  InvalidAPIInfo,
+  ListAPIResult,
+  ParseOptions,
+  ProjectType,
+  SpecParser,
+  SpecParserError,
+  Utils,
   ValidationStatus,
   WarningResult,
   WarningType,
-  SpecParserError,
-  ErrorType,
-  ErrorResult as ApiSpecErrorResult,
-  ListAPIResult,
-  ProjectType,
-  ParseOptions,
-  AdaptiveCardGenerator,
-  Utils,
-  InvalidAPIInfo,
 } from "@microsoft/m365-spec-parser";
+import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import {
+  ApiOperation,
+  AppPackageFolderName,
+  Context,
+  FxError,
+  IMessagingExtensionCommand,
+  Inputs,
+  ManifestTemplateFileName,
+  ManifestUtil,
+  OpenAIManifestAuthType,
+  OpenAIPluginManifest,
+  Result,
+  SystemError,
+  TeamsAppManifest,
+  UserError,
+  Warning,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import axios, { AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
+import path from "path";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { sendRequestWithRetry } from "../../../common/requestUtils";
+import { MissingRequiredInputError } from "../../../error";
+import {
+  CustomCopilotRagOptions,
+  ProgrammingLanguage,
+  QuestionNames,
+  copilotPluginApiSpecOptionId,
+} from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import path from "path";
-import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { copilotPluginApiSpecOptionId } from "../../../question/constants";
-import { OpenAPIV3 } from "openapi-types";
-import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
-import { isCopilotAuthEnabled } from "../../../common/featureFlags";
-import { sendRequestWithRetry } from "../../../common/requestUtils";
-import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question/create";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";

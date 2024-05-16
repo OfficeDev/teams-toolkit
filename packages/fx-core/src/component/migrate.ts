@@ -6,7 +6,7 @@ import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { ComponentNames } from "./constants";
-import { CapabilityOptions } from "../question/capabilityOptions";
+import { CapabilityOptions } from "../question/constants";
 
 export const EnvStateMigrationComponentNames = [
   ["solution", "solution"],

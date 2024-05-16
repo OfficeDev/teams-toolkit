@@ -38,11 +38,12 @@ import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
 import {
+  CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
 import { isValidHttpUrl } from "../../../question/util";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
@@ -68,7 +69,6 @@ import {
   specParserGenerateResultWarningsTelemetryProperty,
   updateForCustomApi,
 } from "./helper";
-import { CapabilityOptions } from "../../../question/capabilityOptions";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";

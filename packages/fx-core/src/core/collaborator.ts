@@ -34,7 +34,7 @@ import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../com
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
-import { QuestionNames } from "../question/questionNames";
+import { QuestionNames } from "../question/constants";
 import { CoreSource, FailedToLoadManifestId } from "./error";
 
 export class CollaborationConstants {

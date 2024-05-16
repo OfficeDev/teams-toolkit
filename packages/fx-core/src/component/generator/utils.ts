@@ -12,7 +12,7 @@ import { sendRequestWithRetry, sendRequestWithTimeout } from "../../common/reque
 import { SampleConfig, SampleUrlInfo, sampleProvider } from "../../common/samples";
 import templateConfig from "../../common/templates-config.json";
 import { InvalidInputError } from "../../core/error";
-import { ProgrammingLanguage } from "../../question/create";
+import { ProgrammingLanguage } from "../../question/constants";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,

@@ -262,9 +262,9 @@ export enum SolutionTelemetrySuccess {
   No = "no",
 }
 
-export const SolutionTelemetryComponentName = "solution";
-export const SolutionSource = "Solution";
-export const CoordinatorSource = "coordinator";
+export const SolutionTelemetryComponentName = "core";
+export const SolutionSource = "core";
+export const CoordinatorSource = "core";
 
 export enum Language {
   JavaScript = "javascript",

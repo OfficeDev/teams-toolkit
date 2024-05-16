@@ -2,6 +2,14 @@
 // Licensed under the MIT license.
 
 import {
+  ErrorType,
+  ListAPIResult,
+  SpecParser,
+  SpecParserError,
+  ValidationStatus,
+  WarningType,
+} from "@microsoft/m365-spec-parser";
+import {
   CopilotGptManifestSchema,
   FxError,
   IQTreeNode,
@@ -35,14 +43,6 @@ import {
   projectTypeChecker,
 } from "../../src/common/projectTypeChecker";
 import {
-  ErrorType,
-  ListAPIResult,
-  SpecParser,
-  SpecParserError,
-  ValidationStatus,
-  WarningType,
-} from "@microsoft/m365-spec-parser";
-import {
   DriverDefinition,
   DriverInstance,
   ExecutionResult,
@@ -58,14 +58,18 @@ import * as buildAadManifest from "../../src/component/driver/aad/utility/buildA
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
+import { copilotGptManifestUtils } from "../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
+import { createDriverContext } from "../../src/component/driver/util/utils";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
-import { createDriverContext } from "../../src/component/driver/util/utils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -90,10 +94,6 @@ import {
 import { HubOptions, PluginAvailabilityOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
-import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
-import { copilotGptManifestUtils } from "../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
-import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 
 const tools = new MockTools();
 

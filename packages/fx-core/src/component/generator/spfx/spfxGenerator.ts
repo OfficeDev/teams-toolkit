@@ -30,8 +30,12 @@ import { cpUtils } from "../../../common/deps-checker";
 import { jsonUtils } from "../../../common/jsonUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, UserCancelError } from "../../../error";
-import { ProgrammingLanguage, SPFxVersionOptionIds } from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+import {
+  CapabilityOptions,
+  ProgrammingLanguage,
+  QuestionNames,
+  SPFxVersionOptionIds,
+} from "../../../question/constants";
 import { SPFxQuestionNames } from "../../constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
@@ -58,7 +62,6 @@ import { ProgressHelper } from "./utils/progress-helper";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
-import { CapabilityOptions } from "../../../question/capabilityOptions";
 
 export class SPFxGenerator {
   @hooks([

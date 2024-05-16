@@ -422,6 +422,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv
   ) {
     let command;
+    console.log("cli version is V3 or not: " + CliHelper.getVersionFlag());
     if (CliHelper.getVersionFlag()) {
       command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
     } else {

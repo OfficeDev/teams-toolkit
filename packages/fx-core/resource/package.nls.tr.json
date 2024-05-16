@@ -36,7 +36,7 @@
   "core.migrationV3.manifestInvalid": "templates/appPackage/manifest.template.json geçersiz.",
   "core.migrationV3.abandonedProject": "Bu proje yalnızca önizleme içindir ve Teams Toolkit tarafından desteklenmeyecektir. Lütfen yeni bir proje oluşturarak Teams Toolkit'i deneyin",
   "core.migrationV3.notAllowedMigration": "Teams Araç Seti'nin Yayın Öncesi sürümü yeni proje yapılandırmasını destekler ve önceki sürümlerle uyumsuzdur. Yeni bir proje oluşturarak deneyin veya önce projenizi yükseltmek için \"teamsfx upgrade\" komutunu çalıştırın.",
-  "core.projectVersionChecker.cliUseNewVersion": "TeamsFx CLI sürümünüz geçerli projeyi desteklemek için çok eski, lütfen aşağıdaki komutu kullanarak en son sürüme yükseltin:\nnpm install -g @microsoft/teamsfx-cli@latest",
+  "core.projectVersionChecker.cliUseNewVersion": "Teams Toolkit CLI sürümünüz geçerli projeyi desteklemek için çok eski, lütfen aşağıdaki komutu kullanarak en son sürüme yükseltin:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.projectVersionChecker.incompatibleProject": "Geçerli proje Teams Araç Seti'nin yüklü sürümüyle uyumlu değil.",
   "core.projectVersionChecker.vs.incompatibleProject": "Çözümdeki proje, Teams Araç Seti önizleme özelliği (Teams Uygulama Yapılandırması İyileştirmeleri) ile oluşturulur. Devam etmek için önizleme özelliğini açabilirsiniz.",
   "core.deployArmTemplates.ActionSuccess": "ARM şablonları başarıyla dağıtıldı. Kaynak grubu adı: %s. Dağıtım adı: %s",

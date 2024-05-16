@@ -2234,7 +2234,7 @@
             <Val><![CDATA[[core]5D; L'interfaccia della riga di comando di TeamFx è troppo vecchia per supportare il progetto corrente. Eseguire l'aggiornamento alla versione più recente usando il comando seguente:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+            <Val><![CDATA[[core]5D; Your Teams Toolkit CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

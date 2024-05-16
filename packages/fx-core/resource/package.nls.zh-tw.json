@@ -36,7 +36,7 @@
   "core.migrationV3.manifestInvalid": "templates/appPackage/manifest.template.json 無效。",
   "core.migrationV3.abandonedProject": "此專案僅供預覽，且 Teams Toolkit 不會予以支援。請建立新專案以試用 Teams Toolkit",
   "core.migrationV3.notAllowedMigration": "Teams 工具組的發行前版本支援新的專案設定，而且與舊版不相容。請嘗試建立新專案，或執行 「teamsfx 升級」 以先升級您的專案。",
-  "core.projectVersionChecker.cliUseNewVersion": "您的 TeamsFx CLI 版本太舊，而且並不支援目前的專案，請使用下列命令升級至最新版本:\nnpm install -g @microsoft/teamsfx-cli@latest",
+  "core.projectVersionChecker.cliUseNewVersion": "您的 Teams Toolkit CLI 版本太舊，而且並不支援目前的專案，請使用下列命令升級至最新版本:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.projectVersionChecker.incompatibleProject": "目前的專案與已安裝的 Teams 工具組版本不相容。",
   "core.projectVersionChecker.vs.incompatibleProject": "解決方案中的專案是使用 Teams 工具組預覽功能建立 - Teams 應用程式組態改進。您可以開啟預覽功能以繼續。",
   "core.deployArmTemplates.ActionSuccess": "已成功部署 ARM 範本。資源群組名稱: %s。部署名稱: %s",

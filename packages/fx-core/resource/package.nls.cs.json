@@ -36,7 +36,7 @@
   "core.migrationV3.manifestInvalid": "Soubor templates/appPackage/manifest.template.json není platný.",
   "core.migrationV3.abandonedProject": "Tento projekt je určený jenom pro náhled a sada Teams Toolkit ho nebude podporovat. Vyzkoušejte sadu nástrojů Teams Toolkit vytvořením nového projektu.",
   "core.migrationV3.notAllowedMigration": "Předběžná verze sady nástrojů Teams Toolkit podporuje novou konfiguraci projektu a není kompatibilní s předchozími verzemi. Pokud ji chcete vyzkoušet, nejprve vytvořte nový projekt nebo spusťte kód „teamsfx upgrade“.",
-  "core.projectVersionChecker.cliUseNewVersion": "Vaše verze TeamsFx CLI je příliš stará na to, aby podporovala aktuální projekt, upgradujte ji prosím na nejnovější verzi pomocí následujícího příkazu:\nnpm install -g @microsoft/teamsfx-cli@latest",
+  "core.projectVersionChecker.cliUseNewVersion": "Vaše verze Teams Toolkit CLI je příliš stará na to, aby podporovala aktuální projekt, upgradujte ji prosím na nejnovější verzi pomocí následujícího příkazu:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.projectVersionChecker.incompatibleProject": "Aktuální projekt není kompatibilní s nainstalovanou verzí sady Teams Toolkit.",
   "core.projectVersionChecker.vs.incompatibleProject": "Projekt v řešení je vytvořená pomocí funkce preview sady Teams Toolkit – Vylepšení konfigurace aplikace Teams. Pokud chcete pokračovat, můžete funkci Preview zapnout.",
   "core.deployArmTemplates.ActionSuccess": "Nasazení šablony ARM proběhlo úspěšně. Název skupiny prostředků: %s. Název nasazení: %s",

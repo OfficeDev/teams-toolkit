@@ -2234,7 +2234,7 @@
             <Val><![CDATA[Twoja wersja interfejsu wiersza polecenia w usłudze TeamsFx jest stara i nie obsługuje bieżącego projektu. Uaktualnij do najnowszej wersji za pomocą poniższego polecenia:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+            <Val><![CDATA[[core]5D; Your Teams Toolkit CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

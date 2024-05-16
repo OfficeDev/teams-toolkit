@@ -120,10 +120,11 @@ describe("Generator utils", () => {
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
     sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
-    const templateName = "templateName";
-    const selectedTag = await generatorUtils.getTemplateLatestVersion();
-    const url = generatorUtils.getTemplateZipUrlByVersion(templateName, selectedTag);
-    assert.isTrue(url.includes("0.0.0-rc"));
+    const url = await generatorUtils.getTemplateUrl(
+      "templateName",
+      generatorUtils.getTemplateLatestVersion
+    );
+    assert.isTrue(url?.includes("0.0.0-rc"));
   });
 
   it("set useLocalTemplate flag to true", async () => {

@@ -259,18 +259,24 @@ export class SampledebugContext extends TestContext {
 
   public async updateManifestAppName(): Promise<void> {
     console.log("[start] update manifest file");
-    const manifestFile =
-      path.resolve(this.projectPath, "appPackage", "manifest.json") ??
-      path.resolve(this.projectPath, "appManifest", "manifest.json");
-    const manifest = await fs.readJSON(manifestFile);
-    // manifest name can't be longer than 15 characters
-    manifest.name.short =
-      this.appName.substring(0, 10) + "${{APP_NAME_SUFFIX}}";
-    fs.writeJSON(manifestFile, manifest, { spaces: 4 });
-    console.log(
-      "[finish] update manifest file successfully, appName: ",
-      manifest.name.short
-    );
+    const manifestFile = fs.pathExistsSync(
+      path.resolve(this.projectPath, "appPackage")
+    )
+      ? path.resolve(this.projectPath, "appPackage", "manifest.json")
+      : path.resolve(this.projectPath, "appManifest", "manifest.json");
+    try {
+      const manifest = await fs.readJSON(manifestFile);
+      // manifest name can't be longer than 15 characters
+      manifest.name.short =
+        this.appName.substring(0, 10) + "${{APP_NAME_SUFFIX}}";
+      fs.writeJSON(manifestFile, manifest, { spaces: 4 });
+      console.log(
+        "[finish] update manifest file successfully, appName: ",
+        manifest.name.short
+      );
+    } catch (error) {
+      console.log("[skip] manifest file not found");
+    }
   }
 
   public async openExistFolder(path: string): Promise<void> {

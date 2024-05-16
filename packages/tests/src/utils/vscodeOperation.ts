@@ -477,7 +477,7 @@ async function selectQuickPickWithRegex(regex: RegExp): Promise<boolean> {
 }
 
 // Set folder path in the input box
-async function inputFolderPath(
+export async function inputFolderPath(
   driver: WebDriver,
   input: InputBox,
   folder: string

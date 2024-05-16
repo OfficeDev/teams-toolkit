@@ -4,7 +4,7 @@
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
-import { InputBox, VSBrowser } from "vscode-extension-tester";
+import { InputBox, VSBrowser, WebDriver } from "vscode-extension-tester";
 import { expect } from "chai";
 import {
   CommandPaletteCommands,
@@ -12,9 +12,13 @@ import {
   CreateProjectQuestion,
 } from "../../utils/constants";
 import { TreeViewTestContext } from "./treeviewContext";
-import { execCommandIfExist } from "../../utils/vscodeOperation";
+import {
+  execCommandIfExist,
+  inputFolderPath,
+} from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
 import { getNodeVersion } from "../../utils/getNodeVersion";
+import * as os from "os";
 
 describe("New project Tests", function () {
   this.timeout(Timeout.testCase);
@@ -60,11 +64,13 @@ describe("New project Tests", function () {
 
       // Input folder path
       await input.selectQuickPick("Browse...");
-      do {
-        // input may be auto-corrected to other value, so set until it's fixed
-        await input.setText(testRootFolder);
-        await driver.sleep(Timeout.input);
-      } while ((await input.getText()) !== testRootFolder);
+      await inputFolderPath(driver, input, testRootFolder);
+      await driver.sleep(Timeout.input);
+      if (os.type() === "Windows_NT") {
+        await input.sendKeys("\\");
+      } else if (os.type() === "Linux") {
+        await input.sendKeys("/");
+      }
       await input.confirm();
 
       // Input App Name
@@ -122,11 +128,13 @@ describe("New project Tests", function () {
       await input.confirm();
       // Input folder path
       await input.selectQuickPick("Browse...");
-      do {
-        // input may be auto-corrected to other value, so set until it's fixed
-        await input.setText(testRootFolder);
-        await driver.sleep(Timeout.input);
-      } while ((await input.getText()) !== testRootFolder);
+      await inputFolderPath(driver, input, testRootFolder);
+      await driver.sleep(Timeout.input);
+      if (os.type() === "Windows_NT") {
+        await input.sendKeys("\\");
+      } else if (os.type() === "Linux") {
+        await input.sendKeys("/");
+      }
       await input.confirm();
       // Input App Name
       await input.setText("2invalidname");

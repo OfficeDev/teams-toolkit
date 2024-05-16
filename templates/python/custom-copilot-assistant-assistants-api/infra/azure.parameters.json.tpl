@@ -18,7 +18,7 @@
       "value": "B1"
     },
     "botDisplayName": {
-      "value": "aiAssistant-py"
+      "value": "{{appName}}"
     },
     "linuxFxVersion": {
       "value": "PYTHON|3.11"

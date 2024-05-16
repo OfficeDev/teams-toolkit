@@ -3,7 +3,7 @@
 This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview).
 It showcases how to build an AI agent in Teams capable of helping users accomplish specific tasks using natural language right in the Teams conversations, such as solving a math problem, call functions to get city weather, etc.
 
-## Get started with the AI Chat Bot template
+## Get started with the template
 
 > **Prerequisites**
 >
@@ -43,19 +43,22 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **If you already have an Assistant created**
 
-1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
+1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.local.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
    OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
 
 ### Conversation with bot
+1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
-**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+**Congratulations**! You are running an application that can now interact with users in Teams:
+
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ![AI Agent in Teams](https://github.com/OfficeDev/TeamsFx/assets/37978464/fd1cf673-e7d8-4826-9cac-e9481a74ee1e)
 
@@ -91,7 +94,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Chat Bot template with more AI capabilities
+## Extend the template
 
 You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
 - [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-build-new)

@@ -16,6 +16,7 @@ import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as teamsfxCore from "@microsoft/teamsfx-core";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -229,7 +230,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
       });
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
     const isManifestOnlyOfficeAddinProjectStub = sandbox
-      .stub(teamsfxCore, "isManifestOnlyOfficeAddinProject")
+      .stub(projectSettingsHelper, "isManifestOnlyOfficeAddinProject")
       .returns(false);
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
@@ -253,7 +254,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
       });
 
     const isManifestOnlyOfficeAddinProjectStub = sandbox
-      .stub(teamsfxCore, "isManifestOnlyOfficeAddinProject")
+      .stub(projectSettingsHelper, "isManifestOnlyOfficeAddinProject")
       .returns(false);
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();

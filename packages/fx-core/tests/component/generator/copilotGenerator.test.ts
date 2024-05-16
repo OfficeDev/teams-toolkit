@@ -1236,12 +1236,14 @@ describe("formatValidationErrors", () => {
 describe("listPluginExistingOperations", () => {
   const teamsManifestWithPlugin: TeamsAppManifest = {
     ...teamsManifest,
-    plugins: [
-      {
-        file: "resources/plugin.json",
-        id: "plugin1",
-      },
-    ],
+    copilotExtensions: {
+      plugins: [
+        {
+          file: "resources/plugin.json",
+          id: "plugin1",
+        },
+      ],
+    },
   };
 
   const sandbox = sinon.createSandbox();

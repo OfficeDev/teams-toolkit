@@ -1083,7 +1083,7 @@ describe("SpecParser", () => {
 
       const updateManifestWithAiPluginStub = sinon
         .stub(ManifestUpdater, "updateManifestWithAiPlugin")
-        .resolves([{}, {}] as any);
+        .resolves([{}, {}, []] as any);
 
       const filter = ["get /hello"];
 

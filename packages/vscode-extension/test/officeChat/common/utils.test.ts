@@ -3,7 +3,7 @@ import * as sinon from "sinon";
 import * as fs from "fs";
 import * as chaipromised from "chai-as-promised";
 import * as commonUtils from "../../../src/officeChat/common/utils";
-import * as requestUtils from "@microsoft/teamsfx-core";
+import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
 import { AxiosResponse } from "axios";
 
 chai.use(chaipromised);

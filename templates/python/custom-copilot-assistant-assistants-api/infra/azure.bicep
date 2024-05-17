@@ -70,7 +70,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'OPENAI_API_KEY'
           value: openaiKey
-        },
+        }
         {
           name: 'OPENAI_ASSISTANT_ID'
           value: assistantId

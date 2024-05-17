@@ -237,7 +237,7 @@ export class AzServiceBusHelper {
   }
 
   static async login() {
-    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    const command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
     await Executor.execute(command, process.cwd());
 
     // set subscription
@@ -269,7 +269,7 @@ export class AzServiceBusHelper {
 }
 
 export async function cleanRG() {
-  const { success, stdout } = await AzSqlHelper.listResourceGroup("fxui");
+  const { stdout } = await AzSqlHelper.listResourceGroup("fxui");
   for (const rg of stdout) {
     await AzSqlHelper.deleteResourceGroup(rg);
   }

@@ -45,8 +45,11 @@ export async function matchProject(
   if (!request.prompt.includes("template")) {
     // also search in samples
     matchedProjects.push(...(await matchSamples(request, token, telemetryMetadata)));
+    matchedProjects.sort((a, b) => b.score - a.score);
+  } else {
+    matchedProjects.sort((a, b) => b.score - a.score);
+    matchedProjects.splice(2);
   }
-  matchedProjects.sort((a, b) => b.score - a.score);
   const result: ProjectMetadata[] = [];
   const matchedProjectIds = new Set<string>();
   for (const { id, score } of matchedProjects) {

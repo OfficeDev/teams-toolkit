@@ -19,8 +19,8 @@ export async function verbatimCopilotInteraction(
   if (!familyMatch) {
     throw new Error("No chat models available for the specified family");
   }
-  const chatRequest = await familyMatch.sendRequest(messages, {}, token);
-  for await (const fragment of chatRequest.stream) {
+  const chatResponse = await familyMatch.sendRequest(messages, {}, token);
+  for await (const fragment of chatResponse.text) {
     response.markdown(fragment);
   }
 }
@@ -36,9 +36,9 @@ export async function getCopilotResponseAsString(
   if (!familyMatch) {
     throw new Error("No chat models available for the specified family");
   }
-  const chatRequest = await familyMatch.sendRequest(messages, {}, token);
+  const chatResponse = await familyMatch.sendRequest(messages, {}, token);
   let response = "";
-  for await (const fragment of chatRequest.stream) {
+  for await (const fragment of chatResponse.text) {
     response += fragment;
   }
   return response;

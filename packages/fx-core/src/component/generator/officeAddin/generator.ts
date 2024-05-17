@@ -18,6 +18,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
+import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
 import { join } from "path";
@@ -29,18 +30,15 @@ import {
   OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
-  getOfficeAddinFramework,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
+import { getOfficeAddinFramework, getOfficeAddinTemplateConfig } from "../../../question/create";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
-import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
-import { HelperMethods } from "./helperMethods";
-import { toLower } from "lodash";
-import { convertToLangKey } from "../utils";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
-import { fetchAndUnzip } from "../../utils";
+import { convertToLangKey } from "../utils";
+import { HelperMethods } from "./helperMethods";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -143,7 +141,11 @@ export class OfficeAddinGenerator {
 
         // Copy project template files from project repository
         if (projectLink) {
-          const fetchRes = await fetchAndUnzip("office-addin-generator", projectLink, addinRoot);
+          const fetchRes = await HelperMethods.fetchAndUnzip(
+            "office-addin-generator",
+            projectLink,
+            addinRoot
+          );
           if (fetchRes.isErr()) {
             return err(fetchRes.error);
           }

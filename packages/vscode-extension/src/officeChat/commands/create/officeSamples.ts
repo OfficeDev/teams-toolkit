@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AccessGithubError, SampleConfig, sendRequestWithTimeout } from "@microsoft/teamsfx-core";
 import axios from "axios";
-import { sendRequestWithTimeout } from "@microsoft/teamsfx-core/build/component/generator/utils";
-import { SampleConfig } from "@microsoft/teamsfx-core";
-import { AccessGithubError } from "@microsoft/teamsfx-core";
 
 const OfficeSampleCofigOwner = "OfficeDev";
 const OfficeSampleRepo = "Office-Samples";

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { getLocalizedString } from "./localizeUtils";
+
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
@@ -55,3 +57,35 @@ export class FeatureFlagName {
   static readonly CopilotAuth = "API_COPILOT_PLUGIN_AUTH";
   static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
 }
+
+export function getAllowedAppMaps(): Record<string, string> {
+  return {
+    [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
+    [TeamsClientId.Web]: getLocalizedString("core.common.TeamsWebClientName"),
+    [OfficeClientId.Desktop]: getLocalizedString("core.common.OfficeDesktopClientName"),
+    [OfficeClientId.Web1]: getLocalizedString("core.common.OfficeWebClientName1"),
+    [OfficeClientId.Web2]: getLocalizedString("core.common.OfficeWebClientName2"),
+    [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
+    [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
+    [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+  };
+}
+
+const AzurePortalUrl = "https://portal.azure.com";
+export function getResourceGroupInPortal(
+  subscriptionId?: string,
+  tenantId?: string,
+  resourceGroupName?: string
+): string | undefined {
+  if (subscriptionId && tenantId && resourceGroupName) {
+    return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
+  } else {
+    return undefined;
+  }
+}
+
+export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
+export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
+export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
+export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];

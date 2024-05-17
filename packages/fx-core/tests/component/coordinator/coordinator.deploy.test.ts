@@ -16,7 +16,6 @@ import {
 
 import { MetadataV3, VersionInfo, VersionSource } from "../../../src/common/versionMetadata";
 import { ExecutionResult, ProjectModel } from "../../../src/component/configManager/interface";
-import { SolutionSource } from "../../../src/component/constants";
 import { deployUtils } from "../../../src/component/deployUtils";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../../src/component/utils/envUtil";
@@ -26,9 +25,9 @@ import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { UserCancelError } from "../../../src/error";
 import { MockTools } from "../../core/utils";
 import { mockedResolveDriverInstances } from "./coordinator.test";
-import { UserCancelError } from "../../../src/error";
 
 const versionInfo: VersionInfo = {
   version: MetadataV3.projectVersion,

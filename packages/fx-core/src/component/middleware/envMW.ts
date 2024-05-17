@@ -7,7 +7,7 @@ import { environmentNameManager } from "../../core/environmentName";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
-import { QuestionNames } from "../../question/questionNames";
+import { QuestionNames } from "../../question/constants";
 import { selectTargetEnvQuestion } from "../../question/other";
 import { traverse } from "../../ui/visitor";
 import { envUtil } from "../utils/envUtil";

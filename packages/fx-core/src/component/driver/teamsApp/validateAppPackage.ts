@@ -5,39 +5,38 @@
  * @author Ning Liu <nliu@microsoft.com>
  */
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  Result,
-  FxError,
-  ok,
-  err,
-  TeamsAppManifest,
-  Platform,
   Colors,
+  FxError,
   LogLevel,
   ManifestUtil,
+  Platform,
+  Result,
+  TeamsAppManifest,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { hooks } from "@feathersjs/hooks/lib";
-import { Service } from "typedi";
-import fs from "fs-extra";
-import * as path from "path";
-import { EOL } from "os";
-import { merge } from "lodash";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryPropertyKey } from "./utils/telemetry";
-import { AppStudioResultFactory } from "./results";
-import { AppStudioError } from "./errors";
-import { AppStudioClient } from "./clients/appStudioClient";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
 import AdmZip from "adm-zip";
-import { Constants } from "./constants";
-import { metadataUtil } from "../../utils/metadataUtil";
-import { SummaryConstant } from "../../configManager/constant";
+import fs from "fs-extra";
+import { merge } from "lodash";
+import { EOL } from "os";
+import * as path from "path";
+import { Service } from "typedi";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { SummaryConstant } from "../../configManager/constant";
+import { metadataUtil } from "../../utils/metadataUtil";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { AppStudioClient } from "./clients/appStudioClient";
+import { AppStudioScopes, Constants } from "./constants";
+import { AppStudioError } from "./errors";
+import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
+import { AppStudioResultFactory } from "./results";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 
 const actionName = "teamsApp/validateAppPackage";
 

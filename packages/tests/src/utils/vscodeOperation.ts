@@ -585,6 +585,7 @@ export async function createNewProject(
     }
     case "crbot": {
       await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await driver.sleep(Timeout.input);
       // await input.selectQuickPick("Chat Command");
       await input.setText("Chat Command");
       await input.confirm();

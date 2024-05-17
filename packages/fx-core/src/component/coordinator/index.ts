@@ -23,11 +23,11 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
+import { getResourceGroupInPortal } from "../../common/constants";
 import { isNewGeneratorEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
 import { ObjectIsUndefinedError } from "../../core/error";
@@ -47,9 +47,9 @@ import {
   MeArchitectureOptions,
   OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../question/create";
-import { QuestionNames } from "../../question/questionNames";
+} from "../../question/constants";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import { CoordinatorSource } from "../constants";
@@ -60,9 +60,12 @@ import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
+import { Generators } from "../generator/generatorProvider";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
+import { Feature2TemplateName } from "../generator/templates/templateNames";
+import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
@@ -71,9 +74,6 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { Generators } from "../generator/generatorProvider";
-import { Feature2TemplateName } from "../generator/templates/templateNames";
-import { convertToLangKey } from "../generator/utils";
 
 const M365Actions = [
   "botAadApp/create",

@@ -1,19 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks";
+import { LogProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import FormData from "form-data";
 import fs from "fs-extra";
-
-import { LogProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
-
-import { waitSeconds } from "../tools";
-import { NotExtendedToM365Error } from "./errors";
-import { serviceEndpoint } from "./serviceConstant";
+import { ErrorContextMW, TOOLS } from "../../core/globalVars";
 import { assembleError } from "../../error/common";
 import { ErrorCategory } from "../../error/types";
-import { ErrorContextMW, TOOLS } from "../../core/globalVars";
-import { hooks } from "@feathersjs/hooks";
 import {
   Component,
   TelemetryEvent,
@@ -21,7 +16,10 @@ import {
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
 } from "../telemetry";
+import { waitSeconds } from "../utils";
 import { WrappedAxiosClient } from "../wrappedAxiosClient";
+import { NotExtendedToM365Error } from "./errors";
+import { serviceEndpoint } from "./serviceConstant";
 
 const M365ErrorSource = "M365";
 const M365ErrorComponent = "PackageService";

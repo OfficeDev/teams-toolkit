@@ -4,6 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import * as semver from "semver";
 
 import {
   AppPackageFolderName,
@@ -18,6 +19,7 @@ import {
   Correlator,
   VersionState,
   initializePreviewFeatureFlags,
+  isChatParticipantEnabled,
   setRegion,
 } from "@microsoft/teamsfx-core";
 
@@ -105,6 +107,9 @@ import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
+  process.env[FeatureFlags.ChatParticipant] = (
+    IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0-insider")
+  ).toString();
   initializePreviewFeatureFlags();
 
   configMgr.registerConfigChangeCallback();
@@ -123,8 +128,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (IsChatParticipantEnabled) {
+  if (isChatParticipantEnabled()) {
     registerChatParticipant(context);
+
     registerOfficeChatParticipant(context);
   }
 
@@ -149,10 +155,8 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
-    IsChatParticipantEnabled
+    isChatParticipantEnabled()
   );
-
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
 
   await vscode.commands.executeCommand(
     "setContext",

@@ -21,9 +21,12 @@ import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
 import SampleListItem from "./sampleListItem";
-import { IsChatParticipantEnabled } from "../../chat/consts";
 
-export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
+interface SampleGalleryProps {
+  shouldShowChat: string;
+}
+
+export default class SampleGallery extends React.Component<SampleGalleryProps, SampleGalleryState> {
   private samples: SampleInfo[] = [];
   private filterOptions: SampleFilterOptionType = {
     capabilities: [],
@@ -31,7 +34,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     technologies: [],
   };
 
-  constructor(props: unknown) {
+  constructor(props: SampleGalleryProps) {
     super(props);
     this.state = {
       loading: true,
@@ -62,7 +65,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         </div>
         <div className="title">
           <h1>Samples</h1>
-          {IsChatParticipantEnabled ? (
+          {this.props.shouldShowChat === "true" ? (
             <h3>
               Explore our sample gallery filled with solutions that work seamlessly with Teams
               Toolkit. Need help choosing? Let{" "}

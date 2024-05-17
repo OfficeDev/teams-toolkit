@@ -42,8 +42,8 @@ import {
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
 import { isValidHttpUrl } from "../../../question/util";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";

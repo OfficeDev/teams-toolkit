@@ -36,7 +36,6 @@ import {
   OfficeAddinGeneratorNew,
 } from "../../../src/component/generator/officeAddin/generator";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
-import * as componentUtils from "../../../src/component/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { UserCancelError } from "../../../src/error";
@@ -189,7 +188,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -209,7 +208,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -228,7 +227,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(componentUtils, "fetchAndUnzip").rejects(new UserCancelError());
+    sinon.stub(HelperMethods, "fetchAndUnzip").rejects(new UserCancelError());
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -683,7 +682,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -702,7 +701,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
@@ -722,7 +721,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     inputs[QuestionNames.OfficeAddinFramework] = "default";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(componentUtils, "fetchAndUnzip").rejects(new UserCancelError());
+    sinon.stub(HelperMethods, "fetchAndUnzip").rejects(new UserCancelError());
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 

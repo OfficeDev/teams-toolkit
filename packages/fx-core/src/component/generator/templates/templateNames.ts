@@ -9,8 +9,8 @@ import {
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",

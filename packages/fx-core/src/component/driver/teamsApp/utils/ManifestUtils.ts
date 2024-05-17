@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { hooks } from "@feathersjs/hooks";
 import {
   FxError,
+  IComposeExtension,
+  IMessagingExtensionCommand,
   InputsWithProjectPath,
   ManifestCapability,
   Result,
   TeamsAppManifest,
-  IComposeExtension,
-  IMessagingExtensionCommand,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -19,15 +20,14 @@ import "reflect-metadata";
 import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import {
-  FileNotFoundError,
-  JSONSyntaxError,
-  MissingEnvironmentVariablesError,
-} from "../../../../error/common";
-import { CapabilityOptions } from "../../../../question/create";
+import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
+import { ErrorContextMW } from "../../../../core/globalVars";
+import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
+import { CapabilityOptions } from "../../../../question/constants";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { expandEnvironmentVariable } from "../../../utils/common";
+import { WrapDriverContext } from "../../util/wrapUtil";
 import {
   BOTS_TPL_EXISTING_APP,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
@@ -47,10 +47,6 @@ import {
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
-import { WrapDriverContext } from "../../util/wrapUtil";
-import { hooks } from "@feathersjs/hooks";
-import { ErrorContextMW } from "../../../../core/globalVars";
-import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 import { getResolvedManifest } from "./utils";
 
 export class ManifestUtils {

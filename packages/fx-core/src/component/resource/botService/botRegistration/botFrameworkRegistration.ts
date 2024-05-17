@@ -4,10 +4,10 @@
 /**
  * @author Qianhao Dong <qidon@microsoft.com>
  */
-import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
-import { err, FxError, Result, ok, M365TokenProvider, LogProvider } from "@microsoft/teamsfx-api";
-import { AppStudioScopes } from "../../../../common/tools";
+import { FxError, LogProvider, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
+import { AppStudioScopes } from "../../../driver/teamsApp/constants";
 import { AppStudioClient } from "../appStudio/appStudioClient";
+import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { Utils } from "./utils";
 
 export async function createOrUpdateBotRegistration(

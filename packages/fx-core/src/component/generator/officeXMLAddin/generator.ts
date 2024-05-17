@@ -14,15 +14,19 @@ import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
-import { OfficeAddinHostOptions, ProgrammingLanguage, ProjectTypeOptions } from "../../../question";
-import { QuestionNames } from "../../../question/questionNames";
+import {
+  OfficeAddinHostOptions,
+  ProgrammingLanguage,
+  ProjectTypeOptions,
+  QuestionNames,
+} from "../../../question/constants";
+import { getOfficeAddinTemplateConfig } from "../../../question/create";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { fetchAndUnzip } from "../../utils";
 import { Generator } from "../generator";
+import { HelperMethods } from "../officeAddin/helperMethods";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
-import { getOfficeAddinTemplateConfig } from "./projectConfig";
 
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
@@ -88,7 +92,7 @@ export class OfficeXMLAddinGenerator {
         // [Condition]: Project have remote repo (not manifest-only proj)
 
         // -> Step: Download the project from GitHub
-        const fetchRes = await fetchAndUnzip(
+        const fetchRes = await HelperMethods.fetchAndUnzip(
           "office-xml-addin-generator",
           projectLink,
           destinationPath
@@ -197,7 +201,11 @@ export class OfficeXmlAddinGeneratorNew extends DefaultTemplateGenerator {
       // [Condition]: Project have remote repo (not manifest-only proj)
 
       // -> Step: Download the project from GitHub
-      const fetchRes = await fetchAndUnzip(this.componentName, projectLink, destinationPath);
+      const fetchRes = await HelperMethods.fetchAndUnzip(
+        this.componentName,
+        projectLink,
+        destinationPath
+      );
       if (fetchRes.isErr()) {
         return err(fetchRes.error);
       }

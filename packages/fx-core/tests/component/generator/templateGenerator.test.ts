@@ -1,22 +1,21 @@
+import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import sinon from "sinon";
-import { Inputs, Platform } from "@microsoft/teamsfx-api";
-import { createContextV3 } from "../../../src/component/utils";
 import path from "path";
-import { createSandbox } from "sinon";
-import { Generators } from "../../../src/component/generator/generatorProvider";
-import { ProgrammingLanguage } from "../../../src/question/create";
-import { CapabilityOptions, QuestionNames } from "../../../src/question";
-import { MockTools, randomAppName } from "../../core/utils";
+import sinon, { createSandbox } from "sinon";
 import { Generator } from "../../../src/component/generator/generator";
+import { Generators } from "../../../src/component/generator/generatorProvider";
+import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
+import { TemplateInfo } from "../../../src/component/generator/templates/templateInfo";
 import {
   TemplateNames,
   inputsToTemplateName,
 } from "../../../src/component/generator/templates/templateNames";
+import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
-import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
-import { TemplateInfo } from "../../../src/component/generator/templates/templateInfo";
+import { CapabilityOptions, QuestionNames } from "../../../src/question";
+import { ProgrammingLanguage } from "../../../src/question/constants";
+import { MockTools, randomAppName } from "../../core/utils";
 
 describe("TemplateGenerator", () => {
   const testInputsToTemplateName = new Map([

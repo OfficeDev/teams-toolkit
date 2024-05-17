@@ -4,6 +4,7 @@
 import { Executor } from "./executor";
 import sql from "mssql";
 import * as uuid from "uuid";
+import os from "os";
 import { expect } from "chai";
 import { Env } from "../utils/env";
 
@@ -107,7 +108,12 @@ export class AzSqlHelper {
   }
 
   static async login() {
-    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    let command = "";
+    if (os.type() === "Windows_NT") {
+      command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
+    } else {
+      command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    }
     await Executor.execute(command, process.cwd());
     // set subscription
     const subscription = Env["azureSubscriptionId"];
@@ -237,7 +243,12 @@ export class AzServiceBusHelper {
   }
 
   static async login() {
-    const command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
+    let command = "";
+    if (os.type() === "Windows_NT") {
+      command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
+    } else {
+      command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    }
     await Executor.execute(command, process.cwd());
 
     // set subscription

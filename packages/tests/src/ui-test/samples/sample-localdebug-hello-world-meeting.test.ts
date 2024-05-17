@@ -68,7 +68,7 @@ new MyFirstMettingTestCase(
   "local",
   [LocalDebugTaskLabel.StartFrontend],
   {
-    teamsAppName: "hello-world-in-meetinglocal",
+    teamsAppName: "fxuiMyFirslocal",
     type: "meeting",
     skipValidation: true,
     debug: "cli",

@@ -28,7 +28,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { waitSeconds } from "../../../../common/tools";
+import { waitSeconds } from "../../../../common/utils";
 import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";

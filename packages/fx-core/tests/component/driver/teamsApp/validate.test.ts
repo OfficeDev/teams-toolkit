@@ -1,45 +1,48 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
-import chai from "chai";
-import fs from "fs-extra";
 import {
   ManifestUtil,
+  Platform,
   SystemError,
+  TeamsAppManifest,
   err,
   ok,
-  Platform,
-  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "../../../../src/common/tools";
-import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
-import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
-import { IAppValidationNote } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
-import { AsyncAppValidationResultsResponse } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResultsResponse";
+import AdmZip from "adm-zip";
+import chai from "chai";
+import fs from "fs-extra";
+import "mocha";
+import * as sinon from "sinon";
+import * as commonTools from "../../../../src/common/utils";
+import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { Constants } from "../../../../src/component/driver/teamsApp/constants";
+import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import {
   AsyncAppValidationResponse,
   AsyncAppValidationStatus,
 } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
-import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
+import { AsyncAppValidationResultsResponse } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResultsResponse";
 import { ValidateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
-import { ValidateWithTestCasesDriver } from "../../../../src/component/driver/teamsApp/validateTestCases";
+import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
 import { ValidateWithTestCasesArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
-import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
+import { IAppValidationNote } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
+import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
+import { copilotGptManifestUtils } from "../../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
+import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../../../../src/component/driver/teamsApp/validateTestCases";
+import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
+import { setTools } from "../../../../src/core/globalVars";
+import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
+import { MockTools } from "../../../core/utils";
 import {
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import AdmZip from "adm-zip";
-import { Constants } from "../../../../src/component/driver/teamsApp/constants";
-import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
-import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
-import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
-import { setTools } from "../../../../src/core/globalVars";
-import { MockTools } from "../../../core/utils";
 
 describe("teamsApp/validateManifest", async () => {
   const teamsAppDriver = new ValidateManifestDriver();
@@ -212,6 +215,173 @@ describe("teamsApp/validateManifest", async () => {
     if (result.isErr()) {
       chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
     }
+  });
+
+  describe("validate Copilot extensions", async () => {
+    it("validate with errors returned", async () => {
+      const teamsManifest: TeamsAppManifest = new TeamsAppManifest();
+      teamsManifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+        plugins: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+      };
+
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(teamsManifest));
+      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+      sinon.stub(pluginManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error1"],
+        })
+      );
+      sinon.stub(pluginManifestUtils, "logValidationErrors").returns("errorMessage1");
+
+      sinon.stub(copilotGptManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error2"],
+          actionValidationResult: [
+            {
+              id: "fakeId",
+              filePath: "fakeFile",
+              validationResult: ["error3"],
+            },
+          ],
+        })
+      );
+      sinon.stub(copilotGptManifestUtils, "logValidationErrors").returns("errorMessage2");
+
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        showMessage: true,
+      };
+
+      mockedDriverContext.platform = Platform.VSCode;
+      mockedDriverContext.projectPath = "test";
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, AppStudioError.ValidationFailedError.name);
+      }
+    });
+
+    it("plugin manifest validation error", async () => {
+      const teamsManifest: TeamsAppManifest = new TeamsAppManifest();
+      teamsManifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+        plugins: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+      };
+
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(teamsManifest));
+      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+      sinon
+        .stub(pluginManifestUtils, "validateAgainstSchema")
+        .resolves(err(new SystemError("testError", "testError", "", "")));
+      sinon.stub(pluginManifestUtils, "logValidationErrors").returns("errorMessage1");
+
+      sinon.stub(copilotGptManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error2"],
+          actionValidationResult: [
+            {
+              id: "fakeId",
+              filePath: "fakeFile",
+              validationResult: ["error3"],
+            },
+          ],
+        })
+      );
+      sinon.stub(copilotGptManifestUtils, "logValidationErrors").returns("errorMessage2");
+
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        showMessage: true,
+      };
+
+      mockedDriverContext.platform = Platform.VSCode;
+      mockedDriverContext.projectPath = "test";
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, "testError");
+      }
+    });
+
+    it("declarative copilot manifest validation error", async () => {
+      const teamsManifest: TeamsAppManifest = new TeamsAppManifest();
+      teamsManifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+        plugins: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+      };
+
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(teamsManifest));
+      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+      sinon.stub(pluginManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error1"],
+        })
+      );
+      sinon.stub(pluginManifestUtils, "logValidationErrors").returns("errorMessage1");
+
+      sinon
+        .stub(copilotGptManifestUtils, "validateAgainstSchema")
+        .resolves(err(new SystemError("testError", "testError", "", "")));
+      sinon.stub(copilotGptManifestUtils, "logValidationErrors").returns("errorMessage2");
+
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        showMessage: true,
+      };
+
+      mockedDriverContext.platform = Platform.VSCode;
+      mockedDriverContext.projectPath = "test";
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, "testError");
+      }
+    });
   });
 });
 

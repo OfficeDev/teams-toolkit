@@ -477,7 +477,7 @@ async function selectQuickPickWithRegex(regex: RegExp): Promise<boolean> {
 }
 
 // Set folder path in the input box
-async function inputFolderPath(
+export async function inputFolderPath(
   driver: WebDriver,
   input: InputBox,
   folder: string
@@ -529,7 +529,7 @@ async function setInputTextWsl(
 export async function createNewProject(
   option: OptionType,
   appName: string,
-  lang?: "JavaScript" | "TypeScript",
+  lang?: "JavaScript" | "TypeScript" | "Python",
   testRootFolder?: string,
   appNameCopySuffix = "copy"
 ): Promise<void> {
@@ -1309,4 +1309,21 @@ export async function getOutputLogs(): Promise<string | undefined> {
     console.log("Can't get output log");
   }
   return;
+}
+
+export async function createEnvironmentWithPython() {
+  await execCommandIfExist("Python: Create Environment...", Timeout.webView);
+  const input = await InputBox.create();
+  const driver = VSBrowser.instance.driver;
+  await input.selectQuickPick("Venv");
+  await driver.sleep(Timeout.input);
+  await input.selectQuickPick("Python 3.11");
+  await driver.sleep(Timeout.input);
+  await driver.findElement(By.className("quick-input-check-all")).click();
+  await input.confirm();
+  await driver.sleep(Timeout.longTimeWait);
+  await getNotification(
+    "The following environment is selected",
+    Timeout.shortTimeWait
+  );
 }

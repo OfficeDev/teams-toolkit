@@ -22,7 +22,7 @@ import {
 } from "../../../src/component/configManager/interface";
 import { coordinator } from "../../../src/component/coordinator";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { createDriverContext } from "../../../src/component/utils";
+import { createDriverContext } from "../../../src/component/driver/util/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../../src/component/utils/pathUtils";

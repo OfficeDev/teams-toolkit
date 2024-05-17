@@ -4,18 +4,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import { assert } from "chai";
+import "mocha";
 import * as sinon from "sinon";
-
-import * as tools from "../../../../src/common/tools";
-import * as utils from "../../../../src/component/driver/script/scriptDriver";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
-import { TestLogProvider } from "../../util/logProviderMock";
-import { NpxBuildDriver } from "../../../../src/component/driver/script/npxBuildDriver";
-import { MockUserInteraction } from "../../../core/utils";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import chai from "chai";
+import * as tools from "../../../../src/common/utils";
+import { NpxBuildDriver } from "../../../../src/component/driver/script/npxBuildDriver";
+import * as utils from "../../../../src/component/driver/script/scriptDriver";
+import { MockUserInteraction } from "../../../core/utils";
+import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import { TestLogProvider } from "../../util/logProviderMock";
 
 describe("NPX Build Driver test", () => {
   const sandbox = sinon.createSandbox();

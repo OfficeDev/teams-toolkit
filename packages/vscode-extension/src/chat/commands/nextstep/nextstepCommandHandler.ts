@@ -112,7 +112,7 @@ export async function describeStep(
   telemetryMetadata: IChatTelemetryData
 ): Promise<string> {
   const messages = [
-    describeStepSystemPrompt,
+    describeStepSystemPrompt(),
     new LanguageModelChatMessage(
       LanguageModelChatMessageRole.User,
       `The content is '${JSON.stringify({

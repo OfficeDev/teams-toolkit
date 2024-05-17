@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, ManifestUtil } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
-import isUUID from "validator/lib/isUUID";
+import { FxError, ManifestUtil, Result, err, ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { merge } from "lodash";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
+import { Service } from "typedi";
+import isUUID from "validator/lib/isUUID";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { getAbsolutePath } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
+import { AppStudioScopes } from "./constants";
+import { AppStudioError } from "./errors";
+import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { AppStudioResultFactory } from "./results";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { AppStudioError } from "./errors";
-import { AppStudioScopes } from "../../../common/tools";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { Service } from "typedi";
-import { getAbsolutePath } from "../../utils/common";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 export const actionName = "teamsApp/update";
 

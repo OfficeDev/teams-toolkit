@@ -24,12 +24,12 @@ import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArg
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes, waitSeconds } from "../../../common/tools";
 import AdmZip from "adm-zip";
 import {
   Constants,
   getAppStudioEndpoint,
   CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS,
+  AppStudioScopes,
 } from "./constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
@@ -39,6 +39,7 @@ import {
 } from "./interfaces/AsyncAppValidationResponse";
 import { AsyncAppValidationResultsResponse } from "./interfaces/AsyncAppValidationResultsResponse";
 import { SummaryConstant } from "../../configManager/constant";
+import { waitSeconds } from "../../../common/utils";
 
 const actionName = "teamsApp/validateWithTestCases";
 

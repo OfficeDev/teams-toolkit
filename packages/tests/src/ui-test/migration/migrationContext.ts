@@ -69,18 +69,15 @@ export class MigrationTestContext extends TestContext {
   }
 
   public async createProjectCLI(V3: boolean): Promise<string> {
-    if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
-    } else {
-      process.env["TEAMSFX_V3"] = "false";
-    }
+    V3 ? CliHelper.setV3Enable() : CliHelper.setV2Enable();
     if (this.trigger) {
       await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
         this.lang,
-        `--bot-host-type-trigger ${this.trigger}`
+        `--bot-host-type-trigger ${this.trigger}`,
+        process.env
       );
     } else if (this.framework) {
       await CliHelper.createProjectWithCapabilityMigration(
@@ -88,14 +85,17 @@ export class MigrationTestContext extends TestContext {
         this.testRootFolder,
         this.testName,
         this.lang,
-        `--spfx-framework-type ${this.framework}`
+        `--spfx-framework-type ${this.framework}`,
+        process.env
       );
     } else {
       await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
-        this.lang
+        this.lang,
+        undefined,
+        process.env
       );
     }
     const projectPath = path.resolve(this.testRootFolder, this.appName);

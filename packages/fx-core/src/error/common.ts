@@ -514,3 +514,13 @@ const errnoCodes: Record<string, string> = {
   EWOULDBLOCK: "Operation would block",
   EXDEV: "Cross-device link",
 };
+
+export function isUserCancelError(error: Error): boolean {
+  const errorName = "name" in error ? (error as any)["name"] : "";
+  return (
+    errorName === "User Cancel" ||
+    errorName === "CancelProvision" ||
+    errorName === "UserCancel" ||
+    errorName === "UserCancelError"
+  );
+}

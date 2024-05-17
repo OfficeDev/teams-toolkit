@@ -13,12 +13,12 @@ import {
   downloadDirectory,
   fetchZipFromUrl,
   getSampleInfoFromName,
-  SampleUrlInfo,
   unzip,
   getTemplateLatestTag,
 } from "./utils";
 import semver from "semver";
 import templateConfig from "../../common/templates-config.json";
+import { SampleUrlInfo } from "../../common/samples";
 
 export interface GeneratorContext {
   name: string;

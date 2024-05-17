@@ -28,8 +28,9 @@ import {
   TemplateActionSeq,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
+import * as requestUtils from "../../../src/common/requestUtils";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { sampleProvider, SampleConfig } from "../../../src/common/samples";
+import { sampleProvider, SampleConfig, SampleUrlInfo } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import {
   commonTemplateName,
@@ -46,11 +47,12 @@ import {
 import { ActionContext } from "../../../src/component/middleware/actionExecutionMW";
 import * as featurefalgs from "../../../src/common/featureFlags";
 import { QuestionNames } from "../../../src/question";
-import { CapabilityOptions, ProgrammingLanguage } from "../../../src/question/create";
+import { CapabilityOptions, ProgrammingLanguage } from "../../../src/question";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { getTemplateReplaceMap } from "../../../src/component/generator/templates/templateReplaceMap";
+import { sendRequestWithRetry, sendRequestWithTimeout } from "../../../src/common/requestUtils";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -178,7 +180,7 @@ describe("Generator utils", () => {
       return { status: 400 } as AxiosResponse;
     };
     try {
-      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+      await sendRequestWithRetry(requestFn, 1);
     } catch (e) {
       assert.exists(e);
       return;
@@ -191,7 +193,7 @@ describe("Generator utils", () => {
       throw new Error("test");
     };
     try {
-      await generatorUtils.sendRequestWithRetry(requestFn, 1);
+      await sendRequestWithRetry(requestFn, 1);
     } catch (e) {
       assert.exists(e);
       return;
@@ -204,7 +206,7 @@ describe("Generator utils", () => {
       throw new Error("test");
     };
     try {
-      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 1);
+      await sendRequestWithTimeout(requestFn, 1000, 1);
     } catch (e) {
       assert.exists(e);
       return;
@@ -218,7 +220,7 @@ describe("Generator utils", () => {
     };
     sandbox.stub(axios, "isCancel").returns(true);
     try {
-      await generatorUtils.sendRequestWithTimeout(requestFn, 1000, 2);
+      await sendRequestWithTimeout(requestFn, 1000, 2);
     } catch (e) {
       assert.exists(e);
       return;
@@ -406,7 +408,7 @@ describe("Generator utils", () => {
   });
 
   it("convert sample info to url", async () => {
-    const sampleInfo: generatorUtils.SampleUrlInfo = {
+    const sampleInfo: SampleUrlInfo = {
       owner: "OfficeDev",
       repository: "TeamsFx-Samples",
       ref: "dev",
@@ -579,7 +581,7 @@ describe("Generator error", async () => {
     sandbox.stub(generatorUtils, "getSampleInfoFromName").resolves(mockedSampleInfo);
     sandbox.stub(generatorUtils, "downloadDirectory").resolves([] as string[]);
     sandbox
-      .stub(generatorUtils, "sendRequestWithTimeout")
+      .stub(requestUtils, "sendRequestWithTimeout")
       .resolves({ data: sampleConfigV3 } as AxiosResponse);
 
     const result = await Generator.generateSample(ctx, tmpDir, "test");

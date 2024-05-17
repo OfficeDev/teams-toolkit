@@ -19,6 +19,9 @@ export enum TelemetryPropertyKey {
   validationWarnings = "validation-warnings",
   OverwriteIfAppAlreadyExists = "overwrite-if-app-already-exists",
   region = "region",
+  pluginValidationErrors = "plugin-validation-errors",
+  gptValidationErrors = "gpt-validation-errors",
+  gptActionValidationErrors = "gpt-action-validation-errors",
 }
 
 export enum TelemetryPropertyValue {

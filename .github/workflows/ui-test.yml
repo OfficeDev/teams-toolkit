@@ -245,6 +245,11 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Install function core tool (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -444,6 +449,11 @@ jobs:
         working-directory: packages/tests
         run: |
           npm run build
+
+      - name: Install python extension
+        working-directory: packages/tests
+        run: |
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-python.python
 
       - name: Install docker extension
         if: contains(matrix.test-case,  'docker')

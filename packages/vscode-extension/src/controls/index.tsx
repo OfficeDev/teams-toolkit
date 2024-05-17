@@ -38,6 +38,7 @@ function App(props: any) {
   } else if (panelType === PanelType.RestifyServerNotificationBotReadme) {
     initialIndex = 5;
   }
+
   return (
     <MemoryRouter
       initialEntries={[
@@ -50,7 +51,10 @@ function App(props: any) {
       ]}
       initialIndex={initialIndex}
     >
-      <Route path="/sample-gallery" component={SampleGallery} />
+      <Route
+        path="/sample-gallery"
+        render={() => <SampleGallery shouldShowChat={shouldShowChat} />}
+      />
       <Route path="/survey" component={Survey} />
       <Route path="/respond-to-card-actions" component={WorkflowBot} />
       <Route path="/account-help" component={AccountHelp} />

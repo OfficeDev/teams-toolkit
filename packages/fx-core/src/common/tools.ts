@@ -232,6 +232,7 @@ export function getAllowedAppMaps(): Record<string, string> {
     [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
     [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
     [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+    [OutlookClientId.Mobile]: getLocalizedString("core.common.OutlookMobileClientName"),
   };
 }
 

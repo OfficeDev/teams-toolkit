@@ -1008,10 +1008,6 @@ describe("formatValidationErrors", () => {
         content: "ResolverError: Error downloading",
       },
       {
-        type: ErrorType.SpecNotValid,
-        content: "RangeError: Maximum call stack size exceeded",
-      },
-      {
         type: ErrorType.RemoteRefNotSupported,
         content: "test",
       },
@@ -1060,6 +1056,7 @@ describe("formatValidationErrors", () => {
               ErrorType.ExceededRequiredParamsLimit,
               ErrorType.NoParameter,
               ErrorType.NoAPIInfo,
+              ErrorType.CircularReferenceNotSupported,
             ],
           },
           { api: "GET /api3", reason: ["unknown"] },
@@ -1099,16 +1096,13 @@ describe("formatValidationErrors", () => {
 
     expect(res[0].content).equals("test");
     expect(res[1].content).includes(getLocalizedString("core.common.ErrorFetchApiSpec"));
-    expect(res[2].content).includes(
-      getLocalizedString("core.common.CircularReferenceNotSupported")
-    );
-    expect(res[3].content).equals("test");
-    expect(res[4].content).equals(getLocalizedString("core.common.NoServerInformation"));
-    expect(res[5].content).equals(
+    expect(res[2].content).equals("test");
+    expect(res[3].content).equals(getLocalizedString("core.common.NoServerInformation"));
+    expect(res[4].content).equals(
       getLocalizedString("core.common.UrlProtocolNotSupported", "http")
     );
-    expect(res[6].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
-    expect(res[7].content).equals(
+    expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
+    expect(res[6].content).equals(
       getLocalizedString(
         "core.common.NoSupportedApi",
         getLocalizedString("core.common.invalidReason.NoAPIs")
@@ -1133,9 +1127,10 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
       getLocalizedString("core.common.invalidReason.NoParameter"),
       getLocalizedString("core.common.invalidReason.NoAPIInfo"),
+      getLocalizedString("core.common.invalidReason.CircularReference"),
     ];
 
-    expect(res[8].content).equals(
+    expect(res[7].content).equals(
       getLocalizedString(
         "core.common.NoSupportedApi",
         "GET /api: " +
@@ -1147,14 +1142,14 @@ describe("formatValidationErrors", () => {
           "GET /api3: unknown"
       )
     );
-    expect(res[9].content).equals(getLocalizedString("error.apime.noExtraAPICanBeAdded"));
-    expect(res[10].content).equals("resolveurl");
-    expect(res[11].content).equals(getLocalizedString("core.common.CancelledMessage"));
-    expect(res[12].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[13].content).equals(
-      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[13].data)
+    expect(res[8].content).equals(getLocalizedString("error.apime.noExtraAPICanBeAdded"));
+    expect(res[9].content).equals("resolveurl");
+    expect(res[10].content).equals(getLocalizedString("core.common.CancelledMessage"));
+    expect(res[11].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
+    expect(res[12].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
     );
-    expect(res[14].content).equals("unknown");
+    expect(res[13].content).equals("unknown");
   });
 
   it("format validation errors from spec parser: copilot", () => {
@@ -1241,12 +1236,14 @@ describe("formatValidationErrors", () => {
 describe("listPluginExistingOperations", () => {
   const teamsManifestWithPlugin: TeamsAppManifest = {
     ...teamsManifest,
-    plugins: [
-      {
-        file: "resources/plugin.json",
-        id: "plugin1",
-      },
-    ],
+    copilotExtensions: {
+      plugins: [
+        {
+          file: "resources/plugin.json",
+          id: "plugin1",
+        },
+      ],
+    },
   };
 
   const sandbox = sinon.createSandbox();

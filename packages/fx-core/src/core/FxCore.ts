@@ -1536,15 +1536,19 @@ export class FxCore {
     }
 
     const teamsManifest = manifestRes.value;
-    if (!teamsManifest.copilotGpts?.[0].file) {
+    const declarativeGpt = teamsManifest.copilotExtensions?.declarativeCopilots?.[0];
+    if (!declarativeGpt?.file) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppRequiredPropertyMissingError.name,
-          AppStudioError.TeamsAppRequiredPropertyMissingError.message("copilotGpts", manifestPath)
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "declarativeCopilots",
+            manifestPath
+          )
         )
       );
     }
-    const gptManifestFilePath = path.join(appPackageFolder, teamsManifest.copilotGpts[0].file);
+    const gptManifestFilePath = path.join(appPackageFolder, declarativeGpt.file);
     const gptManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
       gptManifestFilePath
     );
@@ -1586,16 +1590,19 @@ export class FxCore {
     const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
     const openApiSpecFileType = openApiSpecFileName.split(".")[1];
     let apiSpecFileNameSuffix = 1;
+    openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+
     while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
-      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix++}.${openApiSpecFileType}`;
+      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${++apiSpecFileNameSuffix}.${openApiSpecFileType}`;
     }
     const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
 
     let pluginManifestName = defaultPluginManifestFileName;
     const pluginManifestNamePrefix = defaultPluginManifestFileName.split(".")[0];
     let pluginFileNameSuffix = 1;
+    pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
     while (await fs.pathExists(path.join(appPackageFolder, pluginManifestName))) {
-      pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix++}.json`;
+      pluginManifestName = `${pluginManifestNamePrefix}_${++pluginFileNameSuffix}.json`;
     }
     const pluginManifestFilePath = path.join(appPackageFolder, pluginManifestName);
 
@@ -1638,11 +1645,15 @@ export class FxCore {
 
     // update Teams manifest
     if (needAddCopilotPlugin) {
-      teamsManifest.plugins = teamsManifest.plugins || [];
-      teamsManifest.plugins.push({
+      const plugins = teamsManifest.copilotExtensions?.plugins || [];
+      plugins.push({
         id: "plugin_1", // Teams manifest can have only one plugin.
         file: pluginManifestName,
       });
+      teamsManifest.copilotExtensions = {
+        ...teamsManifest.copilotExtensions,
+        plugins,
+      };
       const updateManifestRes = await manifestUtils._writeAppManifest(teamsManifest, manifestPath);
       if (updateManifestRes.isErr()) {
         return err(updateManifestRes.error);

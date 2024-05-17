@@ -51,6 +51,7 @@ import { WrapDriverContext } from "../../util/wrapUtil";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "../../../../core/globalVars";
 import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
+import { getResolvedManifest } from "./utils";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -274,7 +275,7 @@ export class ManifestUtils {
     manifest: TeamsAppManifest,
     manifestPath: string
   ): Promise<Result<string, FxError>> {
-    const pluginFile = manifest.plugins?.[0]?.file;
+    const pluginFile = manifest.copilotExtensions?.plugins?.[0]?.file;
     if (pluginFile) {
       const plugin = path.resolve(path.dirname(manifestPath), pluginFile);
       const doesFileExist = await fs.pathExists(plugin);
@@ -314,22 +315,17 @@ export class ManifestUtils {
     const manifestTemplateString = JSON.stringify(manifest);
 
     // Add environment variable keys to telemetry
-    const customizedKeys = getEnvironmentVariables(manifestTemplateString);
-    const telemetryProps: { [key: string]: string } = {};
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = customizedKeys.join(";");
-    if (context) {
-      context.addTelemetryProperties(telemetryProps);
+    const resolvedManifestRes = getResolvedManifest(
+      manifestTemplateString,
+      manifestTemplatePath,
+      TelemetryPropertyKey.customizedKeys,
+      context
+    );
+
+    if (resolvedManifestRes.isErr()) {
+      return err(resolvedManifestRes.error);
     }
-
-    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
-
-    const tokens = getEnvironmentVariables(resolvedManifestString);
-    if (tokens.length > 0) {
-      return err(
-        new MissingEnvironmentVariablesError("teamsApp", tokens.join(","), manifestTemplatePath)
-      );
-    }
-
+    const resolvedManifestString = resolvedManifestRes.value;
     manifest = JSON.parse(resolvedManifestString);
 
     if (generateIdIfNotResolved) {

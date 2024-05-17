@@ -13,6 +13,7 @@ param botAadAppClientSecret string
 @secure()
 @description('Required in your bot project to access OpenAI service. You can get it from OpenAI > API > API Key')
 param openaiKey string
+param assistantId string
 
 param webAppSKU string
 param linuxFxVersion string
@@ -69,6 +70,10 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'OPENAI_API_KEY'
           value: openaiKey
+        },
+        {
+          name: 'OPENAI_ASSISTANT_ID'
+          value: assistantId
         }
       ]
       ftpsState: 'FtpsOnly'

@@ -14,6 +14,9 @@
     "openaiKey": {
       "value": "${{SECRET_OPENAI_API_KEY}}"
     },
+    "assistantId": {
+      "value": "${{OPENAI_ASSISTANT_ID}}"
+    },
     "webAppSKU": {
       "value": "B1"
     },

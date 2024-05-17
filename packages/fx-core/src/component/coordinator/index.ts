@@ -183,6 +183,9 @@ class Coordinator {
         }
         const res = await generator.run(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+        else {
+          warnings = res.value.warnings;
+        }
       } else {
         // legacy logic
         if (capability === CapabilityOptions.SPFxTab().id) {

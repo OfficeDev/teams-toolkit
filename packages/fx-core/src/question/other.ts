@@ -946,23 +946,22 @@ export function resourceGroupQuestionNode(
 }
 
 export class PluginAvailabilityOptions {
-  // TODO: localize the label
   static action(): OptionItem {
     return {
       id: "action",
-      label: "Declarative Copilot",
+      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
     };
   }
   static copilotPlugin(): OptionItem {
     return {
       id: "copilot-plugin",
-      label: "Copilot for Microsoft 365",
+      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
     };
   }
   static copilotPluginAndAction(): OptionItem {
     return {
       id: "copilot-plugin-and-action",
-      label: "Both declarative Copilot and Copilot for Microsoft 365",
+      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
     };
   }
 
@@ -978,7 +977,7 @@ export class PluginAvailabilityOptions {
 export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.PluginAvailability,
-    title: "Select Plugin Availability",
+    title: getLocalizedString("core.question.pluginAvailability.title"),
     cliDescription: "Select plugin availability.",
     type: "singleSelect",
     staticOptions: PluginAvailabilityOptions.all(),
@@ -994,7 +993,7 @@ export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
         throw AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppRequiredPropertyMissingError.name,
           AppStudioError.TeamsAppRequiredPropertyMissingError.message(
-            "copilotGpts",
+            "declarativeCopilots",
             teamsManifestPath
           )
         );
@@ -1048,13 +1047,11 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          const pattern = /^(\w){10,128}/g;
-          const match = pattern.test(input);
+          if (input.length < 10 || input.length > 128) {
+            return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          }
 
-          const result = match
-            ? undefined
-            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-          return result;
+          return undefined;
         },
       },
       additionalValidationOnAccept: {
@@ -1155,13 +1152,11 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): string | undefined => {
-        const pattern = /^(\w){10,128}/g;
-        const match = pattern.test(input);
+        if (input.length < 10 || input.length > 128) {
+          return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+        }
 
-        const result = match
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-        return result;
+        return undefined;
       },
     },
     additionalValidationOnAccept: {

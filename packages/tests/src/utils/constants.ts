@@ -58,6 +58,7 @@ export enum TemplateProject {
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
   LargeScaleBot = "Large Scale Notification Bot",
   BotSSODocker = "Containerized Bot App with SSO Enabled",
+  HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
 }
 
 export enum TemplateProjectFolder {
@@ -91,6 +92,7 @@ export enum TemplateProjectFolder {
   RetailDashboard = "react-retail-dashboard",
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
+  HelloWorldTabDocker = "hello-world-tab-docker",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -130,6 +132,8 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
     [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
     [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
+    [TemplateProject.HelloWorldTabDocker]:
+      TemplateProjectFolder.HelloWorldTabDocker,
   };
 
 export enum Resource {
@@ -383,6 +387,7 @@ export enum LocalDebugTaskLabel {
   Compile = "Compile typescript",
   StartWebServer = "Start web server",
   DockerRun = "docker-run: debug",
+  DockerTask = "docker",
 }
 
 export class LocalDebugTaskResult {
@@ -397,11 +402,12 @@ export class LocalDebugTaskResult {
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
-  static readonly DockerRunFinish = "press any key to close it";
+  static readonly DockerFinish = "press any key to close it";
 }
 
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
+  PythonDebugConsole = "Python Debug Console",
 }
 
 export enum LocalDebugError {

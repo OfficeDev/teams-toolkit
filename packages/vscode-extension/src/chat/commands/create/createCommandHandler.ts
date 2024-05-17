@@ -6,7 +6,8 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 
 import * as util from "util";
@@ -73,7 +74,8 @@ export default async function createCommandHandler(
     const firstMatch = matchedResult[0];
     const describeProjectChatMessages = [
       describeProjectSystemPrompt,
-      new LanguageModelChatUserMessage(
+      new LanguageModelChatMessage(
+        LanguageModelChatMessageRole.User,
         `The project you are looking for is '${JSON.stringify({
           name: firstMatch.name,
           description: firstMatch.description,
@@ -129,7 +131,8 @@ export default async function createCommandHandler(
 
       const brieflyDescribeProjectChatMessages = [
         brieflyDescribeProjectSystemPrompt,
-        new LanguageModelChatUserMessage(
+        new LanguageModelChatMessage(
+          LanguageModelChatMessageRole.User,
           `The project you are looking for is '${JSON.stringify(project)}'.`
         ),
       ];

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ChatResponseStream, LanguageModelChatUserMessage, CancellationToken } from "vscode";
+import { ChatResponseStream, LanguageModelChatMessage, CancellationToken } from "vscode";
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
@@ -29,7 +29,7 @@ export class projectCreator implements ISkill {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec

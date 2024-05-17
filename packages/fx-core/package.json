@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -67,6 +67,7 @@
     "test:stringUtils": "nyc mocha \"tests/common/stringUtils.test.ts\"",
     "test:generatorUtils": "nyc mocha \"tests/component/generatorUtils.test.ts\"",
     "test:spfxGenerator": "nyc mocha \"tests/component/generator/spfxGenerator.test.ts\"",
+    "test:copilotGenerator": "nyc mocha \"tests/component/generator/copilotGenerator.test.ts\"",
     "clean": "rm -rf build",
     "prebuild": "npm run gen:cli",
     "build": "rimraf build && npx tsc -p ./",

@@ -3248,7 +3248,10 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 2);
             const title =
               typeof question.title === "function" ? await question.title(inputs) : question.title;
-            assert.equal(title, "Choose Declarative Copilot type");
+            assert.equal(
+              title,
+              getLocalizedString("core.createProjectQuestion.declarativeCopilotType.title")
+            );
             return ok({ type: "success", result: CapabilityOptions.customizeGptBasic().id });
           } else if (question.name === QuestionNames.AppName) {
             return ok({ type: "success", result: "test001" });

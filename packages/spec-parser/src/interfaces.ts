@@ -97,6 +97,7 @@ export enum ErrorType {
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",
   SpecVersionNotSupported = "spec-version-not-supported",
+  CircularReferenceNotSupported = "circular-reference-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",

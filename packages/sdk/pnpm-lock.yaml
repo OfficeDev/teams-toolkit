@@ -58,9 +58,6 @@ devDependencies:
   '@istanbuljs/nyc-config-typescript':
     specifier: ^1.0.1
     version: 1.0.1(nyc@15.1.0)(source-map-support@0.5.21)(ts-node@10.4.0)
-  '@microsoft/api-documenter':
-    specifier: ^7.14.1
-    version: 7.15.3
   '@microsoft/api-extractor':
     specifier: ^7.19.4
     version: 7.19.4
@@ -158,8 +155,8 @@ devDependencies:
     specifier: ^4.0.0
     version: 4.0.0(eslint@8.1.0)(prettier@2.4.1)
   get-func-name:
-    specifier: ^2.0.0
-    version: 2.0.0
+    specifier: ^3.0.0
+    version: 3.0.0
   got:
     specifier: ^11.8.5
     version: 11.8.5
@@ -837,19 +834,6 @@ packages:
   /@js-joda/core@4.3.1:
     resolution: {integrity: sha512-oeaetlodcqVsiZDxnEcqsbs+sXBkASxua0mXs5OXuPQXz3/wdPTMlxwfQ4z2HKcOik3S9voW3QJkp/KLWDhvRQ==}
     dev: false
-
-  /@microsoft/api-documenter@7.15.3:
-    resolution: {integrity: sha512-tehv1f/aKwGBQp0sheQofz5NQfa61mvTdAe4IHQnVavsyyK71r+P+CVXWewznPYkqFzzVXaTdrCuNGPU5Yd3mg==}
-    hasBin: true
-    dependencies:
-      '@microsoft/api-extractor-model': 7.15.3
-      '@microsoft/tsdoc': 0.13.2
-      '@rushstack/node-core-library': 3.45.0
-      '@rushstack/ts-command-line': 4.10.6
-      colors: 1.2.5
-      js-yaml: 3.13.1
-      resolve: 1.17.0
-    dev: true
 
   /@microsoft/api-extractor-model@7.15.3:
     resolution: {integrity: sha512-NkSjolmSI7NGvbdz0Y7kjQfdpD+j9E5CwXTxEyjDqxd10MI7GXV8DnAsQ57GFJcgHKgTjf2aUnYfMJ9w3aMicw==}
@@ -2200,7 +2184,7 @@ packages:
       assertion-error: 1.1.0
       check-error: 1.0.3
       deep-eql: 3.0.1
-      get-func-name: 2.0.0
+      get-func-name: 2.0.2
       pathval: 1.1.1
       type-detect: 4.0.8
     dev: true
@@ -3462,12 +3446,13 @@ packages:
     engines: {node: 6.* || 8.* || >= 10.*}
     dev: true
 
-  /get-func-name@2.0.0:
-    resolution: {integrity: sha512-Hm0ixYtaSZ/V7C8FJrtZIuBBI+iSgL+1Aq82zSu8VQNB4S3Gk8e7Qs3VwBDJAhmRZcFqkl3tQu36g/Foh5I5ig==}
-    dev: true
-
   /get-func-name@2.0.2:
     resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
+    dev: true
+
+  /get-func-name@3.0.0:
+    resolution: {integrity: sha512-6lB4zp64YzgT5KVoAuY0vBXQXNObRmelzfVCpx2dHkGVskX8WwjxTVd/kGUsVzxuOpSEF9BcD54ChSKMVjSsfQ==}
+    engines: {node: '>= 12'}
     dev: true
 
   /get-intrinsic@1.2.2:
@@ -4252,14 +4237,6 @@ packages:
 
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
-    dev: true
-
-  /js-yaml@3.13.1:
-    resolution: {integrity: sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==}
-    hasBin: true
-    dependencies:
-      argparse: 1.0.10
-      esprima: 4.0.1
     dev: true
 
   /js-yaml@3.14.1:

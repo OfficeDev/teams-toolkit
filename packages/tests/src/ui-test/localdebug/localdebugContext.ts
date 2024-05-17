@@ -9,6 +9,7 @@ import { stopDebugging } from "../../utils/vscodeOperation";
 import { TestContext } from "../testContext";
 import { dotenvUtil } from "../../utils/envUtil";
 import { TestFilePath } from "../../utils/constants";
+import { VSBrowser } from "vscode-extension-tester";
 
 export type LocalDebugTestName =
   | "tab"
@@ -36,12 +37,12 @@ export type LocalDebugTestName =
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
-  public lang: "javascript" | "typescript" = "javascript";
+  public lang: "javascript" | "typescript" | "python" = "javascript";
   needMigrate: boolean | undefined;
 
   constructor(
     testName: LocalDebugTestName,
-    lang: "javascript" | "typescript" = "javascript",
+    lang: "javascript" | "typescript" | "python" = "javascript",
     needMigrate?: boolean
   ) {
     super(testName);
@@ -53,7 +54,8 @@ export class LocalDebugTestContext extends TestContext {
   public async before() {
     await super.before();
     await this.createProject();
-    await this.disableDebugConsole();
+    await VSBrowser.instance.driver.sleep(30000);
+    // await this.disableDebugConsole();
     const testFolder = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(testFolder);
   }

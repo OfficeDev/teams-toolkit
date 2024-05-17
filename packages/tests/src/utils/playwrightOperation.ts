@@ -104,6 +104,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.BotSSODocker]: async () => {
     await startDebugging("Debug in Docker (Chrome)");
   },
+  [TemplateProject.HelloWorldTabDocker]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
 };
 
 export async function initPage(

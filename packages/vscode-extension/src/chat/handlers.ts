@@ -7,7 +7,8 @@ import {
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
   ProviderResult,
   Uri,
   commands,
@@ -64,7 +65,16 @@ async function defaultHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+  if (!request.prompt) {
+    throw new Error(`
+Please specify a question when using this command.
+
+Usage: @teams Ask questions about Teams Development"`);
+  }
+  const messages = [
+    defaultSystemPrompt(),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+  ];
   chatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 

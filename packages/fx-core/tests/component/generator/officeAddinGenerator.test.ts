@@ -1041,4 +1041,30 @@ describe("OfficeAddinGeneratorNew", () => {
       }
     });
   });
+
+  describe("post()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it(`happy`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it(`fail`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(err(new UserCancelError()));
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isErr());
+    });
+  });
 });

@@ -733,6 +733,8 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
       return getLocalizedString("core.common.invalidReason.MethodNotAllowed");
     case ErrorType.UrlPathNotExist:
       return getLocalizedString("core.common.invalidReason.UrlPathNotExist");
+    case ErrorType.CircularReferenceNotSupported:
+      return getLocalizedString("core.common.invalidReason.CircularReference");
     default:
       return reason.toString();
   }

@@ -31,7 +31,7 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 {{#useAzureOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>`, and deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`.
 {{/useAzureOpenAI}}
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 1. You can send any message to get a response from the bot.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:

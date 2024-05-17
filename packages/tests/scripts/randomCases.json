@@ -174,8 +174,7 @@
             "sample-localdebug-bot-sso-docker",
             "sample-remotedebug-bot-sso-docker",
             "sample-localdebug-hello-world-tab-docker",
-            "sample-remotedebug-hello-world-tab-docker",
-            "treeview-collaboration-win-only"
+            "sample-remotedebug-hello-world-tab-docker"
         ]
     }
 ]

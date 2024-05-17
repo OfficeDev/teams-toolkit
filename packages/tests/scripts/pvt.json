@@ -20,6 +20,7 @@
     "node-18": [
       "treeview-newproject-outlook-add-in",
       "treeview-newproject-tab",
+      "treeview-collaboration-win-only",
       "remotedebug-bot-ts-win-only",
       "remotedebug-bot-win-only",
       "remotedebug-command-and-response-ts-win-only",

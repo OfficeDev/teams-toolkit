@@ -241,7 +241,6 @@ export async function listOperations(
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
       let existingOperations: string[] = [];
       if (manifest.isOk()) {
-        const operationIds = operations.map((operation) => operation.api);
         let isOriginalSpec;
 
         if (isPlugin) {
@@ -250,8 +249,10 @@ export async function listOperations(
             teamsManifestPath,
             inputs[QuestionNames.DestinationApiSpecFilePath]
           );
+
+          const operationAPIs = operations.map((operation) => operation.api);
           isOriginalSpec = existingOperations.every((operation) =>
-            operationIds.includes(operation)
+            operationAPIs.includes(operation)
           );
         } else {
           const existingOperationIds = manifestUtils.getOperationIds(manifest.value);

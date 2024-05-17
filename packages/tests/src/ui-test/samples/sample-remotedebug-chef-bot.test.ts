@@ -25,10 +25,13 @@ class ChefBotTestCase extends CaseFactory {
     const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      ".env.dev.user"
+      ".env.dev"
     );
     // create .env.local.user file
-    fs.writeFileSync(envFile, "SECRET_OPENAI_KEY=yourapikey");
+    fs.writeFileSync(
+      envFile,
+      "SECRET_OPENAI_KEY=sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    );
     console.log(`add SECRET_OPENAI_KEY=yourapikey to .env file`);
     // await sampledebugContext.prepareDebug("yarn");
   }

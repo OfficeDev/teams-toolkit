@@ -241,17 +241,41 @@ export async function listOperations(
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
       let existingOperations: string[] = [];
       if (manifest.isOk()) {
+        let isOriginalSpec;
+
         if (isPlugin) {
           existingOperations = await listPluginExistingOperations(
             manifest.value,
             teamsManifestPath,
             inputs[QuestionNames.DestinationApiSpecFilePath]
           );
+
+          const operationAPIs = operations.map((operation) => operation.api);
+          isOriginalSpec = existingOperations.every((operation) =>
+            operationAPIs.includes(operation)
+          );
         } else {
           const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
           existingOperations = operations
             .filter((operation) => existingOperationIds.includes(operation.operationId))
             .map((operation) => operation.api);
+
+          isOriginalSpec = existingOperations.length === existingOperationIds.length;
+        }
+
+        if (!isOriginalSpec) {
+          const errors = formatValidationErrors(
+            [
+              {
+                type: ApiSpecErrorType.AddedAPINotInOriginalSpec,
+                content: "",
+              },
+            ],
+            inputs
+          );
+
+          logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
+          return err(errors);
         }
 
         operations = operations.filter(
@@ -791,6 +815,8 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
         return getLocalizedString("core.common.SwaggerNotSupported");
       case ErrorType.SpecVersionNotSupported:
         return getLocalizedString("core.common.SpecVersionNotSupported", error.data);
+      case ErrorType.AddedAPINotInOriginalSpec:
+        return getLocalizedString("core.common.AddedAPINotInOriginalSpec");
 
       default:
         return error.content;

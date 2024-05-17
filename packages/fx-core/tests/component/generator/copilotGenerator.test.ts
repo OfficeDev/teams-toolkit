@@ -1087,6 +1087,10 @@ describe("formatValidationErrors", () => {
         type: ErrorType.Unknown,
         content: "unknown",
       },
+      {
+        type: ErrorType.AddedAPINotInOriginalSpec,
+        content: "test",
+      },
     ];
 
     const res = formatValidationErrors(errors, {
@@ -1150,6 +1154,7 @@ describe("formatValidationErrors", () => {
       format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
     );
     expect(res[13].content).equals("unknown");
+    expect(res[14].content).equals(getLocalizedString("core.common.AddedAPINotInOriginalSpec"));
   });
 
   it("format validation errors from spec parser: copilot", () => {
@@ -1720,10 +1725,6 @@ describe("updateForCustomApi", async () => {
 describe("listOperations", async () => {
   const context = createContextV3();
   const sandbox = sinon.createSandbox();
-  const inputs = {
-    "custom-copilot-rag": "custom-copilot-rag-customApi",
-    platform: Platform.VSCode,
-  };
   const spec = {
     openapi: "3.0.0",
     info: {
@@ -1800,6 +1801,10 @@ describe("listOperations", async () => {
   });
 
   it("allow auth for teams ai project", async () => {
+    const inputs = {
+      "custom-copilot-rag": "custom-copilot-rag-customApi",
+      platform: Platform.VSCode,
+    };
     sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
     sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -1821,6 +1826,51 @@ describe("listOperations", async () => {
       ""
     );
     expect(res.isOk()).to.be.true;
+  });
+
+  it("should throw error if list api not from original OpenAPI spec", async () => {
+    const inputs = {
+      platform: Platform.VSCode,
+      "manifest-path": "fake-path",
+    };
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+    sandbox.stub(manifestUtils, "getOperationIds").returns(["getHello"]);
+    sandbox.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves(["getHello"]);
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "GET /api",
+          server: "https://test",
+          operationId: "getApi",
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 0,
+    });
+
+    const res = await CopilotPluginHelper.listOperations(
+      context,
+      undefined,
+      "",
+      inputs,
+      false,
+      false,
+      ""
+    );
+    expect(res.isErr()).to.be.true;
+    if (res.isErr()) {
+      expect(res.error.length).to.be.equal(1);
+      expect(res.error[0].type).to.be.equal(ErrorType.AddedAPINotInOriginalSpec);
+    }
   });
 });
 

@@ -533,6 +533,7 @@
   "core.common.CancelledMessage": "Operation is canceled.",
   "core.common.SwaggerNotSupported": "Swagger 2.0 is not supported. Convert it to OpenAPI 3.0 first.",
   "core.common.SpecVersionNotSupported": "OpenAPI version %s is not supported. Use version 3.0.x.",
+  "core.common.AddedAPINotInOriginalSpec": "APIs added to the project need to originate from the original OpenAPI description document.",
   "core.common.NoServerInformation": "No server information is found in the OpenAPI description document.",
   "core.common.RemoteRefNotSupported": "Remote reference is not supported: %s.",
   "core.common.MissingOperationId": "Missing operationIds: %s.",

@@ -612,6 +612,105 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return a valid result if one api contains circular reference", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "Pet Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        components: {
+          schemas: {
+            Circular: {
+              type: "object",
+              properties: {
+                item: {
+                  $ref: "#/components/schemas/Circular",
+                },
+              },
+            },
+            Pet: {
+              type: "object",
+              properties: {
+                item: {
+                  type: "string",
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "getPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              tags: ["pet"],
+              operationId: "postPet",
+              summary: "Post pet information from the store",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Circular",
+                    },
+                  },
+                },
+              },
+              responses: {
+                "200": {
+                  description: "postPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(spec as any, { projectType: ProjectType.Copilot });
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+    });
+
     it("should only create validator once if already created", async () => {
       const specPath = "path/to/spec";
       const spec = {

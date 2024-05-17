@@ -1590,16 +1590,19 @@ export class FxCore {
     const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
     const openApiSpecFileType = openApiSpecFileName.split(".")[1];
     let apiSpecFileNameSuffix = 1;
+    openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+
     while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
-      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix++}.${openApiSpecFileType}`;
+      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${++apiSpecFileNameSuffix}.${openApiSpecFileType}`;
     }
     const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
 
     let pluginManifestName = defaultPluginManifestFileName;
     const pluginManifestNamePrefix = defaultPluginManifestFileName.split(".")[0];
     let pluginFileNameSuffix = 1;
+    pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
     while (await fs.pathExists(path.join(appPackageFolder, pluginManifestName))) {
-      pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix++}.json`;
+      pluginManifestName = `${pluginManifestNamePrefix}_${++pluginFileNameSuffix}.json`;
     }
     const pluginManifestFilePath = path.join(appPackageFolder, pluginManifestName);
 

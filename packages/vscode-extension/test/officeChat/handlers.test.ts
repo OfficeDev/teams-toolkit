@@ -41,7 +41,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: OfficeChatCommand.Create,
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -60,7 +60,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: OfficeChatCommand.GenerateCode,
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -79,7 +79,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: OfficeChatCommand.NextStep,
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -101,7 +101,7 @@ describe("File: officeChat/handlers.ts", () => {
       const request: vscode.ChatRequest = {
         prompt: "test",
         command: "",
-        variables: [],
+        references: [],
         location: vscode.ChatLocation.Panel,
         attempt: 0,
         enableCommandDetection: false,
@@ -126,6 +126,41 @@ describe("File: officeChat/handlers.ts", () => {
         token
       );
       chai.expect(verbatimCopilotInteractionStub.calledOnce);
+    });
+
+    it("call officeDefaultHandler - error", async () => {
+      const request: vscode.ChatRequest = {
+        prompt: "",
+        command: "",
+        references: [],
+        location: vscode.ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
+      };
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(officeChatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      officeChatTelemetryDataMock.chatMessages = [];
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(officeChatTelemetryDataMock);
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(util, "verbatimCopilotInteraction");
+      await chai.expect(
+        handler.officeChatRequestHandler(
+          request,
+          {} as unknown as vscode.ChatContext,
+          response as unknown as vscode.ChatResponseStream,
+          token
+        )
+      ).is.rejectedWith(`
+Please specify a question when using this command.
+
+Usage: @office Ask questions about Office Add-ins development.`);
     });
   });
 

@@ -25,7 +25,7 @@ class ChefBotTestCase extends CaseFactory {
     const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      ".env.dev.user"
+      ".env.dev"
     );
     // create .env.local.user file
     fs.writeFileSync(

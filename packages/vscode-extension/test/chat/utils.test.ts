@@ -30,7 +30,7 @@ describe("chat utils", () => {
       const token = new CancellationToken();
       const chatModel: vscode.LanguageModelChat = {
         sendRequest: sandbox.stub().resolves({
-          stream: asyncIterator,
+          text: asyncIterator,
         }),
         id: "",
         vendor: "",
@@ -77,7 +77,7 @@ describe("chat utils", () => {
       const token = new CancellationToken();
       const chatModel: vscode.LanguageModelChat = {
         sendRequest: sandbox.stub().resolves({
-          stream: asyncIterator,
+          text: asyncIterator,
         }),
         id: "",
         vendor: "",

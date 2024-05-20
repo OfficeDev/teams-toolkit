@@ -6,6 +6,9 @@ This app template also demonstrates usage of techniques like:
 - [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search)
 - [Teams AI Library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview)
 
+> In this template, we upload raw text data to Azure AI Search. Azure AI Search also allows you to create vectorized data and do vector similarity search.
+  You can refer to the doc [Build-a-RAG-Bot-in-Teams](https://github.com/OfficeDev/TeamsFx/wiki/Build-a-RAG-Bot-in-Teams#integrate-vectorization) or the demo [integrated-vectorization](https://github.com/Azure/azure-search-vector-samples/tree/main/demo-python/code/integrated-vectorization) for more details.
+
 ## Get started with the template
 
 > **Prerequisites**

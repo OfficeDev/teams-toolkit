@@ -311,7 +311,6 @@ describe("copilotGptManifestUtils", () => {
         "pluginPath"
       ) as string;
 
-      console.log(res);
       chai.assert.isFalse(res.includes("errorActions2"));
       chai.assert.isTrue(res.includes("errorAction1"));
     });
@@ -369,8 +368,7 @@ describe("copilotGptManifestUtils", () => {
         Platform.CLI,
         ""
       ) as Array<{ content: string; color: Colors }>;
-      console.log(res);
-      chai.assert.isTrue(res.find((item) => item.content.includes("error1Action2")) !== undefined);
+      chai.assert.isTrue(res.find((item) => item.content.includes("errorAction2")) !== undefined);
       chai.assert.isTrue(res.find((item) => item.content.includes("errorAction1")) !== undefined);
     });
   });

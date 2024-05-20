@@ -125,6 +125,7 @@ export const capabilitiesHavePythonOption = [
   "custom-copilot-rag-azureAISearch",
   "custom-copilot-rag-customize",
   "custom-copilot-agent-new",
+  "custom-copilot-agent-assistants-api",
 ];
 
 export class RuntimeOptions {

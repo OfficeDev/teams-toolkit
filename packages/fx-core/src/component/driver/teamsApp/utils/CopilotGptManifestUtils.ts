@@ -178,41 +178,45 @@ export class CopilotGptManifestUtils {
   ): string | Array<{ content: string; color: Colors }> {
     const validationErrors = validationRes.validationResult;
     const filePath = validationRes.filePath;
-    let hasError = validationErrors.length > 0;
+    const hasDeclarativeCopilotError = validationErrors.length > 0;
+    let hasActionError = false;
 
     for (const actionValidationRes of validationRes.actionValidationResult) {
       if (actionValidationRes.validationResult.length > 0) {
-        hasError = true;
+        hasActionError = true;
         break;
       }
     }
-    if (!hasError) {
+    if (!hasDeclarativeCopilotError && !hasActionError) {
       return "";
     }
 
     if (platform !== Platform.CLI) {
-      const errors = validationErrors
-        .map((error: string) => {
-          return `${SummaryConstant.Failed} ${error}`;
-        })
-        .join(EOL);
-      let outputMessage =
-        getLocalizedString(
-          "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
-          filePath
-        ) +
-        EOL +
-        errors;
+      let outputMessage = "";
+      if (hasDeclarativeCopilotError) {
+        const errors = validationErrors
+          .map((error: string) => {
+            return `${SummaryConstant.Failed} ${error}`;
+          })
+          .join(EOL);
+        outputMessage +=
+          getLocalizedString(
+            "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
+            filePath
+          ) +
+          EOL +
+          errors;
+      }
 
       for (const actionValidationRes of validationRes.actionValidationResult) {
-        if (pluginPath && actionValidationRes.filePath !== pluginPath) {
+        if (!pluginPath || actionValidationRes.filePath !== pluginPath) {
           // do not output validation result of the Declarative Copilot if same file has been validated when validating plugin manifest.
           const actionValidationMessage = pluginManifestUtils.logValidationErrors(
             actionValidationRes,
             platform
           ) as string;
           if (actionValidationMessage) {
-            outputMessage += EOL + actionValidationMessage;
+            outputMessage += (!outputMessage ? "" : EOL) + actionValidationMessage;
           }
         }
       }
@@ -220,24 +224,26 @@ export class CopilotGptManifestUtils {
       return outputMessage;
     } else {
       const outputMessage = [];
-      outputMessage.push({
-        content:
-          getDefaultString(
-            "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
-            filePath
-          ) + "\n",
-        color: Colors.BRIGHT_WHITE,
-      });
-      validationErrors.map((error: string) => {
-        outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+      if (hasDeclarativeCopilotError) {
         outputMessage.push({
-          content: `${error}\n`,
+          content:
+            getDefaultString(
+              "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
+              filePath
+            ) + "\n",
           color: Colors.BRIGHT_WHITE,
         });
-      });
+        validationErrors.map((error: string) => {
+          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+          outputMessage.push({
+            content: `${error}\n`,
+            color: Colors.BRIGHT_WHITE,
+          });
+        });
+      }
 
       for (const actionValidationRes of validationRes.actionValidationResult) {
-        if (pluginPath && actionValidationRes.filePath !== pluginPath) {
+        if (!pluginPath || actionValidationRes.filePath !== pluginPath) {
           const actionValidationMessage = pluginManifestUtils.logValidationErrors(
             actionValidationRes,
             platform

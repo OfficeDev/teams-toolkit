@@ -3049,5 +3049,181 @@ describe("SpecParser", () => {
         expect(err.message).to.equal("Error: parse error");
       }
     });
+
+    it("should works fine when filter spec", async () => {
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      };
+      const specParser = new SpecParser(spec as any);
+
+      const filter = ["get /user/{userId}"];
+      const result = await specParser.getFilteredSpecs(filter);
+      expect(result[0]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
+      expect(result[1]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
+    });
   });
 });

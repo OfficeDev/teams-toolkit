@@ -246,7 +246,7 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
+      const clonedUnResolveSpec = JSON.parse(JSON.stringify(newUnResolvedSpec));
       const newSpec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
       return [newUnResolvedSpec, newSpec];
     } catch (err) {

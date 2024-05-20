@@ -262,6 +262,28 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     chai.assert(autoInstallDependencyHandlerStub.calledOnce);
   });
 
+  it("autoInstallDependency manifest only office add-in", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "teamsToolkit:autoInstallDependency") {
+        return true;
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(localizeUtils, "localize").returns("installPopUp");
+    const showInformationMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
+        return Promise.resolve("No" as any);
+      });
+    const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert(globalStateUpdateStub.calledOnce);
+  });
+
   it("openOfficeDevFolder", async () => {
     const folderPath = vscode.Uri.file("/test");
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");

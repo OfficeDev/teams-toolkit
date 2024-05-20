@@ -776,8 +776,9 @@ class Coordinator {
         void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    ctx.logProvider.info(msg);
-
+    if (ctx.platform !== Platform.CLI) {
+      ctx.logProvider.info(msg);
+    }
     return ok(output);
   }
 

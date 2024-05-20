@@ -130,42 +130,6 @@ async function updateManifest(
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
 
-  // Adding a feature with groupChat scope in TDP won't pass validation for extendToM365 action.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = decapitalizeScope(
-          manifest.configurableTabs[0].scopes
-        ) as ("team" | "groupchat")[];
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = decapitalizeScope(manifest.bots[0].scopes) as BotOrMeScopes;
-      }
-    }
-
-    if (manifest.bots[0].commandLists) {
-      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
-        if (commandList.scopes) {
-          commandList.scopes = decapitalizeScope(commandList.scopes) as BotOrMeScopes;
-        }
-      });
-    }
-  }
-
-  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-    if (manifest.composeExtensions[0].scopes) {
-      {
-        manifest.composeExtensions[0].scopes = decapitalizeScope(
-          manifest.composeExtensions[0].scopes
-        ) as BotOrMeScopes;
-      }
-    }
-  }
-
   // manifest: tab
   const tabs = manifest.staticTabs;
   let needUpdateStaticTabUrls = false;
@@ -316,10 +280,6 @@ function updateTabUrl(
 
 function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | undefined {
   return tabs.find((o) => o.name === name);
-}
-
-function decapitalizeScope(scopes: string[]): string[] {
-  return scopes.map((o) => o.toLowerCase());
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

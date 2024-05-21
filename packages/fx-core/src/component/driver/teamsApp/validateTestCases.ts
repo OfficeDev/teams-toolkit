@@ -337,7 +337,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
         new InvalidActionInputError(
           actionName,
           ["appPackagePath"],
-          "https://aka.ms/teamsfx-actions/teamsapp-validate"
+          "https://aka.ms/teamsfx-actions/teamsapp-validate-test-cases"
         )
       );
     }

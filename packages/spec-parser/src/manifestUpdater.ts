@@ -35,12 +35,13 @@ export class ManifestUpdater {
     spec: OpenAPIV3.Document,
     options: ParseOptions,
     authInfo?: AuthInfo
-  ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
+  ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
+    manifest.copilotExtensions = manifest.copilotExtensions || {};
     // Insert plugins in manifest.json if it is plugin for Copilot.
     if (!options.isGptPlugin) {
-      manifest.plugins = [
+      manifest.copilotExtensions.plugins = [
         {
           file: apiPluginRelativePath,
           id: ConstantString.DefaultPluginId,
@@ -52,7 +53,7 @@ export class ManifestUpdater {
     const appName = this.removeEnvs(manifest.name.short);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-    const apiPlugin = await ManifestUpdater.generatePluginManifestSchema(
+    const [apiPlugin, warnings] = await ManifestUpdater.generatePluginManifestSchema(
       spec,
       specRelativePath,
       apiPluginFilePath,
@@ -61,7 +62,7 @@ export class ManifestUpdater {
       options
     );
 
-    return [manifest, apiPlugin];
+    return [manifest, apiPlugin, warnings];
   }
 
   static updateManifestDescription(manifest: TeamsAppManifest, spec: OpenAPIV3.Document): void {
@@ -98,7 +99,8 @@ export class ManifestUpdater {
     appName: string,
     authInfo: AuthInfo | undefined,
     options: ParseOptions
-  ): Promise<PluginManifestSchema> {
+  ): Promise<[PluginManifestSchema, WarningResult[]]> {
+    const warnings: WarningResult[] = [];
     const functions: FunctionObject[] = [];
     const functionNames: string[] = [];
     const conversationStarters: string[] = [];
@@ -177,14 +179,24 @@ export class ManifestUpdater {
               };
 
               if (options.allowResponseSemantics) {
-                const { json } = Utils.getResponseJson(operationItem);
-                if (json.schema) {
-                  const [card, jsonPath] =
-                    AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
-                  const responseSemantic = wrapResponseSemantics(card, jsonPath);
-                  funcObj.capabilities = {
-                    response_semantics: responseSemantic,
-                  };
+                try {
+                  const { json } = Utils.getResponseJson(operationItem);
+                  if (json.schema) {
+                    const [card, jsonPath] =
+                      AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+
+                    card.body = card.body.slice(0, 5);
+                    const responseSemantic = wrapResponseSemantics(card, jsonPath);
+                    funcObj.capabilities = {
+                      response_semantics: responseSemantic,
+                    };
+                  }
+                } catch (err) {
+                  warnings.push({
+                    type: WarningType.GenerateCardFailed,
+                    content: (err as Error).toString(),
+                    data: operationId,
+                  });
                 }
               }
 
@@ -223,6 +235,7 @@ export class ManifestUpdater {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
     } else {
       apiPlugin = {
+        $schema: ConstantString.PluginManifestSchema,
         schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",
@@ -289,7 +302,7 @@ export class ManifestUpdater {
       }
     }
 
-    return apiPlugin;
+    return [apiPlugin, warnings];
   }
 
   static async updateManifest(

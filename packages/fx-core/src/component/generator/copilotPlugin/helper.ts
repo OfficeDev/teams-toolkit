@@ -6,56 +6,59 @@
  */
 
 import {
-  Context,
-  FxError,
-  OpenAIManifestAuthType,
-  OpenAIPluginManifest,
-  Result,
-  UserError,
-  err,
-  ok,
-  TeamsAppManifest,
-  ApiOperation,
-  ManifestTemplateFileName,
-  Warning,
-  AppPackageFolderName,
-  ManifestUtil,
-  IMessagingExtensionCommand,
-  SystemError,
-  Inputs,
-} from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
-import { sendRequestWithRetry } from "../utils";
-import {
-  SpecParser,
+  AdaptiveCardGenerator,
+  ErrorResult as ApiSpecErrorResult,
   ErrorType as ApiSpecErrorType,
+  ErrorType,
+  InvalidAPIInfo,
+  ListAPIResult,
+  ParseOptions,
+  ProjectType,
+  SpecParser,
+  SpecParserError,
+  Utils,
   ValidationStatus,
   WarningResult,
   WarningType,
-  SpecParserError,
-  ErrorType,
-  ErrorResult as ApiSpecErrorResult,
-  ListAPIResult,
-  ProjectType,
-  ParseOptions,
-  AdaptiveCardGenerator,
-  Utils,
-  InvalidAPIInfo,
 } from "@microsoft/m365-spec-parser";
+import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import {
+  ApiOperation,
+  AppPackageFolderName,
+  Context,
+  FxError,
+  IMessagingExtensionCommand,
+  Inputs,
+  ManifestTemplateFileName,
+  ManifestUtil,
+  OpenAIManifestAuthType,
+  OpenAIPluginManifest,
+  Result,
+  SystemError,
+  TeamsAppManifest,
+  UserError,
+  Warning,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import axios, { AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
+import path from "path";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { sendRequestWithRetry } from "../../../common/requestUtils";
+import { MissingRequiredInputError } from "../../../error";
+import {
+  CustomCopilotRagOptions,
+  ProgrammingLanguage,
+  QuestionNames,
+  copilotPluginApiSpecOptionId,
+} from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import path from "path";
-import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { copilotPluginApiSpecOptionId } from "../../../question/constants";
-import { OpenAPIV3 } from "openapi-types";
-import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
-import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
-import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -241,17 +244,41 @@ export async function listOperations(
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
       let existingOperations: string[] = [];
       if (manifest.isOk()) {
+        let isOriginalSpec;
+
         if (isPlugin) {
           existingOperations = await listPluginExistingOperations(
             manifest.value,
             teamsManifestPath,
             inputs[QuestionNames.DestinationApiSpecFilePath]
           );
+
+          const operationAPIs = operations.map((operation) => operation.api);
+          isOriginalSpec = existingOperations.every((operation) =>
+            operationAPIs.includes(operation)
+          );
         } else {
           const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
           existingOperations = operations
             .filter((operation) => existingOperationIds.includes(operation.operationId))
             .map((operation) => operation.api);
+
+          isOriginalSpec = existingOperations.length === existingOperationIds.length;
+        }
+
+        if (!isOriginalSpec) {
+          const errors = formatValidationErrors(
+            [
+              {
+                type: ApiSpecErrorType.AddedAPINotInOriginalSpec,
+                content: "",
+              },
+            ],
+            inputs
+          );
+
+          logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
+          return err(errors);
         }
 
         operations = operations.filter(
@@ -791,6 +818,8 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
         return getLocalizedString("core.common.SwaggerNotSupported");
       case ErrorType.SpecVersionNotSupported:
         return getLocalizedString("core.common.SpecVersionNotSupported", error.data);
+      case ErrorType.AddedAPINotInOriginalSpec:
+        return getLocalizedString("core.common.AddedAPINotInOriginalSpec");
 
       default:
         return error.content;

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 import {
   AppPackageFolderName,
   ConfigFolderName,
@@ -9,7 +11,7 @@ import {
   TemplateFolderName,
   ok,
 } from "@microsoft/teamsfx-api";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 import { exec } from "child_process";
 import * as dotenv from "dotenv";
@@ -19,8 +21,6 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { YAMLMap, YAMLSeq, parseDocument } from "yaml";
-import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
-import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 import {
   AadManager,
   AadValidator,

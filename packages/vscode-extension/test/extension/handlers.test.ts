@@ -2603,7 +2603,7 @@ describe("autoOpenProjectHandler", () => {
       ok({
         name: { short: "short", full: "full" },
         description: { short: "short", full: "" },
-        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+        copilotExtensions: { plugins: [{ file: "ai-plugin.json", id: "plugin1" }] },
       } as any)
     );
     const parseRes = {
@@ -2703,7 +2703,7 @@ describe("autoOpenProjectHandler", () => {
       ok({
         name: { short: "short", full: "full" },
         description: { short: "short", full: "" },
-        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+        copilotExtensions: { plugins: [{ file: "ai-plugin.json", id: "plugin1" }] },
       } as any)
     );
     const parseRes = {

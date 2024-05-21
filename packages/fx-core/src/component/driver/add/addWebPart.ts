@@ -1,26 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, IStaticTab, Inputs, Stage } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
+import { FxError, IStaticTab, Inputs, Result, Stage } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import path from "path";
 import { Service } from "typedi";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
+import * as util from "util";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { QuestionNames } from "../../../question/constants";
+import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
+import { ManifestTemplate } from "../../generator/spfx/utils/constants";
+import { createContextV3 } from "../../utils";
+import { wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../teamsApp/utils/ManifestUtils";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { wrapRun } from "../../utils/common";
-import { AddWebPartArgs } from "./interface/AddWebPartArgs";
-import path from "path";
-import * as fs from "fs-extra";
-import * as util from "util";
-import { ManifestTemplate } from "../../generator/spfx/utils/constants";
-import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
-import { createContextV3 } from "../../utils";
-import { Constants } from "./utility/constants";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { NoConfigurationError } from "./error/noConfigurationError";
-import { QuestionNames } from "../../../question/questionNames";
+import { AddWebPartArgs } from "./interface/AddWebPartArgs";
+import { Constants } from "./utility/constants";
 
 @Service(Constants.ActionName)
 export class AddWebPartDriver implements StepDriver {

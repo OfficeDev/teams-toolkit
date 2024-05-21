@@ -95,8 +95,11 @@ declare module 'vscode' {
 		 *   console.error(e);
 		 * }
 		 * ```
+		 *
+		 * To cancel the stream, the consumer can {@link CancellationTokenSource.cancel cancel} the token that was used to make the request
+		 * or break from the for-loop.
 		 */
-		stream: AsyncIterable<string>;
+		text: AsyncIterable<string>;
 	}
 
 	/**

@@ -2,7 +2,15 @@
 // Licensed under the MIT license.
 
 import {
-  CopilotGptManifestSchema,
+  ErrorType,
+  ListAPIResult,
+  SpecParser,
+  SpecParserError,
+  ValidationStatus,
+  WarningType,
+} from "@microsoft/m365-spec-parser";
+import {
+  DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
   Inputs,
@@ -35,14 +43,6 @@ import {
   projectTypeChecker,
 } from "../../src/common/projectTypeChecker";
 import {
-  ErrorType,
-  ListAPIResult,
-  SpecParser,
-  SpecParserError,
-  ValidationStatus,
-  WarningType,
-} from "@microsoft/m365-spec-parser";
-import {
   DriverDefinition,
   DriverInstance,
   ExecutionResult,
@@ -58,14 +58,18 @@ import * as buildAadManifest from "../../src/component/driver/aad/utility/buildA
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
+import { copilotGptManifestUtils } from "../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
+import { createDriverContext } from "../../src/component/driver/util/utils";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
-import { createDriverContext } from "../../src/component/utils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -87,13 +91,9 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { HubOptions, PluginAvailabilityOptions } from "../../src/question/other";
+import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
-import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
-import { copilotGptManifestUtils } from "../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
-import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 
 const tools = new MockTools();
 
@@ -1773,12 +1773,15 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.plugins = [
-      {
-        file: "ai-plugin.json",
-        id: "plugin1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      plugins: [
+        {
+          file: "ai-plugin.json",
+          id: "plugin1",
+        },
+      ],
+    };
+
     const listResult: ListAPIResult = {
       APIs: [
         {
@@ -1830,12 +1833,14 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.plugins = [
-      {
-        file: "ai-plugin.json",
-        id: "plugin1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      plugins: [
+        {
+          file: "ai-plugin.json",
+          id: "plugin1",
+        },
+      ],
+    };
     const listResult: ListAPIResult = {
       APIs: [
         {
@@ -1887,12 +1892,14 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.plugins = [
-      {
-        file: "ai-plugin.json",
-        id: "plugin1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      plugins: [
+        {
+          file: "ai-plugin.json",
+          id: "plugin1",
+        },
+      ],
+    };
     const listResult: ListAPIResult = {
       APIs: [
         {
@@ -3881,12 +3888,14 @@ describe("copilotPlugin", async () => {
         platform: Platform.VS,
       };
       const manifest = new TeamsAppManifest();
-      manifest.plugins = [
-        {
-          file: "ai-plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
       sinon
         .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
@@ -3922,12 +3931,14 @@ describe("copilotPlugin", async () => {
         platform: Platform.VS,
       };
       const manifest = new TeamsAppManifest();
-      manifest.plugins = [
-        {
-          file: "ai-plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
       sinon
         .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
@@ -4096,12 +4107,15 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        file: "test1.json",
-        id: "action_1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
+
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
@@ -4122,8 +4136,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4154,12 +4170,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        file: "test1.json",
-        id: "action_1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
@@ -4180,8 +4198,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4212,12 +4232,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        file: "test1.json",
-        id: "action_1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
@@ -4238,8 +4260,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4270,12 +4294,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        file: "test1.json",
-        id: "action_1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox
       .stub(manifestUtils, "_readAppManifest")
@@ -4300,12 +4326,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        id: "1",
-        file: "test.json",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
@@ -4354,17 +4382,19 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        id: "1",
-        file: "test.json",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Cancel"));
     const core = new FxCore(tools);
     const result = await core.addPlugin(inputs);
@@ -4386,17 +4416,19 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        id: "1",
-        file: "test.json",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox
       .stub(tools.ui, "showMessage")
       .resolves(err(new SystemError("uiError", "uiError", "", "")));
@@ -4420,12 +4452,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        id: "1",
-        file: "test.json",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith("openapi_1.json")) {
         return false;
@@ -4439,7 +4473,7 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     sandbox.stub(SpecParser.prototype, "generateForCopilot").throws(new Error("fakeError"));
     const core = new FxCore(tools);
@@ -4459,12 +4493,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        id: "1",
-        file: "test.json",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith("openapi_1.json")) {
         return false;
@@ -4478,7 +4514,7 @@ describe("addPlugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     sandbox
       .stub(SpecParser.prototype, "generateForCopilot")
@@ -4500,12 +4536,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        file: "test1.json",
-        id: "action_1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox
@@ -4523,8 +4561,10 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
-    sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox
+      .stub(copilotGptManifestUtils, "addAction")
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
     sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
@@ -4555,12 +4595,14 @@ describe("addPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.copilotGpts = [
-      {
-        file: "test1.json",
-        id: "action_1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
@@ -4575,7 +4617,7 @@ describe("addPlugin", async () => {
     });
     sandbox
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as CopilotGptManifestSchema));
+      .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox
       .stub(copilotGptManifestUtils, "addAction")
       .resolves(err(new SystemError("addActionError", "addActionError", "", "")));

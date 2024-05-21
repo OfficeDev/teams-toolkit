@@ -34,6 +34,7 @@ import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXM
 import { convertToLangKey } from "../../src/component/generator/utils";
 import * as utils from "../../src/component/utils";
 import { setTools } from "../../src/core/globalVars";
+import { FileNotFoundError } from "../../src/error";
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
@@ -44,6 +45,7 @@ import {
   OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
+  QuestionNames,
   RuntimeOptions,
   SPFxVersionOptionIds,
   apiOperationQuestion,
@@ -60,12 +62,10 @@ import {
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
   projectTypeQuestion,
-} from "../../src/question/create";
-import { QuestionNames } from "../../src/question/questionNames";
+} from "../../src/question";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
-import { FileNotFoundError } from "../../src/error";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -1567,7 +1567,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;

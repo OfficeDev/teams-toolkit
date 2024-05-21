@@ -369,7 +369,7 @@ export interface IPlugin {
   id: string;
 }
 
-export interface ICopilotGpt {
+export interface IDeclarativeCopilot {
   file: string;
   id: string;
 }
@@ -550,12 +550,15 @@ export class TeamsAppManifest implements AppManifest {
       resourceSpecific?: IAppPermission[];
     };
   };
-  /**
-   * Pointer to plugin manifest.
-   */
-  plugins?: IPlugin[];
-  /**
-   * Pointer to copilot GPTs.
-   */
-  copilotGpts?: ICopilotGpt[];
+
+  copilotExtensions?: {
+    /**
+     * Pointer to plugins.
+     */
+    plugins?: IPlugin[];
+    /**
+     * Pointer to declarative Copilot.
+     */
+    declarativeCopilots?: IDeclarativeCopilot[];
+  };
 }

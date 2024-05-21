@@ -30,16 +30,16 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import { OpenAPIV3 } from "openapi-types";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
+import { OpenAPIV3 } from "openapi-types";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { pathToFileURL } from "url";
-import { parse, parseDocument } from "yaml";
+import { parse } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
@@ -48,6 +48,7 @@ import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHel
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
+import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
 import {
@@ -67,11 +68,14 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import "../component/driver/script/scriptDriver";
 import { updateManifestV3 } from "../component/driver/teamsApp/appStudio";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
+import { AppStudioError } from "../component/driver/teamsApp/errors";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
 import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
+import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
+import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 import {
@@ -81,27 +85,28 @@ import {
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
+import { createDriverContext } from "../component/driver/util/utils";
 import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   OpenAIPluginManifestHelper,
+  convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
   defaultApiSpecFolderName,
   defaultApiSpecJsonFileName,
   defaultApiSpecYamlFileName,
-  convertSpecParserErrorToFxError,
-  copilotPluginParserOptions,
+  defaultPluginManifestFileName,
   generateScaffoldingSummary,
   isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
-  defaultPluginManifestFileName,
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { createContextV3, createDriverContext } from "../component/utils";
+import { createContextV3 } from "../component/utils";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
@@ -119,17 +124,21 @@ import {
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { AppNamePattern, ProjectTypeOptions, ValidateTeamsAppInputs } from "../question";
-import { copilotPluginApiSpecOptionId } from "../question/constants";
-import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import {
+  AppNamePattern,
   HubTypes,
   PluginAvailabilityOptions,
+  ProjectTypeOptions,
+  QuestionNames,
+  SPFxVersionOptionIds,
+  ScratchOptions,
   TeamsAppValidationOptions,
-  isAadMainifestContainsPlaceholder,
-} from "../question/other";
-import { QuestionNames } from "../question/questionNames";
-import { CallbackRegistry } from "./callback";
+  copilotPluginApiSpecOptionId,
+} from "../question/constants";
+import { createProjectCliHelpNode } from "../question/create";
+import { ValidateTeamsAppInputs } from "../question/inputs/ValidateTeamsAppInputs";
+import { isAadMainifestContainsPlaceholder } from "../question/other";
+import { CallbackRegistry, CoreCallbackFunc } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
@@ -146,12 +155,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
-import { AppStudioError } from "../component/driver/teamsApp/errors";
-import { copilotGptManifestUtils } from "../component/driver/teamsApp/utils/CopilotGptManifestUtils";
-import { ActionInjector } from "../component/configManager/actionInjector";
-
-export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -1536,15 +1539,19 @@ export class FxCore {
     }
 
     const teamsManifest = manifestRes.value;
-    if (!teamsManifest.copilotGpts?.[0].file) {
+    const declarativeGpt = teamsManifest.copilotExtensions?.declarativeCopilots?.[0];
+    if (!declarativeGpt?.file) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppRequiredPropertyMissingError.name,
-          AppStudioError.TeamsAppRequiredPropertyMissingError.message("copilotGpts", manifestPath)
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "declarativeCopilots",
+            manifestPath
+          )
         )
       );
     }
-    const gptManifestFilePath = path.join(appPackageFolder, teamsManifest.copilotGpts[0].file);
+    const gptManifestFilePath = path.join(appPackageFolder, declarativeGpt.file);
     const gptManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
       gptManifestFilePath
     );
@@ -1641,11 +1648,15 @@ export class FxCore {
 
     // update Teams manifest
     if (needAddCopilotPlugin) {
-      teamsManifest.plugins = teamsManifest.plugins || [];
-      teamsManifest.plugins.push({
+      const plugins = teamsManifest.copilotExtensions?.plugins || [];
+      plugins.push({
         id: "plugin_1", // Teams manifest can have only one plugin.
         file: pluginManifestName,
       });
+      teamsManifest.copilotExtensions = {
+        ...teamsManifest.copilotExtensions,
+        plugins,
+      };
       const updateManifestRes = await manifestUtils._writeAppManifest(teamsManifest, manifestPath);
       if (updateManifestRes.isErr()) {
         return err(updateManifestRes.error);

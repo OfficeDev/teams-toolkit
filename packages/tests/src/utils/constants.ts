@@ -407,6 +407,7 @@ export class LocalDebugTaskResult {
 
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
+  PythonDebugConsole = "Python Debug Console",
 }
 
 export enum LocalDebugError {

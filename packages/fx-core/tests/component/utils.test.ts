@@ -14,7 +14,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { deployUtils } from "../../src/component/deployUtils";
-import { createDriverContext } from "../../src/component/utils";
+import { createDriverContext } from "../../src/component/driver/util/utils";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
 import { setTools } from "../../src/core/globalVars";

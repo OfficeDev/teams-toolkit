@@ -18,12 +18,11 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
+import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import {
   OfficeXMLAddinGenerator,
   OfficeXmlAddinGeneratorNew,
 } from "../../../src/component/generator/officeXMLAddin/generator";
-import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
-import * as componentUtils from "../../../src/component/utils";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import {
@@ -31,6 +30,7 @@ import {
   ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
+  getOfficeAddinTemplateConfig,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 
@@ -93,7 +93,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -133,7 +133,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
 
@@ -247,7 +247,7 @@ describe("OfficeXmlAddinGeneratorNew", () => {
       sandbox.restore();
     });
     it("happy path for word-taskpane", async () => {
-      sandbox.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+      sandbox.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
       sandbox.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
       const inputs: Inputs = {
         platform: Platform.CLI,
@@ -264,7 +264,7 @@ describe("OfficeXmlAddinGeneratorNew", () => {
       }
     });
     it("happy path for word-manifest", async () => {
-      sandbox.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+      sandbox.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
       sandbox.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
       const inputs: Inputs = {
         platform: Platform.CLI,

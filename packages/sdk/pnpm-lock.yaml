@@ -58,9 +58,6 @@ devDependencies:
   '@istanbuljs/nyc-config-typescript':
     specifier: ^1.0.1
     version: 1.0.1(nyc@15.1.0)(source-map-support@0.5.21)(ts-node@10.4.0)
-  '@microsoft/api-documenter':
-    specifier: ^7.14.1
-    version: 7.15.3
   '@microsoft/api-extractor':
     specifier: ^7.19.4
     version: 7.19.4
@@ -837,19 +834,6 @@ packages:
   /@js-joda/core@4.3.1:
     resolution: {integrity: sha512-oeaetlodcqVsiZDxnEcqsbs+sXBkASxua0mXs5OXuPQXz3/wdPTMlxwfQ4z2HKcOik3S9voW3QJkp/KLWDhvRQ==}
     dev: false
-
-  /@microsoft/api-documenter@7.15.3:
-    resolution: {integrity: sha512-tehv1f/aKwGBQp0sheQofz5NQfa61mvTdAe4IHQnVavsyyK71r+P+CVXWewznPYkqFzzVXaTdrCuNGPU5Yd3mg==}
-    hasBin: true
-    dependencies:
-      '@microsoft/api-extractor-model': 7.15.3
-      '@microsoft/tsdoc': 0.13.2
-      '@rushstack/node-core-library': 3.45.0
-      '@rushstack/ts-command-line': 4.10.6
-      colors: 1.2.5
-      js-yaml: 3.13.1
-      resolve: 1.17.0
-    dev: true
 
   /@microsoft/api-extractor-model@7.15.3:
     resolution: {integrity: sha512-NkSjolmSI7NGvbdz0Y7kjQfdpD+j9E5CwXTxEyjDqxd10MI7GXV8DnAsQ57GFJcgHKgTjf2aUnYfMJ9w3aMicw==}
@@ -4253,14 +4237,6 @@ packages:
 
   /js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
-    dev: true
-
-  /js-yaml@3.13.1:
-    resolution: {integrity: sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==}
-    hasBin: true
-    dependencies:
-      argparse: 1.0.10
-      esprima: 4.0.1
     dev: true
 
   /js-yaml@3.14.1:

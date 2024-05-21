@@ -123,4 +123,6 @@ export class ConstantString {
   static readonly ParameterTitleMaxLens = 32;
   static readonly SMERequiredParamsMaxNum = 5;
   static readonly DefaultPluginId = "plugin_1";
+  static readonly PluginManifestSchema =
+    "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json";
 }

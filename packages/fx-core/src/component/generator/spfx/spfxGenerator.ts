@@ -33,9 +33,9 @@ import { FileNotFoundError, UserCancelError } from "../../../error";
 import {
   CapabilityOptions,
   ProgrammingLanguage,
+  QuestionNames,
   SPFxVersionOptionIds,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+} from "../../../question/constants";
 import { SPFxQuestionNames } from "../../constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";

@@ -11,7 +11,7 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 >
 > - [Python](https://www.python.org/), version 3.8 to 3.11.
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher.
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) latest version or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli).
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) latest version or [Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli).
 {{#useAzureOpenAI}}
 > - An account with [Azure OpenAI](https://aka.ms/oai/access).
 {{/useAzureOpenAI}}

@@ -1408,7 +1408,10 @@ export class FxCore {
           manifestRes.value,
           path.relative(inputs.projectPath!, outputApiSpecPath)
         );
-        context.logProvider.info(warnSummary);
+
+        if (warnSummary) {
+          context.logProvider.info(warnSummary);
+        }
       }
     } catch (e) {
       let error: FxError;

@@ -590,35 +590,29 @@ function validateTeamsManifestLength(
       (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
     );
 
-    const commands = teamsManifest.composeExtensions![0].commands;
     if (optionalParamsOnlyWarnings) {
       for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
-        const command = commands.find(
-          (o: IMessagingExtensionCommand) => o.id === optionalParamsOnlyWarning.data
-        );
-
-        if (command && command.parameters) {
-          const parameterName = command.parameters[0]?.name;
-          resultWarnings.push(
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly",
+            optionalParamsOnlyWarning.data.commandId,
+            optionalParamsOnlyWarning.data.commandId
+          ) +
             getLocalizedString(
-              "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly",
-              optionalParamsOnlyWarning.data,
-              optionalParamsOnlyWarning.data
-            ) +
-              getLocalizedString(
-                "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation",
-                parameterName,
-                optionalParamsOnlyWarning.data,
-                path.join(AppPackageFolderName, ManifestTemplateFileName),
-                path.join(
-                  AppPackageFolderName,
-                  teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
-                )
+              "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation",
+              optionalParamsOnlyWarning.data.parameterName,
+              optionalParamsOnlyWarning.data.commandId,
+              path.join(AppPackageFolderName, ManifestTemplateFileName),
+              path.join(
+                AppPackageFolderName,
+                teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
               )
-          );
-        }
+            )
+        );
       }
     }
+
+    const commands = teamsManifest.composeExtensions![0].commands;
 
     for (const command of commands) {
       if (command.type === "query") {

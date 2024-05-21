@@ -3732,7 +3732,13 @@ describe("copilotPlugin", async () => {
 
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
-      warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
+      warnings: [
+        {
+          type: WarningType.OperationOnlyContainsOptionalParam,
+          content: "fakeMessage",
+          data: { commandId: "fakeId", parameterName: "fakeName" },
+        },
+      ],
       allSuccess: false,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);

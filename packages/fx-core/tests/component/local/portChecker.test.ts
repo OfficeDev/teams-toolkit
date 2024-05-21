@@ -24,7 +24,7 @@ describe("portChecker", () => {
     });
 
     it("happy path", async () => {
-      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+      const portChecker = proxyquire("../../../src/component/local/portChecker", {
         "detect-port": async (port: number) => port,
       });
 
@@ -36,7 +36,7 @@ describe("portChecker", () => {
     });
 
     it("detect-port timeout", async () => {
-      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+      const portChecker = proxyquire("../../../src/component/local/portChecker", {
         "detect-port": async (port: number) =>
           new Promise((resolve) => {
             setTimeout(() => resolve(port + 1), 60 * 1000);
@@ -54,7 +54,7 @@ describe("portChecker", () => {
     });
 
     it("53000 in use", async () => {
-      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+      const portChecker = proxyquire("../../../src/component/local/portChecker", {
         "detect-port": async (port: number) => (port === 53000 ? 53001 : port),
       });
 
@@ -66,7 +66,7 @@ describe("portChecker", () => {
     });
 
     it("55000 in use, do not detect", async () => {
-      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+      const portChecker = proxyquire("../../../src/component/local/portChecker", {
         "detect-port": async (port: number) => (port === 55000 ? 55001 : port),
       });
 
@@ -91,7 +91,7 @@ describe("portChecker", () => {
       await fs.ensureDir(path.join(projectPath, "api"));
       await fs.writeFile(packageJsonPath, content);
 
-      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+      const portChecker = proxyquire("../../../src/component/local/portChecker", {
         "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
       });
 

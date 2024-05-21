@@ -963,7 +963,7 @@ describe("Func Tools Checker Test", () => {
       }
     }
 
-    const module = proxyquire("../../../src/common/deps-checker/internal/funcToolChecker", {
+    const module = proxyquire("../../../src/component/deps-checker/internal/funcToolChecker", {
       os: {
         homedir: sandbox.stub().callsFake(() => {
           return homeDir;

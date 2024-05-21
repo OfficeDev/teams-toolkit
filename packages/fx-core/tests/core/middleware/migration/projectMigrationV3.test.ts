@@ -64,7 +64,7 @@ import {
   loadExpectedYmlFile,
   getYmlTemplates,
 } from "./utils";
-import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
+import { NodeChecker } from "../../../../src/component/deps-checker/internal/nodeChecker";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;

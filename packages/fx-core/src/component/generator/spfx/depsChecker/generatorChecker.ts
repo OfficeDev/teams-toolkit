@@ -19,7 +19,7 @@ import { DependencyChecker } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
-import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
+import { cpUtils } from "../../../deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
 

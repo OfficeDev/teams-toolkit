@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "strict": true /* enable all strict type-checking options */,
     "jsx": "react",
-    "plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]
+    "plugins": []
     /* Additional Checks */
     // "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
     // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
@@ -19,5 +19,5 @@
   "exclude": ["node_modules", "test-folder", "out", "test/migration/data"],
   "ts-node": {
     "files": true
-  },
+  }
 }

@@ -16,7 +16,7 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { cpUtils } from "../../../src/common/deps-checker";
+import { cpUtils } from "../../../src/component/deps-checker/";
 import { Generator } from "../../../src/component/generator/generator";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import {

@@ -3745,8 +3745,80 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    const logSpy = sinon.spy(tools.logProvider, "info");
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
+    assert.isTrue(logSpy.calledOnce);
+  });
+
+  it("add API - unknown warning not show log", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [
+          {
+            id: "getUserById",
+            title: "Get User By Id",
+          },
+          {
+            id: "notexist",
+            title: "Get User By Id",
+          },
+        ],
+      },
+    ];
+
+    const listResult: ListAPIResult = {
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [
+        {
+          type: "unknown" as any,
+          content: "fakeMessage",
+          data: { commandId: "fakeId", parameterName: "fakeName" },
+        },
+      ],
+      allSuccess: false,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    const logSpy = sinon.spy(tools.logProvider, "info");
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+    assert.isTrue(logSpy.notCalled);
   });
 
   it("add API - readManifestFailed", async () => {

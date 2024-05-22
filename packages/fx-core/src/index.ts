@@ -58,3 +58,4 @@ export { QuestionNames as CoreQuestionNames } from "./question/constants";
 export * from "./question/util";
 export * from "./ui/validationUtils";
 export * from "./ui/visitor";
+export { SummaryConstant } from "./component/configManager/constant";

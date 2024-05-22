@@ -28,6 +28,7 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
 4. Send a message to Copilot to find a repair record.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 

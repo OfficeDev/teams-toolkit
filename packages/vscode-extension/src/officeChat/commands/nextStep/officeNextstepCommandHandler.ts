@@ -30,8 +30,7 @@ export default async function officeNextStepCommandHandler(
 ): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    OfficeChatCommand.NextStep,
-    request.location
+    OfficeChatCommand.NextStep
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,

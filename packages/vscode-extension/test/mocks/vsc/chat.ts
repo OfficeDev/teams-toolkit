@@ -48,25 +48,6 @@ export class LanguageModelChatMessage {
   }
 }
 
-export enum ChatLocation {
-  /**
-   * The chat panel
-   */
-  Panel = 1,
-  /**
-   * Terminal inline chat
-   */
-  Terminal = 2,
-  /**
-   * Notebook inline chat
-   */
-  Notebook = 3,
-  /**
-   * Code editor inline chat
-   */
-  Editor = 4,
-}
-
 export enum LanguageModelChatMessageRole {
   /**
    * The user role.

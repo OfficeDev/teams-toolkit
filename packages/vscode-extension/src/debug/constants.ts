@@ -107,7 +107,8 @@ export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
       n
     )} Teams Toolkit is checking if all required prerequisites are installed and will install them if not.`,
   summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about get started prerequisites check.`,
+  learnMore: (link: string) =>
+    `Visit ${link} to get more information about get started prerequisites check.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-get-started-prerequisite",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
@@ -125,7 +126,8 @@ export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
   checkNumber: (n: number) =>
     `${stepPrefix(n)} Teams Toolkit is checking the required prerequisites.`,
   summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} to learn more about 'Validate prerequisites' task.`,
+  learnMore: (link: string) =>
+    `Visit ${link} to get more info about 'Validate prerequisites' task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",

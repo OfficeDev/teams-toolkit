@@ -394,7 +394,7 @@ export class CodeFlowLogin {
             )
         );
         if (!(await checkIsOnline())) {
-          return error(CheckOnlineError());
+          return err(CheckOnlineError());
         }
         await this.logout();
         if (refresh) {

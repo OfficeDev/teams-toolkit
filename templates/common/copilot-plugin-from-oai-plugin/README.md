@@ -25,6 +25,7 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 4. Select `Preivew in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. When Teams launches in the browser, click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
 6. Open the `Copilot` app and send a prompt to trigger your plugin.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 

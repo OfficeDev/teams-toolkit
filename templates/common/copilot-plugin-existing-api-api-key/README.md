@@ -22,6 +22,7 @@ This app template allows Teams to interact directly with third-party data, apps,
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Teams (Edge)` or `Preview in Teams (Chrome)` from the launch configuration dropdown.
 5. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 > [!NOTE]
 > Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.

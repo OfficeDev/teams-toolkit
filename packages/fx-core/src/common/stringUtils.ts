@@ -5,6 +5,7 @@ import { FailedToParseResourceIdError } from "../core/error";
 import * as Handlebars from "handlebars";
 import * as uuid from "uuid";
 import * as crypto from "crypto";
+import { getLocalizedString } from "./localizeUtils";
 
 const MIN_ENTROPY = 4;
 const SECRET_REPLACE = "<REDACTED:secret>";
@@ -173,4 +174,12 @@ export function getUuid(): string {
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+export function loadingOptionsPlaceholder(): string {
+  return getLocalizedString("ui.select.LoadingOptionsPlaceholder");
+}
+
+export function loadingDefaultPlaceholder(): string {
+  return getLocalizedString("ui.select.LoadingDefaultPlaceholder");
 }

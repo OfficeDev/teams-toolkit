@@ -26,7 +26,6 @@ export * from "./common/samples";
 export * from "./common/stringUtils";
 export * from "./common/telemetry";
 export * from "./common/tools";
-export { loadingDefaultPlaceholder, loadingOptionsPlaceholder } from "./common/utils";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export * from "./component/constants";
 export { getPermissionMap } from "./component/driver/aad/permissions/index";

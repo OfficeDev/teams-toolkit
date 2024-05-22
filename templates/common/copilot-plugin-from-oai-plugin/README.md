@@ -18,6 +18,7 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - Join Microsoft 365 Copilot Plugin development [early access program](https://aka.ms/plugins-dev-waitlist).
+> - [Switch to the new Microsoft Teams](https://support.microsoft.com/en-us/office/switch-to-the-new-microsoft-teams-2d4a0c96-fa52-43f8-a006-4bfbc62cf6c5)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.

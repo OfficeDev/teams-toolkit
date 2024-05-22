@@ -15,6 +15,7 @@
 4. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio
 5. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension.
 ## Learn more
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 - [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)
 

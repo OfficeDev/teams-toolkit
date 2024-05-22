@@ -20,6 +20,7 @@ With the declarative copilot, you can build a custom version of copilot that can
 3. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
 4. Once the Copilot app is loaded in the browser, click on the "…" menu and select "Copilot chats". You will see your declarative copilot on the right rail. Clicking on it will change the experience to showcase the logo and name of your declarative copilot.
 5. Ask your declarative copilot a question, such as "Show repair records assigned to Karin Blair". It will respond with the relevant repair records.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 

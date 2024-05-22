@@ -408,15 +408,20 @@ export class ManifestUpdater {
                 ) {
                   command.parameters = command.parameters.filter((param) => param.isRequired);
                 } else if (command.parameters && command.parameters.length > 0) {
-                  command.parameters = [command.parameters[0]];
-                  warnings.push({
-                    type: WarningType.OperationOnlyContainsOptionalParam,
-                    content: Utils.format(
-                      ConstantString.OperationOnlyContainsOptionalParam,
-                      command.id
-                    ),
-                    data: command.id,
-                  });
+                  if (command.parameters.length > 1) {
+                    command.parameters = [command.parameters[0]];
+                    warnings.push({
+                      type: WarningType.OperationOnlyContainsOptionalParam,
+                      content: Utils.format(
+                        ConstantString.OperationOnlyContainsOptionalParam,
+                        command.id
+                      ),
+                      data: {
+                        commandId: command.id,
+                        parameterName: command.parameters[0].name,
+                      },
+                    });
+                  }
                 }
 
                 if (adaptiveCardFolder) {

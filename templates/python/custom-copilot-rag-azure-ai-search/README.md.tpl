@@ -132,7 +132,8 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## Extend the template
 
 - Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
-- Follow [Build a RAG Bot in Teams](https://aka.ms/teamsfx-rag-bot) to extend the template with more RAG capabilities.
+- Follow [Build a RAG Bot in Teams](https://aka.ms/teamsfx-rag-bot) to extend the template with more RAG capabilities. In this template, we upload raw text data to Azure AI Search. Azure AI Search also allows you to create vectorized data and do vector similarity search. 
+You can refer to the section [integrate-vectorization](https://github.com/OfficeDev/TeamsFx/wiki/Build-a-RAG-Bot-in-Teams#integrate-vectorization) or the demo [integrated-vectorization](https://github.com/Azure/azure-search-vector-samples/tree/main/demo-python/code/integrated-vectorization) for more details.
 - Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#azure-ai-search-as-data-source).
 
 ## Additional information and references

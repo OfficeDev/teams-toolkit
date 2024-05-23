@@ -177,6 +177,25 @@ export class Executor {
     return this.executeCmd(workspace, "publish", env);
   }
 
+  static async listAppOwners(workspace: string, env = "dev") {
+    return this.executeCmd(
+      workspace,
+      "collaborator status --interactive false"
+    );
+  }
+
+  static async addAppOwner(
+    workspace: string,
+    email: string,
+    teamsManifestFilePath: string,
+    env = "dev"
+  ) {
+    return this.executeCmd(
+      workspace,
+      `collaborator grant --email ${email} -t ${teamsManifestFilePath}  --interactive false`
+    );
+  }
+
   static async publishWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,

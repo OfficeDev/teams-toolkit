@@ -333,7 +333,13 @@ export class ValidateWithTestCasesDriver implements StepDriver {
 
   private validateArgs(args: ValidateWithTestCasesArgs): Result<any, FxError> {
     if (!args || !args.appPackagePath) {
-      return err(new InvalidActionInputError(actionName, ["appPackagePath"]));
+      return err(
+        new InvalidActionInputError(
+          actionName,
+          ["appPackagePath"],
+          "https://aka.ms/teamsfx-actions/teamsapp-validate-test-cases"
+        )
+      );
     }
     return ok(undefined);
   }

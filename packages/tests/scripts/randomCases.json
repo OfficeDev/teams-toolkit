@@ -123,8 +123,6 @@
             "sample-remotedebug-hello-world-tab-outlook",
             "sample-remotedebug-bot-sso",
             "sample-remotedebug-sso-tab-via-apim-proxy",
-            "basic-tab-provision-upgrade-provision-debug",
-            "bot-provision-upgrade-provision-debug",
             "basic-tab-upgrade-provision-debug",
             "bot-upgrade-provision-debug"
         ]
@@ -174,7 +172,9 @@
             "sample-localdebug-bot-sso-docker",
             "sample-remotedebug-bot-sso-docker",
             "sample-localdebug-hello-world-tab-docker",
-            "sample-remotedebug-hello-world-tab-docker"
+            "sample-remotedebug-hello-world-tab-docker",
+            "basic-tab-provision-upgrade-provision-debug",
+            "bot-provision-upgrade-provision-debug"
         ]
     }
 ]

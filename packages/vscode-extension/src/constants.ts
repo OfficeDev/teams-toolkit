@@ -34,6 +34,8 @@ export enum GlobalKey {
 export enum CommandKey {
   Create = "fx-extension.create",
   OpenWelcome = "fx-extension.openWelcome",
+  BuildIntelligentAppsWalkthrough = "fx-extension.buildIntelligentAppsWalkthrough",
+  CheckCopilotAccess = "fx-extension.checkCopilotAccess",
   OpenDocument = "fx-extension.openDocument",
   OpenSamples = "fx-extension.openSamples",
   DownloadSample = "fx-extension.downloadSample",

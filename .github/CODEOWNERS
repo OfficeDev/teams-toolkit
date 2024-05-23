@@ -156,7 +156,6 @@
 /packages/fx-core/src/core/middleware/projectMigrationV3 @xzf0587 @frankqianms @blackchoey
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
-/packages/fx-core/src/failpoint @jayzhang @LongOddCode
 /packages/fx-core/src/folder.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/index.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77 @tecton
@@ -212,7 +211,6 @@
 /packages/fx-core/tests/core/FxCore.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/callback.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon
-/packages/fx-core/tests/core/failpoint.test.ts @jayzhang @LongOddCode
 /packages/fx-core/tests/core/middleware/VideoFilterAppBlockerMW.test.ts @a1exwang
 /packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/core/middleware/migration @xzf0587 @frankqianms @blackchoey

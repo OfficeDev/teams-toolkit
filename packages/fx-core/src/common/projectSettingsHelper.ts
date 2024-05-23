@@ -80,6 +80,12 @@ export function isValidOfficeAddInProject(workspacePath?: string): boolean {
   }
 }
 
+export function isManifestOnlyOfficeAddinProject(workspacePath?: string): boolean {
+  if (!workspacePath) return false;
+  const srcPath = path.join(workspacePath, "src");
+  return !fs.existsSync(srcPath);
+}
+
 export function fetchManifestList(
   workspacePath?: string,
   officeManifestType?: OfficeManifestType

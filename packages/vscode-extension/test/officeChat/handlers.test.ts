@@ -38,14 +38,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeCreateCommandHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: OfficeChatCommand.Create,
         references: [],
-        location: vscode.ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeCreateCommandHandlerStub = sandbox.stub(officeCreateCommandHandler, "default");
       handler.officeChatRequestHandler(
         request,
@@ -57,14 +57,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call generatecodeCommandHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: OfficeChatCommand.GenerateCode,
         references: [],
-        location: vscode.ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const generatecodeCommandHandlerStub = sandbox.stub(generatecodeCommandHandler, "default");
       handler.officeChatRequestHandler(
         request,
@@ -76,14 +76,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeNextStepCommandHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: OfficeChatCommand.NextStep,
         references: [],
-        location: vscode.ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeNextStepCommandHandlerStub = sandbox.stub(
         officeNextStepCommandHandler,
         "default"
@@ -98,14 +98,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeDefaultHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: "",
         references: [],
-        location: vscode.ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
@@ -129,14 +129,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeDefaultHandler - error", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "",
         command: "",
         references: [],
-        location: vscode.ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;

@@ -111,7 +111,9 @@ export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
-    IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0-insider")
+    IsChatParticipantEnabled &&
+    semver.gte(vscode.version, "1.90.0-insider") &&
+    vscode.version.includes("insider")
   ).toString();
   initializePreviewFeatureFlags();
 

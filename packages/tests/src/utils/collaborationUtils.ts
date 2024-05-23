@@ -38,6 +38,7 @@ export async function addCollaboratorCLI(
   if (stderr) {
     throw new Error(stderr);
   }
+  console.log(stdout);
 }
 
 export async function getAllCollaborators(): Promise<string> {

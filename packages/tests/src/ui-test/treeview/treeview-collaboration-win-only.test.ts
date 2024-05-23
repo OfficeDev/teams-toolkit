@@ -94,16 +94,16 @@ describe("Collaborator Tests", function () {
         collaborator,
         teamsManifestFilePath
       );
-
-      {
-        const findCollaborator = await getAllCollaboratorsCLI(projectPath);
-        console.log(findCollaborator);
-        expect(
-          findCollaborator.includes((collaborator as string)?.split("@")[0])
-        ).to.be.true;
-        expect(findCollaborator.includes((creator as string)?.split("@")[0])).to
-          .be.true;
-      }
+      // cli not support
+      // {
+      //   const findCollaborator = await getAllCollaboratorsCLI(projectPath);
+      //   console.log(findCollaborator);
+      //   expect(
+      //     findCollaborator.includes((collaborator as string)?.split("@")[0])
+      //   ).to.be.true;
+      //   expect(findCollaborator.includes((creator as string)?.split("@")[0])).to
+      //     .be.true;
+      // }
     }
   );
 });

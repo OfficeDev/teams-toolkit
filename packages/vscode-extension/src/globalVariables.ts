@@ -6,7 +6,11 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { UserState } from "./constants";
 import { UriHandler } from "./uriHandler";
-import { isValidProject, isValidOfficeAddInProject } from "@microsoft/teamsfx-core";
+import {
+  isValidProject,
+  isValidOfficeAddInProject,
+  isManifestOnlyOfficeAddinProject,
+} from "@microsoft/teamsfx-core";
 
 /**
  * Common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -15,6 +19,7 @@ export let context: vscode.ExtensionContext;
 export let workspaceUri: vscode.Uri | undefined;
 export let isTeamsFxProject = false;
 export let isOfficeAddInProject = false;
+export let isOfficeManifestOnlyProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
 export let uriEventHandler: UriHandler;
@@ -32,6 +37,9 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
   isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
   isOfficeAddInProject = isValidOfficeAddInProject(workspaceUri?.fsPath);
+  if (isOfficeAddInProject) {
+    isOfficeManifestOnlyProject = isManifestOnlyOfficeAddinProject(workspaceUri?.fsPath);
+  }
   // Default Extension log path
   // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
   defaultExtensionLogPath = ctx.logUri.fsPath;

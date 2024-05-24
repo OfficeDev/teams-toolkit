@@ -72,7 +72,7 @@ export default async function createCommandHandler(
     response.markdown(localize("teamstoolkit.chatParticipants.create.oneMatched"));
     const firstMatch = matchedResult[0];
     const describeProjectChatMessages = [
-      describeProjectSystemPrompt,
+      describeProjectSystemPrompt(),
       new LanguageModelChatUserMessage(
         `The project you are looking for is '${JSON.stringify({
           name: firstMatch.name,
@@ -128,7 +128,7 @@ export default async function createCommandHandler(
       response.markdown(`- ${project.name}: `);
 
       const brieflyDescribeProjectChatMessages = [
-        brieflyDescribeProjectSystemPrompt,
+        brieflyDescribeProjectSystemPrompt(),
         new LanguageModelChatUserMessage(
           `The project you are looking for is '${JSON.stringify(project)}'.`
         ),

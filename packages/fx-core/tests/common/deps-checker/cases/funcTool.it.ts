@@ -130,8 +130,8 @@ describe("FuncToolChecker E2E Test", async () => {
     expect(depsInfo.command).to.be.equal("func");
     expect(depsInfo.details.binFolders).to.be.equal(undefined);
     expect(depsInfo.error?.message).to.contains(
-      "Cannot find Azure Functions Core Tools.",
-      `Expect error message contains 'Cannot find Azure Functions Core Tools.'. Actual error message: ${depsInfo.error?.message}`
+      "Unable to find Azure Functions Core Tools.",
+      `Expect error message contains 'Unable to find Azure Functions Core Tools.'. Actual error message: ${depsInfo.error?.message}`
     );
   });
 

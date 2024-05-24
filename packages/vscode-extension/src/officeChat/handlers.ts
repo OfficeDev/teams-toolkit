@@ -8,7 +8,6 @@ import {
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
-  ChatUserActionEvent,
   LanguageModelChatMessage,
   LanguageModelChatMessageRole,
   ProviderResult,
@@ -160,25 +159,6 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatFeedback,
-    telemetryData.properties,
-    telemetryData.measurements
-  );
-}
-
-export function handleOfficeUserAction(e: ChatUserActionEvent): void {
-  const result = e.result as ICopilotChatOfficeResult;
-  const telemetryData: ITelemetryData = {
-    properties: {
-      [TelemetryProperty.CopilotChatRequestId]: result.metadata?.requestId ?? "",
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
-      [TelemetryProperty.CorrelationId]: Correlator.getId(),
-      [TelemetryProperty.CopilotChatUserAction]: e.action.kind,
-    },
-    measurements: {},
-  };
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatUserAction,
     telemetryData.properties,
     telemetryData.measurements
   );

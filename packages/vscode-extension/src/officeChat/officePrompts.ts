@@ -66,9 +66,10 @@ export const defaultOfficeSystemPrompt = () => {
   );
 };
 
-export const describeOfficeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
-);
+export const describeOfficeProjectSystemPrompt = () =>
+  new vscode.LanguageModelChatSystemMessage(
+    `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  );
 
 export const excelSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.

@@ -111,7 +111,7 @@ export async function describeStep(
   telemetryMetadata: IChatTelemetryData
 ): Promise<string> {
   const messages = [
-    describeStepSystemPrompt,
+    describeStepSystemPrompt(),
     new LanguageModelChatUserMessage(
       `The content is '${JSON.stringify({
         description: step.description as string,

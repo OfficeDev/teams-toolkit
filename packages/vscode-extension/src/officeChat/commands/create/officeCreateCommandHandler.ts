@@ -63,7 +63,7 @@ export default async function officeCreateCommandHandler(
         localize("teamstoolkit.chatParticipants.officeAddIn.create.projectMatched")
       );
       const describeProjectChatMessages = [
-        describeOfficeProjectSystemPrompt,
+        describeOfficeProjectSystemPrompt(),
         new LanguageModelChatUserMessage(
           `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
         ),

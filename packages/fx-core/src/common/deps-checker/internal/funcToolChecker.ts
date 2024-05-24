@@ -397,7 +397,7 @@ export class FuncToolChecker implements DepsChecker {
       await cpUtils.executeCommand(
         undefined,
         undefined,
-        { timeout: timeout, shell: isWindows() ? "cmd.exe" : false },
+        { timeout: timeout, shell: isWindows() ? "cmd.exe" : true },
         this.getExecCommand("npm"),
         "install",
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail

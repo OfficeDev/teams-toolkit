@@ -38,7 +38,6 @@ import {
   officeChatRequestHandler,
   chatCreateOfficeProjectCommandHandler,
   handleOfficeFeedback,
-  handleOfficeUserAction,
 } from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -493,7 +492,6 @@ function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
   participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
-  participant.onDidPerformAction((...args) => Correlator.run(handleOfficeUserAction, ...args));
 
   context.subscriptions.push(
     participant,

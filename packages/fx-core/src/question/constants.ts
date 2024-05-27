@@ -105,6 +105,7 @@ export enum ProgrammingLanguage {
   TS = "typescript",
   CSharp = "csharp",
   PY = "python",
+  Common = "common",
   None = "none",
 }
 

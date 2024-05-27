@@ -59,3 +59,5 @@ export { QuestionNames as CoreQuestionNames } from "./question/constants";
 export * from "./question/util";
 export * from "./ui/validationUtils";
 export * from "./ui/visitor";
+export * from "./component/middleware/actionExecutionMW";
+export { TemplateInfo } from "./component/generator/templates/templateInfo";

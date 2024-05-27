@@ -37,18 +37,22 @@ export const defaultSystemPrompt = () => {
   );
 };
 
-export const describeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
-);
-export const brieflyDescribeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 30 and 40 words.`
-);
-export const describeScenarioSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
-);
-export const describeStepSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
-);
+export const describeProjectSystemPrompt = () =>
+  new vscode.LanguageModelChatSystemMessage(
+    `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  );
+export const brieflyDescribeProjectSystemPrompt = () =>
+  new vscode.LanguageModelChatSystemMessage(
+    `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 30 and 40 words.`
+  );
+export const describeScenarioSystemPrompt = () =>
+  new vscode.LanguageModelChatSystemMessage(
+    `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  );
+export const describeStepSystemPrompt = () =>
+  new vscode.LanguageModelChatSystemMessage(
+    `You are an advisor for Teams App developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
+  );
 
 export function getTemplateMatchChatMessages(
   projectMetadata: ProjectMetadata[],

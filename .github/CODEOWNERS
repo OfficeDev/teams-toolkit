@@ -272,8 +272,8 @@
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/api-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/api-plugin-from-scratch @hund030 @eriolchan @huimiu
-/templates/**/api-plugin-bearer @hund030 @eriolchan @huimiu @Yimin-Jin
-/templates/**/api-plugin-oauth @hund030 @eriolchan @huimiu @Yimin-Jin
+/templates/**/api-plugin-from-scratch-bearer @hund030 @eriolchan @huimiu @Yimin-Jin
+/templates/**/api-plugin-from-scratch-oauth @hund030 @eriolchan @huimiu @Yimin-Jin
 /templates/**/copilot-gpt-basic @hund030 @eriolchan @huimiu
 /templates/**/copilot-gpt-existing-api @hund030 @eriolchan @huimiu
 /templates/**/copilot-gpt-from-scratch-plugin @hund030 @eriolchan @huimiu

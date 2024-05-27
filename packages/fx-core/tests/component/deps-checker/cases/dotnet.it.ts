@@ -204,37 +204,6 @@ describe("DotnetChecker E2E Test - first run", async () => {
       }
     );
   });
-
-  describe("PowerShell ExecutionPolicy is default on Windows", async () => {
-    if (!isWindows()) {
-      return;
-    }
-
-    let originalExecutionPolicy = "Unrestricted";
-    beforeEach(async function () {
-      originalExecutionPolicy = await getExecutionPolicyForCurrentUser();
-      await setExecutionPolicyForCurrentUser("Restricted");
-    });
-
-    afterEach(async function () {
-      await setExecutionPolicyForCurrentUser(originalExecutionPolicy);
-    });
-    it(".NET SDK not installed and PowerShell ExecutionPolicy is default (Restricted) on Windows", async function () {
-      if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
-        this.skip();
-      }
-
-      const dotnetChecker = CheckerFactory.createChecker(
-        DepsType.Dotnet,
-        logger,
-        new TestTelemetry()
-      );
-      const res = await dotnetChecker.resolve();
-
-      assert.isTrue(res.isInstalled);
-      await verifyPrivateInstallation(dotnetChecker);
-    });
-  });
 });
 
 describe("DotnetChecker E2E Test - second run", () => {

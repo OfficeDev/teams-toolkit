@@ -40,7 +40,7 @@ const nodeFuncVersionRangeMapping: { [key: string]: string } = {
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Functions Core Tools";
 
-const timeout = 5 * 60 * 1000;
+const timeout = 10 * 60 * 1000;
 
 export class FuncToolChecker implements DepsChecker {
   private telemetryProperties: { [key: string]: string };
@@ -397,13 +397,13 @@ export class FuncToolChecker implements DepsChecker {
       await cpUtils.executeCommand(
         undefined,
         undefined,
-        { timeout: timeout, shell: false },
+        { timeout: timeout, shell: isWindows() ? "cmd.exe" : true },
         this.getExecCommand("npm"),
         "install",
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${funcPackageName}@${expectedFuncVersion}`,
         "--prefix",
-        `${tmpFolder}`,
+        `"${tmpFolder}"`,
         "--no-audit"
       );
 

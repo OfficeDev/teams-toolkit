@@ -1014,9 +1014,17 @@ describe("Func Tools Checker Test", () => {
               throw new Error("Mock install failed");
             }
             if (overrideInstallFunc) {
-              await overrideInstallFunc(installFuncVersion, args[3]);
+              await overrideInstallFunc(
+                installFuncVersion,
+                args[3].substring(1, args[3].length - 1)
+              );
             } else {
-              await mockInstallFunc(installFuncVersion, args[3], false, false);
+              await mockInstallFunc(
+                installFuncVersion,
+                args[3].substring(1, args[3].length - 1),
+                false,
+                false
+              );
             }
             return "";
           } else {

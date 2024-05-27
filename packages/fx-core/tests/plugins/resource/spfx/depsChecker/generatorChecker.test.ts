@@ -6,7 +6,7 @@ import chai from "chai";
 import fs from "fs-extra";
 import "mocha";
 import { restore, stub } from "sinon";
-import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
+import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
 import { GeneratorChecker } from "../../../../../src/component/generator/spfx/depsChecker/generatorChecker";
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { createContextV3 } from "../../../../../src/component/utils";

@@ -185,7 +185,7 @@ jobs:
 
       - name: commit change on local
         run: |
-          git add packages/fx-core/src/common/m365/serviceConstant.ts
+          git add packages/fx-core/src/component/m365/serviceConstant.ts
           git commit -m "build: replace sideloading placeholders"
 
       - name: disable chat participant environment variable

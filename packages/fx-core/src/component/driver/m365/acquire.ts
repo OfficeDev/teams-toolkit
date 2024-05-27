@@ -8,8 +8,8 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { PackageService } from "../../../common/m365/packageService";
-import { serviceEndpoint, serviceScope } from "../../../common/m365/serviceConstant";
+import { PackageService } from "../../m365/packageService";
+import { serviceEndpoint, serviceScope } from "../../m365/serviceConstant";
 import { FileNotFoundError, InvalidActionInputError, assembleError } from "../../../error/common";
 import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";

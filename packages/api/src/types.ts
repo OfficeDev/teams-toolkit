@@ -9,7 +9,7 @@ import {
   IStaticTab,
   IWebApplicationInfo,
 } from "@microsoft/teams-manifest";
-import { Platform, Stage, VsCodeEnv } from "./constants";
+import { Platform } from "./constants";
 
 /**
  * Definition of option item in single selection or multiple selection

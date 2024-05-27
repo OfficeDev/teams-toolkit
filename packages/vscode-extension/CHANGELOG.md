@@ -2,6 +2,12 @@
 
 > Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of pre-released versions, please refer to the [Teams Toolkit Pre-release Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/PRERELEASE.md).
 
+## 5.8.1 - May 27, 2024
+
+Hotfix version.
+
+Resolved an issue that occurred when the Teams Toolkit extension was used with VS Code versions v1.87.2 or earlier. See issue [#11679](https://github.com/OfficeDev/teams-toolkit/issues/11679) for more details.
+
 ## 5.8.0 - May 14, 2024
 
 This update, marking a minor version increment of the Teams Toolkit, incorporates new features and resolves bugs based on user input. Previously, these incremental modifications were detailed in the prerelease version and a series of blog posts:

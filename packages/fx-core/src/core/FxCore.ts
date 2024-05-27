@@ -42,7 +42,6 @@ import { pathToFileURL } from "url";
 import { parse } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { LaunchHelper } from "../component/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
@@ -104,6 +103,7 @@ import {
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
+import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3 } from "../component/utils";
@@ -142,7 +142,6 @@ import { CallbackRegistry, CoreCallbackFunc } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
-import { InvalidInputError } from "./error";
 import { ErrorContextMW, TOOLS, setErrorContext, setTools } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -183,7 +182,9 @@ export class FxCore {
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
-        return err(InvalidInputError("Teams app contains unsupported features"));
+        return err(
+          new InputValidationError("manifest.json", "Teams app contains unsupported features")
+        );
       } else {
         context.telemetryReporter.sendTelemetryEvent(CoreTelemetryEvent.CreateFromTdpStart, {
           [CoreTelemetryProperty.TdpTeamsAppFeatures]: getFeaturesFromAppDefinition(
@@ -1121,11 +1122,11 @@ export class FxCore {
     lifecycleName: string
   ): Promise<Result<undefined, FxError>> {
     if (!inputs.projectPath) {
-      return err(InvalidInputError("invalid projectPath", inputs));
+      return err(new InputValidationError("projectPath", "empty", "Core"));
     }
     const projectPath = inputs.projectPath;
     if (!inputs.env) {
-      return err(InvalidInputError("invalid env", inputs));
+      return err(new InputValidationError("env", "empty", "Core"));
     }
     const env = inputs.env;
     const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;

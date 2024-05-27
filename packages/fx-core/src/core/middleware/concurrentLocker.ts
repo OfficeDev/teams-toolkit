@@ -19,9 +19,14 @@ import { lock, unlock } from "proper-lockfile";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { waitSeconds } from "../../common/utils";
-import { ConcurrentError, FileNotFoundError, InvalidProjectError } from "../../error/common";
+import {
+  ConcurrentError,
+  CoreSource,
+  FileNotFoundError,
+  InvalidProjectError,
+  NoProjectOpenedError,
+} from "../../error/common";
 import { CallbackRegistry } from "../callback";
-import { CoreSource, NoProjectOpenedError } from "../error";
 import { TOOLS } from "../globalVars";
 import { shouldIgnored } from "./projectSettingsLoader";
 

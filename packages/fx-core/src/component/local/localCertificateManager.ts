@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
-import { CoreSource } from "../../core/error";
+import { CoreSource } from "../../error";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 
 const installText = () => getLocalizedString("debug.install");

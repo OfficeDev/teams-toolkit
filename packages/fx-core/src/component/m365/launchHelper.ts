@@ -4,7 +4,7 @@
 import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@microsoft/teamsfx-api";
 
 import { hooks } from "@feathersjs/hooks";
-import { CoreSource } from "../../core/error";
+import { CoreSource } from "../../error";
 import { ErrorContextMW } from "../../core/globalVars";
 import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/constants";

@@ -21,7 +21,7 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
-import { ObjectIsUndefinedError } from "../core/error";
+import { InputValidationError } from "../error";
 import { QuestionNames } from "../question/constants";
 import { getProjectTypeAndCapability } from "../question/create";
 import { CoordinatorSource } from "./constants";
@@ -51,11 +51,11 @@ export class DeveloperPortalScaffoldUtils {
     inputs: Inputs
   ): Promise<Result<undefined, FxError>> {
     if (!ctx.projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
+      return err(new InputValidationError("projectPath", "undefined"));
     }
 
     if (!ctx.tokenProvider) {
-      return err(new ObjectIsUndefinedError("tokenProvider"));
+      return err(new InputValidationError("tokenProvider", "undefined"));
     }
 
     const manifestRes = await updateManifest(ctx, appDefinition, inputs);
@@ -111,7 +111,7 @@ async function updateManifest(
   const existingManifestTemplate = manifestRes.value;
 
   if (!existingManifestTemplate) {
-    return err(new ObjectIsUndefinedError("manifest.json downloaded from template"));
+    return err(new InputValidationError("manifest.json downloaded from template", "undefined"));
   }
 
   // icons
@@ -291,11 +291,11 @@ function updateTabUrl(
   existingManifestStaticTabs: IStaticTab[] | undefined
 ) {
   if (!tabs || tabs.length === 0) {
-    return err(new ObjectIsUndefinedError("static tabs"));
+    return err(new InputValidationError("tabs in manifest.json", "empty"));
   }
 
   if (!existingManifestStaticTabs || existingManifestStaticTabs.length === 0) {
-    return err(new ObjectIsUndefinedError("static tabs in manifest.json"));
+    return err(new InputValidationError("static tabs in manifest.json", "empty"));
   }
   answers.forEach((answer: string) => {
     const tabToUpdate = findTabBasedOnName(answer, tabs);

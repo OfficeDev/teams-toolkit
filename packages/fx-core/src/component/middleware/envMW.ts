@@ -4,7 +4,7 @@ import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { Inputs, err } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { environmentNameManager } from "../../core/environmentName";
-import { NoProjectOpenedError } from "../../core/error";
+import { NoProjectOpenedError } from "../../error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
 import { QuestionNames } from "../../question/constants";

@@ -8,7 +8,7 @@ import { merge } from "lodash";
 import "mocha";
 import path from "path";
 import * as sinon from "sinon";
-import { CapabilityOptions, getProjectTypeAndCapability } from "../../src";
+import { CapabilityOptions, getProjectTypeAndCapability, InputValidationError } from "../../src";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
 import {
@@ -26,7 +26,6 @@ import { manifestUtils } from "../../src/component/driver/teamsApp/utils/Manifes
 import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
 import { createContextV3 } from "../../src/component/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
-import { ObjectIsUndefinedError } from "../../src/core/error";
 import { setTools } from "../../src/core/globalVars";
 import { QuestionNames } from "../../src/question/constants";
 import { MockTools } from "../core/utils";
@@ -63,7 +62,7 @@ describe("developPortalScaffoldUtils", () => {
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 
@@ -80,7 +79,7 @@ describe("developPortalScaffoldUtils", () => {
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 
@@ -188,7 +187,7 @@ describe("developPortalScaffoldUtils", () => {
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 

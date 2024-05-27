@@ -30,7 +30,6 @@ import { convertToAlphanumericOnly } from "../../common/stringUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
-import { ObjectIsUndefinedError } from "../../core/error";
 import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
@@ -949,10 +948,10 @@ class Coordinator {
   ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {
-      return err(new ObjectIsUndefinedError("tokenProvider"));
+      return err(new InputValidationError("tokenProvider", "undefined"));
     }
     if (!inputs[QuestionNames.AppPackagePath]) {
-      return err(new ObjectIsUndefinedError("appPackagePath"));
+      return err(new InputValidationError("appPackagePath", "undefined"));
     }
     const updateRes = await updateTeamsAppV3ForPublish(ctx, inputs);
 

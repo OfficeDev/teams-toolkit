@@ -14,22 +14,33 @@ import * as os from "os";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
-import { EnvConstants } from "../../src/commonlib/constants";
 
 export class Executor {
   static async execute(
     command: string,
     cwd: string,
     processEnv?: NodeJS.ProcessEnv,
-    timeout?: number
+    timeout?: number,
+    withRetry?: boolean
   ) {
     try {
       console.log(`[Start] "${command}" in ${cwd}.`);
-      const result = await execAsyncWithRetry(command, {
-        cwd,
-        env: processEnv ?? process.env,
-        timeout: timeout ?? 0,
-      });
+      const result = withRetry ? 
+        await execAsyncWithRetry(
+          command, 
+          {
+            cwd,
+            env: processEnv ?? process.env,
+            timeout: timeout ?? 0,
+          },
+          3
+        ) :
+        await execAsync(command, {
+          cwd,
+          env: processEnv ?? process.env,
+          timeout: timeout ?? 0,
+        });
+  
       if (result.stderr) {
         /// the command exit with 0
         console.log(
@@ -116,12 +127,13 @@ export class Executor {
     env = "dev",
     processEnv?: NodeJS.ProcessEnv,
     npx = false,
-    isV3 = true
+    isV3 = true,
+    withRetry = false
   ) {
     const npxCommand = npx ? "npx " : "";
     const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
     const command = `${npxCommand} ${cliPrefix} ${cmd} --env ${env}`;
-    return this.execute(command, workspace, processEnv);
+    return this.execute(command, workspace, processEnv, 0, withRetry);
   }
 
   static async provision(workspace: string, env = "dev", isV3 = true) {
@@ -161,7 +173,7 @@ export class Executor {
   }
 
   static async deploy(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "deploy", env);
+    return this.executeCmd(workspace, "deploy", env, undefined, false, true, true);
   }
 
   static async deployWithCustomizedProcessEnv(

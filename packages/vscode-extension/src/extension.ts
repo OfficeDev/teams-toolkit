@@ -162,8 +162,6 @@ export async function activate(context: vscode.ExtensionContext) {
     isChatParticipantEnabled()
   );
 
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
-
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
   // API_COPILOT_PLUGIN: boolean from ENV

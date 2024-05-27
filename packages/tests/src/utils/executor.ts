@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { execAsync, editDotEnvFile } from "./commonUtils";
+import { execAsync, editDotEnvFile, execAsyncWithRetry } from "./commonUtils";
 import {
   TemplateProjectFolder,
   Capability,
@@ -24,7 +24,8 @@ export class Executor {
     timeout?: number
   ) {
     try {
-      const result = await execAsync(command, {
+      console.log(`[Start] "${command}" in ${cwd}.`);
+      const result = await execAsyncWithRetry(command, {
         cwd,
         env: processEnv ?? process.env,
         timeout: timeout ?? 0,

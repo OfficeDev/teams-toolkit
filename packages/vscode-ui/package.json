@@ -1,5 +1,5 @@
 {
-  "name": "@microsoft/vscode-ui",
+  "name": "@microsoft/teams-toolkit-vscode-ui",
   "version": "1.0.2",
   "main": "build/index.js",
   "types": "build/index.d.ts",

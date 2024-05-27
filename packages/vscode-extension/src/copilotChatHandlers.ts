@@ -3,9 +3,12 @@
 import * as util from "util";
 import * as vscode from "vscode";
 
+import { UserCancelError, sleep } from "@microsoft/teams-toolkit-vscode-ui";
 import { FxError, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { assembleError } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "./commonlib/log";
+import { InstallCopilotChatLink } from "./constants";
+import { showOutputChannel } from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -15,9 +18,6 @@ import {
 } from "./telemetry/extTelemetryEvents";
 import { getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
-import { UserCancelError, sleep } from "@microsoft/vscode-ui";
-import { showOutputChannel } from "./handlers";
-import { InstallCopilotChatLink } from "./constants";
 
 const githubCopilotChatExtensionId = "github.copilot-chat";
 

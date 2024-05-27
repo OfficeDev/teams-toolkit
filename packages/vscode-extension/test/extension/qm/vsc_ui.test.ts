@@ -30,7 +30,7 @@ import {
   SingleSelectConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { FxQuickPickItem, UserCancelError } from "@microsoft/vscode-ui";
+import { FxQuickPickItem, UserCancelError } from "@microsoft/teams-toolkit-vscode-ui";
 import { VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { sleep } from "../../../src/utils/commonUtils";

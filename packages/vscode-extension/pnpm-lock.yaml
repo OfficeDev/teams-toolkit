@@ -41,7 +41,7 @@ dependencies:
   '@microsoft/tsdoc':
     specifier: ^0.14.2
     version: 0.14.2
-  '@microsoft/vscode-ui':
+  '@microsoft/teams-toolkit-vscode-ui':
     specifier: workspace:*
     version: link:../vscode-ui
   '@npmcli/package-json':

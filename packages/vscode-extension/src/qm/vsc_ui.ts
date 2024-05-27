@@ -3,6 +3,7 @@
 
 import { commands, ExtensionContext, extensions } from "vscode";
 
+import { InternalUIError, Localizer, VSCodeUI } from "@microsoft/teams-toolkit-vscode-ui";
 import {
   err,
   FxError,
@@ -13,22 +14,20 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   assembleError,
+  isValidHttpUrl,
   loadingDefaultPlaceholder,
   loadingOptionsPlaceholder,
 } from "@microsoft/teamsfx-core";
-import { Localizer, VSCodeUI } from "@microsoft/vscode-ui";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { sleep } from "../utils/commonUtils";
-import { getDefaultString, localize } from "../utils/localizeUtils";
-import { InternalUIError } from "@microsoft/vscode-ui";
 import {
   SelectFileOrInputResultType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { isValidHttpUrl } from "@microsoft/teamsfx-core";
+import { sleep } from "../utils/commonUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {

@@ -15,7 +15,7 @@ import { getAppStudioEndpoint } from "../component/driver/teamsApp/constants";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 import { GraphReadUserScopes, SPFxScopes } from "./constants";
-import { PackageService } from "./m365/packageService";
+import { PackageService } from "../component/m365/packageService";
 
 export function getCopilotStatus(
   token: string,

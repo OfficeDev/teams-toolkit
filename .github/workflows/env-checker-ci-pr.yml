@@ -9,8 +9,8 @@ on:
     paths:
       - ".github/workflows/env-checker-ci-pr.yml"
       - ".github/env-checker"
-      - "packages/fx-core/src/common/deps-checker/**"
-      - "packages/fx-core/tests/common/deps-checker/**"
+      - "packages/fx-core/src/component/deps-checker/**"
+      - "packages/fx-core/tests/component/deps-checker/**"
   push:
     branches:
       - dev
@@ -19,8 +19,8 @@ on:
     paths:
       - ".github/workflows/env-checker-ci-pr.yml"
       - ".github/env-checker"
-      - "packages/fx-core/src/common/deps-checker/**"
-      - "packages/fx-core/tests/common/deps-checker/**"
+      - "packages/fx-core/src/component/deps-checker/**"
+      - "packages/fx-core/tests/component/deps-checker/**"
   workflow_dispatch: # Manual trigger
 
 jobs:

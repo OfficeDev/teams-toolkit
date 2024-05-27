@@ -4,7 +4,7 @@
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { openWelcomeHandler } from "../handlers";
+import { openBuildIntelligentAppsWalkthroughHandler, openWelcomeHandler } from "../handlers";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
 
@@ -17,5 +17,6 @@ export async function openWelcomePageAfterExtensionInstallation(): Promise<void>
   // Let's show!
   await globalStateUpdate(welcomePageKey, true);
   await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
+  await openBuildIntelligentAppsWalkthroughHandler([TelemetryTriggerFrom.Auto]);
   await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
 }

@@ -105,13 +105,13 @@ export const ScaffoldLocalTemplateAction: GeneratorAction = {
 async function determineTemplateSource(context: GeneratorContext) {
   let url = "local";
   if (!Boolean(templateConfig.useLocalTemplate)) {
-    let latestTag = await getTemplateLatestTag(
+    const latestTag = await getTemplateLatestTag(
       context.language!,
       context.tryLimits,
       context.timeoutInMs
     );
-    latestTag = latestTag.replace(templateConfig.tagPrefix, "").trim();
-    if (semver.gt(latestTag, templateConfig.localVersion)) {
+    const latestVersion = latestTag.replace(templateConfig.tagPrefix, "").trim();
+    if (semver.gt(latestVersion, templateConfig.localVersion)) {
       // git tag version is higher than the local version, download template from github
       url = `${templateConfig.templateDownloadBaseURL}/${latestTag}/${context.language!}.zip`;
     }

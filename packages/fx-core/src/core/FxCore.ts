@@ -42,7 +42,7 @@ import { pathToFileURL } from "url";
 import { parse } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { LaunchHelper } from "../common/m365/launchHelper";
+import { LaunchHelper } from "../component/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";

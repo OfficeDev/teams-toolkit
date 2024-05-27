@@ -29,7 +29,9 @@ describe("provisionUtils", () => {
 
   describe("ensureSubscription", () => {
     const mocker = sinon.createSandbox();
-
+    beforeEach(() => {
+      setTools(tools);
+    });
     afterEach(() => {
       mocker.restore();
     });

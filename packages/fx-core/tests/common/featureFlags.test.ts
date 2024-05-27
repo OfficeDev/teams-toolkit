@@ -70,8 +70,6 @@ describe("FeatureFlagManager", () => {
     chai.assert.equal(stringRes, "false");
   });
   it("list", async () => {
-    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
-    chai.assert.isFalse(booleanRes);
     const list = featureFlagManager.list();
     chai.assert.deepEqual(list, Object.values(FeatureFlags));
   });

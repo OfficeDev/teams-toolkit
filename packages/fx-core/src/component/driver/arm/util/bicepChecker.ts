@@ -31,7 +31,7 @@ import { performance } from "perf_hooks";
 import { DriverContext } from "../../interface/commonArgs";
 import { InstallSoftwareError } from "../../../../error/common";
 import { DownloadBicepCliError } from "../../../../error/arm";
-import { isMacOS, isWindows } from "../../../../common/deps-checker/util/system";
+import { isMacOS, isWindows } from "../../../deps-checker/util/system";
 
 const BicepName = "Bicep";
 

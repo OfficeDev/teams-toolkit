@@ -156,13 +156,6 @@ export class ValidateWithTestCasesDriver implements StepDriver {
         ];
         context.ui?.showMessage("info", message, false);
       } else {
-        const message = getLocalizedString(
-          "driver.teamsApp.progressBar.validateWithTestCases.step",
-          response.status,
-          `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation`
-        );
-        context.logProvider.info(message);
-
         // Do not await the final validation result, return immediately
         void this.runningBackgroundJob(args, context, appStudioToken, response, manifest.id);
       }
@@ -206,13 +199,13 @@ export class ValidateWithTestCasesDriver implements StepDriver {
         resultResp.status !== AsyncAppValidationStatus.Completed &&
         resultResp.status !== AsyncAppValidationStatus.Aborted
       ) {
-        await waitSeconds(CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS);
         const message = getLocalizedString(
           "driver.teamsApp.progressBar.validateWithTestCases.step",
           resultResp.status,
           validationRequestListUrl
         );
         context.logProvider.info(message);
+        await waitSeconds(CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS);
         resultResp = await AppStudioClient.getAppValidationById(
           resultResp.appValidationId,
           appStudioToken

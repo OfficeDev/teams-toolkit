@@ -107,6 +107,11 @@ publish:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+  # Validate app package with the test cases Microsoft uses before they publish it
+  - uses: teamsApp/validateWithTestCases
+    with:
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
   # Publish the app to
   # Teams Admin Center (https://admin.teams.microsoft.com/policies/manage-apps)
   # for review and approval

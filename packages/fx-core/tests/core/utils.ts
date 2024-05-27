@@ -20,7 +20,6 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  PermissionRequestProvider,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -39,7 +38,6 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { DEFAULT_PERMISSION_REQUEST } from "../../src/component/constants";
 import { MyTokenCredential } from "../plugins/solution/util";
 
 export function randomAppName() {

@@ -6,7 +6,8 @@
 
 Hotfix version.
 
-Resolved an issue that occurred when the Teams Toolkit extension was used with VS Code versions v1.87.2 or earlier. See issue [#11679](https://github.com/OfficeDev/teams-toolkit/issues/11679) for more details.
+- Resolved an issue that occurred when the Teams Toolkit extension was used with VS Code versions v1.87.2 or earlier. See issue [#11679](https://github.com/OfficeDev/teams-toolkit/issues/11679) for more details.
+- Fixed the launch URL issue in the API-based message extension template with Microsoft Entra auth.
 
 ## 5.8.0 - May 14, 2024
 

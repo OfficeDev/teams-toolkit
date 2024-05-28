@@ -502,7 +502,7 @@
   "core.selectValidateMethodQuestion.validate.appPackageOption": "Validate app package using validation rules",
   "core.selectValidateMethodQuestion.validate.appPackageOptionDescription": "Validate app package using validation rules",
   "core.selectValidateMethodQuestion.validate.testCasesOption": "Validate against pre-publish test cases",
-  "core.selectValidateMethodQuestion.validate.testCasesOptionDescription": "Comprehensive test of your app using Microsoft's test cases to access readiness before publishing",
+  "core.selectValidateMethodQuestion.validate.testCasesOptionDescription": "Comprehensive tests to assess readiness",
   "core.confirmManifestQuestion.placeholder": "Confirm you've selected the correct manifest file",
   "core.aadAppQuestion.label": "Microsoft Entra app",
   "core.aadAppQuestion.description": "Your Microsoft Entra app for Single Sign On",

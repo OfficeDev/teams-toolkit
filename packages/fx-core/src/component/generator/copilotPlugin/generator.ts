@@ -167,29 +167,6 @@ export class CopilotPluginGenerator {
       errorSource: fromOpenAIPlugincomponentName,
     }),
   ])
-  public static async generateFromOpenAIPlugin(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    return await this.generate(
-      context,
-      inputs,
-      destinationPath,
-      fromOpenAIPluginTemplateName,
-      fromOpenAIPlugincomponentName,
-      false
-    );
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: fromOpenAIPlugincomponentName,
-      telemetryEventName: TelemetryEvents.Generate,
-      errorSource: fromOpenAIPlugincomponentName,
-    }),
-  ])
   public static async generateForCustomCopilotRagCustomApi(
     context: Context,
     inputs: Inputs,
@@ -225,7 +202,7 @@ export class CopilotPluginGenerator {
           : isPlugin
           ? ProjectType.Copilot
           : ProjectType.SME;
-      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      let url = inputs[QuestionNames.ApiSpecLocation];
       url = url.trim();
       let isYaml: boolean;
       try {
@@ -312,7 +289,6 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     return (
       capability === CapabilityOptions.copilotPluginApiSpec().id ||
-      capability === CapabilityOptions.copilotPluginOpenAIPlugin().id ||
       meArchitecture === MeArchitectureOptions.apiSpec().id ||
       (capability === CapabilityOptions.customCopilotRag().id &&
         inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
@@ -327,8 +303,6 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
       templateName = apiPluginFromApiSpecTemplateName;
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
       templateName = fromApiSpecTemplateName;
-    } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-      templateName = fromOpenAIPluginTemplateName;
     } else if (
       capability === CapabilityOptions.customCopilotRag().id &&
       inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
@@ -375,7 +349,7 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
         : getTemplateInfosState.isPlugin
         ? ProjectType.Copilot
         : ProjectType.SME;
-    const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const url = inputs[QuestionNames.ApiSpecLocation];
     getTemplateInfosState.url = url.trim();
 
     getTemplateInfosState.isYaml = false;

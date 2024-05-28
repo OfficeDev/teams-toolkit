@@ -31,8 +31,6 @@ import {
   Inputs,
   ManifestTemplateFileName,
   ManifestUtil,
-  OpenAIManifestAuthType,
-  OpenAIPluginManifest,
   Result,
   SystemError,
   TeamsAppManifest,
@@ -60,9 +58,6 @@ import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 
-const manifestFilePath = "/.well-known/ai-plugin.json";
-const componentName = "OpenAIPluginManifestHelper";
-
 const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
@@ -74,13 +69,7 @@ const enum telemetryProperties {
 
 const enum telemetryEvents {
   validateApiSpec = "validate-api-spec",
-  validateOpenAiPluginManifest = "validate-openai-plugin-manifest",
   listApis = "spec-parser-list-apis-result",
-}
-
-enum OpenAIPluginManifestErrorType {
-  AuthNotSupported = "openai-pliugin-auth-not-supported",
-  ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
 export const copilotPluginParserOptions: ParseOptions = {
@@ -113,7 +102,7 @@ export interface ErrorResult {
   /**
    * The type of error.
    */
-  type: ApiSpecErrorType | OpenAIPluginManifestErrorType;
+  type: ApiSpecErrorType;
 
   /**
    * The content of the error.
@@ -123,75 +112,15 @@ export interface ErrorResult {
   data?: any;
 }
 
-export class OpenAIPluginManifestHelper {
-  static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    input = input.trim();
-    let path = input.endsWith("/") ? input.substring(0, input.length - 1) : input;
-    if (!input.toLowerCase().endsWith(manifestFilePath)) {
-      path = path + manifestFilePath;
-    }
-    if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
-      path = "https://" + path;
-    }
-
-    try {
-      const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
-        return await axios.get(path);
-      }, 3);
-
-      return res.data;
-    } catch (e) {
-      throw new UserError(
-        componentName,
-        "loadOpenAIPluginManifest",
-        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path),
-        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path)
-      );
-    }
-  }
-
-  static async updateManifest(
-    openAiPluginManifest: OpenAIPluginManifest,
-    teamsAppManifest: TeamsAppManifest,
-    manifestPath: string
-  ): Promise<Result<undefined, FxError>> {
-    teamsAppManifest.description.full = openAiPluginManifest.description_for_human;
-    teamsAppManifest.description.short = openAiPluginManifest.description_for_human;
-    teamsAppManifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
-    teamsAppManifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
-    teamsAppManifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
-
-    await fs.writeFile(manifestPath, JSON.stringify(teamsAppManifest, null, "\t"), "utf-8");
-    return ok(undefined);
-  }
-}
-
 export async function listOperations(
   context: Context,
-  manifest: OpenAIPluginManifest | undefined,
+  manifest: OpenAIPluginManifest | undefined, // TODO: clean
   apiSpecUrl: string | undefined,
   inputs: Inputs,
   includeExistingAPIs = true,
   shouldLogWarning = true,
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-  if (manifest) {
-    const errors = validateOpenAIPluginManifest(manifest);
-    logValidationResults(
-      errors,
-      [],
-      context,
-      false,
-      shouldLogWarning,
-      false,
-      existingCorrelationId
-    );
-    if (errors.length > 0) {
-      return err(errors);
-    }
-    apiSpecUrl = manifest.api.url;
-  }
-
   const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
@@ -397,7 +326,7 @@ export function logValidationResults(
   errors: ErrorResult[],
   warnings: WarningResult[],
   context: Context,
-  isApiSpec: boolean,
+  isApiSpec: boolean, // TODO: remove
   shouldLogWarning: boolean,
   shouldSkipTelemetry: boolean,
   existingCorrelationId?: string
@@ -416,10 +345,7 @@ export function logValidationResults(
     if (existingCorrelationId) {
       properties["correlation-id"] = existingCorrelationId;
     }
-    context.telemetryReporter.sendTelemetryEvent(
-      isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
-      properties
-    );
+    context.telemetryReporter.sendTelemetryEvent(telemetryEvents.validateApiSpec, properties);
   }
 
   if (errors.length === 0 && (warnings.length === 0 || !shouldLogWarning)) {
@@ -455,47 +381,16 @@ export function logValidationResults(
     );
   }
 
-  const outputMessage = isApiSpec
-    ? EOL +
-      getLocalizedString(
-        "core.copilotPlugin.validate.apiSpec.summary",
-        summaryStr.join(", "),
-        errorMessage,
-        warningMessage
-      )
-    : EOL +
-      getLocalizedString(
-        "core.copilotPlugin.validate.openAIPluginManifest.summary",
-        summaryStr.join(", "),
-        errorMessage,
-        warningMessage
-      );
+  const outputMessage =
+    EOL +
+    getLocalizedString(
+      "core.copilotPlugin.validate.apiSpec.summary",
+      summaryStr.join(", "),
+      errorMessage,
+      warningMessage
+    );
 
   void context.logProvider.info(outputMessage);
-}
-
-function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {
-  const errors: ErrorResult[] = [];
-  if (!manifest.api?.url) {
-    errors.push({
-      type: OpenAIPluginManifestErrorType.ApiUrlMissing,
-      content: getLocalizedString(
-        "core.createProjectQuestion.openAiPluginManifest.validationError.missingApiUrl",
-        "api.url"
-      ),
-    });
-  }
-
-  if (manifest.auth?.type !== OpenAIManifestAuthType.None) {
-    errors.push({
-      type: OpenAIPluginManifestErrorType.AuthNotSupported,
-      content: getLocalizedString(
-        "core.createProjectQuestion.openAiPluginManifest.validationError.authNotSupported",
-        "none"
-      ),
-    });
-  }
-  return errors;
 }
 
 export function generateScaffoldingSummary(

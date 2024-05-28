@@ -1098,81 +1098,6 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
   };
 }
 
-export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
-  // export for unit test
-  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
-  return {
-    type: "text",
-    name: QuestionNames.OpenAIPluginManifest,
-    cliShortName: "m",
-    title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
-    placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
-    cliDescription: "OpenAI plugin website domain or manifest URL.",
-    forgetLastValue: true,
-    validation: {
-      validFunc: (input: string): Promise<string | undefined> => {
-        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?(\/)?$/i;
-        const match = pattern.test(input);
-
-        const result = match
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
-        return Promise.resolve(result);
-      },
-    },
-    additionalValidationOnAccept: {
-      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-        if (!inputs) {
-          throw new Error("inputs is undefined"); // should never happen
-        }
-        let manifest;
-
-        try {
-          manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(input);
-          inputs.openAIPluginManifest = manifest;
-        } catch (e) {
-          const error = assembleError(e);
-          return error.message;
-        }
-
-        const context = createContextV3();
-        try {
-          const res = await listOperations(
-            context,
-            manifest,
-            inputs[QuestionNames.ApiSpecLocation],
-            inputs,
-            true,
-            true,
-            inputs.platform === Platform.VSCode ? correlationId : undefined
-          );
-          if (res.isOk()) {
-            inputs.supportedApisFromApiSpec = res.value;
-          } else {
-            const errors = res.error;
-            if (inputs.platform === Platform.CLI) {
-              return errors.map((e) => e.content).join("\n");
-            }
-            if (
-              errors.length === 1 &&
-              errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
-            ) {
-              return errors[0].content;
-            } else {
-              return getLocalizedString(
-                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
-              );
-            }
-          }
-        } catch (e) {
-          const error = assembleError(e);
-          throw error;
-        }
-      },
-    },
-  };
-}
-
 export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
@@ -1487,10 +1412,6 @@ export function capabilitySubTree(): IQTreeNode {
           {
             data: apiSpecLocationQuestion(),
           },
-          // {
-          //   condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
-          //   data: openAIPluginManifestLocationQuestion(),
-          // },
           {
             data: apiOperationQuestion(),
           },

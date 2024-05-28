@@ -46,7 +46,6 @@ export enum QuestionNames {
   AppPackagePath = "appPackagePath",
   CopilotPluginExistingApi = "copilot-plugin-existing-api", // group name for creating a Copilot plugin from existing api
   ApiSpecLocation = "openapi-spec-location",
-  OpenAIPluginManifest = "openai-plugin-manifest",
   ApiOperation = "api-operation",
   MeArchitectureType = "me-architecture",
   ApiSpecApiKey = "api-key",
@@ -109,17 +108,9 @@ export enum ProgrammingLanguage {
 }
 
 export const copilotPluginApiSpecOptionId = "copilot-plugin-existing-api";
-export const copilotPluginOpenAIPluginOptionId = "copilot-plugin-openai-plugin";
-export const copilotPluginExistingApiOptionIds = [
-  copilotPluginApiSpecOptionId,
-  copilotPluginOpenAIPluginOptionId,
-];
+export const copilotPluginExistingApiOptionIds = [copilotPluginApiSpecOptionId];
 export const copilotPluginNewApiOptionId = "copilot-plugin-new-api";
-export const copilotPluginOptionIds = [
-  copilotPluginNewApiOptionId,
-  copilotPluginApiSpecOptionId,
-  copilotPluginOpenAIPluginOptionId,
-];
+export const copilotPluginOptionIds = [copilotPluginNewApiOptionId, copilotPluginApiSpecOptionId];
 export const capabilitiesHavePythonOption = [
   "custom-copilot-basic",
   "custom-copilot-rag-azureAISearch",
@@ -607,11 +598,7 @@ export class CapabilityOptions {
   }
 
   static copilotPlugins(): OptionItem[] {
-    return [
-      CapabilityOptions.copilotPluginNewApi(),
-      CapabilityOptions.copilotPluginApiSpec(),
-      // CapabilityOptions.copilotPluginOpenAIPlugin(),
-    ];
+    return [CapabilityOptions.copilotPluginNewApi(), CapabilityOptions.copilotPluginApiSpec()];
   }
 
   static customCopilots(): OptionItem[] {
@@ -740,18 +727,6 @@ export class CapabilityOptions {
       ),
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
-      ),
-    };
-  }
-
-  static copilotPluginOpenAIPlugin(): OptionItem {
-    return {
-      id: copilotPluginOpenAIPluginOptionId,
-      label: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginAIPluginOption.label"
-      ),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginAIPluginOption.detail"
       ),
     };
   }

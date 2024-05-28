@@ -26,7 +26,7 @@ export class Executor {
     const maxRetries = 2;
 
     while (retryCount < maxRetries) {
-      // if failed, retry. 3 times at most.
+      // if failed, retry. 2 times at most.
       try {
         console.log(`[Start] "${command}" in ${cwd}.`);
         const options = {

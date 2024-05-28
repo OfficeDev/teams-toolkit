@@ -26,6 +26,7 @@ export class Executor {
     const maxRetries = 3;
 
     while (retryCount < maxRetries) {
+      // if failed, retry. 3 times at most.
       try {
         console.log(`[Start] "${command}" in ${cwd}.`);
         const options = {
@@ -53,9 +54,7 @@ export class Executor {
             `[Failed] "${command}" in ${cwd} with error: ${e.message}`
           );
         }
-
         retryCount++;
-
         if (retryCount >= maxRetries) {
           return { success: false, stdout: "", stderr: e.message as string };
         }
@@ -63,6 +62,7 @@ export class Executor {
         console.log(`Retrying "${command}" in ${cwd}. Attempt ${retryCount} of ${maxRetries}.`);
       }
     }
+    console.log(`[Failed] Not executed command ${command}`);
     return { success: false, stdout: "", stderr: ""};
   }
 

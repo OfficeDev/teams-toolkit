@@ -20,6 +20,10 @@ import {
   CLIVersionCheck,
   updateDeverloperInManifestFile,
 } from "../../../utils/commonUtils";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.migrationTestCase);
@@ -70,10 +74,8 @@ describe("Migration Tests", function () {
         mirgationDebugTestContext.projectPath
       );
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      // v3 deploy
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await provisionProject(mirgationDebugTestContext.appName);
+      await deployProject(mirgationDebugTestContext.appName);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

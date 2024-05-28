@@ -20,11 +20,9 @@ import {
   CLIVersionCheck,
   updateDeverloperInManifestFile,
 } from "../../../utils/commonUtils";
-import { VSBrowser } from "vscode-extension-tester";
 import {
-  reRunProvision,
-  runDeploy,
-  runProvision,
+  deployProject,
+  provisionProject,
 } from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
@@ -82,8 +80,8 @@ describe("Migration Tests", function () {
       );
 
       // v3 provision
-      await reRunProvision();
-      await runDeploy(Timeout.botDeploy);
+      await provisionProject(mirgationDebugTestContext.appName);
+      await deployProject(mirgationDebugTestContext.appName);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

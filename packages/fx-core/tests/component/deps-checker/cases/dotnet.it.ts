@@ -25,7 +25,6 @@ import {
   setExecutionPolicyForCurrentUser,
 } from "../utils/common";
 import * as dotnetUtils from "../utils/dotnet";
-import { dotnetInstallVersion } from "../utils/dotnet";
 
 describe("DotnetChecker E2E Test - first run", async () => {
   const sandbox = sinon.createSandbox();
@@ -183,7 +182,7 @@ describe("DotnetChecker E2E Test - first run", async () => {
     // user manually install
     await dotnetUtils.withDotnet(
       dotnetChecker,
-      dotnetInstallVersion,
+      dotnetUtils.dotnetInstallVersion,
       true,
       async (installedDotnetExecPath: string) => {
         // pre-check installed dotnet works
@@ -233,7 +232,7 @@ describe("DotnetChecker E2E Test - second run", () => {
     ) as DotnetChecker;
     await dotnetUtils.withDotnet(
       dotnetChecker,
-      dotnetInstallVersion,
+      dotnetUtils.dotnetInstallVersion,
       false,
       async (installedDotnetExecPath: string) => {
         // pre-check installed dotnet works
@@ -315,7 +314,7 @@ describe("DotnetChecker E2E Test - second run", () => {
 
     await dotnetUtils.withDotnet(
       dotnetChecker,
-      DotnetVersion.v31,
+      dotnetUtils.dotnetInstallVersion,
       true,
       async (installedDotnetExecPath: string) => {
         const invalidPath = "/this/path/does/not/exist";

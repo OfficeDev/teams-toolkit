@@ -55,7 +55,7 @@ describe("Debug V3 command-and-response template", () => {
       // create
       const myRecordAzOpenAI: Record<string, string> = {};
       myRecordAzOpenAI["programming-language"] = "python ";
-      myRecordAzOpenAI["custom-copilot-agent"] = "custom-copilot-agent-assistant-api";
+      myRecordAzOpenAI["custom-copilot-agent"] = "custom-copilot-agent-assistants-api";
       myRecordAzOpenAI["llm-service"] = "llm-service-openai";
       myRecordAzOpenAI["openai-key"] = "fake";
       const options = Object.entries(myRecordAzOpenAI)

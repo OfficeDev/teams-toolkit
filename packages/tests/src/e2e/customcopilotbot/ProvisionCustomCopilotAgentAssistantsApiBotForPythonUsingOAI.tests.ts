@@ -26,7 +26,7 @@ class AgentAssitantApiOpenAITestCase extends CaseFactory {
 
 // OpenAI
 const myRecordOpenAI: Record<string, string> = {};
-myRecordOpenAI["custom-copilot-agent"] = "custom-copilot-agent-assistant-api";
+myRecordOpenAI["custom-copilot-agent"] = "custom-copilot-agent-assistants-api";
 myRecordOpenAI["llm-service"] = "llm-service-openai";
 myRecordOpenAI["openai-key"] = "fake";
 new AgentAssitantApiOpenAITestCase(

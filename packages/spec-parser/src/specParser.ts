@@ -189,7 +189,9 @@ export class SpecParser {
 
         if (isValid) {
           const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
-          apiResult.server = serverObj!.url;
+          if (serverObj) {
+            apiResult.server = serverObj.url;
+          }
 
           const authArray = Utils.getAuthArray(operation.security, spec);
           for (const auths of authArray) {

@@ -20,47 +20,50 @@ export class Executor {
     command: string,
     cwd: string,
     processEnv?: NodeJS.ProcessEnv,
-    timeout?: number,
-    withRetry?: boolean
+    timeout?: number
   ) {
-    try {
-      console.log(`[Start] "${command}" in ${cwd}.`);
-      const result = withRetry ? 
-        await execAsyncWithRetry(
-          command, 
-          {
-            cwd,
-            env: processEnv ?? process.env,
-            timeout: timeout ?? 0,
-          },
-          3
-        ) :
-        await execAsync(command, {
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        console.log(`[Start] "${command}" in ${cwd}.`);
+        const options = {
           cwd,
           env: processEnv ?? process.env,
           timeout: timeout ?? 0,
-        });
-  
-      if (result.stderr) {
-        /// the command exit with 0
-        console.log(
-          `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
-        );
-        return { ...result, success: false };
-      } else {
-        console.log(`[Success] "${command}" in ${cwd}.`);
-        return { ...result, success: true };
+        };
+        const result = await execAsync(command, options);
+
+        if (result.stderr) {
+          /// the command exit with 0
+          console.log(
+              `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+          );
+          return { success: false, ...result };
+        } else {
+          console.log(`[Success] "${command}" in ${cwd}.`);
+          return { success: true, ...result };
+        }
+      } catch (e: any) {
+        if (e.killed && e.signal == "SIGTERM") {
+          console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
+        } else {
+          console.error(
+            `[Failed] "${command}" in ${cwd} with error: ${e.message}`
+          );
+        }
+
+        retryCount++;
+
+        if (retryCount >= maxRetries) {
+          return { success: false, stdout: "", stderr: e.message as string };
+        }
+
+        console.log(`Retrying "${command}" in ${cwd}. Attempt ${retryCount} of ${maxRetries}.`);
       }
-    } catch (e: any) {
-      if (e.killed && e.signal == "SIGTERM") {
-        console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
-      } else {
-        console.error(
-          `[Failed] "${command}" in ${cwd} with error: ${e.message}`
-        );
-      }
-      return { stdout: "", stderr: e.message as string, success: false };
     }
+    return { success: false, stdout: "", stderr: ""};
   }
 
   static async login() {
@@ -127,13 +130,12 @@ export class Executor {
     env = "dev",
     processEnv?: NodeJS.ProcessEnv,
     npx = false,
-    isV3 = true,
-    withRetry = false
+    isV3 = true
   ) {
     const npxCommand = npx ? "npx " : "";
     const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
     const command = `${npxCommand} ${cliPrefix} ${cmd} --env ${env}`;
-    return this.execute(command, workspace, processEnv, 0, withRetry);
+    return this.execute(command, workspace, processEnv, 0);
   }
 
   static async provision(workspace: string, env = "dev", isV3 = true) {
@@ -173,7 +175,7 @@ export class Executor {
   }
 
   static async deploy(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "deploy", env, undefined, false, true, true);
+    return this.executeCmd(workspace, "deploy", env);
   }
 
   static async deployWithCustomizedProcessEnv(

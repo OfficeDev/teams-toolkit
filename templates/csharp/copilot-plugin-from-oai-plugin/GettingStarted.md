@@ -14,6 +14,7 @@
 to install the app to.
 3. Right-click your project and select `Teams Toolkit > Preview in > Teams`.
 4. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## Learn more
 

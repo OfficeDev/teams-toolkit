@@ -13,6 +13,7 @@
 to install the app to.
 3. Right-click your project and select `Teams Toolkit > Preview in > Teams`.
 4. When Teams launches in the browser, open the `Copilot` app and send a prompt to trigger your plugin.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 {{#ApiKey}}
 > [!NOTE]

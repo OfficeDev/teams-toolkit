@@ -23,7 +23,7 @@ export class Executor {
     timeout?: number
   ) {
     let retryCount = 0;
-    const maxRetries = 3;
+    const maxRetries = 2;
 
     while (retryCount < maxRetries) {
       // if failed, retry. 3 times at most.

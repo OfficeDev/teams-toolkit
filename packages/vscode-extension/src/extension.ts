@@ -111,7 +111,9 @@ export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
-    IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0-insider")
+    IsChatParticipantEnabled &&
+    semver.gte(vscode.version, "1.90.0-insider") &&
+    vscode.version.includes("insider")
   ).toString();
   initializePreviewFeatureFlags();
 
@@ -161,7 +163,14 @@ export async function activate(context: vscode.ExtensionContext) {
     isChatParticipantEnabled()
   );
 
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings

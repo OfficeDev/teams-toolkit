@@ -138,7 +138,7 @@ export async function buildTemplateFileTree(
   const context = createContextV3();
   generator.activate(context, createInputs);
   await generator.run(context, createInputs, tempFolder);
-  const isCustomFunction = data.capabilities.includes("excel-cf");
+  const isCustomFunction = data.capabilities.includes("excel-custom-functions");
   if (!!isCustomFunction && !!codeSnippet) {
     await mergeCFCode(tempFolder, codeSnippet);
   } else if (!!codeSnippet) {

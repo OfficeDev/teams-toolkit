@@ -80,8 +80,11 @@ describe("Migration Tests", function () {
       );
 
       // v3 provision
-      await provisionProject(mirgationDebugTestContext.appName);
-      await deployProject(mirgationDebugTestContext.appName);
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

@@ -161,6 +161,7 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 5);
+          assert.isUndefined((options as OptionItem[])[0].groupName);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -3331,6 +3332,57 @@ describe("scaffold question", () => {
     });
     afterEach(() => {
       mockedEnvRestore();
+    });
+
+    it("notification bot", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 6);
+          assert.equal(
+            getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+            (options as OptionItem[])[0].groupName
+          );
+          return ok({ type: "success", result: ProjectTypeOptions.bot().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          return ok({ type: "success", result: CapabilityOptions.notificationBot().id });
+        } else if (question.name === QuestionNames.BotTrigger) {
+          return ok({ type: "success", result: NotificationTriggerOptions.appService().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          return ok({ type: "success", result: "javascript" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.BotTrigger,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
     });
 
     it("chat with Copilot Chat", async () => {

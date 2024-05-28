@@ -21,8 +21,8 @@ import * as sinon from "sinon";
 import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
 import * as tools from "../../../src/common/utils";
 import { CallbackRegistry } from "../../../src/core/callback";
-import { NoProjectOpenedError } from "../../../src/error";
 import { ConcurrentLockerMW, getLockFolder } from "../../../src/core/middleware/concurrentLocker";
+import { CoreSource, NoProjectOpenedError } from "../../../src/error";
 import {
   ConcurrentError,
   FileNotFoundError,
@@ -30,7 +30,6 @@ import {
   UserCancelError,
 } from "../../../src/error/common";
 import { randomAppName } from "../utils";
-import { CoreSource } from "../../../src/core/error";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {

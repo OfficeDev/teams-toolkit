@@ -10,7 +10,6 @@ import {
   FxError,
   IQTreeNode,
   Inputs,
-  OpenAIPluginManifest,
   Result,
   Stage,
   Tools,
@@ -93,7 +92,6 @@ export default class ServerConnection implements IServerConnection {
       this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
       this.copilotPluginAddAPIRequest.bind(this),
-      this.loadOpenAIPluginManifestRequest.bind(this),
       this.listOpenAPISpecOperationsRequest.bind(this),
       this.checkAndInstallTestTool.bind(this),
       this.listPluginApiSpecs.bind(this),
@@ -451,19 +449,6 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (inputs) => this.core.listPluginApiSpecs(inputs),
-      inputs
-    );
-    return standardizeResult(res);
-  }
-
-  public async loadOpenAIPluginManifestRequest(
-    inputs: Inputs,
-    token: CancellationToken
-  ): Promise<Result<OpenAIPluginManifest, FxError>> {
-    const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const res = await Correlator.runWithId(
-      corrId,
-      (inputs) => this.core.copilotPluginLoadOpenAIManifest(inputs),
       inputs
     );
     return standardizeResult(res);

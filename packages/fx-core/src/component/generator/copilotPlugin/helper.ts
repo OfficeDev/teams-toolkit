@@ -114,7 +114,6 @@ export interface ErrorResult {
 
 export async function listOperations(
   context: Context,
-  manifest: OpenAIPluginManifest | undefined, // TODO: clean
   apiSpecUrl: string | undefined,
   inputs: Inputs,
   includeExistingAPIs = true,
@@ -147,7 +146,6 @@ export async function listOperations(
       validationRes.errors,
       validationRes.warnings,
       context,
-      true,
       shouldLogWarning,
       false,
       existingCorrelationId
@@ -206,7 +204,7 @@ export async function listOperations(
             inputs
           );
 
-          logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
+          logValidationResults(errors, [], context, true, false, existingCorrelationId);
           return err(errors);
         }
 
@@ -224,7 +222,7 @@ export async function listOperations(
             ],
             inputs
           );
-          logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
+          logValidationResults(errors, [], context, true, false, existingCorrelationId);
           return err(errors);
         }
       } else {
@@ -326,7 +324,6 @@ export function logValidationResults(
   errors: ErrorResult[],
   warnings: WarningResult[],
   context: Context,
-  isApiSpec: boolean, // TODO: remove
   shouldLogWarning: boolean,
   shouldSkipTelemetry: boolean,
   existingCorrelationId?: string

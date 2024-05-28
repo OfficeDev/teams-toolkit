@@ -52,7 +52,6 @@ import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import {
-  OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
   copilotPluginParserOptions,
   defaultApiSpecFolderName,
@@ -73,9 +72,7 @@ import {
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
-const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
-const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
 const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
@@ -462,7 +459,7 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
       }
 
       if (validationRes.status === ValidationStatus.Error) {
-        logValidationResults(validationRes.errors, warnings, context, true, false, true);
+        logValidationResults(validationRes.errors, warnings, context, false, true);
         const errorMessage =
           inputs.platform === Platform.VSCode
             ? getLocalizedString(
@@ -545,14 +542,6 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
       }
 
       const teamsManifest = manifestRes.value;
-      if (inputs.openAIPluginManifest) {
-        const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
-          inputs.openAIPluginManifest,
-          teamsManifest,
-          manifestPath
-        );
-        if (updateManifestRes.isErr()) return err(updateManifestRes.error);
-      }
 
       if (getTemplateInfosState.templateName === forCustomCopilotRagCustomApi) {
         const specs = await specParser.getFilteredSpecs(filters);

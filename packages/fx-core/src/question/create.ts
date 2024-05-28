@@ -45,10 +45,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "../component/driver/teamsApp/utils/utils";
-import {
-  OpenAIPluginManifestHelper,
-  listOperations,
-} from "../component/generator/copilotPlugin/helper";
+import { listOperations } from "../component/generator/copilotPlugin/helper";
 import {
   IOfficeAddinHostConfig,
   OfficeAddinProjectConfig,
@@ -752,8 +749,6 @@ export function appNameQuestion(): TextInputQuestion {
         defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
       } else if (inputs[QuestionNames.SPFxSolution] == "import") {
         defaultName = await getSolutionName(inputs[QuestionNames.SPFxFolder]);
-      } else if (inputs.openAIPluginManifest) {
-        defaultName = inputs.openAIPluginManifest.name_for_human;
       }
       return defaultName;
     },
@@ -1025,7 +1020,6 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       const context = createContextV3();
       const res = await listOperations(
         context,
-        undefined,
         input.trim(),
         inputs,
         includeExistingAPIs,
@@ -1398,26 +1392,6 @@ export function capabilitySubTree(): IQTreeNode {
         data: meArchitectureQuestion(),
       },
       {
-        // API ME from API Spec or Copilot plugin from API spec or AI Plugin
-        condition: (inputs: Inputs) => {
-          return (
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
-            inputs[QuestionNames.Capabilities] ===
-              CapabilityOptions.copilotPluginOpenAIPlugin().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
-          );
-        },
-        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
-        children: [
-          {
-            data: apiSpecLocationQuestion(),
-          },
-          {
-            data: apiOperationQuestion(),
-          },
-        ],
-      },
-      {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
         },
@@ -1428,21 +1402,22 @@ export function capabilitySubTree(): IQTreeNode {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
         },
         data: customCopilotRagQuestion(),
+      },
+      {
+        // from API spec
+        condition: (inputs: Inputs) => {
+          return (
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
+            inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+          );
+        },
+        data: { type: "group", name: QuestionNames.FromExistingApi },
         children: [
           {
-            condition: (inputs: Inputs) => {
-              return (
-                inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
-              );
-            },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: (inputs: Inputs) => {
-              return (
-                inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
-              );
-            },
             data: apiOperationQuestion(),
           },
         ],
@@ -1462,8 +1437,6 @@ export function capabilitySubTree(): IQTreeNode {
           return (
             !!inputs[QuestionNames.Capabilities] &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
-            inputs[QuestionNames.Capabilities] !==
-              CapabilityOptions.copilotPluginOpenAIPlugin().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
             inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&

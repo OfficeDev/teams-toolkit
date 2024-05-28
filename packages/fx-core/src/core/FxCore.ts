@@ -19,7 +19,6 @@ import {
   Inputs,
   InputsWithProjectPath,
   ManifestUtil,
-  OpenAIPluginManifest,
   Platform,
   ResponseTemplatesFolderName,
   Result,
@@ -89,7 +88,6 @@ import { createDriverContext } from "../component/driver/util/utils";
 import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
-  OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
   copilotPluginParserOptions,
   defaultApiSpecFolderName,
@@ -1252,7 +1250,7 @@ export class FxCore {
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<string, FxError>> {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
-    const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const url = inputs[QuestionNames.ApiSpecLocation];
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
     const context = createContextV3();
@@ -1463,26 +1461,12 @@ export class FxCore {
   }
 
   @hooks([
-    ErrorContextMW({ component: "FxCore", stage: "copilotPluginLoadOpenAIManifest" }),
-    ErrorHandlerMW,
-  ])
-  async copilotPluginLoadOpenAIManifest(
-    inputs: Inputs
-  ): Promise<Result<OpenAIPluginManifest, FxError>> {
-    try {
-      return ok(await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(inputs.domain));
-    } catch (error) {
-      return err(error as FxError);
-    }
-  }
-  @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginListOperations" }),
     ErrorHandlerMW,
   ])
   async copilotPluginListOperations(inputs: Inputs): Promise<Result<ApiOperation[], FxError>> {
     const res = await listOperations(
       createContextV3(),
-      inputs.manifest,
       inputs.apiSpecUrl,
       inputs,
       inputs.includeExistingAPIs,

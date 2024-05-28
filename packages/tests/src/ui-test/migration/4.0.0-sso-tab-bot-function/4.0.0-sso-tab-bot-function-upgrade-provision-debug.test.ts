@@ -20,7 +20,10 @@ import {
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
-import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -71,8 +74,11 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // v3 provision
-      await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy(Timeout.botDeploy);
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify

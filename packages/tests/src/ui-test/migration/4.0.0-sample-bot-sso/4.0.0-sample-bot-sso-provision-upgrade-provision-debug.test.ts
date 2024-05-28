@@ -22,6 +22,10 @@ import {
 import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -74,10 +78,11 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // v3 provision
-      await sampledebugContext.provisionWithCLI("dev", true);
-      // v3 deploy
-      await CLIVersionCheck("V3", sampledebugContext.projectPath);
-      await sampledebugContext.deployWithCLI("dev");
+      await provisionProject(
+        sampledebugContext.appName,
+        sampledebugContext.projectPath
+      );
+      await deployProject(sampledebugContext.projectPath);
 
       const teamsAppId = await sampledebugContext.getTeamsAppId("dev");
       console.log(teamsAppId);

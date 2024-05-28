@@ -37,7 +37,7 @@ describe("chat utils", () => {
         name: "",
         family: "gpt-3.5-turbo",
         version: "",
-        contextSize: 0,
+        maxInputTokens: 0,
         countTokens: sandbox.stub(),
       };
       sandbox.stub(vscode.lm, "selectChatModels").resolves([chatModel]);
@@ -84,7 +84,7 @@ describe("chat utils", () => {
         name: "",
         family: "gpt-3.5-turbo",
         version: "",
-        contextSize: 0,
+        maxInputTokens: 0,
         countTokens: sandbox.stub(),
       };
       sandbox.stub(vscode.lm, "selectChatModels").resolves([chatModel]);

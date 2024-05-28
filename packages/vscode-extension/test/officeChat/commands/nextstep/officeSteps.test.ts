@@ -9,41 +9,27 @@ describe("office steps", () => {
   const sandbox = sinon.createSandbox();
   const steps = officeSteps();
 
-  describe('title: "Teams Toolkit"', () => {
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("condition: selected", () => {
-      sandbox.stub(condition, "isFirstInstalled").returns(true);
-      const step = steps.find((s) => s.title === "Teams Toolkit");
-      chai.assert.isNotEmpty(step);
-      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
-    });
-
-    it("condition: not selected", () => {
-      sandbox.stub(condition, "isFirstInstalled").returns(false);
-      const step = steps.find((s) => s.title === "Teams Toolkit");
-      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
-    });
-  });
-
-  describe('title: "New Project"', () => {
+  describe('title: "Create a New Project"', () => {
     afterEach(() => {
       sandbox.restore();
     });
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
-      const step = steps.find((s) => s.title === "New Project");
-      chai.assert.isNotEmpty(step);
-      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
+      const newProject = steps.find((s) => s.title === "Create a New Project");
+      const samples = steps.find((s) => s.title === "View Samples");
+      chai.assert.isNotEmpty(newProject);
+      chai.assert.isNotEmpty(samples);
+      chai.assert.isTrue(newProject?.condition({} as OfficeWholeStatus));
+      chai.assert.isTrue(samples?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      const step = steps.find((s) => s.title === "New Project");
-      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
+      const newProject = steps.find((s) => s.title === "Create a New Project");
+      const samples = steps.find((s) => s.title === "View Samples");
+      chai.assert.isFalse(newProject?.condition({} as OfficeWholeStatus));
+      chai.assert.isFalse(samples?.condition({} as OfficeWholeStatus));
     });
   });
 

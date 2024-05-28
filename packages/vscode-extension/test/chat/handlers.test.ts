@@ -1,22 +1,9 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as fs from "fs-extra";
 import { CancellationToken } from "../mocks/vsc";
-import { URI } from "../mocks/vsc/uri";
 import { TeamsChatCommand } from "../../src/chat/consts";
 import * as handler from "../../src/chat/handlers";
-import {
-  ChatContext,
-  ChatLocation,
-  ChatRequest,
-  ChatResponseStream,
-  workspace,
-  window,
-  QuickPickItem,
-  commands,
-  ChatResultFeedback,
-  env,
-} from "vscode";
+import { ChatContext, ChatRequest, ChatResponseStream, commands, ChatResultFeedback } from "vscode";
 import * as createCommandHandler from "../../src/chat/commands/create/createCommandHandler";
 import * as nextStepCommandHandler from "../../src/chat/commands/nextstep/nextstepCommandHandler";
 import * as telemetry from "../../src/chat/telemetry";
@@ -27,13 +14,8 @@ import {
   TelemetryTriggerFrom,
 } from "../../src/telemetry/extTelemetryEvents";
 import * as util from "../../src/chat/utils";
-import * as generatorUtil from "@microsoft/teamsfx-core/build/component/generator/utils";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import { ProjectMetadata } from "../../src/chat/commands/create/types";
 import { Correlator } from "@microsoft/teamsfx-core";
-import * as path from "path";
 import { openUrlCommandHandler } from "../../src/chat/handlers";
-import { request } from "http";
 import { CommandKey } from "../../src/constants";
 
 describe("chat handlers", () => {
@@ -51,14 +33,14 @@ describe("chat handlers", () => {
     });
 
     it("call createCommandHandler", async () => {
-      const request: ChatRequest = {
+      const request = {
         prompt: "fakePrompt",
         command: TeamsChatCommand.Create,
         references: [],
-        location: ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as ChatRequest;
       const createCommandHandlerStub = sandbox.stub(createCommandHandler, "default");
       handler.chatRequestHandler(
         request,
@@ -79,14 +61,14 @@ describe("chat handlers", () => {
     });
 
     it("call nextStepCommandHandler", async () => {
-      const request: ChatRequest = {
+      const request = {
         prompt: "fakePrompt",
         command: TeamsChatCommand.NextStep,
         references: [],
-        location: ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as ChatRequest;
 
       const nextStepCommandHandlerStub = sandbox.stub(nextStepCommandHandler, "default");
       handler.chatRequestHandler(
@@ -108,14 +90,14 @@ describe("chat handlers", () => {
     });
 
     it("call defaultHandler", async () => {
-      const request: ChatRequest = {
+      const request = {
         prompt: "fakePrompt",
         command: "",
         references: [],
-        location: ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as ChatRequest;
 
       const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       const metaDataMock = { metadata: { command: undefined, requestId: undefined } };
@@ -142,14 +124,14 @@ describe("chat handlers", () => {
     });
 
     it("call defaultHandler - error", async () => {
-      const request: ChatRequest = {
+      const request = {
         prompt: "",
         command: "",
         references: [],
-        location: ChatLocation.Panel,
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as ChatRequest;
 
       const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       const metaDataMock = { metadata: { command: undefined, requestId: undefined } };

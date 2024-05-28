@@ -4,7 +4,6 @@ import {
   isDebugSucceededAfterSourceCodeChanged,
   isDependenciesInstalled,
   isDidNoActionAfterScaffolded,
-  isFirstInstalled,
   isHaveReadMe,
   isProjectOpened,
 } from "../../../../src/officeChat/commands/nextStep/condition";
@@ -13,16 +12,6 @@ import { emptyProjectStatus } from "../../../../src/utils/projectStatusUtils";
 import { CommandKey } from "../../../../src/constants";
 
 describe("offce chat nextstep conditions", () => {
-  it("isFirstInstalled", () => {
-    chai.assert.isTrue(
-      isFirstInstalled({
-        machineStatus: {
-          firstInstalled: true,
-        },
-      } as OfficeWholeStatus)
-    );
-  });
-
   it("isProjectOpened", () => {
     chai.assert.isTrue(
       isProjectOpened({

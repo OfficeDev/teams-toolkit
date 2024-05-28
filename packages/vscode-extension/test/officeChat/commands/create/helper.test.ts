@@ -179,7 +179,7 @@ describe("File: office chat create helper", () => {
 
     it("call filetree API with cf project", async () => {
       const data = {
-        capabilities: "excel-cftest",
+        capabilities: "excel-custom-functions-test",
         "project-type": "test",
         "addin-host": "test",
         agent: "test",
@@ -295,7 +295,7 @@ describe("File: office chat create helper", () => {
     it("fail to merge taskpane code snippet", async () => {
       sandbox.stub(fs, "readFile").rejects(new Error("test"));
       const data = {
-        capabilities: "excel-cftest",
+        capabilities: "excel-custom-functions-test",
         "project-type": "test",
         "addin-host": "test",
         agent: "test",

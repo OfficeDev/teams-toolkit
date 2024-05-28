@@ -1857,7 +1857,7 @@ export async function showError(e: UserError | SystemError) {
   const errorCode = `${e.source}.${e.name}`;
   const runTestTool = {
     title: localize("teamstoolkit.handlers.debugInTestTool"),
-    run: () => debugInTestToolHandler("message"),
+    run: () => debugInTestToolHandler("message")(),
   };
   const recommendTestTool =
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&

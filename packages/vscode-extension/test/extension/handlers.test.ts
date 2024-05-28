@@ -1536,6 +1536,31 @@ describe("handlers", () => {
     );
   });
 
+  it("showError with test tool button click", async () => {
+    sandbox.stub(localizeUtils, "localize").returns("");
+    const showErrorMessageStub = sandbox
+      .stub(vscode.window, "showErrorMessage")
+      .callsFake((title: string, button: any) => {
+        return Promise.resolve(button);
+      });
+    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(vscode.commands, "executeCommand");
+    const error = new UserError("test source", "test name", "test message", "test displayMessage");
+    error.recommendedOperation = "debug-in-test-tool";
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+    sinon.stub(fs, "pathExistsSync").returns(true);
+
+    await handlers.showError(error);
+
+    chai.assert.isFalse(
+      sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.ClickGetHelp, {
+        "error-code": "test source.test name",
+        "error-message": "test displayMessage",
+        "help-link": "test helpLink",
+      })
+    );
+  });
+
   it("showError - similar issues", async () => {
     sandbox
       .stub(vscode.window, "showErrorMessage")

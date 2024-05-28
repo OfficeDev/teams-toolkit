@@ -90,7 +90,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## Extend the template
 
 - Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
-- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#microsoft-365-as-data-source).
+- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#azure-ai-search-as-data-source).
 
 ## Additional information and references
 

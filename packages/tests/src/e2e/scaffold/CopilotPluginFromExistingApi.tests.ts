@@ -64,7 +64,7 @@ describe("Create Copilot plugin", () => {
         "appPackage/manifest.json",
       ];
       for (const file of files) {
-        const filePath = path.join(testFolder, appName, `src`, file);
+        const filePath = path.join(testFolder, appName, file);
         expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
       }
     }

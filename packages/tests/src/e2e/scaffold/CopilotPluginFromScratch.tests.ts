@@ -45,9 +45,6 @@ describe("Create Copilot plugin", () => {
       env["API_COPILOT_PLUGIN"] = "true";
       env["DEVELOP_COPILOT_PLUGIN"] = "true";
 
-      const apiSpecPath = path.join(__dirname, "../", "apispec.yml");
-
-      console.log(apiSpecPath);
       // create
       await CliHelper.createProjectWithCapability(
         appName,
@@ -63,7 +60,7 @@ describe("Create Copilot plugin", () => {
         "appPackage/manifest.json",
       ];
       for (const file of files) {
-        const filePath = path.join(testFolder, appName, `src`, file);
+        const filePath = path.join(testFolder, appName, file);
         expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
       }
     }

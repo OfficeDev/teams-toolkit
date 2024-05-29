@@ -45,7 +45,7 @@ describe("Create Copilot plugin", () => {
       env["API_COPILOT_PLUGIN"] = "true";
       env["DEVELOP_COPILOT_PLUGIN"] = "true";
 
-      const apiSpecPath = path.join(__dirname, "../", "apispec.yml");
+      const apiSpecPath = path.join(__dirname, "../", "testApiSpec.yml");
 
       console.log(apiSpecPath);
       // create

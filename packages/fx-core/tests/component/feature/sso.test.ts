@@ -11,7 +11,7 @@ import { Container } from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
 import "../../../src/component/feature/sso";
 import * as templateUtils from "../../../src/component/generator/utils";
-import * as utils from "../../../src/component/utils";
+import * as utils from "../../../src/common/globalVars";
 import { setTools } from "../../../src/common/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 

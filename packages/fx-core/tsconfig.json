@@ -20,7 +20,7 @@
     "resolveJsonModule": true,
     "jsx": "react",
     "declaration": true,
-    "plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]
+    "plugins": []
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/tests/*"]

@@ -23,11 +23,11 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
+import { getResourceGroupInPortal } from "../../common/constants";
 import { isNewGeneratorEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
 import { ObjectIsUndefinedError } from "../../core/error";
@@ -47,9 +47,9 @@ import {
   MeArchitectureOptions,
   OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../question/create";
-import { QuestionNames } from "../../question/questionNames";
+} from "../../question/constants";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import { CoordinatorSource } from "../constants";
@@ -60,9 +60,12 @@ import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
+import { Generators } from "../generator/generatorProvider";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
+import { Feature2TemplateName } from "../generator/templates/templateNames";
+import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
@@ -71,9 +74,6 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { Generators } from "../generator/generatorProvider";
-import { Feature2TemplateName } from "../generator/templates/templateNames";
-import { convertToLangKey } from "../generator/utils";
 
 const M365Actions = [
   "botAadApp/create",
@@ -159,66 +159,53 @@ class Coordinator {
         [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
+      if (projectType === ProjectTypeOptions.customCopilot().id) {
+        merge(actionContext?.telemetryProps, {
+          [TelemetryProperty.CustomCopilotRAG]: inputs["custom-copilot-rag"] ?? "",
+          [TelemetryProperty.CustomCopilotAgent]: inputs["custom-copilot-agent"] ?? "",
+          [TelemetryProperty.LlmService]: inputs["llm-service"] ?? "",
+          [TelemetryProperty.HasAzureOpenAIKey]: inputs["azure-openai-key"] ? "true" : "false",
+          [TelemetryProperty.HasAzureOpenAIEndpoint]: inputs["azure-openai-endpoint"]
+            ? "true"
+            : "false",
+          [TelemetryProperty.HasAzureOpenAIDeploymentName]: inputs["azure-openai-deployment-name"]
+            ? "true"
+            : "false",
+          [TelemetryProperty.HasOpenAIKey]: inputs["openai-key"] ? "true" : "false",
+        });
+      }
 
-      if (capability === CapabilityOptions.SPFxTab().id) {
-        const res = await SPFxGenerator.generate(context, inputs, projectPath);
-        if (res.isErr()) return err(res.error);
-      } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
-        const addinHost = inputs[QuestionNames.OfficeAddinHost];
-        if (
-          projectType === ProjectTypeOptions.officeXMLAddin().id &&
-          addinHost &&
-          addinHost !== OfficeAddinHostOptions.outlook().id
-        ) {
-          const res = await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
-          if (res.isErr()) return err(res.error);
-        } else {
-          const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-          if (res.isErr()) return err(res.error);
-        }
-      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
-        const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
-        const res = await CopilotPluginGenerator.generateMeFromApiSpec(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-        const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else if (isNewGeneratorEnabled()) {
+      if (isNewGeneratorEnabled()) {
+        // refactored generator
         const generator = Generators.find((g) => g.activate(context, inputs));
         if (!generator) {
           return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }
         const res = await generator.run(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
-        // TODO: move the following code to CopilotPluginGenerator
-        if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
-          const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
+        else {
+          warnings = res.value.warnings;
+        }
+      } else {
+        // legacy logic
+        if (capability === CapabilityOptions.SPFxTab().id) {
+          const res = await SPFxGenerator.generate(context, inputs, projectPath);
+          if (res.isErr()) return err(res.error);
+        } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
+          const addinHost = inputs[QuestionNames.OfficeAddinHost];
+          if (
+            projectType === ProjectTypeOptions.officeXMLAddin().id &&
+            addinHost &&
+            addinHost !== OfficeAddinHostOptions.outlook().id
+          ) {
+            const res = await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
+            if (res.isErr()) return err(res.error);
+          } else {
+            const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+            if (res.isErr()) return err(res.error);
+          }
+        } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+          const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
             context,
             inputs,
             projectPath
@@ -228,93 +215,110 @@ class Coordinator {
           } else {
             warnings = res.value.warnings;
           }
-        }
-      } else {
-        if (
-          capability === CapabilityOptions.m365SsoLaunchPage().id ||
-          capability === CapabilityOptions.m365SearchMe().id
-        ) {
-          inputs.isM365 = true;
-        }
-        const trigger = inputs[QuestionNames.BotTrigger] as string;
-        let feature = `${capability}:${trigger}`;
-
-        if (
-          language === "csharp" &&
-          capability === CapabilityOptions.notificationBot().id &&
-          inputs.isIsolated === true
-        ) {
-          feature += "-isolated";
-        }
-
-        if (meArchitecture) {
-          feature = `${feature}:${meArchitecture}`;
-        }
-        if (
-          inputs.targetFramework &&
-          inputs.targetFramework !== "net6.0" &&
-          inputs.targetFramework !== "net7.0" &&
-          (capability === CapabilityOptions.nonSsoTab().id ||
-            capability === CapabilityOptions.tab().id)
-        ) {
-          feature = `${capability}:ssr`;
-        }
-
-        if (
-          capability === CapabilityOptions.m365SearchMe().id &&
-          meArchitecture === MeArchitectureOptions.newApi().id
-        ) {
-          feature = `${feature}:${apiMEAuthType}`;
-        }
-
-        if (capability === CapabilityOptions.customCopilotRag().id) {
-          feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
-        } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
-          feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
-        }
-
-        const templateName = Feature2TemplateName[feature];
-
-        if (templateName) {
-          const langKey = convertToLangKey(language);
-          const safeProjectNameFromVS =
-            language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-          const llmService: string | undefined = inputs[QuestionNames.LLMService];
-          const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
-          const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
-          const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
-          const azureOpenAIDeploymentName: string | undefined =
-            inputs[QuestionNames.AzureOpenAIDeploymentName];
-          context.templateVariables = Generator.getDefaultVariables(
-            appName,
-            safeProjectNameFromVS,
-            inputs.targetFramework,
-            inputs.placeProjectFileInSolutionDir === "true",
-            undefined,
-            {
-              llmService,
-              openAIKey,
-              azureOpenAIKey,
-              azureOpenAIEndpoint,
-              azureOpenAIDeploymentName,
-            }
+        } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+          const res = await CopilotPluginGenerator.generateMeFromApiSpec(
+            context,
+            inputs,
+            projectPath
           );
-          const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
-          if (res.isErr()) return err(res.error);
-          if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
-            const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
-              context,
-              inputs,
-              projectPath
-            );
-            if (res.isErr()) {
-              return err(res.error);
-            } else {
-              warnings = res.value.warnings;
-            }
+          if (res.isErr()) {
+            return err(res.error);
+          } else {
+            warnings = res.value.warnings;
           }
         } else {
-          return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
+          if (
+            capability === CapabilityOptions.m365SsoLaunchPage().id ||
+            capability === CapabilityOptions.m365SearchMe().id
+          ) {
+            inputs.isM365 = true;
+          }
+          const trigger = inputs[QuestionNames.BotTrigger] as string;
+          let feature = `${capability}:${trigger}`;
+
+          if (
+            language === "csharp" &&
+            capability === CapabilityOptions.notificationBot().id &&
+            inputs.isIsolated === true
+          ) {
+            feature += "-isolated";
+          }
+
+          if (meArchitecture) {
+            feature = `${feature}:${meArchitecture}`;
+          }
+          if (
+            inputs.targetFramework &&
+            inputs.targetFramework !== "net6.0" &&
+            inputs.targetFramework !== "net7.0" &&
+            (capability === CapabilityOptions.nonSsoTab().id ||
+              capability === CapabilityOptions.tab().id)
+          ) {
+            feature = `${capability}:ssr`;
+          }
+
+          if (
+            capability === CapabilityOptions.m365SearchMe().id &&
+            meArchitecture === MeArchitectureOptions.newApi().id
+          ) {
+            feature = `${feature}:${apiMEAuthType}`;
+          }
+
+          if (capability === CapabilityOptions.customCopilotRag().id) {
+            feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
+          } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
+            feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
+          }
+
+          const templateName = Feature2TemplateName[feature];
+
+          if (templateName) {
+            const langKey = convertToLangKey(language);
+            const safeProjectNameFromVS =
+              language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+            const llmService: string | undefined = inputs[QuestionNames.LLMService];
+            const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
+            const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
+            const azureOpenAIEndpoint: string | undefined =
+              inputs[QuestionNames.AzureOpenAIEndpoint];
+            const azureOpenAIDeploymentName: string | undefined =
+              inputs[QuestionNames.AzureOpenAIDeploymentName];
+            context.templateVariables = Generator.getDefaultVariables(
+              appName,
+              safeProjectNameFromVS,
+              inputs.targetFramework,
+              inputs.placeProjectFileInSolutionDir === "true",
+              undefined,
+              {
+                llmService,
+                openAIKey,
+                azureOpenAIKey,
+                azureOpenAIEndpoint,
+                azureOpenAIDeploymentName,
+              }
+            );
+            const res = await Generator.generateTemplate(
+              context,
+              projectPath,
+              templateName,
+              langKey
+            );
+            if (res.isErr()) return err(res.error);
+            if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
+              const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
+                context,
+                inputs,
+                projectPath
+              );
+              if (res.isErr()) {
+                return err(res.error);
+              } else {
+                warnings = res.value.warnings;
+              }
+            }
+          } else {
+            return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
+          }
         }
       }
     }
@@ -761,8 +765,9 @@ class Coordinator {
         void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    ctx.logProvider.info(msg);
-
+    if (ctx.platform !== Platform.CLI) {
+      ctx.logProvider.info(msg);
+    }
     return ok(output);
   }
 

@@ -369,6 +369,11 @@ export interface IPlugin {
   id: string;
 }
 
+export interface IDeclarativeCopilot {
+  file: string;
+  id: string;
+}
+
 export type AppManifest = Record<string, any>;
 
 /**
@@ -545,8 +550,15 @@ export class TeamsAppManifest implements AppManifest {
       resourceSpecific?: IAppPermission[];
     };
   };
-  /**
-   * Pointer to plugin manifest.
-   */
-  plugins?: IPlugin[];
+
+  copilotExtensions?: {
+    /**
+     * Pointer to plugins.
+     */
+    plugins?: IPlugin[];
+    /**
+     * Pointer to declarative Copilot.
+     */
+    declarativeCopilots?: IDeclarativeCopilot[];
+  };
 }

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 export type Instruction = string | string[];
 export type Example = string | string[];
 
@@ -18,6 +17,7 @@ export interface PluginManifestSchema {
   runtimes?: (RuntimeObjectLocalplugin | RuntimeObjectOpenapi)[];
   capabilities?: {
     localization: LocalizationObject;
+    conversation_starters?: ConversationStarter[];
     [k: string]: unknown;
   };
   [k: string]: unknown;
@@ -92,7 +92,9 @@ export interface ResponseSemanticsObject {
     template_selector?: string;
     [k: string]: unknown;
   };
-  static_template?: { [k: string]: unknown };
+  static_template?: {
+    [k: string]: unknown;
+  };
   [k: string]: unknown;
 }
 export interface RuntimeObjectLocalplugin {
@@ -113,7 +115,7 @@ export interface RuntimeObjectOpenapi {
   [k: string]: unknown;
 }
 export interface AuthObject {
-  type: "none" | "oAuthPluginVault" | "apiKeyPluginVault";
+  type: "None" | "OAuthPluginVault" | "ApiKeyPluginVault";
   reference_id?: string;
   [k: string]: unknown;
 }
@@ -137,4 +139,9 @@ export interface LocalizationObject {
       [k: string]: unknown;
     };
   };
+}
+export interface ConversationStarter {
+  text: string;
+  title?: string;
+  [k: string]: unknown;
 }

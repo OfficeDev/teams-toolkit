@@ -15,21 +15,21 @@ import {
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import * as sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
-import { getLockFolder, ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
+import * as sinon from "sinon";
+import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
+import * as tools from "../../../src/common/utils";
 import { CallbackRegistry } from "../../../src/core/callback";
 import { CoreSource, NoProjectOpenedError } from "../../../src/core/error";
-import { randomAppName } from "../utils";
-import * as tools from "../../../src/common/tools";
-import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
+import { ConcurrentLockerMW, getLockFolder } from "../../../src/core/middleware/concurrentLocker";
 import {
   ConcurrentError,
   FileNotFoundError,
   InvalidProjectError,
   UserCancelError,
 } from "../../../src/error/common";
+import { randomAppName } from "../utils";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {

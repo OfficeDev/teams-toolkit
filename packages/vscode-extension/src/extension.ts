@@ -4,6 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import * as semver from "semver";
 
 import {
   AppPackageFolderName,
@@ -18,7 +19,9 @@ import {
   Correlator,
   VersionState,
   initializePreviewFeatureFlags,
+  isChatParticipantEnabled,
   setRegion,
+  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -27,6 +30,15 @@ import {
   IsChatParticipantEnabled,
   chatParticipantId,
 } from "./chat/consts";
+import {
+  officeChatParticipantId,
+  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+} from "./officeChat/consts";
+import {
+  officeChatRequestHandler,
+  chatCreateOfficeProjectCommandHandler,
+  handleOfficeFeedback,
+} from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
   chatExecuteCommandHandler,
@@ -66,6 +78,7 @@ import {
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
+  isOfficeManifestOnlyProject,
   setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
@@ -90,10 +103,18 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
+import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
+import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
+  process.env[FeatureFlags.ChatParticipant] = (
+    IsChatParticipantEnabled &&
+    semver.gte(vscode.version, "1.90.0-insider") &&
+    vscode.version.includes("insider")
+  ).toString();
   initializePreviewFeatureFlags();
 
   configMgr.registerConfigChangeCallback();
@@ -112,7 +133,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  registerChatParticipant(context);
+  if (isChatParticipantEnabled()) {
+    registerChatParticipant(context);
+
+    registerOfficeChatParticipant(context);
+  }
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -135,15 +160,37 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
-    IsChatParticipantEnabled
+    isChatParticipantEnabled()
   );
 
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
+
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
 
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isOfficeAddIn",
     isOfficeAddInProject
+  );
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isManifestOnlyOfficeAddIn",
+    isOfficeManifestOnlyProject
   );
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
@@ -218,6 +265,9 @@ function activateOfficeDevRegistration(context: vscode.ExtensionContext) {
   if (vscode.workspace.isTrusted) {
     registerOfficeDevCodeLensProviders(context);
   }
+
+  // Register task and debug event handlers, as well as sending telemetries
+  registerOfficeTaskAndDebugEvents();
 }
 
 /**
@@ -248,7 +298,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
       const res: Result<CreateProjectResult, FxError> = await Correlator.run(
-        handlers.createProjectFromWalkthroughHandler,
+        createProjectFromWalkthroughHandler,
         args
       );
       if (res.isOk()) {
@@ -280,6 +330,11 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Quick start
   registerInCommandController(context, CommandKeys.OpenWelcome, handlers.openWelcomeHandler);
+  registerInCommandController(
+    context,
+    CommandKeys.BuildIntelligentAppsWalkthrough,
+    handlers.openBuildIntelligentAppsWalkthroughHandler
+  );
 
   // Tutorials
   registerInCommandController(
@@ -297,6 +352,9 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     CommandKeys.ValidateGetStartedPrerequisites,
     handlers.validateGetStartedPrerequisitesHandler
   );
+
+  // commmand: check copilot access
+  registerInCommandController(context, CommandKeys.CheckCopilotAccess, checkCopilotAccessHandler);
 
   // Upgrade command to update Teams manifest
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
@@ -431,6 +489,29 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
     () => Correlator.run(officeDevHandlers.generateManifestGUID)
   );
   context.subscriptions.push(generateManifestGUID);
+}
+
+/**
+ * Copilot Chat Participant for Office Add-in
+ */
+function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
+  const participant = vscode.chat.createChatParticipant(officeChatParticipantId, (...args) =>
+    Correlator.run(officeChatRequestHandler, ...args)
+  );
+  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
+  participant.followupProvider = followupProvider;
+  participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
+
+  context.subscriptions.push(
+    participant,
+    vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
+      Correlator.run(officeDevHandlers.openDocumentHandler, args)
+    ),
+    vscode.commands.registerCommand(
+      CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+      chatCreateOfficeProjectCommandHandler
+    )
+  );
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
@@ -806,12 +887,6 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  const openOfficeDevDocumentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openOfficeDevDocument",
-    (...args) => Correlator.run(officeDevHandlers.openDocumentHandler, args)
-  );
-  context.subscriptions.push(openOfficeDevDocumentLinkCmd);
-
   const openGetStartedLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openGetStarted",
     (...args) => Correlator.run(officeDevHandlers.openGetStartedLinkHandler, args)
@@ -1099,9 +1174,7 @@ async function runBackgroundAsyncTasks(
   const releaseNote = new ReleaseNote(context);
   await releaseNote.show();
 
-  if (!isOfficeAddInProject) {
-    await openWelcomePageAfterExtensionInstallation();
-  }
+  await openWelcomePageAfterExtensionInstallation();
 
   if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();

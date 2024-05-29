@@ -29,7 +29,8 @@
 3. Right-click your project and select `Teams Toolkit > Prepare Teams App Dependencies`.
 4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
 5. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio
-6. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
+6. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension..
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 
 ## Learn more

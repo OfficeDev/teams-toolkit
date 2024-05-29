@@ -29,12 +29,12 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { GraphScopes } from "../common/tools";
+import { GraphScopes } from "../common/constants";
 import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
 import { FileNotFoundError } from "../error/common";
-import { QuestionNames } from "../question/questionNames";
+import { QuestionNames } from "../question/constants";
 import { CoreSource, FailedToLoadManifestId } from "./error";
 
 export class CollaborationConstants {

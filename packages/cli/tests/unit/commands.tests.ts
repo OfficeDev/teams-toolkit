@@ -1,6 +1,7 @@
 import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import {
   CollaborationStateResult,
+  FeatureFlags,
   FuncToolChecker,
   FxCore,
   ListCollaboratorResult,
@@ -25,6 +26,7 @@ import {
   accountLogoutCommand,
   accountShowCommand,
   accountUtils,
+  addCommand,
   addSPFxWebpartCommand,
   createSampleCommand,
   deployCommand,
@@ -62,6 +64,7 @@ import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSett
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 import { envResetCommand } from "../../src/commands/models/envReset";
+import { addPluginCommand } from "../../src/commands/models/addPlugin";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -84,6 +87,7 @@ describe("CLI commands", () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CustomizeGpt.name]: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -96,34 +100,6 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
-      );
-      const res = await getCreateCommand().handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "false",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
-      );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });
@@ -256,6 +232,42 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
   });
+
+  describe("addPluginCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "addPlugin").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...addPluginCommand, fullName: "add copilot-plugin" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await addPluginCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("getAddCommand", async () => {
+    it("customize GPT is not enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlags.CustomizeGpt.name]: "false",
+      });
+
+      const commands = addCommand();
+      assert.isTrue(commands.commands?.length === 1);
+    });
+
+    it("customize GPT is enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlags.CustomizeGpt.name]: "true",
+      });
+
+      const commands = addCommand();
+      assert.isTrue(commands.commands?.length === 2);
+    });
+  });
+
   describe("deployCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "deployArtifacts").resolves(ok(undefined));

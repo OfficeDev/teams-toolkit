@@ -6,24 +6,24 @@ import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
   CoreCallbackEvent,
-  err,
   Func,
   Inputs,
   ProductName,
+  err,
 } from "@microsoft/teamsfx-api";
+import crypto from "crypto";
 import * as fs from "fs-extra";
+import * as os from "os";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { TOOLS } from "../globalVars";
+import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
+import { waitSeconds } from "../../common/utils";
+import { ConcurrentError, FileNotFoundError, InvalidProjectError } from "../../error/common";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, NoProjectOpenedError } from "../error";
+import { TOOLS } from "../globalVars";
 import { shouldIgnored } from "./projectSettingsLoader";
-import crypto from "crypto";
-import * as os from "os";
-import { waitSeconds } from "../../common/tools";
-import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
-import { ConcurrentError, FileNotFoundError, InvalidProjectError } from "../../error/common";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {

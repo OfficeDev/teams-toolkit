@@ -14,11 +14,8 @@ import {
   EmptyTelemetry,
   TestToolReleaseType,
   v3DefaultHelpLink,
-} from "../../../common/deps-checker";
-import {
-  LocalCertificate,
-  LocalCertificateManager,
-} from "../../../common/local/localCertificateManager";
+} from "../../deps-checker";
+import { LocalCertificate, LocalCertificateManager } from "../../local/localCertificateManager";
 import { wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -37,10 +34,10 @@ import { InvalidActionInputError } from "../../../error/common";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { FuncToolChecker } from "../../../common/deps-checker/internal/funcToolChecker";
-import { DotnetChecker } from "../../../common/deps-checker/internal/dotnetChecker";
+import { FuncToolChecker } from "../../deps-checker/internal/funcToolChecker";
+import { DotnetChecker } from "../../deps-checker/internal/dotnetChecker";
 import { ErrorContextMW } from "../../../core/globalVars";
-import { TestToolChecker } from "../../../common/deps-checker/internal/testToolChecker";
+import { TestToolChecker } from "../../deps-checker/internal/testToolChecker";
 import { TestToolInstallationUserError } from "./error/testToolInstallationUserError";
 
 const ACTION_NAME = "devTool/install";

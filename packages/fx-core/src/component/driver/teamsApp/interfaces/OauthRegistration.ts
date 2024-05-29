@@ -10,23 +10,27 @@ export interface OauthRegistration {
 
   clientId: string;
   clientSecret: string;
-  tenantId: string;
 
-  authorizationUrl: string;
-  tokenEndpoint: string;
-  refreshEndpoint: string;
+  authorizationEndpoint: string;
+  tokenExchangeEndpoint: string;
+  tokenRefreshEndpoint?: string;
   scopes: string[];
 
   /**
    * Teams app Id associated with the OauthRegistration, should be required if applicableToApps === "SpecificType"
    */
-  specificAppId?: string;
+  m365AppId?: string;
   applicableToApps: OauthRegistrationAppType;
   /**
    * Default to be "HomeTenant"
    */
   targetAudience?: OauthRegistrationTargetAudience;
   manageableByUsers?: OauthRegistrationUser[];
+
+  /**
+   * Currently max length 1
+   */
+  targetUrlsShouldStartWith: string[];
 }
 
 export enum OauthRegistrationAppType {

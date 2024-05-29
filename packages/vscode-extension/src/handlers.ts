@@ -18,7 +18,6 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  Context,
   CoreCallbackEvent,
   CreateProjectResult,
   Func,
@@ -37,7 +36,6 @@ import {
   StaticOptions,
   SubscriptionInfo,
   SystemError,
-  TemplateFolderName,
   Tools,
   UserError,
   Void,
@@ -78,6 +76,7 @@ import {
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
+  serviceScope,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -88,6 +87,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
   AzurePortalUrl,
+  CommandKey,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
@@ -144,6 +144,7 @@ import {
 } from "./debug/constants";
 import { openOfficeDevFolder } from "./officeDevHandlers";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
+import { updateProjectStatus } from "./utils/projectStatusUtils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -385,6 +386,10 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     return result;
   }
   const projectPathUri = Uri.file(res.projectPath);
+  // If it is triggered in @office /create for code gen, then do no open the temp folder.
+  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.agent === "office") {
+    return result;
+  }
   // show local debug button by default
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
@@ -432,14 +437,6 @@ export async function updateAutoOpenGlobalKey(
   if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
-}
-
-export async function createProjectFromWalkthroughHandler(
-  args?: any[]
-): Promise<Result<CreateProjectResult, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
-  return result;
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1002,7 +999,7 @@ async function processResult(
   }
 }
 
-function wrapError(e: Error): Result<null, FxError> {
+export function wrapError(e: Error): Result<null, FxError> {
   if (
     e instanceof UserError ||
     e instanceof SystemError ||
@@ -1234,11 +1231,26 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
+
 export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
     getWalkThroughId()
+  );
+  return Promise.resolve(ok(data));
+}
+
+export async function openBuildIntelligentAppsWalkthroughHandler(
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.WalkThroughBuildIntelligentApps,
+    getTriggerFromProperty(args)
+  );
+  const data = await vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
   );
   return Promise.resolve(ok(data));
 }
@@ -1296,7 +1308,8 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
-    await openReadMeHandler([TelemetryTriggerFrom.Auto]);
+    await openReadMeHandler(TelemetryTriggerFrom.Auto);
+    await updateProjectStatus(globalVariables.workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
     await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
@@ -1844,7 +1857,7 @@ export async function showError(e: UserError | SystemError) {
   const errorCode = `${e.source}.${e.name}`;
   const runTestTool = {
     title: localize("teamstoolkit.handlers.debugInTestTool"),
-    run: () => debugInTestToolHandler("message"),
+    run: () => debugInTestToolHandler("message")(),
   };
   const recommendTestTool =
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&
@@ -2998,7 +3011,7 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
   return Promise.resolve(ok(null));
 }
 
-export function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
+export async function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
   VS_CODE_UI.showMessage(
     "warn",
     localize("teamstoolkit.accountTree.copilotMessage"),

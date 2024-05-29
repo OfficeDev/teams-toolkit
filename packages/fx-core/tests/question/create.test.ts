@@ -1,4 +1,3 @@
-import { AppYmlGenerator } from "./../../src/core/middleware/utils/appYmlGenerator";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ErrorType, SpecParser, ValidationStatus, WarningType } from "@microsoft/m365-spec-parser";
@@ -17,7 +16,6 @@ import {
   UserInteraction,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios from "axios";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -27,12 +25,15 @@ import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { sampleProvider } from "../../src/common/samples";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 import { convertToLangKey } from "../../src/component/generator/utils";
 import * as utils from "../../src/component/utils";
 import { setTools } from "../../src/core/globalVars";
+import { FileNotFoundError } from "../../src/error";
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
@@ -43,6 +44,7 @@ import {
   OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
+  QuestionNames,
   RuntimeOptions,
   SPFxVersionOptionIds,
   apiOperationQuestion,
@@ -53,19 +55,15 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
-  officeAddinHostingQuestion,
-  openAIPluginManifestLocationQuestion,
-  programmingLanguageQuestion,
+  getSolutionName,
   officeAddinFrameworkQuestion,
-  getAddinFrameworkOptions,
+  officeAddinHostingQuestion,
+  programmingLanguageQuestion,
   projectTypeQuestion,
-} from "../../src/question/create";
-import { QuestionNames } from "../../src/question/questionNames";
+} from "../../src/question";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
-import { sampleProvider } from "../../src/common/samples";
-import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -106,7 +104,7 @@ describe("scaffold question", () => {
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
         [FeatureFlagName.ChatParticipant]: "false",
-        [FeatureFlagName.OfficeXMLAddin]: "false",
+        [FeatureFlagName.CustomizeGpt]: "false",
       });
     });
     afterEach(() => {
@@ -575,9 +573,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode Office XML addin", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -647,7 +642,6 @@ describe("scaffold question", () => {
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);
-      mockedEnvRestoreLocal();
     });
     it("traverse in vscode Office addin", async () => {
       const inputs: Inputs = {
@@ -1507,7 +1501,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
@@ -1571,7 +1565,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
@@ -1764,15 +1758,12 @@ describe("scaffold question", () => {
       });
 
       describe("list operations", async () => {
-        let mockedEnvRestore: RestoreFn = () => {};
+        const mockedEnvRestore: RestoreFn = () => {};
 
         afterEach(() => {
           mockedEnvRestore();
         });
         it("list operations successfully", async () => {
-          mockedEnvRestore = mockedEnv({
-            [FeatureFlagName.ApiKey]: "false",
-          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1806,7 +1797,7 @@ describe("scaffold question", () => {
           assert.isTrue(options[1].id === "operation2");
           assert.equal(
             placeholder,
-            getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+            getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
           );
           assert.equal(
             title,
@@ -1854,6 +1845,21 @@ describe("scaffold question", () => {
           );
         });
 
+        it("validate operations error: missing inputs", async () => {
+          const question = apiOperationQuestion();
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+
+          let hasError = false;
+          try {
+            await validationSchema.validFunc!(["operation1", "operation2"], undefined);
+          } catch (e) {
+            hasError = true;
+          }
+
+          assert.isTrue(hasError);
+        });
+
         it(" validate operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1866,6 +1872,7 @@ describe("scaffold question", () => {
                 groupName: "1",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
               {
@@ -1874,6 +1881,7 @@ describe("scaffold question", () => {
                 groupName: "2",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
             ],
@@ -1882,6 +1890,10 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
+          assert.deepEqual(inputs.apiAuthData, {
+            serverUrl: "https://server1",
+            authName: "oauth2",
+          });
           assert.isUndefined(res);
         });
 
@@ -2125,9 +2137,6 @@ describe("scaffold question", () => {
         });
 
         it(" validate operations with auth successfully", async () => {
-          mockedEnvRestore = mockedEnv({
-            [FeatureFlagName.ApiKey]: "true",
-          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -2347,6 +2356,40 @@ describe("scaffold question", () => {
                 isValid: true,
                 reason: [],
               },
+              {
+                api: "get operation3",
+                server: "https://server",
+                operationId: "getOperation3",
+                isValid: true,
+                reason: [],
+                auth: {
+                  name: "authName",
+                  authScheme: {
+                    type: "oauth2",
+                    flows: {
+                      authorizationCode: {
+                        authorizationUrl: "url",
+                        tokenUrl: "url",
+                        scopes: {},
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                api: "get operation4",
+                server: "https://server",
+                operationId: "getOperation4",
+                isValid: true,
+                reason: [],
+                auth: {
+                  name: "",
+                  authScheme: {
+                    type: "openIdConnect",
+                    openIdConnectUrl: "url",
+                  },
+                },
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2359,18 +2402,41 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
               id: "get operation2",
               label: "get operation2",
+              detail: "None auth",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
+              },
+            },
+            {
+              id: "get operation3",
+              label: "get operation3",
+              detail: "OAuth(Auth code flow)",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server",
+                authType: "oauth2",
+                authName: "authName",
+              },
+            },
+            {
+              id: "get operation4",
+              label: "get operation4",
+              detail: "",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server",
               },
             },
           ]);
@@ -2422,15 +2488,18 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
               id: "get operation2",
               label: "get operation2",
+              detail: "None auth",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2626,6 +2695,7 @@ describe("scaffold question", () => {
             {
               id: "GET /store/order",
               label: "GET /store/order",
+              detail: "None auth",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2747,6 +2817,7 @@ describe("scaffold question", () => {
                 serverUrl: "https://server",
               },
               groupName: "GET",
+              detail: "None auth",
               id: "GET /user/{userId}",
               label: "GET /user/{userId}",
             },
@@ -2754,379 +2825,118 @@ describe("scaffold question", () => {
           assert.isUndefined(res);
         });
       });
+    });
 
-      describe("openAIPluginManifestLocationQuestion", async () => {
-        it("valid openAI plugin manifest spec and list operations successfully", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-            api: {
-              type: "openapi",
-              url: "test",
-            },
-            auth: { type: "none" },
-          };
-          const getStub = sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves({
-            APIs: [
-              {
-                api: "GET /user/{userId}",
-                server: "https://server",
-                auth: {
-                  name: "api_key",
-                  authScheme: {
-                    name: "api_key",
-                    in: "header",
-                    type: "apiKey",
-                  },
-                },
-                operationId: "getUserById",
-                isValid: true,
-                reason: [],
-              },
-              {
-                api: "GET /store/order",
-                server: "https://server2",
-                operationId: "getStoreOrder",
-                isValid: true,
-                reason: [],
-              },
-            ],
-            allAPICount: 2,
-            validAPICount: 2,
-          });
-
-          const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
-          const additionalValidationRes = await (
-            question.additionalValidationOnAccept as any
-          ).validFunc("test.com/.well-known/ai-plugin.json", inputs);
-
-          assert.isUndefined(validationRes);
-          assert.isUndefined(additionalValidationRes);
-          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
+    describe("customize GPT", () => {
+      let mockedEnvRestore: RestoreFn;
+      const tools = new MockTools();
+      setTools(tools);
+      beforeEach(() => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.CopilotPlugin]: "true",
+          [FeatureFlagName.ApiCopilotPlugin]: "true",
+          [FeatureFlagName.CustomizeGpt]: "true",
         });
+      });
 
-        it("valid openAI plugin domain and list operations successfully", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-            api: {
-              type: "openapi",
-              url: "test",
-            },
-            auth: { type: "none" },
-          };
-          const getStub = sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      afterEach(() => {
+        if (mockedEnvRestore) {
+          mockedEnvRestore();
+        }
+      });
 
-          sandbox.stub(SpecParser.prototype, "list").resolves({
-            APIs: [
-              {
-                api: "GET /user/{userId}",
-                server: "https://server",
-                auth: {
-                  name: "api_key",
-                  authScheme: {
-                    name: "api_key",
-                    in: "header",
-                    type: "apiKey",
-                  },
-                },
-                operationId: "getUserById",
-                isValid: true,
-                reason: [],
-              },
-              {
-                api: "GET /store/order",
-                server: "https://server2",
-                operationId: "getStoreOrder",
-                isValid: true,
-                reason: [],
-              },
-            ],
-            allAPICount: 2,
-            validAPICount: 2,
-          });
+      it("customize GPT without plugin", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
 
-          const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
-          const additionalValidationRes = await (
-            question.additionalValidationOnAccept as any
-          ).validFunc("test.com", inputs);
+          await callFuncs(question, inputs);
 
-          assert.isUndefined(validationRes);
-          assert.isUndefined(additionalValidationRes);
-          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
-        });
-
-        it("remove ending slash before generating manifest URL and cannot load openAI plugin manifest", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-            api: {
-              type: "openapi",
-            },
-            auth: "oauth",
-          };
-          const getStub = sandbox.stub(axios, "get").throws(new Error("error1"));
-          sandbox
-            .stub(SpecParser.prototype, "validate")
-            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-
-          sandbox.stub(SpecParser.prototype, "list").resolves({
-            APIs: [
-              {
-                api: "GET /user/{userId}",
-                server: "https://server",
-                auth: {
-                  name: "api_key",
-                  authScheme: {
-                    name: "api_key",
-                    in: "header",
-                    type: "apiKey",
-                  },
-                },
-                operationId: "getUserById",
-                isValid: true,
-                reason: [],
-              },
-              {
-                api: "GET /store/order",
-                server: "https://server2",
-                operationId: "getStoreOrder",
-                isValid: true,
-                reason: [],
-              },
-            ],
-            allAPICount: 2,
-            validAPICount: 2,
-          });
-
-          const res = await (question.additionalValidationOnAccept as any).validFunc(
-            "https://test.com/",
-            inputs
-          );
-
-          assert.isFalse(res === undefined);
-          assert.equal(getStub.firstCall.args[0], "https://test.com/.well-known/ai-plugin.json");
-        });
-
-        it("invalid openAI plugin manifest spec: missing property", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-          };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
-
-          assert.isFalse(res === undefined);
-        });
-
-        it("invalid openAI plugin manifest spec -single error", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.CLI,
-            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-            api: {
-              type: "openapi",
-              url: "test",
-            },
-            auth: { type: "none" },
-          };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-          sandbox.stub(SpecParser.prototype, "validate").resolves({
-            status: ValidationStatus.Error,
-            errors: [{ content: "error", type: ErrorType.NoSupportedApi, data: [] }],
-            warnings: [],
-          });
-
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
-
-          const noAPIMessage = getLocalizedString("core.common.invalidReason.NoAPIs");
-          assert.equal(res, getLocalizedString("core.common.NoSupportedApi", noAPIMessage));
-        });
-
-        it("invalid openAI plugin manifest spec - multiple errors", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.VSCode,
-            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-            api: {
-              type: "openapi",
-              url: "test",
-            },
-            auth: { type: "none" },
-          };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-          sandbox.stub(SpecParser.prototype, "validate").resolves({
-            status: ValidationStatus.Error,
-            errors: [
-              { content: "error", type: ErrorType.NoSupportedApi, data: [] },
-              { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
-            ],
-            warnings: [],
-          });
-
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
-
-          assert.equal(
-            res,
-            getLocalizedString(
-              "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
-            )
-          );
-        });
-
-        it("invalid openAI plugin manifest spec - multiple errors in CLI", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-          const inputs: Inputs = {
-            platform: Platform.CLI,
-            [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-          };
-          const manifest = {
-            schema_version: "1.0.0",
-            api: {
-              type: "openapi",
-              url: "test",
-            },
-            auth: { type: "none" },
-          };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-          sandbox.stub(SpecParser.prototype, "validate").resolves({
-            status: ValidationStatus.Error,
-            errors: [
-              { content: "error", type: ErrorType.NoSupportedApi, data: [] },
-              { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
-            ],
-            warnings: [],
-          });
-
-          const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
-          assert.equal(
-            res,
-            `${getLocalizedString(
-              "core.common.NoSupportedApi",
-              getLocalizedString("core.common.invalidReason.NoAPIs")
-            )}\n${getLocalizedString("core.common.RelativeServerUrlNotSupported")}`
-          );
-        });
-
-        it("throw error if missing inputs", async () => {
-          const question = openAIPluginManifestLocationQuestion();
-
-          const manifest = {
-            schema_version: "1.0.0",
-          };
-          sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
-
-          let err: Error | undefined = undefined;
-          try {
-            await (question.additionalValidationOnAccept as any).validFunc("url", undefined);
-          } catch (e) {
-            err = e as Error;
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 6);
+            return ok({ type: "success", result: ProjectTypeOptions.customizeGpt().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            const title =
+              typeof question.title === "function" ? await question.title(inputs) : question.title;
+            assert.equal(
+              title,
+              getLocalizedString("core.createProjectQuestion.declarativeCopilotType.title")
+            );
+            return ok({ type: "success", result: CapabilityOptions.customizeGptBasic().id });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
           }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
 
-          assert.equal(err?.message, "inputs is undefined");
-        });
+      it("customize GPT with plugin from scratch", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
 
-        describe("validate when changing value", async () => {
-          it("valid input - case 1", async () => {
-            const question = openAIPluginManifestLocationQuestion();
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-            };
-            const input = "test.com";
-            const validationRes = await (question.validation as any).validFunc!(input, inputs);
+          await callFuncs(question, inputs);
 
-            assert.isUndefined(validationRes);
-          });
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 6);
+            return ok({ type: "success", result: ProjectTypeOptions.customizeGpt().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
 
-          it("valid input - case 2", async () => {
-            const input = "HTTPS://test.com";
-            const question = openAIPluginManifestLocationQuestion();
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-            };
-            const validationRes = await (question.validation as any).validFunc!(input, inputs);
-
-            assert.isUndefined(validationRes);
-          });
-
-          it("valid input - case 3", async () => {
-            const input = "HTTP://www.test.com";
-            const question = openAIPluginManifestLocationQuestion();
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-            };
-            const validationRes = await (question.validation as any).validFunc!(input, inputs);
-
-            assert.isUndefined(validationRes);
-          });
-
-          it("valid input - localhost", async () => {
-            const input = "localhost:3000";
-            const question = openAIPluginManifestLocationQuestion();
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-            };
-            const validationRes = await (question.validation as any).validFunc!(input, inputs);
-
-            assert.isUndefined(validationRes);
-          });
-
-          it("invalid input", async () => {
-            const input = "localhost:";
-            const question = openAIPluginManifestLocationQuestion();
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-            };
-            const validationRes = await (question.validation as any).validFunc!(input, inputs);
-
-            assert.isFalse(validationRes === undefined);
-          });
-
-          it("valid input - path", async () => {
-            const input = "HTTP://www.test.com/";
-            const question = openAIPluginManifestLocationQuestion();
-            const inputs: Inputs = {
-              platform: Platform.VSCode,
-              [QuestionNames.OpenAIPluginManifest]: "openAIPluginManifest",
-            };
-            const validationRes = await (question.validation as any).validFunc!(input, inputs);
-
-            assert.isUndefined(validationRes);
-          });
-        });
+            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            return ok({ type: "success", result: "javascript" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
       });
     });
   });
@@ -3140,6 +2950,7 @@ describe("scaffold question", () => {
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
         [FeatureFlagName.ChatParticipant]: "true",
+        [FeatureFlagName.CustomizeGpt]: "true",
       });
     });
     afterEach(() => {
@@ -3399,6 +3210,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.CustomizeGpt]: "false",
       });
     });
     afterEach(() => {
@@ -3612,9 +3424,6 @@ describe("scaffold question", () => {
     });
 
     it("office xml addin: normal project have ts and js", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.CLI,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
@@ -3629,13 +3438,9 @@ describe("scaffold question", () => {
           { label: "JavaScript", id: "javascript" },
         ]);
       }
-      mockedEnvRestoreLocal();
     });
 
     it("office xml addin: manifest-only project only have js option as default", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.CLI,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
@@ -3647,7 +3452,6 @@ describe("scaffold question", () => {
         const options = await question.dynamicOptions(inputs);
         assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
       }
-      mockedEnvRestoreLocal();
     });
 
     it("office addin: should have typescript as options", async () => {
@@ -3886,6 +3690,71 @@ describe("scaffold question", () => {
         );
         assert.isDefined(officeAddinOption);
       }
+    });
+    it("show customize GPT if CLI and enable declarative GPT() ", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CustomizeGpt]: "true",
+      });
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const customizeGptOption = options.find(
+          (o) => o.id === ProjectTypeOptions.customizeGpt().id
+        );
+        assert.isDefined(customizeGptOption);
+      }
+    });
+
+    it("not show customize GPT if not CLI ", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CustomizeGpt]: "true",
+      });
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const customizeGptOption = options.find(
+          (o) => o.id === ProjectTypeOptions.customizeGpt().id
+        );
+        assert.isUndefined(customizeGptOption);
+      }
+    });
+  });
+
+  describe("getSolutionName", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({
+        "@microsoft/generator-sharepoint": {
+          solutionName: "testSolutionName",
+        },
+      });
+      const res = await getSolutionName("");
+      assert.equal(res, "testSolutionName");
+    });
+
+    it("FileNotFoundError", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      try {
+        await getSolutionName(".");
+        assert.fail("should throw");
+      } catch (e) {
+        assert.isTrue(e instanceof FileNotFoundError);
+      }
+    });
+
+    it("undefined", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({});
+      const res = await getSolutionName("");
+      assert.isUndefined(res);
     });
   });
 });

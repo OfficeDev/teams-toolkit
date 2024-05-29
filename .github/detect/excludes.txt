@@ -27,7 +27,7 @@ docs/cicd/README.md
 docs/cicd_insider/README.md
 docs/cicd/azdo/*.yml
 .github/scripts/download-simpleauth.sh
-packages/fx-core/tests/common/local/localCertificateManager.test.ts
+packages/fx-core/tests/component/local/localCertificateManager.test.ts
 packages/sdk/test/unit/node/appCredential.spec.ts
 packages/sdk/test/unit/node/core/onBehalfOfUserCredential.spec.ts
 packages/fx-core/tests/component/driver/teamsApp/success.zip
@@ -40,3 +40,4 @@ packages/fx-core/tests/core/samples_v3.zip
 packages/fx-core/tests/core/samples_v2.zip
 .azure-pipelines/CredScanSuppressions.json
 .azure-pipelines/vs-sdk-build.yml
+.azure-pipelines/componentDetect.yml

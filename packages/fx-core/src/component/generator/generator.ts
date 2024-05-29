@@ -6,7 +6,6 @@ import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { BaseComponentInnerError } from "../error/componentError";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -41,6 +40,7 @@ import {
   isNewProjectTypeEnabled,
 } from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 
 export class Generator {
   public static getDefaultVariables(
@@ -48,7 +48,12 @@ export class Generator {
     safeProjectNameFromVS?: string,
     targetFramework?: string,
     placeProjectFileInSolutionDir?: boolean,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
+    authData?: {
+      authName: string;
+      openapiSpecPath: string;
+      registrationIdEnvName: string;
+      authType?: string;
+    },
     llmServiceData?: {
       llmService?: string;
       openAIKey?: string;
@@ -60,7 +65,7 @@ export class Generator {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
     const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
-      apiKeyAuthData?.registrationIdEnvName ?? ""
+      authData?.registrationIdEnvName ?? ""
     );
 
     return {
@@ -70,9 +75,11 @@ export class Generator {
       PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthName: authData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
-      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      ApiSpecPath: authData?.openapiSpecPath ?? "",
+      ApiKey: authData?.authType === "apiKey" ? "true" : "",
+      OAuth: authData?.authType === "oauth2" ? "true" : "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
       enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
       useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",

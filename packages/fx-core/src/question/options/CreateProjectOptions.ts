@@ -53,6 +53,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
+      "basic-declarative-copilot",
+      "declarative-copilot-with-plugin-from-scratch",
       "json-taskpane",
       "office-content-addin",
       "word-taskpane",
@@ -129,18 +131,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: ["new-api", "api-spec", "bot-plugin", "bot"],
   },
   {
-    name: "openapi-spec-location",
-    type: "string",
-    shortName: "a",
-    description: "OpenAPI description document location.",
-  },
-  {
-    name: "api-operation",
-    type: "array",
-    shortName: "o",
-    description: "Select Operation(s) Teams Can Interact with.",
-  },
-  {
     name: "api-me-auth",
     type: "string",
     description: "The authentication type for the API.",
@@ -158,6 +148,18 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "custom-copilot-rag-customApi",
       "custom-copilot-rag-microsoft365",
     ],
+  },
+  {
+    name: "openapi-spec-location",
+    type: "string",
+    shortName: "a",
+    description: "OpenAPI description document location.",
+  },
+  {
+    name: "api-operation",
+    type: "array",
+    shortName: "o",
+    description: "Select operation(s) Teams can interact with.",
   },
   {
     name: "custom-copilot-agent",

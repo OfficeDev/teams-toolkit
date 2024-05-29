@@ -28,12 +28,15 @@ export enum GlobalKey {
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   CreateWarnings = "CreateWarnings",
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
+  SampleGalleryInitialSample = "teamsToolkit:sampleGallery:initialSample",
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
 export enum CommandKey {
   Create = "fx-extension.create",
   OpenWelcome = "fx-extension.openWelcome",
+  BuildIntelligentAppsWalkthrough = "fx-extension.buildIntelligentAppsWalkthrough",
+  CheckCopilotAccess = "fx-extension.checkCopilotAccess",
   OpenDocument = "fx-extension.openDocument",
   OpenSamples = "fx-extension.openSamples",
   DownloadSample = "fx-extension.downloadSample",
@@ -47,6 +50,10 @@ export enum CommandKey {
   Deploy = "fx-extension.deploy",
   Publish = "fx-extension.publish",
   Preview = "fx-extension.preview",
+  installDependency = "fx-extension.installDependency",
+  publishToAppSource = "fx-extension.publishToAppSource",
+  openDeployLink = "fx-extension.officeDevDeploy",
+  openOfficeDevDocument = "fx-extension.openOfficeDevDocument",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

@@ -7,7 +7,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as tools from "../../../../../src/common/tools";
+import * as tools from "../../../../../src/common/utils";
 import { AzureStorageStaticWebsiteConfigDriver } from "../../../../../src/component/driver/deploy/azure/azureStorageStaticWebsiteConfigDriver";
 import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";

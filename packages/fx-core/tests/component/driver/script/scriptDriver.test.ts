@@ -6,9 +6,10 @@ import { assert } from "chai";
 import child_process from "child_process";
 import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as sinon from "sinon";
-import * as tools from "../../../../src/common/tools";
+import * as tools from "../../../../src/common/utils";
 import {
   convertScriptErrorToFxError,
   defaultShell,
@@ -22,7 +23,6 @@ import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/
 import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();

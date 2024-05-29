@@ -6,9 +6,11 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
+  FxError,
   LogProvider,
   SystemError,
   TelemetryReporter,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import { cpUtils } from "../../../utils/depsChecker/cpUtils";
@@ -26,11 +28,10 @@ import {
 } from "../../../constants";
 
 import { performance } from "perf_hooks";
-import { sendErrorTelemetryThenReturnError } from "../../../utils";
 import { DriverContext } from "../../interface/commonArgs";
 import { InstallSoftwareError } from "../../../../error/common";
 import { DownloadBicepCliError } from "../../../../error/arm";
-import { isMacOS, isWindows } from "../../../../common/deps-checker/util/system";
+import { isMacOS, isWindows } from "../../../deps-checker/util/system";
 
 const BicepName = "Bicep";
 
@@ -300,4 +301,34 @@ function getCommonProps(): { [key: string]: string } {
   properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
   properties[SolutionTelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
   return properties;
+}
+
+function sendErrorTelemetryThenReturnError(
+  eventName: string,
+  error: FxError,
+  reporter?: TelemetryReporter,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number },
+  errorProps?: string[]
+): FxError {
+  if (!properties) {
+    properties = {};
+  }
+
+  if (SolutionTelemetryProperty.Component in properties === false) {
+    properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
+  }
+
+  properties[SolutionTelemetryProperty.Success] = "no";
+  if (error instanceof UserError) {
+    properties["error-type"] = "user";
+  } else {
+    properties["error-type"] = "system";
+  }
+
+  properties["error-code"] = `${error.source}.${error.name}`;
+  properties["error-message"] = error.message;
+
+  reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+  return error;
 }

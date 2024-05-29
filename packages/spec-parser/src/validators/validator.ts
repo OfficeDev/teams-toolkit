@@ -23,9 +23,20 @@ export abstract class Validator {
   options!: ParseOptions;
 
   private apiMap: APIMap | undefined;
+  private hasCircularReference = false;
 
   abstract validateAPI(method: string, path: string): APIValidationResult;
   abstract validateSpec(): SpecValidationResult;
+
+  protected checkCircularReference(): void {
+    try {
+      JSON.stringify(this.spec);
+    } catch (e) {
+      if ((e as Error).message.includes("Converting circular structure to JSON")) {
+        this.hasCircularReference = true;
+      }
+    }
+  }
 
   listAPIs(): APIMap {
     if (this.apiMap) {
@@ -142,6 +153,23 @@ export abstract class Validator {
     return result;
   }
 
+  protected validateCircularReference(method: string, path: string): APIValidationResult {
+    const result: APIValidationResult = { isValid: true, reason: [] };
+    if (this.hasCircularReference) {
+      const operationObject = (this.spec.paths[path] as any)[method] as OpenAPIV3.OperationObject;
+      try {
+        JSON.stringify(operationObject);
+      } catch (e) {
+        if ((e as Error).message.includes("Converting circular structure to JSON")) {
+          result.isValid = false;
+          result.reason.push(ErrorType.CircularReferenceNotSupported);
+        }
+      }
+    }
+
+    return result;
+  }
+
   protected validateResponse(method: string, path: string): APIValidationResult {
     const result: APIValidationResult = { isValid: true, reason: [] };
 
@@ -149,12 +177,12 @@ export abstract class Validator {
 
     const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
 
-    // only support response body only contains “application/json” content type
-    if (multipleMediaType) {
-      result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
-    } else if (Object.keys(json).length === 0) {
-      // response body should not be empty
-      if (this.options.projectType === ProjectType.SME) {
+    if (this.options.projectType === ProjectType.SME) {
+      // only support response body only contains “application/json” content type
+      if (multipleMediaType) {
+        result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
+      } else if (Object.keys(json).length === 0) {
+        // response body should not be empty
         result.reason.push(ErrorType.ResponseJsonIsEmpty);
       }
     }

@@ -4,19 +4,24 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { CreateSampleProjectInputs, validationUtils } from "../../../src";
 import * as FeatureFlags from "../../../src/common/featureFlags";
-import { FeatureFlagName } from "../../../src/common/constants";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { Generator } from "../../../src/component/generator/generator";
-import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
+import {
+  OfficeAddinGenerator,
+  OfficeAddinGeneratorNew,
+} from "../../../src/component/generator/officeAddin/generator";
+import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
+import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
@@ -25,22 +30,20 @@ import { InputValidationError, MissingRequiredInputError } from "../../../src/er
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
+  CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../../src/question/create";
-import { QuestionNames } from "../../../src/question/questionNames";
+} from "../../../src/question/constants";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
-import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 
 const V3Version = MetadataV3.projectVersion;
 
-[false, true].forEach((newGeneratorFlag) => {
+[false].forEach((newGeneratorFlag) => {
   describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
     const mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
@@ -224,9 +227,6 @@ const V3Version = MetadataV3.projectVersion;
       }
     });
     it("create project for new office XML Addin MissingRequiredInputError missing App name", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
@@ -240,12 +240,8 @@ const V3Version = MetadataV3.projectVersion;
       if (res.isErr()) {
         assert.isTrue(res.error instanceof MissingRequiredInputError);
       }
-      mockedEnvRestoreLocal();
     });
     it("create project for new office XML Addin InputValidationError invalid App name", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
@@ -260,7 +256,6 @@ const V3Version = MetadataV3.projectVersion;
       if (res.isErr()) {
         assert.isTrue(res.error instanceof InputValidationError);
       }
-      mockedEnvRestoreLocal();
     });
     it("create project for new office JSON Addin MissingRequiredInputError missing App name", async () => {
       const inputs: Inputs = {
@@ -840,6 +835,63 @@ const V3Version = MetadataV3.projectVersion;
         : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
     });
 
+    it("create custom copilot rag custom api with azure open ai success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: "typescript",
+        [QuestionNames.SafeProjectName]: "safeprojectname",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+        [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+        [QuestionNames.ApiSpecLocation]: "spec",
+        [QuestionNames.ApiOperation]: "test",
+        [QuestionNames.LLMService]: "llm-service-azure-openai",
+        [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
+        [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
+        [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
+      };
+      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+      const fxCore = new FxCore(tools);
+      const res = await fxCore.createProject(inputs);
+
+      assert.isTrue(res.isOk());
+      newGeneratorFlag
+        ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotRagCustomApi)
+        : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
+    });
+
+    it("create custom agent api with azure open ai success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: "typescript",
+        [QuestionNames.SafeProjectName]: "safeprojectname",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotAssistant().id,
+        [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.new().id,
+        [QuestionNames.ApiSpecLocation]: "spec",
+        [QuestionNames.ApiOperation]: "test",
+        [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
+        [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
+        [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
+      };
+      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+      const fxCore = new FxCore(tools);
+      const res = await fxCore.createProject(inputs);
+
+      assert.isTrue(res.isOk());
+      newGeneratorFlag
+        ? assert.equal(generator.args[0][1].templateName, TemplateNames.CustomCopilotAssistantNew)
+        : assert.equal(generator.args[0][2], TemplateNames.CustomCopilotAssistantNew);
+    });
+
     it("create custom copilot rag custom api failed", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -871,15 +923,12 @@ const V3Version = MetadataV3.projectVersion;
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "false",
-    });
   });
 
   afterEach(() => {
@@ -962,15 +1011,12 @@ describe("Office Addin", async () => {
 describe("Office XML Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "true",
-    });
   });
 
   afterEach(() => {
@@ -1045,15 +1091,12 @@ describe("Office XML Addin", async () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "false",
-    });
   });
 
   afterEach(() => {
@@ -1186,44 +1229,32 @@ describe("Copilot plugin", async () => {
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr());
   });
+});
 
-  it("should scaffold from OpenAI plugin successfully", async () => {
+describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  setTools(tools);
+  beforeEach(() => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(true);
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should scaffold by OfficeAddinGeneratorNew successfully", async () => {
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
-
+    sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok({}));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());
-  });
-
-  it("scaffold from OpenAI plugin error", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr());
   });
 });

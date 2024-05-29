@@ -93,10 +93,12 @@ export enum ErrorType {
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  AddedAPINotInOriginalSpec = "added-api-not-in-original-spec",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",
   SpecVersionNotSupported = "spec-version-not-supported",
+  CircularReferenceNotSupported = "circular-reference-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -245,10 +247,20 @@ export interface ParseOptions {
   allowResponseSemantics?: boolean;
 
   /**
+   * If true, the paser will allow confirmation in plugin file. Only take effect in Copilot project
+   */
+  allowConfirmation?: boolean;
+
+  /**
    * The type of project that the parser is being used for.
    * Project can be SME/Copilot/TeamsAi
    */
   projectType?: ProjectType;
+
+  /**
+   * If true, we will generate files of plugin for GPT (Declarative Extensions in a Copilot Extension). Otherwise, we will generate files of plugin for Copilot.
+   */
+  isGptPlugin?: boolean;
 }
 
 export enum ProjectType {

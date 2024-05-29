@@ -3,7 +3,6 @@
   "description": "Chat with Teams RAG",
   "type": "completion",
   "completion": {
-      "model": "gpt-35-turbo",
       "completion_type": "chat",
       "include_history": true,
       "include_input": true,

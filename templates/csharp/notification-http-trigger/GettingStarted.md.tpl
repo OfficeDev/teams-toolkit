@@ -24,6 +24,14 @@ the notification(replace <endpoint> with real endpoint, for example localhost:51
    Invoke-WebRequest -Uri "http://<endpoint>/api/notification" -Method Post
    
 {{/enableTestToolByDefault}}
+
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
+{{^enableTestToolByDefault}}
+## Debug in Test Tool
+Teams App Test Tool allows developers test and debug bots locally without needing Microsoft 365 accounts, development tunnels, or Teams app and bot registration. See https://aka.ms/teams-toolkit-vs-test-tool for more details.
+{{/enableTestToolByDefault}}
+
 ## Learn more
 
 New to Teams app development or Teams Toolkit? Learn more about 

@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FailedToParseResourceIdError } from "../core/error";
+import * as Handlebars from "handlebars";
+import * as uuid from "uuid";
+import * as crypto from "crypto";
+import { getLocalizedString } from "./localizeUtils";
+
 const MIN_ENTROPY = 4;
 const SECRET_REPLACE = "<REDACTED:secret>";
 const USER_REPLACE = "<REDACTED:user>";
@@ -107,9 +113,9 @@ export function maskSecret(
       output += SECRET_REPLACE;
     }
   });
-  for (const token of tokens) {
-    console.log(token);
-  }
+  // for (const token of tokens) {
+  //   console.log(token);
+  // }
   return output;
 }
 
@@ -131,4 +137,49 @@ export function maskSecretValues(stdout: string, replace = "***"): string {
     }
   }
   return stdout;
+}
+
+export function convertToAlphanumericOnly(appName: string): string {
+  return appName.replace(/[^\da-zA-Z]/g, "");
+}
+
+Handlebars.registerHelper("contains", (value, array) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) > -1 ? this : "";
+});
+Handlebars.registerHelper("notContains", (value, array) => {
+  array = array instanceof Array ? array : [array];
+  return array.indexOf(value) == -1 ? this : "";
+});
+Handlebars.registerHelper("equals", (value, target) => {
+  return value === target ? this : "";
+});
+
+export function getResourceGroupNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
+  if (!result) {
+    throw FailedToParseResourceIdError("resource group name", resourceId);
+  }
+  return result;
+}
+
+export function parseFromResourceId(pattern: RegExp, resourceId: string): string {
+  const result = resourceId.match(pattern);
+  return result ? result[1].trim() : "";
+}
+
+export function getUuid(): string {
+  return uuid.v4();
+}
+
+export function getHashedEnv(envName: string): string {
+  return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+export function loadingOptionsPlaceholder(): string {
+  return getLocalizedString("ui.select.LoadingOptionsPlaceholder");
+}
+
+export function loadingDefaultPlaceholder(): string {
+  return getLocalizedString("ui.select.LoadingDefaultPlaceholder");
 }

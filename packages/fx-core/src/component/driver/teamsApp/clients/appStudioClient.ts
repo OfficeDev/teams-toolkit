@@ -28,7 +28,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../../common/telemetry";
-import { waitSeconds } from "../../../../common/tools";
+import { waitSeconds } from "../../../../common/utils";
 import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
@@ -46,6 +46,7 @@ import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResp
 import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
 import { AsyncAppValidationDetailsResponse } from "../interfaces/AsyncAppValidationDetailsResponse";
 import { OauthRegistration } from "../interfaces/OauthRegistration";
+import { OauthConfigurationId } from "../interfaces/OauthConfigurationId";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -123,7 +124,7 @@ export namespace AppStudioClient {
         const error = AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message(),
-          HelpLinks.SwitchAccountOrSub
+          HelpLinks.SwitchTenant
         );
         throw error;
       }
@@ -636,7 +637,7 @@ export namespace AppStudioClient {
   export async function submitAppValidationRequest(
     teamsAppId: string,
     appStudioToken: string,
-    timeoutSeconds = 10
+    timeoutSeconds = 20
   ): Promise<AsyncAppValidationResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     requester.defaults.timeout = timeoutSeconds * 1000;
@@ -686,7 +687,7 @@ export namespace AppStudioClient {
   export async function getAppValidationById(
     appValidationId: string,
     appStudioToken: string,
-    timeoutSeconds = 10
+    timeoutSeconds = 20
   ): Promise<AsyncAppValidationResultsResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     requester.defaults.timeout = timeoutSeconds * 1000;
@@ -860,7 +861,7 @@ export namespace AppStudioClient {
   export async function createOauthRegistration(
     appStudioToken: string,
     oauthRegistration: OauthRegistration
-  ): Promise<OauthRegistration> {
+  ): Promise<OauthConfigurationId> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
       const response = await RetryHandler.Retry(() =>

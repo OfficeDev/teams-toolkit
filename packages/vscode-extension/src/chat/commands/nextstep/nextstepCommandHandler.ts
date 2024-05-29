@@ -8,14 +8,15 @@ import {
   ChatFollowup,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID, TeamsChatCommand, chatParticipantId } from "../../consts";
 import followupProvider from "../../followupProvider";
-import { describeScenarioSystemPrompt } from "../../prompts";
+import { describeStepSystemPrompt } from "../../prompts";
 import { ChatTelemetryData } from "../../telemetry";
 import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import { getCopilotResponseAsString } from "../../utils";
@@ -32,8 +33,7 @@ export default async function nextStepCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByParticipant(
     chatParticipantId,
-    TeamsChatCommand.NextStep,
-    request.location
+    TeamsChatCommand.NextStep
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
@@ -83,7 +83,10 @@ export default async function nextStepCommandHandler(
   }
   const followUps: ChatFollowup[] = [];
   steps.forEach((s) => {
-    followUps.push(...s.followUps);
+    const ids = followUps.map((f) => `${f.label ?? ""} ${f.command ?? ""} ${f.prompt}`);
+    followUps.push(
+      ...s.followUps.filter((f) => !ids.includes(`${f.label ?? ""} ${f.command ?? ""} ${f.prompt}`))
+    );
   });
   followupProvider.addFollowups(followUps);
 
@@ -102,15 +105,16 @@ export default async function nextStepCommandHandler(
   };
 }
 
-async function describeStep(
+export async function describeStep(
   step: NextStep,
   token: CancellationToken,
   telemetryMetadata: IChatTelemetryData
 ): Promise<string> {
   const messages = [
-    describeScenarioSystemPrompt,
-    new LanguageModelChatUserMessage(
-      `The scenario you are looking for is '${JSON.stringify({
+    describeStepSystemPrompt(),
+    new LanguageModelChatMessage(
+      LanguageModelChatMessageRole.User,
+      `The content is '${JSON.stringify({
         description: step.description as string,
       })}'.`
     ),

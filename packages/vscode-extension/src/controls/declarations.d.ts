@@ -8,5 +8,10 @@ declare const vscode: vscode;
 declare const DOMPurify: {
   sanitize(source: string | Node): string;
 };
+declare const mermaid: {
+  initialize: (configs?: { theme: string }) => void;
+  run(): Promise<void>;
+};
 declare const panelType: string;
 declare const containerType: string;
+declare const shouldShowChat: string;

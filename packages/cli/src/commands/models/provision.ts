@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { newResourceGroupOption } from "@microsoft/teamsfx-core/build/question/other";
+import { CoreQuestionNames, newResourceGroupOption } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";

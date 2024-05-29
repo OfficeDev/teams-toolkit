@@ -121,6 +121,17 @@ export class InjectAPIKeyActionFailedError extends UserError {
   }
 }
 
+export class InjectOAuthActionFailedError extends UserError {
+  constructor() {
+    super({
+      message: getDefaultString("core.copilot.addAPI.InjectOAuthActionFailed"),
+      displayMessage: getLocalizedString("core.copilot.addAPI.InjectOAuthActionFailed"),
+      source: "coordinator",
+      categories: [ErrorCategory.Internal],
+    });
+  }
+}
+
 export class JSONSyntaxError extends UserError {
   constructor(filePathOrContent: string, error: any, source?: string) {
     super({
@@ -503,3 +514,13 @@ const errnoCodes: Record<string, string> = {
   EWOULDBLOCK: "Operation would block",
   EXDEV: "Cross-device link",
 };
+
+export function isUserCancelError(error: Error): boolean {
+  const errorName = "name" in error ? (error as any)["name"] : "";
+  return (
+    errorName === "User Cancel" ||
+    errorName === "CancelProvision" ||
+    errorName === "UserCancel" ||
+    errorName === "UserCancelError"
+  );
+}

@@ -6,7 +6,8 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 
 import * as util from "util";
@@ -29,8 +30,7 @@ export default async function createCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByParticipant(
     chatParticipantId,
-    TeamsChatCommand.Create,
-    request.location
+    TeamsChatCommand.Create
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
@@ -72,9 +72,13 @@ export default async function createCommandHandler(
     response.markdown(localize("teamstoolkit.chatParticipants.create.oneMatched"));
     const firstMatch = matchedResult[0];
     const describeProjectChatMessages = [
-      describeProjectSystemPrompt,
-      new LanguageModelChatUserMessage(
-        `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
+      describeProjectSystemPrompt(),
+      new LanguageModelChatMessage(
+        LanguageModelChatMessageRole.User,
+        `The project you are looking for is '${JSON.stringify({
+          name: firstMatch.name,
+          description: firstMatch.description,
+        })}'.`
       ),
     ];
     chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
@@ -125,8 +129,9 @@ export default async function createCommandHandler(
       response.markdown(`- ${project.name}: `);
 
       const brieflyDescribeProjectChatMessages = [
-        brieflyDescribeProjectSystemPrompt,
-        new LanguageModelChatUserMessage(
+        brieflyDescribeProjectSystemPrompt(),
+        new LanguageModelChatMessage(
+          LanguageModelChatMessageRole.User,
           `The project you are looking for is '${JSON.stringify(project)}'.`
         ),
       ];

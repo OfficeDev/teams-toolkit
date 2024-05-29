@@ -2,6 +2,51 @@
 
 > Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of pre-released versions, please refer to the [Teams Toolkit Pre-release Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/PRERELEASE.md).
 
+## 5.8.0 - May 14, 2024
+
+This update, marking a minor version increment of the Teams Toolkit, incorporates new features and resolves bugs based on user input. Previously, these incremental modifications were detailed in the prerelease version and a series of blog posts:
+
+- [March Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-march-2024/): Included enhancements to the user interface and application templates for custom copilots, introducing a basic AI chatbot and AI agent, along with Python language support for constructing custom copilots using the Teams AI Library.
+- [April Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-april-2024/): Introduced the ability to utilize authentication-protected APIs in API-based message extensions, debug message extensions using the Teams App Test Tool, and build custom copilots with retrieval augmented generation employing Azure AI Search, custom APIs, and Microsoft 365 data.
+
+### New Features
+
+- **Create API based Message Extensions using auth-protected API**: Teams Toolkit now supports two forms of API authentication protection for your API-based Message Extension app:
+  ![add-auth-api-me](https://github.com/OfficeDev/TeamsFx/assets/113089977/c5faea2f-676b-4a8c-82d6-f3b037e54f0e)
+  - API-Key: You can either add the API key of your existing API or, if you don't have one, Teams Toolkit will generate one to demonstrate authentication flow.
+  - Microsoft Entra (Azure AD): Teams Toolkit facilitates the creation of Microsoft Entra IDs to authenticate your new API.
+
+- **Debug Message Extensions in Teams App Test Tool**: Developers can now debug and test the message extensions in a web-based environment using the Teams App Test Tool, which emulates Microsoft Teams without requiring tunnels or a Microsoft 365 account. This version extends Teams App Test Tool support to search-based, action-based, and link-unfurling message extension apps.
+  ![ME-test-tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/2b55996f-87a9-4683-abaf-3089b7ea878e)
+
+- **Create Intelligent Chatbot with RAG Capability**: The Custom Copilot with RAG capability is an AI-powered chatbot capable of understanding natural language and retrieving domain-specific data to answer questions. Teams Toolkit now supports accessing custom data in Custom Copilot apps. When creating a Custom Copilot app, developers can select 'Chat with your Data' and then choose the desired data source.
+  ![access-data-custom-copilot](https://github.com/OfficeDev/TeamsFx/assets/113089977/d40cfc84-8cb8-4816-b587-668a2bcf9560)
+  Four types of data sources are available:
+  ![data-source-custom-copilot](https://github.com/OfficeDev/TeamsFx/assets/113089977/2d010366-96a0-4f8b-861d-28d5bb9e36b8)
+  - `Customize`: Load data from a custom data source, for example, the file system or vector Database.
+  - `Azure AI Search`: Load data from Azure AI Search service and use it in conversation with users.
+  - `Custom API`: Invoke the API defined in the OpenAPI description document to retrieve domain data from the API service.
+  - `Microsoft 365`: Query Microsoft 365 data from the Microsoft Graph Search API as a data source in the conversation.
+
+- **Build Your Own Copilots in Teams with Teams AI Library**: Enhancements have been made to the user experience for developers to create their custom copilots, AI-powered intelligent chatbots for Teams, with the following improvements:
+![Custom Copilots](https://github.com/OfficeDev/TeamsFx/assets/11220663/0387a2ce-ec39-4c72-aabc-1ec2b9e85d59)
+  - Streamlined UX for scaffolding, including top-level entry points and easy configuration of LLM services and credentials during the scaffolding flow.
+  - New application templates allowing developers to build an AI Agent from scratch.
+  - Python language support for building a `Basic AI Chatbot` and `AI Agent`.
+
+### Enhancements
+
+- The `aadApp/create` action now supports setting `serviceManagementReference` for Entra apps, facilitating referencing application or service contact information from a Service or Asset Management database.
+- The `office-addin-manifest` and `office-addin-project` have been upgraded to the latest version to enable the use of the latest version of the manifest schema when importing an existing XML-based Outlook Add-in project.
+- The `@azure/identity` and `@azure/msal-node` packages have been updated to the latest version to ensure the security of the authentication process.
+- The `teamsjs` dependency in `teamsfx` and `teamsfx-react` has been upgraded to the latest version to ensure compatibility with the latest TeamsJS SDK.
+
+### Bug Fixes
+
+- Fixed an issue in the `teamsapp` CLI, where scrolling down would result in an error when selecting an item of a large index from a list. ([#11521](https://github.com/OfficeDev/TeamsFx/pull/11521))
+- Fixed a bug in API-based message extension app templates, where the launch URL pointed to the home page instead of the app installation page. ([#11461](https://github.com/OfficeDev/TeamsFx/pull/11461))
+- Fixed a vulnerability issue introduced by the `axios` package. ([#11449](https://github.com/OfficeDev/TeamsFx/pull/11449))
+
 ## 5.6.0 - Mar 12, 2024
 
 This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include Deploy Tab Apps to Static Web App, Teams Toolkit CLI v3 and many other enhancements. We previously shared these incremental changes in the prerelease version and through a blog post:
@@ -316,7 +361,7 @@ Enhancement:
 - UI improvement of `Create a new Teams app` and `Start from a sample`.
 - UI improvement of the Teams Toolkit menus in the sidebar.
 - Optimize and simplify the Sample apps. Improve the experience of Sample apps.
-- Improved the experience of TeamsFx CLI tool.
+- Improved the experience of Teams Toolkit CLI tool.
 
 ## 3.8.0 - Apr 22, 2022
 

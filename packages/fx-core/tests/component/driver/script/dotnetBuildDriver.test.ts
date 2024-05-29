@@ -4,7 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as tools from "../../../../src/common/tools";
+import * as tools from "../../../../src/common/utils";
 import * as utils from "../../../../src/component/driver/script/scriptDriver";
 import { DotnetBuildDriver } from "../../../../src/component/driver/script/dotnetBuildDriver";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";

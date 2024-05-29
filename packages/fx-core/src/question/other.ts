@@ -3,14 +3,13 @@
 
 import {
   AppPackageFolderName,
-  AzureAccountProvider,
   BuildFolderName,
   ConfirmQuestion,
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
+  ManifestUtil,
   MultiSelectQuestion,
-  OptionItem,
   Platform,
   SingleFileQuestion,
   SingleSelectQuestion,
@@ -19,14 +18,24 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
+import { isAsyncAppValidationEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
-import { AppStudioScopes } from "../common/tools";
 import { Constants } from "../component/driver/add/utility/constants";
-import { recommendedLocations, resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
+import { AppStudioScopes } from "../component/driver/teamsApp/constants";
+import { AppStudioError } from "../component/driver/teamsApp/errors";
+import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
+import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { getAbsolutePath } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentNameManager } from "../core/environmentName";
 import { TOOLS } from "../core/globalVars";
+import {
+  HubOptions,
+  PluginAvailabilityOptions,
+  QuestionNames,
+  TeamsAppValidationOptions,
+} from "./constants";
 import {
   SPFxFrameworkQuestion,
   SPFxImportFolderQuestion,
@@ -34,8 +43,6 @@ import {
   apiOperationQuestion,
   apiSpecLocationQuestion,
 } from "./create";
-import { QuestionNames } from "./questionNames";
-import { isAsyncAppValidationEnabled } from "../common/featureFlags";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -267,7 +274,7 @@ export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
     cliName: "teams-manifest-file",
     cliShortName: "t",
     cliDescription:
-      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+      "Specify the path for Teams app manifest template. It can be either absolute path or relative path to the project root folder, with default at './appPackage/manifest.json'",
     title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -390,36 +397,6 @@ export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
   };
 }
 
-export class TeamsAppValidationOptions {
-  static schema(): OptionItem {
-    return {
-      id: "validateAgainstSchema",
-      label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
-      ),
-    };
-  }
-  static package(): OptionItem {
-    return {
-      id: "validateAgainstPackage",
-      label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
-      ),
-    };
-  }
-  static testCases(): OptionItem {
-    return {
-      id: "validateWithTestCases",
-      label: getLocalizedString("core.selectValidateMethodQuestion.validate.testCasesOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.testCasesOptionDescription"
-      ),
-    };
-  }
-}
-
 function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.TeamsAppPackageFilePath,
@@ -450,36 +427,6 @@ export function selectTeamsAppPackageQuestionNode(): IQTreeNode {
   return {
     data: selectTeamsAppPackageQuestion(),
   };
-}
-
-export enum HubTypes {
-  teams = "teams",
-  outlook = "outlook",
-  office = "office",
-}
-
-export class HubOptions {
-  static teams(): OptionItem {
-    return {
-      id: "teams",
-      label: "Teams",
-    };
-  }
-  static outlook(): OptionItem {
-    return {
-      id: "outlook",
-      label: "Outlook",
-    };
-  }
-  static office(): OptionItem {
-    return {
-      id: "office",
-      label: "the Microsoft 365 app",
-    };
-  }
-  static all(): OptionItem[] {
-    return [this.teams(), this.outlook(), this.office()];
-  }
 }
 
 function selectM365HostQuestion(): SingleSelectQuestion {
@@ -790,150 +737,54 @@ export function createNewEnvQuestionNode(): IQTreeNode {
   };
 }
 
-export const newResourceGroupOption = "+ New resource group";
-
-/**
- * select existing resource group or create new resource group
- */
-function selectResourceGroupQuestion(
-  azureAccountProvider: AzureAccountProvider,
-  subscriptionId: string
-): SingleSelectQuestion {
+export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
   return {
+    name: QuestionNames.PluginAvailability,
+    title: getLocalizedString("core.question.pluginAvailability.title"),
+    cliDescription: "Select plugin availability.",
     type: "singleSelect",
-    name: QuestionNames.TargetResourceGroupName,
-    title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
-    staticOptions: [{ id: newResourceGroupOption, label: newResourceGroupOption }],
-    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      const rmClient = await resourceGroupHelper.createRmClient(
-        azureAccountProvider,
-        subscriptionId
-      );
-      const listRgRes = await resourceGroupHelper.listResourceGroups(rmClient);
-      if (listRgRes.isErr()) throw listRgRes.error;
-      const rgList = listRgRes.value;
-      const options: OptionItem[] = rgList.map((rg) => {
-        return {
-          id: rg[0],
-          label: rg[0],
-          description: rg[1],
-        };
-      });
-      const existingResourceGroupNames = rgList.map((rg) => rg[0]);
-      inputs.existingResourceGroupNames = existingResourceGroupNames; // cache existing resource group names for valiation usage
-      return [{ id: newResourceGroupOption, label: newResourceGroupOption }, ...options];
-    },
-    skipSingleOption: true,
-    returnObject: true,
-    forgetLastValue: true,
-  };
-}
-
-export function validateResourceGroupName(input: string, inputs?: Inputs): string | undefined {
-  const name = input;
-  // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
-  const match = name.match(/^[-\w._()]+$/);
-  if (!match) {
-    return getLocalizedString("core.QuestionNewResourceGroupName.validation");
-  }
-
-  // To avoid the issue in CLI that using async func for validation and filter will make users input answers twice,
-  // we check the existence of a resource group from the list rather than call the api directly for now.
-  // Bug: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/15066282
-  // GitHub issue: https://github.com/SBoudrias/Inquirer.js/issues/1136
-  if (inputs?.existingResourceGroupNames) {
-    const maybeExist =
-      inputs.existingResourceGroupNames.findIndex(
-        (o: string) => o.toLowerCase() === input.toLowerCase()
-      ) >= 0;
-    if (maybeExist) {
-      return `resource group already exists: ${name}`;
-    }
-  }
-  return undefined;
-}
-
-export function newResourceGroupNameQuestion(defaultResourceGroupName: string): TextInputQuestion {
-  return {
-    type: "text",
-    name: QuestionNames.NewResourceGroupName,
-    title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
-    placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
-    // default resource group name will change with env name
-    forgetLastValue: true,
-    default: defaultResourceGroupName,
-    validation: {
-      validFunc: validateResourceGroupName,
-    },
-  };
-}
-
-function selectResourceGroupLocationQuestion(
-  azureAccountProvider: AzureAccountProvider,
-  subscriptionId: string
-): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: QuestionNames.NewResourceGroupLocation,
-    title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
-    staticOptions: [],
+    staticOptions: PluginAvailabilityOptions.all(),
     dynamicOptions: async (inputs: Inputs) => {
-      const rmClient = await resourceGroupHelper.createRmClient(
-        azureAccountProvider,
-        subscriptionId
-      );
-      const getLocationsRes = await resourceGroupHelper.getLocations(
-        azureAccountProvider,
-        rmClient
-      );
-      if (getLocationsRes.isErr()) {
-        throw getLocationsRes.error;
+      const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
+      const absolutePath = getAbsolutePath(teamsManifestPath, inputs.projectPath!);
+      const manifestRes = await manifestUtils._readAppManifest(absolutePath);
+      if (manifestRes.isErr()) {
+        throw manifestRes.error;
       }
-      const recommended = getLocationsRes.value.filter((location) => {
-        return recommendedLocations.indexOf(location) >= 0;
-      });
-      const others = getLocationsRes.value.filter((location) => {
-        return recommendedLocations.indexOf(location) < 0;
-      });
-      return [
-        ...recommended.map((location) => {
-          return {
-            id: location,
-            label: location,
-            groupName: getLocalizedString(
-              "core.QuestionNewResourceGroupLocation.group.recommended"
-            ),
-          } as OptionItem;
-        }),
-        ...others.map((location) => {
-          return {
-            id: location,
-            label: location,
-            groupName: getLocalizedString("core.QuestionNewResourceGroupLocation.group.others"),
-          } as OptionItem;
-        }),
-      ];
+      const commonProperties = ManifestUtil.parseCommonProperties(manifestRes.value);
+      if (!commonProperties.capabilities.includes("copilotGpt")) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "declarativeCopilots",
+            teamsManifestPath
+          )
+        );
+      }
+
+      if (commonProperties.capabilities.includes("plugin")) {
+        // A project can have only one plugin.
+        return [PluginAvailabilityOptions.action()];
+      } else {
+        return PluginAvailabilityOptions.all();
+      }
     },
-    default: "Central US",
   };
 }
 
-export function resourceGroupQuestionNode(
-  azureAccountProvider: AzureAccountProvider,
-  subscriptionId: string,
-  defaultResourceGroupName: string
-): IQTreeNode {
+// add Plugin to a declarative Copilot project
+export function addPluginQuestionNode(): IQTreeNode {
   return {
-    data: selectResourceGroupQuestion(azureAccountProvider, subscriptionId),
+    data: selectTeamsAppManifestQuestion(),
     children: [
       {
-        condition: { equals: newResourceGroupOption },
-        data: newResourceGroupNameQuestion(defaultResourceGroupName),
-        children: [
-          {
-            data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
-          },
-        ],
+        data: selectPluginAvailabilityQuestion(),
+      },
+      {
+        data: apiSpecLocationQuestion(),
+      },
+      {
+        data: apiOperationQuestion(true, true),
       },
     ],
   };
@@ -959,13 +810,11 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          const pattern = /^(\w){10,128}/g;
-          const match = pattern.test(input);
+          if (input.length < 10 || input.length > 128) {
+            return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          }
 
-          const result = match
-            ? undefined
-            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-          return result;
+          return undefined;
         },
       },
       additionalValidationOnAccept: {
@@ -992,5 +841,96 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
         data: apiSpecApiKeyConfirmQestion(),
       },
     ],
+  };
+}
+
+export function oauthQuestion(): IQTreeNode {
+  return {
+    data: { type: "group" },
+    condition: (inputs: Inputs) => {
+      return (
+        inputs.outputEnvVarNames && !process.env[inputs.outputEnvVarNames.get("configurationId")]
+      );
+    },
+    children: [
+      {
+        data: oauthClientIdQuestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientId;
+        },
+      },
+      {
+        data: oauthClientSecretQuestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientSecret;
+        },
+      },
+      {
+        data: oauthConfirmQestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientSecret || !inputs.clientId;
+        },
+      },
+    ],
+  };
+}
+
+function oauthClientIdQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.OauthClientId,
+    cliShortName: "i",
+    title: getLocalizedString("core.createProjectQuestion.OauthClientId"),
+    cliDescription: "Oauth client id for OpenAPI spec.",
+    forgetLastValue: true,
+    additionalValidationOnAccept: {
+      validFunc: (input: string, inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+
+        process.env[QuestionNames.OauthClientId] = input;
+        return;
+      },
+    },
+  };
+}
+
+function oauthConfirmQestion(): ConfirmQuestion {
+  return {
+    name: QuestionNames.OauthConfirm,
+    title: getLocalizedString("core.createProjectQuestion.OauthClientSecretConfirm"),
+    type: "confirm",
+    default: true,
+  };
+}
+
+function oauthClientSecretQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.OauthClientSecret,
+    cliShortName: "c",
+    title: getLocalizedString("core.createProjectQuestion.OauthClientSecret"),
+    cliDescription: "Oauth client secret for OpenAPI spec.",
+    forgetLastValue: true,
+    validation: {
+      validFunc: (input: string): string | undefined => {
+        if (input.length < 10 || input.length > 128) {
+          return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+        }
+
+        return undefined;
+      },
+    },
+    additionalValidationOnAccept: {
+      validFunc: (input: string, inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+
+        process.env[QuestionNames.OauthClientSecret] = input;
+        return;
+      },
+    },
   };
 }

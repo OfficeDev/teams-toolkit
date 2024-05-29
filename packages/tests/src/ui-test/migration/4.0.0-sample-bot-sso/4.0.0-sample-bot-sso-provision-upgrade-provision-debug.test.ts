@@ -21,7 +21,12 @@ import {
 } from "../../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import {
+  CLIVersionCheck,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
+import { updatePakcageJson } from "./helper";
+import * as path from "path";
 import {
   deployProject,
   provisionProject,
@@ -56,6 +61,9 @@ describe("Migration Tests", function () {
     async () => {
       // create v2 project using CLI
       await sampledebugContext.openResourceFolder();
+      updatePakcageJson(
+        path.join(sampledebugContext.projectPath, "bot", "package.json")
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
@@ -76,6 +84,8 @@ describe("Migration Tests", function () {
       );
       // enable cli v3
       CliHelper.setV3Enable();
+
+      await updateDeverloperInManifestFile(sampledebugContext.projectPath);
 
       // v3 provision
       await provisionProject(

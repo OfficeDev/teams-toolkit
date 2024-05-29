@@ -21,6 +21,9 @@ import {
 } from "../../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
+import { updateDeverloperInManifestFile } from "../../../utils/commonUtils";
+import { updatePakcageJson } from "./helper";
+import * as path from "path";
 import {
   deployProject,
   provisionProject,
@@ -58,6 +61,10 @@ describe("Migration Tests", function () {
       // verify popup
       await validateNotification(Notification.Upgrade);
 
+      updatePakcageJson(
+        path.join(sampledebugContext.projectPath, "bot", "package.json")
+      );
+
       // upgrade
       await upgradeByTreeView();
       //verify upgrade
@@ -70,6 +77,8 @@ describe("Migration Tests", function () {
         sampledebugContext.projectPath
       );
       CliHelper.setV3Enable();
+
+      await updateDeverloperInManifestFile(sampledebugContext.projectPath);
 
       // v3 provision
       await provisionProject(

@@ -84,14 +84,14 @@ export class AddWebPartDriver implements StepDriver {
       name: webpartName,
       contentUrl: util.format(Constants.REMOTE_CONTENT_URL, componentId),
       websiteUrl: ManifestTemplate.WEBSITE_URL,
-      scopes: ["personal", "team", "groupChat"],
+      scopes: ["personal"],
     };
     const localStaticSnippet: IStaticTab = {
       entityId: componentId,
       name: webpartName,
       contentUrl: util.format(Constants.LOCAL_CONTENT_URL, componentId),
       websiteUrl: ManifestTemplate.WEBSITE_URL,
-      scopes: ["personal", "team", "groupChat"],
+      scopes: ["personal"],
     };
 
     inputs["addManifestPath"] = localManifestPath;

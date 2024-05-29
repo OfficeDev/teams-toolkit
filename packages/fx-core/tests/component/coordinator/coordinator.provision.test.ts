@@ -27,7 +27,7 @@ import { pathUtils } from "../../../src/component/utils/pathUtils";
 import { resourceGroupHelper } from "../../../src/component/utils/ResourceGroupHelper";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import {
   InvalidAzureCredentialError,

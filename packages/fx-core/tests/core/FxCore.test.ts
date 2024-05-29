@@ -75,7 +75,7 @@ import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
 import {
   FileNotFoundError,

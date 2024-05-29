@@ -25,7 +25,7 @@ import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
 import { environmentManager } from "../../src/core/environment";
 import { FxCore } from "../../src/core/FxCore";
-import { globalVars, setTools, TOOLS } from "../../src/core/globalVars";
+import { globalVars, setTools, TOOLS } from "../../src/common/globalVars";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
 import {

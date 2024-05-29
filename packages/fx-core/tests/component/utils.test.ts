@@ -17,7 +17,7 @@ import { deployUtils } from "../../src/component/deployUtils";
 import { createDriverContext } from "../../src/component/driver/util/utils";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import { MockTools } from "../core/utils";
 import { MockedTelemetryReporter } from "../plugins/solution/util";
 import { resolveString } from "../../src/component/configManager/lifecycle";

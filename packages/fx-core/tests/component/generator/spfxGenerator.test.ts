@@ -7,9 +7,8 @@ import {
   Inputs,
   ok,
   Platform,
-  Result,
   Stage,
-  SystemError,
+  SystemError
 } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
@@ -18,6 +17,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
+import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
 import { cpUtils } from "../../../src/component/deps-checker/";
 import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
@@ -29,9 +30,8 @@ import {
   SPFxGeneratorNew,
 } from "../../../src/component/generator/spfx/spfxGenerator";
 import { Utils } from "../../../src/component/generator/spfx/utils/utils";
-import { createContextV3 } from "../../../src/component/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
-import { setTools } from "../../../src/core/globalVars";
+import { FileNotFoundError, UserCancelError } from "../../../src/error";
 import {
   CapabilityOptions,
   ProjectTypeOptions,
@@ -39,8 +39,6 @@ import {
   SPFxVersionOptionIds,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { FileNotFoundError, UserCancelError } from "../../../src/error";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");

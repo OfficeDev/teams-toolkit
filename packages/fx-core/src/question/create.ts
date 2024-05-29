@@ -56,7 +56,7 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { createContextV3 } from "../component/utils";
+import { createContextV3 } from "../common/globalVars";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
   ApiMessageExtensionAuthOptions,

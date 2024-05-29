@@ -7,7 +7,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-import { TOOLS } from "../core/globalVars";
+import { TOOLS } from "./globalVars";
 import { APP_STUDIO_API_NAMES, Constants } from "../component/driver/teamsApp/constants";
 import {
   TelemetryPropertyKey,

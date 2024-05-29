@@ -8,6 +8,7 @@ import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { CreateSampleProjectInputs, validationUtils } from "../../../src";
 import * as FeatureFlags from "../../../src/common/featureFlags";
+import { createContextV3, setTools } from "../../../src/common/globalVars";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
@@ -22,10 +23,8 @@ import { OfficeXMLAddinGenerator } from "../../../src/component/generator/office
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
-import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
-import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
 import {
   ApiMessageExtensionAuthOptions,

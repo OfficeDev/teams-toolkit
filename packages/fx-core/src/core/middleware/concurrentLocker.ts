@@ -22,7 +22,7 @@ import { waitSeconds } from "../../common/utils";
 import { ConcurrentError, FileNotFoundError, InvalidProjectError } from "../../error/common";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, NoProjectOpenedError } from "../error";
-import { TOOLS } from "../globalVars";
+import { TOOLS } from "../../common/globalVars";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 let doingTask: string | undefined = undefined;

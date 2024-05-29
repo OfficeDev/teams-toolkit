@@ -1,26 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as chai from "chai";
-import sinon from "sinon";
-import fs from "fs-extra";
 import {
-  MockLogProvider,
-  MockM365TokenProvider,
-  MockTools,
-  randomAppName,
-} from "../../../core/utils";
-import {
-  err,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  UserError,
-  ManifestUtil,
-  TeamsAppManifest,
   Context,
+  InputsWithProjectPath,
+  ManifestUtil,
+  Platform,
+  TeamsAppManifest,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import * as chai from "chai";
+import fs from "fs-extra";
+import "mocha";
+import { RestoreFn } from "mocked-env";
+import sinon from "sinon";
+import Container from "typedi";
+import { createContextV3, setTools } from "../../../../src/common/globalVars";
+import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
 import {
   checkIfAppInDifferentAcountSameTenant,
   getAppPackage,
@@ -28,21 +27,20 @@ import {
   updateTeamsAppV3ForPublish,
 } from "../../../../src/component/driver/teamsApp/appStudio";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import AdmZip from "adm-zip";
-import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
-import { createContextV3 } from "../../../../src/component/utils";
-import { RestoreFn } from "mocked-env";
-import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
-import { setTools } from "../../../../src/core/globalVars";
 import { QuestionNames } from "../../../../src/question";
-import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import {
+  MockLogProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
-import * as commonTools from "../../../../src/common/featureFlags";
-import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
 
 describe.skip("appStudio", () => {
   const tools = new MockTools();

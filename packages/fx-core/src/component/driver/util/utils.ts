@@ -3,7 +3,7 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../interface/commonArgs";
-import { TOOLS } from "../../../core/globalVars";
+import { TOOLS } from "../../../common/globalVars";
 
 // Needs to validate the parameters outside of the function
 export function loadStateFromEnv(

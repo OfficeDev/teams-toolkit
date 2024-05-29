@@ -6,64 +6,59 @@
  */
 
 import {
+  ErrorResult,
+  ErrorType,
+  SpecParser,
+  SpecParserError,
+  ValidationStatus,
+  WarningType
+} from "@microsoft/m365-spec-parser";
+import {
   ApiOperation,
-  err,
   IComposeExtension,
   Inputs,
-  ok,
   OpenAIManifestAuthType,
   Platform,
   ResponseTemplatesFolderName,
   SystemError,
   TeamsAppManifest,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import "mocha";
-import * as sinon from "sinon";
 import axios from "axios";
-import { Generator } from "../../../src/component/generator/generator";
-import { setTools } from "../../../src/core/globalVars";
-import { MockTools } from "../../core/utils";
-import {
-  SpecParser,
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-  SpecParserError,
-  AdaptiveCardGenerator,
-  ProjectType,
-} from "@microsoft/m365-spec-parser";
+import { assert, expect } from "chai";
+import fs from "fs-extra";
+import "mocha";
+import { OpenAPIV3 } from "openapi-types";
+import path from "path";
+import * as sinon from "sinon";
+import { format } from "util";
+import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import {
   CopilotGenerator,
   CopilotPluginGenerator,
 } from "../../../src/component/generator/copilotPlugin/generator";
-import { assert, expect } from "chai";
-import { createContextV3 } from "../../../src/component/utils";
+import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
+import {
+  OpenAIPluginManifestHelper,
+  formatValidationErrors,
+  generateScaffoldingSummary,
+  isYamlSpecFile,
+  listPluginExistingOperations,
+} from "../../../src/component/generator/copilotPlugin/helper";
+import { Generator } from "../../../src/component/generator/generator";
 import {
   CapabilityOptions,
-  copilotPluginApiSpecOptionId,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
   QuestionNames,
+  copilotPluginApiSpecOptionId,
 } from "../../../src/question";
-import {
-  generateScaffoldingSummary,
-  OpenAIPluginManifestHelper,
-  isYamlSpecFile,
-  formatValidationErrors,
-  listPluginExistingOperations,
-} from "../../../src/component/generator/copilotPlugin/helper";
-import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
-import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import fs from "fs-extra";
-import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { ErrorResult } from "@microsoft/m365-spec-parser";
-import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
-import path from "path";
-import { OpenAPIV3 } from "openapi-types";
-import { format } from "util";
-import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
-import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
+import { MockTools } from "../../core/utils";
 
 const openAIPluginManifest = {
   schema_version: "v1",

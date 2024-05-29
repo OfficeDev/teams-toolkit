@@ -1,20 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
+import { LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
-import { stub, spy, restore, assert } from "sinon";
-import rewire from "rewire";
 import fs from "fs-extra";
-
-import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
-import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
-import { LogProvider, LogLevel, UserError } from "@microsoft/teamsfx-api";
+import "mocha";
+import rewire from "rewire";
+import { assert, restore, spy, stub } from "sinon";
+import { createContextV3, setTools } from "../../../../../src/common/globalVars";
 import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
-import { createContextV3 } from "../../../../../src/component/utils";
-import { setTools } from "../../../../../src/core/globalVars";
-import { MockTools } from "../../../../core/utils";
+import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
+import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
+import { MockTools } from "../../../../core/utils";
 
 const ryc = rewire("../../../../../src/component/generator/spfx/depsChecker/yoChecker");
 

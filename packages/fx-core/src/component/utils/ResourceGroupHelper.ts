@@ -16,7 +16,7 @@ import {
   TextInputQuestion,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../common/globalVars";
 import {
   CheckResourceGroupExistenceError,
   CreateResourceGroupError,

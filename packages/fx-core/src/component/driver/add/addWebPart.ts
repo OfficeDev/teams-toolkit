@@ -11,7 +11,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { QuestionNames } from "../../../question/constants";
 import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
 import { ManifestTemplate } from "../../generator/spfx/utils/constants";
-import { createContextV3 } from "../../utils";
+import { createContextV3 } from "../../../common/globalVars";
 import { wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";

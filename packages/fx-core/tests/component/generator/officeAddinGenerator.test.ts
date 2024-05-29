@@ -27,6 +27,7 @@ import * as path from "path";
 import proxyquire from "proxyquire";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
+import { createContextV3, setTools } from "../../../src/common/globalVars";
 import { cpUtils } from "../../../src/component/deps-checker/";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
@@ -36,8 +37,6 @@ import {
   OfficeAddinGeneratorNew,
 } from "../../../src/component/generator/officeAddin/generator";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
-import { createContextV3 } from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
 import { UserCancelError } from "../../../src/error";
 import {
   CapabilityOptions,

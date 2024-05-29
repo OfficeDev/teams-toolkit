@@ -16,7 +16,7 @@ import {
   sendTelemetryEvent,
   TelemetryEvent,
 } from "../../common/telemetry";
-import { TOOLS } from "../globalVars";
+import { TOOLS } from "../../common/globalVars";
 import {
   UpgradeV3CanceledError,
   MigrationError,

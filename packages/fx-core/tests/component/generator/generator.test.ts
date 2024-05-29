@@ -1,60 +1,57 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import _ from "lodash";
-import "mocha";
-import fs from "fs-extra";
-import path from "path";
-import axios, { AxiosError, AxiosResponse, AxiosHeaders } from "axios";
-import {
-  downloadDirectory,
-  getSampleInfoFromName,
-  runWithLimitedConcurrency,
-  renderTemplateFileData,
-  renderTemplateFileName,
-  simplifyAxiosError,
-  isApiLimitError,
-} from "../../../src/component/generator/utils";
-import { assert } from "chai";
-import { Generator } from "../../../src/component/generator/generator";
-import { createContextV3 } from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
-import { MockTools, randomAppName } from "../../core/utils";
+import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import { createSandbox } from "sinon";
-import {
-  ScaffoldRemoteTemplateAction,
-  fetchSampleInfoAction,
-  TemplateActionSeq,
-  GeneratorContext,
-  ScaffoldLocalTemplateAction,
-} from "../../../src/component/generator/generatorAction";
-import * as generatorUtils from "../../../src/component/generator/utils";
-import * as requestUtils from "../../../src/common/requestUtils";
+import axios, { AxiosError, AxiosHeaders, AxiosResponse } from "axios";
+import { assert } from "chai";
+import fs from "fs-extra";
+import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { sampleProvider, SampleConfig, SampleUrlInfo } from "../../../src/common/samples";
+import Mustache from "mustache";
+import path from "path";
+import { createSandbox } from "sinon";
+import * as folderUtils from "../../../../fx-core/src/folder";
+import * as featurefalgs from "../../../src/common/featureFlags";
+import { createContextV3, setTools } from "../../../src/common/globalVars";
+import * as requestUtils from "../../../src/common/requestUtils";
+import { sendRequestWithRetry, sendRequestWithTimeout } from "../../../src/common/requestUtils";
+import { SampleConfig, SampleUrlInfo, sampleProvider } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import {
   commonTemplateName,
   placeholderDelimiters,
 } from "../../../src/component/generator/constant";
-import sampleConfigV3 from "../../common/samples-config-v3.json";
-import Mustache from "mustache";
-import * as folderUtils from "../../../../fx-core/src/folder";
 import {
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
   FetchSampleInfoError,
 } from "../../../src/component/generator/error";
-import { ActionContext } from "../../../src/component/middleware/actionExecutionMW";
-import * as featurefalgs from "../../../src/common/featureFlags";
-import { QuestionNames } from "../../../src/question";
-import { CapabilityOptions, ProgrammingLanguage } from "../../../src/question";
+import { Generator } from "../../../src/component/generator/generator";
+import {
+  GeneratorContext,
+  ScaffoldLocalTemplateAction,
+  ScaffoldRemoteTemplateAction,
+  TemplateActionSeq,
+  fetchSampleInfoAction,
+} from "../../../src/component/generator/generatorAction";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
-import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { getTemplateReplaceMap } from "../../../src/component/generator/templates/templateReplaceMap";
-import { sendRequestWithRetry, sendRequestWithTimeout } from "../../../src/common/requestUtils";
+import * as generatorUtils from "../../../src/component/generator/utils";
+import {
+  downloadDirectory,
+  getSampleInfoFromName,
+  isApiLimitError,
+  renderTemplateFileData,
+  renderTemplateFileName,
+  runWithLimitedConcurrency,
+  simplifyAxiosError,
+} from "../../../src/component/generator/utils";
+import { ActionContext } from "../../../src/component/middleware/actionExecutionMW";
+import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../src/question";
+import sampleConfigV3 from "../../common/samples-config-v3.json";
+import { MockTools, randomAppName } from "../../core/utils";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",

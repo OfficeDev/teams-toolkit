@@ -106,7 +106,7 @@ import {
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { createContextV3 } from "../component/utils";
+import { createContextV3 } from "../common/globalVars";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
@@ -143,7 +143,7 @@ import { checkPermission, grantPermission, listCollaborator } from "./collaborat
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
-import { ErrorContextMW, TOOLS, setErrorContext, setTools } from "./globalVars";
+import { ErrorContextMW, TOOLS, setErrorContext, setTools } from "../common/globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";

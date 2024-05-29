@@ -3,6 +3,7 @@ import { assert } from "chai";
 import "mocha";
 import path from "path";
 import sinon, { createSandbox } from "sinon";
+import { createContextV3, setTools } from "../../../src/common/globalVars";
 import { Generator } from "../../../src/component/generator/generator";
 import { Generators } from "../../../src/component/generator/generatorProvider";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
@@ -11,8 +12,6 @@ import {
   TemplateNames,
   inputsToTemplateName,
 } from "../../../src/component/generator/templates/templateNames";
-import { createContextV3 } from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
 import { CapabilityOptions, QuestionNames } from "../../../src/question";
 import { ProgrammingLanguage } from "../../../src/question/constants";
 import { MockTools, randomAppName } from "../../core/utils";

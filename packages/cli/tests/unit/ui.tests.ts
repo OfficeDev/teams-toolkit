@@ -4,6 +4,7 @@
 import * as prompts from "@inquirer/prompts";
 import {
   Colors,
+  InputTextConfig,
   LogLevel,
   MultiSelectConfig,
   SelectFileConfig,
@@ -463,6 +464,22 @@ describe("User Interaction Tests", function () {
       };
       const result = await UI.selectFolder(config);
       expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
+    });
+    it("Input text", async () => {
+      sandbox.stub(prompts, "input").resolves("abc");
+      sandbox.stub(UI, "interactive").value(true);
+      const config: InputTextConfig = {
+        name: "folder",
+        title: "Select a folder",
+        validation: () => {
+          return undefined;
+        },
+        additionalValidationOnAccept: () => {
+          return undefined;
+        },
+      };
+      const result = await UI.inputText(config);
+      expect(result.isOk() ? result.value.result : result.error).deep.equals("abc");
     });
   });
 

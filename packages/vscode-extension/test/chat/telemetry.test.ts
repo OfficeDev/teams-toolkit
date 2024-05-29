@@ -7,11 +7,8 @@ import {
 } from "../../src/telemetry/extTelemetryEvents";
 import sinon from "ts-sinon";
 import { Correlator } from "@microsoft/teamsfx-core";
-import * as vscodeMocks from "../mocks/vsc";
 import * as utils from "../../src/chat/utils";
 import * as coreTools from "@microsoft/teamsfx-core/build/common/stringUtils";
-
-const ChatLocation = vscodeMocks.chat.ChatLocation;
 
 describe("ChatTelemetryData", () => {
   const sandbox = sinon.createSandbox();
@@ -27,8 +24,7 @@ describe("ChatTelemetryData", () => {
       "testCommand",
       "testRequestId",
       0,
-      "testParticipantId",
-      ChatLocation.Panel
+      "testParticipantId"
     );
 
     const telemetryDataProperties = chatTelemetryData.telemetryData.properties;
@@ -49,16 +45,11 @@ describe("ChatTelemetryData", () => {
       telemetryDataProperties[TelemetryProperty.CopilotChatParticipantId],
       "testParticipantId"
     );
-    chai.assert.equal(
-      telemetryDataProperties[TelemetryProperty.CopilotChatLocation],
-      ChatLocation[ChatLocation.Panel]
-    );
 
     chai.assert.equal(chatTelemetryData.command, "testCommand");
     chai.assert.equal(chatTelemetryData.requestId, "testRequestId");
     chai.assert.equal(chatTelemetryData.startTime, 0);
     chai.assert.equal(chatTelemetryData.participantId, "testParticipantId");
-    chai.assert.equal(chatTelemetryData.chatLocation, ChatLocation.Panel);
     chai.assert.equal(chatTelemetryData.hasComplete, false);
 
     chai.assert.equal(ChatTelemetryData.requestData["testRequestId"], chatTelemetryData);
@@ -70,8 +61,7 @@ describe("ChatTelemetryData", () => {
       "testCommand",
       "testRequestId",
       0,
-      "testParticipantId",
-      ChatLocation.Panel
+      "testParticipantId"
     );
 
     const properties = chatTelemetryData.properties;
@@ -81,10 +71,6 @@ describe("ChatTelemetryData", () => {
     chai.assert.equal(properties[TelemetryProperty.TriggerFrom], TelemetryTriggerFrom.CopilotChat);
     chai.assert.equal(properties[TelemetryProperty.CorrelationId], "testCorrelationId");
     chai.assert.equal(properties[TelemetryProperty.CopilotChatParticipantId], "testParticipantId");
-    chai.assert.equal(
-      properties[TelemetryProperty.CopilotChatLocation],
-      ChatLocation[ChatLocation.Panel]
-    );
   });
 
   describe("measurements", () => {
@@ -99,8 +85,7 @@ describe("ChatTelemetryData", () => {
         "testCommand",
         "testRequestId",
         0,
-        "testParticipantId",
-        ChatLocation.Panel
+        "testParticipantId"
       );
 
       const measurements = chatTelemetryData.measurements;
@@ -116,8 +101,7 @@ describe("ChatTelemetryData", () => {
         "testCommand",
         "testRequestId",
         0,
-        "testParticipantId",
-        ChatLocation.Panel
+        "testParticipantId"
       );
 
       chatTelemetryData.markComplete();
@@ -135,13 +119,11 @@ describe("ChatTelemetryData", () => {
 
     const chatTelemetryData = ChatTelemetryData.createByParticipant(
       "testParticipantId",
-      "testCommand",
-      ChatLocation.Panel
+      "testCommand"
     );
 
     chai.assert.equal(chatTelemetryData.command, "testCommand");
     chai.assert.equal(chatTelemetryData.participantId, "testParticipantId");
-    chai.assert.equal(chatTelemetryData.chatLocation, ChatLocation.Panel);
     chai.assert.equal(chatTelemetryData.startTime, 100);
     chai.assert.equal(chatTelemetryData.requestId, "testRequestId");
   });
@@ -162,8 +144,7 @@ describe("ChatTelemetryData", () => {
         "testCommand",
         "testRequestId",
         0,
-        "testParticipantId",
-        ChatLocation.Panel
+        "testParticipantId"
       );
 
       chai.assert.equal(ChatTelemetryData.get("testRequestId"), chatTelemetryData);
@@ -173,8 +154,7 @@ describe("ChatTelemetryData", () => {
   it("extendBy", () => {
     const chatTelemetryData = ChatTelemetryData.createByParticipant(
       "testParticipantId",
-      "testCommand",
-      ChatLocation.Panel
+      "testCommand"
     );
 
     chatTelemetryData.extendBy({ testProperty: "testValue" }, { testMeasurement: 1 });
@@ -190,8 +170,7 @@ describe("ChatTelemetryData", () => {
       "testCommand",
       "testRequestId",
       0,
-      "testParticipantId",
-      ChatLocation.Panel
+      "testParticipantId"
     );
 
     chai.assert.equal(chatTelemetryData.hasComplete, false);

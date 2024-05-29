@@ -816,3 +816,9 @@ class ${className} extends OfficeExtension.ClientObject {
   \`\`\`
   `;
 }
+
+export const describeOfficeStepSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Office Add-ins developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
+  );

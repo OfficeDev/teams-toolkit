@@ -38,7 +38,6 @@ import {
   officeChatRequestHandler,
   chatCreateOfficeProjectCommandHandler,
   handleOfficeFeedback,
-  handleOfficeUserAction,
 } from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -112,7 +111,9 @@ export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
-    IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0-insider")
+    IsChatParticipantEnabled &&
+    semver.gte(vscode.version, "1.90.0-insider") &&
+    vscode.version.includes("insider")
   ).toString();
   initializePreviewFeatureFlags();
 
@@ -162,7 +163,14 @@ export async function activate(context: vscode.ExtensionContext) {
     isChatParticipantEnabled()
   );
 
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
@@ -493,7 +501,6 @@ function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
   participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
-  participant.onDidPerformAction((...args) => Correlator.run(handleOfficeUserAction, ...args));
 
   context.subscriptions.push(
     participant,

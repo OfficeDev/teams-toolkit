@@ -36,7 +36,9 @@ export class projectCreator implements ISkill {
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const host = spec.appendix.host.toLowerCase();
     const createInputs = {
-      capabilities: spec.appendix.isCustomFunction ? "excel-cfshared" : `${host}-taskpane`,
+      capabilities: spec.appendix.isCustomFunction
+        ? "excel-custom-functions-shared"
+        : `${host}-taskpane`,
       "project-type": "office-xml-addin-type",
       "addin-host": host,
       "programming-language": "typescript",

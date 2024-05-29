@@ -107,7 +107,8 @@ export async function getBotSiteEndpoint(
   );
   const endpointUrl =
     context.obj[`${endpoint}`] ??
-    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"];
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"] ??
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT"];
   const result = endpointUrl.includes("https://")
     ? endpointUrl
     : "https://" + endpointUrl;

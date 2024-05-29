@@ -21,7 +21,7 @@ import {
 } from "../commonUtils";
 import { deleteTeamsApp } from "../debug/utility";
 
-describe("Create Copilot plugin", () => {
+describe.only("Create Copilot plugin", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

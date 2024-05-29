@@ -1,15 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Context,
-  err,
-  Inputs,
-  ok,
-  Platform,
-  Stage,
-  SystemError
-} from "@microsoft/teamsfx-api";
+import { Context, err, Inputs, ok, Platform, Stage, SystemError } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";

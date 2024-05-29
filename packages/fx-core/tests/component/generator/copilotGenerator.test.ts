@@ -11,7 +11,7 @@ import {
   SpecParser,
   SpecParserError,
   ValidationStatus,
-  WarningType
+  WarningType,
 } from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,

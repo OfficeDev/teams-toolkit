@@ -11,7 +11,7 @@ import {
   APP_STUDIO_API_NAMES,
   getAppStudioEndpoint,
 } from "../../src/component/driver/teamsApp/constants";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import { MockTools } from "../core/utils";
 
 describe("Wrapped Axios Client Test", () => {

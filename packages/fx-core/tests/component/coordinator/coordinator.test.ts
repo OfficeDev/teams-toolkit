@@ -14,7 +14,7 @@ import {
   ok,
   Platform,
   Result,
-  UserError
+  UserError,
 } from "@microsoft/teamsfx-api";
 
 import { createContextV3, setTools } from "../../../src/common/globalVars";

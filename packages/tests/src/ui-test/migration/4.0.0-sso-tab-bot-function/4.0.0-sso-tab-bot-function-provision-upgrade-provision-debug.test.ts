@@ -19,7 +19,12 @@ import {
   upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
+import {
+  updateFunctionAuthorizationPolicy,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
+import * as path from "path";
+import { updatePakcageJson } from "./helper";
 import {
   deployProject,
   provisionProject,
@@ -63,7 +68,14 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
+      updatePakcageJson(
+        path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
+      );
+
       await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 

@@ -24,8 +24,8 @@ import {
   getBotSiteEndpoint,
   updateDeverloperInManifestFile,
 } from "../../../utils/commonUtils";
-import path from "path";
 import { updatePakcageJson } from "./helper";
+import path from "path";
 import {
   deployProject,
   provisionProject,
@@ -64,7 +64,7 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.createProjectCLI(false);
 
       // update package.json in bot folder
-      await updatePakcageJson(
+      updatePakcageJson(
         path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
       );
 

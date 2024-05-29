@@ -73,9 +73,7 @@ describe("Migration Tests", function () {
       );
 
       await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
-      await updateDeverloperInManifestFile(
-        mirgationDebugTestContext.projectPath
-      );
+
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
@@ -86,6 +84,10 @@ describe("Migration Tests", function () {
 
       // enable cli v3
       CliHelper.setV3Enable();
+
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
 
       // v3 provision
       await provisionProject(

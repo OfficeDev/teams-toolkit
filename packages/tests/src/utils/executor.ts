@@ -137,7 +137,7 @@ export class Executor {
     const npxCommand = npx ? "npx " : "";
     const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
     const command = `${npxCommand} ${cliPrefix} ${cmd} --env ${env}`;
-    return this.execute(command, workspace, processEnv, 0);
+    return this.execute(command, workspace, processEnv);
   }
 
   static async provision(workspace: string, env = "dev", isV3 = true) {

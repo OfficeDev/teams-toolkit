@@ -40,7 +40,7 @@ export class LaunchHelper {
           capabilities.length > 0 &&
           (capabilities.filter((capability) => !copilotCapabilities.includes(capability)).length ==
             0 ||
-            capabilities.includes("apiMeAAD"))
+            (!capabilities.includes("staticTab") && capabilities.includes("apiMeAAD")))
         ) {
           installAppPackage = false;
         }

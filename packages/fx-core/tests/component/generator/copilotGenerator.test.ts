@@ -56,6 +56,7 @@ import {
   QuestionNames,
   copilotPluginApiSpecOptionId,
 } from "../../../src/question";
+import { MockTools } from "../../core/utils";
 
 const teamsManifest: TeamsAppManifest = {
   name: {

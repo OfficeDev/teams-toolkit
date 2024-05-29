@@ -75,7 +75,7 @@ export type ExternalSource =
   | "M365"
   | "";
 
-export function createContextV3(): Context {
+export function createContext(): Context {
   const context: Context = {
     userInteraction: TOOLS.ui,
     logProvider: TOOLS.logProvider,

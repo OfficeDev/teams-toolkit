@@ -3,7 +3,7 @@ import { assert } from "chai";
 import "mocha";
 import path from "path";
 import sinon, { createSandbox } from "sinon";
-import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { Generator } from "../../../src/component/generator/generator";
 import { Generators } from "../../../src/component/generator/generatorProvider";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
@@ -54,7 +54,7 @@ describe("TemplateGenerator", () => {
   ]);
 
   setTools(new MockTools());
-  const ctx = createContextV3();
+  const ctx = createContext();
   const destinationPath = path.join(__dirname, "tmp");
   const sandbox = createSandbox();
   let scaffoldingSpy: sinon.SinonSpy;

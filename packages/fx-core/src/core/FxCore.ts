@@ -106,7 +106,7 @@ import {
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { createContextV3 } from "../common/globalVars";
+import { createContext } from "../common/globalVars";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
@@ -175,7 +175,7 @@ export class FxCore {
     QuestionMW("createProject"),
   ])
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
-    const context = createContextV3();
+    const context = createContext();
     if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.startWithGithubCopilot().id) {
       return ok({ projectPath: "", shouldInvokeTeamsAgent: true });
     }
@@ -227,7 +227,7 @@ export class FxCore {
     const projectPath = path.join(folder, appName);
 
     //2. run generator
-    const context = createContextV3();
+    const context = createContext();
     const genRes = await generator.run(context, inputs, projectPath);
     if (genRes.isErr()) return err(genRes.error);
     //3. ensure unique projectId in teamsapp.yaml (optional)
@@ -250,7 +250,7 @@ export class FxCore {
     QuestionMW("createSampleProject"),
   ])
   async createSampleProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
-    const context = createContextV3();
+    const context = createContext();
     inputs[QuestionNames.Scratch] = ScratchOptions.no().id;
     const res = await coordinator.create(context, inputs);
     inputs.projectPath = context.projectPath;
@@ -508,7 +508,7 @@ export class FxCore {
     ctx?: CoreHookContext
   ): Promise<Result<undefined, FxError>> {
     inputs.manifestTemplatePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
-    const context = createContextV3();
+    const context = createContext();
     const res = await updateManifestV3(context, inputs as InputsWithProjectPath);
     if (res.isOk()) {
       ctx!.envVars = envUtil.map2object(res.value);
@@ -905,7 +905,7 @@ export class FxCore {
   ])
   async grantPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     inputs.stage = Stage.grantPermission;
-    const context = createContextV3();
+    const context = createContext();
     setErrorContext({ component: "collaborator" });
     const res = await grantPermission(
       context,
@@ -928,7 +928,7 @@ export class FxCore {
   ])
   async checkPermission(inputs: Inputs): Promise<Result<PermissionsResult, FxError>> {
     inputs.stage = Stage.checkPermission;
-    const context = createContextV3();
+    const context = createContext();
     const res = await checkPermission(
       context,
       inputs as InputsWithProjectPath,
@@ -950,7 +950,7 @@ export class FxCore {
   ])
   async listCollaborator(inputs: Inputs): Promise<Result<ListCollaboratorResult, FxError>> {
     inputs.stage = Stage.listCollaborator;
-    const context = createContextV3();
+    const context = createContext();
     const res = await listCollaborator(
       context,
       inputs as InputsWithProjectPath,
@@ -1240,7 +1240,7 @@ export class FxCore {
   ])
   async publishInDeveloperPortal(inputs: Inputs): Promise<Result<undefined, FxError>> {
     inputs.stage = Stage.publishInDeveloperPortal;
-    const context = createContextV3();
+    const context = createContext();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 
@@ -1255,7 +1255,7 @@ export class FxCore {
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
-    const context = createContextV3();
+    const context = createContext();
 
     // Get API spec file path from manifest
     const manifestRes = await manifestUtils._readAppManifest(manifestPath);
@@ -1481,7 +1481,7 @@ export class FxCore {
   ])
   async copilotPluginListOperations(inputs: Inputs): Promise<Result<ApiOperation[], FxError>> {
     const res = await listOperations(
-      createContextV3(),
+      createContext(),
       inputs.manifest,
       inputs.apiSpecUrl,
       inputs,
@@ -1564,7 +1564,7 @@ export class FxCore {
 
     const gptManifest = gptManifestRes.value;
 
-    const context = createContextV3();
+    const context = createContext();
 
     // confirm
     const confirmRes = await context.userInteraction.showMessage(

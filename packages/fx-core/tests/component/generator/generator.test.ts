@@ -13,7 +13,7 @@ import path from "path";
 import { createSandbox } from "sinon";
 import * as folderUtils from "../../../../fx-core/src/folder";
 import * as featurefalgs from "../../../src/common/featureFlags";
-import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import * as requestUtils from "../../../src/common/requestUtils";
 import { sendRequestWithRetry, sendRequestWithTimeout } from "../../../src/common/requestUtils";
 import { SampleConfig, SampleUrlInfo, sampleProvider } from "../../../src/common/samples";
@@ -520,7 +520,7 @@ describe("Generator utils", () => {
 describe("Generator error", async () => {
   const tools = new MockTools();
   setTools(tools);
-  const ctx = createContextV3();
+  const ctx = createContext();
   const inputs = {
     platform: Platform.VSCode,
     [QuestionNames.AppName]: randomAppName(),
@@ -764,7 +764,7 @@ describe("render template", () => {
   describe(`Generator happy path with isNewGeneratorEnabled=${newGeneratorFlag}`, async () => {
     const tools = new MockTools();
     setTools(tools);
-    const context = createContextV3();
+    const context = createContext();
     let inputs: Inputs;
     const sandbox = createSandbox();
     const tmpDir = path.join(__dirname, "tmp");
@@ -1167,7 +1167,7 @@ describe("Generate sample using download directory", () => {
   let mockedEnvRestore = mockedEnv({});
   const tools = new MockTools();
   setTools(tools);
-  const ctx = createContextV3();
+  const ctx = createContext();
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
       DOWNLOAD_DIRECTORY: "true",

@@ -9,7 +9,7 @@ import "mocha";
 import path from "path";
 import * as sinon from "sinon";
 import { CapabilityOptions, getProjectTypeAndCapability } from "../../src";
-import { createContextV3, setTools } from "../../src/common/globalVars";
+import { createContext, setTools } from "../../src/common/globalVars";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
 import {
@@ -48,7 +48,7 @@ describe("developPortalScaffoldUtils", () => {
       sandbox.restore();
     });
     it("missing project path", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -67,7 +67,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("missing token provider", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
@@ -84,7 +84,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("get App package error", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -108,7 +108,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("missing manifest error", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -130,7 +130,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("missing manifest.json from template", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -192,7 +192,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update files successfully", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -335,7 +335,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update files successfully but keep url", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -470,7 +470,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update bot id only", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -591,7 +591,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update bot id of message extension only", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -725,7 +725,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update bot id and message extension id", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -862,7 +862,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update manifest if selecting capability from ttk UI", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -992,7 +992,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("update group chat", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),
@@ -1122,7 +1122,7 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("read manifest error", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       ctx.tokenProvider = {
         m365TokenProvider: new MockedM365Provider(),
         azureAccountProvider: new MockedAzureAccountProvider(),

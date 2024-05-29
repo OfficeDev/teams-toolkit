@@ -27,7 +27,7 @@ import * as path from "path";
 import proxyquire from "proxyquire";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { cpUtils } from "../../../src/component/deps-checker/";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
@@ -57,7 +57,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fse.ensureDir(testFolder);
     sinon.stub(fs, "stat").resolves();
@@ -587,7 +587,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fse.ensureDir(testFolder);
     sinon.stub(fs, "stat").resolves();
@@ -976,7 +976,7 @@ describe("OfficeAddinGeneratorNew", () => {
   const gtools = new MockTools();
   setTools(gtools);
   const generator = new OfficeAddinGeneratorNew();
-  const context = createContextV3();
+  const context = createContext();
   describe("active()", () => {
     it(`should return true`, async () => {
       const inputs: Inputs = {

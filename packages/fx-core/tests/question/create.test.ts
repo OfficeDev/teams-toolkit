@@ -3461,7 +3461,7 @@ describe("scaffold question", () => {
 
     it("app name has 25 length - VSC", async () => {
       const mockedUI = new MockedUserInteraction();
-      sandbox.stub(utils, "createContextV3").returns({
+      sandbox.stub(utils, "createContext").returns({
         userInteraction: mockedUI,
       } as Context);
       const showMessageStub = sandbox.stub(mockedUI, "showMessage");
@@ -3474,7 +3474,7 @@ describe("scaffold question", () => {
 
     it("app name has 25 length - VS", async () => {
       const mockedLogProvider = new MockedLogProvider();
-      sandbox.stub(utils, "createContextV3").returns({
+      sandbox.stub(utils, "createContext").returns({
         logProvider: mockedLogProvider as LogProvider,
       } as Context);
       const warningStub = sandbox.stub(mockedLogProvider, "warning");

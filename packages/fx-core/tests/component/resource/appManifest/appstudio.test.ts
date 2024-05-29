@@ -18,7 +18,7 @@ import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import Container from "typedi";
-import { createContextV3, setTools } from "../../../../src/common/globalVars";
+import { createContext, setTools } from "../../../../src/common/globalVars";
 import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
 import {
   checkIfAppInDifferentAcountSameTenant,
@@ -214,7 +214,7 @@ describe.skip("appStudio", () => {
       }
     });
     it("not valid json", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const zip = new AdmZip();
       zip.addFile("manifest.json", new Buffer(""));
       const info = zip.toBuffer();
@@ -233,7 +233,7 @@ describe.skip("appStudio", () => {
     });
 
     it("no manifest file", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const zip = new AdmZip();
       const info = zip.toBuffer();
 
@@ -250,7 +250,7 @@ describe.skip("appStudio", () => {
     });
 
     it("manifest without id", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         $schema: "schema",
       };
@@ -272,7 +272,7 @@ describe.skip("appStudio", () => {
     });
 
     it("manifest invalid id", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         id: "fe58d257",
       };
@@ -295,7 +295,7 @@ describe.skip("appStudio", () => {
     });
 
     it.skip("manifest no schema", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         id: "fe58d257-4ce6-427e-a388-496c89633774",
       };
@@ -317,7 +317,7 @@ describe.skip("appStudio", () => {
     });
 
     it.skip("manifest validation failed", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
 
       const json = {
         $schema: "schema",
@@ -345,7 +345,7 @@ describe.skip("appStudio", () => {
     });
 
     it("update teams app error", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         $schema: "schema",
         id: "fe58d257-4ce6-427e-a388-496c89633774",
@@ -380,7 +380,7 @@ describe.skip("appStudio", () => {
     });
 
     it("happy path", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         $schema: "schema",
         id: "fe58d257-4ce6-427e-a388-496c89633774",
@@ -432,7 +432,7 @@ describe("App-manifest Component - v3", () => {
   setTools(tools);
 
   beforeEach(() => {
-    context = createContextV3();
+    context = createContext();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
       ok({
@@ -515,7 +515,7 @@ describe("App-manifest Component - v3", () => {
   it("updateManifestV3 - getManifestV3 Error", async () => {
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
     sandbox.stub(manifestUtils, "getManifestV3").resolves(err(new UserError({})));
-    const ctx = createContextV3();
+    const ctx = createContext();
     const inputs: InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: "projectPath",

@@ -6,7 +6,7 @@ import "mocha";
 import mockFs from "mock-fs";
 import * as sinon from "sinon";
 import * as stream from "stream";
-import { createContextV3, setTools } from "../../../../src/common/globalVars";
+import { createContext, setTools } from "../../../../src/common/globalVars";
 import { ensureBicepForDriver } from "../../../../src/component/driver/arm/util/bicepChecker";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
@@ -62,7 +62,7 @@ describe("BicepChecker", () => {
 
     const tools = new MockTools();
     setTools(tools);
-    context = createContextV3();
+    context = createContext();
   });
 
   afterEach(() => {

@@ -7,7 +7,7 @@ import fs from "fs-extra";
 import "mocha";
 import rewire from "rewire";
 import { assert, restore, spy, stub } from "sinon";
-import { createContextV3, setTools } from "../../../../../src/common/globalVars";
+import { createContext, setTools } from "../../../../../src/common/globalVars";
 import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
 import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
@@ -241,7 +241,7 @@ describe("Yo checker", () => {
         console.log("installing");
       });
 
-      const context = createContextV3();
+      const context = createContext();
 
       const result = await yc.ensureDependency(context, "latest");
       expect(result.isOk()).to.be.true;
@@ -253,7 +253,7 @@ describe("Yo checker", () => {
         throw new UserError("source", "name", "msg", "msg");
       });
 
-      const context = createContextV3();
+      const context = createContext();
 
       const result = await yc.ensureDependency(context, "latest");
       expect(result.isErr()).to.be.true;

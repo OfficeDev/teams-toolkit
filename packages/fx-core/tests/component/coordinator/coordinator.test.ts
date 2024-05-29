@@ -17,7 +17,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 
-import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3, VersionInfo, VersionSource } from "../../../src/common/versionMetadata";
 import {
   DriverInstance,
@@ -411,7 +411,7 @@ describe("component coordinator test", () => {
       sandbox.restore();
     });
     it("missing token provider", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = undefined;
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
@@ -423,7 +423,7 @@ describe("component coordinator test", () => {
     });
 
     it("missing appPackagePath", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = {
         m365TokenProvider: new MockM365TokenProvider(),
         azureAccountProvider: new MockAzureAccountProvider(),
@@ -437,7 +437,7 @@ describe("component coordinator test", () => {
     });
 
     it("success", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = {
         m365TokenProvider: new MockM365TokenProvider(),
         azureAccountProvider: new MockAzureAccountProvider(),
@@ -459,7 +459,7 @@ describe("component coordinator test", () => {
     });
 
     it("update manifest error", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = {
         m365TokenProvider: new MockM365TokenProvider(),
         azureAccountProvider: new MockAzureAccountProvider(),

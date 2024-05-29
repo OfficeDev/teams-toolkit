@@ -9,7 +9,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
 import { cpUtils } from "../../../src/component/deps-checker/";
 import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
@@ -40,7 +40,7 @@ describe("SPFxGenerator", function () {
   beforeEach(async () => {
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
@@ -1105,7 +1105,7 @@ describe("SPFxGeneratorNew", () => {
   const gtools = new MockTools();
   setTools(gtools);
   const generator = new SPFxGeneratorNew();
-  const context = createContextV3();
+  const context = createContext();
   describe("activate", () => {
     it("happy path", () => {
       const inputs: Inputs = {
@@ -1155,7 +1155,7 @@ describe("SPFxGeneratorImport", () => {
   const gtools = new MockTools();
   setTools(gtools);
   const generator = new SPFxGeneratorImport();
-  const context = createContextV3();
+  const context = createContext();
   describe("activate", () => {
     it("happy path", () => {
       const inputs: Inputs = {

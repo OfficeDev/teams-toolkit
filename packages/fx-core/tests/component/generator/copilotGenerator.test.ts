@@ -33,7 +33,7 @@ import { OpenAPIV3 } from "openapi-types";
 import path from "path";
 import * as sinon from "sinon";
 import { format } from "util";
-import { createContextV3, setTools } from "../../../src/common/globalVars";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
@@ -141,7 +141,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -185,7 +185,7 @@ describe("copilotPluginGenerator", function () {
         serverUrl: "",
       },
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -218,7 +218,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -253,7 +253,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Warning,
       errors: [],
@@ -310,7 +310,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Warning,
       errors: [],
@@ -346,7 +346,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Warning,
       errors: [],
@@ -378,7 +378,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -414,7 +414,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -450,7 +450,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "generate").resolves();
     sandbox
       .stub(Generator, "generateTemplate")
@@ -473,7 +473,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Error,
       errors: [{ type: ErrorType.NoServerInformation, content: "" }],
@@ -504,7 +504,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -536,7 +536,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
 
     const result = await CopilotPluginGenerator.generateMeFromApiSpec(
@@ -556,7 +556,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -589,7 +589,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -641,7 +641,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -706,7 +706,7 @@ describe("copilotPluginGenerator", function () {
         },
       ] as ApiOperation[],
     };
-    const context = createContextV3();
+    const context = createContext();
 
     sandbox
       .stub(SpecParser.prototype, "validate")
@@ -1718,7 +1718,7 @@ describe("updateForCustomApi", async () => {
 });
 
 describe("listOperations", async () => {
-  const context = createContextV3();
+  const context = createContext();
   const sandbox = sinon.createSandbox();
   const spec = {
     openapi: "3.0.0",
@@ -1873,7 +1873,7 @@ describe("CopilotGenerator", async () => {
   describe("activate", async () => {
     it("should activate and get correct template name", async () => {
       const generator = new CopilotGenerator();
-      const context = createContextV3();
+      const context = createContext();
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
@@ -1910,7 +1910,7 @@ describe("CopilotGenerator", async () => {
   describe("getTempalteInfos", async () => {
     it("happy path", async () => {
       const generator = new CopilotGenerator();
-      const context = createContextV3();
+      const context = createContext();
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",

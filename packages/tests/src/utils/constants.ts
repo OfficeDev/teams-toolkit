@@ -171,6 +171,7 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
+  CopilotPluginFromExistingAPI = "copilot-plugin-existing-api",
 }
 
 export enum Trigger {

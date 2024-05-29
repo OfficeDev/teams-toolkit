@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   ActivityBar,
   BottomBarPanel,
@@ -9,9 +12,34 @@ import {
 } from "vscode-extension-tester";
 import { Extension, Timeout, TreeViewCommands } from "./constants";
 import { clearNotifications, openTerminalView } from "./vscodeOperation";
+import { Executor } from "../utils/executor";
 
 const listCollaborator = "List Microsoft 365 Teams App (with AAD App) Owners";
 const grantPermission = "Manage M365 Teams App (with AAD app) Collaborators";
+
+export async function getAllCollaboratorsCLI(projectPath: string) {
+  const { stdout, stderr } = await Executor.listAppOwners(projectPath);
+  if (stderr) {
+    throw new Error(stderr);
+  }
+  return stdout;
+}
+
+export async function addCollaboratorCLI(
+  projectPath: string,
+  email: string,
+  teamsManifestFilePath: string
+): Promise<void> {
+  const { stdout, stderr } = await Executor.addAppOwner(
+    projectPath,
+    email,
+    teamsManifestFilePath
+  );
+  if (stderr) {
+    throw new Error(stderr);
+  }
+  console.log(stdout);
+}
 
 export async function getAllCollaborators(): Promise<string> {
   const driver = VSBrowser.instance.driver;

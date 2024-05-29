@@ -10,7 +10,7 @@ import fs from "fs-extra";
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
 import { LogProvider, LogLevel, UserError } from "@microsoft/teamsfx-api";
-import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
+import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";

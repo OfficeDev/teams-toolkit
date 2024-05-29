@@ -23,17 +23,31 @@ import {
   templateFileExt,
 } from "./constant";
 
-async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
-  const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
-    ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}`
-    : "";
-  const templateVersion = templateConfig.version;
+export async function getTemplateUrl(
+  name: string,
+  getLatestVersion: () => Promise<string>
+): Promise<string | undefined> {
+  if (process.env.TEAMSFX_TEMPLATE_PRERELEASE) {
+    return getTemplateZipUrlByVersion(name, `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}`);
+  }
+  if (!templateConfig.useLocalTemplate) {
+    const latestVersion = await getLatestVersion();
+    if (semver.gt(latestVersion, templateConfig.localVersion)) {
+      // Upstream latest version is higher than the local version, return upstream templates url for downloading.
+      return getTemplateZipUrlByVersion(name, latestVersion);
+    }
+  }
+}
+
+async function selectTemplateVersion(
+  getTags: () => Promise<string[]>
+): Promise<string | undefined> {
   const templateTagPrefix = templateConfig.tagPrefix;
-  const versionPattern = preRelease || templateVersion;
+  const versionPattern = templateConfig.version;
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
+  return selectedVersion ?? undefined;
 }
 
 async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number): Promise<string> {
@@ -49,23 +63,22 @@ async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number)
   return res.data;
 }
 
-export async function getTemplateLatestTag(
-  name: string,
+export async function getTemplateLatestVersion(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
   const templateTagListURL = templateConfig.tagListURL;
-  const selectedTag = await selectTemplateTag(async () =>
+  const selectedVersion = await selectTemplateVersion(async () =>
     (await fetchTagList(templateTagListURL, tryLimits, timeoutInMs)).replace(/\r/g, "").split("\n")
   );
-  if (!selectedTag) {
-    throw new Error(`Failed to find valid template for ${name}`);
+  if (!selectedVersion) {
+    throw new Error(`Failed to find valid template`);
   }
-  return selectedTag;
+  return selectedVersion;
 }
 
-export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {
-  return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
+export function getTemplateZipUrlByVersion(name: string, version: string): string {
+  return `${templateConfig.templateDownloadBaseURL}/${templateConfig.tagPrefix}${version}/${name}${templateConfig.templateExt}`;
 }
 
 export async function fetchZipFromUrl(

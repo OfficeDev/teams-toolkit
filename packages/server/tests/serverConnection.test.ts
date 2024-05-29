@@ -439,17 +439,6 @@ describe("serverConnections", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("loadOpenAIPluginManifestRequest succeed", async () => {
-    const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(ok({}));
-    sandbox.replace(connection["core"], "copilotPluginLoadOpenAIManifest", fake);
-    const res = await connection.loadOpenAIPluginManifestRequest(
-      {} as Inputs,
-      {} as CancellationToken
-    );
-    assert.isTrue(res.isOk());
-  });
-
   it("copilotPluginListOperations fail", async () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.resolves(err(new UserError("source", "name", "", "")));

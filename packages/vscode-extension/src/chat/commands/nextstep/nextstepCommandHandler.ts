@@ -33,8 +33,7 @@ export default async function nextStepCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByParticipant(
     chatParticipantId,
-    TeamsChatCommand.NextStep,
-    request.location
+    TeamsChatCommand.NextStep
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 

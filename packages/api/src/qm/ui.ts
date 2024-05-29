@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { LocalFunc, ValidateFunc } from ".";
 import { FxError } from "../error";
-import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
 import { Inputs, OptionItem } from "../types";
 import { Colors } from "./../utils/log";
+import { LocalFunc, OnSelectionChangeFunc, StaticOptions } from "./question";
 
 /**
  * A base structure of user interaction (UI) configuration

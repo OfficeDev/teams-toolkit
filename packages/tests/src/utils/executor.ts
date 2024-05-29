@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { execAsync, editDotEnvFile, execAsyncWithRetry } from "./commonUtils";
+import { execAsync, editDotEnvFile } from "./commonUtils";
 import {
   TemplateProjectFolder,
   Capability,

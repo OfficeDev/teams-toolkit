@@ -1228,46 +1228,6 @@ describe("Copilot plugin", async () => {
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr());
   });
-
-  it("should scaffold from OpenAI plugin successfully", async () => {
-    const v3ctx = createContext();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isOk());
-  });
-
-  it("scaffold from OpenAI plugin error", async () => {
-    const v3ctx = createContext();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr());
-  });
 });
 
 describe(`coordinator create with isNewGeneratorEnabled = true`, () => {

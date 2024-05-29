@@ -16,7 +16,6 @@ import {
   Inputs,
   LogProvider,
   Ok,
-  OpenAIPluginManifest,
   Platform,
   Result,
   Stage,
@@ -69,7 +68,6 @@ import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp
 import { createDriverContext } from "../../src/component/driver/util/utils";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
-import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -1493,8 +1491,6 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
         "api-me-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -1534,8 +1530,6 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
         "api-me-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -1575,8 +1569,6 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
         "api-me-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -1617,8 +1609,6 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
         "api-me-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -4030,26 +4020,6 @@ describe("copilotPlugin", async () => {
         assert.equal(res.error.name, "get plugin error");
       }
     });
-  });
-
-  it("load OpenAI manifest - should run successful", async () => {
-    const core = new FxCore(tools);
-    const inputs = { domain: "mydomain.com" };
-    sinon
-      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
-      .returns(Promise.resolve<OpenAIPluginManifest>(undefined as any));
-    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
-    assert.isTrue(result.isOk());
-  });
-
-  it("load OpenAI manifest - should return an error when an exception is thrown", async () => {
-    const core = new FxCore(tools);
-    const inputs = { domain: "mydomain.com" };
-    sinon
-      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
-      .throws(new Error("Test error"));
-    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
-    assert.isTrue(result.isErr());
   });
 
   it("load operations - should return a list of operations when given valid inputs", async () => {

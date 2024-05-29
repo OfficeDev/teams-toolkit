@@ -226,17 +226,6 @@ class Coordinator {
           } else {
             warnings = res.value.warnings;
           }
-        } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-          const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
-            context,
-            inputs,
-            projectPath
-          );
-          if (res.isErr()) {
-            return err(res.error);
-          } else {
-            warnings = res.value.warnings;
-          }
         } else {
           if (
             capability === CapabilityOptions.m365SsoLaunchPage().id ||

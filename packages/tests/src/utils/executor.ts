@@ -39,7 +39,7 @@ export class Executor {
         if (result.stderr) {
           /// the command exit with 0
           console.log(
-              `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+            `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
           );
           return { success: false, ...result };
         } else {
@@ -59,11 +59,13 @@ export class Executor {
           return { success: false, stdout: "", stderr: e.message as string };
         }
 
-        console.log(`Retrying "${command}" in ${cwd}. Attempt ${retryCount} of ${maxRetries}.`);
+        console.log(
+          `Retrying "${command}" in ${cwd}. Attempt ${retryCount} of ${maxRetries}.`
+        );
       }
     }
     console.log(`[Failed] Not executed command ${command}`);
-    return { success: false, stdout: "", stderr: ""};
+    return { success: false, stdout: "", stderr: "" };
   }
 
   static async login() {

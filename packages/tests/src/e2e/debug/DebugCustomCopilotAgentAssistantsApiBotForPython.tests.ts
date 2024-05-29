@@ -55,7 +55,8 @@ describe("Debug V3 command-and-response template", () => {
       // create
       const myRecordAzOpenAI: Record<string, string> = {};
       myRecordAzOpenAI["programming-language"] = "python ";
-      myRecordAzOpenAI["custom-copilot-agent"] = "custom-copilot-agent-assistants-api";
+      myRecordAzOpenAI["custom-copilot-agent"] =
+        "custom-copilot-agent-assistants-api";
       myRecordAzOpenAI["llm-service"] = "llm-service-openai";
       myRecordAzOpenAI["openai-key"] = "fake";
       const options = Object.entries(myRecordAzOpenAI)
@@ -81,8 +82,7 @@ describe("Debug V3 command-and-response template", () => {
 
       // add extra envs
       const userFile = path.resolve(projectPath, "env", `.env.local.user`);
-      const OPENAI_ASSISTANT_ID =
-      "OPENAI_ASSISTANT_ID=fake";
+      const OPENAI_ASSISTANT_ID = "OPENAI_ASSISTANT_ID=fake";
       const KEY = "\n" + OPENAI_ASSISTANT_ID;
       fs.appendFileSync(userFile, KEY);
       console.log(`add key ${KEY} to .env.local.user file`);

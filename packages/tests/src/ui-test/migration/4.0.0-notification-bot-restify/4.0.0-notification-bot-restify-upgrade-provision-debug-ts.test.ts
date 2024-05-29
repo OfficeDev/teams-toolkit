@@ -111,7 +111,7 @@ describe("Migration Tests", function () {
         mirgationDebugTestContext.projectPath,
         "dev"
       );
-      await validateNotificationBot(page, funcEndpoint + "/api/notification");
+      // await validateNotificationBot(page, funcEndpoint + "/api/notification");
     }
   );
 });

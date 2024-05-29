@@ -38,7 +38,7 @@ describe("Create Copilot plugin", () => {
 
   it(
     "happy path: scaffold",
-    { testPlanCaseId: 27569693, author: "yuqzho@microsoft.com" },
+    { testPlanCaseId: 27569845, author: "yuqzho@microsoft.com" },
     async function () {
       const env = Object.assign({}, process.env);
 

@@ -40,7 +40,13 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { parse } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
-import { ErrorContextMW, TOOLS, createContext, setErrorContext, setTools } from "../common/globalVars";
+import {
+  ErrorContextMW,
+  TOOLS,
+  createContext,
+  setErrorContext,
+  setTools,
+} from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";

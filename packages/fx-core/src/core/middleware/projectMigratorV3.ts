@@ -25,7 +25,8 @@ import {
   AbandonedProjectError,
   MigrationError,
   NotAllowedMigrationError,
-  UpgradeV3CanceledError, assembleError
+  UpgradeV3CanceledError,
+  assembleError,
 } from "../../error";
 import { getTemplatesFolder } from "../../folder";
 import { CoreHookContext } from "../types";

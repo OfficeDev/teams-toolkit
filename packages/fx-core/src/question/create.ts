@@ -53,7 +53,7 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { createContextV3 } from "../component/utils";
+import { createContext } from "../common/globalVars";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
   ApiMessageExtensionAuthOptions,
@@ -760,7 +760,7 @@ export function appNameQuestion(): TextInputQuestion {
         };
         if (input.length === 25) {
           // show warning notification because it may exceed the Teams app name max length after appending suffix
-          const context = createContextV3();
+          const context = createContext();
           if (previousInputs?.platform === Platform.VSCode) {
             void context.userInteraction.showMessage(
               "warn",
@@ -1017,7 +1017,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       if (!inputs) {
         throw new Error("inputs is undefined"); // should never happen
       }
-      const context = createContextV3();
+      const context = createContext();
       const res = await listOperations(
         context,
         input.trim(),

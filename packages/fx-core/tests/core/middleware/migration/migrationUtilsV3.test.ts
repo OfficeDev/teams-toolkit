@@ -23,7 +23,7 @@ import { MigrationContext } from "../../../../src/core/middleware/utils/migratio
 import { mockMigrationContext } from "./utils";
 import sinon from "sinon";
 import { getPlaceholderMappings } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { setTools, TOOLS } from "../../../../src/core/globalVars";
+import { setTools, TOOLS } from "../../../../src/common/globalVars";
 import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 describe("MigrationUtilsV3", () => {

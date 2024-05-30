@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError } from "@microsoft/teamsfx-api";
-import { TOOLS, globalVars } from "../core/globalVars";
+import { TOOLS, globalVars } from "../common/globalVars";
 import { TelemetryConstants } from "./constants";
 import { fillInTelemetryPropsForFxError } from "../common/telemetry";
 

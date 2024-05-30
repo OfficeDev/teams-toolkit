@@ -11,7 +11,7 @@ import { Base64 } from "js-base64";
 import path from "path";
 import { getDefaultString, getLocalizedString } from "../../../../../common/localizeUtils";
 import { waitSeconds } from "../../../../../common/utils";
-import { ErrorContextMW } from "../../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../../common/globalVars";
 import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,

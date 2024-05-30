@@ -3,7 +3,7 @@
 
 import axios from "axios";
 import { hooks } from "@feathersjs/hooks";
-import { ErrorContextMW } from "../core/globalVars";
+import { ErrorContextMW } from "./globalVars";
 import { AccessGithubError } from "../error/common";
 import { FeatureFlagName } from "./constants";
 import { sendRequestWithTimeout } from "./requestUtils";

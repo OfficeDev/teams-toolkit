@@ -3,7 +3,7 @@
 
 import { FxError, SystemError } from "@microsoft/teamsfx-api";
 import { TelemetryConstants } from "../component/constants";
-import { TOOLS, globalVars } from "../core/globalVars";
+import { TOOLS, globalVars } from "./globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
 import { ProjectType } from "@microsoft/m365-spec-parser";

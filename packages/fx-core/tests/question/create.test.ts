@@ -24,6 +24,8 @@ import * as path from "path";
 import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
+import * as utils from "../../src/common/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { sampleProvider } from "../../src/common/samples";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
@@ -31,8 +33,6 @@ import { manifestUtils } from "../../src/component/driver/teamsApp/utils/Manifes
 import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 import { convertToLangKey } from "../../src/component/generator/utils";
-import * as utils from "../../src/component/utils";
-import { setTools } from "../../src/core/globalVars";
 import { FileNotFoundError } from "../../src/error";
 import {
   ApiMessageExtensionAuthOptions,
@@ -3085,7 +3085,7 @@ describe("scaffold question", () => {
 
     it("app name has 25 length - VSC", async () => {
       const mockedUI = new MockedUserInteraction();
-      sandbox.stub(utils, "createContextV3").returns({
+      sandbox.stub(utils, "createContext").returns({
         userInteraction: mockedUI,
       } as Context);
       const showMessageStub = sandbox.stub(mockedUI, "showMessage");
@@ -3098,7 +3098,7 @@ describe("scaffold question", () => {
 
     it("app name has 25 length - VS", async () => {
       const mockedLogProvider = new MockedLogProvider();
-      sandbox.stub(utils, "createContextV3").returns({
+      sandbox.stub(utils, "createContext").returns({
         logProvider: mockedLogProvider as LogProvider,
       } as Context);
       const warningStub = sandbox.stub(mockedLogProvider, "warning");

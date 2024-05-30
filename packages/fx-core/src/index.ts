@@ -64,7 +64,6 @@ export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";
 export * from "./core/error";
-export { isVideoFilterProject } from "./core/middleware/videoFilterAppBlocker";
 export { VersionCheckRes } from "./core/types";
 export * from "./error/index";
 export * from "./question/constants";

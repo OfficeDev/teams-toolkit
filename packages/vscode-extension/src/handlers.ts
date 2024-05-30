@@ -503,16 +503,6 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
   return ok(null);
 }
 
-async function isVideoFilterProject(): Promise<boolean> {
-  const projPath = globalVariables.workspaceUri?.fsPath;
-  if (projPath) {
-    const result = await commonTools.isVideoFilterProject(projPath);
-    return result.isOk() && result.value;
-  } else {
-    return false;
-  }
-}
-
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.ValidateManifestStart,

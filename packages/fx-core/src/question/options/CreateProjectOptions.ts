@@ -150,6 +150,13 @@ export const CreateProjectOptions: CLICommandOption[] = [
     ],
   },
   {
+    name: "copilot-api-auth",
+    type: "string",
+    description: "The authentication type for the API.",
+    default: "none",
+    choices: ["none"],
+  },
+  {
     name: "openapi-spec-location",
     type: "string",
     shortName: "a",

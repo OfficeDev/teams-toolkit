@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import { Inputs } from "@microsoft/teamsfx-api";
 import {
+  CopilotPluginFromNewApiAuthOptions,
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
@@ -41,6 +42,7 @@ export enum TemplateNames {
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
   ApiPluginFromScratch = "api-plugin-from-scratch",
+  ApiPluginFromScratchBearer = "api-plugin-from-scratch-bearer",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   ApiMessageExtensionSso = "api-message-extension-sso",
@@ -100,7 +102,11 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]: TemplateNames.ApiPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:${CopilotPluginFromNewApiAuthOptions.none().id}`]:
+    TemplateNames.ApiPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:${
+    CopilotPluginFromNewApiAuthOptions.apiKey().id
+  }`]: TemplateNames.ApiPluginFromScratchBearer,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.none().id
   }`]: TemplateNames.CopilotPluginFromScratch,
@@ -344,5 +350,19 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
       [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.assistantsApi().id,
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.CopilotApiAuth]: CopilotPluginFromNewApiAuthOptions.none().id,
+    },
+    TemplateNames.ApiPluginFromScratch,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.CopilotApiAuth]: CopilotPluginFromNewApiAuthOptions.apiKey().id,
+    },
+    TemplateNames.ApiPluginFromScratchBearer,
   ],
 ]);

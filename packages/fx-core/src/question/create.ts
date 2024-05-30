@@ -56,6 +56,7 @@ import { Utils } from "../component/generator/spfx/utils/utils";
 import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
+  CopilotPluginFromNewApiAuthOptions,
   ApiMessageExtensionAuthOptions,
   AppNamePattern,
   CapabilityOptions,
@@ -1096,7 +1097,7 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.ApiMEAuth,
-    title: getLocalizedString("core.createProjectQuestion.apiMessageExtensionAuth.title"),
+    title: getLocalizedString("core.createProjectQuestion.authentication.title"),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.apiMessageExtensionAuth.placeholder"
     ),
@@ -1404,6 +1405,13 @@ export function capabilitySubTree(): IQTreeNode {
         data: customCopilotRagQuestion(),
       },
       {
+        // from new API
+        condition: (inputs: Inputs) => {
+          return inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id;
+        },
+        data: newApiAuthQuestion(),
+      },
+      {
         // from API spec
         condition: (inputs: Inputs) => {
           return (
@@ -1588,6 +1596,19 @@ export function createProjectCliHelpNode(): IQTreeNode {
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;
+}
+
+export function newApiAuthQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.CopilotApiAuth,
+    title: getLocalizedString("core.createProjectQuestion.authentication.title"),
+    placeholder: getLocalizedString("core.createProjectQuestion.authentication.placeholder"),
+    cliDescription: "The authentication type for the API.",
+    staticOptions: CopilotPluginFromNewApiAuthOptions.all(),
+    dynamicOptions: () => CopilotPluginFromNewApiAuthOptions.all(),
+    default: CopilotPluginFromNewApiAuthOptions.none().id,
+  };
 }
 
 function trimQuestionTreeForCliHelp(node: IQTreeNode, deleteNames: string[]): void {

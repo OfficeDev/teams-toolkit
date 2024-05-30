@@ -90,6 +90,8 @@ export interface CreateProjectInputs extends Inputs {
     | "custom-copilot-rag-azureAISearch"
     | "custom-copilot-rag-customApi"
     | "custom-copilot-rag-microsoft365";
+  /** @description Authentication Type */
+  "copilot-api-auth"?: "none";
   /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
   /** @description Select Operation(s) Teams Can Interact with */

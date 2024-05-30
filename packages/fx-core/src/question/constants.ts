@@ -51,6 +51,7 @@ export enum QuestionNames {
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
   ApiMEAuth = "api-me-auth",
+  CopilotApiAuth = "copilot-api-auth",
   OauthClientSecret = "oauth-client-secret",
   OauthClientId = "oauth-client-id",
   OauthConfirm = "oauth-confirm",
@@ -1292,5 +1293,26 @@ export class HubOptions {
   }
   static all(): OptionItem[] {
     return [this.teams(), this.outlook(), this.office()];
+  }
+}
+export class CopilotPluginFromNewApiAuthOptions {
+  static none(): OptionItem {
+    return {
+      id: "none",
+      label: "None",
+    };
+  }
+  static apiKey(): OptionItem {
+    return {
+      id: "api-key",
+      label: "API Key",
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [
+      CopilotPluginFromNewApiAuthOptions.none(),
+      //  CopilotPluginFromNewApiAuthOptions.apiKey()
+    ];
   }
 }

@@ -153,6 +153,7 @@ class Coordinator {
       const projectType = inputs[QuestionNames.ProjectType];
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
       const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
+      const copilotApiAuthType = inputs[QuestionNames.CopilotApiAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -268,6 +269,10 @@ class Coordinator {
             feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
           } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
             feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
+          }
+
+          if (capability === CapabilityOptions.copilotPluginNewApi().id) {
+            feature = `${capability}:${copilotApiAuthType}`;
           }
 
           const templateName = Feature2TemplateName[feature];

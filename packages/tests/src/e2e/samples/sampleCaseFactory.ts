@@ -260,12 +260,7 @@ export abstract class CaseFactory {
             console.log("debug finish!");
             return;
           }
-          const { success, stderr, stdout } = await Executor.preview(
-            projectPath,
-            "dev"
-          );
-          console.log("[Log]: ", stdout);
-          console.log("[Error]: ", stderr);
+          const { success } = await Executor.preview(projectPath);
           expect(success).to.be.true;
         }
       });

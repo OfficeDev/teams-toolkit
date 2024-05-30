@@ -39,7 +39,7 @@ export class Executor {
 
         if (result.stderr) {
           if (skipErrorMessage && result.stderr.includes(skipErrorMessage)) {
-            console.log(`[Skip] "${command}" in ${cwd}.`);
+            console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };
           }
           // the command exit with 0

@@ -38,14 +38,23 @@ import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { pathToFileURL } from "url";
-import { parse } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
+import {
+  ErrorContextMW,
+  TOOLS,
+  createContext,
+  setErrorContext,
+  setTools,
+} from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
-import { LaunchHelper } from "../component/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
-import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import {
+  getProjectMetadata,
+  isValidProjectV2,
+  isValidProjectV3,
+} from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
+import { TelemetryEvent, telemetryUtils } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -102,9 +111,9 @@ import {
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
+import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { createContext } from "../common/globalVars";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
@@ -141,7 +150,6 @@ import { checkPermission, grantPermission, listCollaborator } from "./collaborat
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
-import { ErrorContextMW, TOOLS, setErrorContext, setTools } from "../common/globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -791,20 +799,9 @@ export class FxCore {
   async getProjectMetadata(
     projectPath: string
   ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
-    try {
-      const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
-      if (!ymlPath || !(await fs.pathExists(ymlPath))) {
-        return ok({});
-      }
-      const ymlContent = await fs.readFile(ymlPath, "utf-8");
-      const ymlObject = parse(ymlContent);
-      return ok({
-        projectId: ymlObject?.projectId ? ymlObject.projectId.toString() : "",
-        version: ymlObject?.version ? ymlObject.version.toString() : "",
-      });
-    } catch {
-      return ok({});
-    }
+    const res = getProjectMetadata(projectPath);
+    if (!res) return ok({});
+    return Promise.resolve(ok(res));
   }
 
   /**
@@ -1487,7 +1484,7 @@ export class FxCore {
   async checkProjectType(projectPath: string): Promise<Result<ProjectTypeResult, FxError>> {
     const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
     const props: Record<string, string> = {};
-    fillinProjectTypeProperties(props, projectTypeRes);
+    telemetryUtils.fillinProjectTypeProperties(props, projectTypeRes);
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, props);
     return ok(projectTypeRes);
   }

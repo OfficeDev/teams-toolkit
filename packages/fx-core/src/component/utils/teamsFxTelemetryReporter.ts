@@ -4,7 +4,7 @@
 import { FxError, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
 import { TelemetryConstants } from "../constants";
-import { fillInTelemetryPropsForFxError } from "../../common/telemetry";
+import { telemetryUtils } from "../../common/telemetry";
 
 export class TeamsFxTelemetryReporter {
   constructor(
@@ -46,7 +46,7 @@ export class TeamsFxTelemetryReporter {
         // sendTelemetryErrorEvent
         actualConfig.properties = actualConfig.properties || {};
 
-        fillInTelemetryPropsForFxError(actualConfig.properties, error);
+        telemetryUtils.fillInErrorProperties(actualConfig.properties, error);
 
         if (!actualConfig.errorProps) {
           actualConfig.errorProps = [];

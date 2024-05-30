@@ -6,6 +6,7 @@ import * as Handlebars from "handlebars";
 import * as uuid from "uuid";
 import * as crypto from "crypto";
 import { getLocalizedString } from "./localizeUtils";
+import { URL } from "url";
 
 const MIN_ENTROPY = 4;
 const SECRET_REPLACE = "<REDACTED:secret>";
@@ -182,4 +183,14 @@ export function loadingOptionsPlaceholder(): string {
 
 export function loadingDefaultPlaceholder(): string {
   return getLocalizedString("ui.select.LoadingDefaultPlaceholder");
+}
+
+export function isValidHttpUrl(input: string): boolean {
+  let url;
+  try {
+    url = new URL(input);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (e) {
+    return false;
+  }
 }

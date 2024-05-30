@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 
 import { FxError, SystemError } from "@microsoft/teamsfx-api";
+import { assign } from "lodash";
 import { TelemetryConstants } from "../component/constants";
 import { TOOLS, globalVars } from "./globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
-import { assign } from "lodash";
-import { ProjectType } from "@microsoft/m365-spec-parser";
 import { maskSecret } from "./stringUtils";
 
 export enum TelemetryProperty {
@@ -234,88 +233,88 @@ export function sendTelemetryErrorEvent(
   }
   properties[TelemetryProperty.Component] = component;
 
-  fillInTelemetryPropsForFxError(properties, fxError);
+  telemetryUtils.fillInErrorProperties(properties, fxError);
 
   TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
 }
 
-/**
- * fill in telemetry properties for FxError
- * @param error FxError
- * @param props teletry properties
- */
-export function fillInTelemetryPropsForFxError(
-  props: Record<string, string>,
-  error: FxError
-): void {
-  const errorCode = error.source + "." + error.name;
-  const errorType =
-    error instanceof SystemError
-      ? TelemetryConstants.values.systemError
-      : TelemetryConstants.values.userError;
-  props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
-  props[TelemetryConstants.properties.errorCode] =
-    props[TelemetryConstants.properties.errorCode] || errorCode;
-  props[TelemetryConstants.properties.errorType] = errorType;
-  props[TelemetryConstants.properties.errorMessage] = error.skipProcessInTelemetry
-    ? error.message
-    : maskSecret(error.message);
-  props[TelemetryConstants.properties.errorStack] = extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
-  props[TelemetryConstants.properties.errorName] = error.name;
+class TelemetryUtils {
+  /**
+   * fill in telemetry properties for FxError
+   * @param error FxError
+   * @param props teletry properties
+   */
+  fillInErrorProperties(props: Record<string, string>, error: FxError): void {
+    const errorCode = error.source + "." + error.name;
+    const errorType =
+      error instanceof SystemError
+        ? TelemetryConstants.values.systemError
+        : TelemetryConstants.values.userError;
+    props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
+    props[TelemetryConstants.properties.errorCode] =
+      props[TelemetryConstants.properties.errorCode] || errorCode;
+    props[TelemetryConstants.properties.errorType] = errorType;
+    props[TelemetryConstants.properties.errorMessage] = error.skipProcessInTelemetry
+      ? error.message
+      : maskSecret(error.message);
+    props[TelemetryConstants.properties.errorStack] = this.extractMethodNamesFromErrorStack(
+      error.stack
+    ); // error stack will not append in error-message any more
+    props[TelemetryConstants.properties.errorName] = error.name;
 
-  // append global context properties
-  props[TelemetryConstants.properties.errorComponent] = globalVars.component;
-  props[TelemetryConstants.properties.errorStage] = globalVars.stage;
-  props[TelemetryConstants.properties.errorMethod] = globalVars.method;
-  props[TelemetryConstants.properties.errorSource] = globalVars.source;
-  if (error.innerError && error.innerError["code"]) {
-    props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
+    // append global context properties
+    props[TelemetryConstants.properties.errorComponent] = globalVars.component;
+    props[TelemetryConstants.properties.errorStage] = globalVars.stage;
+    props[TelemetryConstants.properties.errorMethod] = globalVars.method;
+    props[TelemetryConstants.properties.errorSource] = globalVars.source;
+    if (error.innerError && error.innerError["code"]) {
+      props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
+    }
+
+    // if (error.innerError) {  // inner-error is retired
+    //   props[TelemetryConstants.properties.innerError] = JSON.stringify(
+    //     error.innerError,
+    //     Object.getOwnPropertyNames(error.innerError)
+    //   );
+    // }
+
+    if (error.categories) {
+      props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
+      props[TelemetryConstants.properties.errorCat1] = error.categories[0];
+      props[TelemetryConstants.properties.errorCat2] = error.categories[1];
+      props[TelemetryConstants.properties.errorCat3] = error.categories[2];
+    }
   }
 
-  // if (error.innerError) {  // inner-error is retired
-  //   props[TelemetryConstants.properties.innerError] = JSON.stringify(
-  //     error.innerError,
-  //     Object.getOwnPropertyNames(error.innerError)
-  //   );
-  // }
+  fillinProjectTypeProperties(props: Record<string, string>, projectTypeRes: ProjectTypeResult) {
+    const newProps = {
+      [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+      [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
+      [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
+      [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
+      [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
+      [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+      [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
+      [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
+      [ProjectTypeProps.TeamsfxProjectId]: projectTypeRes.teamsfxProjectId || "",
+      [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
+      [ProjectTypeProps.TeamsManifestCapabilities]:
+        projectTypeRes.manifestCapabilities?.join(",") || "",
+      [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
+    };
+    assign(props, newProps);
+  }
 
-  if (error.categories) {
-    props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
-    props[TelemetryConstants.properties.errorCat1] = error.categories[0];
-    props[TelemetryConstants.properties.errorCat2] = error.categories[1];
-    props[TelemetryConstants.properties.errorCat3] = error.categories[2];
+  extractMethodNamesFromErrorStack(stack?: string): string {
+    if (!stack) return "";
+    const methodNamesRegex = /at\s([\w.<>\[\]\s]+)\s\(/g;
+    let match;
+    const methodNames: string[] = [];
+    while ((match = methodNamesRegex.exec(stack)) !== null) {
+      methodNames.push(match[1]);
+    }
+    return methodNames.join(" | ");
   }
 }
 
-export function fillinProjectTypeProperties(
-  props: Record<string, string>,
-  projectTypeRes: ProjectTypeResult
-) {
-  const newProps = {
-    [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
-    [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
-    [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
-    [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
-    [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
-    [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
-    [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
-    [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
-    [ProjectTypeProps.TeamsfxProjectId]: projectTypeRes.teamsfxProjectId || "",
-    [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
-    [ProjectTypeProps.TeamsManifestCapabilities]:
-      projectTypeRes.manifestCapabilities?.join(",") || "",
-    [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
-  };
-  assign(props, newProps);
-}
-
-export function extractMethodNamesFromErrorStack(stack?: string): string {
-  if (!stack) return "";
-  const methodNamesRegex = /at\s([\w.<>\[\]\s]+)\s\(/g;
-  let match;
-  const methodNames: string[] = [];
-  while ((match = methodNamesRegex.exec(stack)) !== null) {
-    methodNames.push(match[1]);
-  }
-  return methodNames.join(" | ");
-}
+export const telemetryUtils = new TelemetryUtils();

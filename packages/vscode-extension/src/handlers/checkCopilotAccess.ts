@@ -10,6 +10,7 @@ import * as handlerBase from "../handlers";
 import * as vscode from "vscode";
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import * as core from "@microsoft/teamsfx-core";
+import { PackageService } from "@microsoft/teamsfx-core";
 
 export async function checkCopilotAccessHandler(): Promise<Result<null, FxError>> {
   // check m365 login status, if not logged in, pop up a message
@@ -39,7 +40,10 @@ export async function checkCopilotAccessHandler(): Promise<Result<null, FxError>
     scopes: [copilotCheckServiceScope],
   });
   if (copilotTokenRes.isOk()) {
-    const hasCopilotAccess = await core.getCopilotStatus(copilotTokenRes.value, false);
+    const hasCopilotAccess = await PackageService.GetSharedInstance().getCopilotStatus(
+      copilotTokenRes.value,
+      false
+    );
     if (hasCopilotAccess) {
       VsCodeLogInstance.semLog({
         content: "Your Microsoft 365 account has Copilot access enabled",

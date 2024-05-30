@@ -4,10 +4,10 @@
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
+import { parse } from "yaml";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { MissingRequiredFileError, MissingRequiredInputError } from "../../error/common";
-import { yamlParser } from "../configManager/parser";
 import { environmentNameManager } from "../../core/environmentName";
+import { MissingRequiredFileError, MissingRequiredInputError } from "../../error/common";
 
 class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
@@ -33,13 +33,11 @@ class PathUtils {
   }
   async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {
     const ymlFilePath = this.getYmlFilePath(projectPath, "dev");
-    const parseRes = await yamlParser.parse(ymlFilePath);
-    if (parseRes.isErr()) return err(parseRes.error);
-    const projectModel = parseRes.value;
-    if (!projectModel.environmentFolderPath) projectModel.environmentFolderPath = "./env";
-    const envFolderPath = path.isAbsolute(projectModel.environmentFolderPath)
-      ? projectModel.environmentFolderPath
-      : path.join(projectPath, projectModel.environmentFolderPath);
+    const yamlObj = parse(ymlFilePath);
+    if (!yamlObj.environmentFolderPath) yamlObj.environmentFolderPath = "./env";
+    const envFolderPath = path.isAbsolute(yamlObj.environmentFolderPath)
+      ? yamlObj.environmentFolderPath
+      : path.join(projectPath, yamlObj.environmentFolderPath);
     if (!(await fs.pathExists(envFolderPath))) return ok(undefined);
     return ok(envFolderPath);
   }

@@ -61,7 +61,7 @@ import {
   assembleError,
   environmentManager,
   generateScaffoldingSummary,
-  getFixedCommonProjectSettings,
+  getProjectMetadata,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
@@ -153,9 +153,7 @@ export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
   const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
   if (validProject) {
-    const fixedProjectSettings = getFixedCommonProjectSettings(
-      globalVariables.workspaceUri?.fsPath
-    );
+    const fixedProjectSettings = getProjectMetadata(globalVariables.workspaceUri?.fsPath);
     ExtTelemetry.addSharedProperty(
       TelemetryProperty.ProjectId,
       fixedProjectSettings?.projectId as string

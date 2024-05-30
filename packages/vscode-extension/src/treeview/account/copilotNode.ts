@@ -2,11 +2,8 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-
-import { serviceScope, getCopilotStatus } from "@microsoft/teamsfx-core";
-
+import { serviceScope, PackageService } from "@microsoft/teamsfx-core";
 import M365TokenInstance from "../../commonlib/m365Login";
-import { checkCopilotCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
@@ -37,7 +34,7 @@ export class CopilotNode extends DynamicNode {
       if (m365TokenStatus.isOk()) {
         const m365TokenResult = m365TokenStatus.value;
         if (m365TokenResult !== undefined && m365TokenResult !== "") {
-          return await getCopilotStatus(m365TokenResult, true);
+          return await PackageService.GetSharedInstance().getCopilotStatus(m365TokenResult, true);
         }
       }
     } catch (error) {

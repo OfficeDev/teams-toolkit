@@ -34,7 +34,7 @@ describe("chat nextstep status", () => {
     });
 
     it("folder !== undefined", async () => {
-      sandbox.stub(helper, "getFixedCommonProjectSettings").returns({ projectId: "test-id" });
+      sandbox.stub(helper, "getProjectMetadata").returns({ projectId: "test-id" });
       sandbox
         .stub(projectStatusUtils, "getProjectStatus")
         .resolves(projectStatusUtils.emptyProjectStatus());
@@ -65,7 +65,7 @@ describe("chat nextstep status", () => {
     });
 
     it("folder !== undefined (no project id)", async () => {
-      sandbox.stub(helper, "getFixedCommonProjectSettings").returns(undefined);
+      sandbox.stub(helper, "getProjectMetadata").returns(undefined);
       sandbox
         .stub(projectStatusUtils, "getProjectStatus")
         .resolves(projectStatusUtils.emptyProjectStatus());

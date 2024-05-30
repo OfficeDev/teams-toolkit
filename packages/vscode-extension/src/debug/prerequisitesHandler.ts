@@ -29,8 +29,9 @@ import {
   V3NodeNotSupportedError,
   assembleError,
   serviceScope,
-  getCopilotStatus,
   getSideloadingStatus,
+  ErrorCategory,
+  PackageService,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 import * as util from "util";
@@ -61,7 +62,6 @@ import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ProgressHelper } from "./progressHelper";
 import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
-import { ErrorCategory } from "@microsoft/teamsfx-core";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -447,7 +447,10 @@ async function ensureCopilotAccess(
       });
       let hasCopilotAccess: boolean | undefined = undefined;
       if (copilotTokenRes.isOk()) {
-        hasCopilotAccess = await getCopilotStatus(copilotTokenRes.value, false);
+        hasCopilotAccess = await PackageService.GetSharedInstance().getCopilotStatus(
+          copilotTokenRes.value,
+          false
+        );
       }
 
       // true, false or undefined for error

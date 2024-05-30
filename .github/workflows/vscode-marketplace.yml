@@ -36,13 +36,6 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           ref: ${{ github.head_ref }}
 
-      - name: Install VSCE command
-        uses: azure/powershell@v2
-        with:
-          azPSVersion: "latest"
-          inlineScript: |
-            npm install vsce -g
-
       - name: Download release artifacts
         uses: Legit-Labs/action-download-artifact@v2
         with:
@@ -81,7 +74,7 @@ jobs:
         with:
           azPSVersion: "latest"
           inlineScript: |
-            vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
+            npx @vscode/vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
 
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
@@ -89,4 +82,4 @@ jobs:
         with:
           azPSVersion: "latest"
           inlineScript: |
-            vsce publish --azure-credential --packagePath *.vsix --noVerify
+            npx @vscode/vsce publish --azure-credential --packagePath *.vsix --noVerify

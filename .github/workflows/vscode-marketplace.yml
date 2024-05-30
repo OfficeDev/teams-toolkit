@@ -37,8 +37,11 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Install VSCE command
-        run: |
-          npm install vsce -g
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: "latest"
+          inlineScript: |
+            npm install vsce -g
 
       - name: Download release artifacts
         uses: Legit-Labs/action-download-artifact@v2
@@ -65,17 +68,25 @@ jobs:
           tag_prefix: ""
 
       - name: Azure login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.PUBLISHER_AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.PUBLISHER_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.PUBLISHER_AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
 
-      - name: release preview
+      - name: release preview to VSCode marketplace
         if: ${{ github.event.inputs.isPreview != 'no' }}
-        run: vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: "latest"
+          inlineScript: |
+            vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
 
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
-        run: vsce publish --azure-credential --packagePath *.vsix --noVerify
+        uses: azure/powershell@v2
+        with:
+          azPSVersion: "latest"
+          inlineScript: |
+            vsce publish --azure-credential --packagePath *.vsix --noVerify

@@ -237,7 +237,8 @@ describe("codeGenerator", () => {
       true, //isCustomFunction
       spec.appendix.host,
       spec.userInput,
-      "Some code sample"
+      "Some code sample",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -258,7 +259,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -285,7 +287,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -316,7 +319,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -347,7 +351,8 @@ describe("codeGenerator", () => {
       false,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     const mainFunc =

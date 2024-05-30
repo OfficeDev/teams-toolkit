@@ -18,6 +18,9 @@ import {
   MeasurementCodeGenExecutionTimeInTotalSec,
   PropertySystemCodeGenResult,
   MeasurementSystemCodegenTaskBreakdownAttemptFailedCount,
+  MeasurementCodeGenTaskBreakdownTimeInTotalSec,
+  MeasurementCodeGenPreScanTimeInTotalSec,
+  MeasurementCodeGenGetSampleTimeInTotalSec,
 } from "../telemetryConsts";
 import {
   excelSystemPrompt,
@@ -33,6 +36,7 @@ import {
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
+import { DeclarationFinder } from "../declarationFinder";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -53,14 +57,16 @@ export class CodeGenerator implements ISkill {
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
-    const t0 = performance.now();
-
     response.progress("Identify code-generation scenarios...");
     if (
       (!spec.appendix.host || spec.appendix.host.length === 0) &&
       spec.appendix.complexity === 0
     ) {
+      const t0 = performance.now();
       const scanResult = await this.userAskPreScanningAsync(spec, token);
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec] = duration;
       if (!scanResult) {
         return { result: ExecutionResultEnum.Failure, spec: spec };
       }
@@ -76,12 +82,17 @@ export class CodeGenerator implements ISkill {
     }
 
     if (!spec.appendix.codeSample || spec.appendix.codeSample.length === 0) {
+      const t0 = performance.now();
       const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesBM25(
         token,
         spec.appendix.host,
         spec.userInput,
         1
       );
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec] =
+        duration;
       if (samples.size > 0) {
         console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
         spec.appendix.codeSample = Array.from(samples.values())[0].codeSample;
@@ -92,14 +103,20 @@ export class CodeGenerator implements ISkill {
       spec.appendix.codeTaskBreakdown.length === 0 &&
       spec.appendix.codeExplanation.length === 0
     ) {
+      const t0 = performance.now();
       const breakdownResult = await this.userAskBreakdownAsync(
         token,
         spec.appendix.complexity,
         spec.appendix.isCustomFunction,
         spec.appendix.host,
         spec.userInput,
-        spec.appendix.codeSample
+        spec.appendix.codeSample,
+        spec
       );
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec] =
+        duration;
 
       console.debug(`functional spec: ${breakdownResult?.spec || ""}`);
       console.debug(breakdownResult?.funcs.map((task) => `- ${task}`).join("\n"));
@@ -138,6 +155,7 @@ export class CodeGenerator implements ISkill {
       );
     }
     response.progress(progressMessageStr);
+    const t0 = performance.now();
     let codeSnippet: string | null = "";
     codeSnippet = await this.generateCode(
       token,
@@ -227,7 +245,8 @@ export class CodeGenerator implements ISkill {
     isCustomFunctions: boolean,
     host: string,
     userInput: string,
-    sampleCode: string
+    sampleCode: string,
+    spec: Spec
   ): Promise<null | {
     spec: string;
     funcs: string[];
@@ -243,6 +262,45 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
 
+    //     let declarations = new Map<string, SampleData>();
+    //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
+    //       declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+    //         token,
+    //         host,
+    //         userInput,
+    //         "" //sampleCode
+    //       );
+
+    //       spec.appendix.apiDeclarationsReference = declarations;
+    //     } else {
+    //       declarations = spec.appendix.apiDeclarationsReference;
+    //     }
+
+    //     if (declarations.size > 0) {
+    //       const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+    //       declarations.forEach((declaration) => {
+    //         if (!groupedMethodsOrProperties.has(declaration.definition)) {
+    //           groupedMethodsOrProperties.set(declaration.definition, []);
+    //         }
+    //         groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+    //       });
+
+    //       let tempClassDeclaration = "\n```typescript\n";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+    // }
+    // \n
+    //       `;
+    //       });
+    //       tempClassDeclaration += "```\n";
+
+    //       console.debug(`API declarations: \n${tempClassDeclaration}`);
+    //       const classPrompt = `Here are some API declaration that you may want to use as reference, you should only pick those relevant to the user's ask. List the name of used method, property with its class as part of the spec and function descriptions :\n\n${tempClassDeclaration}`;
+    //       messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.System, classPrompt));
+    //     }
+
     if (sampleCode.length > 0) {
       messages.push(
         new LanguageModelChatMessage(
@@ -253,7 +311,7 @@ export class CodeGenerator implements ISkill {
     }
 
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+      "copilot-gpt-3.5-turbo", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
@@ -313,41 +371,41 @@ export class CodeGenerator implements ISkill {
         break;
     }
 
-    if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
-      const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
-        token,
-        host,
-        codeSpec,
-        "" //sampleCode
-      );
+    //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
+    //       const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+    //         token,
+    //         host,
+    //         codeSpec,
+    //         "" //sampleCode
+    //       );
 
-      spec.appendix.apiDeclarationsReference = declarations;
-    }
+    //       spec.appendix.apiDeclarationsReference = declarations;
+    //     }
 
-    let declarationPrompt = getGenerateCodeDeclarationPrompt();
-    if (spec.appendix.apiDeclarationsReference.size > 0) {
-      const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
-      spec.appendix.apiDeclarationsReference.forEach((declaration) => {
-        if (!groupedMethodsOrProperties.has(declaration.definition)) {
-          groupedMethodsOrProperties.set(declaration.definition, []);
-        }
-        groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
-      });
+    //     let declarationPrompt = getGenerateCodeDeclarationPrompt();
+    //     if (spec.appendix.apiDeclarationsReference.size > 0) {
+    //       const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+    //       spec.appendix.apiDeclarationsReference.forEach((declaration) => {
+    //         if (!groupedMethodsOrProperties.has(declaration.definition)) {
+    //           groupedMethodsOrProperties.set(declaration.definition, []);
+    //         }
+    //         groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+    //       });
 
-      let tempClassDeclaration = "\n```typescript\n";
-      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
-        tempClassDeclaration += `
-class ${className} extends OfficeExtension.ClientObject {
-  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
-}
-\n
-      `;
-      });
-      tempClassDeclaration += "```\n";
+    //       let tempClassDeclaration = "\n```typescript\n";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+    // }
+    // \n
+    //       `;
+    //       });
+    //       tempClassDeclaration += "```\n";
 
-      declarationPrompt += tempClassDeclaration;
-      console.debug(`API declarations: \n${declarationPrompt}`);
-    }
+    //       declarationPrompt += tempClassDeclaration;
+    //       // console.debug(`API declarations: \n${declarationPrompt}`);
+    //     }
     const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";
     let msgCount = 0;
 
@@ -356,6 +414,22 @@ class ${className} extends OfficeExtension.ClientObject {
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
+    // // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
+    // if (isCustomFunctions) {
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    //   );
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
+    //   );
+    // } else {
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
+    //   );
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    //   );
+    // }
     if (sampleCode.length > 0) {
       let samplePrompt = getGenerateCodeSamplePrompt();
       samplePrompt += `
@@ -368,18 +442,6 @@ class ${className} extends OfficeExtension.ClientObject {
       `;
       messages.push(
         new LanguageModelChatMessage(LanguageModelChatMessageRole.System, samplePrompt)
-      );
-    }
-    // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
-    if (isCustomFunctions) {
-      messages.push(
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt),
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
-      );
-    } else {
-      messages.push(
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt),
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
       );
     }
     // Because of the token window limitation, we have to cut off the messages if it exceeds the limitation

@@ -17,7 +17,13 @@ import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { ExecutionResultEnum } from "./skills/executionResultEnum";
 import {
+  MeasurementCodeGenExecutionTimeInTotalSec,
+  MeasurementCodeGenGetSampleTimeInTotalSec,
+  MeasurementCodeGenPreScanTimeInTotalSec,
+  MeasurementCodeGenTaskBreakdownTimeInTotalSec,
   MeasurementCommandExcutionTimeSec,
+  MeasurementErrorsAfterCorrection,
+  MeasurementSelfReflectionExecutionTimeInTotalSec,
   PropertySystemFailureFromSkill,
   PropertySystemRequesRejected,
   PropertySystemRequestCancelled,
@@ -115,6 +121,7 @@ export class Planner {
         console.log(`Skill ${candidate.name || "unknown"} is executed.`);
       }
     } catch (error) {
+      console.log("Purified user message: ", purified);
       console.error(error);
       const errorDetails = localize(
         "teamstoolkit.chatParticipants.officeAddIn.default.canNotAssist"
@@ -129,6 +136,29 @@ export class Planner {
       spec.appendix.telemetryData.measurements
     );
     console.log("User ask processing time cost: ", duration, " seconds.");
+    response.markdown(
+      `
+      ## Time cost:\n 
+      In total ${Math.ceil(duration)} seconds.\n
+      - Task pre scan: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec]
+      )} seconds.
+      - Task breakdown: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec]
+      )} seconds.
+      - Download sample: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec]
+      )} seconds.
+      - Code gen: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec]
+      )} seconds.
+      - Self reflection: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementSelfReflectionExecutionTimeInTotalSec]
+      )} seconds.\n\n
+      ## Compile error remains:\n
+      ${Math.ceil(spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection])} 
+      `
+    );
 
     return chatResult;
   }

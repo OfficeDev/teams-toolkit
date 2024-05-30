@@ -10,7 +10,7 @@ import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
-import { serviceEndpoint, serviceScope } from "./serviceConstant";
+import { MosServiceEndpoint, MosServiceScope } from "./serviceConstant";
 import { AppStudioScopes } from "../../common/constants";
 
 export class LaunchHelper {
@@ -81,8 +81,9 @@ export class LaunchHelper {
   }
 
   public async getM365AppId(teamsAppId: string): Promise<Result<string, FxError>> {
-    const sideloadingServiceEndpoint = process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
-    const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+    const sideloadingServiceEndpoint =
+      process.env.SIDELOADING_SERVICE_ENDPOINT ?? MosServiceEndpoint;
+    const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
     const packageService = new PackageService(sideloadingServiceEndpoint, this.logger);
 
     const sideloadingTokenRes = await this.m365TokenProvider.getAccessToken({

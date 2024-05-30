@@ -17,7 +17,7 @@ describe("check copilot access", () => {
   });
 
   it("check copilot access in walkthrough: not signed in && with access", async () => {
-    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.serviceScope;
+    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.MosServiceScope;
     const m365GetStatusStub = sandbox
       .stub(M365TokenInstance, "getStatus")
       .withArgs({ scopes: core.AppStudioScopes })
@@ -50,7 +50,7 @@ describe("check copilot access", () => {
   });
 
   it("check copilot access in walkthrough: not signed in && no access", async () => {
-    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.serviceScope;
+    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.MosServiceScope;
     const m365GetStatusStub = sandbox
       .stub(M365TokenInstance, "getStatus")
       .withArgs({ scopes: core.AppStudioScopes })
@@ -83,7 +83,7 @@ describe("check copilot access", () => {
   });
 
   it("check copilot access in walkthrough: signed in && no access", async () => {
-    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.serviceScope;
+    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.MosServiceScope;
     const m365GetStatusStub = sandbox
       .stub(M365TokenInstance, "getStatus")
       .withArgs({ scopes: core.AppStudioScopes })
@@ -116,7 +116,7 @@ describe("check copilot access", () => {
   });
 
   it("check copilot access in walkthrough: signed in && with access", async () => {
-    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.serviceScope;
+    const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.MosServiceScope;
     const m365GetStatusStub = sandbox
       .stub(M365TokenInstance, "getStatus")
       .withArgs({ scopes: core.AppStudioScopes })

@@ -35,7 +35,7 @@ export async function checkCopilotAccessHandler(): Promise<Result<null, FxError>
   }
 
   // if logged in, check copilot access with a different scopes
-  const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.serviceScope;
+  const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.MosServiceScope;
   const copilotTokenRes = await M365TokenInstance.getAccessToken({
     scopes: [copilotCheckServiceScope],
   });

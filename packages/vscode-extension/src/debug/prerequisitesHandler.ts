@@ -28,7 +28,7 @@ import {
   TelemetryContext,
   V3NodeNotSupportedError,
   assembleError,
-  serviceScope,
+  MosServiceScope,
   getSideloadingStatus,
   ErrorCategory,
   PackageService,
@@ -427,7 +427,7 @@ function ensureM365Account(
   );
 }
 
-const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
 async function ensureCopilotAccess(
   showLoginPage: boolean
 ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {

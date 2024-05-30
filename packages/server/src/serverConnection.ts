@@ -21,7 +21,7 @@ import {
 import {
   CoreDepsLoggerAdapter,
   CoreDepsTelemetryAdapter,
-  CoreQuestionNames,
+  QuestionNames,
   Correlator,
   DepsManager,
   DepsType,
@@ -222,13 +222,13 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
-    inputs[CoreQuestionNames.OutputZipPathParamName] = path.join(
+    inputs[QuestionNames.OutputZipPathParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
       BuildFolderName,
       `appPackage.${inputs.env}.zip`
     );
-    inputs[CoreQuestionNames.OutputManifestParamName] = path.join(
+    inputs[QuestionNames.OutputManifestParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
       BuildFolderName,

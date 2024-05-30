@@ -3,7 +3,7 @@
 
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import {
-  CoreQuestionNames,
+  QuestionNames,
   Correlator,
   environmentNameManager,
   HubOptions,
@@ -61,9 +61,9 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
-    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
-    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
+    inputs[QuestionNames.M365Host] = HubOptions.teams().id;
+    inputs[QuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
+    inputs[QuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
     const result = await core.previewWithManifest(inputs);
     if (result.isErr()) {
       return err(result.error);

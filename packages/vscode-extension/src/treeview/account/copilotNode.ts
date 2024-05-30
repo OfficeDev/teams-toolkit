@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { serviceScope, PackageService } from "@microsoft/teamsfx-core";
+import { MosServiceScope, PackageService } from "@microsoft/teamsfx-core";
 import M365TokenInstance from "../../commonlib/m365Login";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
@@ -14,7 +14,7 @@ enum ContextValues {
   ShowInfo = "checkCopilot-info",
 }
 
-const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
 
 export class CopilotNode extends DynamicNode {
   constructor(

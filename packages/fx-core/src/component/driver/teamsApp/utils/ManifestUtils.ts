@@ -153,8 +153,8 @@ export class ManifestUtils {
             if (capability.existingApp) {
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
             } else {
-              // import CoreQuestionNames introduces dependency cycle and breaks the whole program
-              // inputs[CoreQuestionNames.Features]
+              // import QuestionNames introduces dependency cycle and breaks the whole program
+              // inputs[QuestionNames.Features]
               if (inputs.features) {
                 const feature = inputs.features;
                 if (

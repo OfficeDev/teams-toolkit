@@ -50,7 +50,7 @@ import {
   AppStudioScopes,
   AuthSvcScopes,
   ConcurrentError,
-  CoreQuestionNames,
+  QuestionNames,
   Correlator,
   DepsManager,
   DepsType,
@@ -480,7 +480,7 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
       throw result.error;
     }
 
-    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const hub = inputs[QuestionNames.M365Host] as Hub;
     const url = result.value;
     properties[TelemetryProperty.Hub] = hub;
 
@@ -2300,11 +2300,11 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
     const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
     if (!isFromApiPlugin) {
       // Codelens for API ME. Trigger from manifest.json
-      inputs[CoreQuestionNames.ManifestPath] = filePath;
+      inputs[QuestionNames.ManifestPath] = filePath;
     } else {
-      inputs[CoreQuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
-      inputs[CoreQuestionNames.DestinationApiSpecFilePath] = filePath;
-      inputs[CoreQuestionNames.ManifestPath] = args[0].manifestPath;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[QuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[QuestionNames.ManifestPath] = args[0].manifestPath;
     }
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);

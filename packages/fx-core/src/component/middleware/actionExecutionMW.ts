@@ -6,9 +6,9 @@ import {
   Context,
   FxError,
   IProgressHandler,
+  IQTreeNode,
   InputsWithProjectPath,
   MaybePromise,
-  IQTreeNode,
   Result,
   SystemError,
   UserError,
@@ -16,9 +16,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
 import { TOOLS, globalVars } from "../../common/globalVars";
+import { TelemetryConstants } from "../../common/telemetry";
 import { assembleError } from "../../error/common";
 import { traverse } from "../../ui/visitor";
-import { TelemetryConstants } from "../constants";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { sendErrorEvent, sendStartEvent, sendSuccessEvent } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";

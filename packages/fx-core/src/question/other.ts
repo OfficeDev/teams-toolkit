@@ -17,11 +17,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString } from "../common/constants";
-import { isAsyncAppValidationEnabled } from "../common/featureFlags";
+import { AppStudioScopes, ConstantString } from "../common/constants";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Constants } from "../component/driver/add/utility/constants";
-import { AppStudioScopes } from "../component/driver/teamsApp/constants";
 import { AppStudioError } from "../component/driver/teamsApp/errors";
 import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
@@ -374,7 +373,7 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
 function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
   const options = [TeamsAppValidationOptions.schema(), TeamsAppValidationOptions.package()];
 
-  if (isAsyncAppValidationEnabled()) {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation)) {
     options.push(TeamsAppValidationOptions.testCases());
   }
 

@@ -36,7 +36,6 @@ import {
   QuestionNames,
   SPFxVersionOptionIds,
 } from "../../../question/constants";
-import { SPFxQuestionNames } from "../../constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { envUtil } from "../../utils/envUtil";
@@ -346,7 +345,7 @@ export class SPFxGenerator {
 
       try {
         await cpUtils.executeCommand(
-          isAddSPFx ? inputs[SPFxQuestionNames.SPFxFolder] : destinationPath,
+          isAddSPFx ? inputs[QuestionNames.SPFxFolder] : destinationPath,
           context.logProvider,
           {
             timeout: 2 * 60 * 1000,

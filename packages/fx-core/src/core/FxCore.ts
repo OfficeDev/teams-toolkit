@@ -59,12 +59,7 @@ import { MetadataV3, VersionSource, VersionState } from "../common/versionMetada
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import {
-  AadConstants,
-  SPFxQuestionNames,
-  SingleSignOnOptionItem,
-  ViewAadAppHelpLinkV5,
-} from "../component/constants";
+import { AadConstants, SingleSignOnOptionItem, ViewAadAppHelpLinkV5 } from "../component/constants";
 import { coordinator } from "../component/coordinator";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
@@ -403,10 +398,10 @@ export class FxCore {
     setErrorContext({ component: "spfxAdd", method: "run" });
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
-      manifestPath: inputs[SPFxQuestionNames.ManifestPath],
-      localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
-      spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
-      webpartName: inputs[SPFxQuestionNames.WebPartName],
+      manifestPath: inputs[QuestionNames.ManifestPath],
+      localManifestPath: inputs[QuestionNames.LocalTeamsAppManifestFilePath],
+      spfxFolder: inputs[QuestionNames.SPFxFolder],
+      webpartName: inputs[QuestionNames.SPFxWebpartName],
       framework: inputs[QuestionNames.SPFxFramework],
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };

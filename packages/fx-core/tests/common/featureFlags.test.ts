@@ -10,28 +10,11 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import {
   FeatureFlags,
   featureFlagManager,
-  initializePreviewFeatureFlags,
   isCopilotAuthEnabled,
 } from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
 describe("featureFlags", () => {
-  describe("initializePreviewFeatureFlags()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-    });
-
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-
-    it("successfully open all feature flags", async () => {
-      initializePreviewFeatureFlags();
-    });
-  });
-
   describe("isCopilotAuthEnabled()", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {

@@ -76,7 +76,6 @@ import {
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
-  serviceScope,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 

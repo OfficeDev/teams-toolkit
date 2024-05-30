@@ -4,11 +4,25 @@
 
 import "reflect-metadata";
 export { askSubscription } from "./common/azureUtils";
-export * from "./common/constants";
-export * from "./common/correlator";
-export * from "./common/featureFlags";
+export {
+  AppStudioScopes,
+  AuthSvcScopes,
+  AzureScopes,
+  GraphScopes,
+  SPFxScopes,
+  getAllowedAppMaps,
+} from "./common/constants";
+export { Correlator } from "./common/correlator";
+export {
+  FeatureFlags,
+  featureFlagManager,
+  isApiCopilotPluginEnabled,
+  isChatParticipantEnabled,
+  isCopilotPluginEnabled,
+  isFeatureFlagEnabled,
+} from "./common/featureFlags";
 export * from "./common/globalState";
-export * from "./common/localizeUtils";
+export { getDefaultString, getLocalizedString } from "./common/localizeUtils";
 export * from "./common/permissionInterface";
 export * from "./common/projectSettingsHelper";
 export * from "./common/projectTypeChecker";
@@ -19,24 +33,23 @@ export { telemetryUtils } from "./common/telemetry";
 export * from "./common/tools";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export { SummaryConstant } from "./component/configManager/constant";
-export * from "./component/constants";
 export * from "./component/deps-checker";
 export { FuncToolChecker } from "./component/deps-checker/internal/funcToolChecker";
 export { LtsNodeChecker } from "./component/deps-checker/internal/nodeChecker";
 export { getPermissionMap } from "./component/driver/aad/permissions/index";
 export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
-export * from "./component/driver/teamsApp/constants";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
 export { pluginManifestUtils } from "./component/driver/teamsApp/utils/PluginManifestUtils";
-export * from "./component/driver/teamsApp/utils/utils";
 export * from "./component/generator/copilotPlugin/helper";
 export { HelperMethods } from "./component/generator/officeAddin/helperMethods";
 export { DefaultTemplateGenerator } from "./component/generator/templates/templateGenerator";
-export * from "./component/generator/utils";
-export * from "./component/local";
+export { getSampleFileInfo, runWithLimitedConcurrency } from "./component/generator/utils";
+export * from "./component/local/constants";
 export { LocalCertificateManager } from "./component/local/localCertificateManager";
-export * from "./component/m365/constants";
+export { LocalEnvManager } from "./component/local/localEnvManager";
+export { LocalTelemetryReporter, TelemetryContext } from "./component/local/localTelemetryReporter";
+export { Hub } from "./component/m365/constants";
 export { PackageService } from "./component/m365/packageService";
 export * from "./component/m365/serviceConstant";
 export * from "./component/migrate";
@@ -51,9 +64,9 @@ export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";
 export * from "./core/error";
 export { isVideoFilterProject } from "./core/middleware/videoFilterAppBlocker";
-export * from "./core/types";
+export { VersionCheckRes } from "./core/types";
 export * from "./error/index";
-export * from "./question";
+export * from "./question/constants";
 export { QuestionNames as CoreQuestionNames } from "./question/constants";
-export * from "./ui/validationUtils";
-export * from "./ui/visitor";
+export * from "./question/inputs";
+export * from "./question/options";

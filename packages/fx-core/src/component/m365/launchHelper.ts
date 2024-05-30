@@ -11,7 +11,7 @@ import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
-import { AppStudioScopes } from "../driver/teamsApp/constants";
+import { AppStudioScopes } from "../../common/constants";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;

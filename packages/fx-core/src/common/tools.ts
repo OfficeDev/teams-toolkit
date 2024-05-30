@@ -9,9 +9,8 @@ import { FxError, M365TokenProvider, Result, SystemError, err, ok } from "@micro
 import axios from "axios";
 import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
 import { AuthSvcClient } from "../component/driver/teamsApp/clients/authSvcClient";
-import { getAppStudioEndpoint } from "../component/driver/teamsApp/constants";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import { GraphReadUserScopes, SPFxScopes } from "./constants";
+import { GraphReadUserScopes, SPFxScopes, getAppStudioEndpoint } from "./constants";
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return AppStudioClient.getSideloadingStatus(token);

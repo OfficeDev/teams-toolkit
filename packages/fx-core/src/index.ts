@@ -41,7 +41,7 @@ export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioCl
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
 export { pluginManifestUtils } from "./component/driver/teamsApp/utils/PluginManifestUtils";
-export * from "./component/generator/copilotPlugin/helper";
+export { generateScaffoldingSummary } from "./component/generator/copilotPlugin/helper";
 export { HelperMethods } from "./component/generator/officeAddin/helperMethods";
 export { DefaultTemplateGenerator } from "./component/generator/templates/templateGenerator";
 export { getSampleFileInfo, runWithLimitedConcurrency } from "./component/generator/utils";

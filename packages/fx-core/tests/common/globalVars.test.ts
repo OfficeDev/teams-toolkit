@@ -5,8 +5,8 @@ import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
 import "../../src/component/feature/sso";
-import { ErrorContextMW, globalVars, setErrorContext, setTools } from "../../src/core/globalVars";
-import { MockTools } from "./utils";
+import { ErrorContextMW, globalVars, setErrorContext, setTools } from "../../src/common/globalVars";
+import { MockTools } from "../core/utils";
 import { hooks } from "@feathersjs/hooks";
 
 const tools = new MockTools();

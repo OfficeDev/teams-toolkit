@@ -188,7 +188,7 @@ export default class SampleGallery extends React.Component<SampleGalleryProps, S
   }
 
   private get selectedSample(): SampleInfo | null {
-    if (!this.state.selectedSampleId) {
+    if (!this.state.selectedSampleId || this.state.selectedSampleId === "") {
       return null;
     }
     const selectedSamples = this.samples.filter(
@@ -204,9 +204,11 @@ export default class SampleGallery extends React.Component<SampleGalleryProps, S
         const error = event.data.error;
         this.samples = event.data.samples as SampleInfo[];
         this.filterOptions = event.data.filterOptions as SampleFilterOptionType;
+        const initialSample = event.data.initialSample as string;
         this.setState({
           loading: false,
           error,
+          selectedSampleId: initialSample,
         });
         break;
       case Commands.GetData:
@@ -217,9 +219,6 @@ export default class SampleGallery extends React.Component<SampleGalleryProps, S
             layout: value || "grid",
           });
         }
-        break;
-      case Commands.OpenDesignatedSample:
-        this.onSampleSelected(event.data.sampleId, TelemetryTriggerFrom.ExternalUrl);
         break;
       default:
         break;

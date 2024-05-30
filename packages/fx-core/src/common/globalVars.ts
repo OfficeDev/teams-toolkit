@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
-import { Tools } from "@microsoft/teamsfx-api";
+import { Context, Tools } from "@microsoft/teamsfx-api";
 
 export let TOOLS: Tools;
 export let Locale: string | undefined;
@@ -74,3 +74,13 @@ export type ExternalSource =
   | "DevTools"
   | "M365"
   | "";
+
+export function createContext(): Context {
+  const context: Context = {
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    tokenProvider: TOOLS.tokenProvider,
+  };
+  return context;
+}

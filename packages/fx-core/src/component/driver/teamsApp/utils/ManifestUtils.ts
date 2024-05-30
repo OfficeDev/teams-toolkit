@@ -21,7 +21,7 @@ import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
 import { CapabilityOptions } from "../../../../question/constants";
 import { BotScenario } from "../../../constants";

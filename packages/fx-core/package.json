@@ -59,7 +59,7 @@
     "test:coll": "nyc mocha \"tests/core/collaborator.test.ts\"",
     "test:error": "nyc mocha \"tests/error/*.test.ts\"",
     "test:cutils": "nyc mocha \"tests/component/utils.test.ts\"",
-    "test:globalVars": "nyc mocha \"tests/core/globalVars.test.ts\"",
+    "test:globalVars": "nyc mocha \"tests/common/globalVars.test.ts\"",
     "test:migration": "nyc mocha \"tests/core/middleware/migration/projectMigrationV3.test.ts\"",
     "test:teamsappMgr": "nyc mocha \"tests/component/driver/teamsApp/teamsappMgr.test.ts\"",
     "test:projcheck": "nyc mocha \"tests/common/projectTypeChecker.test.ts\"",

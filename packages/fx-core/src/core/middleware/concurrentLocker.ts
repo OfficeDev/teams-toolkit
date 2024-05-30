@@ -16,6 +16,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
+import { TOOLS } from "../../common/globalVars";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { waitSeconds } from "../../common/utils";
@@ -27,7 +28,6 @@ import {
   NoProjectOpenedError,
 } from "../../error/common";
 import { CallbackRegistry } from "../callback";
-import { TOOLS } from "../globalVars";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 let doingTask: string | undefined = undefined;

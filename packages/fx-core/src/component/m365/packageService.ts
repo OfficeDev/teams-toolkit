@@ -6,7 +6,7 @@ import { LogProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import FormData from "form-data";
 import fs from "fs-extra";
-import { ErrorContextMW, TOOLS } from "../../core/globalVars";
+import { ErrorContextMW, TOOLS } from "../../common/globalVars";
 import { assembleError } from "../../error/common";
 import { ErrorCategory } from "../../error/types";
 import {

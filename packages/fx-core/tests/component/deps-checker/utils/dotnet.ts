@@ -12,7 +12,7 @@ import {
   DotnetVersion,
 } from "../../../../src/component/deps-checker/internal/dotnetChecker";
 import { cpUtils } from "../../../../src/component/deps-checker/util/cpUtils";
-import { isWindows } from "../../../../src/component/deps-checker/util/system";
+import { isArm64, isMacOS, isWindows } from "../../../../src/component/deps-checker/util/system";
 import { logger } from "../adapters/testLogger";
 import { createTmpDir } from "./common";
 
@@ -29,7 +29,7 @@ export const dotnetPrivateInstallPath = path.join(
 );
 export const dotnetCommand = "dotnet";
 export const dotnetOldVersion = DotnetVersion.v21;
-export const dotnetInstallVersion = DotnetVersion.v31;
+export const dotnetInstallVersion = isMacOS() && isArm64() ? DotnetVersion.v60 : DotnetVersion.v31;
 export const dotnetSupportedVersions = [DotnetVersion.v31, DotnetVersion.v50];
 
 export const testCsprojFileName = "extensions.csproj";
@@ -65,7 +65,7 @@ export async function hasAnyDotnetVersions(
       undefined,
       logger,
       undefined,
-      dotnetExecPath,
+      `"${dotnetExecPath}"`,
       "--list-sdks"
     );
     return output.split(/\r?\n/).some((line: string) => {

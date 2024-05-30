@@ -13,8 +13,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { Service } from "typedi";
+import { ErrorContextMW } from "../../common/globalVars";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
-import { ErrorContextMW } from "../../core/globalVars";
 import { HttpClientError, HttpServerError, assembleError } from "../../error/common";
 import { AppIdNotExist } from "../../error/teamsApp";
 import { AadAppClient } from "../driver/aad/utility/aadAppClient";

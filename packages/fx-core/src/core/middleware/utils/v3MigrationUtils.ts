@@ -21,7 +21,7 @@ import {
 } from "../../../common/versionMetadata";
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { TOOLS } from "../../globalVars";
+import { TOOLS } from "../../../common/globalVars";
 import { settingsUtil } from "../../../component/utils/settingsUtil";
 import * as dotenv from "dotenv";
 import { manifestUtils } from "../../../component/driver/teamsApp/utils/ManifestUtils";

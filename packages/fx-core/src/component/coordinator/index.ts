@@ -25,12 +25,12 @@ import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 import { getResourceGroupInPortal } from "../../common/constants";
 import { isNewGeneratorEnabled } from "../../common/featureFlags";
+import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/stringUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
-import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   InputValidationError,
@@ -216,17 +216,6 @@ class Coordinator {
           }
         } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
           const res = await CopilotPluginGenerator.generateMeFromApiSpec(
-            context,
-            inputs,
-            projectPath
-          );
-          if (res.isErr()) {
-            return err(res.error);
-          } else {
-            warnings = res.value.warnings;
-          }
-        } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-          const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
             context,
             inputs,
             projectPath

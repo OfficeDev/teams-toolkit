@@ -35,7 +35,7 @@ import { ValidateManifestDriver } from "../../../../src/component/driver/teamsAp
 import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
 import { ValidateWithTestCasesDriver } from "../../../../src/component/driver/teamsApp/validateTestCases";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
 import { MockTools } from "../../../core/utils";
 import {

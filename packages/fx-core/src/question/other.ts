@@ -29,7 +29,7 @@ import { getAbsolutePath } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentNameManager } from "../core/environmentName";
-import { TOOLS } from "../core/globalVars";
+import { TOOLS } from "../common/globalVars";
 import {
   HubOptions,
   PluginAvailabilityOptions,

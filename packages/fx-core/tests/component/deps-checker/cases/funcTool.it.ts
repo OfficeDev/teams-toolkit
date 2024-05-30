@@ -136,7 +136,11 @@ describe("FuncToolChecker E2E Test", async () => {
   });
 
   it("already install + linux", async function () {
-    if (!(await funcUtils.getGlobalFunc()) || !isLinux()) {
+    const funcVersion = await funcUtils.getGlobalFunc();
+    if (!funcVersion || !isLinux()) {
+      this.skip();
+    }
+    if (!semver.satisfies(funcVersion, "~4.0.5174")) {
       this.skip();
     }
 

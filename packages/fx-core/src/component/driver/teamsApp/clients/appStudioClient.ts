@@ -32,7 +32,7 @@ import { waitSeconds } from "../../../../common/utils";
 import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
-import { setErrorContext } from "../../../../core/globalVars";
+import { setErrorContext } from "../../../../common/globalVars";
 import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,

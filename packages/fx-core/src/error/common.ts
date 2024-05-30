@@ -10,7 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { globalVars } from "../core/globalVars";
+import { globalVars } from "../common/globalVars";
 import { ErrorCategory } from "./types";
 
 export class FileNotFoundError extends UserError {

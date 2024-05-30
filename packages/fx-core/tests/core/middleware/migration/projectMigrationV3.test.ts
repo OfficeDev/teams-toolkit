@@ -13,11 +13,11 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
+import { setTools } from "../../../../src/common/globalVars";
 import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
 import { NodeChecker } from "../../../../src/component/deps-checker/internal/nodeChecker";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
-import { setTools } from "../../../../src/core/globalVars";
 import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
 import {
   azureParameterMigration,

@@ -10,6 +10,7 @@ import * as commentJson from "comment-json";
 import * as fs from "fs-extra";
 import { EOL } from "os";
 import * as path from "path";
+import { TOOLS } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import {
   Component,
@@ -24,11 +25,9 @@ import {
   AbandonedProjectError,
   MigrationError,
   NotAllowedMigrationError,
-  UpgradeV3CanceledError,
-  assembleError,
+  UpgradeV3CanceledError, assembleError
 } from "../../error";
 import { getTemplatesFolder } from "../../folder";
-import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import { VersionForMigration } from "./types";

@@ -4,10 +4,10 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { FxError, Inputs, Platform, err } from "@microsoft/teamsfx-api";
 import semver from "semver";
+import { TOOLS } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { MetadataV2, VersionInfo, VersionSource } from "../../common/versionMetadata";
 import { IncompatibleProjectError } from "../../error/common";
-import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
 import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
 import { getProjectVersion } from "./utils/v3MigrationUtils";

@@ -11,7 +11,7 @@ import { Service } from "typedi";
 import { GraphScopes } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { getSPFxToken } from "../../../../common/tools";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 import { FileNotFoundError } from "../../../../error/common";
 import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";

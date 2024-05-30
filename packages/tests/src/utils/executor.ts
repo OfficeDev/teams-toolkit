@@ -20,7 +20,8 @@ export class Executor {
     command: string,
     cwd: string,
     processEnv?: NodeJS.ProcessEnv,
-    timeout?: number
+    timeout?: number,
+    skipErrorMessage?: string | undefined
   ) {
     let retryCount = 0;
     const maxRetries = 2;
@@ -37,7 +38,11 @@ export class Executor {
         const result = await execAsync(command, options);
 
         if (result.stderr) {
-          /// the command exit with 0
+          if (skipErrorMessage && result.stderr.includes(skipErrorMessage)) {
+            console.log(`[Skip] "${command}" in ${cwd}.`);
+            return { success: true, ...result };
+          }
+          // the command exit with 0
           console.log(
             `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
           );
@@ -132,12 +137,19 @@ export class Executor {
     env = "dev",
     processEnv?: NodeJS.ProcessEnv,
     npx = false,
-    isV3 = true
+    isV3 = true,
+    skipErrorMessage?: string
   ) {
     const npxCommand = npx ? "npx " : "";
     const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
     const command = `${npxCommand} ${cliPrefix} ${cmd} --env ${env}`;
-    return this.execute(command, workspace, processEnv);
+    return this.execute(
+      command,
+      workspace,
+      processEnv,
+      undefined,
+      skipErrorMessage
+    );
   }
 
   static async provision(workspace: string, env = "dev", isV3 = true) {
@@ -224,7 +236,17 @@ export class Executor {
   }
 
   static async preview(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "preview", env);
+    const skipErrorMessage =
+      "Warning: If you changed the manifest file, please run 'teamsapp provision --env dev'";
+    return this.executeCmd(
+      workspace,
+      "preview",
+      env,
+      undefined,
+      undefined,
+      undefined,
+      skipErrorMessage
+    );
   }
 
   static debugProject(

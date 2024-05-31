@@ -8,7 +8,6 @@ import { merge } from "lodash";
 import "mocha";
 import path from "path";
 import * as sinon from "sinon";
-import { CapabilityOptions, getProjectTypeAndCapability } from "../../src";
 import { createContext, setTools } from "../../src/common/globalVars";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
@@ -27,7 +26,8 @@ import { manifestUtils } from "../../src/component/driver/teamsApp/utils/Manifes
 import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
 import { ObjectIsUndefinedError } from "../../src/core/error";
-import { QuestionNames } from "../../src/question/constants";
+import { CapabilityOptions, QuestionNames } from "../../src/question/constants";
+import { getProjectTypeAndCapability } from "../../src/question/create";
 import { MockTools } from "../core/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
 

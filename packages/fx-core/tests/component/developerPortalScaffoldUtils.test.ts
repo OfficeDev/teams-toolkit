@@ -918,12 +918,6 @@ describe("developPortalScaffoldUtils", () => {
             scopes: ["personal", "team"],
             supportsFiles: false,
             isNotificationOnly: false,
-            commandLists: [
-              {
-                scopes: ["personal", "team", "groupchat"],
-                commands: [],
-              },
-            ],
           },
         ],
         validDomains: ["valid-domain"],

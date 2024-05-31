@@ -35,6 +35,7 @@ import {
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "./utils/envUtil";
+import semver from "semver";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -228,6 +229,50 @@ async function updateManifest(
     }
   }
 
+  // Adjust scope based on manifest version.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      {
+        manifest.configurableTabs[0].scopes = adjustScopeBasedOnVersion(
+          manifest.configurableTabs[0].scopes,
+          manifest.manifestVersion
+        ) as ("team" | "groupchat")[];
+      }
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      {
+        manifest.bots[0].scopes = adjustScopeBasedOnVersion(
+          manifest.bots[0].scopes,
+          manifest.manifestVersion
+        ) as BotOrMeScopes;
+      }
+    }
+
+    if (manifest.bots[0].commandLists) {
+      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
+        if (commandList.scopes) {
+          commandList.scopes = adjustScopeBasedOnVersion(
+            commandList.scopes,
+            manifest.manifestVersion
+          ) as BotOrMeScopes;
+        }
+      });
+    }
+  }
+
+  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+    if (manifest.composeExtensions[0].scopes) {
+      {
+        manifest.composeExtensions[0].scopes = adjustScopeBasedOnVersion(
+          manifest.composeExtensions[0].scopes,
+          manifest.version
+        ) as BotOrMeScopes;
+      }
+    }
+  }
+
   await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, "\t"), "utf-8");
 
   // languages
@@ -280,6 +325,20 @@ function updateTabUrl(
 
 function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | undefined {
   return tabs.find((o) => o.name === name);
+}
+
+export function adjustScopeBasedOnVersion(scopes: string[], version: string): string[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return scopes.map((o) => {
+      if (o === "groupchat") {
+        return "groupChat";
+      }
+      return o;
+    });
+  } else {
+    return scopes;
+  }
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

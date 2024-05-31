@@ -4,7 +4,7 @@
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import { parse } from "yaml";
+import yaml from "yaml";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
 import { MissingRequiredFileError, MissingRequiredInputError } from "../../error/common";
@@ -34,7 +34,7 @@ class PathUtils {
   async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {
     const ymlFilePath = this.getYmlFilePath(projectPath, "dev");
     const ymlContent = await fs.readFile(ymlFilePath, "utf-8");
-    const yamlObj = parse(ymlContent);
+    const yamlObj = yaml.parse(ymlContent);
     const folderPath = yamlObj.environmentFolderPath?.toString() || "./env";
     const envFolderPath = path.isAbsolute(folderPath)
       ? folderPath

@@ -17,7 +17,6 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { MetadataV3 } from "../../src/common/versionMetadata";
 import { ProjectModel } from "../../src/component/configManager/interface";
-import { yamlParser } from "../../src/component/configManager/parser";
 import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
 import { DotenvOutput, dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -93,12 +92,9 @@ describe("envUtils", () => {
 
   describe("pathUtils.getEnvFolderPath", () => {
     it("happy path", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-        environmentFolderPath: "/home/envs",
-      };
-      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
-      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox
+        .stub(fs, "readFile")
+        .resolves("version: 1.0.0\nenvironmentFolderPath: /home/envs" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFolderPath(".");
@@ -108,23 +104,17 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
-      sandbox.stub(fs, "readFile").resolves("" as any);
-      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
     });
     it("returns undefined value", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
-      sandbox.stub(fs, "readFile").resolves("" as any);
-      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
+      sandbox
+        .stub(fs, "readFile")
+        .resolves("version: 1.0.0\nenvironmentFolderPath: /home/envs" as any);
       sandbox.stub(fs, "pathExists").resolves(false);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
@@ -136,13 +126,10 @@ describe("envUtils", () => {
 
   describe("pathUtils.getEnvFilePath", () => {
     it("happy path", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-        environmentFolderPath: "/home/envs",
-      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-      sandbox.stub(fs, "readFile").resolves("" as any);
-      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
+      sandbox
+        .stub(fs, "readFile")
+        .resolves("version: 1.0.0\nenvironmentFolderPath: /home/envs" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFilePath(".", "dev");
       assert.isTrue(res.isOk());
@@ -151,11 +138,7 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-      };
-      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
-      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFilePath(".", "dev");
@@ -402,6 +385,7 @@ describe("envUtils", () => {
       assert.instanceOf(res._unsafeUnwrapErr(), NoEnvFilesError);
     });
     it("environmentManager.listRemoteEnvConfigs return error", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
       sandbox.stub(fs, "readdir").resolves([] as any);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await environmentManager.listRemoteEnvConfigs(".", true);

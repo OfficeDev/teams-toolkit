@@ -358,11 +358,11 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.ApiPluginFromScratch,
   ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-      [QuestionNames.CopilotApiAuth]: CopilotPluginFromNewApiAuthOptions.apiKey().id,
-    },
-    TemplateNames.ApiPluginFromScratchBearer,
-  ],
+  // [
+  //   {
+  //     [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+  //     [QuestionNames.CopilotApiAuth]: CopilotPluginFromNewApiAuthOptions.apiKey().id,
+  //   },
+  //   TemplateNames.ApiPluginFromScratchBearer,
+  // ],
 ]);

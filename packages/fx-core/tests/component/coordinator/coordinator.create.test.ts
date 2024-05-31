@@ -6,7 +6,6 @@ import fs from "fs-extra";
 import { glob } from "glob";
 import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import { CreateSampleProjectInputs, validationUtils } from "../../../src";
 import * as FeatureFlags from "../../../src/common/featureFlags";
 import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
@@ -39,6 +38,8 @@ import {
 } from "../../../src/question/constants";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
+import { CreateSampleProjectInputs } from "../../../src/question";
+import { validationUtils } from "../../../src/ui/validationUtils";
 
 const V3Version = MetadataV3.projectVersion;
 

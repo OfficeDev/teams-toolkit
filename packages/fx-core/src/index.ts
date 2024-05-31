@@ -2,6 +2,16 @@
 // Licensed under the MIT license.
 "use strict";
 
+/**
+ * File structure of this package:
+ * ./common: contains common utilities and constants that are shared across different components.
+ * ./component: contains the implementation of different components
+ * ./core: contains the FxCore class that is the entry points implementing the lifecycle APIs of the Teams Toolkit.
+ * ./error: contains the error classes used in the Teams Toolkit.
+ * ./question: contains the question models used in the Teams Toolkit.
+ * ./ui: contains the UI related components.
+ */
+
 import "reflect-metadata";
 export { askSubscription } from "./common/azureUtils";
 export {

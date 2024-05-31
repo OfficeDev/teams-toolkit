@@ -21,19 +21,49 @@ export {
   isCopilotPluginEnabled,
   isFeatureFlagEnabled,
 } from "./common/featureFlags";
-export * from "./common/globalState";
+export { globalStateGet, globalStateUpdate } from "./common/globalState";
 export { getDefaultString, getLocalizedString } from "./common/localizeUtils";
 export * from "./common/permissionInterface";
 export * from "./common/projectSettingsHelper";
-export * from "./common/projectTypeChecker";
-export * from "./common/requestUtils";
-export * from "./common/samples";
-export * from "./common/stringUtils";
+export {
+  ProjectTypeResult,
+  TeamsfxConfigType,
+  TeamsfxVersionState,
+  projectTypeChecker,
+} from "./common/projectTypeChecker";
+export { sendRequestWithRetry, sendRequestWithTimeout } from "./common/requestUtils";
+export { SampleConfig, SampleUrlInfo, sampleProvider } from "./common/samples";
+export {
+  MaskSecretOptions,
+  convertToAlphanumericOnly,
+  getResourceGroupNameFromResourceId,
+  getUuid,
+  isValidHttpUrl,
+  loadingDefaultPlaceholder,
+  loadingOptionsPlaceholder,
+  maskSecret,
+  parseFromResourceId,
+} from "./common/stringUtils";
 export { telemetryUtils } from "./common/telemetry";
-export * from "./common/tools";
+export { getSPFxTenant, getSideloadingStatus, listDevTunnels, setRegion } from "./common/tools";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export { SummaryConstant } from "./component/configManager/constant";
-export * from "./component/deps-checker";
+export { CheckerFactory } from "./component/deps-checker/checkerFactory";
+export {
+  DepsCheckerEvent,
+  TelemetryMessurement,
+} from "./component/deps-checker/constant/telemetry";
+export { CoreDepsLoggerAdapter } from "./component/deps-checker/coreDepsLoggerAdapter";
+export { CoreDepsTelemetryAdapter } from "./component/deps-checker/coreDepsTelemetryAdapter";
+export {
+  DependencyStatus,
+  DepsType,
+  TestToolInstallOptions,
+} from "./component/deps-checker/depsChecker";
+export * from "./component/deps-checker/depsError";
+export { DepsLogger, EmptyLogger } from "./component/deps-checker/depsLogger";
+export { DepsManager } from "./component/deps-checker/depsManager";
+export { DepsTelemetry, EmptyTelemetry } from "./component/deps-checker/depsTelemetry";
 export { FuncToolChecker } from "./component/deps-checker/internal/funcToolChecker";
 export { LtsNodeChecker } from "./component/deps-checker/internal/nodeChecker";
 export { getPermissionMap } from "./component/driver/aad/permissions/index";
@@ -53,7 +83,6 @@ export { loadTeamsFxDevScript } from "./component/local/packageJsonHelper";
 export { Hub } from "./component/m365/constants";
 export { PackageService } from "./component/m365/packageService";
 export { MosServiceEndpoint, MosServiceScope } from "./component/m365/serviceConstant";
-// export * from "./component/migrate";
 export { newResourceGroupOption, resourceGroupHelper } from "./component/utils/ResourceGroupHelper";
 export { DotenvOutput, envUtil } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";
@@ -64,7 +93,7 @@ export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";
 export * from "./core/error";
-export { VersionCheckRes } from "./core/types";
+export { PreProvisionResForVS, VersionCheckRes } from "./core/types";
 export * from "./error/index";
 export * from "./question/constants";
 export * from "./question/inputs";

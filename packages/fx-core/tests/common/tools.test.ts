@@ -1,30 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ok } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import fs from "fs-extra";
 import "mocha";
 import mockFs from "mock-fs";
-import Sinon, * as sinon from "sinon";
-
-import { ok } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
+import Sinon, * as sinon from "sinon";
+import { getProjectMetadata } from "../../src/common/projectSettingsHelper";
 import * as telemetry from "../../src/common/telemetry";
 import {
-  getProjectMetadata,
   getSPFxToken,
   getSideloadingStatus,
   listDevTunnels,
   setRegion,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
-import { MockTools } from "../core/utils";
-import { isUserCancelError } from "../../src/error/common";
-import { isVideoFilterProject } from "../../src/core/middleware/videoFilterAppBlocker";
 import { PackageService } from "../../src/component/m365/packageService";
+import { isVideoFilterProject } from "../../src/core/middleware/videoFilterAppBlocker";
+import { isUserCancelError } from "../../src/error/common";
+import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
 

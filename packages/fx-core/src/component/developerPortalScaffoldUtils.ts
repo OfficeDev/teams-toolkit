@@ -267,7 +267,7 @@ async function updateManifest(
       {
         manifest.composeExtensions[0].scopes = adjustScopeBasedOnVersion(
           manifest.composeExtensions[0].scopes,
-          manifest.version
+          manifest.manifestVersion
         ) as BotOrMeScopes;
       }
     }

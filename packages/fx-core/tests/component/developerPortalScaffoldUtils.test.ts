@@ -1115,7 +1115,7 @@ describe("developPortalScaffoldUtils", () => {
       const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
       chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
       chai.assert.isTrue(
-        (updatedManifest.configurableTabs![0].scopes as string[]).includes("groupcChat")
+        (updatedManifest.configurableTabs![0].scopes as string[]).includes("groupChat")
       );
       chai.assert.isTrue((updatedManifest.bots![0].scopes as string[]).includes("groupChat"));
       chai.assert.isTrue(

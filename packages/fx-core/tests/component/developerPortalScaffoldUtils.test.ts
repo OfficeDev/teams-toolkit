@@ -1114,10 +1114,16 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.isTrue(updateLanguage);
       const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
       chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
-      chai.assert.isTrue(updatedManifest.configurableTabs![0].scopes.includes("groupcChat"));
-      chai.assert.isTrue(updatedManifest.bots![0].scopes.includes("groupChat"));
-      chai.assert.isTrue(updatedManifest.bots![0].commandLists![0].scopes.includes("groupChat"));
-      chai.assert.isTrue(updatedManifest.composeExtensions![0].scopes!.includes("groupChat"));
+      chai.assert.isTrue(
+        (updatedManifest.configurableTabs![0].scopes as string[]).includes("groupcChat")
+      );
+      chai.assert.isTrue((updatedManifest.bots![0].scopes as string[]).includes("groupChat"));
+      chai.assert.isTrue(
+        (updatedManifest.bots![0].commandLists![0].scopes as string[]).includes("groupChat")
+      );
+      chai.assert.isTrue(
+        (updatedManifest.composeExtensions![0].scopes! as string[]).includes("groupChat")
+      );
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);

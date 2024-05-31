@@ -369,7 +369,8 @@ export namespace AppStudioClient {
   export async function publishTeamsAppUpdate(
     teamsAppId: string,
     file: Buffer,
-    appStudioToken: string
+    appStudioToken: string,
+    logProvider?: LogProvider
   ): Promise<string> {
     setErrorContext({ source: "Teams" });
     try {
@@ -397,6 +398,7 @@ export namespace AppStudioClient {
 
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const requestPath = `${response.request?.method} ${response.request?.path}`;
+      logProvider?.debug(`The response of ${requestPath} is ${JSON.stringify(response)}`);
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           const error = new Error(response.data.error?.message || response.data.errorMessage);

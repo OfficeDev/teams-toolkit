@@ -134,7 +134,8 @@ export class PublishAppPackageDriver implements StepDriver {
           const appId = await AppStudioClient.publishTeamsAppUpdate(
             manifest.id,
             archivedFile,
-            appStudioTokenRes.value
+            appStudioTokenRes.value,
+            context.logProvider
           );
           result = new Map([[outputEnvVarNames.get("publishedAppId") as string, appId]]);
           merge(context.telemetryProperties, {

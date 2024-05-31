@@ -31,7 +31,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
 import { ObjectIsUndefinedError } from "../../core/error";
-import { ErrorContextMW, globalVars } from "../../core/globalVars";
+import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   InputValidationError,
@@ -217,17 +217,6 @@ class Coordinator {
           }
         } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
           const res = await CopilotPluginGenerator.generateMeFromApiSpec(
-            context,
-            inputs,
-            projectPath
-          );
-          if (res.isErr()) {
-            return err(res.error);
-          } else {
-            warnings = res.value.warnings;
-          }
-        } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-          const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
             context,
             inputs,
             projectPath

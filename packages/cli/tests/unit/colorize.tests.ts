@@ -57,9 +57,6 @@ describe("colorize", () => {
   it("colorize - Commands", async () => {
     colorize("test", TextType.Commands);
   });
-  it("colorize - Spinner", async () => {
-    colorize("test", TextType.Spinner);
-  });
   it("replace template string", async () => {
     const template = "test %s";
     const result = replaceTemplateString(template, "test");

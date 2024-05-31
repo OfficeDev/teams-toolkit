@@ -17,7 +17,7 @@ import { HelpLinks } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getHashedEnv } from "../common/stringUtils";
-import { TOOLS } from "../core/globalVars";
+import { TOOLS } from "../common/globalVars";
 import {
   InvalidAzureCredentialError,
   InvalidAzureSubscriptionError,

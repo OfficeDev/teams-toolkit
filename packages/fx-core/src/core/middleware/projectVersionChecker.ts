@@ -7,7 +7,7 @@ import semver from "semver";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { MetadataV2, VersionInfo, VersionSource } from "../../common/versionMetadata";
 import { IncompatibleProjectError } from "../error";
-import { TOOLS } from "../globalVars";
+import { TOOLS } from "../../common/globalVars";
 import { CoreHookContext } from "../types";
 import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
 import { getProjectVersion } from "./utils/v3MigrationUtils";

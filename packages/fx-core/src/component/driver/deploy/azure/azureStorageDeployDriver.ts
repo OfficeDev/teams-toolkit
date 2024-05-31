@@ -35,7 +35,7 @@ import {
   AzureStorageUploadFilesError,
 } from "../../../../error";
 import { ProgressMessages } from "../../../messages";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 
 const ACTION_NAME = "azureStorage/deploy";
 

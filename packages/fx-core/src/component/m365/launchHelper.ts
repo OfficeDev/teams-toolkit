@@ -5,7 +5,7 @@ import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@micro
 
 import { hooks } from "@feathersjs/hooks";
 import { CoreSource } from "../../core/error";
-import { ErrorContextMW } from "../../core/globalVars";
+import { ErrorContextMW } from "../../common/globalVars";
 import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";

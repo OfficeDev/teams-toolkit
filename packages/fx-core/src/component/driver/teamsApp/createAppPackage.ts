@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { ErrorContextMW } from "../../../core/globalVars";
+import { ErrorContextMW } from "../../../common/globalVars";
 import {
   FileNotFoundError,
   InvalidActionInputError,

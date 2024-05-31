@@ -15,7 +15,7 @@ import axios from "axios";
 import { Service } from "typedi";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
 import { AppIdNotExist } from "../../core/error";
-import { ErrorContextMW } from "../../core/globalVars";
+import { ErrorContextMW } from "../../common/globalVars";
 import { HttpClientError, HttpServerError, assembleError } from "../../error/common";
 import { AadAppClient } from "../driver/aad/utility/aadAppClient";
 import { permissionsKeys } from "../driver/aad/utility/constants";

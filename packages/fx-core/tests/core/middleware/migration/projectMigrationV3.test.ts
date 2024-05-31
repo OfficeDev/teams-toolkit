@@ -15,7 +15,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { MockTools, MockUserInteraction, randomAppName } from "../../utils";
 import { CoreHookContext } from "../../../../src/core/types";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import {
   backupFolder,
   MigrationContext,

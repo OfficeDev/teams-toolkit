@@ -36,7 +36,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FuncToolChecker } from "../../deps-checker/internal/funcToolChecker";
 import { DotnetChecker } from "../../deps-checker/internal/dotnetChecker";
-import { ErrorContextMW } from "../../../core/globalVars";
+import { ErrorContextMW } from "../../../common/globalVars";
 import { TestToolChecker } from "../../deps-checker/internal/testToolChecker";
 import { TestToolInstallationUserError } from "./error/testToolInstallationUserError";
 

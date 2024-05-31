@@ -25,7 +25,7 @@ import {
 import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 import { hooks } from "@feathersjs/hooks";
 import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 

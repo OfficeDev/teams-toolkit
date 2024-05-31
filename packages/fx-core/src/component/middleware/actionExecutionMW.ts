@@ -15,7 +15,7 @@ import {
   err,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
-import { TOOLS, globalVars } from "../../core/globalVars";
+import { TOOLS, globalVars } from "../../common/globalVars";
 import { assembleError } from "../../error/common";
 import { traverse } from "../../ui/visitor";
 import { TelemetryConstants } from "../constants";

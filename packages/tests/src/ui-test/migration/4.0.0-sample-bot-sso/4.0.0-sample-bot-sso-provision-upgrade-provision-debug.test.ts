@@ -21,7 +21,16 @@ import {
 } from "../../../utils/vscodeOperation";
 import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import {
+  CLIVersionCheck,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
+import { updatePakcageJson } from "./helper";
+import * as path from "path";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -52,6 +61,9 @@ describe("Migration Tests", function () {
     async () => {
       // create v2 project using CLI
       await sampledebugContext.openResourceFolder();
+      updatePakcageJson(
+        path.join(sampledebugContext.projectPath, "bot", "package.json")
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
@@ -73,11 +85,14 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(sampledebugContext.projectPath);
+
       // v3 provision
-      await sampledebugContext.provisionWithCLI("dev", true);
-      // v3 deploy
-      await CLIVersionCheck("V3", sampledebugContext.projectPath);
-      await sampledebugContext.deployWithCLI("dev");
+      await provisionProject(
+        sampledebugContext.appName,
+        sampledebugContext.projectPath
+      );
+      await deployProject(sampledebugContext.projectPath);
 
       const teamsAppId = await sampledebugContext.getTeamsAppId("dev");
       console.log(teamsAppId);

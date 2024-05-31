@@ -49,6 +49,7 @@ export abstract class CaseFactory {
     skipDeploy?: boolean;
     skipValidate?: boolean;
     skipPackage?: boolean;
+    skipPreview?: boolean;
     manifestFolderName?: string;
   };
 
@@ -249,6 +250,17 @@ export abstract class CaseFactory {
             "dev",
             options?.manifestFolderName
           );
+          expect(success).to.be.true;
+        }
+
+        // preview
+        {
+          if (options?.skipPreview) {
+            console.log("skip Preview...");
+            console.log("debug finish!");
+            return;
+          }
+          const { success } = await Executor.preview(projectPath);
           expect(success).to.be.true;
         }
       });

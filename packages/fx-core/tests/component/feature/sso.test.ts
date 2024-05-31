@@ -11,8 +11,8 @@ import { Container } from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
 import "../../../src/component/feature/sso";
 import * as templateUtils from "../../../src/component/generator/utils";
-import * as utils from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
+import * as utils from "../../../src/common/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 
 describe("SSO can add in VS V3 project", () => {
@@ -20,7 +20,7 @@ describe("SSO can add in VS V3 project", () => {
   const tools = new MockTools();
   setTools(tools);
   const appName = `unittest${randomAppName()}`;
-  const context = utils.createContextV3();
+  const context = utils.createContext();
   afterEach(() => {
     sandbox.restore();
   });

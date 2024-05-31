@@ -10,7 +10,7 @@ import "mocha";
 import sinon from "sinon";
 import { NotExtendedToM365Error } from "../../../src/component/m365/errors";
 import { PackageService } from "../../../src/component/m365/packageService";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { UnhandledError } from "../../../src/error/common";
 import { MockLogProvider } from "../../core/utils";
 

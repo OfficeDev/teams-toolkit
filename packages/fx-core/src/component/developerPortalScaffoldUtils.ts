@@ -232,22 +232,18 @@ async function updateManifest(
   // Adjust scope based on manifest version.
   if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
     if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = adjustScopeBasedOnVersion(
-          manifest.configurableTabs[0].scopes,
-          manifest.manifestVersion
-        ) as ("team" | "groupchat")[];
-      }
+      manifest.configurableTabs[0].scopes = adjustScopeBasedOnVersion(
+        manifest.configurableTabs[0].scopes,
+        manifest.manifestVersion
+      ) as ("team" | "groupchat")[];
     }
   }
   if (!!manifest.bots && manifest.bots.length > 0) {
     if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = adjustScopeBasedOnVersion(
-          manifest.bots[0].scopes,
-          manifest.manifestVersion
-        ) as BotOrMeScopes;
-      }
+      manifest.bots[0].scopes = adjustScopeBasedOnVersion(
+        manifest.bots[0].scopes,
+        manifest.manifestVersion
+      ) as BotOrMeScopes;
     }
 
     if (manifest.bots[0].commandLists) {
@@ -264,12 +260,10 @@ async function updateManifest(
 
   if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
     if (manifest.composeExtensions[0].scopes) {
-      {
-        manifest.composeExtensions[0].scopes = adjustScopeBasedOnVersion(
-          manifest.composeExtensions[0].scopes,
-          manifest.manifestVersion
-        ) as BotOrMeScopes;
-      }
+      manifest.composeExtensions[0].scopes = adjustScopeBasedOnVersion(
+        manifest.composeExtensions[0].scopes,
+        manifest.manifestVersion
+      ) as BotOrMeScopes;
     }
   }
 

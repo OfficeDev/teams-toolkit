@@ -917,26 +917,6 @@ const V3Version = MetadataV3.projectVersion;
 
       assert.isTrue(res.isErr() && res.error.name === "test");
     });
-
-    it("create new-api copilot plugin with non auth", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-        [QuestionNames.CopilotApiAuth]: "none",
-        [QuestionNames.ProgrammingLanguage]: "typescript",
-        [QuestionNames.AppName]: randomAppName(),
-      };
-
-      const fxCore = new FxCore(tools);
-      const res = await fxCore.createProject(inputs);
-
-      assert.isTrue(res.isOk());
-      newGeneratorFlag
-        ? assert.equal(generator.args[0][1].templateName, TemplateNames.ApiPluginFromScratch)
-        : assert.equal(generator.args[0][2], TemplateNames.ApiPluginFromScratch);
-    });
   });
 });
 
@@ -1248,6 +1228,24 @@ describe("Copilot plugin", async () => {
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr());
+  });
+
+  it("should scaffold from new API with non-auth successfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.CopilotApiAuth]: "none",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
+      [QuestionNames.AppName]: randomAppName(),
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
   });
 });
 

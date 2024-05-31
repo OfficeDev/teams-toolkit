@@ -108,7 +108,7 @@ export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
     )} Teams Toolkit is checking if all required prerequisites are installed and will install them if not.`,
   summary: "Summary:",
   learnMore: (link: string) =>
-    `Visit ${link} to get more information about get started prerequisites check.`,
+    `Visit ${link} to get more info about get started prerequisites check.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-get-started-prerequisite",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",

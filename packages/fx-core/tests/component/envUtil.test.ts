@@ -37,6 +37,7 @@ import {
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
 import { parseSetOutputCommand } from "../../src/component/driver/script/scriptDriver";
+import * as yaml from "yaml";
 
 describe("envUtils", () => {
   const tools = new MockTools();
@@ -96,7 +97,8 @@ describe("envUtils", () => {
         version: "1.0.0",
         environmentFolderPath: "/home/envs",
       };
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFolderPath(".");
@@ -110,7 +112,8 @@ describe("envUtils", () => {
         version: "1.0.0",
       };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
@@ -120,7 +123,8 @@ describe("envUtils", () => {
         version: "1.0.0",
       };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(false);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
@@ -137,7 +141,8 @@ describe("envUtils", () => {
         environmentFolderPath: "/home/envs",
       };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFilePath(".", "dev");
       assert.isTrue(res.isOk());
@@ -149,7 +154,8 @@ describe("envUtils", () => {
       const mockProjectModel: ProjectModel = {
         version: "1.0.0",
       };
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(yaml, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFilePath(".", "dev");

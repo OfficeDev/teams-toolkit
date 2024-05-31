@@ -33,12 +33,12 @@ class PathUtils {
   }
   async getEnvFolderPath(projectPath: string): Promise<Result<string | undefined, FxError>> {
     const ymlFilePath = this.getYmlFilePath(projectPath, "dev");
-    const ymlContent = fs.readFileSync(ymlFilePath, "utf-8");
+    const ymlContent = await fs.readFile(ymlFilePath, "utf-8");
     const yamlObj = parse(ymlContent);
-    if (!yamlObj.environmentFolderPath) yamlObj.environmentFolderPath = "./env";
-    const envFolderPath = path.isAbsolute(yamlObj.environmentFolderPath)
-      ? yamlObj.environmentFolderPath
-      : path.join(projectPath, yamlObj.environmentFolderPath);
+    const folderPath = yamlObj.environmentFolderPath?.toString() || "./env";
+    const envFolderPath = path.isAbsolute(folderPath)
+      ? folderPath
+      : path.join(projectPath, folderPath);
     if (!(await fs.pathExists(envFolderPath))) return ok(undefined);
     return ok(envFolderPath);
   }

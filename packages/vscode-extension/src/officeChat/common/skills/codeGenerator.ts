@@ -311,7 +311,7 @@ export class CodeGenerator implements ISkill {
     }
 
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+      "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
@@ -332,7 +332,7 @@ export class CodeGenerator implements ISkill {
         copilotRet = JSON.parse(codeSnippetRet[1].trim());
       }
     } catch (error) {
-      console.error("[User task breakdown] Failed to parse the response from Copilot:", error);
+      console.error("[User task breakdown] Failed to parse the response " + copilotResponse, error);
       return null;
     }
     // We're not able to control the LLM output very precisely, so we need to do some post-processing here

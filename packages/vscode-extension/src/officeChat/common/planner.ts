@@ -135,9 +135,7 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
-    console.log("User ask processing time cost: ", duration, " seconds.");
-    response.markdown(
-      `
+    const debugInfo = `
       ## Time cost:\n 
       In total ${Math.ceil(duration)} seconds.\n
       - Task pre scan: ${Math.ceil(
@@ -157,8 +155,9 @@ export class Planner {
       )} seconds.\n\n
       ## Compile error remains:\n
       ${Math.ceil(spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection])} 
-      `
-    );
+      `;
+    console.debug(debugInfo);
+    response.markdown(debugInfo);
 
     return chatResult;
   }

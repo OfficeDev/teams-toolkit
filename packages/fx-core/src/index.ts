@@ -36,6 +36,7 @@ export { SampleConfig, SampleUrlInfo, sampleProvider } from "./common/samples";
 export {
   MaskSecretOptions,
   convertToAlphanumericOnly,
+  getHashedEnv,
   getResourceGroupNameFromResourceId,
   getUuid,
   isValidHttpUrl,
@@ -55,11 +56,7 @@ export {
 } from "./component/deps-checker/constant/telemetry";
 export { CoreDepsLoggerAdapter } from "./component/deps-checker/coreDepsLoggerAdapter";
 export { CoreDepsTelemetryAdapter } from "./component/deps-checker/coreDepsTelemetryAdapter";
-export {
-  DependencyStatus,
-  DepsType,
-  TestToolInstallOptions,
-} from "./component/deps-checker/depsChecker";
+export * from "./component/deps-checker/depsChecker";
 export * from "./component/deps-checker/depsError";
 export { DepsLogger, EmptyLogger } from "./component/deps-checker/depsLogger";
 export { DepsManager } from "./component/deps-checker/depsManager";

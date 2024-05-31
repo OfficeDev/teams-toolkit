@@ -122,7 +122,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
   TOOLS?.logProvider.warning(`Upgrade cancelled.`);
   if (platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Get more info at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(
       `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`
@@ -132,7 +132,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
     );
   } else if (platform === Platform.VS) {
     TOOLS?.logProvider.warning(
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Get more info at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(
@@ -140,7 +140,7 @@ export function outputCancelMessage(version: string, platform: Platform): void {
     );
   } else {
     TOOLS?.logProvider.warning(
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at ${MetadataV3.v3UpgradeWikiLink}.`
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Get more info at ${MetadataV3.v3UpgradeWikiLink}.`
     );
     TOOLS?.logProvider.warning(`If you want to upgrade, please trigger this command again.`);
     TOOLS?.logProvider.warning(

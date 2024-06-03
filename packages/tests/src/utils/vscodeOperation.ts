@@ -229,11 +229,11 @@ export async function execCommandIfExist(
   console.log("[start] run vsc command: ", commandName);
   if (os.type() === "Darwin") {
     // command + P
-    await driver.actions().keyDown(Key.COMMAND).keyDown("P").perform();
-    await driver.actions().keyUp(Key.COMMAND).keyUp("P").perform();
+    await driver.actions({async: true, bridge: undefined}).keyDown(Key.COMMAND).keyDown("P").perform();
+    await driver.actions({async: true, bridge: undefined}).keyUp(Key.COMMAND).keyUp("P").perform();
   } else {
-    await driver.actions().keyDown(Key.CONTROL).keyDown("P").perform();
-    await driver.actions().keyUp(Key.CONTROL).keyUp("P").perform();
+    await driver.actions({async: true, bridge: undefined}).keyDown(Key.CONTROL).keyDown("P").perform();
+    await driver.actions({async: true, bridge: undefined}).keyUp(Key.CONTROL).keyUp("P").perform();
   }
   const input = await driver.findElement(
     By.css(".quick-input-and-message .input")

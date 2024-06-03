@@ -282,7 +282,7 @@ describe("chat create command", () => {
       chai.assert.isTrue(showFileTreeStub.notCalled);
       chai.assert.isTrue(
         response.markdown.calledOnceWith(
-          "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying 'create a chat bot', you could specify 'create a chat bot that answers FAQs for customer support.'"
+          "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying 'create a bot', you could specify 'create a bot template' or 'create a notification bot that sends user the stock updates'."
         )
       );
     });

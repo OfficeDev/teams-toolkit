@@ -6,7 +6,7 @@
  */
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, GeneratorResult, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
 import _, { merge } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
@@ -14,13 +14,15 @@ import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
+import { OfficeAddinHostOptions, ProgrammingLanguage, ProjectTypeOptions } from "../../../question";
 import { QuestionNames } from "../../../question/questionNames";
-import { ActionExecutionMW, ActionContext } from "../../middleware/actionExecutionMW";
-import { Generator } from "../generator";
-import { HelperMethods } from "../officeAddin/helperMethods";
-import { getOfficeAddinTemplateConfig } from "./projectConfig";
-import { convertToLangKey } from "../utils";
+import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { fetchAndUnzip } from "../../utils";
+import { Generator } from "../generator";
+import { DefaultTemplateGenerator } from "../templates/templateGenerator";
+import { TemplateInfo } from "../templates/templateInfo";
+import { convertToLangKey } from "../utils";
+import { getOfficeAddinTemplateConfig } from "./projectConfig";
 
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
@@ -152,5 +154,88 @@ export class OfficeXMLAddinGenerator {
     stderr: string;
   }> {
     return promisify(childProcess.exec)(cmdLine);
+  }
+}
+
+export class OfficeXmlAddinGeneratorNew extends DefaultTemplateGenerator {
+  componentName = "office-xml-addin-generator";
+
+  public activate(context: Context, inputs: Inputs): boolean {
+    const projectType = inputs[QuestionNames.ProjectType];
+    const addinHost = inputs[QuestionNames.OfficeAddinHost];
+    return (
+      projectType === ProjectTypeOptions.officeXMLAddin().id &&
+      addinHost &&
+      addinHost !== OfficeAddinHostOptions.outlook().id
+    );
+  }
+
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const host = inputs[QuestionNames.OfficeAddinHost] as string;
+    const capability = inputs[QuestionNames.Capabilities];
+    const lang = _.toLower(inputs[QuestionNames.ProgrammingLanguage]) as
+      | "javascript"
+      | "typescript";
+    const projectType = inputs[QuestionNames.ProjectType];
+    const templateConfig = getOfficeAddinTemplateConfig(projectType, host);
+    const templateName = templateConfig[capability].localTemplate;
+    const projectLink = templateConfig[capability].framework["default"][lang];
+    merge(actionContext?.telemetryProps, {
+      [OfficeXMLAddinTelemetryProperties.host]: host,
+      [OfficeXMLAddinTelemetryProperties.project]: capability,
+      [OfficeXMLAddinTelemetryProperties.lang]: lang,
+    });
+
+    process.chdir(destinationPath);
+    const templates: TemplateInfo[] = [];
+    if (!!projectLink) {
+      // [Condition]: Project have remote repo (not manifest-only proj)
+
+      // -> Step: Download the project from GitHub
+      const fetchRes = await fetchAndUnzip(this.componentName, projectLink, destinationPath);
+      if (fetchRes.isErr()) {
+        return err(fetchRes.error);
+      }
+      // -> Step: Convert to single Host
+      await OfficeXMLAddinGenerator.childProcessExec(
+        `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`
+      );
+    } else {
+      templates.push({
+        templateName: `${TEMPLATE_BASE}-manifest-only`,
+        language: lang as ProgrammingLanguage,
+      });
+    }
+    // -> Common Step: Copy the README (or with manifest for manifest-only proj)
+    templates.push({
+      templateName: `${TEMPLATE_BASE}-${templateName}`,
+      language: lang as ProgrammingLanguage,
+    });
+    templates.push({
+      templateName: TEMPLATE_COMMON_NAME,
+      language: ProgrammingLanguage.None,
+    });
+    return ok(templates);
+  }
+
+  public async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const appName = inputs[QuestionNames.AppName] as string;
+    // -> Common Step: Modify the Manifest
+    await OfficeAddinManifest.modifyManifestFile(
+      `${join(destinationPath, "manifest.xml")}`,
+      "random",
+      `${appName}`
+    );
+    return ok({});
   }
 }

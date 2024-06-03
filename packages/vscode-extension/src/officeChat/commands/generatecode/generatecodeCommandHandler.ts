@@ -5,7 +5,8 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
@@ -24,8 +25,7 @@ export default async function generatecodeCommandHandler(
 ): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    OfficeChatCommand.GenerateCode,
-    request.location
+    OfficeChatCommand.GenerateCode
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
@@ -69,7 +69,7 @@ export default async function generatecodeCommandHandler(
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {
     const chatResult = await Planner.getInstance().processRequest(
-      new LanguageModelChatUserMessage(request.prompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
       request,
       response,
       token,

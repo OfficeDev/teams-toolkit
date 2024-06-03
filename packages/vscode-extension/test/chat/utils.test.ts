@@ -28,9 +28,19 @@ describe("chat utils", () => {
         yield "result";
       })();
       const token = new CancellationToken();
-      sandbox.stub(vscode.lm, "sendChatRequest").resolves({
-        stream: asyncIterator,
-      });
+      const chatModel: vscode.LanguageModelChat = {
+        sendRequest: sandbox.stub().resolves({
+          text: asyncIterator,
+        }),
+        id: "",
+        vendor: "",
+        name: "",
+        family: "gpt-3.5-turbo",
+        version: "",
+        maxInputTokens: 0,
+        countTokens: sandbox.stub(),
+      };
+      sandbox.stub(vscode.lm, "selectChatModels").resolves([chatModel]);
       const response = {
         markdown: sandbox.stub(),
       };
@@ -42,6 +52,16 @@ describe("chat utils", () => {
         token
       );
       chai.assert.isTrue(response.markdown.calledOnceWith("result"));
+
+      await chai.assert.isRejected(
+        utils.verbatimCopilotInteraction(
+          "copilot-gpt-4",
+          [],
+          response as unknown as vscode.ChatResponseStream,
+          token
+        ),
+        "No chat models available for the specified family"
+      );
     });
   });
 
@@ -55,15 +75,30 @@ describe("chat utils", () => {
         yield "result";
       })();
       const token = new CancellationToken();
-      sandbox.stub(vscode.lm, "sendChatRequest").resolves({
-        stream: asyncIterator,
-      });
+      const chatModel: vscode.LanguageModelChat = {
+        sendRequest: sandbox.stub().resolves({
+          text: asyncIterator,
+        }),
+        id: "",
+        vendor: "",
+        name: "",
+        family: "gpt-3.5-turbo",
+        version: "",
+        maxInputTokens: 0,
+        countTokens: sandbox.stub(),
+      };
+      sandbox.stub(vscode.lm, "selectChatModels").resolves([chatModel]);
       const response = {
         markdown: sandbox.stub(),
       };
 
       const result = await utils.getCopilotResponseAsString("copilot-gpt-3.5-turbo", [], token);
       chai.assert.equal(result, "result");
+
+      await chai.assert.isRejected(
+        utils.getCopilotResponseAsString("copilot-gpt-4", [], token),
+        "No chat models available for the specified family"
+      );
     });
   });
 
@@ -122,19 +157,26 @@ describe("chat utils", () => {
     });
 
     it("count empty message", () => {
-      const message = new vscodeMocks.chat.LanguageModelChatSystemMessage("");
+      const message = new vscodeMocks.chat.LanguageModelChatMessage(
+        vscodeMocks.chat.LanguageModelChatMessageRole.System,
+        ""
+      );
       const result = utils.countMessageTokens(message);
       chai.assert.equal(result, BaseTokensPerMessage);
     });
 
     it("count message without name", () => {
-      const message = new vscodeMocks.chat.LanguageModelChatSystemMessage("testContent1");
+      const message = new vscodeMocks.chat.LanguageModelChatMessage(
+        vscodeMocks.chat.LanguageModelChatMessageRole.System,
+        "testContent1"
+      );
       const result = utils.countMessageTokens(message);
       chai.assert.equal(result, BaseTokensPerMessage + "testContent1".length);
     });
 
     it("count message with name", () => {
-      const message = new vscodeMocks.chat.LanguageModelChatUserMessage(
+      const message = new vscodeMocks.chat.LanguageModelChatMessage(
+        vscodeMocks.chat.LanguageModelChatMessageRole.User,
         "testContent2",
         "testName2"
       );
@@ -158,15 +200,22 @@ describe("chat utils", () => {
     });
 
     it("count empty messages", () => {
-      const messages = [] as vscodeMocks.chat.LanguageModelChatSystemMessage[];
+      const messages = [] as vscodeMocks.chat.LanguageModelChatMessage[];
       const result = utils.countMessagesTokens(messages);
       chai.assert.equal(result, BaseTokensPerCompletion);
     });
 
     it("count messages", () => {
       const messages = [
-        new vscodeMocks.chat.LanguageModelChatSystemMessage("testContent1"),
-        new vscodeMocks.chat.LanguageModelChatUserMessage("testContent2", "testName2"),
+        new vscodeMocks.chat.LanguageModelChatMessage(
+          vscodeMocks.chat.LanguageModelChatMessageRole.System,
+          "testContent1"
+        ),
+        new vscodeMocks.chat.LanguageModelChatMessage(
+          vscodeMocks.chat.LanguageModelChatMessageRole.User,
+          "testContent2",
+          "testName2"
+        ),
       ];
       const result = utils.countMessagesTokens(messages);
       chai.assert.equal(

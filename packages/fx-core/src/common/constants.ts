@@ -36,6 +36,7 @@ export class OutlookClientId {
   static readonly Desktop = "d3590ed6-52b3-4102-aeff-aad2292ab01c";
   static readonly Web1 = "00000002-0000-0ff1-ce00-000000000000";
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
+  static readonly Mobile = "27922004-5251-4030-b22d-91ecd9a37ea4";
 }
 export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";

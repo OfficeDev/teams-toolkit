@@ -65,6 +65,47 @@ describe("chat create helper", () => {
       chai.assert.strictEqual(result.length, 1);
       chai.assert.strictEqual(result[0].id, "test1");
     });
+
+    it("has matched template project", async () => {
+      const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(chatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(sampleProvider, "SampleCollection").get(function getterFn() {
+        return {
+          samples: [
+            {
+              id: "test1",
+              title: "test1",
+              fullDescription: "test1",
+            },
+          ],
+        };
+      });
+      chatTelemetryDataMock.chatMessages = [];
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox
+        .stub(util, "getCopilotResponseAsString")
+        .onFirstCall()
+        .resolves('{"app":[{"id": "bot", "score": 1.0}]}')
+        .onSecondCall()
+        .resolves('{"app":[{"id": "test2", "score": 0.5}]}');
+
+      const token = new CancellationToken();
+      const result = await helper.matchProject(
+        { prompt: "test template" } as vscode.ChatRequest,
+        token,
+        chatTelemetryDataMock
+      );
+      chai.assert.strictEqual(result.length, 1);
+      chai.assert.strictEqual(result[0].id, "bot");
+    });
   });
 
   describe("showFileTree()", () => {

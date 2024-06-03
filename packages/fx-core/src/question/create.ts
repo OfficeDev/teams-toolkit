@@ -1574,6 +1574,7 @@ export enum ProgrammingLanguage {
   TS = "typescript",
   CSharp = "csharp",
   PY = "python",
+  None = "none",
 }
 
 export function programmingLanguageQuestion(): SingleSelectQuestion {

@@ -18,7 +18,6 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  Context,
   CoreCallbackEvent,
   CreateProjectResult,
   Func,
@@ -37,7 +36,6 @@ import {
   StaticOptions,
   SubscriptionInfo,
   SystemError,
-  TemplateFolderName,
   Tools,
   UserError,
   Void,
@@ -78,6 +76,7 @@ import {
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
+  serviceScope,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -438,14 +437,6 @@ export async function updateAutoOpenGlobalKey(
   if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
-}
-
-export async function createProjectFromWalkthroughHandler(
-  args?: any[]
-): Promise<Result<CreateProjectResult, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
-  return result;
 }
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1008,7 +999,7 @@ async function processResult(
   }
 }
 
-function wrapError(e: Error): Result<null, FxError> {
+export function wrapError(e: Error): Result<null, FxError> {
   if (
     e instanceof UserError ||
     e instanceof SystemError ||
@@ -1240,11 +1231,26 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
+
 export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
     getWalkThroughId()
+  );
+  return Promise.resolve(ok(data));
+}
+
+export async function openBuildIntelligentAppsWalkthroughHandler(
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.WalkThroughBuildIntelligentApps,
+    getTriggerFromProperty(args)
+  );
+  const data = await vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
   );
   return Promise.resolve(ok(data));
 }
@@ -1851,7 +1857,7 @@ export async function showError(e: UserError | SystemError) {
   const errorCode = `${e.source}.${e.name}`;
   const runTestTool = {
     title: localize("teamstoolkit.handlers.debugInTestTool"),
-    run: () => debugInTestToolHandler("message"),
+    run: () => debugInTestToolHandler("message")(),
   };
   const recommendTestTool =
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&
@@ -3005,7 +3011,7 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
   return Promise.resolve(ok(null));
 }
 
-export function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
+export async function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
   VS_CODE_UI.showMessage(
     "warn",
     localize("teamstoolkit.accountTree.copilotMessage"),

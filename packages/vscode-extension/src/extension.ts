@@ -4,6 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import * as semver from "semver";
 
 import {
   AppPackageFolderName,
@@ -18,7 +19,9 @@ import {
   Correlator,
   VersionState,
   initializePreviewFeatureFlags,
+  isChatParticipantEnabled,
   setRegion,
+  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -35,7 +38,6 @@ import {
   officeChatRequestHandler,
   chatCreateOfficeProjectCommandHandler,
   handleOfficeFeedback,
-  handleOfficeUserAction,
 } from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -101,10 +103,17 @@ import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
+import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
+  process.env[FeatureFlags.ChatParticipant] = (
+    IsChatParticipantEnabled &&
+    semver.gte(vscode.version, "1.90.0-insider") &&
+    vscode.version.includes("insider")
+  ).toString();
   initializePreviewFeatureFlags();
 
   configMgr.registerConfigChangeCallback();
@@ -123,8 +132,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (IsChatParticipantEnabled) {
+  if (isChatParticipantEnabled()) {
     registerChatParticipant(context);
+
     registerOfficeChatParticipant(context);
   }
 
@@ -149,10 +159,17 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
-    IsChatParticipantEnabled
+    isChatParticipantEnabled()
   );
 
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -265,7 +282,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
       const res: Result<CreateProjectResult, FxError> = await Correlator.run(
-        handlers.createProjectFromWalkthroughHandler,
+        createProjectFromWalkthroughHandler,
         args
       );
       if (res.isOk()) {
@@ -297,6 +314,11 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Quick start
   registerInCommandController(context, CommandKeys.OpenWelcome, handlers.openWelcomeHandler);
+  registerInCommandController(
+    context,
+    CommandKeys.BuildIntelligentAppsWalkthrough,
+    handlers.openBuildIntelligentAppsWalkthroughHandler
+  );
 
   // Tutorials
   registerInCommandController(
@@ -314,6 +336,9 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     CommandKeys.ValidateGetStartedPrerequisites,
     handlers.validateGetStartedPrerequisitesHandler
   );
+
+  // commmand: check copilot access
+  registerInCommandController(context, CommandKeys.CheckCopilotAccess, checkCopilotAccessHandler);
 
   // Upgrade command to update Teams manifest
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
@@ -460,7 +485,6 @@ function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
   participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
-  participant.onDidPerformAction((...args) => Correlator.run(handleOfficeUserAction, ...args));
 
   context.subscriptions.push(
     participant,

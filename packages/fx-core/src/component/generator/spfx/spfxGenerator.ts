@@ -8,6 +8,7 @@ import {
   Context,
   err,
   FxError,
+  GeneratorResult,
   Inputs,
   IProgressHandler,
   IStaticTab,
@@ -1006,7 +1007,7 @@ export class SPFxGeneratorImport extends DefaultTemplateGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<GeneratorResult, FxError>> {
     try {
       const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
       await SPFxGenerator.updateSPFxTemplate(spfxFolder, destinationPath, this.importDetails);
@@ -1022,7 +1023,7 @@ export class SPFxGeneratorImport extends DefaultTemplateGenerator {
         getLocalizedString("plugins.spfx.import.success", destinationPath),
         false
       );
-      return ok(undefined);
+      return ok({});
     } catch (error) {
       this.importDetails.push(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())

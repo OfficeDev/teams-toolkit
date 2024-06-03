@@ -48,6 +48,7 @@
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openSamples",
     "onCommand:fx-extension.openWelcome",
+    "onCommand:fx-extension.buildIntelligentAppsWalkthrough",
     "onCommand:fx-extension.selectAndDebug",
     "onCommand:fx-extension.selectTutorials",
     "onCommand:fx-extension.signinM365",
@@ -62,11 +63,7 @@
     "workspaceContains:/manifest*.xml"
   ],
   "enabledApiProposals": [
-    "chatParticipant",
-    "chatParticipantAdditions",
-    "chatProvider",
-    "chatVariableResolver",
-    "languageModels"
+    "languageModelSystem"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -136,8 +133,18 @@
         "enablement": "fx-extension.initialized"
       },
       {
+        "view": "teamsfx-empty-project-with-api-copilot-plugin",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-api-copilot-plugin.content%",
+        "enablement": "fx-extension.initialized"
+      },
+      {
         "view": "teamsfx-empty-project-with-chat",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat.content%",
+        "enablement": "fx-extension.initialized"
+      },
+      {
+        "view": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -146,8 +153,18 @@
         "enablement": "fx-extension.initialized"
       },
       {
+        "view": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-api-copilot-plugin.content%",
+        "enablement": "fx-extension.initialized"
+      },
+      {
         "view": "teamsfx-empty-project-new-user-with-chat",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat.content%",
+        "enablement": "fx-extension.initialized"
+      },
+      {
+        "view": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -214,22 +231,42 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-with-api-copilot-plugin",
+          "name": "Teams Toolkit",
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
+          "name": "Teams Toolkit",
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
+          "name": "Teams Toolkit",
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
+          "name": "Teams Toolkit",
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -540,6 +577,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.checkCopilotAccess",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.selectAndDebug",
           "when": "false"
         },
@@ -604,6 +645,11 @@
       {
         "command": "fx-extension.openWelcome",
         "title": "%teamstoolkit.commands.getstarted.title%",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.buildIntelligentAppsWalkthrough",
+        "title": "%teamstoolkit.commands.walkthroughs.buildIntelligentApps.title%",
         "category": "Teams"
       },
       {
@@ -856,6 +902,11 @@
       {
         "command": "fx-extension.checkCopilotCallback",
         "title": "%teamstoolkit.accountTree.copilotWarningTooltip%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.checkCopilotAccess",
+        "title": "%teamstoolkit.commands.checkCopilotAccess%",
         "icon": "$(info)"
       },
       {
@@ -1292,6 +1343,62 @@
     ],
     "walkthroughs": [
       {
+        "id": "buildIntelligentApps",
+        "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.title%",
+        "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.description%",
+        "steps": [
+          {
+            "id": "twoPathsToIntelligentApps",
+            "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.twoPathsToIntelligentApps.title%",
+            "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.twoPathsToIntelligentApps.description%",
+            "media": {
+              "svg": "media/walkthroughs/intelligent-apps/step1.svg"
+            }
+          },
+          {
+            "id": "copilotPlugin",
+            "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.copilotPlugin.title%",
+            "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.copilotPlugin.description%",
+            "media": {
+              "svg": "media/walkthroughs/intelligent-apps/step2.svg"
+            }
+          },
+          {
+            "id": "buildPlugin",
+            "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.buildPlugin.title%",
+            "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.buildPlugin.description%",
+            "media": {
+              "svg": "media/walkthroughs/intelligent-apps/step3.svg"
+            }
+          },
+          {
+            "id": "customCopilot",
+            "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.customCopilot.title%",
+            "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.customCopilot.description%",
+            "media": {
+              "svg": "media/walkthroughs/intelligent-apps/step4.svg"
+            }
+          },
+          {
+            "id": "buildCustomCopilot",
+            "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.title%",
+            "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.description%",
+            "media": {
+              "svg": "media/walkthroughs/intelligent-apps/step5.svg"
+            }
+          },
+          {
+            "id": "intelligentAppResources",
+            "title": "%teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.title%",
+            "description": "%teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.description%",
+            "media": {
+              "svg": "media/walkthroughs/intelligent-apps/step6.svg"
+            }
+          }
+        ],
+        "when": "fx-extension.isApiCopilotPluginEnabled"
+      },
+      {
         "id": "teamsToolkitGetStarted",
         "title": "%teamstoolkit.walkthroughs.title%",
         "description": "%teamstoolkit.walkthroughs.description%",
@@ -1301,7 +1408,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",
             "media": {
-              "svg": "media/walkthrough/Prerequisites.svg",
+              "svg": "media/walkthroughs/get-started/Prerequisites.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%"
             }
           },
@@ -1310,7 +1417,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description%",
             "media": {
-              "svg": "media/walkthrough/Create.svg",
+              "svg": "media/walkthroughs/get-started/Create.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
             }
           },
@@ -1327,7 +1434,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
             "media": {
-              "svg": "media/walkthrough/F5.svg",
+              "svg": "media/walkthroughs/get-started/F5.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
             }
           },
@@ -1336,7 +1443,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
             "media": {
-              "svg": "media/walkthrough/Deployment.svg",
+              "svg": "media/walkthroughs/get-started/Deployment.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
             }
           },
@@ -1345,7 +1452,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
             "media": {
-              "svg": "media/walkthrough/whatsnext.svg",
+              "svg": "media/walkthroughs/get-started/whatsnext.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
             }
           }
@@ -1362,7 +1469,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",
             "media": {
-              "svg": "media/walkthrough/Prerequisites.svg",
+              "svg": "media/walkthroughs/get-started/Prerequisites.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%"
             }
           },
@@ -1371,7 +1478,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildAppWithChat.description%",
             "media": {
-              "svg": "media/walkthrough/Create.svg",
+              "svg": "media/walkthroughs/get-started/Create.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
             }
           },
@@ -1388,7 +1495,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
             "media": {
-              "svg": "media/walkthrough/F5.svg",
+              "svg": "media/walkthroughs/get-started/F5.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
             }
           },
@@ -1397,7 +1504,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
             "media": {
-              "svg": "media/walkthrough/Deployment.svg",
+              "svg": "media/walkthroughs/get-started/Deployment.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
             }
           },
@@ -1406,7 +1513,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
             "media": {
-              "svg": "media/walkthrough/whatsnext.svg",
+              "svg": "media/walkthroughs/get-started/whatsnext.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
             }
           }
@@ -1439,6 +1546,7 @@
         "id": "ms-teams-vscode-extension.teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
+        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",
@@ -1454,6 +1562,7 @@
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
         "description": "%teamstoolkit.chatParticipants.officeAddIn.description%",
+        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",
@@ -1465,7 +1574,7 @@
           },
           {
             "name": "nextstep",
-            "description": "%teamstoolkit.chatParticipants.nextStep.description%"
+            "description": "%teamstoolkit.chatParticipants.officeAddIn.nextStep.description%"
           }
         ]
       }
@@ -1485,7 +1594,7 @@
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
-    "test:unit": "rimraf out && rimraf coverage && npm run compile && nyc mocha --config .mocharc.json ",
+    "test:unit": "rimraf out && rimraf coverage && npm run compile && nyc mocha --config .mocharc.json \"test/**/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
     "check-format": "prettier --list-different --config .prettierrc.js --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
@@ -1522,6 +1631,7 @@
     "@types/react-dom": "^17.0.2",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-syntax-highlighter": "^15.5.5",
+    "@types/semver": "^7.3.4",
     "@types/sinon": "^9.0.9",
     "@types/string-similarity": "^4.0.2",
     "@types/tmp": "^0.2.0",
@@ -1614,6 +1724,7 @@
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
+    "semver": "^7.5.2",
     "string-similarity": "^4.0.4",
     "tmp": "^0.2.1",
     "validator": "^13.7.0",
@@ -1629,6 +1740,9 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
+    ],
+    "*.json": [
+      "npx prettier --cache --write --ignore-unknown"
     ]
   }
 }

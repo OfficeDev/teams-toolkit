@@ -4,7 +4,12 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  SampleConfig,
+  isChatParticipantEnabled,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
@@ -312,6 +317,8 @@ export class WebviewPanel {
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
     );
 
+    const allowChat = isChatParticipantEnabled();
+
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
     return `<!DOCTYPE html>
@@ -328,6 +335,7 @@ export class WebviewPanel {
             <script>
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
+              const shouldShowChat = '${allowChat ? "true" : "false"}';
             </script>
             <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
             <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>

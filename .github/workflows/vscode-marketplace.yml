@@ -70,16 +70,10 @@ jobs:
 
       - name: release preview to VSCode marketplace
         if: ${{ github.event.inputs.isPreview != 'no' }}
-        uses: azure/powershell@v2
-        with:
-          azPSVersion: "latest"
-          inlineScript: |
-            npx @vscode/vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
+        run: |
+          npx @vscode/vsce publish --pre-release --azure-credential --packagePath *.vsix --noVerify
 
       - name: release to VSCode marketplace
         if: ${{ github.event.inputs.isPreview == 'no' }}
-        uses: azure/powershell@v2
-        with:
-          azPSVersion: "latest"
-          inlineScript: |
-            npx @vscode/vsce publish --azure-credential --packagePath *.vsix --noVerify
+        run: |
+          npx @vscode/vsce publish --azure-credential --packagePath *.vsix --noVerify

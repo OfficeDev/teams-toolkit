@@ -331,7 +331,12 @@ export function adjustScopeBasedOnVersion(scopes: string[], version: string): st
       return o;
     });
   } else {
-    return scopes;
+    return scopes.map((o) => {
+      if (o === "groupChat") {
+        return "groupchat";
+      }
+      return o;
+    });
   }
 }
 

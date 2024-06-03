@@ -1439,8 +1439,8 @@ describe("developPortalScaffoldUtils", () => {
     });
 
     it("1.16", () => {
-      const res = adjustScopeBasedOnVersion(["groupchat"], "1.16");
-      chai.assert.deepEqual(res, ["groupchat"]);
+      const res = adjustScopeBasedOnVersion(["groupChat", "teams"], "1.16");
+      chai.assert.deepEqual(res, ["groupchat", "team"]);
     });
   });
 });

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -13,31 +14,27 @@ import {
   Result,
   Stage,
   Tools,
-  UserError,
   Void,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
 import {
-  Correlator,
-  FxCore,
-  environmentManager,
-  getCopilotStatus,
-  getSideloadingStatus,
-  setRegion,
-  listDevTunnels,
-  HubOptions,
-  environmentNameManager,
-  TestToolInstallOptions,
-  DependencyStatus,
-  DepsManager,
-  assembleError,
-  DepsType,
   CoreDepsLoggerAdapter,
   CoreDepsTelemetryAdapter,
+  QuestionNames,
+  Correlator,
+  DepsManager,
+  DepsType,
   EmptyTelemetry,
+  FxCore,
+  PackageService,
+  TestToolInstallOptions,
+  assembleError,
+  environmentNameManager,
+  getSideloadingStatus,
+  listDevTunnels,
+  setRegion,
 } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
@@ -48,7 +45,6 @@ import TelemetryReporter from "./providers/telemetry";
 import TokenProvider from "./providers/tokenProvider";
 import UserInteraction from "./providers/userInteraction";
 import { standardizeResult } from "./utils";
-import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -226,13 +222,13 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
-    inputs[CoreQuestionNames.OutputZipPathParamName] = path.join(
+    inputs[QuestionNames.OutputZipPathParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
       BuildFolderName,
       `appPackage.${inputs.env}.zip`
     );
-    inputs[CoreQuestionNames.OutputManifestParamName] = path.join(
+    inputs[QuestionNames.OutputManifestParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
       BuildFolderName,
@@ -344,7 +340,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
-    const res = await getCopilotStatus(accountToken.token, true);
+    const res = await PackageService.GetSharedInstance().getCopilotStatus(accountToken.token, true);
     return ok(String(res));
   }
 

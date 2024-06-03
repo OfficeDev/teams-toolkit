@@ -5,7 +5,7 @@ import { DepsTelemetry } from "./depsTelemetry";
 import { SystemError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
 import os from "os";
 import { DepsCheckerEvent, TelemetryMessurement } from "./constant";
-import { TelemetryProperty, fillInTelemetryPropsForFxError } from "../../common/telemetry";
+import { TelemetryProperty, telemetryUtils } from "../../common/telemetry";
 import { TelemetryMeasurement } from "../utils/depsChecker/common";
 
 export class CoreDepsTelemetryAdapter implements DepsTelemetry {
@@ -45,7 +45,7 @@ export class CoreDepsTelemetryAdapter implements DepsTelemetry {
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
     const properties: { [key: string]: string } = {};
     const error = new UserError(this._telemetryComponentType, eventName, errorMessage);
-    fillInTelemetryPropsForFxError(properties, error);
+    telemetryUtils.fillInErrorProperties(properties, error);
     this._telemetryReporter.sendTelemetryErrorEvent(eventName, {
       ...this.addCommonProps(),
       ...properties,
@@ -64,7 +64,7 @@ export class CoreDepsTelemetryAdapter implements DepsTelemetry {
       `errorMsg=${errorMessage},errorStack=${errorStack}`
     );
     error.stack = errorStack;
-    fillInTelemetryPropsForFxError(properties, error);
+    telemetryUtils.fillInErrorProperties(properties, error);
     this._telemetryReporter.sendTelemetryErrorEvent(eventName, {
       ...this.addCommonProps(),
       ...properties,

@@ -6,11 +6,15 @@
  */
 import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
+import { hooks } from "@feathersjs/hooks";
 import { Context, SystemError } from "@microsoft/teamsfx-api";
 import { AxiosInstance } from "axios";
+import { getAppStudioEndpoint } from "../../../../common/constants";
+import { ErrorContextMW } from "../../../../common/globalVars";
+import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { AppStudioClient as AppStudio } from "../../../driver/teamsApp/clients/appStudioClient";
-import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../../driver/teamsApp/constants";
+import { APP_STUDIO_API_NAMES } from "../../../driver/teamsApp/constants";
 import { isHappyResponse } from "../common";
 import { TeamsFxUrlNames } from "../constants";
 import {
@@ -25,9 +29,6 @@ import {
 import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
-import { ErrorContextMW } from "../../../../common/globalVars";
-import { hooks } from "@feathersjs/hooks";
-import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 
 function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {

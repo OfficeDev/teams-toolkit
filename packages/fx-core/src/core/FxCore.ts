@@ -38,24 +38,28 @@ import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { pathToFileURL } from "url";
-import { parse } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
+import {
+  ErrorContextMW,
+  TOOLS,
+  createContext,
+  setErrorContext,
+  setTools,
+} from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
-import { LaunchHelper } from "../component/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
-import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import {
+  getProjectMetadata,
+  isValidProjectV2,
+  isValidProjectV3,
+} from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
+import { TelemetryEvent, telemetryUtils } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import {
-  AadConstants,
-  SPFxQuestionNames,
-  SingleSignOnOptionItem,
-  ViewAadAppHelpLinkV5,
-} from "../component/constants";
+import { AadConstants, SingleSignOnOptionItem, ViewAadAppHelpLinkV5 } from "../component/constants";
 import { coordinator } from "../component/coordinator";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
@@ -102,9 +106,9 @@ import {
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/copilotPlugin/helper";
+import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { createContext } from "../common/globalVars";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
@@ -140,8 +144,6 @@ import { CallbackRegistry, CoreCallbackFunc } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
-import { InvalidInputError } from "./error";
-import { ErrorContextMW, TOOLS, setErrorContext, setTools } from "../common/globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -181,7 +183,9 @@ export class FxCore {
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
-        return err(InvalidInputError("Teams app contains unsupported features"));
+        return err(
+          new InputValidationError("manifest.json", "Teams app contains unsupported features")
+        );
       } else {
         context.telemetryReporter.sendTelemetryEvent(CoreTelemetryEvent.CreateFromTdpStart, {
           [CoreTelemetryProperty.TdpTeamsAppFeatures]: getFeaturesFromAppDefinition(
@@ -395,10 +399,10 @@ export class FxCore {
     setErrorContext({ component: "spfxAdd", method: "run" });
     const driver: AddWebPartDriver = Container.get<AddWebPartDriver>("spfx/add");
     const args: AddWebPartArgs = {
-      manifestPath: inputs[SPFxQuestionNames.ManifestPath],
-      localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
-      spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
-      webpartName: inputs[SPFxQuestionNames.WebPartName],
+      manifestPath: inputs[QuestionNames.ManifestPath],
+      localManifestPath: inputs[QuestionNames.LocalTeamsAppManifestFilePath],
+      spfxFolder: inputs[QuestionNames.SPFxFolder],
+      webpartName: inputs[QuestionNames.SPFxWebpartName],
       framework: inputs[QuestionNames.SPFxFramework],
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };
@@ -791,20 +795,9 @@ export class FxCore {
   async getProjectMetadata(
     projectPath: string
   ): Promise<Result<{ version?: string; projectId?: string }, FxError>> {
-    try {
-      const ymlPath = pathUtils.getYmlFilePath(projectPath, "dev");
-      if (!ymlPath || !(await fs.pathExists(ymlPath))) {
-        return ok({});
-      }
-      const ymlContent = await fs.readFile(ymlPath, "utf-8");
-      const ymlObject = parse(ymlContent);
-      return ok({
-        projectId: ymlObject?.projectId ? ymlObject.projectId.toString() : "",
-        version: ymlObject?.version ? ymlObject.version.toString() : "",
-      });
-    } catch {
-      return ok({});
-    }
+    const res = getProjectMetadata(projectPath);
+    if (!res) return ok({});
+    return Promise.resolve(ok(res));
   }
 
   /**
@@ -1119,11 +1112,11 @@ export class FxCore {
     lifecycleName: string
   ): Promise<Result<undefined, FxError>> {
     if (!inputs.projectPath) {
-      return err(InvalidInputError("invalid projectPath", inputs));
+      return err(new InputValidationError("projectPath", "empty", "Core"));
     }
     const projectPath = inputs.projectPath;
     if (!inputs.env) {
-      return err(InvalidInputError("invalid env", inputs));
+      return err(new InputValidationError("env", "empty", "Core"));
     }
     const env = inputs.env;
     const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;
@@ -1487,7 +1480,7 @@ export class FxCore {
   async checkProjectType(projectPath: string): Promise<Result<ProjectTypeResult, FxError>> {
     const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
     const props: Record<string, string> = {};
-    fillinProjectTypeProperties(props, projectTypeRes);
+    telemetryUtils.fillinProjectTypeProperties(props, projectTypeRes);
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, props);
     return ok(projectTypeRes);
   }

@@ -31,9 +31,10 @@ import {
   isChatParticipantEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
+import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
-import { convertToAlphanumericOnly } from "../common/stringUtils";
+import { convertToAlphanumericOnly, isValidHttpUrl } from "../common/stringUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import {
@@ -53,7 +54,6 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { createContext } from "../common/globalVars";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
   ApiMessageExtensionAuthOptions,
@@ -73,7 +73,6 @@ import {
   capabilitiesHavePythonOption,
   getRuntime,
 } from "./constants";
-import { isValidHttpUrl } from "./util";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [

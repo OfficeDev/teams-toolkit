@@ -12,15 +12,12 @@ import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@micro
 import { LoginStatus, login } from "./common/login";
 
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
-import {
-  ConvertTokenToJson,
-  InvalidAzureSubscriptionError,
-  isValidProjectV3,
-} from "@microsoft/teamsfx-core";
+import { InvalidAzureSubscriptionError, isValidProjectV3 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import CLILogProvider from "./log";
+import { ConvertTokenToJson } from "./codeFlowTenantLogin";
 
 /**
  * Prepare for service principal login, not fully implemented

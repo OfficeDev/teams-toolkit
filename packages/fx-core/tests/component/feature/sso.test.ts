@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import "mocha";
 import { createSandbox } from "sinon";
 import { Container } from "typedi";
-import { ComponentNames } from "../../../src/component/constants";
+import { ComponentNames } from "../../../src/component/migrate";
 import "../../../src/component/feature/sso";
 import * as templateUtils from "../../../src/component/generator/utils";
 import * as utils from "../../../src/common/globalVars";

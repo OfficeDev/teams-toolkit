@@ -50,7 +50,7 @@ import {
   AppStudioScopes,
   AuthSvcScopes,
   ConcurrentError,
-  CoreQuestionNames,
+  QuestionNames,
   Correlator,
   DepsManager,
   DepsType,
@@ -61,7 +61,7 @@ import {
   assembleError,
   environmentManager,
   generateScaffoldingSummary,
-  getFixedCommonProjectSettings,
+  getProjectMetadata,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
@@ -76,7 +76,6 @@ import {
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
-  serviceScope,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -153,9 +152,7 @@ export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
   const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
   if (validProject) {
-    const fixedProjectSettings = getFixedCommonProjectSettings(
-      globalVariables.workspaceUri?.fsPath
-    );
+    const fixedProjectSettings = getProjectMetadata(globalVariables.workspaceUri?.fsPath);
     ExtTelemetry.addSharedProperty(
       TelemetryProperty.ProjectId,
       fixedProjectSettings?.projectId as string
@@ -483,7 +480,7 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
       throw result.error;
     }
 
-    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const hub = inputs[QuestionNames.M365Host] as Hub;
     const url = result.value;
     properties[TelemetryProperty.Hub] = hub;
 
@@ -504,16 +501,6 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
     ...properties,
   });
   return ok(null);
-}
-
-async function isVideoFilterProject(): Promise<boolean> {
-  const projPath = globalVariables.workspaceUri?.fsPath;
-  if (projPath) {
-    const result = await commonTools.isVideoFilterProject(projPath);
-    return result.isOk() && result.value;
-  } else {
-    return false;
-  }
 }
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -2303,11 +2290,11 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
     const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
     if (!isFromApiPlugin) {
       // Codelens for API ME. Trigger from manifest.json
-      inputs[CoreQuestionNames.ManifestPath] = filePath;
+      inputs[QuestionNames.ManifestPath] = filePath;
     } else {
-      inputs[CoreQuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
-      inputs[CoreQuestionNames.DestinationApiSpecFilePath] = filePath;
-      inputs[CoreQuestionNames.ManifestPath] = args[0].manifestPath;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[QuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[QuestionNames.ManifestPath] = args[0].manifestPath;
     }
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);

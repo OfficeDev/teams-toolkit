@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, Inputs } from "@microsoft/teamsfx-api";
-import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx-core";
+import { telemetryUtils, getHashedEnv } from "@microsoft/teamsfx-core";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
 import { TelemetryComponentType, TelemetryProperty, TelemetrySuccess } from "./cliTelemetryEvents";
 
@@ -67,7 +67,7 @@ class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    fillInTelemetryPropsForFxError(properties, error);
+    telemetryUtils.fillInErrorProperties(properties, error);
 
     this.reporter
       ?.withRootFolder(this.rootFolder)

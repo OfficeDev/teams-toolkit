@@ -878,7 +878,8 @@ export class FxCore {
         }
         const name = (teamsAppCreate.with as any).name;
         if (name) {
-          res.teamsAppName = name.replace("-${{TEAMSFX_ENV}}", "") || "";
+          res.teamsAppName =
+            name.replace("-${{TEAMSFX_ENV}}", "").replace("${{APP_NAME_SUFFIX}}", "") || "";
         }
       }
     }

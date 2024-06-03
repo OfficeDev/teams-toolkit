@@ -1,6 +1,13 @@
 {
   "windows-latest": {
     "node-16": [
+      "localdebug-tab-nosso",
+      "localdebug-bot",
+      "localdebug-bot-twice",
+      "localdebug-command-and-response",
+      "localdebug-notification-func",
+      "localdebug-notification-restify",
+      "localdebug-tab-regen-appid",
       "treeview-newproject-spfx",
       "treeview-collaboration-spfx",
       "remotedebug-spfxreact-none",
@@ -8,14 +15,7 @@
       "remotedebug-spfxreact",
       "remotedebug-spfxreact-globalpkg",
       "remotedebug-spfxnone-globalpkg-addwebpart",
-      "remotedebug-spfxreact-addwebpart",
-      "localdebug-tab-nosso",
-      "localdebug-bot",
-      "localdebug-bot-twice",
-      "localdebug-command-and-response",
-      "localdebug-notification-func",
-      "localdebug-notification-restify",
-      "localdebug-tab-regen-appid"
+      "remotedebug-spfxreact-addwebpart"
     ],
     "node-18": [
       "treeview-newproject-outlook-add-in",
@@ -72,12 +72,7 @@
   },
   "ubuntu-latest": {
     "node-16": [
-      "remotedebug-spfx-publish",
       "treeview-invalidname",
-      "treeview-spfx-manifest",
-      "localdebug-spfx-minimal",
-      "localdebug-spfx-none",
-      "localdebug-spfx",
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-command-and-response",
@@ -113,7 +108,12 @@
       "localdebug-link-unfurling-ts",
       "localdebug-msg-newapi",
       "localdebug-msg-newapi-ts",
-      "localdebug-aichat-bot-py"
+      "localdebug-aichat-bot-py",
+      "remotedebug-spfx-publish",
+      "treeview-spfx-manifest",
+      "localdebug-spfx-minimal",
+      "localdebug-spfx-none",
+      "localdebug-spfx"
     ],
     "node-20": [
       "localdebug-obo-tab"
@@ -121,12 +121,13 @@
   },
   "macos-latest": {
     "node-16": [
-      "treeview-collaboration-spfx",
       "localdebug-bot",
       "localdebug-command-and-response",
       "localdebug-notification-func",
       "localdebug-notification-restify"
     ],
-    "node-18": []
+    "node-18": [
+      "treeview-collaboration-spfx"
+    ]
   }
 }

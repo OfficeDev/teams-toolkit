@@ -10,7 +10,6 @@ import { Correlator, envUtil, MissingEnvironmentVariablesError } from "@microsof
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { getLocalDebugSession } from "../commonUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { SolutionSource } from "@microsoft/teamsfx-core";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { openTerminalDisplayMessage, openTerminalMessage } from "../constants";
@@ -122,7 +121,7 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
         resolve(
           err(
             new UserError(
-              SolutionSource,
+              ExtensionSource,
               ExtensionErrors.LaunchTeamsDesktopClientError,
               `${getDefaultString("teamstoolkit.localDebug.launchTeamsDesktopClientError")} ${
                 error?.message ?? ""
@@ -142,7 +141,7 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
           resolve(
             err(
               new UserError(
-                SolutionSource,
+                ExtensionSource,
                 ExtensionErrors.LaunchTeamsWebClientError,
                 util.format(
                   getDefaultString("teamstoolkit.localDebug.launchTeamsDesktopClientStoppedError"),

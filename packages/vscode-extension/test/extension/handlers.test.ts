@@ -2896,7 +2896,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
-  it.only("showLocalDebugMessage() - has local env", async () => {
+  it("showLocalDebugMessage() - has local env", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
@@ -2928,7 +2928,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(showMessageStub.calledOnce);
   });
 
-  it.only("showLocalDebugMessage() - no local env", async () => {
+  it("showLocalDebugMessage() - no local env", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");

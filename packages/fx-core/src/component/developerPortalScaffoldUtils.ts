@@ -35,6 +35,7 @@ import {
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "./utils/envUtil";
+import semver from "semver";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -129,42 +130,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-
-  // Adding a feature with groupChat scope in TDP won't pass validation for extendToM365 action.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = decapitalizeScope(
-          manifest.configurableTabs[0].scopes
-        ) as ("team" | "groupchat")[];
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = decapitalizeScope(manifest.bots[0].scopes) as BotOrMeScopes;
-      }
-    }
-
-    if (manifest.bots[0].commandLists) {
-      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
-        if (commandList.scopes) {
-          commandList.scopes = decapitalizeScope(commandList.scopes) as BotOrMeScopes;
-        }
-      });
-    }
-  }
-
-  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-    if (manifest.composeExtensions[0].scopes) {
-      {
-        manifest.composeExtensions[0].scopes = decapitalizeScope(
-          manifest.composeExtensions[0].scopes
-        ) as BotOrMeScopes;
-      }
-    }
-  }
 
   // manifest: tab
   const tabs = manifest.staticTabs;
@@ -264,6 +229,44 @@ async function updateManifest(
     }
   }
 
+  // Adjust scope based on manifest version.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      manifest.configurableTabs[0].scopes = adjustScopeBasedOnVersion(
+        manifest.configurableTabs[0].scopes,
+        manifest.manifestVersion
+      ) as ("team" | "groupchat")[];
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      manifest.bots[0].scopes = adjustScopeBasedOnVersion(
+        manifest.bots[0].scopes,
+        manifest.manifestVersion
+      ) as BotOrMeScopes;
+    }
+
+    if (manifest.bots[0].commandLists) {
+      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
+        if (commandList.scopes) {
+          commandList.scopes = adjustScopeBasedOnVersion(
+            commandList.scopes,
+            manifest.manifestVersion
+          ) as BotOrMeScopes;
+        }
+      });
+    }
+  }
+
+  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+    if (manifest.composeExtensions[0].scopes) {
+      manifest.composeExtensions[0].scopes = adjustScopeBasedOnVersion(
+        manifest.composeExtensions[0].scopes,
+        manifest.manifestVersion
+      ) as BotOrMeScopes;
+    }
+  }
+
   await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, "\t"), "utf-8");
 
   // languages
@@ -318,8 +321,24 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
-function decapitalizeScope(scopes: string[]): string[] {
-  return scopes.map((o) => o.toLowerCase());
+// A temporary solution to adjust scope based on manifest version to avoid errors in manifest validation.
+export function adjustScopeBasedOnVersion(scopes: string[], version: string): string[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return scopes.map((o) => {
+      if (o === "groupchat") {
+        return "groupChat";
+      }
+      return o;
+    });
+  } else {
+    return scopes.map((o) => {
+      if (o === "groupChat") {
+        return "groupchat";
+      }
+      return o;
+    });
+  }
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

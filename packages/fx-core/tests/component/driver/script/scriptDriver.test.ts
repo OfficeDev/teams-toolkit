@@ -101,7 +101,6 @@ describe("getSystemEncoding", () => {
     const result = await getSystemEncoding();
     assert.equal(result, "utf-8");
   });
-
   it("should return gb2312 on win32 platform", async () => {
     sandbox.stub(os, "platform").returns("win32");
     sandbox.stub(child_process, "exec").callsArgWith(2, null, "Active code page: 936");
@@ -145,6 +144,10 @@ describe("getSystemEncoding", () => {
     sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
     const result = await getSystemEncoding();
     assert.equal(result, DefaultEncoding);
+  });
+  it("should return utf8 for azure cli", async () => {
+    const result = await getSystemEncoding("@azure/static-web-apps-cli");
+    assert.equal(result, "utf8");
   });
 });
 

@@ -107,9 +107,7 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  const systemEncoding = command.includes("@azure/static-web-apps-cli")
-    ? "utf8"
-    : await getSystemEncoding();
+  const systemEncoding = await getSystemEncoding(command);
   const dshell = await defaultShell();
   return new Promise((resolve) => {
     const finalShell = shell || dshell;

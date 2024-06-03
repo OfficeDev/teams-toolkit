@@ -501,7 +501,7 @@
   "core.selectValidateMethodQuestion.validate.schemaOptionDescription": "Validate using manifest schema",
   "core.selectValidateMethodQuestion.validate.appPackageOption": "Validate app package using validation rules",
   "core.selectValidateMethodQuestion.validate.appPackageOptionDescription": "Validate app package using validation rules",
-  "core.selectValidateMethodQuestion.validate.testCasesOption": "Validate all integration test cases before pubishing",
+  "core.selectValidateMethodQuestion.validate.testCasesOption": "Validate all integration test cases before publishing",
   "core.selectValidateMethodQuestion.validate.testCasesOptionDescription": "Comprehensive tests to ensure readiness",
   "core.confirmManifestQuestion.placeholder": "Confirm you've selected the correct manifest file",
   "core.aadAppQuestion.label": "Microsoft Entra app",

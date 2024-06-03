@@ -321,6 +321,7 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
+// A temporary solution to adjust scope based on manifest version to avoid errors in manifest validation.
 export function adjustScopeBasedOnVersion(scopes: string[], version: string): string[] {
   const manifestVersion = semver.coerce(version);
   if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {

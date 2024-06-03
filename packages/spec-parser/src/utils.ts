@@ -104,7 +104,10 @@ export class Utils {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  static getResponseJson(operationObject: OpenAPIV3.OperationObject | undefined): {
+  static getResponseJson(
+    operationObject: OpenAPIV3.OperationObject | undefined,
+    allowMultipleMediaType = false
+  ): {
     json: OpenAPIV3.MediaTypeObject;
     multipleMediaType: boolean;
   } {
@@ -119,7 +122,9 @@ export class Utils {
         json = responseObject.content["application/json"];
         if (Utils.containMultipleMediaTypes(responseObject)) {
           multipleMediaType = true;
-          json = {};
+          if (!allowMultipleMediaType) {
+            json = {};
+          }
         } else {
           break;
         }

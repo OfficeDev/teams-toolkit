@@ -4,14 +4,14 @@
 import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@microsoft/teamsfx-api";
 
 import { hooks } from "@feathersjs/hooks";
-import { CoreSource } from "../../core/error";
+import { AppStudioScopes } from "../../common/constants";
 import { ErrorContextMW } from "../../common/globalVars";
+import { CoreSource } from "../../error";
 import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { MosServiceEndpoint, MosServiceScope } from "./serviceConstant";
-import { AppStudioScopes } from "../../common/constants";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;

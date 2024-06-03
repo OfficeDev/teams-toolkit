@@ -13,7 +13,7 @@ import { TestToolChecker } from "../../../../src/component/deps-checker/internal
 import { ToolsInstallDriver } from "../../../../src/component/driver/devTool/installDriver";
 import { InstallToolArgs } from "../../../../src/component/driver/devTool/interfaces/InstallToolArgs";
 import { LocalCertificateManager } from "../../../../src/component/local/localCertificateManager";
-import { CoreSource } from "../../../../src/core/error";
+import { CoreSource } from "../../../../src/error";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 
 describe("Tools Install Driver test", () => {

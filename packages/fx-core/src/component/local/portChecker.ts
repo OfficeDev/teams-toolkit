@@ -5,7 +5,7 @@
 import { LogProvider, UserError } from "@microsoft/teamsfx-api";
 import detectPort from "detect-port";
 
-import { CoreSource } from "../../core/error";
+import { CoreSource } from "../../error";
 import {
   Component,
   sendTelemetryErrorEvent,

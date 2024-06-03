@@ -99,7 +99,6 @@ export { CoreCallbackFunc } from "./core/callback";
 export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";
-export * from "./core/error";
 export { PreProvisionResForVS, VersionCheckRes } from "./core/types";
 export * from "./error/index";
 export * from "./question/constants";

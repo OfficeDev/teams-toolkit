@@ -25,11 +25,11 @@ import { StaticTab } from "../../src/component/driver/teamsApp/interfaces/appdef
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
-import { ObjectIsUndefinedError } from "../../src/core/error";
 import { CapabilityOptions, QuestionNames } from "../../src/question/constants";
 import { getProjectTypeAndCapability } from "../../src/question/create";
 import { MockTools } from "../core/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
+import { InputValidationError } from "../../src/error";
 
 describe("developPortalScaffoldUtils", () => {
   setTools(new MockTools());
@@ -62,7 +62,7 @@ describe("developPortalScaffoldUtils", () => {
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 
@@ -79,7 +79,7 @@ describe("developPortalScaffoldUtils", () => {
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 
@@ -187,7 +187,7 @@ describe("developPortalScaffoldUtils", () => {
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 

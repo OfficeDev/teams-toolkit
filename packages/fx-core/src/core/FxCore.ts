@@ -144,7 +144,6 @@ import { CallbackRegistry, CoreCallbackFunc } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
-import { InvalidInputError } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -184,7 +183,9 @@ export class FxCore {
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
-        return err(InvalidInputError("Teams app contains unsupported features"));
+        return err(
+          new InputValidationError("manifest.json", "Teams app contains unsupported features")
+        );
       } else {
         context.telemetryReporter.sendTelemetryEvent(CoreTelemetryEvent.CreateFromTdpStart, {
           [CoreTelemetryProperty.TdpTeamsAppFeatures]: getFeaturesFromAppDefinition(
@@ -1111,11 +1112,11 @@ export class FxCore {
     lifecycleName: string
   ): Promise<Result<undefined, FxError>> {
     if (!inputs.projectPath) {
-      return err(InvalidInputError("invalid projectPath", inputs));
+      return err(new InputValidationError("projectPath", "empty", "Core"));
     }
     const projectPath = inputs.projectPath;
     if (!inputs.env) {
-      return err(InvalidInputError("invalid env", inputs));
+      return err(new InputValidationError("env", "empty", "Core"));
     }
     const env = inputs.env;
     const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;

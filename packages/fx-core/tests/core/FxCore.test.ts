@@ -77,6 +77,7 @@ import { setTools } from "../../src/common/globalVars";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
 import {
   FileNotFoundError,
+  InputValidationError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
@@ -624,11 +625,7 @@ describe("apply yaml template", async () => {
         projectPath: undefined,
       };
       const res = await core.apply(inputs, "", "provision");
-      assert.isTrue(
-        res.isErr() &&
-          res.error.name === "InvalidInput" &&
-          res.error.message.includes("projectPath")
-      );
+      assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
     });
 
     it("should return error when env is undefined", async () => {
@@ -639,9 +636,7 @@ describe("apply yaml template", async () => {
         env: undefined,
       };
       const res = await core.apply(inputs, "", "provision");
-      assert.isTrue(
-        res.isErr() && res.error.name === "InvalidInput" && res.error.message.includes("env")
-      );
+      assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
     });
   });
 

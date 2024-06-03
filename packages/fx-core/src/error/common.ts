@@ -524,3 +524,114 @@ export function isUserCancelError(error: Error): boolean {
     errorName === "UserCancelError"
   );
 }
+
+export class NoProjectOpenedError extends UserError {
+  constructor() {
+    super({
+      message: getDefaultString("error.NoProjectOpenedError"),
+      displayMessage: getLocalizedString("error.NoProjectOpenedError"),
+      source: "Core",
+    });
+  }
+}
+
+export class MigrationError extends UserError {
+  constructor(e: Error, name: string, helpLink?: string) {
+    super({
+      name: name,
+      source: "Upgrade",
+      error: e,
+      // the link show to user will be helpLink+ # + source + name
+      helpLink: helpLink,
+    });
+  }
+}
+
+export class NotAllowedMigrationError extends UserError {
+  constructor() {
+    super({
+      source: "Core",
+      name: NotAllowedMigrationError.name,
+      message: getLocalizedString("core.migrationV3.notAllowedMigration"),
+      displayMessage: getLocalizedString("core.migrationV3.notAllowedMigration"),
+    });
+  }
+}
+
+export class FailedToLoadManifestId extends UserError {
+  constructor(manifestPath: string) {
+    super({
+      source: "Core",
+      name: FailedToLoadManifestId.name,
+      message: getDefaultString("error.core.failedToLoadManifestId", manifestPath),
+      displayMessage: getLocalizedString("error.core.failedToLoadManifestId", manifestPath),
+    });
+  }
+}
+
+export class VideoFilterAppRemoteNotSupportedError extends UserError {
+  constructor() {
+    super({
+      source: "Core",
+      name: VideoFilterAppRemoteNotSupportedError.name,
+      message: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+      displayMessage: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+    });
+  }
+}
+
+export class UpgradeV3CanceledError extends UserError {
+  constructor() {
+    super(
+      "Core",
+      "UserCancel", // @see tools.isUserCancelError()
+      getDefaultString("error.UpgradeV3CanceledError"),
+      getLocalizedString("error.UpgradeV3CanceledError")
+    );
+  }
+}
+
+export class IncompatibleProjectError extends UserError {
+  constructor(messageKey: string) {
+    super(
+      "Core",
+      "IncompatibleProject",
+      getDefaultString(messageKey),
+      getLocalizedString(messageKey)
+    );
+  }
+}
+
+export class AbandonedProjectError extends UserError {
+  constructor() {
+    super(
+      "Core",
+      "AbandonedProject",
+      getDefaultString("core.migrationV3.abandonedProject"),
+      getLocalizedString("core.migrationV3.abandonedProject")
+    );
+  }
+}
+
+export class FailedToParseResourceIdError extends UserError {
+  constructor(name: string, resourceId: string) {
+    super(
+      "Core",
+      "FailedToParseResourceIdError",
+      getDefaultString("error.FailedToParseResourceIdError", name, resourceId),
+      getLocalizedString("error.FailedToParseResourceIdError", name, resourceId)
+    );
+  }
+}
+
+export class NpmInstallError extends SystemError {
+  constructor(e: Error) {
+    super({
+      source: "Core",
+      error: e,
+      message: e.message,
+    });
+  }
+}
+
+export const CoreSource = "Core";

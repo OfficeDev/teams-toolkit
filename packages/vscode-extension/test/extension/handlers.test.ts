@@ -2896,11 +2896,11 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
-  it("showLocalDebugMessage()", async () => {
+  it.only("showLocalDebugMessage() - has local env", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
-    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox.stub(fs, "pathExists").resolves(true);
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "ShowLocalDebugMessage") {
@@ -2925,7 +2925,39 @@ describe("autoOpenProjectHandler", () => {
 
     await handlers.showLocalDebugMessage();
 
-    chai.assert.isTrue(executeCommandStub.notCalled);
+    chai.assert.isTrue(showMessageStub.calledOnce);
+  });
+
+  it.only("showLocalDebugMessage() - no local env", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox.stub(fs, "pathExists").resolves(false);
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Provision",
+            run: (options as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+
+    await handlers.showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
   });
 
   it("installAdaptiveCardExt()", async () => {

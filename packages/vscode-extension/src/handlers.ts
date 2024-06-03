@@ -1407,12 +1407,12 @@ export async function autoInstallDependencyHandler() {
 }
 
 export async function showLocalDebugMessage() {
-  const isShowLocalDebugMessage = (await globalStateGet(
+  const shouldShowLocalDebugMessage = (await globalStateGet(
     GlobalKey.ShowLocalDebugMessage,
     false
   )) as boolean;
 
-  if (!isShowLocalDebugMessage) {
+  if (!shouldShowLocalDebugMessage) {
     return;
   } else {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, false);

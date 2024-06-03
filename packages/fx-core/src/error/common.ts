@@ -625,9 +625,9 @@ export class FailedToParseResourceIdError extends UserError {
 }
 
 export class NpmInstallError extends SystemError {
-  constructor(e: Error) {
+  constructor(e: Error, source?: string) {
     super({
-      source: "Core",
+      source: source || "Core",
       error: e,
       message: e.message,
     });

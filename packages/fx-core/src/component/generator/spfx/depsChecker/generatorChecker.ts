@@ -190,7 +190,7 @@ export class GeneratorChecker implements DependencyChecker {
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
       void this._logger.error(`Failed to execute npm install ${displayName}@${version}`);
-      throw new NpmInstallError(error as Error);
+      throw new NpmInstallError(error as Error, "spfx-generator");
     }
   }
 }

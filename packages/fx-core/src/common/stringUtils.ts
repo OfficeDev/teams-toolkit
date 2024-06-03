@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FailedToParseResourceIdError } from "../core/error";
 import * as Handlebars from "handlebars";
 import * as uuid from "uuid";
 import * as crypto from "crypto";
 import { getLocalizedString } from "./localizeUtils";
+import { FailedToParseResourceIdError } from "../error";
 
 const MIN_ENTROPY = 4;
 const SECRET_REPLACE = "<REDACTED:secret>";
@@ -158,7 +158,7 @@ Handlebars.registerHelper("equals", (value, target) => {
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw FailedToParseResourceIdError("resource group name", resourceId);
+    throw new FailedToParseResourceIdError("resource group name", resourceId);
   }
   return result;
 }

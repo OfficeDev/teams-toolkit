@@ -221,7 +221,7 @@ class CLIEngine {
         return err(res.error);
       } else {
         if (res.value.isSupport === VersionState.unsupported) {
-          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+          return err(new IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
         } else if (res.value.isSupport === VersionState.upgradeable) {
           const upgrade = await core.phantomMigrationV3(inputs);
           if (upgrade.isErr()) {

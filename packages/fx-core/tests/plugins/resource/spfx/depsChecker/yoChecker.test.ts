@@ -92,7 +92,7 @@ describe("Yo checker", () => {
     try {
       await yc.install("latest");
     } catch (e) {
-      expect(e.name).equal("NpmInstallFailed");
+      expect(e.name).equal("NpmInstallError");
     }
   });
 

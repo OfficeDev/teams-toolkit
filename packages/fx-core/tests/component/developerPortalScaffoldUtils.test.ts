@@ -8,7 +8,7 @@ import { merge } from "lodash";
 import "mocha";
 import path from "path";
 import * as sinon from "sinon";
-import { CapabilityOptions, getProjectTypeAndCapability } from "../../src";
+import { CapabilityOptions, getProjectTypeAndCapability, InputValidationError } from "../../src";
 import { createContext, setTools } from "../../src/common/globalVars";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import * as appStudio from "../../src/component/driver/teamsApp/appStudio";
@@ -26,7 +26,6 @@ import { StaticTab } from "../../src/component/driver/teamsApp/interfaces/appdef
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsApp/utils/utils";
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
-import { ObjectIsUndefinedError } from "../../src/core/error";
 import { QuestionNames } from "../../src/question/constants";
 import { MockTools } from "../core/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
@@ -62,7 +61,7 @@ describe("developPortalScaffoldUtils", () => {
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 
@@ -79,7 +78,7 @@ describe("developPortalScaffoldUtils", () => {
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 
@@ -187,7 +186,7 @@ describe("developPortalScaffoldUtils", () => {
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof ObjectIsUndefinedError);
+        chai.assert.isTrue(res.error instanceof InputValidationError);
       }
     });
 

@@ -50,7 +50,6 @@ export { CoreCallbackFunc } from "./core/callback";
 export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";
-export * from "./core/error";
 export { isVideoFilterProject } from "./core/middleware/videoFilterAppBlocker";
 export * from "./core/types";
 export * from "./error/index";

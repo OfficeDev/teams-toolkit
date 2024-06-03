@@ -2,16 +2,16 @@
 // Licensed under the MIT license.
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
-import { WrapDriverContext } from "../util/wrapUtil";
+import { performance } from "perf_hooks";
+import { maskSecretValues } from "../../../common/stringUtils";
+import { TelemetryConstants } from "../../../common/telemetry";
+import { TelemetryConstant } from "../../constant/commonConstant";
 import {
   TeamsFxTelemetryConfig,
   TeamsFxTelemetryReporter,
 } from "../../utils/teamsFxTelemetryReporter";
-import { TelemetryConstant } from "../../constant/commonConstant";
-import { performance } from "perf_hooks";
-import { TelemetryConstants } from "../../constants";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { isExecutionResult } from "./addStartAndEndTelemetry";
-import { maskSecretValues } from "../../../common/stringUtils";
 
 /**
  * A special telemetry middleware for SWA deployment.

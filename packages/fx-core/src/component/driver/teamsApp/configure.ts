@@ -15,11 +15,11 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
-import { AppStudioScopes } from "./constants";
 import { AppStudioError } from "./errors";
 import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { AppStudioResultFactory } from "./results";
 import { manifestUtils } from "./utils/ManifestUtils";
+import { AppStudioScopes } from "../../../common/constants";
 
 export const actionName = "teamsApp/update";
 

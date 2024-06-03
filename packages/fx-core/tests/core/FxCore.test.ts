@@ -1211,8 +1211,8 @@ describe("getProjectMetadata", async () => {
   });
   it("happy path", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readFile").resolves("version: 1.1.1\nprojectId: 12345" as any);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "readFileSync").returns("version: 1.1.1\nprojectId: 12345" as any);
     const core = new FxCore(tools);
     const res = await core.getProjectMetadata(".");
     assert.isTrue(res.isOk());
@@ -1225,7 +1225,7 @@ describe("getProjectMetadata", async () => {
   });
   it("yml not exist", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "pathExistsSync").resolves(false);
     const core = new FxCore(tools);
     const res = await core.getProjectMetadata(".");
     assert.isTrue(res.isOk());
@@ -1235,7 +1235,7 @@ describe("getProjectMetadata", async () => {
   });
   it("throw error", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(fs, "pathExists").rejects(new Error("mocked error"));
+    sandbox.stub(fs, "pathExistsSync").throws(new Error("mocked error"));
     const core = new FxCore(tools);
     const res = await core.getProjectMetadata(".");
     assert.isTrue(res.isOk());

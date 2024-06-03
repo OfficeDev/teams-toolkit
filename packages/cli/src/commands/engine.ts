@@ -21,7 +21,7 @@ import {
   IncompatibleProjectError,
   VersionState,
   assembleError,
-  fillinProjectTypeProperties,
+  telemetryUtils,
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
@@ -124,7 +124,7 @@ class CLIEngine {
       const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
         const projectTypeResult = res.value;
-        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
+        telemetryUtils.fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 

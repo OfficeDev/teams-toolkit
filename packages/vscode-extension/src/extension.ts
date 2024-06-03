@@ -18,7 +18,6 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  initializePreviewFeatureFlags,
   isChatParticipantEnabled,
   setRegion,
   isApiCopilotPluginEnabled,
@@ -115,7 +114,6 @@ export async function activate(context: vscode.ExtensionContext) {
     semver.gte(vscode.version, "1.90.0-insider") &&
     vscode.version.includes("insider")
   ).toString();
-  initializePreviewFeatureFlags();
 
   configMgr.registerConfigChangeCallback();
 

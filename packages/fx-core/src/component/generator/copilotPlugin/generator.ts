@@ -36,6 +36,7 @@ import path from "path";
 import * as util from "util";
 import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { isValidHttpUrl } from "../../../common/stringUtils";
 import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
@@ -44,7 +45,6 @@ import {
   ProgrammingLanguage,
   QuestionNames,
 } from "../../../question/constants";
-import { isValidHttpUrl } from "../../../question/util";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";

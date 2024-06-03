@@ -12,7 +12,7 @@ import {
   anonymizeFilePaths,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { getProjectMetadata } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
@@ -176,9 +176,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
     if (!properties[TelemetryProperty.ProjectId]) {
-      const fixedProjectSettings = getFixedCommonProjectSettings(
-        globalVariables.workspaceUri?.fsPath
-      );
+      const fixedProjectSettings = getProjectMetadata(globalVariables.workspaceUri?.fsPath);
 
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;

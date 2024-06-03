@@ -104,7 +104,6 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
       } else {
         void vscode.env.openExternal(vscode.Uri.parse("https://" + url));
         childProc = cp.exec(`echo https://${url}`);
-        this.writeEmitter.fire(`https://://${url}\r\n`);
       }
 
       childProc.stdout?.setEncoding("utf-8");

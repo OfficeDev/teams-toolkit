@@ -19,6 +19,7 @@ export {
   AuthSvcScopes,
   AzureScopes,
   GraphScopes,
+  GraphReadUserScopes,
   SPFxScopes,
   getAllowedAppMaps,
 } from "./common/constants";

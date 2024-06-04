@@ -6,8 +6,10 @@ import axios from "axios";
 import * as chai from "chai";
 import "mocha";
 import * as sinon from "sinon";
+import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
 import { teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
+import { setTools } from "../../src/common/globalVars";
 import { AppStudioClient } from "../../src/component/driver/teamsApp/clients/appStudioClient";
 import { Constants } from "../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
@@ -29,10 +31,17 @@ import { AppUser } from "../../src/component/driver/teamsApp/interfaces/appdefin
 import { AppStudioResultFactory } from "../../src/component/driver/teamsApp/results";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { RetryHandler } from "../../src/component/driver/teamsApp/utils/utils";
+import { IBotRegistration } from "../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
+import { ErrorNames } from "../../src/component/resource/botService/constants";
 import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
+import { Messages } from "../component/resource/botService/messages";
+import { MockTools } from "../core/utils";
 import { MockedLogProvider } from "../plugins/solution/util";
+describe("TeamsDevPortalClient Test", () => {
+  const tools = new MockTools();
+  const sandbox = createSandbox();
+  setTools(tools);
 
-describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
   const logProvider = new MockedLogProvider();
 
@@ -75,6 +84,15 @@ describe("App Studio API Test", () => {
     targetUrlsShouldStartWith: ["fake-domain"],
   };
 
+  const sampleBot: IBotRegistration = {
+    botId: "0cd14903-d43a-47f5-b907-73c523aff076",
+    name: "ruhe01290236-local-debug",
+    description: "",
+    iconUrl:
+      "https://docs.botframework.com/static/devportal/client/images/bot-framework-default.png",
+    messagingEndpoint: "https://8075-167-220-255-43.ngrok.io/api/messages",
+    callingEndpoint: "",
+  };
   beforeEach(() => {
     sinon.stub(RetryHandler, "RETRIES").value(1);
   });
@@ -1309,6 +1327,409 @@ describe("App Studio API Test", () => {
         await teamsDevPortalClient.getAppValidationById(appStudioToken, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("getBotRegistration", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Should return a valid bot registration", async () => {
+      // Arrange
+      sandbox.stub(RetryHandler, "Retry").resolves({
+        status: 200,
+        data: sampleBot,
+      });
+      // Act
+      const res = await teamsDevPortalClient.getBotRegistration("anything", "anything");
+
+      // Assert
+      chai.assert.isTrue(res !== undefined);
+      chai.assert.isTrue(res?.botId === sampleBot.botId);
+    });
+
+    it("Should return a undefined when 404 was throwed out", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "get").rejects({
+        response: {
+          status: 404,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act
+      const res = await teamsDevPortalClient.getBotRegistration("anything", "anything");
+
+      // Assert
+      chai.assert.isUndefined(res);
+    });
+
+    it("Should throw NotAllowedToAcquireToken error when 401 was throwed out", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "get").rejects({
+        response: {
+          status: 401,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.getBotRegistration("anything", "anything");
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+      }
+    });
+
+    it("Should throw DeveloperPortalAPIFailed error when other exceptions (500) were throwed out", async () => {
+      // Arrange
+      sandbox.stub(RetryHandler, "Retry").rejects({
+        response: {
+          headers: {
+            "x-correlation-id": "anything",
+          },
+          status: 500,
+        },
+      });
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.getBotRegistration("anything", "anything");
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("createBotRegistration", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Bot registration should be created successfully", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(undefined);
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").resolves({
+        status: 200,
+        data: sampleBot,
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+
+    it("Bot registration creation should be skipped (existing bot case).", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(sampleBot);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+
+    it("BotFrameworkNotAllowedToAcquireToken error should be throwed out (401)", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(undefined);
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").rejects({
+        response: {
+          status: 401,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+      }
+    });
+
+    it("BotFrameworkForbiddenResult error should be throwed out (403)", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(undefined);
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").rejects({
+        response: {
+          status: 403,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
+      }
+    });
+
+    it("BotFrameworkConflictResult error should be throwed out (429)", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(undefined);
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").rejects({
+        response: {
+          status: 429,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR);
+      }
+    });
+
+    it("DeveloperPortalAPIFailed error should be throwed out (500)", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(undefined);
+      sandbox.stub(RetryHandler, "Retry").rejects({
+        response: {
+          headers: {
+            "x-correlation-id": "anything",
+          },
+          status: 500,
+        },
+      });
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("updateBotRegistration", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Bot registration should be updated successfully", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").resolves({
+        status: 200,
+        data: sampleBot,
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateBotRegistration("anything", sampleBot);
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+
+    it("BotFrameworkNotAllowedToAcquireToken error should be throwed out (401)", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").rejects({
+        response: {
+          status: 401,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR);
+      }
+    });
+
+    it("BotFrameworkForbiddenResult error should be throwed out (403)", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").rejects({
+        response: {
+          status: 403,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR);
+      }
+    });
+
+    it("BotFrameworkConflictResult error should be throwed out (429)", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(mockAxiosInstance, "post").rejects({
+        response: {
+          status: 429,
+        },
+      });
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.CONFLICT_RESULT_BOT_FRAMEWORK_ERROR);
+      }
+    });
+
+    it("DeveloperPortalAPIFailed error should be throwed out (500)", async () => {
+      // Arrange
+      sandbox.stub(RetryHandler, "Retry").rejects({
+        response: {
+          headers: {
+            "x-correlation-id": "anything",
+          },
+          status: 500,
+        },
+      });
+
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateBotRegistration("anything", sampleBot);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("updateMessageEndpoint", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Message endpoint should be updated successfully", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(sampleBot);
+      sandbox.stub(teamsDevPortalClient, "updateBotRegistration").resolves();
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateMessageEndpoint("anything", "anything", "anything");
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+
+    it("BotRegistrationNotFound error should be throwed out", async () => {
+      // Arrange
+      sandbox.stub(teamsDevPortalClient, "getBotRegistration").resolves(undefined);
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.updateMessageEndpoint("anything", "anything", "anything");
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e.name === ErrorNames.BOT_REGISTRATION_NOTFOUND_ERROR);
+      }
+    });
+  });
+
+  describe("listBots", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "get").resolves({
+        status: 200,
+        data: [sampleBot],
+      });
+      // Act & Assert
+      try {
+        const res = await teamsDevPortalClient.listBots("anything");
+        chai.assert.deepEqual(res, [sampleBot]);
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+    it("invalid response", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "get").resolves({
+        status: 200,
+      });
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.listBots("anything");
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {}
+    });
+    it("api failure", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "get").resolves({ response: { status: 404 } });
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.listBots("anything");
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+      }
+    });
+  });
+  describe("deleteBot", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "delete").resolves({
+        status: 200,
+      });
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.deleteBot("anything", "anything");
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+    it("api failure", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "delete").resolves({ response: { status: 404 } });
+      // Act & Assert
+      try {
+        await teamsDevPortalClient.deleteBot("anything", "anything");
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof Error);
       }
     });
   });

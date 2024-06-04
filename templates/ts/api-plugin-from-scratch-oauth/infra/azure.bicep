@@ -4,6 +4,8 @@ param resourceBaseName string
 param functionAppSKU string
 param functionStorageSKU string
 param aadAppClientId string
+@secure()
+param aadAppClientSecret string
 param aadAppTenantId string
 param aadAppOauthAuthorityHost string
 param location string = resourceGroup().location
@@ -72,7 +74,11 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'M365_CLIENT_ID'
           value: aadAppClientId
-        }        
+        }
+        {
+          name: 'M365_CLIENT_SECRET'
+          value: aadAppClientSecret
+        }
         {
           name: 'M365_TENANT_ID'
           value: aadAppTenantId

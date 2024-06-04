@@ -2,7 +2,7 @@
   "$schema": "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json",
   "schema_version": "v2.1",
   "namespace": "repairs",
-  "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
+  "name_for_human": "test${{APP_NAME_SUFFIX}}",
   "description_for_human": "Track your repair records",
   "description_for_model": "Plugin for searching a repair list, you can search by who's assigned to the repair.",
   "functions": [
@@ -72,7 +72,7 @@
         "reference_id": "${{OAUTH2AUTHCODE_CONFIGURATION_ID}}"
       },
       "spec": {
-        "url": "apiSpecificationFile/repair.yml",
+        "url": "apiSpecificationFile/repair.dev.yml",
         "progress_style": "ShowUsageWithInputAndOutput"
       },
       "run_for_functions": ["listRepairs"]

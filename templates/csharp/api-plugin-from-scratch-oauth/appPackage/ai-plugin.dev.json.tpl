@@ -72,7 +72,7 @@
         "reference_id": "${{OAUTH2AUTHCODE_CONFIGURATION_ID}}"
       },
       "spec": {
-        "url": "apiSpecificationFile/repair.yml",
+        "url": "apiSpecificationFile/repair.dev.yml",
         "progress_style": "ShowUsageWithInputAndOutput"
       },
       "run_for_functions": ["listRepairs"]

@@ -13,8 +13,8 @@ components:
       description: OAuth configuration for the repair service
       flows:
         authorizationCode:
-          authorizationUrl: https://login.microsoftonline.com/${{tenantId}}/oauth2/v2.0/authorize
-          tokenUrl: https://login.microsoftonline.com/${{tenantId}}/oauth2/v2.0/token
+          authorizationUrl: https://login.microsoftonline.com/${{AAD_APP_TENANT_ID}}/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/${{AAD_APP_TENANT_ID}}/oauth2/v2.0/token
           scopes:
             repairs_read: Read repair records
 paths:

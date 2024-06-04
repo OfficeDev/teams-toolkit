@@ -68,15 +68,24 @@ provision:
       # will use bicep CLI in PATH if you remove this config.
       bicepCliVersion: v0.9.1
 
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
+  # manifest file to determine which Microsoft Entra app to update.
+  - uses: aadApp/update
+    with:
+      # Relative path to this file. Environment variables in manifest will
+      # be replaced before apply to Microsoft Entra app
+      manifestPath: ./aad.manifest.json
+      outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
+
   - uses: oauth/register
     with:
       name: oAuth2AuthCode
       flow: authorizationCode
       appId: ${{TEAMS_APP_ID}}
-      clientId: ${{OAUTH_CLIENT_ID}}
-      clientSecret: ${{SECRET_OAUTH_CLIENT_SECRET}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      clientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
       # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yaml
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
     writeToEnvironmentFile:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
 

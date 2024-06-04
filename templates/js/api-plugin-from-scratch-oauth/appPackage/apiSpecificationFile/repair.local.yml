@@ -6,25 +6,13 @@ info:
 servers:
   - url: ${{OPENAPI_SERVER_URL}}/api
     description: The repair api server
-components:
-  securitySchemes:
-    oAuth2AuthCode:
-      type: oauth2
-      description: OAuth configuration for the repair service
-      flows:
-        authorizationCode:
-          authorizationUrl: https://login.microsoftonline.com/${{tenantId}}/oauth2/v2.0/authorize
-          tokenUrl: https://login.microsoftonline.com/${{tenantId}}/oauth2/v2.0/token
-          scopes:
-            repairs_read: Read repair records
+
 paths:
   /repairs:
     get:
       operationId: listRepairs
       summary: List all repairs
       description: Returns a list of repairs with their details and images
-      security:
-        - oAuth2AuthCode: []
       parameters:
         - name: assignedTo
           in: query

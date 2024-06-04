@@ -20,7 +20,7 @@
         {
             "adminConsentDescription": "Allows Copilot to read repair records on your behalf.",
             "adminConsentDisplayName": "Read repairs",
-            "id": "${{AAD_APP_ACCESS_REPAIR_RECORDS}}",
+            "id": "${{TEAMS_APP_ID}}",
             "isEnabled": true,
             "type": "User",
             "userConsentDescription": "Allows Copilot to read repair records.",

@@ -85,7 +85,7 @@ provision:
       clientId: ${{OAUTH_CLIENT_ID}}
       clientSecret: ${{SECRET_OAUTH_CLIENT_SECRET}}
       # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yaml
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
     writeToEnvironmentFile:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
 

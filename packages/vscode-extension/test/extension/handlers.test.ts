@@ -2965,6 +2965,37 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isFalse(runLocalDebug.called);
   });
 
+  it("showLocalDebugMessage() - has local env and not click debug", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const runLocalDebug = sandbox.stub(runIconHandlers, "selectAndDebug").resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve(undefined);
+        }
+      );
+
+    await handlers.showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.calledOnce);
+    chai.assert.isFalse(runLocalDebug.called);
+  });
+
   it("showLocalDebugMessage() - no local env", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
@@ -3032,6 +3063,37 @@ describe("autoOpenProjectHandler", () => {
 
     chai.assert.isTrue(showMessageStub.called);
     chai.assert.isTrue(executeCommandStub.notCalled);
+  });
+
+  it("showLocalDebugMessage() - no local env and not click provision", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox.stub(fs, "pathExists").resolves(false);
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve(undefined);
+        }
+      );
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+
+    await handlers.showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isFalse(executeCommandStub.called);
   });
 
   it("installAdaptiveCardExt()", async () => {

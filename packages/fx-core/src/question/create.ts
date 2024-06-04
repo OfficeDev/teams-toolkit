@@ -30,6 +30,7 @@ import {
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
   isCopilotAuthEnabled,
+  isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
@@ -1401,7 +1402,12 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
+          return (
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+            (isCopilotAuthEnabled() &&
+              isCopilotPluginEnabled() &&
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+          );
         },
         data: apiAuthQuestion(),
       },
@@ -1429,15 +1435,6 @@ export function capabilitySubTree(): IQTreeNode {
             data: apiOperationQuestion(),
           },
         ],
-      },
-      {
-        condition: (inputs: Inputs) => {
-          return (
-            isCopilotAuthEnabled() &&
-            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
-          );
-        },
-        data: apiAuthQuestion(),
       },
       {
         condition: (inputs: Inputs) => {

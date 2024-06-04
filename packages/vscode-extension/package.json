@@ -1555,7 +1555,6 @@
         "id": "ms-teams-vscode-extension.teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
-        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",
@@ -1571,7 +1570,6 @@
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
         "description": "%teamstoolkit.chatParticipants.officeAddIn.description%",
-        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",

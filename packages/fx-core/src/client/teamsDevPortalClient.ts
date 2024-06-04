@@ -7,16 +7,55 @@ import { AxiosInstance } from "axios";
 import { HelpLinks } from "../common/constants";
 import { ErrorContextMW, TOOLS, setErrorContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+} from "../common/telemetry";
 import { WrappedAxiosClient } from "../common/wrappedAxiosClient";
 import { HttpStatusCode } from "../component/constant/commonConstant";
-import { APP_STUDIO_API_NAMES, Constants } from "../component/driver/teamsApp/constants";
+import {
+  APP_STUDIO_API_NAMES,
+  Constants,
+  ErrorMessages,
+} from "../component/driver/teamsApp/constants";
 import { AppStudioError } from "../component/driver/teamsApp/errors";
+import {
+  ApiSecretRegistration,
+  ApiSecretRegistrationUpdate,
+} from "../component/driver/teamsApp/interfaces/ApiSecretRegistration";
+import { AsyncAppValidationDetailsResponse } from "../component/driver/teamsApp/interfaces/AsyncAppValidationDetailsResponse";
+import { AsyncAppValidationResponse } from "../component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
+import { AsyncAppValidationResultsResponse } from "../component/driver/teamsApp/interfaces/AsyncAppValidationResultsResponse";
+import { OauthConfigurationId } from "../component/driver/teamsApp/interfaces/OauthConfigurationId";
+import { OauthRegistration } from "../component/driver/teamsApp/interfaces/OauthRegistration";
 import { IPublishingAppDenition } from "../component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
+import { IValidationResult } from "../component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
-import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
+import {
+  BotChannelType,
+  IBotRegistration,
+} from "../component/resource/botService/appStudio/interfaces/IBotRegistration";
+import { isHappyResponse } from "../component/resource/botService/common";
+import { TeamsFxUrlNames } from "../component/resource/botService/constants";
+import {
+  BotFrameworkConflictResultError,
+  BotFrameworkForbiddenResultError,
+  BotFrameworkNotAllowedToAcquireTokenError,
+  BotRegistrationNotFoundError,
+  ConfigUpdatingError,
+  ProvisionError,
+} from "../component/resource/botService/errors";
+import { Messages } from "../component/resource/botService/messages";
+import { CommonStrings, ConfigNames } from "../component/resource/botService/strings";
+import {
+  CheckSideloadingPermissionFailedError,
+  DeveloperPortalAPIFailedError,
+} from "../error/teamsApp";
 
 class RetryHandler {
   public static RETRIES = 6;
@@ -82,7 +121,7 @@ class TeamsDevPortalClient {
    * @param {boolean} overwrite - whether to overrite the app if it already exists
    * @returns {Promise<AppDefinition>}
    */
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async importApp(token: string, file: Buffer, overwrite = false): Promise<AppDefinition> {
     try {
       const requester = this.createRequesterWithToken(token);
@@ -150,7 +189,7 @@ class TeamsDevPortalClient {
     }
   }
 
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async listApps(token: string): Promise<AppDefinition[]> {
     if (!this.region) throw new Error("Failed to get region");
     let requester: AxiosInstance;
@@ -173,7 +212,7 @@ class TeamsDevPortalClient {
     throw new Error("Cannot get the app definitions");
   }
 
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getApp(token: string, teamsAppId: string): Promise<AppDefinition> {
     let requester: AxiosInstance;
     try {
@@ -201,7 +240,7 @@ class TeamsDevPortalClient {
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }
 
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getAppPackage(token: string, teamsAppId: string): Promise<any> {
     TOOLS.logProvider?.info("Downloading app package for app " + teamsAppId);
     const requester = this.createRequesterWithToken(token);
@@ -229,7 +268,7 @@ class TeamsDevPortalClient {
    * @param logProvider
    * @returns
    */
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async checkExistsInTenant(token: string, teamsAppId: string): Promise<boolean> {
     const requester = this.createRequesterWithToken(token);
     try {
@@ -249,7 +288,7 @@ class TeamsDevPortalClient {
   /**
    * Publish Teams app to Teams App Catalog
    */
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async publishTeamsApp(token: string, teamsAppId: string, file: Buffer): Promise<string> {
     try {
       const requester = this.createRequesterWithToken(token);
@@ -319,6 +358,7 @@ class TeamsDevPortalClient {
    * @param token
    * @returns
    */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async publishTeamsAppUpdate(token: string, teamsAppId: string, file: Buffer): Promise<string> {
     setErrorContext({ source: "Teams" });
     try {
@@ -377,7 +417,7 @@ class TeamsDevPortalClient {
    * @param token
    * @returns
    */
-  @hooks([ErrorContextMW({ source: "Teams" })])
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getStaggedApp(
     token: string,
     teamsAppId: string
@@ -408,6 +448,8 @@ class TeamsDevPortalClient {
       return undefined;
     }
   }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getUserList(token: string, teamsAppId: string): Promise<AppUser[] | undefined> {
     let app;
     try {
@@ -416,6 +458,477 @@ class TeamsDevPortalClient {
       throw error;
     }
     return app.userList;
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async checkPermission(token: string, teamsAppId: string, userObjectId: string): Promise<string> {
+    let userList;
+    try {
+      userList = await this.getUserList(token, teamsAppId);
+    } catch (error) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
+    const findUser = userList?.find((user: AppUser) => user.aadId === userObjectId);
+    if (!findUser) {
+      return Constants.PERMISSIONS.noPermission;
+    }
+
+    if (findUser.isAdministrator) {
+      return Constants.PERMISSIONS.admin;
+    } else {
+      return Constants.PERMISSIONS.operative;
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async grantPermission(token: string, teamsAppId: string, newUser: AppUser): Promise<void> {
+    let app;
+    try {
+      app = await this.getApp(token, teamsAppId);
+    } catch (error) {
+      throw error;
+    }
+
+    if (this.checkUser(app, newUser)) {
+      return;
+    }
+
+    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
+    if (findUser && findUser >= 0) {
+      return;
+    }
+
+    app.userList?.push(newUser);
+    let requester: AxiosInstance;
+    try {
+      let response;
+      try {
+        TOOLS.logProvider.debug(
+          getLocalizedString(
+            "core.common.SendingApiRequest",
+            `${this.getEndpoint()}/api/appdefinitions/{teamsAppId}/owner`,
+            JSON.stringify(app)
+          )
+        );
+        requester = this.createRequesterWithToken(token);
+        response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+        TOOLS.logProvider.debug(
+          getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
+        );
+      } catch (e: any) {
+        // Teams apps created by non-regional API cannot be found by regional API
+        if (e.response?.status == 404) {
+          requester = this.createRequesterWithToken(token);
+          response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+        } else {
+          throw e;
+        }
+      }
+      if (!response || !response.data || !this.checkUser(response.data as AppDefinition, newUser)) {
+        throw new Error(ErrorMessages.GrantPermissionFailed);
+      }
+    } catch (err) {
+      if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
+        requester = this.createRequesterWithToken(token);
+        await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
+      } else {
+        this.wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
+        throw err;
+      }
+    }
+  }
+  /**
+   * Send the app package for partner center validation
+   * @param file
+   * @param token
+   * @returns
+   */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async partnerCenterAppPackageValidation(token: string, file: Buffer): Promise<IValidationResult> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/appdefinitions/partnerCenterAppPackageValidation", file, {
+          headers: { "Content-Type": "application/zip" },
+        })
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
+      throw error;
+    }
+  }
+
+  checkUser(app: AppDefinition, newUser: AppUser): boolean {
+    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
+    if (findUser != undefined && findUser >= 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Submit App Validation Request (In-App) for which App Definitions are stored at TDP.
+   * @param teamsAppId
+   * @param token
+   * @param timeoutSeconds
+   * @returns
+   */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async submitAppValidationRequest(
+    token: string,
+    teamsAppId: string,
+    timeoutSeconds = 20
+  ): Promise<AsyncAppValidationResponse> {
+    const requester = this.createRequesterWithToken(token);
+    requester.defaults.timeout = timeoutSeconds * 1000;
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post(`/api/v1.0/appvalidations/appdefinition/validate`, {
+          AppEnvironmentId: null,
+          appDefinitionId: teamsAppId,
+        })
+      );
+      return <AsyncAppValidationResponse>response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.SUMIT_APP_VALIDATION);
+      throw error;
+    }
+  }
+
+  /**
+   * Get App validation requests sumitted by the user
+   */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async getAppValidationRequestList(
+    token: string,
+    teamsAppId: string
+  ): Promise<AsyncAppValidationDetailsResponse> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/appvalidations/appdefinitions/${teamsAppId}`)
+      );
+      return <AsyncAppValidationDetailsResponse>response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
+      throw error;
+    }
+  }
+  /**
+   * Get App validation results by provided app validation id
+   * @param appValidationId
+   * @param token
+   * @param timeoutSeconds
+   * @returns
+   */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async getAppValidationById(
+    token: string,
+    appValidationId: string,
+    timeoutSeconds = 20
+  ): Promise<AsyncAppValidationResultsResponse> {
+    const requester = this.createRequesterWithToken(token);
+    requester.defaults.timeout = timeoutSeconds * 1000;
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/appvalidations/${appValidationId}`)
+      );
+      return <AsyncAppValidationResultsResponse>response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
+      throw error;
+    }
+  }
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async getSideloadingStatus(token: string): Promise<boolean | undefined> {
+    const apiName = "<check-sideloading-status>";
+    const apiPath = "/api/usersettings/mtUserAppPolicy";
+    const requester = this.createRequesterWithToken(token);
+
+    let response = undefined;
+    try {
+      response = (await RetryHandler.Retry(() => requester.get(apiPath))) as any;
+      let result: boolean | undefined;
+      if (response.status >= 400) {
+        result = undefined;
+      } else {
+        result = response.data?.value?.isSideloadingAllowed as boolean;
+      }
+
+      if (result !== undefined) {
+        sendTelemetryEvent("TeamsDevPortalClient", TelemetryEvent.CheckSideloading, {
+          [TelemetryProperty.IsSideloadingAllowed]: result.toString() + "",
+        });
+      } else {
+        sendTelemetryErrorEvent(
+          "TeamsDevPortalClient",
+          TelemetryEvent.CheckSideloading,
+          new SystemError(
+            "M365Account",
+            "UnknownValue",
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `AppStudio response code: ${response.status}, body: ${response.data}`
+          ),
+          {
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status as string}`,
+            [TelemetryProperty.CheckSideloadingMethod]: "get",
+            [TelemetryProperty.CheckSideloadingUrl]: apiName,
+          }
+        );
+      }
+
+      return result;
+    } catch (error: any) {
+      sendTelemetryErrorEvent(
+        "TeamsDevPortalClient",
+        TelemetryEvent.CheckSideloading,
+        new CheckSideloadingPermissionFailedError(
+          error,
+          error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
+          apiName,
+          error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+        ),
+        {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          [TelemetryProperty.CheckSideloadingStatusCode]: `${error?.response?.status}`,
+          [TelemetryProperty.CheckSideloadingMethod]: "get",
+          [TelemetryProperty.CheckSideloadingUrl]: apiName,
+        }
+      );
+    }
+    return undefined;
+  }
+
+  /**
+   * Create the Api Key registration.
+   * @param token
+   * @param apiKeyRegistration
+   */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async createApiKeyRegistration(
+    token: string,
+    apiKeyRegistration: ApiSecretRegistration
+  ): Promise<ApiSecretRegistration> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/v1.0/apiSecretRegistrations", apiKeyRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_API_KEY);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the Api Key registration by Id.
+   * @param token
+   * @param apiSecretRegistrationId
+   */
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async getApiKeyRegistrationById(
+    token: string,
+    apiSecretRegistrationId: string
+  ): Promise<ApiSecretRegistration> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/apiSecretRegistrations/${apiSecretRegistrationId}`)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_API_KEY);
+      throw error;
+    }
+  }
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async updateApiKeyRegistration(
+    token: string,
+    apiKeyRegistration: ApiSecretRegistrationUpdate,
+    apiKeyRegistrationId: string
+  ): Promise<ApiSecretRegistrationUpdate> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.patch(
+          `/api/v1.0/apiSecretRegistrations/${apiKeyRegistrationId}`,
+          apiKeyRegistration
+        )
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
+      throw error;
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async getOauthRegistrationById(
+    token: string,
+    oauthRegistrationId: string
+  ): Promise<OauthRegistration> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/oAuthConfigurations/${oauthRegistrationId}`)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_OAUTH);
+      throw error;
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async createOauthRegistration(
+    token: string,
+    oauthRegistration: OauthRegistration
+  ): Promise<OauthConfigurationId> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/v1.0/oAuthConfigurations", oauthRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_OAUTH);
+      throw error;
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async updateOauthRegistration(
+    token: string,
+    oauthRegistration: OauthRegistration,
+    oauthRegistrationId: string
+  ): Promise<OauthRegistration> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.patch(`/api/v1.0/oAuthConfigurations/${oauthRegistrationId}`, oauthRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
+      throw error;
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async getBotRegistration(token: string, botId: string): Promise<IBotRegistration | undefined> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() => requester.get(`/api/botframework/${botId}`));
+      if (isHappyResponse(response)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
+      } else {
+        // Defensive code and it should never reach here.
+        throw new Error("Failed to get data");
+      }
+    } catch (e) {
+      this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async listBots(token: string): Promise<IBotRegistration[] | undefined> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() => requester.get("/api/botframework"));
+      if (isHappyResponse(response)) {
+        return <IBotRegistration[]>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
+      } else {
+        // Defensive code and it should never reach here.
+        throw new Error("Failed to get data");
+      }
+    } catch (e) {
+      this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.LIST_BOT);
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async deleteBot(token: string, botId: string): Promise<void> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      await RetryHandler.Retry(() => requester.delete(`/api/botframework/${botId}`));
+    } catch (e) {
+      this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.DELETE_BOT);
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async createBotRegistration(
+    token: string,
+    registration: IBotRegistration,
+    checkExistence = true
+  ): Promise<void> {
+    if (registration.botId && checkExistence) {
+      const botReg = await this.getBotRegistration(token, registration.botId);
+      if (botReg) {
+        TOOLS.logProvider.info(Messages.BotResourceExist("Appstudio"));
+        return;
+      }
+    }
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post(`/api/botframework`, registration)
+      );
+      if (!isHappyResponse(response)) {
+        throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
+      }
+    } catch (e) {
+      this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT);
+    }
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async updateMessageEndpoint(token: string, botId: string, endpoint: string): Promise<void> {
+    const botReg = await this.getBotRegistration(token, botId);
+    if (!botReg) {
+      throw new BotRegistrationNotFoundError(botId);
+    }
+
+    botReg.messagingEndpoint = endpoint;
+    if (botReg.configuredChannels === undefined || botReg.configuredChannels.length === 0) {
+      botReg.configuredChannels = [BotChannelType.MicrosoftTeams];
+    }
+    await this.updateBotRegistration(token, botReg);
+  }
+
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async updateBotRegistration(token: string, botReg: IBotRegistration): Promise<void> {
+    const requester = this.createRequesterWithToken(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post(`/api/botframework/${botReg.botId!}`, botReg)
+      );
+      if (!isHappyResponse(response)) {
+        throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
+      }
+    } catch (e) {
+      this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
+    }
+  }
+
+  handleBotFrameworkError(e: any, apiName: string): void | undefined {
+    if (e.response?.status === HttpStatusCode.NOTFOUND) {
+      return undefined; // Stands for NotFound.
+    } else if (e.response?.status === HttpStatusCode.UNAUTHORIZED) {
+      throw new BotFrameworkNotAllowedToAcquireTokenError();
+    } else if (e.response?.status === HttpStatusCode.FORBIDDEN) {
+      throw new BotFrameworkForbiddenResultError();
+    } else if (e.response?.status === HttpStatusCode.TOOMANYREQS) {
+      throw new BotFrameworkConflictResultError();
+    } else {
+      e.teamsfxUrlName = TeamsFxUrlNames[apiName];
+      throw this.wrapException(e, apiName) as SystemError;
+    }
   }
   wrapException(e: any, apiName: string): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];

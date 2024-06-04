@@ -4,14 +4,14 @@
 import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@microsoft/teamsfx-api";
 
 import { hooks } from "@feathersjs/hooks";
-import { CoreSource } from "../../core/error";
+import { AppStudioScopes } from "../../common/constants";
 import { ErrorContextMW } from "../../common/globalVars";
+import { CoreSource } from "../../error";
 import { assembleError } from "../../error/common";
 import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
-import { serviceEndpoint, serviceScope } from "./serviceConstant";
-import { AppStudioScopes } from "../driver/teamsApp/constants";
+import { MosServiceEndpoint, MosServiceScope } from "./serviceConstant";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -81,8 +81,9 @@ export class LaunchHelper {
   }
 
   public async getM365AppId(teamsAppId: string): Promise<Result<string, FxError>> {
-    const sideloadingServiceEndpoint = process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
-    const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+    const sideloadingServiceEndpoint =
+      process.env.SIDELOADING_SERVICE_ENDPOINT ?? MosServiceEndpoint;
+    const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
     const packageService = new PackageService(sideloadingServiceEndpoint, this.logger);
 
     const sideloadingTokenRes = await this.m365TokenProvider.getAccessToken({

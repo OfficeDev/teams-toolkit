@@ -4,6 +4,7 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { AppStudioScopes, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error";
 import { QuestionNames } from "../../../question/constants";
@@ -26,8 +27,6 @@ import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
 import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
 import { getDomain, loadStateFromEnv, validateDomain } from "./utility/utility";
-import { AppStudioScopes } from "../teamsApp/constants";
-import { GraphScopes } from "../../../common/constants";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";

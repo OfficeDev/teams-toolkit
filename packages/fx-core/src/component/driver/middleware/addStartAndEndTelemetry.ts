@@ -9,7 +9,7 @@ import {
 } from "../../utils/teamsFxTelemetryReporter";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ExecutionResult } from "../interface/stepDriver";
-import { TelemetryConstants } from "../../constants";
+import { TelemetryConstants } from "../../../common/telemetry";
 import { performance } from "perf_hooks";
 
 // Based on fx-core's design that a component should always return FxError instead of throw exception, no error handling is added

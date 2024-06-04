@@ -1240,18 +1240,12 @@ export class TeamsAppValidationOptions {
     return {
       id: "validateAgainstSchema",
       label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
-      ),
     };
   }
   static package(): OptionItem {
     return {
       id: "validateAgainstPackage",
       label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
-      ),
     };
   }
   static testCases(): OptionItem {

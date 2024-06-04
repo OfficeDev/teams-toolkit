@@ -1,31 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ok } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import fs from "fs-extra";
 import "mocha";
 import mockFs from "mock-fs";
-import Sinon, * as sinon from "sinon";
-
-import { ok } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
+import Sinon, * as sinon from "sinon";
+import { getProjectMetadata } from "../../src/common/projectSettingsHelper";
 import * as telemetry from "../../src/common/telemetry";
 import {
-  ConvertTokenToJson,
-  getFixedCommonProjectSettings,
   getSPFxToken,
-  getCopilotStatus,
   getSideloadingStatus,
   listDevTunnels,
   setRegion,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
-import { MockTools } from "../core/utils";
-import { isUserCancelError } from "../../src/error/common";
+import { PackageService } from "../../src/component/m365/packageService";
 import { isVideoFilterProject } from "../../src/core/middleware/videoFilterAppBlocker";
+import { isUserCancelError } from "../../src/error/common";
+import { MockTools } from "../core/utils";
 
 chai.use(chaiAsPromised);
 
@@ -161,14 +159,14 @@ describe("tools", () => {
         } as AxiosResponse;
       };
 
-      const result = await getCopilotStatus("fake-token");
+      const result = await PackageService.GetSharedInstance().getCopilotStatus("fake-token");
 
       chai.assert.isUndefined(result);
       chai.assert.equal(errors, 1);
     });
   });
 
-  describe("getFixedCommonProjectSettings", () => {
+  describe("getProjectMetadata", () => {
     const sandbox = sinon.createSandbox();
 
     afterEach(() => {
@@ -184,7 +182,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
         sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
           return true;
         });
-        const result = getFixedCommonProjectSettings("root-path");
+        const result = getProjectMetadata("root-path");
         chai.assert.isNotEmpty(result);
         chai.assert.equal(result!.projectId, "00000000-0000-0000-0000-000000000000");
       } finally {
@@ -195,7 +193,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
         return false;
       });
-      const result = getFixedCommonProjectSettings("root-path");
+      const result = getProjectMetadata("root-path");
       chai.assert.isUndefined(result);
     });
 
@@ -203,12 +201,12 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.stub<any, any>(fs, "pathExistsSync").callsFake((file: string) => {
         throw new Error("new error");
       });
-      const result = getFixedCommonProjectSettings("root-path");
+      const result = getProjectMetadata("root-path");
       chai.assert.isUndefined(result);
     });
 
     it("empty root path", async () => {
-      const result = getFixedCommonProjectSettings("");
+      const result = getProjectMetadata("");
       chai.assert.isUndefined(result);
     });
   });
@@ -327,16 +325,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
   });
 
-  describe("ConvertTokenToJson", async () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("ConvertTokenToJson", async () => {
-      const res = ConvertTokenToJson("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c");
-      chai.expect(res["userId"]).equal("test@test.com");
-    });
-  });
   describe("getSPFxToken", async () => {
     afterEach(() => {
       sinon.restore();

@@ -782,7 +782,7 @@ async function updateAdaptiveCardForCustomApi(
 
     for (const item of specItems) {
       const name = item.item.operationId;
-      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item);
+      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
       const cardFilePath = path.join(adaptiveCardsFolderPath, `${name!}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }

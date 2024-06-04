@@ -15,9 +15,10 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
-import { AppStudioScopes, Constants } from "./constants";
+import { Constants } from "./constants";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { TelemetryPropertyKey } from "./utils/telemetry";
+import { AppStudioScopes } from "../../../common/constants";
 
 export const actionName = "teamsApp/publishAppPackage";
 

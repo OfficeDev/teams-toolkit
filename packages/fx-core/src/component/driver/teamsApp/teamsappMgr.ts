@@ -14,6 +14,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Container } from "typedi";
 import * as util from "util";
+import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
 import { resolveString } from "../../configManager/lifecycle";
@@ -22,7 +23,7 @@ import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
 import { createDriverContext } from "../util/utils";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
-import { AppStudioScopes, Constants } from "./constants";
+import { Constants } from "./constants";
 import {
   CreateAppPackageDriver,
   actionName as createAppPackageActionName,

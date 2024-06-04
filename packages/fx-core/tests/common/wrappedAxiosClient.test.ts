@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
+import axios, { AxiosInstance } from "axios";
 import * as chai from "chai";
+import "mocha";
 import * as sinon from "sinon";
 import { v4 as uuid } from "uuid";
-import axios, { AxiosInstance } from "axios";
-import { WrappedAxiosClient } from "../../src/common/wrappedAxiosClient";
-import {
-  APP_STUDIO_API_NAMES,
-  getAppStudioEndpoint,
-} from "../../src/component/driver/teamsApp/constants";
+import { getAppStudioEndpoint } from "../../src/common/constants";
 import { setTools } from "../../src/common/globalVars";
+import { WrappedAxiosClient } from "../../src/common/wrappedAxiosClient";
+import { APP_STUDIO_API_NAMES } from "../../src/component/driver/teamsApp/constants";
 import { MockTools } from "../core/utils";
 
 describe("Wrapped Axios Client Test", () => {

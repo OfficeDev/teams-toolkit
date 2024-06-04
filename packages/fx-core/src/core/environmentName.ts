@@ -9,7 +9,7 @@ class EnvironmentNameManager {
   public readonly schema = "https://aka.ms/teamsfx-env-config-schema";
   public readonly envConfigDescription =
     `You can customize the TeamsFx config for different environments.` +
-    ` Visit https://aka.ms/teamsfx-env-config to learn more about this.`;
+    ` Visit https://aka.ms/teamsfx-env-config to get more info about this.`;
 
   private readonly defaultEnvName = "dev";
   private readonly localEnvName = "local";

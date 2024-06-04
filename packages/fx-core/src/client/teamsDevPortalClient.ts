@@ -90,7 +90,11 @@ class TeamsDevPortalClient {
     }
   }
 
-  async setRegion(regionToken: string) {
+  setRegion(region: string) {
+    this.region = region;
+  }
+
+  async setRegionByToken(regionToken: string) {
     const requester = this.createRequesterWithToken(regionToken);
     const response = await RetryHandler.Retry(() => requester.post(`/v1.0/users/region`));
     this.region = response?.data?.regionGtms?.teamsDevPortal as string;
@@ -211,7 +215,33 @@ class TeamsDevPortalClient {
     }
     throw new Error("Cannot get the app definitions");
   }
-
+  @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
+  async deleteApp(appStudioToken: string, teamsAppId: string): Promise<boolean> {
+    if (!this.region) throw new Error("Failed to get region");
+    setErrorContext({ source: "Teams" });
+    let requester: AxiosInstance;
+    try {
+      requester = this.createRequesterWithToken(appStudioToken);
+      TOOLS.logProvider.debug(
+        `Sent API Request: DELETE ${this.getEndpoint()}/api/appdefinitions/${teamsAppId}`
+      );
+      const response = await RetryHandler.Retry(() =>
+        requester.delete(`/api/appdefinitions/${teamsAppId}`)
+      );
+      if (response && response.data) {
+        const success = <boolean>response.data;
+        if (success) {
+          return success;
+        } else {
+          TOOLS.logProvider?.error("Cannot get the app definitions");
+        }
+      }
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
+      throw error;
+    }
+    throw new Error("Cannot delete the app: " + teamsAppId);
+  }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getApp(token: string, teamsAppId: string): Promise<AppDefinition> {
     let requester: AxiosInstance;

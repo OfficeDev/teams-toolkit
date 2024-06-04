@@ -528,7 +528,7 @@ jobs:
 
   test-plan-update:
     needs: main
-    if: ${{ github.event.inputs.target-testplan-name != '' }}
+    if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
     environment: engineering
     permissions:
       id-token: write
@@ -545,7 +545,7 @@ jobs:
       - name: setup project
         run: |
           pnpm --filter=@microsoft/teamsfx-test install
-      - uses: azure/login@v1
+      - uses: azure/login@v2
         with:
           client-id: ${{secrets.DEVOPS_CLIENT_ID}}
           tenant-id: ${{secrets.DEVOPS_TENANT_ID}}

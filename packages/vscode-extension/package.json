@@ -979,6 +979,10 @@
               {
                 "const": "launch-web-client",
                 "description": "%teamstoolkit.taskDefinitions.command.launchWebClient.description%"
+              },
+              {
+                "const": "launch-desktop-client",
+                "description": "%teamstoolkit.taskDefinitions.command.launchDesktopClient.description%"
               }
             ]
           },

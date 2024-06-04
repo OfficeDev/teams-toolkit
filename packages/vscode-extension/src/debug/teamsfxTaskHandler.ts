@@ -93,6 +93,15 @@ function isNpmInstallTask(task: vscode.Task): boolean {
   return false;
 }
 
+function isDevProxyTask(task: vscode.Task): boolean {
+  if (task) {
+    const name = task.name.trim();
+    return name === "Check dev proxy" || name === "Start dev proxy";
+  }
+
+  return false;
+}
+
 function isTeamsFxTransparentTask(task: vscode.Task): boolean {
   if (task.definition && task.definition.type === ProductName) {
     const command = task.definition.command as string;
@@ -142,6 +151,9 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       if (/teamsfx\/script\/.*\.js/i.test(commandLine)) {
         return true;
       }
+    }
+    if (isDevProxyTask(task)) {
+      return true;
     }
   }
 

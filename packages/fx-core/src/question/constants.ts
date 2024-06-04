@@ -50,7 +50,7 @@ export enum QuestionNames {
   MeArchitectureType = "me-architecture",
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
-  ApiMEAuth = "api-me-auth",
+  ApiAuth = "api-auth",
   OauthClientSecret = "oauth-client-secret",
   OauthClientId = "oauth-client-id",
   OauthConfirm = "oauth-confirm",
@@ -858,7 +858,7 @@ export class OfficeAddinHostOptions {
   }
 }
 
-export class ApiMessageExtensionAuthOptions {
+export class ApiAuthOptions {
   static none(): OptionItem {
     return {
       id: "none",
@@ -879,11 +879,19 @@ export class ApiMessageExtensionAuthOptions {
     };
   }
 
+  static oauth(): OptionItem {
+    return {
+      id: "oauth",
+      label: "OAuth",
+    };
+  }
+
   static all(): OptionItem[] {
     return [
-      ApiMessageExtensionAuthOptions.none(),
-      ApiMessageExtensionAuthOptions.apiKey(),
-      ApiMessageExtensionAuthOptions.microsoftEntra(),
+      ApiAuthOptions.none(),
+      ApiAuthOptions.apiKey(),
+      ApiAuthOptions.microsoftEntra(),
+      ApiAuthOptions.oauth(),
     ];
   }
 }

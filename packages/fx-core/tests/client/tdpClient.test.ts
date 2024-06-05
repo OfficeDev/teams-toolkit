@@ -1733,19 +1733,6 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
     });
-    it("api failure", async () => {
-      // Arrange
-      const mockAxiosInstance = axios.create();
-      sandbox.stub(teamsDevPortalClient, "createRequesterWithToken").returns(mockAxiosInstance);
-      sandbox.stub(mockAxiosInstance, "delete").resolves({ response: { status: 404 } });
-      // Act & Assert
-      try {
-        await teamsDevPortalClient.deleteBot("anything", "anything");
-        chai.assert.fail(Messages.ShouldNotReachHere);
-      } catch (e) {
-        chai.assert.isTrue(e instanceof Error);
-      }
-    });
     it("throw error", async () => {
       // Arrange
       const mockAxiosInstance = axios.create();

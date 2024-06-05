@@ -987,6 +987,18 @@ describe("handlers", () => {
     );
   });
 
+  it("walkthrough: build intelligent apps", async () => {
+    sandbox.stub(featureFlags, "isApiCopilotPluginEnabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+
+    await handlers.openBuildIntelligentAppsWalkthroughHandler();
+    sandbox.assert.calledOnceWithExactly(
+      executeCommands,
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+    );
+  });
+
   it("openSurveyHandler", async () => {
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const openLink = sandbox.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
@@ -1524,6 +1536,31 @@ describe("handlers", () => {
     );
   });
 
+  it("showError with test tool button click", async () => {
+    sandbox.stub(localizeUtils, "localize").returns("");
+    const showErrorMessageStub = sandbox
+      .stub(vscode.window, "showErrorMessage")
+      .callsFake((title: string, button: any) => {
+        return Promise.resolve(button);
+      });
+    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(vscode.commands, "executeCommand");
+    const error = new UserError("test source", "test name", "test message", "test displayMessage");
+    error.recommendedOperation = "debug-in-test-tool";
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+    sinon.stub(fs, "pathExistsSync").returns(true);
+
+    await handlers.showError(error);
+
+    chai.assert.isFalse(
+      sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.ClickGetHelp, {
+        "error-code": "test source.test name",
+        "error-message": "test displayMessage",
+        "help-link": "test helpLink",
+      })
+    );
+  });
+
   it("showError - similar issues", async () => {
     sandbox
       .stub(vscode.window, "showErrorMessage")
@@ -1956,7 +1993,7 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: async () => {
           showMessageCalledCount += 1;
-          return Promise.resolve(ok("Learn More"));
+          return Promise.resolve(ok("Get More Info"));
         },
       });
       const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
@@ -2603,7 +2640,7 @@ describe("autoOpenProjectHandler", () => {
       ok({
         name: { short: "short", full: "full" },
         description: { short: "short", full: "" },
-        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+        copilotExtensions: { plugins: [{ file: "ai-plugin.json", id: "plugin1" }] },
       } as any)
     );
     const parseRes = {
@@ -2703,7 +2740,7 @@ describe("autoOpenProjectHandler", () => {
       ok({
         name: { short: "short", full: "full" },
         description: { short: "short", full: "" },
-        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+        copilotExtensions: { plugins: [{ file: "ai-plugin.json", id: "plugin1" }] },
       } as any)
     );
     const parseRes = {

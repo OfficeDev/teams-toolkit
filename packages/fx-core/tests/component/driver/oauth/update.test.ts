@@ -12,7 +12,7 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { UpdateOauthDriver } from "../../../../src/component/driver/oauth/update";
 import {
@@ -60,7 +60,7 @@ describe("CreateOauthDriver", () => {
       targetUrlsShouldStartWith: ["https://test2"],
       applicableToApps: OauthRegistrationAppType.SpecificApp,
       targetAudience: OauthRegistrationTargetAudience.HomeTenant,
-      specificAppId: "mockedAppId",
+      m365AppId: "mockedAppId",
       clientId: "mockedClientId",
       clientSecret: "mockedClientSecret",
       authorizationEndpoint: "mockedAuthorizationEndpoint",
@@ -132,7 +132,7 @@ describe("CreateOauthDriver", () => {
     sinon.stub(mockedDriverContext.ui, "confirm").callsFake(async (config) => {
       expect((config as ConfirmConfig).title.includes("description")).to.be.true;
       expect((config as ConfirmConfig).title.includes("applicableToApps")).to.be.true;
-      expect((config as ConfirmConfig).title.includes("specificAppId")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("m365AppId")).to.be.true;
       expect((config as ConfirmConfig).title.includes("targetAudience")).to.be.true;
       return ok({ type: "success", value: true });
     });
@@ -241,7 +241,7 @@ describe("CreateOauthDriver", () => {
       targetUrlsShouldStartWith: ["https://test2.asse.devtunnels.ms"],
       applicableToApps: OauthRegistrationAppType.SpecificApp,
       targetAudience: OauthRegistrationTargetAudience.HomeTenant,
-      specificAppId: "mockedAppId",
+      m365AppId: "mockedAppId",
       clientId: "mockedClientId",
       clientSecret: "mockedClientSecret",
       authorizationEndpoint: "mockedAuthorizationEndpoint",

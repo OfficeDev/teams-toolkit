@@ -2,7 +2,12 @@ import * as chai from "chai";
 import sinon from "ts-sinon";
 import { Explainer } from "../../../../src/officeChat/common/skills/codeExplainer";
 import { Spec } from "../../../../src/officeChat/common/skills/spec";
-import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
+import {
+  CancellationToken,
+  ChatResponseStream,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
+} from "vscode";
 import * as utils from "../../../../src/chat/utils";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
@@ -34,7 +39,8 @@ describe("CodeExplainer", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };

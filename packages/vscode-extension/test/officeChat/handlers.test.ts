@@ -38,14 +38,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeCreateCommandHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: OfficeChatCommand.Create,
-        variables: [],
-        location: vscode.ChatLocation.Panel,
+        references: [],
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeCreateCommandHandlerStub = sandbox.stub(officeCreateCommandHandler, "default");
       handler.officeChatRequestHandler(
         request,
@@ -57,14 +57,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call generatecodeCommandHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: OfficeChatCommand.GenerateCode,
-        variables: [],
-        location: vscode.ChatLocation.Panel,
+        references: [],
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const generatecodeCommandHandlerStub = sandbox.stub(generatecodeCommandHandler, "default");
       handler.officeChatRequestHandler(
         request,
@@ -76,14 +76,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeNextStepCommandHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: OfficeChatCommand.NextStep,
-        variables: [],
-        location: vscode.ChatLocation.Panel,
+        references: [],
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeNextStepCommandHandlerStub = sandbox.stub(
         officeNextStepCommandHandler,
         "default"
@@ -98,14 +98,14 @@ describe("File: officeChat/handlers.ts", () => {
     });
 
     it("call officeDefaultHandler", async () => {
-      const request: vscode.ChatRequest = {
+      const request = {
         prompt: "test",
         command: "",
-        variables: [],
-        location: vscode.ChatLocation.Panel,
+        references: [],
+        location: 1,
         attempt: 0,
         enableCommandDetection: false,
-      };
+      } as vscode.ChatRequest;
       const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
@@ -126,6 +126,41 @@ describe("File: officeChat/handlers.ts", () => {
         token
       );
       chai.expect(verbatimCopilotInteractionStub.calledOnce);
+    });
+
+    it("call officeDefaultHandler - error", async () => {
+      const request = {
+        prompt: "",
+        command: "",
+        references: [],
+        location: 1,
+        attempt: 0,
+        enableCommandDetection: false,
+      } as vscode.ChatRequest;
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(officeChatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      officeChatTelemetryDataMock.chatMessages = [];
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(officeChatTelemetryDataMock);
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(util, "verbatimCopilotInteraction");
+      await chai.expect(
+        handler.officeChatRequestHandler(
+          request,
+          {} as unknown as vscode.ChatContext,
+          response as unknown as vscode.ChatResponseStream,
+          token
+        )
+      ).is.rejectedWith(`
+Please specify a question when using this command.
+
+Usage: @office Ask questions about Office Add-ins development.`);
     });
   });
 
@@ -337,64 +372,6 @@ describe("File: officeChat/handlers.ts", () => {
         {
           [TelemetryProperty.CopilotChatFeedbackHelpful]: 0,
         },
-      ]);
-    });
-  });
-
-  describe("Method: handleOfficeUserAction", () => {
-    const action = { kind: "copy" } as vscode.ChatCopyAction;
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("handle user action with undefined request id and command", async () => {
-      const userActionEvent: vscode.ChatUserActionEvent = {
-        result: {},
-        action: action,
-      };
-      sandbox.stub(Correlator, "getId").returns("testCorrelationId");
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      handler.handleOfficeUserAction(userActionEvent);
-
-      chai.expect(sendTelemetryEventStub.calledOnce).to.equal(true);
-      chai.expect(sendTelemetryEventStub.args[0]).to.deep.equal([
-        TelemetryEvent.CopilotChatUserAction,
-        {
-          [TelemetryProperty.CopilotChatRequestId]: "",
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-          [TelemetryProperty.CopilotChatCommand]: "",
-          [TelemetryProperty.CorrelationId]: "testCorrelationId",
-          [TelemetryProperty.CopilotChatUserAction]: "copy",
-        },
-        {},
-      ]);
-    });
-
-    it("handle feedback with request id and command", async () => {
-      const userActionEvent: vscode.ChatUserActionEvent = {
-        result: {
-          metadata: {
-            requestId: "testRequestId",
-            command: "testCommand",
-          },
-        },
-        action: action,
-      };
-      sandbox.stub(Correlator, "getId").returns("testCorrelationId");
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      handler.handleOfficeUserAction(userActionEvent);
-
-      chai.expect(sendTelemetryEventStub.calledOnce).to.equal(true);
-      chai.expect(sendTelemetryEventStub.args[0]).to.deep.equal([
-        TelemetryEvent.CopilotChatUserAction,
-        {
-          [TelemetryProperty.CopilotChatRequestId]: "testRequestId",
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-          [TelemetryProperty.CopilotChatCommand]: "testCommand",
-          [TelemetryProperty.CorrelationId]: "testCorrelationId",
-          [TelemetryProperty.CopilotChatUserAction]: "copy",
-        },
-        {},
       ]);
     });
   });

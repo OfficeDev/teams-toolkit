@@ -16,14 +16,21 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { cpUtils } from "../../../src/common/deps-checker";
+import { createContext, setTools } from "../../../src/common/globalVars";
+import { cpUtils } from "../../../src/component/deps-checker/";
 import { Generator } from "../../../src/component/generator/generator";
-import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
-import * as componentUtils from "../../../src/component/utils";
-import { createContextV3 } from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
-import { OfficeAddinHostOptions, ProjectTypeOptions, QuestionNames } from "../../../src/question";
+import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import {
+  OfficeXMLAddinGenerator,
+  OfficeXmlAddinGeneratorNew,
+} from "../../../src/component/generator/officeXMLAddin/generator";
+import {
+  OfficeAddinHostOptions,
+  ProgrammingLanguage,
+  ProjectTypeOptions,
+  QuestionNames,
+  getOfficeAddinTemplateConfig,
+} from "../../../src/question";
 import { MockTools } from "../../core/utils";
 
 describe("OfficeXMLAddinGenerator", function () {
@@ -36,7 +43,7 @@ describe("OfficeXMLAddinGenerator", function () {
     mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fse.ensureDir(testFolder);
     sinon.stub(fs, "stat").resolves();
@@ -85,7 +92,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -125,7 +132,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
-    sinon.stub(componentUtils, "fetchAndUnzip").resolves(ok(undefined));
+    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
 
@@ -201,5 +208,92 @@ describe("getOfficeAddinTemplateConfig", () => {
       config["excel-react"].framework?.default?.typescript,
       "https://aka.ms/ccdevx-fx-react-ts"
     );
+  });
+});
+
+describe("OfficeXmlAddinGeneratorNew", () => {
+  const gtools = new MockTools();
+  setTools(gtools);
+  const generator = new OfficeXmlAddinGeneratorNew();
+  const context = createContext();
+  describe("active()", () => {
+    it(`should return true`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      };
+      const res = generator.activate(context, inputs);
+      chai.assert.isTrue(res);
+    });
+
+    it(`should return false`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.outlook().id,
+      };
+      const res = generator.activate(context, inputs);
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("getTemplateInfos()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path for word-taskpane", async () => {
+      sandbox.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
+      sandbox.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.Capabilities]: "word-taskpane",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value.length, 2);
+      }
+    });
+    it("happy path for word-manifest", async () => {
+      sandbox.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
+      sandbox.stub(OfficeXMLAddinGenerator, "childProcessExec").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.Capabilities]: "word-manifest",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value.length, 3);
+      }
+    });
+  });
+
+  describe("post()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      sandbox.stub(OfficeAddinManifest, "modifyManifestFile").resolves();
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+    });
   });
 });

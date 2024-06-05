@@ -5,7 +5,7 @@ import {
   CancellationToken,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
 } from "vscode";
 import { OfficeChatCommand } from "../consts";
 import { ISkill } from "./skills/iSkill";
@@ -43,7 +43,7 @@ export class Planner {
   }
 
   public async processRequest(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,

@@ -16,7 +16,7 @@ describe("office steps: getWholeStatus", () => {
   });
 
   it("folder !== undefined", async () => {
-    sandbox.stub(helper, "getFixedCommonProjectSettings").returns({ projectId: "test-id" });
+    sandbox.stub(helper, "getProjectMetadata").returns({ projectId: "test-id" });
     sandbox
       .stub(projectStatusUtils, "getProjectStatus")
       .resolves(projectStatusUtils.emptyProjectStatus());

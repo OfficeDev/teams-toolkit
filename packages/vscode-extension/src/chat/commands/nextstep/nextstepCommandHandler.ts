@@ -8,7 +8,8 @@ import {
   ChatFollowup,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
@@ -32,8 +33,7 @@ export default async function nextStepCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByParticipant(
     chatParticipantId,
-    TeamsChatCommand.NextStep,
-    request.location
+    TeamsChatCommand.NextStep
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
@@ -111,8 +111,9 @@ export async function describeStep(
   telemetryMetadata: IChatTelemetryData
 ): Promise<string> {
   const messages = [
-    describeStepSystemPrompt,
-    new LanguageModelChatUserMessage(
+    describeStepSystemPrompt(),
+    new LanguageModelChatMessage(
+      LanguageModelChatMessageRole.User,
       `The content is '${JSON.stringify({
         description: step.description as string,
       })}'.`

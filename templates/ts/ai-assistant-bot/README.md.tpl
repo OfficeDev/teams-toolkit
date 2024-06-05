@@ -66,7 +66,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:

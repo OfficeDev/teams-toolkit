@@ -29,6 +29,7 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. Open the `Copilot` app and send a prompt to trigger your plugin.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 {{#ApiKey}}
 > [!NOTE]

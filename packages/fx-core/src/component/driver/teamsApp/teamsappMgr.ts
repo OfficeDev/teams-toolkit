@@ -14,14 +14,14 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Container } from "typedi";
 import * as util from "util";
+import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
 import { resolveString } from "../../configManager/lifecycle";
-import { createDriverContext } from "../../utils";
 import { envUtil } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
+import { createDriverContext } from "../util/utils";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
 import { Constants } from "./constants";
 import {
@@ -33,6 +33,7 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import {
   actionName as PublishAppPackageActionName,
   PublishAppPackageDriver,
@@ -40,7 +41,6 @@ import {
 import { manifestUtils } from "./utils/ManifestUtils";
 import { ValidateManifestDriver } from "./validate";
 import { ValidateAppPackageDriver } from "./validateAppPackage";
-import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import { ValidateWithTestCasesDriver } from "./validateTestCases";
 
 class TeamsAppMgr {

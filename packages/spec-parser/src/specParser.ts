@@ -84,7 +84,12 @@ export class SpecParser {
     try {
       try {
         await this.loadSpec();
-        await this.parser.validate(this.spec!);
+        if (!this.parser.$refs.circular) {
+          await this.parser.validate(this.spec!);
+        } else {
+          const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
+          await this.parser.validate(clonedUnResolveSpec);
+        }
       } catch (e) {
         return {
           status: ValidationStatus.Error,
@@ -185,7 +190,7 @@ export class SpecParser {
         if (isValid) {
           const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
           if (serverObj) {
-            apiResult.server = Utils.resolveEnv(serverObj.url);
+            apiResult.server = serverObj.url;
           }
 
           const authArray = Utils.getAuthArray(operation.security, spec);
@@ -241,7 +246,8 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+      const clonedUnResolveSpec = JSON.parse(JSON.stringify(newUnResolvedSpec));
+      const newSpec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
       return [newUnResolvedSpec, newSpec];
     } catch (err) {
       if (err instanceof SpecParserError) {
@@ -283,17 +289,20 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
-        manifestPath,
-        outputSpecPath,
-        pluginFilePath,
-        newSpec,
-        this.options,
-        authInfo
-      );
+      const [updatedManifest, apiPlugin, warnings] =
+        await ManifestUpdater.updateManifestWithAiPlugin(
+          manifestPath,
+          outputSpecPath,
+          pluginFilePath,
+          newSpec,
+          this.options,
+          authInfo
+        );
 
-      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
-      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 2 });
+      result.warnings.push(...warnings);
+
+      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 4 });
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 4 });
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;
@@ -391,7 +400,8 @@ export class SpecParser {
 
   private async loadSpec(): Promise<void> {
     if (!this.spec) {
-      this.unResolveSpec = (await this.parser.parse(this.pathOrSpec)) as OpenAPIV3.Document;
+      const spec = (await this.parser.parse(this.pathOrSpec)) as OpenAPIV3.Document;
+      this.unResolveSpec = this.resolveEnvForSpec(spec);
       // Convert swagger 2.0 to openapi 3.0
       if (!this.unResolveSpec.openapi && (this.unResolveSpec as any).swagger === "2.0") {
         const specObj = await converter.convert(this.unResolveSpec as any, {});
@@ -430,5 +440,11 @@ export class SpecParser {
       resultStr = JSON.stringify(unResolvedSpec, null, 2);
     }
     await fs.outputFile(outputSpecPath, resultStr);
+  }
+
+  private resolveEnvForSpec(spec: OpenAPIV3.Document): OpenAPIV3.Document {
+    const specString = JSON.stringify(spec);
+    const specResolved = Utils.resolveEnv(specString);
+    return JSON.parse(specResolved) as OpenAPIV3.Document;
   }
 }

@@ -107,19 +107,6 @@ jobs:
               return "stable"
             }
 
-  CallAzurePipeline:
-    runs-on: ubuntu-latest
-    needs: DownloadAndOutput
-    steps:
-      - name: Call Azure Pipeline
-        if: ${{needs.downloadAndOutput.outputs.server_version}}
-        uses: Azure/pipelines@v1.2
-        with:
-          azure-devops-project-url: https://devdiv.visualstudio.com/DevDiv
-          azure-pipeline-name: TeamsFx-Dev17-CD
-          azure-devops-token: ${{ secrets.VS_ADO_PAT }}
-          azure-pipeline-variables: '{"PreId": ${{needs.downloadAndOutput.outputs.pre_id}}, "ServerVersion": ${{needs.downloadAndOutput.outputs.server_version}}, "zipLink": ${{needs.downloadAndOutput.outputs.zipLink}}, "series": ${{needs.downloadAndOutput.outputs.stage}}}'
-
   CheckSetupSuccess:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}

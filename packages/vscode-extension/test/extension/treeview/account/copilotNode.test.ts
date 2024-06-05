@@ -1,15 +1,13 @@
+import { Err, Ok, SystemError } from "@microsoft/teamsfx-api";
+import { PackageService } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-
-import { Err, Ok, SystemError } from "@microsoft/teamsfx-api";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
-
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
+import * as handlers from "../../../../src/handlers";
 import { infoIcon, passIcon, warningIcon } from "../../../../src/treeview/account/common";
 import { CopilotNode } from "../../../../src/treeview/account/copilotNode";
 import { DynamicNode } from "../../../../src/treeview/dynamicNode";
-import * as handlers from "../../../../src/handlers";
 
 describe("sideloadingNode", () => {
   const sandbox = sinon.createSandbox();
@@ -30,7 +28,7 @@ describe("sideloadingNode", () => {
     sandbox
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
-    sandbox.stub(tools, "getCopilotStatus").returns(Promise.resolve(false));
+    sandbox.stub(PackageService.prototype, "getCopilotStatus").returns(Promise.resolve(false));
     sandbox.stub(handlers, "checkCopilotCallback");
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
@@ -42,7 +40,7 @@ describe("sideloadingNode", () => {
     sandbox
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
-    sandbox.stub(tools, "getCopilotStatus").returns(Promise.resolve(true));
+    sandbox.stub(PackageService.prototype, "getCopilotStatus").returns(Promise.resolve(true));
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
 
@@ -53,7 +51,9 @@ describe("sideloadingNode", () => {
     sandbox
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
-    sandbox.stub(tools, "getCopilotStatus").returns(Promise.reject(new Error("test-error")));
+    sandbox
+      .stub(PackageService.prototype, "getCopilotStatus")
+      .returns(Promise.reject(new Error("test-error")));
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
 

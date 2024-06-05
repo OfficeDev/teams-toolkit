@@ -1,24 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, TeamsAppManifest, Platform } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import AdmZip from "adm-zip";
-import { merge } from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
+import { FxError, Platform, Result, TeamsAppManifest, err, ok } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import fs from "fs-extra";
+import { merge } from "lodash";
+import { Service } from "typedi";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
+import { getAbsolutePath } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { Constants } from "./constants";
+import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { TelemetryPropertyKey } from "./utils/telemetry";
-import { AppStudioScopes } from "../../../common/tools";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { Service } from "typedi";
-import { getAbsolutePath } from "../../utils/common";
-import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
+import { AppStudioScopes } from "../../../common/constants";
 
 export const actionName = "teamsApp/publishAppPackage";
 

@@ -148,8 +148,13 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
+        os: [windows-latest, macos-latest, macos-13, macos-12, ubuntu-latest]
         dotnet-version: [none, 3.1.x, 5.0.x, 6.0.x]
+        exclude:
+          - os: macos-latest
+            dotnet-version: 3.1.x
+          - os: macos-latest
+            dotnet-version: 5.0.x
       max-parallel: 30
 
     runs-on: ${{ matrix.os }}
@@ -172,7 +177,7 @@ jobs:
 
       - name: Setup .NET SDK
         if: ${{ matrix.dotnet-version != 'none' }}
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 

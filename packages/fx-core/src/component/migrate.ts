@@ -5,10 +5,32 @@ import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
-import { CapabilityOptions } from "../question/create";
-import { ComponentNames } from "./constants";
-import { ensureComponentConnections } from "./utils";
-import { getComponent } from "./workflow";
+import { CapabilityOptions } from "../question/constants";
+
+export const ComponentNames = {
+  TeamsTab: "teams-tab",
+  TeamsBot: "teams-bot",
+  TeamsApi: "teams-api",
+  AppManifest: "app-manifest",
+  AadApp: "aad-app",
+  AzureWebApp: "azure-web-app",
+  AzureStorage: "azure-storage",
+  BotService: "bot-service",
+  SPFxTab: "spfx-tab",
+  SPFx: "spfx",
+  Identity: "identity",
+  APIM: "apim",
+  KeyVault: "key-vault",
+  AzureSQL: "azure-sql",
+  TabCode: "tab-code",
+  BotCode: "bot-code",
+  ApiCode: "api-code",
+  Function: "azure-function",
+  SimpleAuth: "simple-auth",
+  SSO: "sso",
+  ApiConnector: "api-connector",
+  CICD: "cicd",
+};
 
 export const EnvStateMigrationComponentNames = [
   ["solution", "solution"],
@@ -203,6 +225,68 @@ export function convertProjectSettingsV2ToV3(settingsV2: any, projectPath: strin
     ensureComponentConnections(settingsV3);
   }
   return settingsV3;
+}
+const ComponentConnections = {
+  [ComponentNames.AzureWebApp]: [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.AadApp,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.Function]: [
+    ComponentNames.Identity,
+    ComponentNames.AzureSQL,
+    ComponentNames.KeyVault,
+    ComponentNames.AadApp,
+    ComponentNames.TeamsTab,
+    ComponentNames.TeamsBot,
+    ComponentNames.TeamsApi,
+  ],
+  [ComponentNames.APIM]: [ComponentNames.TeamsTab, ComponentNames.TeamsBot],
+};
+export function getComponent(projectSettings: any, resourceType: string): any | undefined {
+  return projectSettings.components?.find((r: any) => r.name === resourceType);
+}
+enum Scenarios {
+  Tab = "Tab",
+  Bot = "Bot",
+  Api = "Api",
+}
+export function getComponentByScenario(
+  projectSetting: any,
+  resourceType: string,
+  scenario?: Scenarios
+): any | undefined {
+  return scenario
+    ? projectSetting.components?.find(
+        (r: any) => r.name === resourceType && r.scenario === scenario
+      )
+    : getComponent(projectSetting, resourceType);
+}
+function ensureComponentConnections(settingsV3: any): void {
+  const exists = (c: string) => getComponent(settingsV3, c) !== undefined;
+  const existingConfigNames = Object.keys(ComponentConnections).filter(exists);
+  for (const configName of existingConfigNames) {
+    const existingResources = ComponentConnections[configName].filter(exists);
+    const configs = settingsV3.components.filter((c: any) => c.name === configName);
+    for (const config of configs) {
+      config.connections = cloneDeep(existingResources);
+    }
+  }
+  if (
+    getComponent(settingsV3, ComponentNames.TeamsApi) &&
+    getComponent(settingsV3, ComponentNames.APIM)
+  ) {
+    const functionConfig = getComponentByScenario(
+      settingsV3,
+      ComponentNames.Function,
+      Scenarios.Api
+    );
+    functionConfig?.connections?.push(ComponentNames.APIM);
+  }
 }
 
 export function convertManifestTemplateToV3(content: string): string {

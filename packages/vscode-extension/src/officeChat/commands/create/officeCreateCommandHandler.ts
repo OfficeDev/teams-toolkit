@@ -6,7 +6,8 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
@@ -30,8 +31,7 @@ export default async function officeCreateCommandHandler(
 ): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    OfficeChatCommand.Create,
-    request.location
+    OfficeChatCommand.Create
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
@@ -63,8 +63,9 @@ export default async function officeCreateCommandHandler(
         localize("teamstoolkit.chatParticipants.officeAddIn.create.projectMatched")
       );
       const describeProjectChatMessages = [
-        describeOfficeProjectSystemPrompt,
-        new LanguageModelChatUserMessage(
+        describeOfficeProjectSystemPrompt(),
+        new LanguageModelChatMessage(
+          LanguageModelChatMessageRole.User,
           `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
         ),
       ];
@@ -95,7 +96,7 @@ export default async function officeCreateCommandHandler(
       }
     } else {
       const chatResult = await Planner.getInstance().processRequest(
-        new LanguageModelChatUserMessage(request.prompt),
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
         request,
         response,
         token,

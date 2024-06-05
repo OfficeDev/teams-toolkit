@@ -7,6 +7,7 @@ export enum TelemetryEvent {
   CreateAccount = "create-account",
 
   GetStarted = "quick-start",
+  WalkThroughBuildIntelligentApps = "walkthrough-build-intelligent-apps",
 
   Samples = "samples",
 
@@ -144,6 +145,7 @@ export enum TelemetryEvent {
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
   DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
+  LaunchDesktopClientTask = "launch-desktop-client",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",

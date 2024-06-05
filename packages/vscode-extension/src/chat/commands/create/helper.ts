@@ -7,12 +7,12 @@ import { includes } from "lodash";
 import * as path from "path";
 import * as tmp from "tmp";
 
-import { sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
+  sampleProvider,
   sendRequestWithRetry,
-} from "@microsoft/teamsfx-core/build/component/generator/utils";
+} from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   ChatRequest,
@@ -45,8 +45,11 @@ export async function matchProject(
   if (!request.prompt.includes("template")) {
     // also search in samples
     matchedProjects.push(...(await matchSamples(request, token, telemetryMetadata)));
+    matchedProjects.sort((a, b) => b.score - a.score);
+  } else {
+    matchedProjects.sort((a, b) => b.score - a.score);
+    matchedProjects.splice(2);
   }
-  matchedProjects.sort((a, b) => b.score - a.score);
   const result: ProjectMetadata[] = [];
   const matchedProjectIds = new Set<string>();
   for (const { id, score } of matchedProjects) {

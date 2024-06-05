@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { TeamsAppManifest, err, ok } from "@microsoft/teamsfx-api";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import "mocha";
 import { createSandbox } from "sinon";
@@ -33,6 +33,8 @@ import { ErrorNames } from "../../src/component/resource/botService/constants";
 import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
 import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
+import mockFs from "mock-fs";
+import * as telemetry from "../../src/common/telemetry";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
@@ -1744,5 +1746,99 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.isTrue(e instanceof Error);
       }
     });
+  });
+  describe("getSideloadingStatus()", () => {
+    let mockGet: () => AxiosResponse;
+    let events: number;
+    let errors: number;
+    beforeEach(() => {
+      const mockInstance = axios.create();
+      sandbox.stub(mockInstance, "get").callsFake(async () => mockGet());
+      sandbox.stub(axios, "create").returns(mockInstance);
+
+      events = 0;
+      sandbox.stub(telemetry, "sendTelemetryEvent").callsFake(() => {
+        ++events;
+      });
+
+      errors = 0;
+      sandbox.stub(telemetry, "sendTelemetryErrorEvent").callsFake(() => {
+        ++errors;
+      });
+    });
+    it("sideloading enabled", async () => {
+      mockGet = () => {
+        return {
+          status: 200,
+          data: {
+            value: {
+              isSideloadingAllowed: true,
+            },
+          },
+        } as AxiosResponse;
+      };
+
+      const result = await teamsDevPortalClient.getSideloadingStatus("fake-token");
+
+      chai.assert.isDefined(result);
+      chai.assert.isTrue(result);
+      chai.assert.equal(events, 1);
+      chai.assert.equal(errors, 0);
+    });
+
+    it("sideloading not enabled", async () => {
+      mockGet = () => {
+        return {
+          status: 200,
+          data: {
+            value: {
+              isSideloadingAllowed: false,
+            },
+          },
+        } as AxiosResponse;
+      };
+
+      const result = await teamsDevPortalClient.getSideloadingStatus("fake-token");
+
+      chai.assert.isDefined(result);
+      chai.assert.isFalse(result);
+      chai.assert.equal(events, 1);
+      chai.assert.equal(errors, 0);
+    });
+
+    it("sideloading unknown", async () => {
+      mockGet = () => {
+        return {
+          status: 200,
+          data: {
+            value: {
+              foo: "bar",
+            },
+          },
+        } as AxiosResponse;
+      };
+
+      const result = await teamsDevPortalClient.getSideloadingStatus("fake-token");
+
+      chai.assert.isUndefined(result);
+      chai.assert.equal(events, 0);
+      chai.assert.equal(errors, 1);
+    });
+
+    // it("error and retry", async () => {
+    //   mockGet = () => {
+    //     throw new Error("test");
+    //   };
+    //   const clock = sandbox.useFakeTimers();
+
+    //   const resultPromise = teamsDevPortalClient.getSideloadingStatus("fake-token");
+    //   await clock.tickAsync(100000);
+    //   const result = await resultPromise;
+    //   clock.restore();
+
+    //   chai.assert.isUndefined(result);
+    //   chai.assert.equal(events, 0);
+    //   chai.assert.equal(errors, 3);
+    // });
   });
 });

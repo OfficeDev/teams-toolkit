@@ -34,7 +34,7 @@ import * as fs from "fs-extra";
 import { merge } from "lodash";
 import path from "path";
 import * as util from "util";
-import { isCopilotAuthEnabled, isSMEOAuthEnabled } from "../../../common/featureFlags";
+import { isSMEOAuthEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { isValidHttpUrl } from "../../../common/stringUtils";
 import { assembleError } from "../../../error";

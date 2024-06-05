@@ -5,7 +5,6 @@ import { TeamsAppManifest, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import * as chai from "chai";
 import "mocha";
-import * as sinon from "sinon";
 import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
 import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
@@ -94,12 +93,13 @@ describe("TeamsDevPortalClient Test", () => {
     callingEndpoint: "",
   };
   beforeEach(() => {
-    sinon.stub(RetryHandler, "RETRIES").value(1);
+    sandbox.stub(RetryHandler, "RETRIES").value(1);
   });
 
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
   });
+
   describe("setRegionByToken", () => {
     it("Happy path", async () => {
       sandbox.stub(RetryHandler, "Retry").resolves({
@@ -117,13 +117,13 @@ describe("TeamsDevPortalClient Test", () => {
   describe("publishTeamsApp", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       const response = {
         data: {
           id: "fakeId",
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       const res = await teamsDevPortalClient.publishTeamsApp(
         appStudioToken,
@@ -135,13 +135,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "error",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.publishTeamsApp(appStudioToken, "fakeId", Buffer.from(""));
@@ -152,7 +152,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const xCorrelationId = "fakeCorrelationId";
       const response = {
@@ -164,7 +164,7 @@ describe("TeamsDevPortalClient Test", () => {
           "x-correlation-id": xCorrelationId,
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       try {
         await teamsDevPortalClient.publishTeamsApp(appStudioToken, "fakeId", Buffer.from(""));
@@ -176,7 +176,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Bad gateway", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const postResponse = {
         data: {
@@ -186,7 +186,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(postResponse);
 
       const getResponse = {
         data: {
@@ -204,7 +204,7 @@ describe("TeamsDevPortalClient Test", () => {
           ],
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       const res = await teamsDevPortalClient.publishTeamsApp(
         appStudioToken,
@@ -216,7 +216,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("AppdefinitionsAlreadyExists - update", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const publishResponse = {
         data: {
@@ -235,13 +235,13 @@ describe("TeamsDevPortalClient Test", () => {
           teamsAppId: "fakeId",
         },
       };
-      sinon
+      sandbox
         .stub(fakeAxiosInstance, "post")
         .onFirstCall()
         .resolves(publishResponse)
         .onSecondCall()
         .resolves(updateResponse);
-      sinon.stub(teamsDevPortalClient, "publishTeamsAppUpdate").resolves("fakeId");
+      sandbox.stub(teamsDevPortalClient, "publishTeamsAppUpdate").resolves("fakeId");
 
       const getResponse = {
         data: {
@@ -259,7 +259,7 @@ describe("TeamsDevPortalClient Test", () => {
           ],
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       const res = await teamsDevPortalClient.publishTeamsApp(
         appStudioToken,
@@ -271,7 +271,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("AppdefinitionsAlreadyExists - failed", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const postResponse = {
         data: {
@@ -284,7 +284,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(postResponse);
 
       try {
         await teamsDevPortalClient.publishTeamsApp(appStudioToken, "fakeId", Buffer.from(""));
@@ -297,12 +297,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("import Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appDef,
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       teamsDevPortalClient.region = "https://dev.teams.microsoft.com/amer";
 
@@ -312,12 +312,12 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Happy path - with wrong region", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appDef,
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
       teamsDevPortalClient.region = "https://dev.teams.microsoft.com";
       const res = await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
       chai.assert.equal(res, appDef);
@@ -325,14 +325,14 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("409 conflict", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
           status: 409,
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
@@ -343,7 +343,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("422 conflict", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
@@ -351,7 +351,7 @@ describe("TeamsDevPortalClient Test", () => {
           data: "Unable import, App already exists and published. publishStatus: 'LobStore'",
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
@@ -365,7 +365,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("422 other error", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
@@ -376,7 +376,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
@@ -387,8 +387,8 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("invalid Teams app id", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
-      sinon
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox
         .stub(manifestUtils, "extractManifestFromArchivedFile")
         .returns(ok(new TeamsAppManifest()));
 
@@ -398,7 +398,7 @@ describe("TeamsDevPortalClient Test", () => {
           data: "App Id must be a GUID",
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
@@ -409,12 +409,14 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("extract manifet failed", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       const fileNotFoundError = AppStudioResultFactory.UserError(
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
       );
-      sinon.stub(manifestUtils, "extractManifestFromArchivedFile").returns(err(fileNotFoundError));
+      sandbox
+        .stub(manifestUtils, "extractManifestFromArchivedFile")
+        .returns(err(fileNotFoundError));
 
       const error = {
         response: {
@@ -422,7 +424,7 @@ describe("TeamsDevPortalClient Test", () => {
           data: "App Id must be a GUID",
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
@@ -433,7 +435,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("400 bad reqeust", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
@@ -445,7 +447,7 @@ describe("TeamsDevPortalClient Test", () => {
         },
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
@@ -458,12 +460,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("get Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appDef,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.getApp(appStudioToken, appDef.teamsAppId!);
       chai.assert.equal(res, appDef);
@@ -471,13 +473,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getApp(appStudioToken, appDef.teamsAppId!);
@@ -489,7 +491,7 @@ describe("TeamsDevPortalClient Test", () => {
     it("region - 404", async () => {
       teamsDevPortalClient.region = "https://dev.teams.microsoft.com/amer";
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
@@ -499,7 +501,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getApp(appStudioToken, appDef.teamsAppId!);
@@ -514,12 +516,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("get app package", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: "fakeData",
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.getAppPackage(appStudioToken, appDef.teamsAppId!);
       chai.assert.equal(res, "fakeData");
@@ -527,13 +529,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getAppPackage(appStudioToken, appDef.teamsAppId!);
@@ -546,7 +548,7 @@ describe("TeamsDevPortalClient Test", () => {
   describe("partner center app validation", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: {
@@ -562,7 +564,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       const res = await teamsDevPortalClient.partnerCenterAppPackageValidation(
         appStudioToken,
@@ -573,13 +575,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("422", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "422",
         message: "Invalid zip",
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.partnerCenterAppPackageValidation(
@@ -595,12 +597,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("Check exists in tenant", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: true,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.checkExistsInTenant(
         appStudioToken,
@@ -611,13 +613,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.checkExistsInTenant(appStudioToken, appDef.teamsAppId!);
@@ -630,7 +632,7 @@ describe("TeamsDevPortalClient Test", () => {
   describe("publishTeamsAppUpdate", () => {
     it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const xCorrelationId = "fakeCorrelationId";
       const postResponse = {
@@ -643,7 +645,7 @@ describe("TeamsDevPortalClient Test", () => {
         },
       };
 
-      sinon.stub(fakeAxiosInstance, "post").resolves(postResponse);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(postResponse);
 
       const getResponse = {
         data: {
@@ -661,7 +663,7 @@ describe("TeamsDevPortalClient Test", () => {
           ],
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       try {
         await teamsDevPortalClient.publishTeamsAppUpdate(appStudioToken, "", Buffer.from(""));
@@ -672,13 +674,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "error",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       const getResponse = {
         data: {
@@ -696,7 +698,7 @@ describe("TeamsDevPortalClient Test", () => {
           ],
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       try {
         await teamsDevPortalClient.publishTeamsAppUpdate(appStudioToken, "", Buffer.from(""));
@@ -709,14 +711,14 @@ describe("TeamsDevPortalClient Test", () => {
   describe("grantPermission", () => {
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "error",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
-      sinon.stub(fakeAxiosInstance, "get").resolves({ data: appDef });
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").resolves({ data: appDef });
 
       const appUser: AppUser = {
         tenantId: uuid(),
@@ -735,7 +737,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const newAppUser: AppUser = {
         tenantId: "new-tenant-id",
@@ -772,10 +774,10 @@ describe("TeamsDevPortalClient Test", () => {
           newAppUser,
         ],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves({
+      sandbox.stub(fakeAxiosInstance, "get").resolves({
         data: appDefWithUser,
       });
-      sinon.stub(fakeAxiosInstance, "post").resolves({
+      sandbox.stub(fakeAxiosInstance, "post").resolves({
         data: appDefWithUserAdded,
       });
 
@@ -790,7 +792,7 @@ describe("TeamsDevPortalClient Test", () => {
       AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
 
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const newAppUser: AppUser = {
         tenantId: "new-tenant-id",
@@ -827,10 +829,10 @@ describe("TeamsDevPortalClient Test", () => {
           newAppUser,
         ],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves({
+      sandbox.stub(fakeAxiosInstance, "get").resolves({
         data: appDefWithUser,
       });
-      sinon.stub(fakeAxiosInstance, "post").resolves({
+      sandbox.stub(fakeAxiosInstance, "post").resolves({
         data: appDefWithUserAdded,
       });
 
@@ -845,12 +847,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("getUserList", () => {
     it("happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appDef,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.getUserList(appStudioToken, appDef.teamsAppId!);
     });
@@ -859,12 +861,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("checkPermission", () => {
     it("No permission", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appDef,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await AppStudioClient.checkPermission(
         appDef.teamsAppId!,
@@ -879,13 +881,13 @@ describe("TeamsDevPortalClient Test", () => {
   describe("getApiKeyRegistration", () => {
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
@@ -896,12 +898,12 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appApiRegistration,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
       chai.assert.equal(res, appApiRegistration);
@@ -911,12 +913,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("createApiKeyRegistration", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appApiRegistration,
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       const res = await teamsDevPortalClient.createApiKeyRegistration(
         appStudioToken,
@@ -927,7 +929,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Graph API failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
@@ -942,7 +944,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.createApiKeyRegistration(appStudioToken, appApiRegistration);
@@ -960,13 +962,13 @@ describe("TeamsDevPortalClient Test", () => {
     };
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "patch").throws(error);
+      sandbox.stub(fakeAxiosInstance, "patch").throws(error);
 
       try {
         await teamsDevPortalClient.updateApiKeyRegistration(
@@ -981,12 +983,12 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: appApiRegistration,
       };
-      sinon.stub(fakeAxiosInstance, "patch").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "patch").resolves(response);
 
       const res = await teamsDevPortalClient.updateApiKeyRegistration(
         appStudioToken,
@@ -1000,7 +1002,7 @@ describe("TeamsDevPortalClient Test", () => {
   describe("createOauthRegistration", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: {
@@ -1009,7 +1011,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       const res = await teamsDevPortalClient.createOauthRegistration(
         appStudioToken,
@@ -1020,7 +1022,7 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Graph API failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
@@ -1035,7 +1037,7 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.createOauthRegistration(appStudioToken, fakeOauthRegistration);
@@ -1048,12 +1050,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("getOauthRegistration", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: fakeOauthRegistration,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.getOauthRegistrationById(appStudioToken, "fakeId");
       chai.assert.equal(res, fakeOauthRegistration);
@@ -1061,13 +1063,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Graph API failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getOauthRegistrationById(appStudioToken, "fakeId");
@@ -1080,12 +1082,12 @@ describe("TeamsDevPortalClient Test", () => {
   describe("updateOauthRegistration", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: fakeOauthRegistration,
       };
-      sinon.stub(fakeAxiosInstance, "patch").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "patch").resolves(response);
 
       const res = await teamsDevPortalClient.updateOauthRegistration(
         appStudioToken,
@@ -1097,13 +1099,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("Graph API failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "patch").throws(error);
+      sandbox.stub(fakeAxiosInstance, "patch").throws(error);
 
       try {
         await teamsDevPortalClient.updateOauthRegistration(
@@ -1120,24 +1122,24 @@ describe("TeamsDevPortalClient Test", () => {
   describe("list Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: [appDef],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       const res = await teamsDevPortalClient.listApps(appStudioToken);
       chai.assert.deepEqual(res, [appDef]);
     });
     it("Error - no region", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: [appDef],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       teamsDevPortalClient.setRegion("");
       try {
         await teamsDevPortalClient.listApps(appStudioToken);
@@ -1148,8 +1150,8 @@ describe("TeamsDevPortalClient Test", () => {
     });
     it("Error - api failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
-      sinon.stub(fakeAxiosInstance, "get").rejects(new Error());
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(fakeAxiosInstance, "get").rejects(new Error());
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.listApps(appStudioToken);
@@ -1160,12 +1162,12 @@ describe("TeamsDevPortalClient Test", () => {
     });
     it("Error - no data", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: undefined,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.listApps(appStudioToken);
@@ -1179,23 +1181,23 @@ describe("TeamsDevPortalClient Test", () => {
   describe("delete Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       const response = {
         data: true,
       };
-      sinon.stub(fakeAxiosInstance, "delete").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       const res = await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
       chai.assert.isTrue(res);
     });
     it("Error - no region", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: [appDef],
       };
-      sinon.stub(fakeAxiosInstance, "delete").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
       teamsDevPortalClient.setRegion("");
       try {
         await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
@@ -1206,8 +1208,8 @@ describe("TeamsDevPortalClient Test", () => {
     });
     it("Error - api failure", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
-      sinon.stub(fakeAxiosInstance, "delete").rejects(new Error());
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(fakeAxiosInstance, "delete").rejects(new Error());
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
@@ -1218,12 +1220,12 @@ describe("TeamsDevPortalClient Test", () => {
     });
     it("Error - no data", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
         data: undefined,
       };
-      sinon.stub(fakeAxiosInstance, "delete").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
@@ -1237,14 +1239,14 @@ describe("TeamsDevPortalClient Test", () => {
   describe("Submit async app validation request", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       const response = {
         data: {
           appValidationId: uuid(),
           status: AsyncAppValidationStatus.Created,
         },
       };
-      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
       const res = await teamsDevPortalClient.submitAppValidationRequest(appStudioToken, "fakeId");
       chai.assert.equal(res.appValidationId, response.data.appValidationId);
     });
@@ -1253,27 +1255,27 @@ describe("TeamsDevPortalClient Test", () => {
   describe("Get async app validation request list", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       const response = {
         data: {
           continuationToken: "",
           appValidations: [],
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       const res = await teamsDevPortalClient.getAppValidationRequestList(appStudioToken, "fakeId");
       chai.assert.equal(res.appValidations!.length, 0);
     });
 
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
         await teamsDevPortalClient.submitAppValidationRequest(appStudioToken, "fakeId");
@@ -1286,7 +1288,7 @@ describe("TeamsDevPortalClient Test", () => {
   describe("Get async app validation result details", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       const response = {
         data: {
           appValidationId: "fakeId",
@@ -1304,20 +1306,20 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       const res = await teamsDevPortalClient.getAppValidationById(appStudioToken, "fakeId");
       chai.assert.equal(res.appValidationId, "fakeId");
     });
 
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getAppValidationRequestList(appStudioToken, "fakeId");
@@ -1328,13 +1330,13 @@ describe("TeamsDevPortalClient Test", () => {
 
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         name: "404",
         message: "fake message",
       };
-      sinon.stub(fakeAxiosInstance, "get").throws(error);
+      sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
         await teamsDevPortalClient.getAppValidationById(appStudioToken, "fakeId");
@@ -1345,10 +1347,6 @@ describe("TeamsDevPortalClient Test", () => {
   });
 
   describe("getBotRegistration", () => {
-    afterEach(() => {
-      sandbox.restore();
-    });
-
     it("Should return a valid bot registration", async () => {
       // Arrange
       sandbox.stub(RetryHandler, "Retry").resolves({

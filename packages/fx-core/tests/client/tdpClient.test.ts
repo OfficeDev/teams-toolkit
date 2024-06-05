@@ -9,7 +9,6 @@ import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
 import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
 import { setTools } from "../../src/common/globalVars";
-import { AppStudioClient } from "../../src/component/driver/teamsApp/clients/appStudioClient";
 import { Constants } from "../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 import {
@@ -508,7 +507,7 @@ describe("TeamsDevPortalClient Test", () => {
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       } finally {
-        AppStudioClient.setRegion(undefined as unknown as string);
+        teamsDevPortalClient.setRegion(undefined as unknown as string);
       }
     });
   });
@@ -789,7 +788,7 @@ describe("TeamsDevPortalClient Test", () => {
     });
 
     it("happy path with region", async () => {
-      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
 
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -868,11 +867,10 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await AppStudioClient.checkPermission(
-        appDef.teamsAppId!,
+      const res = await teamsDevPortalClient.checkPermission(
         appStudioToken,
-        "fakeUesrId",
-        logProvider
+        appDef.teamsAppId!,
+        "fakeUesrId"
       );
       chai.assert.equal(res, Constants.PERMISSIONS.noPermission);
     });

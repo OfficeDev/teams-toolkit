@@ -57,7 +57,7 @@ import {
   DeveloperPortalAPIFailedError,
 } from "../error/teamsApp";
 
-class RetryHandler {
+export class RetryHandler {
   public static RETRIES = 6;
   public static async Retry<T>(fn: () => Promise<T>): Promise<T | undefined> {
     let retries = this.RETRIES;

@@ -8,7 +8,7 @@ import "mocha";
 import * as sinon from "sinon";
 import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
-import { teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
+import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
 import { setTools } from "../../src/common/globalVars";
 import { AppStudioClient } from "../../src/component/driver/teamsApp/clients/appStudioClient";
 import { Constants } from "../../src/component/driver/teamsApp/constants";
@@ -30,13 +30,13 @@ import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/ap
 import { AppUser } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioResultFactory } from "../../src/component/driver/teamsApp/results";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { RetryHandler } from "../../src/component/driver/teamsApp/utils/utils";
 import { IBotRegistration } from "../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
 import { ErrorNames } from "../../src/component/resource/botService/constants";
 import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
 import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
 import { MockedLogProvider } from "../plugins/solution/util";
+
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
   const sandbox = createSandbox();

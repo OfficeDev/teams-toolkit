@@ -507,19 +507,9 @@ class TeamsDevPortalClient {
 
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async grantPermission(token: string, teamsAppId: string, newUser: AppUser): Promise<void> {
-    let app;
-    try {
-      app = await this.getApp(token, teamsAppId);
-    } catch (error) {
-      throw error;
-    }
+    const app = await this.getApp(token, teamsAppId);
 
     if (this.checkUser(app, newUser)) {
-      return;
-    }
-
-    const findUser = app.userList?.findIndex((user: AppUser) => user["aadId"] === newUser.aadId);
-    if (findUser && findUser >= 0) {
       return;
     }
 

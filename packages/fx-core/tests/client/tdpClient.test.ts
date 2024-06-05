@@ -735,6 +735,21 @@ describe("TeamsDevPortalClient Test", () => {
   });
 
   describe("grantPermission", () => {
+    it("no need to grant", async () => {
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves(appDef);
+      sandbox.stub(teamsDevPortalClient, "checkUser").returns(true);
+      try {
+        await teamsDevPortalClient.grantPermission(token, "fake", {
+          tenantId: uuid(),
+          aadId: uuid(),
+          displayName: "fake",
+          userPrincipalName: "fake",
+          isAdministrator: false,
+        });
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -807,7 +822,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: appDefWithUserAdded,
       });
 
-      const res = await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, newAppUser);
+      await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, newAppUser);
     });
 
     it("happy path with region", async () => {

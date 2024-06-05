@@ -480,12 +480,7 @@ class TeamsDevPortalClient {
 
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getUserList(token: string, teamsAppId: string): Promise<AppUser[] | undefined> {
-    let app;
-    try {
-      app = await this.getApp(token, teamsAppId);
-    } catch (error) {
-      throw error;
-    }
+    const app = await this.getApp(token, teamsAppId);
     return app.userList;
   }
 

@@ -864,34 +864,70 @@ describe("TeamsDevPortalClient Test", () => {
 
   describe("getUserList", () => {
     it("happy path", async () => {
-      const fakeAxiosInstance = axios.create();
-      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-
-      const response = {
-        data: appDef,
-      };
-      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves({
+        userList: [
+          {
+            tenantId: "fake-tenant-id",
+            aadId: "fake-aad-id",
+            displayName: "fake",
+            userPrincipalName: "fake",
+            isAdministrator: false,
+          },
+        ],
+      });
       const res = await teamsDevPortalClient.getUserList(token, appDef.teamsAppId!);
+      chai.assert.equal(res!.length, 1);
     });
   });
 
   describe("checkPermission", () => {
-    it("No permission", async () => {
-      const fakeAxiosInstance = axios.create();
-      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-
-      const response = {
-        data: appDef,
-      };
-      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-
+    it("getUserList error", async () => {
+      sandbox.stub(teamsDevPortalClient, "getUserList").rejects(new Error());
       const res = await teamsDevPortalClient.checkPermission(
         token,
         appDef.teamsAppId!,
         "fakeUesrId"
       );
       chai.assert.equal(res, Constants.PERMISSIONS.noPermission);
+    });
+    it("aadId not match", async () => {
+      sandbox.stub(teamsDevPortalClient, "getUserList").resolves([
+        {
+          tenantId: "fake-tenant-id",
+          aadId: "fake-aad-id",
+          displayName: "fake",
+          userPrincipalName: "fake",
+          isAdministrator: false,
+        },
+      ]);
+      const res = await teamsDevPortalClient.checkPermission(token, "any-id", "fakeUesrId");
+      chai.assert.equal(res, Constants.PERMISSIONS.noPermission);
+    });
+    it("is admin", async () => {
+      sandbox.stub(teamsDevPortalClient, "getUserList").resolves([
+        {
+          tenantId: "fake-tenant-id",
+          aadId: "fake-aad-id",
+          displayName: "fake",
+          userPrincipalName: "fake",
+          isAdministrator: true,
+        },
+      ]);
+      const res = await teamsDevPortalClient.checkPermission(token, "any-id", "fake-aad-id");
+      chai.assert.equal(res, Constants.PERMISSIONS.admin);
+    });
+    it("is operative", async () => {
+      sandbox.stub(teamsDevPortalClient, "getUserList").resolves([
+        {
+          tenantId: "fake-tenant-id",
+          aadId: "fake-aad-id",
+          displayName: "fake",
+          userPrincipalName: "fake",
+          isAdministrator: false,
+        },
+      ]);
+      const res = await teamsDevPortalClient.checkPermission(token, "any-id", "fake-aad-id");
+      chai.assert.equal(res, Constants.PERMISSIONS.operative);
     });
   });
 

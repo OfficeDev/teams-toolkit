@@ -33,16 +33,12 @@ import { ErrorNames } from "../../src/component/resource/botService/constants";
 import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
 import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
-import { MockedLogProvider } from "../plugins/solution/util";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
   const sandbox = createSandbox();
   setTools(tools);
-
-  const appStudioToken = "appStudioToken";
-  const logProvider = new MockedLogProvider();
-
+  const token = "appStudioToken";
   const appDef: AppDefinition = {
     appName: "fake",
     teamsAppId: uuid(),
@@ -83,12 +79,12 @@ describe("TeamsDevPortalClient Test", () => {
   };
 
   const sampleBot: IBotRegistration = {
-    botId: "0cd14903-d43a-47f5-b907-73c523aff076",
-    name: "ruhe01290236-local-debug",
+    botId: "00000000-0000-0000-0000-000000000000",
+    name: "ttttttt-local-debug",
     description: "",
     iconUrl:
       "https://docs.botframework.com/static/devportal/client/images/bot-framework-default.png",
-    messagingEndpoint: "https://8075-167-220-255-43.ngrok.io/api/messages",
+    messagingEndpoint: "https://1111-222-222-333-44.ngrok.io/api/messages",
     callingEndpoint: "",
   };
   beforeEach(() => {
@@ -124,11 +120,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
-      const res = await teamsDevPortalClient.publishTeamsApp(
-        appStudioToken,
-        "fakeId",
-        Buffer.from("")
-      );
+      const res = await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       chai.assert.equal(res, response.data.id);
     });
 
@@ -143,7 +135,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.publishTeamsApp(appStudioToken, "fakeId", Buffer.from(""));
+        await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -166,7 +158,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       try {
-        await teamsDevPortalClient.publishTeamsApp(appStudioToken, "fakeId", Buffer.from(""));
+        await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
         chai.assert.include(error.message, xCorrelationId);
@@ -205,11 +197,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
-      const res = await teamsDevPortalClient.publishTeamsApp(
-        appStudioToken,
-        "fakeId",
-        Buffer.from("")
-      );
+      const res = await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       chai.assert.equal(res, getResponse.data.value[0].appDefinitions[0].teamsAppId);
     });
 
@@ -260,11 +248,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
-      const res = await teamsDevPortalClient.publishTeamsApp(
-        appStudioToken,
-        "fakeId",
-        Buffer.from("")
-      );
+      const res = await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       chai.assert.equal(res, "fakeId");
     });
 
@@ -286,7 +270,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").resolves(postResponse);
 
       try {
-        await teamsDevPortalClient.publishTeamsApp(appStudioToken, "fakeId", Buffer.from(""));
+        await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.TeamsAppPublishConflictError.name);
       }
@@ -305,7 +289,7 @@ describe("TeamsDevPortalClient Test", () => {
 
       teamsDevPortalClient.region = "https://dev.teams.microsoft.com/amer";
 
-      const res = await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+      const res = await teamsDevPortalClient.importApp(token, Buffer.from(""));
       chai.assert.equal(res, appDef);
     });
 
@@ -318,7 +302,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
       teamsDevPortalClient.region = "https://dev.teams.microsoft.com";
-      const res = await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+      const res = await teamsDevPortalClient.importApp(token, Buffer.from(""));
       chai.assert.equal(res, appDef);
     });
 
@@ -334,7 +318,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.TeamsAppCreateConflictError.name);
       }
@@ -353,7 +337,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(
           error.name,
@@ -378,7 +362,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -400,7 +384,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.InvalidTeamsAppIdError.name);
       }
@@ -426,7 +410,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, AppStudioError.FileNotFoundError.name);
       }
@@ -449,7 +433,25 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.importApp(appStudioToken, Buffer.from(""));
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+
+    it("return error when no response data", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const res = {
+        response: {
+          staus: 200,
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "post").resolves(res);
+
+      try {
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -466,7 +468,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await teamsDevPortalClient.getApp(appStudioToken, appDef.teamsAppId!);
+      const res = await teamsDevPortalClient.getApp(token, appDef.teamsAppId!);
       chai.assert.equal(res, appDef);
     });
 
@@ -481,7 +483,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getApp(appStudioToken, appDef.teamsAppId!);
+        await teamsDevPortalClient.getApp(token, appDef.teamsAppId!);
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -503,11 +505,26 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getApp(appStudioToken, appDef.teamsAppId!);
+        await teamsDevPortalClient.getApp(token, appDef.teamsAppId!);
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       } finally {
         teamsDevPortalClient.setRegion(undefined as unknown as string);
+      }
+    });
+
+    it("app id not match", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appDef,
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
+      try {
+        await teamsDevPortalClient.getApp(token, "anotherId");
+      } catch (e) {
+        chai.assert.isTrue(e.message.includes("Cannot get the app definition with app ID"));
       }
     });
   });
@@ -522,7 +539,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await teamsDevPortalClient.getAppPackage(appStudioToken, appDef.teamsAppId!);
+      const res = await teamsDevPortalClient.getAppPackage(token, appDef.teamsAppId!);
       chai.assert.equal(res, "fakeData");
     });
 
@@ -537,9 +554,23 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getAppPackage(appStudioToken, appDef.teamsAppId!);
+        await teamsDevPortalClient.getAppPackage(token, appDef.teamsAppId!);
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+
+    it("No data", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: undefined,
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
+      try {
+        await teamsDevPortalClient.getAppPackage(token, appDef.teamsAppId!);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
       }
     });
   });
@@ -566,7 +597,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
       const res = await teamsDevPortalClient.partnerCenterAppPackageValidation(
-        appStudioToken,
+        token,
         Buffer.from("")
       );
       chai.assert.equal(res, response.data);
@@ -583,10 +614,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.partnerCenterAppPackageValidation(
-          appStudioToken,
-          Buffer.from("")
-        );
+        await teamsDevPortalClient.partnerCenterAppPackageValidation(token, Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -603,10 +631,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await teamsDevPortalClient.checkExistsInTenant(
-        appStudioToken,
-        appDef.teamsAppId!
-      );
+      const res = await teamsDevPortalClient.checkExistsInTenant(token, appDef.teamsAppId!);
       chai.assert.isTrue(res);
     });
 
@@ -621,7 +646,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.checkExistsInTenant(appStudioToken, appDef.teamsAppId!);
+        await teamsDevPortalClient.checkExistsInTenant(token, appDef.teamsAppId!);
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -665,7 +690,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       try {
-        await teamsDevPortalClient.publishTeamsAppUpdate(appStudioToken, "", Buffer.from(""));
+        await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
       } catch (error) {
         chai.assert.include(error.message, xCorrelationId);
       }
@@ -700,7 +725,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
       try {
-        await teamsDevPortalClient.publishTeamsAppUpdate(appStudioToken, "", Buffer.from(""));
+        await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -728,7 +753,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
 
       try {
-        await teamsDevPortalClient.grantPermission(appStudioToken, appDef.teamsAppId!, appUser);
+        await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, appUser);
       } catch (e) {
         chai.assert.equal(e.name, error.name);
       }
@@ -780,11 +805,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: appDefWithUserAdded,
       });
 
-      const res = await teamsDevPortalClient.grantPermission(
-        appStudioToken,
-        appDef.teamsAppId!,
-        newAppUser
-      );
+      const res = await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, newAppUser);
     });
 
     it("happy path with region", async () => {
@@ -835,11 +856,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: appDefWithUserAdded,
       });
 
-      const res = await teamsDevPortalClient.grantPermission(
-        appStudioToken,
-        appDef.teamsAppId!,
-        newAppUser
-      );
+      const res = await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, newAppUser);
     });
   });
 
@@ -853,7 +870,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await teamsDevPortalClient.getUserList(appStudioToken, appDef.teamsAppId!);
+      const res = await teamsDevPortalClient.getUserList(token, appDef.teamsAppId!);
     });
   });
 
@@ -868,7 +885,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
       const res = await teamsDevPortalClient.checkPermission(
-        appStudioToken,
+        token,
         appDef.teamsAppId!,
         "fakeUesrId"
       );
@@ -888,7 +905,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
+        await teamsDevPortalClient.getApiKeyRegistrationById(token, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -903,7 +920,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await teamsDevPortalClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
+      const res = await teamsDevPortalClient.getApiKeyRegistrationById(token, "fakeId");
       chai.assert.equal(res, appApiRegistration);
     });
   });
@@ -918,10 +935,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
-      const res = await teamsDevPortalClient.createApiKeyRegistration(
-        appStudioToken,
-        appApiRegistration
-      );
+      const res = await teamsDevPortalClient.createApiKeyRegistration(token, appApiRegistration);
       chai.assert.equal(res, appApiRegistration);
     });
 
@@ -945,7 +959,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.createApiKeyRegistration(appStudioToken, appApiRegistration);
+        await teamsDevPortalClient.createApiKeyRegistration(token, appApiRegistration);
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -969,11 +983,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "patch").throws(error);
 
       try {
-        await teamsDevPortalClient.updateApiKeyRegistration(
-          appStudioToken,
-          appApiRegistration,
-          "fakeId"
-        );
+        await teamsDevPortalClient.updateApiKeyRegistration(token, appApiRegistration, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -989,7 +999,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "patch").resolves(response);
 
       const res = await teamsDevPortalClient.updateApiKeyRegistration(
-        appStudioToken,
+        token,
         appApiRegistration,
         "fakeId"
       );
@@ -1011,10 +1021,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
-      const res = await teamsDevPortalClient.createOauthRegistration(
-        appStudioToken,
-        fakeOauthRegistration
-      );
+      const res = await teamsDevPortalClient.createOauthRegistration(token, fakeOauthRegistration);
       chai.assert.equal(res.configurationRegistrationId.oAuthConfigId, "fakeId");
     });
 
@@ -1038,7 +1045,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.createOauthRegistration(appStudioToken, fakeOauthRegistration);
+        await teamsDevPortalClient.createOauthRegistration(token, fakeOauthRegistration);
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -1055,7 +1062,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
 
-      const res = await teamsDevPortalClient.getOauthRegistrationById(appStudioToken, "fakeId");
+      const res = await teamsDevPortalClient.getOauthRegistrationById(token, "fakeId");
       chai.assert.equal(res, fakeOauthRegistration);
     });
 
@@ -1070,7 +1077,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getOauthRegistrationById(appStudioToken, "fakeId");
+        await teamsDevPortalClient.getOauthRegistrationById(token, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -1088,7 +1095,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "patch").resolves(response);
 
       const res = await teamsDevPortalClient.updateOauthRegistration(
-        appStudioToken,
+        token,
         fakeOauthRegistration,
         "fakeId"
       );
@@ -1106,11 +1113,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "patch").throws(error);
 
       try {
-        await teamsDevPortalClient.updateOauthRegistration(
-          appStudioToken,
-          fakeOauthRegistration,
-          "fakeId"
-        );
+        await teamsDevPortalClient.updateOauthRegistration(token, fakeOauthRegistration, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -1127,7 +1130,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
-      const res = await teamsDevPortalClient.listApps(appStudioToken);
+      const res = await teamsDevPortalClient.listApps(token);
       chai.assert.deepEqual(res, [appDef]);
     });
     it("Error - no region", async () => {
@@ -1140,7 +1143,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       teamsDevPortalClient.setRegion("");
       try {
-        await teamsDevPortalClient.listApps(appStudioToken);
+        await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
       } catch (e) {
         chai.assert.isTrue(e instanceof Error);
@@ -1152,7 +1155,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").rejects(new Error());
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
-        await teamsDevPortalClient.listApps(appStudioToken);
+        await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
       } catch (e) {
         chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
@@ -1168,7 +1171,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
-        await teamsDevPortalClient.listApps(appStudioToken);
+        await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
       } catch (e) {
         chai.assert.equal(e.message, "Cannot get the app definitions");
@@ -1185,7 +1188,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
-      const res = await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
+      const res = await teamsDevPortalClient.deleteApp(token, "testid");
       chai.assert.isTrue(res);
     });
     it("Error - no region", async () => {
@@ -1198,7 +1201,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
       teamsDevPortalClient.setRegion("");
       try {
-        await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
+        await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
       } catch (e) {
         chai.assert.isTrue(e instanceof Error);
@@ -1210,7 +1213,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "delete").rejects(new Error());
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
-        await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
+        await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
       } catch (e) {
         chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
@@ -1226,7 +1229,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
       teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
-        await teamsDevPortalClient.deleteApp(appStudioToken, "testid");
+        await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
       } catch (e) {
         chai.assert.equal(e.message, "Cannot delete the app: " + "testid");
@@ -1245,7 +1248,7 @@ describe("TeamsDevPortalClient Test", () => {
         },
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
-      const res = await teamsDevPortalClient.submitAppValidationRequest(appStudioToken, "fakeId");
+      const res = await teamsDevPortalClient.submitAppValidationRequest(token, "fakeId");
       chai.assert.equal(res.appValidationId, response.data.appValidationId);
     });
   });
@@ -1261,7 +1264,7 @@ describe("TeamsDevPortalClient Test", () => {
         },
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-      const res = await teamsDevPortalClient.getAppValidationRequestList(appStudioToken, "fakeId");
+      const res = await teamsDevPortalClient.getAppValidationRequestList(token, "fakeId");
       chai.assert.equal(res.appValidations!.length, 0);
     });
 
@@ -1276,7 +1279,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "post").throws(error);
 
       try {
-        await teamsDevPortalClient.submitAppValidationRequest(appStudioToken, "fakeId");
+        await teamsDevPortalClient.submitAppValidationRequest(token, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -1305,7 +1308,7 @@ describe("TeamsDevPortalClient Test", () => {
         },
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-      const res = await teamsDevPortalClient.getAppValidationById(appStudioToken, "fakeId");
+      const res = await teamsDevPortalClient.getAppValidationById(token, "fakeId");
       chai.assert.equal(res.appValidationId, "fakeId");
     });
 
@@ -1320,7 +1323,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getAppValidationRequestList(appStudioToken, "fakeId");
+        await teamsDevPortalClient.getAppValidationRequestList(token, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
@@ -1337,7 +1340,7 @@ describe("TeamsDevPortalClient Test", () => {
       sandbox.stub(fakeAxiosInstance, "get").throws(error);
 
       try {
-        await teamsDevPortalClient.getAppValidationById(appStudioToken, "fakeId");
+        await teamsDevPortalClient.getAppValidationById(token, "fakeId");
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }

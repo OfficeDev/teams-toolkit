@@ -202,13 +202,11 @@ class TeamsDevPortalClient {
       requester = this.createRequesterWithToken(token);
       TOOLS.logProvider.debug(`Sent API Request: GET ${this.region}/api/appdefinitions`);
       const response = await RetryHandler.Retry(() => requester.get(`/api/appdefinitions`));
-      if (response && response.data) {
-        const apps = <AppDefinition[]>response.data;
-        if (apps) {
-          return apps;
-        } else {
-          TOOLS.logProvider.error("Cannot get the app definitions");
-        }
+      const apps = <AppDefinition[]>response?.data;
+      if (apps) {
+        return apps;
+      } else {
+        TOOLS.logProvider.error("Cannot get the app definitions");
       }
     } catch (e) {
       const error = this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);

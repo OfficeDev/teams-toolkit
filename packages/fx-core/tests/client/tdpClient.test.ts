@@ -636,7 +636,18 @@ describe("TeamsDevPortalClient Test", () => {
       const res = await teamsDevPortalClient.checkExistsInTenant(token, appDef.teamsAppId!);
       chai.assert.isTrue(res);
     });
+    it("data false", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
+      const response = {
+        data: false,
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await teamsDevPortalClient.checkExistsInTenant(token, appDef.teamsAppId!);
+      chai.assert.isFalse(res);
+    });
     it("404 not found", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);

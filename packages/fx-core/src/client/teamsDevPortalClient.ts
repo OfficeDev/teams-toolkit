@@ -545,7 +545,7 @@ class TeamsDevPortalClient {
     } catch (err) {
       if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
         requester = this.createRequesterWithToken(token);
-        await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
+        await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList); //TODO ???
       } else {
         this.wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
         throw err;

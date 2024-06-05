@@ -5,6 +5,7 @@
  * @author Anne Fu <v-annefu@microsoft.com>
  */
 import * as path from "path";
+import * as fs from "fs-extra";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import { initPage, validateApiMeResult } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
@@ -20,10 +21,7 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext(
-      "msgnewapi",
-      "typescript"
-    );
+    localDebugTestContext = new LocalDebugTestContext("msgapikey");
     await localDebugTestContext.before();
   });
 
@@ -33,9 +31,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[Typescript] Local debug for API Message Extension with none auth",
+    "[Javascript] Local debug for API Message Extension with API key auth",
     {
-      testPlanCaseId: 28253781,
+      testPlanCaseId: 28289196,
       author: "v-annefu@microsoft.com",
     },
     async function () {
@@ -43,7 +41,12 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/functions/repair.ts");
+      validateFileExist(projectPath, "src/functions/repair.js");
+      const userFile = path.resolve(projectPath, "env", ".env.local.user");
+      const SECRET_API_KEY = "SECRET_API_KEY=gbxEWvk4p3sg";
+      const KEY = "\n" + SECRET_API_KEY;
+      fs.appendFileSync(userFile, KEY);
+      console.log("add SECRET_API_KEY=yourapikey to .env file");
       await startDebugging("Debug in Teams (Chrome)");
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(

@@ -5,6 +5,7 @@
  * @author Anne Fu <v-annefu@microsoft.com>
  */
 import * as path from "path";
+import * as fs from "fs-extra";
 import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
 import {
@@ -32,7 +33,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("msgnewapi");
+    remoteDebugTestContext = new RemoteDebugTestContext("msgapikey");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -58,14 +59,19 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] [Javascript] Remote debug for API Message Extension with none auth",
+    "[auto] [Typescript] Remote debug for API Message Extension with API key auth",
     {
-      testPlanCaseId: 28253792,
+      testPlanCaseId: 28289212,
       author: "v-annefu@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("msgnewapi", appName);
+      await createNewProject("msgapikey", appName, "TypeScript");
+      const userFile = path.resolve(projectPath, "env", ".env.dev.user");
+      const SECRET_API_KEY = "SECRET_API_KEY=gbxEWvk4p3sg";
+      const KEY = "\n" + SECRET_API_KEY;
+      fs.appendFileSync(userFile, KEY);
+      console.log("add SECRET_API_KEY=yourapikey to .env file");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(

@@ -994,6 +994,19 @@ export async function createNewProject(
       await input.confirm();
       break;
     }
+    case "msgapikey": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a new API");
+      await input.selectQuickPick("API Key");
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
     default:
       break;
   }

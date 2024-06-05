@@ -64,7 +64,9 @@
       "localdebug-aichat-bot-ts",
       "localdebug-aiassistant-bot",
       "localdebug-aiassistant-bot-ts",
-      "remotedebug-aichat-bot-py-win-only"
+      "remotedebug-aichat-bot-py-win-only",
+      "remotedebug-msg-newapi-apikey-ts-win-only",
+      "remotedebug-msg-newapi-apikey-win-only"
     ],
     "node-20": [
       "localdebug-obo-tab"
@@ -113,7 +115,9 @@
       "treeview-spfx-manifest",
       "localdebug-spfx-minimal",
       "localdebug-spfx-none",
-      "localdebug-spfx"
+      "localdebug-spfx",
+      "localdebug-msg-newapi-apikey-ts",
+      "localdebug-msg-newapi-apikey"
     ],
     "node-20": [
       "localdebug-obo-tab"

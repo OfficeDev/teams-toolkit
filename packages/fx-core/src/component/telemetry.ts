@@ -2,9 +2,8 @@
 // Licensed under the MIT license.
 
 import { FxError } from "@microsoft/teamsfx-api";
-import { TOOLS, globalVars } from "../core/globalVars";
-import { TelemetryConstants } from "./constants";
-import { fillInTelemetryPropsForFxError } from "../common/telemetry";
+import { TOOLS, globalVars } from "../common/globalVars";
+import { TelemetryConstants, telemetryUtils } from "../common/telemetry";
 
 type TelemetryProps = { [key: string]: string };
 function getCommonProperties(): TelemetryProps {
@@ -50,7 +49,7 @@ export function sendErrorEvent(
     ...getCommonProperties(),
     ...properties,
   };
-  fillInTelemetryPropsForFxError(props, error);
+  telemetryUtils.fillInErrorProperties(props, error);
   TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, props, measurements ?? {}, [
     TelemetryConstants.properties.errorMessage,
   ]);

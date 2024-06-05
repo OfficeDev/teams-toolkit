@@ -5,7 +5,7 @@
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
 import { hooks } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, ok, Platform, Result, SystemError } from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -13,32 +13,37 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
-import { MockTools, MockUserInteraction, randomAppName } from "../../utils";
-import { CoreHookContext } from "../../../../src/core/types";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
+import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
+import { NodeChecker } from "../../../../src/component/deps-checker/internal/nodeChecker";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
+import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
+import {
+  azureParameterMigration,
+  checkapimPluginExists,
+  checkVersionForMigration,
+  configsMigration,
+  debugMigration,
+  errorNames,
+  generateApimPluginEnvContent,
+  manifestsMigration,
+  migrate,
+  ProjectMigratorMWV3,
+  statesMigration,
+  updateLaunchJson,
+  userdataMigration,
+  wrapRunMigration,
+} from "../../../../src/core/middleware/projectMigratorV3";
+import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
+import { getProjectSettingsPath } from "../../../../src/core/middleware/projectSettingsLoader";
+import { VersionForMigration } from "../../../../src/core/middleware/types";
+import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import {
   backupFolder,
   MigrationContext,
 } from "../../../../src/core/middleware/utils/migrationContext";
-import {
-  manifestsMigration,
-  statesMigration,
-  updateLaunchJson,
-  migrate,
-  wrapRunMigration,
-  checkVersionForMigration,
-  configsMigration,
-  generateApimPluginEnvContent,
-  userdataMigration,
-  debugMigration,
-  azureParameterMigration,
-  checkapimPluginExists,
-  ProjectMigratorMWV3,
-  errorNames,
-} from "../../../../src/core/middleware/projectMigratorV3";
-import * as MigratorV3 from "../../../../src/core/middleware/projectMigratorV3";
-import { NotAllowedMigrationError } from "../../../../src/core/error";
-import { MetadataV3, VersionSource, VersionState } from "../../../../src/common/versionMetadata";
+import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
 import {
   buildEnvUserFileName,
   getTrackingIdFromPath,
@@ -46,26 +51,21 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
 } from "../../../../src/core/middleware/utils/v3MigrationUtils";
-import * as v3MigrationUtils from "../../../../src/core/middleware/utils/v3MigrationUtils";
-import { getProjectSettingsPath } from "../../../../src/core/middleware/projectSettingsLoader";
-import * as debugV3MigrationUtils from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { VersionForMigration } from "../../../../src/core/middleware/types";
-import * as loader from "../../../../src/core/middleware/projectSettingsLoader";
-import { settingsUtil } from "../../../../src/component/utils/settingsUtil";
+import { CoreHookContext } from "../../../../src/core/types";
+import { NotAllowedMigrationError } from "../../../../src/error";
+import { MockTools, MockUserInteraction, randomAppName } from "../../utils";
 import {
-  copyTestProject,
-  mockMigrationContext,
   assertFileContent,
-  readEnvFile,
-  getTestAssetsPath,
-  readEnvUserFile,
   Constants,
+  copyTestProject,
   getManifestPathV2,
-  loadExpectedYmlFile,
+  getTestAssetsPath,
   getYmlTemplates,
+  loadExpectedYmlFile,
+  mockMigrationContext,
+  readEnvFile,
+  readEnvUserFile,
 } from "./utils";
-import { NodeChecker } from "../../../../src/component/deps-checker/internal/nodeChecker";
-import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 let mockedEnvRestore: () => void;
 const mockedId = "00000000-0000-0000-0000-000000000000";

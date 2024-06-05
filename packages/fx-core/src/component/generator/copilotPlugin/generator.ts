@@ -36,6 +36,7 @@ import path from "path";
 import * as util from "util";
 import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { isValidHttpUrl } from "../../../common/stringUtils";
 import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
@@ -44,7 +45,6 @@ import {
   ProgrammingLanguage,
   QuestionNames,
 } from "../../../question/constants";
-import { isValidHttpUrl } from "../../../question/util";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
@@ -52,7 +52,6 @@ import { TelemetryEvents } from "../spfx/utils/telemetryEvents";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import {
-  OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
   copilotPluginParserOptions,
   defaultApiSpecFolderName,
@@ -73,9 +72,7 @@ import {
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
-const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
-const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
 const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
@@ -167,29 +164,6 @@ export class CopilotPluginGenerator {
       errorSource: fromOpenAIPlugincomponentName,
     }),
   ])
-  public static async generateFromOpenAIPlugin(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    return await this.generate(
-      context,
-      inputs,
-      destinationPath,
-      fromOpenAIPluginTemplateName,
-      fromOpenAIPlugincomponentName,
-      false
-    );
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: fromOpenAIPlugincomponentName,
-      telemetryEventName: TelemetryEvents.Generate,
-      errorSource: fromOpenAIPlugincomponentName,
-    }),
-  ])
   public static async generateForCustomCopilotRagCustomApi(
     context: Context,
     inputs: Inputs,
@@ -225,7 +199,7 @@ export class CopilotPluginGenerator {
           : isPlugin
           ? ProjectType.Copilot
           : ProjectType.SME;
-      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      let url = inputs[QuestionNames.ApiSpecLocation];
       url = url.trim();
       let isYaml: boolean;
       try {
@@ -312,7 +286,6 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     return (
       capability === CapabilityOptions.copilotPluginApiSpec().id ||
-      capability === CapabilityOptions.copilotPluginOpenAIPlugin().id ||
       meArchitecture === MeArchitectureOptions.apiSpec().id ||
       (capability === CapabilityOptions.customCopilotRag().id &&
         inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
@@ -327,8 +300,6 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
       templateName = apiPluginFromApiSpecTemplateName;
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
       templateName = fromApiSpecTemplateName;
-    } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-      templateName = fromOpenAIPluginTemplateName;
     } else if (
       capability === CapabilityOptions.customCopilotRag().id &&
       inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
@@ -375,7 +346,7 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
         : getTemplateInfosState.isPlugin
         ? ProjectType.Copilot
         : ProjectType.SME;
-    const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+    const url = inputs[QuestionNames.ApiSpecLocation];
     getTemplateInfosState.url = url.trim();
 
     getTemplateInfosState.isYaml = false;
@@ -488,7 +459,7 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
       }
 
       if (validationRes.status === ValidationStatus.Error) {
-        logValidationResults(validationRes.errors, warnings, context, true, false, true);
+        logValidationResults(validationRes.errors, warnings, context, false, true);
         const errorMessage =
           inputs.platform === Platform.VSCode
             ? getLocalizedString(
@@ -571,14 +542,6 @@ export class CopilotGenerator extends DefaultTemplateGenerator {
       }
 
       const teamsManifest = manifestRes.value;
-      if (inputs.openAIPluginManifest) {
-        const updateManifestRes = await OpenAIPluginManifestHelper.updateManifest(
-          inputs.openAIPluginManifest,
-          teamsManifest,
-          manifestPath
-        );
-        if (updateManifestRes.isErr()) return err(updateManifestRes.error);
-      }
 
       if (getTemplateInfosState.templateName === forCustomCopilotRagCustomApi) {
         const specs = await specParser.getFilteredSpecs(filters);

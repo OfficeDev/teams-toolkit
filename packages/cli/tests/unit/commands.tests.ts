@@ -100,10 +100,6 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
-      );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });

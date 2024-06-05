@@ -10,7 +10,7 @@ chai.use(chaiPromised);
 const titles = {
   gettingStarted: "Getting started with Teams Toolkit",
   createOrOpenProject: "Create a new project or open an existing project",
-  summarizeReadme: "Learn more about the project with README",
+  summarizeReadme: "Get more info about the project with README",
   previewInTestTool: "Preview in Test Tool",
   signInM365Account: "Sign in to Microsoft 365 Account",
   joinM365DeveloperProgram: "Join Microsoft 365 Developer Program",

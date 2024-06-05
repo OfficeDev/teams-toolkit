@@ -18,10 +18,11 @@ import {
 import { DependencyChecker } from "./dependencyChecker";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
-import { DependencyValidateError, NpmInstallError } from "../error";
+import { DependencyValidateError } from "../error";
 import { cpUtils } from "../../../deps-checker/util/cpUtils";
 import { getExecCommand, Utils } from "../utils/utils";
 import { Constants } from "../utils/constants";
+import { NpmInstallError } from "../../../../error";
 
 const name = Constants.YeomanPackageName;
 const displayName = `${name}`;
@@ -193,7 +194,7 @@ export class YoChecker implements DependencyChecker {
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
       void this._logger.error(`Failed to execute npm install ${displayName}@${version}`);
-      throw NpmInstallError(error as Error);
+      throw new NpmInstallError(error as Error);
     }
   }
 }

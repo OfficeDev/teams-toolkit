@@ -4,8 +4,8 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { AppStudioScopes, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { GraphScopes } from "../../../common/constants";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { QuestionNames } from "../../../question/constants";
 import { QuestionMW } from "../../middleware/questionMW";
@@ -14,7 +14,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
-import { AppStudioScopes } from "../teamsApp/constants";
 import {
   OauthRegistration,
   OauthRegistrationAppType,

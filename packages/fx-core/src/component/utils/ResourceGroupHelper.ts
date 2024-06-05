@@ -16,7 +16,7 @@ import {
   TextInputQuestion,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../common/globalVars";
 import {
   CheckResourceGroupExistenceError,
   CreateResourceGroupError,
@@ -30,6 +30,7 @@ import { QuestionNames, recommendedLocations } from "../../question/constants";
 import { traverse } from "../../ui/visitor";
 import { SolutionSource } from "../constants";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { InputValidationError } from "../../error";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -369,7 +370,11 @@ class ResourceGroupHelper {
     const targetResourceGroupName = targetResourceGroupNameOptionItem.id;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
       return err(
-        new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
+        new InputValidationError(
+          "targetResourceGroupName",
+          "Invalid targetResourceGroupName",
+          "ResourceGroupHelper"
+        )
       );
     }
     if (targetResourceGroupName === newResourceGroupOption) {

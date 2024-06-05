@@ -1993,7 +1993,7 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: async () => {
           showMessageCalledCount += 1;
-          return Promise.resolve(ok("Learn More"));
+          return Promise.resolve(ok("Get More Info"));
         },
       });
       const createOrShow = sinon.stub(WebviewPanel, "createOrShow");

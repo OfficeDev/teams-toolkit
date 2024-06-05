@@ -6,7 +6,7 @@ import { LogProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import FormData from "form-data";
 import fs from "fs-extra";
-import { ErrorContextMW, TOOLS } from "../../core/globalVars";
+import { ErrorContextMW, TOOLS } from "../../common/globalVars";
 import { assembleError } from "../../error/common";
 import { ErrorCategory } from "../../error/types";
 import {
@@ -19,7 +19,7 @@ import {
 import { waitSeconds } from "../../common/utils";
 import { WrappedAxiosClient } from "../../common/wrappedAxiosClient";
 import { NotExtendedToM365Error } from "./errors";
-import { serviceEndpoint } from "./serviceConstant";
+import { MosServiceEndpoint } from "./serviceConstant";
 
 const M365ErrorSource = "M365";
 const M365ErrorComponent = "PackageService";
@@ -35,7 +35,7 @@ export class PackageService {
   public static GetSharedInstance(): PackageService {
     if (!PackageService.sharedInstance) {
       PackageService.sharedInstance = new PackageService(
-        process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint,
+        process.env.SIDELOADING_SERVICE_ENDPOINT ?? MosServiceEndpoint,
         TOOLS.logProvider
       );
     }

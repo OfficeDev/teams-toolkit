@@ -2,15 +2,18 @@
 // Licensed under the MIT license.
 
 import { AppPackageFolderName } from "@microsoft/teamsfx-api";
-import { FileType, namingConverterV3 } from "./MigrationUtils";
-import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
-import { getTemplatesFolder } from "../../../folder";
-import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
+import * as path from "path";
 import { MetadataV3 } from "../../../common/versionMetadata";
-import { convertProjectSettingsV2ToV3, getComponent } from "../../../component/migrate";
-import { ComponentNames } from "../../../component/constants";
+import {
+  ComponentNames,
+  convertProjectSettingsV2ToV3,
+  getComponent,
+} from "../../../component/migrate";
+import { getTemplatesFolder } from "../../../folder";
+import { FileType, namingConverterV3 } from "./MigrationUtils";
+import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
   constructor(protected oldProjectSettings: any) {}

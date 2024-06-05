@@ -12,11 +12,6 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
-/**
- * Update all preview feature flags.
- */
-export function initializePreviewFeatureFlags(): void {}
-
 export function isCLIDotNetEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
 }

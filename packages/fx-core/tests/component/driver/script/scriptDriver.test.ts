@@ -146,6 +146,10 @@ describe("getSystemEncoding", () => {
     const result = await getSystemEncoding();
     assert.equal(result, DefaultEncoding);
   });
+  it("should return utf8 for azure cli", async () => {
+    const result = await getSystemEncoding("@azure/static-web-apps-cli");
+    assert.equal(result, "utf8");
+  });
 });
 
 describe("parseSetOutputCommand", () => {

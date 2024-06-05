@@ -4,6 +4,8 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import { MetadataV3 } from "./versionMetadata";
+import { pathUtils } from "../component/utils/pathUtils";
+import { parse } from "yaml";
 
 export enum OfficeManifestType {
   XmlAddIn,
@@ -139,4 +141,26 @@ export function isValidProjectV2(workspacePath: string): boolean {
 
 export function isVSProject(projectSettings?: any): boolean {
   return projectSettings?.programmingLanguage === "csharp";
+}
+
+export function getProjectMetadata(
+  rootPath?: string | undefined
+): { version?: string; projectId?: string } | undefined {
+  if (!rootPath) {
+    return undefined;
+  }
+  try {
+    const ymlPath = pathUtils.getYmlFilePath(rootPath, "dev");
+    if (!ymlPath || !fs.pathExistsSync(ymlPath)) {
+      return undefined;
+    }
+    const ymlContent = fs.readFileSync(ymlPath, "utf-8");
+    const ymlObject = parse(ymlContent);
+    return {
+      projectId: ymlObject?.projectId ? ymlObject.projectId.toString() : "",
+      version: ymlObject?.version ? ymlObject.version.toString() : "",
+    };
+  } catch {
+    return undefined;
+  }
 }

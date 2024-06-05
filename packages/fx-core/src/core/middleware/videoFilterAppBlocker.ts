@@ -5,8 +5,7 @@
 import { NextFunction } from "@feathersjs/hooks";
 import { Func, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
-import { assembleError } from "../../error/common";
-import { VideoFilterAppRemoteNotSupportedError } from "../error";
+import { VideoFilterAppRemoteNotSupportedError, assembleError } from "../../error/common";
 import { CoreHookContext } from "../types";
 
 const userTasksToBlock: Func[] = [

@@ -34,7 +34,7 @@ import {
 } from "../../src/component/utils/ResourceGroupHelper";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../../src/core/collaborator";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import { SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
   PluginAvailabilityOptions,

@@ -460,7 +460,7 @@ describe("TeamsDevPortalClient Test", () => {
     });
   });
 
-  describe("get Teams app", () => {
+  describe("getApp", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -530,8 +530,44 @@ describe("TeamsDevPortalClient Test", () => {
       }
     });
   });
-
-  describe("get app package", () => {
+  describe("getStaggedApp", () => {
+    it("happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: "xx",
+                  displayName: "xx",
+                  lastModifiedDateTime: null,
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
+      const res = await teamsDevPortalClient.getStaggedApp(token, "fake");
+      chai.assert.equal(res?.teamsAppId, "xx");
+    });
+    it("not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: {
+          value: [],
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(response);
+      const res = await teamsDevPortalClient.getStaggedApp(token, "fake");
+      chai.assert.isUndefined(res);
+    });
+  });
+  describe("getAppPackage", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);

@@ -95,6 +95,7 @@ class TeamsDevPortalClient {
   }
 
   async setRegionByToken(regionToken: string) {
+    this.region = undefined;
     const requester = this.createRequesterWithToken(regionToken);
     const response = await RetryHandler.Retry(() => requester.post(`/v1.0/users/region`));
     this.region = response?.data?.regionGtms?.teamsDevPortal as string;

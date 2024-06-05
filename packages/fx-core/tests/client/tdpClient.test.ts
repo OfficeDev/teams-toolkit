@@ -100,7 +100,20 @@ describe("TeamsDevPortalClient Test", () => {
   afterEach(() => {
     sinon.restore();
   });
-
+  describe("setRegionByToken", () => {
+    it("Happy path", async () => {
+      sandbox.stub(RetryHandler, "Retry").resolves({
+        status: 200,
+        data: {
+          regionGtms: {
+            teamsDevPortal: "https://xxx.xxx.xxx",
+          },
+        },
+      });
+      await teamsDevPortalClient.setRegionByToken("");
+      chai.assert.equal(teamsDevPortalClient.region, "https://xxx.xxx.xxx");
+    });
+  });
   describe("publishTeamsApp", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();

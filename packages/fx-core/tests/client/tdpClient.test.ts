@@ -1931,20 +1931,10 @@ describe("TeamsDevPortalClient Test", () => {
       chai.assert.equal(errors, 1);
     });
 
-    // it("error and retry", async () => {
-    //   mockGet = () => {
-    //     throw new Error("test");
-    //   };
-    //   const clock = sandbox.useFakeTimers();
-
-    //   const resultPromise = teamsDevPortalClient.getSideloadingStatus("fake-token");
-    //   await clock.tickAsync(100000);
-    //   const result = await resultPromise;
-    //   clock.restore();
-
-    //   chai.assert.isUndefined(result);
-    //   chai.assert.equal(events, 0);
-    //   chai.assert.equal(errors, 3);
-    // });
+    it("error and retry", async () => {
+      sandbox.stub(RetryHandler, "Retry").rejects(new Error());
+      const res = await teamsDevPortalClient.getSideloadingStatus("fake-token");
+      chai.assert.isUndefined(res);
+    });
   });
 });

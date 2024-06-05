@@ -143,6 +143,15 @@ export class ManifestUtil {
     if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
       capabilities.push("MessageExtension");
     }
+    if (
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      (manifest.composeExtensions[0] as IComposeExtension).composeExtensionType == "apiBased" &&
+      (manifest.composeExtensions[0] as IComposeExtension).authorization?.authType ==
+        "microsoftEntra"
+    ) {
+      capabilities.push("apiMeAAD");
+    }
 
     const properties: ManifestCommonProperties = {
       id: manifest.id,

@@ -703,6 +703,31 @@ describe("TeamsDevPortalClient Test", () => {
   });
 
   describe("publishTeamsAppUpdate", () => {
+    it("Happy path", async () => {
+      sandbox.stub(teamsDevPortalClient, "getStaggedApp").resolves({
+        publishingState: PublishingState.submitted,
+        teamsAppId: "xx",
+        displayName: "xx",
+        lastModifiedDateTime: null,
+      });
+      sandbox.stub(RetryHandler, "Retry").resolves({ data: { teamsAppId: "xx" } });
+      const res = await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
+      chai.assert.equal(res, "xx");
+    });
+    it("return no data", async () => {
+      sandbox.stub(teamsDevPortalClient, "getStaggedApp").resolves({
+        publishingState: PublishingState.submitted,
+        teamsAppId: "xx",
+        displayName: "xx",
+        lastModifiedDateTime: null,
+      });
+      sandbox.stub(RetryHandler, "Retry").resolves({ data: { teamsAppId: "xx" } });
+      try {
+        await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
+      } catch (e) {
+        chai.assert.isTrue(e.name === AppStudioError.TeamsAppPublishFailedError.name);
+      }
+    });
     it("should contain x-correlation-id on BadeRequest with 2xx status code", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);

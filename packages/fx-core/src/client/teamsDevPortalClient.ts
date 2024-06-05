@@ -5,7 +5,7 @@ import { hooks } from "@feathersjs/hooks";
 import { SystemError } from "@microsoft/teamsfx-api";
 import { AxiosInstance } from "axios";
 import { HelpLinks } from "../common/constants";
-import { ErrorContextMW, TOOLS, setErrorContext } from "../common/globalVars";
+import { ErrorContextMW, TOOLS } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   TelemetryEvent,
@@ -217,7 +217,6 @@ class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async deleteApp(appStudioToken: string, teamsAppId: string): Promise<boolean> {
     if (!this.region) throw new Error("Failed to get region");
-    setErrorContext({ source: "Teams" });
     let requester: AxiosInstance;
     try {
       requester = this.createRequesterWithToken(appStudioToken);
@@ -389,7 +388,6 @@ class TeamsDevPortalClient {
    */
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async publishTeamsAppUpdate(token: string, teamsAppId: string, file: Buffer): Promise<string> {
-    setErrorContext({ source: "Teams" });
     try {
       // Get App Definition from Teams App Catalog
       const appDefinition = await this.getStaggedApp(token, teamsAppId);
@@ -398,10 +396,10 @@ class TeamsDevPortalClient {
       let response = null;
       if (appDefinition) {
         // update the existing app
-        response = await requester.post(
-          `/api/publishing/${appDefinition.teamsAppId}/appdefinitions`,
-          file,
-          { headers: { "Content-Type": "application/zip" } }
+        response = await RetryHandler.Retry(() =>
+          requester.post(`/api/publishing/${appDefinition.teamsAppId}/appdefinitions`, file, {
+            headers: { "Content-Type": "application/zip" },
+          })
         );
       } else {
         throw AppStudioResultFactory.SystemError(
@@ -412,9 +410,8 @@ class TeamsDevPortalClient {
           )
         );
       }
-
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const requestPath = `${response.request?.method} ${response.request?.path}`;
+      const requestPath = `${response?.request?.method} ${response?.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           const error = new Error(response.data.error?.message || response.data.errorMessage);

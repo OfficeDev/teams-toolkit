@@ -1883,7 +1883,15 @@ describe("TeamsDevPortalClient Test", () => {
       chai.assert.equal(events, 1);
       chai.assert.equal(errors, 0);
     });
-
+    it("status > 400", async () => {
+      mockGet = () => {
+        return {
+          status: 404,
+        } as AxiosResponse;
+      };
+      const result = await teamsDevPortalClient.getSideloadingStatus("fake-token");
+      chai.assert.isUndefined(result);
+    });
     it("sideloading not enabled", async () => {
       mockGet = () => {
         return {

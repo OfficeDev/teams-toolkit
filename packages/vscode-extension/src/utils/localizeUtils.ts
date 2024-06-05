@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as globalVariables from "../globalVariables";
 import VsCodeLogInstance from "../commonlib/log";
+import { getExtensionId } from "./versionUtil";
 
 let loadedCollection: Record<string, string> | undefined = undefined;
 let defaultCollection: Record<string, string> | undefined = undefined;
@@ -80,9 +81,10 @@ function getLocalizedString(key: string, isDefault: boolean, defValue?: string):
  */
 export function loadLocalizedStrings(): void {
   loadedLocale = parseLocale();
+  const extension = vscode.extensions.getExtension(getExtensionId());
 
   const nlsFile = path.join(
-    globalVariables.context ? globalVariables.context.extensionPath : "",
+    extension ? extension.extensionPath : "",
     `package.nls.${loadedLocale}.json`
   );
   if (fs.pathExistsSync(nlsFile)) {
@@ -101,10 +103,8 @@ export function loadLocalizedStrings(): void {
 
 function loadDefaultStrings(): void {
   if (!defaultCollection) {
-    const defaultNlsFile = path.join(
-      globalVariables.context ? globalVariables.context.extensionPath : "",
-      "package.nls.json"
-    );
+    const extension = vscode.extensions.getExtension(getExtensionId());
+    const defaultNlsFile = path.join(extension ? extension.extensionPath : "", "package.nls.json");
     if (fs.pathExistsSync(defaultNlsFile)) {
       defaultCollection = fs.readJsonSync(defaultNlsFile) as Record<string, string> | undefined;
     } else {

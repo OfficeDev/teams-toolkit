@@ -6,8 +6,8 @@
 import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 import * as fs from "fs-extra";
-import { defaultExtensionLogPath } from "../globalVariables";
-import { SummaryConstant } from "@microsoft/teamsfx-core";
+import { SummaryConstant, globalStateGet } from "@microsoft/teamsfx-core";
+import { GlobalKey } from "../constants";
 
 const outputChannelDisplayName = "Teams Toolkit";
 
@@ -15,6 +15,7 @@ export class VsCodeLogProvider implements LogProvider {
   logLevel: LogLevel = LogLevel.Info;
   outputChannel: vscode.OutputChannel;
   logFileName: string;
+  logFilePath: string | undefined = undefined;
 
   private static instance: VsCodeLogProvider;
 
@@ -45,7 +46,14 @@ export class VsCodeLogProvider implements LogProvider {
    * Get log file path
    */
   getLogFilePath(): string {
-    return `${defaultExtensionLogPath}/${this.logFileName}`;
+    if (this.logFilePath) {
+      return `${this.logFilePath}/${this.logFileName}`;
+    } else {
+      void globalStateGet(GlobalKey.LogPath).then((path) => {
+        this.logFilePath = path;
+      });
+      return `${this.logFilePath as string}/${this.logFileName}`;
+    }
   }
 
   verbose(message: string): void {

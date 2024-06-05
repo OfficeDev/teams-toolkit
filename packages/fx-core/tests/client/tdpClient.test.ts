@@ -125,7 +125,17 @@ describe("TeamsDevPortalClient Test", () => {
       const res = await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       chai.assert.equal(res, response.data.id);
     });
-
+    it("return no data", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {};
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
+      try {
+        await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
+      } catch (e) {
+        chai.assert.equal(e.name, AppStudioError.TeamsAppPublishFailedError.name);
+      }
+    });
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);

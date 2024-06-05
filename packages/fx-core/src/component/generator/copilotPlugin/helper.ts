@@ -44,7 +44,7 @@ import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
-import { isCopilotAuthEnabled } from "../../../common/featureFlags";
+import { isCopilotAuthEnabled, isSMEOAuthEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { sendRequestWithRetry } from "../../../common/requestUtils";
 import { MissingRequiredInputError } from "../../../error";
@@ -136,7 +136,7 @@ export async function listOperations(
         : {
             allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: true,
-            allowOauth2: isCopilotAuthEnabled(),
+            allowOauth2: isSMEOAuthEnabled(),
           }
     );
     const validationRes = await specParser.validate();

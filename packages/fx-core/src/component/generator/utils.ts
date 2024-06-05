@@ -322,6 +322,9 @@ export function convertToLangKey(programmingLanguage: string): string {
     case ProgrammingLanguage.PY: {
       return "python";
     }
+    case ProgrammingLanguage.None: {
+      return "common";
+    }
   }
   return programmingLanguage;
 }

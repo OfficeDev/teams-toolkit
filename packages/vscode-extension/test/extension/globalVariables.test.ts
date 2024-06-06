@@ -4,7 +4,6 @@ import * as sinon from "sinon";
 import { ExtensionContext, Uri } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
-import { UriHandler } from "../../src/uriHandler";
 import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("Global Variables", () => {
@@ -53,13 +52,6 @@ describe("Global Variables", () => {
       } as unknown as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(true);
-
-      sinon.restore();
-    });
-
-    it("set uri handler", async () => {
-      const uriHandler = new UriHandler();
-      globalVariables.setUriEventHandler(uriHandler);
 
       sinon.restore();
     });

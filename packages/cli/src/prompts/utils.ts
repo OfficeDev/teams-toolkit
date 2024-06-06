@@ -46,10 +46,12 @@ export function computePrefixWidth(
 ): number {
   const middle = Math.floor(pageSize / 2);
   let pageStart;
-  if (current < middle) pageStart = 0;
-  else if (current > choices.length - middle)
-    pageStart = choices.length < pageSize ? 0 : choices.length - pageSize;
-  else pageStart = current - middle;
+  if (choices.length <= pageSize) pageStart = 0;
+  else {
+    if (current < middle) pageStart = 0;
+    else if (current > choices.length - middle) pageStart = choices.length - pageSize;
+    else pageStart = current - middle;
+  }
   let prefixWidth = 1;
   choices.slice(pageStart, pageStart + pageSize).forEach((choice) => {
     prefixWidth = Math.max(prefixWidth, !choice.title ? 0 : choice.title.length + 1);

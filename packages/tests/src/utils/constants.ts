@@ -364,7 +364,8 @@ export type OptionType =
   | "aichat"
   | "aiassist"
   | "msgnewapi"
-  | "msgopenapi";
+  | "msgopenapi"
+  | "msgapikey";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

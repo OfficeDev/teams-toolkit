@@ -1407,41 +1407,75 @@ export async function autoInstallDependencyHandler() {
 }
 
 export async function showLocalDebugMessage() {
-  const isShowLocalDebugMessage = (await globalStateGet(
+  const shouldShowLocalDebugMessage = (await globalStateGet(
     GlobalKey.ShowLocalDebugMessage,
     false
   )) as boolean;
 
-  if (!isShowLocalDebugMessage) {
+  if (!shouldShowLocalDebugMessage) {
     return;
   } else {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, false);
   }
 
-  const localDebug = {
-    title: localize("teamstoolkit.handlers.localDebugTitle"),
-    run: async (): Promise<void> => {
-      await selectAndDebug();
-    },
-  };
+  const hasLocalEnv = await fs.pathExists(
+    path.join(globalVariables.workspaceUri!.fsPath, "teamsapp.local.yml")
+  );
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
-  const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
+  const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
+  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
 
-  let message = util.format(messageTemplate, appName, globalVariables.workspaceUri?.fsPath);
-  if (isWindows) {
-    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(messageTemplate, appName, openFolderCommand);
-  }
-  void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
-    if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-      selection.run();
+  if (hasLocalEnv) {
+    const localDebug = {
+      title: localize("teamstoolkit.handlers.localDebugTitle"),
+      run: async (): Promise<void> => {
+        await selectAndDebug();
+      },
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+
+    const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
+
+    let message = util.format(messageTemplate, appName, globalVariables.workspaceUri?.fsPath);
+    if (isWindows) {
+      message = util.format(messageTemplate, appName, openFolderCommand);
     }
-  });
+    void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
+      if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+        selection.run();
+      }
+    });
+  } else {
+    const provision = {
+      title: localize("teamstoolkit.handlers.provisionTitle"),
+      run: async (): Promise<void> => {
+        await vscode.commands.executeCommand(CommandKey.Provision, [
+          TelemetryTriggerFrom.Notification,
+        ]);
+      },
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowProvisionNotification);
+    const message = isWindows
+      ? util.format(
+          localize("teamstoolkit.handlers.provisionDescription"),
+          appName,
+          openFolderCommand
+        )
+      : util.format(
+          localize("teamstoolkit.handlers.provisionDescription.fallback"),
+          appName,
+          globalVariables.workspaceUri?.fsPath
+        );
+    void vscode.window.showInformationMessage(message, provision).then((selection) => {
+      if (selection?.title === localize("teamstoolkit.handlers.provisionTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickProvision);
+        selection.run();
+      }
+    });
+  }
 }
 
 export async function ShowScaffoldingWarningSummary(

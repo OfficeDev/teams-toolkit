@@ -30,6 +30,7 @@
 4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
 5. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio
 6. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension..
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 
 ## Learn more

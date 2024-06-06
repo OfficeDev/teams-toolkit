@@ -6,8 +6,8 @@ import fs from "fs-extra";
 import { glob } from "glob";
 import { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import { CreateSampleProjectInputs, validationUtils } from "../../../src";
 import * as FeatureFlags from "../../../src/common/featureFlags";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
@@ -22,13 +22,11 @@ import { OfficeXMLAddinGenerator } from "../../../src/component/generator/office
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
-import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
-import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
@@ -40,6 +38,8 @@ import {
 } from "../../../src/question/constants";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
+import { CreateSampleProjectInputs } from "../../../src/question";
+import { validationUtils } from "../../../src/ui/validationUtils";
 
 const V3Version = MetadataV3.projectVersion;
 
@@ -161,7 +161,7 @@ const V3Version = MetadataV3.projectVersion;
         platform: Platform.VSCode,
         ignoreLockByUT: true,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -174,7 +174,7 @@ const V3Version = MetadataV3.projectVersion;
         ignoreLockByUT: true,
         folder: ".",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -188,7 +188,7 @@ const V3Version = MetadataV3.projectVersion;
         folder: ".",
         "app-name": "__#$%___",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -203,7 +203,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -219,7 +219,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
         "app-name": "__#$%___",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -234,7 +234,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -250,7 +250,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
         [QuestionNames.AppName]: "__#$%___",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -265,7 +265,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -281,7 +281,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
         "app-name": "__#$%___",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -295,7 +295,7 @@ const V3Version = MetadataV3.projectVersion;
         folder: ".",
         [QuestionNames.Scratch]: ScratchOptions.no().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -663,7 +663,7 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API ME (no auth) from new api sucessfully", async () => {
-      const v3ctx = createContextV3();
+      const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
       const inputs: Inputs = {
@@ -672,7 +672,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
         [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
         [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-        [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -684,7 +684,7 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API ME (key auth) from new api sucessfully", async () => {
-      const v3ctx = createContextV3();
+      const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
       const inputs: Inputs = {
@@ -693,7 +693,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
         [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
         [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-        [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -708,7 +708,7 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API ME from existing api sucessfully", async () => {
-      const v3ctx = createContextV3();
+      const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
       sandbox
@@ -917,6 +917,42 @@ const V3Version = MetadataV3.projectVersion;
 
       assert.isTrue(res.isErr() && res.error.name === "test");
     });
+
+    it("create API Plugin with none auth", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("create API Plugin with none auth (feature flag enabled)", async () => {
+      sandbox.stub(FeatureFlags, "isCopilotAuthEnabled").returns(true);
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
   });
 });
 
@@ -937,7 +973,7 @@ describe("Office Addin", async () => {
   });
 
   it("should scaffold taskpane successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
@@ -958,7 +994,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is invalid", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -972,7 +1008,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is undefined", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -986,7 +1022,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
@@ -1025,7 +1061,7 @@ describe("Office XML Addin", async () => {
   });
 
   it("should scaffold project successfully", async () => {
-    const context = createContextV3();
+    const context = createContext();
     context.userInteraction = new MockedUserInteraction();
 
     sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(ok(undefined));
@@ -1043,7 +1079,7 @@ describe("Office XML Addin", async () => {
   });
 
   it("should return error if app name is invalid", async () => {
-    const context = createContextV3();
+    const context = createContext();
     context.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1056,7 +1092,7 @@ describe("Office XML Addin", async () => {
   });
 
   it("should return error if app name is undefined", async () => {
-    const context = createContextV3();
+    const context = createContext();
     context.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1069,7 +1105,7 @@ describe("Office XML Addin", async () => {
   });
 
   it("should return error if OfficeXMLAddinGenerator returns error", async () => {
-    const context = createContextV3();
+    const context = createContext();
     context.userInteraction = new MockedUserInteraction();
 
     const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
@@ -1105,7 +1141,7 @@ describe("Office Addin", async () => {
   });
 
   it("should scaffold taskpane successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
@@ -1126,7 +1162,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is invalid", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1140,7 +1176,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is undefined", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1154,7 +1190,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
@@ -1191,7 +1227,7 @@ describe("Copilot plugin", async () => {
   });
 
   it("should scaffold from API spec successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
@@ -1211,7 +1247,7 @@ describe("Copilot plugin", async () => {
   });
 
   it("scaffold from API spec error", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
@@ -1223,46 +1259,6 @@ describe("Copilot plugin", async () => {
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr());
-  });
-
-  it("should scaffold from OpenAI plugin successfully", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isOk());
-  });
-
-  it("scaffold from OpenAI plugin error", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
@@ -1284,7 +1280,7 @@ describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
   });
 
   it("should scaffold by OfficeAddinGeneratorNew successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok({}));
     const inputs: Inputs = {

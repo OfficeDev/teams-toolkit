@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Service } from "typedi";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { getLocalizedString } from "../../../common/localizeUtils";
 import { hooks } from "@feathersjs/hooks";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { UpdateApiKeyArgs } from "./interface/updateApiKeyArgs";
-import { DriverContext } from "../interface/commonArgs";
 import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { logMessageKeys } from "./utility/constants";
+import { Service } from "typedi";
+import { AppStudioScopes } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error";
-import { AppStudioScopes } from "../teamsApp/constants";
-import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
   ApiSecretRegistrationTargetAudience,
   ApiSecretRegistrationUpdate,
 } from "../teamsApp/interfaces/ApiSecretRegistration";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
+import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
+import { UpdateApiKeyArgs } from "./interface/updateApiKeyArgs";
+import { logMessageKeys } from "./utility/constants";
 import { getDomain, validateDomain } from "./utility/utility";
 
 const actionName = "apiKey/update"; // DO NOT MODIFY the name

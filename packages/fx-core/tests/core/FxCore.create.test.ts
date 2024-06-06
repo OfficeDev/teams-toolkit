@@ -21,7 +21,7 @@ import * as os from "os";
 import sinon from "sinon";
 import { AppDefinition, FxCore, UserCancelError } from "../../src";
 import { coordinator } from "../../src/component/coordinator";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import {
   CapabilityOptions,
   ProjectTypeOptions,

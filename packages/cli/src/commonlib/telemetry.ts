@@ -4,7 +4,7 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { Correlator, getProjectMetadata } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 import { logger } from "./logger";
@@ -34,7 +34,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
       this.reporter.setAppRoot(rootPath);
 
       // add shared properties
-      const fixedProjectSettings = getFixedCommonProjectSettings(rootPath);
+      const fixedProjectSettings = getProjectMetadata(rootPath);
       this.addSharedProperty(TelemetryProperty.ProjectId, fixedProjectSettings?.projectId);
     }
     return this;
@@ -120,7 +120,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
     if (!properties[TelemetryProperty.ProjectId]) {
-      const fixedProjectSettings = getFixedCommonProjectSettings(this.rootFolder);
+      const fixedProjectSettings = getProjectMetadata(this.rootFolder);
 
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;

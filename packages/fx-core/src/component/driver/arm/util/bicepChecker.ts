@@ -31,7 +31,9 @@ import { performance } from "perf_hooks";
 import { DriverContext } from "../../interface/commonArgs";
 import { InstallSoftwareError } from "../../../../error/common";
 import { DownloadBicepCliError } from "../../../../error/arm";
-import { isMacOS, isWindows } from "../../../../common/deps-checker/util/system";
+import { isMacOS, isWindows } from "../../../deps-checker/util/system";
+import { maskSecret } from "../../../../common/stringUtils";
+import { TelemetryProperty } from "../../../../common/telemetry";
 
 const BicepName = "Bicep";
 
@@ -298,8 +300,8 @@ function getCommonProps(): { [key: string]: string } {
   const properties: { [key: string]: string } = {};
   properties[TelemetryMeasurement.OSArch] = os.arch();
   properties[TelemetryMeasurement.OSRelease] = os.release();
-  properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
-  properties[SolutionTelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
+  properties[TelemetryProperty.Component] = SolutionTelemetryComponentName;
+  properties[TelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
   return properties;
 }
 
@@ -315,19 +317,19 @@ function sendErrorTelemetryThenReturnError(
     properties = {};
   }
 
-  if (SolutionTelemetryProperty.Component in properties === false) {
-    properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
+  if (TelemetryProperty.Component in properties === false) {
+    properties[TelemetryProperty.Component] = SolutionTelemetryComponentName;
   }
 
-  properties[SolutionTelemetryProperty.Success] = "no";
+  properties[TelemetryProperty.Success] = "no";
   if (error instanceof UserError) {
-    properties["error-type"] = "user";
+    properties[TelemetryProperty.ErrorType] = "user";
   } else {
-    properties["error-type"] = "system";
+    properties[TelemetryProperty.ErrorType] = "system";
   }
 
-  properties["error-code"] = `${error.source}.${error.name}`;
-  properties["error-message"] = error.message;
+  properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
+  properties[TelemetryProperty.ErrorMessage] = maskSecret(error.message);
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;

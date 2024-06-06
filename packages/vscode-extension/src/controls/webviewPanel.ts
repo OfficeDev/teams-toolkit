@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
+import { GlobalKey } from "../constants";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { downloadSampleApp } from "../handlers";
@@ -22,7 +23,7 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
@@ -61,14 +62,18 @@ export class WebviewPanel {
     if (!args?.length) {
       return;
     }
-    if (panelType == PanelType.SampleGallery && args.length > 1) {
+    if (panelType == PanelType.SampleGallery && args.length > 1 && typeof args[1] == "string") {
       try {
-        const sampleId = args[1] as string;
+        const sampleId = args[1];
         const panel = WebviewPanel.currentPanels.find((panel) => panel.panelType === panelType);
         if (panel) {
-          void panel.panel.webview.postMessage({
-            message: Commands.OpenDesignatedSample,
-            sampleId: sampleId,
+          void globalVariables.context.globalState.update(
+            GlobalKey.SampleGalleryInitialSample,
+            sampleId
+          );
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectSample, {
+            ...getTriggerFromProperty(args),
+            [TelemetryProperty.SampleAppName]: sampleId,
           });
         }
       } catch (e) {}
@@ -227,12 +232,21 @@ export class WebviewPanel {
         versionComparisonResult,
       };
     });
+    const initialSample = globalVariables.context.globalState.get<string>(
+      GlobalKey.SampleGalleryInitialSample,
+      ""
+    );
     if (this.panel && this.panel.webview) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
         samples: sampleData,
+        initialSample: initialSample,
         filterOptions: sampleCollection.filterOptions,
       });
+      if (initialSample != "") {
+        // reset initial sample after shown
+        await globalVariables.context.globalState.update(GlobalKey.SampleGalleryInitialSample, "");
+      }
     }
   }
 

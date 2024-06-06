@@ -7,22 +7,10 @@ import {
 } from "@microsoft/dev-tunnels-management";
 import { FxError, M365TokenProvider, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import * as fs from "fs-extra";
-import { parse } from "yaml";
 import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
 import { AuthSvcClient } from "../component/driver/teamsApp/clients/authSvcClient";
-import { getAppStudioEndpoint } from "../component/driver/teamsApp/constants";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
-import { GraphReadUserScopes, SPFxScopes } from "./constants";
-import { PackageService } from "./m365/packageService";
-
-export function getCopilotStatus(
-  token: string,
-  ensureUpToDate = false
-): Promise<boolean | undefined> {
-  return PackageService.GetSharedInstance().getCopilotStatus(token, ensureUpToDate);
-}
+import { GraphReadUserScopes, SPFxScopes, getAppStudioEndpoint } from "./constants";
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return AppStudioClient.getSideloadingStatus(token);
@@ -70,33 +58,6 @@ export async function setRegion(authSvcToken: string) {
     }
     AppStudioClient.setRegion(region);
     BotAppStudioClient.setRegion(region);
-  }
-}
-
-export function ConvertTokenToJson(token: string): Record<string, unknown> {
-  const array = token.split(".");
-  const buff = Buffer.from(array[1], "base64");
-  return JSON.parse(buff.toString("utf8"));
-}
-
-export function getFixedCommonProjectSettings(rootPath: string | undefined) {
-  if (!rootPath) {
-    return undefined;
-  }
-  try {
-    const settingsPath = getProjectSettingsPath(rootPath);
-
-    if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
-      return undefined;
-    }
-
-    const settingsContent = fs.readFileSync(settingsPath, "utf-8");
-    const settings = parse(settingsContent);
-    return {
-      projectId: settings?.projectId ?? undefined,
-    };
-  } catch {
-    return undefined;
   }
 }
 

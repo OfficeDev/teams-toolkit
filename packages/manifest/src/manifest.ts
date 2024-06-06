@@ -215,6 +215,11 @@ export interface IComposeExtension {
    * To support SME, it's the relative path to api spec file in the manifest
    */
   apiSpecificationFile?: string;
+
+  /**
+   * Authorization information.
+   */
+  authorization?: IAuthorization;
 }
 
 export interface IComposeExtensionMessageHandler {
@@ -269,6 +274,24 @@ export interface IMessagingExtensionCommand {
    * To support SME
    */
   apiResponseRenderingTemplateFile?: string;
+}
+
+export interface IAuthorization {
+  /**
+   * The type of authorization to use.
+   */
+  authType?: "none" | "apiSecretServiceAuth" | "microsoftEntra";
+  /**
+   * Capturing details needed to do microsoftEntra auth flow. It will be only present when auth type is microsoftEntra.
+   */
+  microsoftEntraConfiguration?: IMicrosoftEntraConfiguration;
+}
+
+export interface IMicrosoftEntraConfiguration {
+  /**
+   * Boolean indicating whether single sign on is configured for the app.
+   */
+  supportsSingleSignOn?: boolean;
 }
 
 export interface IParameter {

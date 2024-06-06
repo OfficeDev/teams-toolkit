@@ -101,13 +101,10 @@
 /packages/fx-core/scripts/generate-appdef.ps1 @nliu-ms
 /packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
-/packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 /packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587
 /packages/fx-core/src/common/globalState.ts @tecton @jayzhang @LongOddCode
 /packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft @chagong
-/packages/fx-core/src/common/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/src/common/permissionInterface.ts @SLdragon @KennethBWSong
 /packages/fx-core/src/common/projectSettingsHelper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/projectSettingsHelperV3.ts @jayzhang @xzf0587 @LongOddCode
@@ -120,6 +117,7 @@
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 /packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
@@ -150,6 +148,8 @@
 /packages/fx-core/src/component/generator/officeAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/officeXMLAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms
+/packages/fx-core/src/component/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/packages/fx-core/src/component/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @SLdragon
 /packages/fx-core/src/component/resource/botService @kimizhu @swatDong @kuojianlu
 /packages/fx-core/src/core @jayzhang @LongOddCode @jayzhang @nliu-ms @xzf0587 @hund030
@@ -164,16 +164,14 @@
 /packages/fx-core/templates/plugins/resource/aad/ @KennethBWSong @xzf0587
 /packages/fx-core/templates/plugins/resource/appstudio @nliu-ms @anchenyi
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
-/packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 /packages/fx-core/tests/common/featureFlags.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
-/packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
-/packages/fx-core/tests/common/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
 /packages/fx-core/tests/common/tools.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/utils.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/tests/component/coordinator @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/component/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 /packages/fx-core/tests/component/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong
 /packages/fx-core/tests/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
@@ -200,6 +198,8 @@
 /packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @tecton
 /packages/fx-core/tests/component/generator/officeXMLAddinGenerator.test.ts @jayzhang @tecton
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
+/packages/fx-core/tests/component/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/packages/fx-core/tests/component/m365 @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/component/jsonUtils.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft @anchenyi
 /packages/fx-core/tests/component/resource/botService @kimizhu @swatDong @kuojianlu
@@ -250,6 +250,8 @@
 /packages/tests/src/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
 /packages/tests/src/e2e/samples @LongOddCode @ayachensiyuan
 /packages/tests/src/e2e/scaffold @hund030 @eriolchan @huimiu
+/packages/tests/src/e2e/scaffold/CopilotPluginFromScratch.tests.ts @yuqizhou77 @huimiu @SLdragon
+/packages/tests/src/e2e/scaffold/CopilotPluginFromExistingApi.tests.ts @yuqizhou77 @huimiu @SLdragon
 
 /packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms @tecton
 /packages/vscode-extension/CHANGELOG.md @therealjohn @sffamily
@@ -272,6 +274,8 @@
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/api-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/api-plugin-from-scratch @hund030 @eriolchan @huimiu
+/templates/**/api-plugin-from-scratch-bearer @hund030 @eriolchan @huimiu @Yimin-Jin
+/templates/**/api-plugin-from-scratch-oauth @hund030 @eriolchan @huimiu @Yimin-Jin
 /templates/**/copilot-gpt-basic @hund030 @eriolchan @huimiu
 /templates/**/copilot-gpt-existing-api @hund030 @eriolchan @huimiu
 /templates/**/copilot-gpt-from-scratch-plugin @hund030 @eriolchan @huimiu
@@ -288,7 +292,7 @@
 /templates/**/custom-copilot-rag-microsoft365 @kimizhu @swatDong @kuojianlu @XiaofuHuang @xiaolang124
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/**/default-bot-message-extension @yuqizhou77
+/templates/**/default-bot-message-extension @yuqizhou77 @Yukun-dong
 /templates/**/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
 /templates/**/message-extension @yuqizhou77 @Yukun-dong

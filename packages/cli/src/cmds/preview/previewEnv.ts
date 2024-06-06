@@ -7,7 +7,7 @@ import { Colors, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-a
 import {
   AppStudioScopes,
   assembleError,
-  CoreQuestionNames,
+  QuestionNames,
   environmentNameManager,
   envUtil,
   FxCore,
@@ -273,9 +273,9 @@ export default class PreviewEnv {
     const coreRes = await activate(projectPath, true);
     const core = (coreRes as any).value as FxCore;
     const inputs = getSystemInputs(projectPath, env);
-    inputs[CoreQuestionNames.M365Host] = hub;
-    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
-    // inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation // confirm is skipped in question model
+    inputs[QuestionNames.M365Host] = hub;
+    inputs[QuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
+    // inputs[QuestionNames.ConfirmManifest] = "manifest"; // skip confirmation // confirm is skipped in question model
     return await core.previewWithManifest(inputs);
   }
 

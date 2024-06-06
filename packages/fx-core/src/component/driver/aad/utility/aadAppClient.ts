@@ -8,7 +8,7 @@ import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import { GraphScopes } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AadOwner } from "../../../../common/permissionInterface";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 import {
   DeleteOrUpdatePermissionFailedError,
   HostNameNotOnVerifiedDomainError,

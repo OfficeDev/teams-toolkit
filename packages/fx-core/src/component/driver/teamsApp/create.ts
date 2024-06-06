@@ -1,42 +1,42 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  TeamsAppManifest,
-  UserError,
-  SystemError,
   FxError,
   Result,
+  SystemError,
+  TeamsAppManifest,
+  UserError,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
-import AdmZip from "adm-zip";
-import { v4 } from "uuid";
 import { Service } from "typedi";
-import { hooks } from "@feathersjs/hooks/lib";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
+import { v4 } from "uuid";
+import { AppStudioScopes } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { InvalidActionInputError } from "../../../error/common";
+import { getTemplatesFolder } from "../../../folder";
+import { AppDefinition } from "../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
+import { loadStateFromEnv } from "../util/utils";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
-import { AppStudioResultFactory } from "./results";
-import { AppStudioError } from "./errors";
 import {
+  COLOR_TEMPLATE,
   Constants,
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
-  COLOR_TEMPLATE,
   OUTLINE_TEMPLATE,
-  AppStudioScopes,
 } from "./constants";
-import { AppDefinition } from "../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { getTemplatesFolder } from "../../../folder";
-import { InvalidActionInputError } from "../../../error/common";
-import { loadStateFromEnv } from "../util/utils";
+import { AppStudioError } from "./errors";
+import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
+import { AppStudioResultFactory } from "./results";
 
 const actionName = "teamsApp/create";
 

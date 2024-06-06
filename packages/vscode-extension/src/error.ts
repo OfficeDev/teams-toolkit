@@ -59,4 +59,5 @@ export enum ExtensionErrors {
   DefaultManifestTemplateNotExistsError = "DefaultManifestTemplateNotExistsError",
   DefaultAppPackageNotExistsError = "DefaultAppPackageNotExistsError",
   DevTunnelStartError = "DevTunnelStartError",
+  LaunchTeamsDesktopClientError = "LaunchTeamsDesktopClientError",
 }

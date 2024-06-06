@@ -11,7 +11,7 @@ import { ErrorType, ProjectType, ValidationStatus, WarningType } from "../src/in
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
-import { OpenAPIV3 } from "openapi-types";
+import { OpenAPI, OpenAPIV3 } from "openapi-types";
 import { SpecFilter } from "../src/specFilter";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
@@ -3006,7 +3006,12 @@ describe("SpecParser", () => {
       };
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .callsFake(async (api: string | OpenAPI.Document) => {
+          expect((api as OpenAPIV3.Document).servers![0].url == "https://server1");
+          return api as any;
+        });
 
       const result = await specParser.list();
 

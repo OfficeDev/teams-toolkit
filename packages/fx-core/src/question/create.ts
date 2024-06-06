@@ -29,11 +29,14 @@ import {
   isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
+  isCopilotAuthEnabled,
+  isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
+import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
-import { convertToAlphanumericOnly } from "../common/stringUtils";
+import { convertToAlphanumericOnly, isValidHttpUrl } from "../common/stringUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import {
@@ -45,10 +48,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "../component/driver/teamsApp/utils/utils";
-import {
-  OpenAIPluginManifestHelper,
-  listOperations,
-} from "../component/generator/copilotPlugin/helper";
+import { listOperations } from "../component/generator/copilotPlugin/helper";
 import {
   IOfficeAddinHostConfig,
   OfficeAddinProjectConfig,
@@ -56,10 +56,9 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   AppNamePattern,
   CapabilityOptions,
   CliQuestionName,
@@ -76,7 +75,6 @@ import {
   capabilitiesHavePythonOption,
   getRuntime,
 } from "./constants";
-import { isValidHttpUrl } from "./util";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -752,8 +750,6 @@ export function appNameQuestion(): TextInputQuestion {
         defaultName = convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
       } else if (inputs[QuestionNames.SPFxSolution] == "import") {
         defaultName = await getSolutionName(inputs[QuestionNames.SPFxFolder]);
-      } else if (inputs.openAIPluginManifest) {
-        defaultName = inputs.openAIPluginManifest.name_for_human;
       }
       return defaultName;
     },
@@ -765,7 +761,7 @@ export function appNameQuestion(): TextInputQuestion {
         };
         if (input.length === 25) {
           // show warning notification because it may exceed the Teams app name max length after appending suffix
-          const context = createContextV3();
+          const context = createContext();
           if (previousInputs?.platform === Platform.VSCode) {
             void context.userInteraction.showMessage(
               "warn",
@@ -1022,10 +1018,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       if (!inputs) {
         throw new Error("inputs is undefined"); // should never happen
       }
-      const context = createContextV3();
+      const context = createContext();
       const res = await listOperations(
         context,
-        undefined,
         input.trim(),
         inputs,
         includeExistingAPIs,
@@ -1098,93 +1093,26 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
   };
 }
 
-export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
-  // export for unit test
-  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
-  return {
-    type: "text",
-    name: QuestionNames.OpenAIPluginManifest,
-    cliShortName: "m",
-    title: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain"),
-    placeholder: getLocalizedString("core.createProjectQuestion.OpenAIPluginDomain.placeholder"),
-    cliDescription: "OpenAI plugin website domain or manifest URL.",
-    forgetLastValue: true,
-    validation: {
-      validFunc: (input: string): Promise<string | undefined> => {
-        const pattern = /(https?:\/\/)?([a-z0-9-]+(\.[a-z0-9-]+)*)(:[0-9]{1,5})?(\/)?$/i;
-        const match = pattern.test(input);
-
-        const result = match
-          ? undefined
-          : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
-        return Promise.resolve(result);
-      },
-    },
-    additionalValidationOnAccept: {
-      validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-        if (!inputs) {
-          throw new Error("inputs is undefined"); // should never happen
-        }
-        let manifest;
-
-        try {
-          manifest = await OpenAIPluginManifestHelper.loadOpenAIPluginManifest(input);
-          inputs.openAIPluginManifest = manifest;
-        } catch (e) {
-          const error = assembleError(e);
-          return error.message;
-        }
-
-        const context = createContextV3();
-        try {
-          const res = await listOperations(
-            context,
-            manifest,
-            inputs[QuestionNames.ApiSpecLocation],
-            inputs,
-            true,
-            true,
-            inputs.platform === Platform.VSCode ? correlationId : undefined
-          );
-          if (res.isOk()) {
-            inputs.supportedApisFromApiSpec = res.value;
-          } else {
-            const errors = res.error;
-            if (inputs.platform === Platform.CLI) {
-              return errors.map((e) => e.content).join("\n");
-            }
-            if (
-              errors.length === 1 &&
-              errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
-            ) {
-              return errors[0].content;
-            } else {
-              return getLocalizedString(
-                "core.createProjectQuestion.openAiPluginManifest.multipleValidationErrors.vscode.message"
-              );
-            }
-          }
-        } catch (e) {
-          const error = assembleError(e);
-          throw error;
-        }
-      },
-    },
-  };
-}
-
-export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
+export function apiAuthQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: QuestionNames.ApiMEAuth,
+    name: QuestionNames.ApiAuth,
     title: getLocalizedString("core.createProjectQuestion.apiMessageExtensionAuth.title"),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.apiMessageExtensionAuth.placeholder"
     ),
     cliDescription: "The authentication type for the API.",
-    staticOptions: ApiMessageExtensionAuthOptions.all(),
-    dynamicOptions: () => ApiMessageExtensionAuthOptions.all(),
-    default: ApiMessageExtensionAuthOptions.none().id,
+    staticOptions: ApiAuthOptions.all(),
+    dynamicOptions: (inputs: Inputs) => {
+      const options: OptionItem[] = [ApiAuthOptions.none()];
+      if (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id) {
+        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
+      } else if (inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id) {
+        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
+      }
+      return options;
+    },
+    default: ApiAuthOptions.none().id,
   };
 }
 
@@ -1473,55 +1401,37 @@ export function capabilitySubTree(): IQTreeNode {
         data: meArchitectureQuestion(),
       },
       {
-        // API ME from API Spec or Copilot plugin from API spec or AI Plugin
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
-            inputs[QuestionNames.Capabilities] ===
-              CapabilityOptions.copilotPluginOpenAIPlugin().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+            (isCopilotAuthEnabled() &&
+              isCopilotPluginEnabled() &&
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
           );
         },
-        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
-        children: [
-          {
-            data: apiSpecLocationQuestion(),
-          },
-          // {
-          //   condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
-          //   data: openAIPluginManifestLocationQuestion(),
-          // },
-          {
-            data: apiOperationQuestion(),
-          },
-        ],
-      },
-      {
-        condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
-        },
-        data: apiMessageExtensionAuthQuestion(),
+        data: apiAuthQuestion(),
       },
       {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
         },
         data: customCopilotRagQuestion(),
+      },
+      {
+        // from API spec
+        condition: (inputs: Inputs) => {
+          return (
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
+            inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+          );
+        },
+        data: { type: "group", name: QuestionNames.FromExistingApi },
         children: [
           {
-            condition: (inputs: Inputs) => {
-              return (
-                inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
-              );
-            },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: (inputs: Inputs) => {
-              return (
-                inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
-              );
-            },
             data: apiOperationQuestion(),
           },
         ],
@@ -1541,8 +1451,6 @@ export function capabilitySubTree(): IQTreeNode {
           return (
             !!inputs[QuestionNames.Capabilities] &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
-            inputs[QuestionNames.Capabilities] !==
-              CapabilityOptions.copilotPluginOpenAIPlugin().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
             inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&

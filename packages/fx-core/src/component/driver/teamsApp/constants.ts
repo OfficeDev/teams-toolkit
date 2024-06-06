@@ -5,7 +5,7 @@
  * @author Huajie Zhang <huajiezhang@microsoft.com>
  */
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../constants";
+import { ComponentNames } from "../../migrate";
 
 const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
@@ -189,16 +189,6 @@ export const WEB_APPLICATION_INFO_V3 = {
   id: `{{state.${AAD_STATE_KEY}.clientId}}`,
   resource: `{{{state.${AAD_STATE_KEY}.applicationIdUris}}}`,
 };
-
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
-
-export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
 
 export class Constants {
   public static readonly MANIFEST_FILE = "manifest.json";

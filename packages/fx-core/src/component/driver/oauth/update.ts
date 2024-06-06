@@ -2,24 +2,24 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { UpdateOauthArgs } from "./interface/updateOauthArgs";
-import { DriverContext } from "../interface/commonArgs";
 import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { logMessageKeys } from "./utility/constants";
+import { Service } from "typedi";
+import { AppStudioScopes } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
-import { OauthNameTooLongError } from "./error/oauthNameTooLong";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   OauthRegistration,
   OauthRegistrationAppType,
   OauthRegistrationTargetAudience,
 } from "../teamsApp/interfaces/OauthRegistration";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
-import { AppStudioScopes } from "../teamsApp/constants";
+import { OauthNameTooLongError } from "./error/oauthNameTooLong";
+import { UpdateOauthArgs } from "./interface/updateOauthArgs";
+import { logMessageKeys } from "./utility/constants";
 import { getandValidateOauthInfoFromSpec } from "./utility/utility";
-import { Service } from "typedi";
 
 const actionName = "oauth/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-update";

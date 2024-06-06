@@ -4,13 +4,11 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { GlobalKey, UserState } from "./constants";
-import { UriHandler } from "./uriHandler";
+import { UserState } from "./constants";
 import {
   isValidProject,
   isValidOfficeAddInProject,
   isManifestOnlyOfficeAddinProject,
-  globalStateUpdate,
 } from "@microsoft/teamsfx-core";
 
 /**
@@ -23,7 +21,6 @@ export let isOfficeAddInProject = false;
 export let isOfficeManifestOnlyProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
-export let uriEventHandler: UriHandler;
 export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
 
@@ -48,7 +45,6 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   if (!fs.pathExistsSync(defaultExtensionLogPath)) {
     fs.mkdirSync(defaultExtensionLogPath);
   }
-  void globalStateUpdate(GlobalKey.LogPath, defaultExtensionLogPath).then(() => {});
   if (isTeamsFxProject && workspaceUri?.fsPath) {
     isSPFxProject = checkIsSPFx(workspaceUri?.fsPath);
   } else {
@@ -69,10 +65,6 @@ export function checkIsSPFx(directory: string): boolean {
     }
   }
   return false;
-}
-
-export function setUriEventHandler(uriHandler: UriHandler) {
-  uriEventHandler = uriHandler;
 }
 
 export function setCommandIsRunning(isRunning: boolean) {

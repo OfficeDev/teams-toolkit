@@ -30,7 +30,6 @@ export enum GlobalKey {
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
   SampleGalleryInitialSample = "teamsToolkit:sampleGallery:initialSample",
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
-  LogPath = "LogPath",
 }
 
 export enum CommandKey {

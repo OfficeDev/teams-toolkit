@@ -211,7 +211,7 @@ jobs:
           parse_json: true
 
       - name: commit change on local
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid != 'alpha') }}
         run: |
           git add ./packages/vscode-extension/package.json ./packages/vscode-extension/src/chat/consts.ts
           git commit -m "build: disable chat participant"

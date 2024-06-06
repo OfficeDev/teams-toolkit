@@ -3,7 +3,7 @@
 
 import {
   DefaultTemplateGenerator,
-  CoreQuestionNames,
+  QuestionNames,
   HelperMethods,
   ActionContext,
   ProgrammingLanguage,
@@ -30,8 +30,8 @@ export class OfficeXMLAddinGenerator extends DefaultTemplateGenerator {
   componentName = "office-xml-addin-generator";
 
   public activate(context: Context, inputs: Inputs): boolean {
-    const projectType = inputs[CoreQuestionNames.ProjectType];
-    const addinHost = inputs[CoreQuestionNames.OfficeAddinHost];
+    const projectType = inputs[QuestionNames.ProjectType];
+    const addinHost = inputs[QuestionNames.OfficeAddinHost];
     return (
       projectType === "office-xml-addin-type" &&
       addinHost &&
@@ -46,11 +46,9 @@ export class OfficeXMLAddinGenerator extends DefaultTemplateGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
-    const host = inputs[CoreQuestionNames.OfficeAddinHost] as string;
-    const capability = inputs[CoreQuestionNames.Capabilities];
-    const lang = toLower(inputs[CoreQuestionNames.ProgrammingLanguage]) as
-      | "javascript"
-      | "typescript";
+    const host = inputs[QuestionNames.OfficeAddinHost] as string;
+    const capability = inputs[QuestionNames.Capabilities];
+    const lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as "javascript" | "typescript";
     const templateConfig = getOfficeAddinTemplateConfig(host);
     const templateName = templateConfig[capability].localTemplate;
     const projectLink = templateConfig[capability].framework["default"][lang];
@@ -60,7 +58,6 @@ export class OfficeXMLAddinGenerator extends DefaultTemplateGenerator {
       [OfficeXMLAddinTelemetryProperties.lang]: lang,
     });
 
-    process.chdir(destinationPath);
     const templates: TemplateInfo[] = [];
     if (!!projectLink) {
       // [Condition]: Project have remote repo (not manifest-only proj)
@@ -74,6 +71,7 @@ export class OfficeXMLAddinGenerator extends DefaultTemplateGenerator {
       if (fetchRes.isErr()) {
         return err(fetchRes.error);
       }
+      process.chdir(destinationPath);
       // -> Step: Convert to single Host
       await OfficeXMLAddinGenerator.childProcessExec(
         `npm run convert-to-single-host --if-present -- ${toLower(host)}`
@@ -102,7 +100,7 @@ export class OfficeXMLAddinGenerator extends DefaultTemplateGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<GeneratorResult, FxError>> {
-    const appName = inputs[CoreQuestionNames.AppName] as string;
+    const appName = inputs[QuestionNames.AppName] as string;
     // -> Common Step: Modify the Manifest
     await OfficeAddinManifest.modifyManifestFile(
       `${join(destinationPath, "manifest.xml")}`,

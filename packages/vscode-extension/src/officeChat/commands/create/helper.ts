@@ -23,8 +23,8 @@ import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper
 import { getOfficeSampleDownloadUrlInfo } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
-import { createContextV3 } from "@microsoft/teamsfx-core/build/component/utils";
-import { Inputs } from "@microsoft/teamsfx-api";
+import { CreateProjectInputs } from "@microsoft/teamsfx-api";
+import { core } from "../../../handlers";
 
 export async function matchOfficeProject(
   request: ChatRequest,
@@ -120,37 +120,41 @@ export async function showOfficeTemplateFileTree(
   codeSnippet?: string
 ): Promise<string> {
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
-  const nodes = await buildTemplateFileTree(data, tempFolder, codeSnippet);
-  response.filetree(nodes, Uri.file(tempFolder));
-  return tempFolder;
+  const nodes = await buildTemplateFileTree(data, tempFolder, data.capabilities, codeSnippet);
+  response.filetree(nodes, Uri.file(path.join(tempFolder, data.capabilities)));
+  return path.join(tempFolder, data.capabilities);
 }
 
 export async function buildTemplateFileTree(
   data: any,
   tempFolder: string,
+  appName: string,
   codeSnippet?: string
 ): Promise<ChatResponseFileTree[]> {
-  const createInputs: Inputs = {
+  const createInputs: CreateProjectInputs = {
     ...data,
     folder: tempFolder,
+    "app-name": appName,
   };
   const generator = new OfficeXMLAddinGenerator();
-  const context = createContextV3();
-  generator.activate(context, createInputs);
-  await generator.run(context, createInputs, tempFolder);
+  const result = await core.createProjectByCustomizedGenerator(createInputs, generator);
+  if (result.isErr()) {
+    throw new Error("Failed to generate the project.");
+  }
+  const projectPath = result.value.projectPath;
   const isCustomFunction = data.capabilities.includes("excel-custom-functions");
   if (!!isCustomFunction && !!codeSnippet) {
-    await mergeCFCode(tempFolder, codeSnippet);
+    await mergeCFCode(projectPath, codeSnippet);
   } else if (!!codeSnippet) {
-    await mergeTaskpaneCode(tempFolder, codeSnippet);
+    await mergeTaskpaneCode(projectPath, codeSnippet);
   }
   const root: ChatResponseFileTree = {
-    name: tempFolder,
+    name: projectPath,
     children: [],
   };
-  await fs.ensureDir(tempFolder);
-  traverseFiles(tempFolder, (fullPath) => {
-    const relativePath = path.relative(tempFolder, fullPath);
+  await fs.ensureDir(projectPath);
+  traverseFiles(projectPath, (fullPath) => {
+    const relativePath = path.relative(projectPath, fullPath);
     fileTreeAdd(root, relativePath);
   });
   return root.children ?? [];

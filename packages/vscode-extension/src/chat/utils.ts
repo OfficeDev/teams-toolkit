@@ -31,7 +31,7 @@ export async function getCopilotResponseAsString(
   token: CancellationToken
 ): Promise<string> {
   const [vendor, family] = model.split(/-(.*)/s);
-  const chatModels = await lm.selectChatModels({ vendor, family });
+  const chatModels = await lm.selectChatModels({ family: family });
   const familyMatch = chatModels?.find((chatModel) => chatModel.family === family);
   if (!familyMatch) {
     throw new Error("No chat models available for the specified family");

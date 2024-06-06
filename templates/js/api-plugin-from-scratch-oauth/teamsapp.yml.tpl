@@ -82,8 +82,8 @@ provision:
       name: oAuth2AuthCode
       flow: authorizationCode
       appId: ${{TEAMS_APP_ID}}
-      clientId: ${{OAUTH_CLIENT_ID}}
-      clientSecret: ${{SECRET_OAUTH_CLIENT_SECRET}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      clientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
       # Path to OpenAPI description document
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
     writeToEnvironmentFile:

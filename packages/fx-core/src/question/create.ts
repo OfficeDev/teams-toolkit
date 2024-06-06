@@ -1108,7 +1108,7 @@ export function apiAuthQuestion(): SingleSelectQuestion {
       if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
       } else if (
-        isCopilotAuthEnabled() &&
+        featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
         inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id
       ) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());

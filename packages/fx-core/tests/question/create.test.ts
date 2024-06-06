@@ -47,6 +47,7 @@ import {
   QuestionNames,
   RuntimeOptions,
   SPFxVersionOptionIds,
+  apiAuthQuestion,
   apiOperationQuestion,
   apiSpecLocationQuestion,
   appNameQuestion,
@@ -3917,6 +3918,73 @@ describe("scaffold question", () => {
       sandbox.stub(fs, "readJson").resolves({});
       const res = await getSolutionName("");
       assert.isUndefined(res);
+    });
+  });
+
+  describe("api plugin auth question", () => {
+    const ui = new MockUserInteraction();
+    let mockedEnvRestore: RestoreFn;
+    const tools = new MockTools();
+    setTools(tools);
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "true",
+        [FeatureFlagName.ApiCopilotPlugin]: "true",
+      });
+    });
+
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("api message extension", async () => {
+      const question = apiAuthQuestion();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.newApi().id;
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        assert.deepEqual(options, [
+          ApiAuthOptions.none(),
+          ApiAuthOptions.apiKey(),
+          ApiAuthOptions.microsoftEntra(),
+        ]);
+      }
+    });
+
+    it("api plugin from scratch with auth enabled", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.CopilotAuth]: "true" });
+      const question = apiAuthQuestion();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginNewApi().id;
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        assert.deepEqual(options, [
+          ApiAuthOptions.none(),
+          ApiAuthOptions.apiKey(),
+          ApiAuthOptions.oauth(),
+        ]);
+      }
+    });
+
+    it("api plugin from scratch with auth disabled", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.CopilotAuth]: "false" });
+      const question = apiAuthQuestion();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginNewApi().id;
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        assert.deepEqual(options, [ApiAuthOptions.none()]);
+      }
     });
   });
 });

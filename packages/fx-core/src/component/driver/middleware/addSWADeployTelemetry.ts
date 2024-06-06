@@ -4,7 +4,7 @@
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import { performance } from "perf_hooks";
 import { maskSecretValues } from "../../../common/stringUtils";
-import { TelemetryConstants, TelemetryProperty } from "../../../common/telemetry";
+import { TelemetryProperty } from "../../../common/telemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import {
   TeamsFxTelemetryConfig,

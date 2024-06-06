@@ -4,7 +4,7 @@
 import { Context, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { TelemetryConstants, TelemetrySuccess } from "../../common/telemetry";
+import { TelemetrySuccess } from "../../common/telemetry";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   SolutionTelemetryComponentName,

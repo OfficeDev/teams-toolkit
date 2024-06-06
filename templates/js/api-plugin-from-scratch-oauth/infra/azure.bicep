@@ -129,3 +129,4 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
 output API_FUNCTION_ENDPOINT string = apiEndpoint
 output API_FUNCTION_RESOURCE_ID string = functionApp.id
 output OPENAPI_SERVER_URL string = apiEndpoint
+output OPENAPI_SERVER_DOMAIN string = functionApp.properties.defaultHostName

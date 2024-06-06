@@ -9,7 +9,7 @@ import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
 import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
 import { setTools } from "../../src/common/globalVars";
-import { Constants } from "../../src/component/driver/teamsApp/constants";
+import { Constants, ErrorMessages } from "../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 import {
   ApiSecretRegistration,
@@ -833,16 +833,9 @@ describe("TeamsDevPortalClient Test", () => {
       }
     });
     it("API Failure", async () => {
-      const fakeAxiosInstance = axios.create();
-      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-
-      const error = {
-        name: "error",
-        message: "fake message",
-      };
-      sandbox.stub(fakeAxiosInstance, "post").throws(error);
-      sandbox.stub(fakeAxiosInstance, "get").resolves({ data: appDef });
-
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves(appDef);
+      sandbox.stub(teamsDevPortalClient, "checkUser").returns(false);
+      sandbox.stub(RetryHandler, "Retry").rejects(new Error());
       const appUser: AppUser = {
         tenantId: uuid(),
         aadId: uuid(),
@@ -850,14 +843,31 @@ describe("TeamsDevPortalClient Test", () => {
         userPrincipalName: "fake",
         isAdministrator: false,
       };
-
       try {
         await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, appUser);
       } catch (e) {
-        chai.assert.equal(e.name, error.name);
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
       }
     });
-
+    it("response no data", async () => {
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves(appDef);
+      sandbox.stub(teamsDevPortalClient, "checkUser").returns(false);
+      sandbox.stub(RetryHandler, "Retry").resolves({
+        data: undefined,
+      });
+      const appUser: AppUser = {
+        tenantId: uuid(),
+        aadId: uuid(),
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+      try {
+        await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, appUser);
+      } catch (e) {
+        chai.assert.isTrue(e.message.includes(ErrorMessages.GrantPermissionFailed));
+      }
+    });
     it("happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -905,57 +915,6 @@ describe("TeamsDevPortalClient Test", () => {
       });
 
       await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, newAppUser);
-    });
-
-    it("happy path with region", async () => {
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
-
-      const fakeAxiosInstance = axios.create();
-      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-
-      const newAppUser: AppUser = {
-        tenantId: "new-tenant-id",
-        aadId: "new-aad-id",
-        displayName: "fake",
-        userPrincipalName: "fake",
-        isAdministrator: false,
-      };
-      const teamsAppId = appDef.teamsAppId!;
-      const appDefWithUser: AppDefinition = {
-        appName: "fake",
-        teamsAppId: teamsAppId,
-        userList: [
-          {
-            tenantId: "fake-tenant-id",
-            aadId: "fake-aad-id",
-            displayName: "fake",
-            userPrincipalName: "fake",
-            isAdministrator: false,
-          },
-        ],
-      };
-      const appDefWithUserAdded: AppDefinition = {
-        appName: "fake",
-        teamsAppId: teamsAppId,
-        userList: [
-          {
-            tenantId: "fake-tenant-id",
-            aadId: "fake-aad-id",
-            displayName: "fake",
-            userPrincipalName: "fake",
-            isAdministrator: false,
-          },
-          newAppUser,
-        ],
-      };
-      sandbox.stub(fakeAxiosInstance, "get").resolves({
-        data: appDefWithUser,
-      });
-      sandbox.stub(fakeAxiosInstance, "post").resolves({
-        data: appDefWithUserAdded,
-      });
-
-      const res = await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, newAppUser);
     });
   });
 

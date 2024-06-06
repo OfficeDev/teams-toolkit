@@ -505,48 +505,32 @@ class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async grantPermission(token: string, teamsAppId: string, newUser: AppUser): Promise<void> {
     const app = await this.getApp(token, teamsAppId);
-
     if (this.checkUser(app, newUser)) {
       return;
     }
-
     app.userList?.push(newUser);
     let requester: AxiosInstance;
     try {
-      let response;
-      try {
-        TOOLS.logProvider.debug(
-          getLocalizedString(
-            "core.common.SendingApiRequest",
-            `${this.getEndpoint()}/api/appdefinitions/{teamsAppId}/owner`,
-            JSON.stringify(app)
-          )
-        );
-        requester = this.createRequesterWithToken(token);
-        response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-        TOOLS.logProvider.debug(
-          getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
-        );
-      } catch (e: any) {
-        // Teams apps created by non-regional API cannot be found by regional API
-        if (e.response?.status == 404) {
-          requester = this.createRequesterWithToken(token);
-          response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
-        } else {
-          throw e;
-        }
-      }
+      TOOLS.logProvider.debug(
+        getLocalizedString(
+          "core.common.SendingApiRequest",
+          `${this.getEndpoint()}/api/appdefinitions/{teamsAppId}/owner`,
+          JSON.stringify(app)
+        )
+      );
+      requester = this.createRequesterWithToken(token);
+      const response = await RetryHandler.Retry(() =>
+        requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app)
+      );
+      TOOLS.logProvider.debug(
+        getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response?.data))
+      );
       if (!response || !response.data || !this.checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);
       }
     } catch (err) {
-      if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
-        requester = this.createRequesterWithToken(token);
-        await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList); //TODO ???
-      } else {
-        this.wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
-        throw err;
-      }
+      const error = this.wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
+      throw error;
     }
   }
   /**

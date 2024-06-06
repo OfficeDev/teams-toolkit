@@ -5,7 +5,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { UserState } from "./constants";
-import { UriHandler } from "./uriHandler";
 import {
   isValidProject,
   isValidOfficeAddInProject,
@@ -22,7 +21,6 @@ export let isOfficeAddInProject = false;
 export let isOfficeManifestOnlyProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
-export let uriEventHandler: UriHandler;
 export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
 
@@ -41,6 +39,7 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
     isOfficeManifestOnlyProject = isManifestOnlyOfficeAddinProject(workspaceUri?.fsPath);
   }
   // Default Extension log path
+  // eslint-disable-next-line no-secrets/no-secrets
   // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
   defaultExtensionLogPath = ctx.logUri.fsPath;
   if (!fs.pathExistsSync(defaultExtensionLogPath)) {
@@ -66,10 +65,6 @@ export function checkIsSPFx(directory: string): boolean {
     }
   }
   return false;
-}
-
-export function setUriEventHandler(uriHandler: UriHandler) {
-  uriEventHandler = uriHandler;
 }
 
 export function setCommandIsRunning(isRunning: boolean) {

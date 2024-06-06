@@ -78,7 +78,6 @@ import {
   isSPFxProject,
   isTeamsFxProject,
   isOfficeManifestOnlyProject,
-  setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
@@ -91,7 +90,7 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { UriHandler } from "./uriHandler";
+import { UriHandler, setUriEventHandler } from "./uriHandler";
 import {
   FeatureFlags,
   delay,

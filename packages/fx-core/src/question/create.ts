@@ -29,6 +29,8 @@ import {
   isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
+  isCopilotAuthEnabled,
+  isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
@@ -56,7 +58,7 @@ import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   AppNamePattern,
   CapabilityOptions,
   CliQuestionName,
@@ -1091,18 +1093,26 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
   };
 }
 
-export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
+export function apiAuthQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: QuestionNames.ApiMEAuth,
+    name: QuestionNames.ApiAuth,
     title: getLocalizedString("core.createProjectQuestion.apiMessageExtensionAuth.title"),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.apiMessageExtensionAuth.placeholder"
     ),
     cliDescription: "The authentication type for the API.",
-    staticOptions: ApiMessageExtensionAuthOptions.all(),
-    dynamicOptions: () => ApiMessageExtensionAuthOptions.all(),
-    default: ApiMessageExtensionAuthOptions.none().id,
+    staticOptions: ApiAuthOptions.all(),
+    dynamicOptions: (inputs: Inputs) => {
+      const options: OptionItem[] = [ApiAuthOptions.none()];
+      if (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id) {
+        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
+      } else if (inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id) {
+        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
+      }
+      return options;
+    },
+    default: ApiAuthOptions.none().id,
   };
 }
 
@@ -1392,9 +1402,14 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
+          return (
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+            (isCopilotAuthEnabled() &&
+              isCopilotPluginEnabled() &&
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+          );
         },
-        data: apiMessageExtensionAuthQuestion(),
+        data: apiAuthQuestion(),
       },
       {
         condition: (inputs: Inputs) => {

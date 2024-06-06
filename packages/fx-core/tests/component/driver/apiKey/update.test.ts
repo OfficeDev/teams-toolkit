@@ -13,7 +13,7 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import { UpdateApiKeyDriver } from "../../../../src/component/driver/apiKey/update";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import {
   ApiSecretRegistrationAppType,

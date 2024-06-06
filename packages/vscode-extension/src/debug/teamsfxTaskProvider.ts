@@ -17,6 +17,7 @@ import * as globalVariables from "../globalVariables";
 import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
 import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
 import { MigrateTaskTerminal } from "./taskTerminal/migrateTaskTerminal";
+import { LaunchDesktopClientTerminal } from "./taskTerminal/launchDesktopClientTerminal";
 
 const deprecatedTasks = [
   "frontend start",
@@ -72,6 +73,13 @@ const customTasks = Object.freeze({
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
+  },
+  [TaskCommand.launchDesktopClient]: {
+    createTerminal: (d: vscode.TaskDefinition) =>
+      Promise.resolve(new LaunchDesktopClientTerminal(d)),
+    presentationReveal: vscode.TaskRevealKind.Silent,
+    presentationEcho: true,
+    presentationshowReuseMessage: true,
   },
 });
 

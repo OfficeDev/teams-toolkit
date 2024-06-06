@@ -18,7 +18,6 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  initializePreviewFeatureFlags,
   isChatParticipantEnabled,
   setRegion,
   isApiCopilotPluginEnabled,
@@ -78,7 +77,7 @@ import {
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
-  setUriEventHandler,
+  isOfficeManifestOnlyProject,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
@@ -91,7 +90,7 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { UriHandler } from "./uriHandler";
+import { UriHandler, setUriEventHandler } from "./uriHandler";
 import {
   FeatureFlags,
   delay,
@@ -114,7 +113,6 @@ export async function activate(context: vscode.ExtensionContext) {
     semver.gte(vscode.version, "1.90.0-insider") &&
     vscode.version.includes("insider")
   ).toString();
-  initializePreviewFeatureFlags();
 
   configMgr.registerConfigChangeCallback();
 
@@ -171,10 +169,25 @@ export async function activate(context: vscode.ExtensionContext) {
     isApiCopilotPluginEnabled()
   );
 
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
+
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isOfficeAddIn",
     isOfficeAddInProject
+  );
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isManifestOnlyOfficeAddIn",
+    isOfficeManifestOnlyProject
   );
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");

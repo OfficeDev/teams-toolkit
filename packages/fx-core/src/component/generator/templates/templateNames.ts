@@ -2,15 +2,15 @@
 // Licensed under the MIT license.
 import { Inputs } from "@microsoft/teamsfx-api";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -41,6 +41,8 @@ export enum TemplateNames {
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
   ApiPluginFromScratch = "api-plugin-from-scratch",
+  ApiPluginFromScratchBearer = "api-plugin-from-scratch-bearer",
+  ApiPluginFromScratchOAuth = "api-plugin-from-scratch-oauth",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   ApiMessageExtensionSso = "api-message-extension-sso",
@@ -100,15 +102,20 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]: TemplateNames.ApiPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.none().id}`]:
+    TemplateNames.ApiPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.apiKey().id}`]:
+    TemplateNames.ApiPluginFromScratchBearer,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.oauth().id}`]:
+    TemplateNames.ApiPluginFromScratchOAuth,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.none().id
+    ApiAuthOptions.none().id
   }`]: TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.apiKey().id
+    ApiAuthOptions.apiKey().id
   }`]: TemplateNames.CopilotPluginFromScratchApiKey,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.microsoftEntra().id
+    ApiAuthOptions.microsoftEntra().id
   }`]: TemplateNames.ApiMessageExtensionSso,
   [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
@@ -279,7 +286,7 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
     },
     TemplateNames.CopilotPluginFromScratch,
   ],
@@ -287,7 +294,7 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
     },
     TemplateNames.CopilotPluginFromScratchApiKey,
   ],
@@ -295,7 +302,7 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.microsoftEntra().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.microsoftEntra().id,
     },
     TemplateNames.ApiMessageExtensionSso,
   ],

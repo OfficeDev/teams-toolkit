@@ -3785,10 +3785,6 @@ describe("manifestUpdater", () => {
           ],
         },
       ],
-      webApplicationInfo: {
-        id: "${{AAD_APP_CLIENT_ID}}",
-        resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
-      },
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const oauth2: AuthInfo = {

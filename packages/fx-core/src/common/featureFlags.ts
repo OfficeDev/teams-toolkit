@@ -12,11 +12,6 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
-/**
- * Update all preview feature flags.
- */
-export function initializePreviewFeatureFlags(): void {}
-
 export function isCLIDotNetEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
 }
@@ -65,6 +60,10 @@ export function isChatParticipantEnabled(): boolean {
 
 export function isCopilotAuthEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
+}
+
+export function isSMEOAuthEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,6 +151,7 @@ export class FeatureFlags {
     defaultValue: "false",
   };
   static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
+  static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
 }
 

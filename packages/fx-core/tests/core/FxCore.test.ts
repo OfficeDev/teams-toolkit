@@ -2,13 +2,20 @@
 // Licensed under the MIT license.
 
 import {
+  ErrorType,
+  ListAPIResult,
+  SpecParser,
+  SpecParserError,
+  ValidationStatus,
+  WarningType,
+} from "@microsoft/m365-spec-parser";
+import {
   DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
   Inputs,
   LogProvider,
   Ok,
-  OpenAIPluginManifest,
   Platform,
   Result,
   Stage,
@@ -28,20 +35,12 @@ import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
-import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import { LaunchHelper } from "../../src/component/m365/launchHelper";
 import {
   TeamsfxConfigType,
   TeamsfxVersionState,
   projectTypeChecker,
 } from "../../src/common/projectTypeChecker";
-import {
-  ErrorType,
-  ListAPIResult,
-  SpecParser,
-  SpecParserError,
-  ValidationStatus,
-  WarningType,
-} from "@microsoft/m365-spec-parser";
 import {
   DriverDefinition,
   DriverInstance,
@@ -58,23 +57,27 @@ import * as buildAadManifest from "../../src/component/driver/aad/utility/buildA
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
+import { copilotGptManifestUtils } from "../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
+import { createDriverContext } from "../../src/component/driver/util/utils";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
-import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
-import { createDriverContext } from "../../src/component/utils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 import * as collaborator from "../../src/core/collaborator";
 import { environmentManager } from "../../src/core/environment";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import * as projectMigratorV3 from "../../src/core/middleware/projectMigratorV3";
 import {
   FileNotFoundError,
+  InputValidationError,
   InvalidProjectError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
@@ -87,13 +90,9 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { HubOptions, PluginAvailabilityOptions } from "../../src/question/other";
+import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
-import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
-import { copilotGptManifestUtils } from "../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
-import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 
 const tools = new MockTools();
 
@@ -626,11 +625,7 @@ describe("apply yaml template", async () => {
         projectPath: undefined,
       };
       const res = await core.apply(inputs, "", "provision");
-      assert.isTrue(
-        res.isErr() &&
-          res.error.name === "InvalidInput" &&
-          res.error.message.includes("projectPath")
-      );
+      assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
     });
 
     it("should return error when env is undefined", async () => {
@@ -641,9 +636,7 @@ describe("apply yaml template", async () => {
         env: undefined,
       };
       const res = await core.apply(inputs, "", "provision");
-      assert.isTrue(
-        res.isErr() && res.error.name === "InvalidInput" && res.error.message.includes("env")
-      );
+      assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
     });
   });
 
@@ -1218,8 +1211,8 @@ describe("getProjectMetadata", async () => {
   });
   it("happy path", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readFile").resolves("version: 1.1.1\nprojectId: 12345" as any);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    sandbox.stub(fs, "readFileSync").returns("version: 1.1.1\nprojectId: 12345" as any);
     const core = new FxCore(tools);
     const res = await core.getProjectMetadata(".");
     assert.isTrue(res.isOk());
@@ -1232,7 +1225,7 @@ describe("getProjectMetadata", async () => {
   });
   it("yml not exist", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "pathExistsSync").resolves(false);
     const core = new FxCore(tools);
     const res = await core.getProjectMetadata(".");
     assert.isTrue(res.isOk());
@@ -1242,7 +1235,7 @@ describe("getProjectMetadata", async () => {
   });
   it("throw error", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
-    sandbox.stub(fs, "pathExists").rejects(new Error("mocked error"));
+    sandbox.stub(fs, "pathExistsSync").throws(new Error("mocked error"));
     const core = new FxCore(tools);
     const res = await core.getProjectMetadata(".");
     assert.isTrue(res.isOk());
@@ -1493,9 +1486,7 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
-        "api-me-auth",
+        "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
         "api-operation",
@@ -1534,9 +1525,7 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
-        "api-me-auth",
+        "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
         "api-operation",
@@ -1575,9 +1564,7 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
-        "api-me-auth",
+        "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
         "api-operation",
@@ -1617,9 +1604,7 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
-        "openapi-spec-location",
-        "api-operation",
-        "api-me-auth",
+        "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
         "api-operation",
@@ -4030,26 +4015,6 @@ describe("copilotPlugin", async () => {
         assert.equal(res.error.name, "get plugin error");
       }
     });
-  });
-
-  it("load OpenAI manifest - should run successful", async () => {
-    const core = new FxCore(tools);
-    const inputs = { domain: "mydomain.com" };
-    sinon
-      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
-      .returns(Promise.resolve<OpenAIPluginManifest>(undefined as any));
-    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
-    assert.isTrue(result.isOk());
-  });
-
-  it("load OpenAI manifest - should return an error when an exception is thrown", async () => {
-    const core = new FxCore(tools);
-    const inputs = { domain: "mydomain.com" };
-    sinon
-      .stub(OpenAIPluginManifestHelper, "loadOpenAIPluginManifest")
-      .throws(new Error("Test error"));
-    const result = await core.copilotPluginLoadOpenAIManifest(inputs as any);
-    assert.isTrue(result.isErr());
   });
 
   it("load operations - should return a list of operations when given valid inputs", async () => {

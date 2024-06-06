@@ -369,7 +369,7 @@ Enhancement:
 - UI improvement of `Create a new Teams app` and `Start from a sample`.
 - UI improvement of the Teams Toolkit menus in the sidebar.
 - Optimize and simplify the Sample apps. Improve the experience of Sample apps.
-- Improved the experience of TeamsFx CLI tool.
+- Improved the experience of Teams Toolkit CLI tool.
 
 ## 3.8.0 - Apr 22, 2022
 

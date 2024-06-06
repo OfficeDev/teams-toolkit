@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import * as chai from "chai";
 import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { AzureScopes } from "@microsoft/teamsfx-core";
+import * as chai from "chai";
 import {
   getActivePluginsFromProjectSetting,
   getProvisionParameterValueByKey,
 } from "../e2e/commonUtils";
-import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
+import { PluginId, StateConfigKey, provisionParametersKey } from "./constants";
 import {
+  getExpectedM365ApplicationIdUri,
+  getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  getWebappSettings,
   getWebappServicePlan,
-  getExpectedM365ClientSecret,
-  getExpectedM365ApplicationIdUri,
+  getWebappSettings,
 } from "./utilities";
 
 export class PropertiesKeys {

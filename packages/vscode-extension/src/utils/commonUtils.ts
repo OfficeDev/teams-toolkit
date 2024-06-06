@@ -6,10 +6,10 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-
 import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { PluginNames, isValidProject } from "@microsoft/teamsfx-core";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import { glob } from "glob";
+import { workspace } from "vscode";
 import * as extensionPackage from "../../package.json";
 import * as commonUtils from "../debug/commonUtils";
 import { getV3TeamsAppId } from "../debug/commonUtils";
@@ -17,7 +17,6 @@ import * as globalVariables from "../globalVariables";
 import { core } from "../handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { localize } from "./localizeUtils";
-import { workspace } from "vscode";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -204,7 +203,20 @@ export async function getSubscriptionInfoFromEnv(
     return undefined;
   }
 }
-
+enum PluginNames {
+  SQL = "fx-resource-azure-sql",
+  MSID = "fx-resource-identity",
+  FE = "fx-resource-frontend-hosting",
+  SPFX = "fx-resource-spfx",
+  BOT = "fx-resource-bot",
+  AAD = "fx-resource-aad-app-for-teams",
+  FUNC = "fx-resource-function",
+  SA = "fx-resource-simple-auth",
+  LDEBUG = "fx-resource-local-debug",
+  APIM = "fx-resource-apim",
+  APPST = "fx-resource-appstudio",
+  SOLUTION = "solution",
+}
 export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
   let provisionResult: Record<string, any> | undefined;
 

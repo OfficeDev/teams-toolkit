@@ -2,12 +2,12 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { MockTools } from "../../core/utils";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { MockDriver } from "./helper";
 import sinon from "sinon";
-import { TelemetryConstants } from "../../../src/component/constants";
 import { TeamsFxTelemetryReporter } from "../../../src/component/utils/teamsFxTelemetryReporter";
 import { performance } from "perf_hooks";
+import { TelemetryConstants } from "../../../src/common/telemetry";
 
 chai.use(chaiAsPromised);
 

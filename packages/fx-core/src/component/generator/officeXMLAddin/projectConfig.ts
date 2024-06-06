@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { OfficeAddinHostOptions, ProjectTypeOptions } from "../../../question";
-
 /**
  * @author zyun@microsoft.com
  */
 
-interface IOfficeAddinHostConfig {
+export interface IOfficeAddinHostConfig {
   [property: string]: {
     title: string;
     detail: string;
@@ -22,7 +20,7 @@ interface IOfficeAddinHostConfig {
   };
 }
 
-interface IOfficeAddinProjectConfig {
+export interface IOfficeAddinProjectConfig {
   [property: string]: IOfficeAddinHostConfig;
 }
 
@@ -185,17 +183,3 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
     },
   },
 };
-
-export function getOfficeAddinTemplateConfig(
-  projectType: string,
-  addinHost?: string
-): IOfficeAddinHostConfig {
-  if (
-    projectType === ProjectTypeOptions.officeXMLAddin().id &&
-    addinHost &&
-    addinHost !== OfficeAddinHostOptions.outlook().id
-  ) {
-    return OfficeAddinProjectConfig[addinHost];
-  }
-  return OfficeAddinProjectConfig["json"];
-}

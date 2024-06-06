@@ -4,8 +4,8 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { jsonUtils } from "../../src/common/jsonUtils";
-import { setTools } from "../../src/core/globalVars";
-import { FileNotFoundError, JSONSyntaxError, UnhandledError } from "../../src/error/common";
+import { setTools } from "../../src/common/globalVars";
+import { FileNotFoundError, JSONSyntaxError } from "../../src/error/common";
 import { MockTools } from "../core/utils";
 
 describe("JSONUtils", () => {

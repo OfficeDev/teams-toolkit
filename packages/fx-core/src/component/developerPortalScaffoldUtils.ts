@@ -6,14 +6,14 @@
  */
 
 import {
+  BotOrMeScopes,
   Context,
   FxError,
+  ICommandList,
   IStaticTab,
   Inputs,
   Result,
   TeamsAppManifest,
-  BotOrMeScopes,
-  ICommandList,
   UserError,
   err,
   ok,
@@ -21,8 +21,9 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../common/localizeUtils";
-import { ObjectIsUndefinedError } from "../core/error";
-import { CapabilityOptions } from "../question/create";
+import { InputValidationError } from "../error";
+import { QuestionNames } from "../question/constants";
+import { getProjectTypeAndCapability } from "../question/create";
 import { CoordinatorSource } from "./constants";
 import * as appStudio from "./driver/teamsApp/appStudio";
 import {
@@ -33,15 +34,8 @@ import {
 } from "./driver/teamsApp/constants";
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
-import {
-  isBot,
-  isBotAndBotBasedMessageExtension,
-  isBotBasedMessageExtension,
-  needTabAndBotCode,
-  needTabCode,
-} from "./driver/teamsApp/utils/utils";
 import { envUtil } from "./utils/envUtil";
-import { QuestionNames } from "../question/questionNames";
+import semver from "semver";
 
 const appPackageFolderName = "appPackage";
 const colorFileName = "color.png";
@@ -58,11 +52,11 @@ export class DeveloperPortalScaffoldUtils {
     inputs: Inputs
   ): Promise<Result<undefined, FxError>> {
     if (!ctx.projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
+      return err(new InputValidationError("projectPath", "undefined"));
     }
 
     if (!ctx.tokenProvider) {
-      return err(new ObjectIsUndefinedError("tokenProvider"));
+      return err(new InputValidationError("tokenProvider", "undefined"));
     }
 
     const manifestRes = await updateManifest(ctx, appDefinition, inputs);
@@ -118,7 +112,7 @@ async function updateManifest(
   const existingManifestTemplate = manifestRes.value;
 
   if (!existingManifestTemplate) {
-    return err(new ObjectIsUndefinedError("manifest.json downloaded from template"));
+    return err(new InputValidationError("manifest.json downloaded from template", "undefined"));
   }
 
   // icons
@@ -136,42 +130,6 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
-
-  // Adding a feature with groupChat scope in TDP won't pass validation for extendToM365 action.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = decapitalizeScope(
-          manifest.configurableTabs[0].scopes
-        ) as ("team" | "groupchat")[];
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = decapitalizeScope(manifest.bots[0].scopes) as BotOrMeScopes;
-      }
-    }
-
-    if (manifest.bots[0].commandLists) {
-      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
-        if (commandList.scopes) {
-          commandList.scopes = decapitalizeScope(commandList.scopes) as BotOrMeScopes;
-        }
-      });
-    }
-  }
-
-  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-    if (manifest.composeExtensions[0].scopes) {
-      {
-        manifest.composeExtensions[0].scopes = decapitalizeScope(
-          manifest.composeExtensions[0].scopes
-        ) as BotOrMeScopes;
-      }
-    }
-  }
 
   // manifest: tab
   const tabs = manifest.staticTabs;
@@ -271,6 +229,44 @@ async function updateManifest(
     }
   }
 
+  // Adjust scope based on manifest version.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      manifest.configurableTabs[0].scopes = adjustScopeBasedOnVersion(
+        manifest.configurableTabs[0].scopes,
+        manifest.manifestVersion
+      ) as ("team" | "groupchat")[];
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      manifest.bots[0].scopes = adjustScopeBasedOnVersion(
+        manifest.bots[0].scopes,
+        manifest.manifestVersion
+      ) as BotOrMeScopes;
+    }
+
+    if (manifest.bots[0].commandLists) {
+      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
+        if (commandList.scopes) {
+          commandList.scopes = adjustScopeBasedOnVersion(
+            commandList.scopes,
+            manifest.manifestVersion
+          ) as BotOrMeScopes;
+        }
+      });
+    }
+  }
+
+  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+    if (manifest.composeExtensions[0].scopes) {
+      manifest.composeExtensions[0].scopes = adjustScopeBasedOnVersion(
+        manifest.composeExtensions[0].scopes,
+        manifest.manifestVersion
+      ) as BotOrMeScopes;
+    }
+  }
+
   await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, "\t"), "utf-8");
 
   // languages
@@ -298,11 +294,11 @@ function updateTabUrl(
   existingManifestStaticTabs: IStaticTab[] | undefined
 ) {
   if (!tabs || tabs.length === 0) {
-    return err(new ObjectIsUndefinedError("static tabs"));
+    return err(new InputValidationError("tabs in manifest.json", "empty"));
   }
 
   if (!existingManifestStaticTabs || existingManifestStaticTabs.length === 0) {
-    return err(new ObjectIsUndefinedError("static tabs in manifest.json"));
+    return err(new InputValidationError("static tabs in manifest.json", "empty"));
   }
   answers.forEach((answer: string) => {
     const tabToUpdate = findTabBasedOnName(answer, tabs);
@@ -325,43 +321,24 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
-export function getProjectTypeAndCapability(
-  teamsApp: AppDefinition
-): { projectType: string; templateId: string } | undefined {
-  // tab with bot, tab with message extension, tab with bot and message extension
-  if (needTabAndBotCode(teamsApp)) {
-    return { projectType: "tab-bot-type", templateId: CapabilityOptions.nonSsoTabAndBot().id };
+// A temporary solution to adjust scope based on manifest version to avoid errors in manifest validation.
+export function adjustScopeBasedOnVersion(scopes: string[], version: string): string[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return scopes.map((o) => {
+      if (o === "groupchat") {
+        return "groupChat";
+      }
+      return o;
+    });
+  } else {
+    return scopes.map((o) => {
+      if (o === "groupChat") {
+        return "groupchat";
+      }
+      return o;
+    });
   }
-
-  // tab only
-  if (needTabCode(teamsApp)) {
-    return { projectType: "tab-type", templateId: CapabilityOptions.nonSsoTab().id };
-  }
-
-  // bot and message extension
-  if (isBotAndBotBasedMessageExtension(teamsApp)) {
-    return { projectType: "bot-me-type", templateId: CapabilityOptions.botAndMe().id };
-  }
-
-  // bot based message extension
-  if (isBotBasedMessageExtension(teamsApp)) {
-    return { projectType: "me-type", templateId: CapabilityOptions.me().id };
-  }
-
-  // bot
-  if (isBot(teamsApp)) {
-    return { projectType: "bot-type", templateId: CapabilityOptions.basicBot().id };
-  }
-
-  return undefined;
-}
-
-function decapitalizeScope(scopes: string[]): string[] {
-  return scopes.map((o) => o.toLowerCase());
-}
-
-export function isFromDevPortal(inputs: Inputs | undefined): boolean {
-  return !!inputs?.teamsAppFromTdp;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

@@ -4,10 +4,10 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { AppStudioScopes, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { InvalidActionInputError, assembleError } from "../../../error";
-import { QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/constants";
 import { QuestionMW } from "../../middleware/questionMW";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { DriverContext } from "../interface/commonArgs";

@@ -5,8 +5,8 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { Service } from "typedi";
+import { GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { GraphScopes } from "../../../common/tools";
 import {
   HttpClientError,
   HttpServerError,
@@ -18,15 +18,19 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { AadAppNameTooLongError } from "./error/aadAppNameTooLongError";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
 import { SignInAudience } from "./interface/signInAudience";
 import { AadAppClient } from "./utility/aadAppClient";
-import { constants, descriptionMessageKeys, logMessageKeys } from "./utility/constants";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { telemetryKeys } from "./utility/constants";
+import {
+  constants,
+  descriptionMessageKeys,
+  logMessageKeys,
+  telemetryKeys,
+} from "./utility/constants";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";

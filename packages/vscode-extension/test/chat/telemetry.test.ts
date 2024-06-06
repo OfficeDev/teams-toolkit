@@ -8,7 +8,7 @@ import {
 import sinon from "ts-sinon";
 import { Correlator } from "@microsoft/teamsfx-core";
 import * as utils from "../../src/chat/utils";
-import * as coreTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as coreTools from "@microsoft/teamsfx-core/build/common/stringUtils";
 
 describe("ChatTelemetryData", () => {
   const sandbox = sinon.createSandbox();

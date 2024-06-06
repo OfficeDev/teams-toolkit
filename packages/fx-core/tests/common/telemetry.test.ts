@@ -4,7 +4,7 @@
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { extractMethodNamesFromErrorStack } from "../../src/common/telemetry";
+import { telemetryUtils } from "../../src/common/telemetry";
 
 describe("telemetry", () => {
   const sandbox = sinon.createSandbox();
@@ -41,11 +41,11 @@ describe("telemetry", () => {
         "async FxCore.ErrorHandlerMW",
         "async FxCore.<anonymous>",
       ];
-      const output = extractMethodNamesFromErrorStack(stack);
+      const output = telemetryUtils.extractMethodNamesFromErrorStack(stack);
       assert.equal(output, expectedOutput.join(" | "));
     });
     it("input undefined", async () => {
-      const output = extractMethodNamesFromErrorStack();
+      const output = telemetryUtils.extractMethodNamesFromErrorStack();
       assert.equal(output, "");
     });
   });

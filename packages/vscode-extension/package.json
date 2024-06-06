@@ -797,7 +797,7 @@
       {
         "command": "fx-extension.localdebug",
         "title": "%teamstoolkit.commands.localDebug.title%",
-        "enablement": "!fx-extension.commandLocked",
+        "enablement": "!fx-extension.commandLocked && !fx-extension.isManifestOnlyOfficeAddIn",
         "category": "Teams"
       },
       {
@@ -940,6 +940,11 @@
         "icon": "$(info)"
       },
       {
+        "command": "fx-extension.stopDebugging",
+        "title": "%teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugTitle%",
+        "enablement": "fx-extension.isOfficeAddIn && !fx-extension.isManifestOnlyOfficeAddIn"
+      },
+      {
         "command": "fx-extension.invokeChat",
         "title": "%teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle%",
         "category": "Teams",
@@ -974,6 +979,10 @@
               {
                 "const": "launch-web-client",
                 "description": "%teamstoolkit.taskDefinitions.command.launchWebClient.description%"
+              },
+              {
+                "const": "launch-desktop-client",
+                "description": "%teamstoolkit.taskDefinitions.command.launchDesktopClient.description%"
               }
             ]
           },
@@ -1527,7 +1536,7 @@
         "fx-extension.developCopilotPlugin": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Get more info from [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)."
         },
         "fx-extension.logLevel": {
           "type": "string",
@@ -1546,7 +1555,6 @@
         "id": "ms-teams-vscode-extension.teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
-        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",
@@ -1562,7 +1570,6 @@
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
         "description": "%teamstoolkit.chatParticipants.officeAddIn.description%",
-        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",
@@ -1588,7 +1595,6 @@
     "copy-static-assets": "copyfiles -f src/chat/cl100k_base.tiktoken out/src/chat",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-md-files && npm run copy-static-assets",
     "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
-    "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",

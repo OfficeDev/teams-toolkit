@@ -3,12 +3,7 @@
 
 import { FxError } from "@microsoft/teamsfx-api";
 import { TOOLS, globalVars } from "../common/globalVars";
-import {
-  TelemetryConstants,
-  TelemetryProperty,
-  TelemetrySuccess,
-  telemetryUtils,
-} from "../common/telemetry";
+import { TelemetryProperty, TelemetrySuccess, telemetryUtils } from "../common/telemetry";
 
 type TelemetryProps = { [key: string]: string };
 function getCommonProperties(): TelemetryProps {

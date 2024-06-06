@@ -15,7 +15,6 @@ export class VsCodeLogProvider implements LogProvider {
   logLevel: LogLevel = LogLevel.Info;
   outputChannel: vscode.OutputChannel;
   logFileName: string;
-  logFilePath: string | undefined = undefined;
 
   private static instance: VsCodeLogProvider;
 

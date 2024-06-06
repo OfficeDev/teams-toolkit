@@ -24,7 +24,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
-import { isNewGeneratorEnabled } from "../../common/featureFlags";
+import { isCopilotAuthEnabled, isNewGeneratorEnabled } from "../../common/featureFlags";
 import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/stringUtils";
@@ -151,7 +151,7 @@ class Coordinator {
       const capability = inputs.capabilities as string;
       const projectType = inputs[QuestionNames.ProjectType];
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-      const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
+      const apiMEAuthType = inputs[QuestionNames.ApiAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -261,6 +261,14 @@ class Coordinator {
             meArchitecture === MeArchitectureOptions.newApi().id
           ) {
             feature = `${feature}:${apiMEAuthType}`;
+          }
+
+          if (capability === CapabilityOptions.copilotPluginNewApi().id) {
+            if (isCopilotAuthEnabled()) {
+              feature = `${feature}:${apiMEAuthType}`;
+            } else {
+              feature = `${feature}:none`;
+            }
           }
 
           if (capability === CapabilityOptions.customCopilotRag().id) {

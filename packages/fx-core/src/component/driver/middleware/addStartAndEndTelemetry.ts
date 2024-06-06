@@ -9,7 +9,7 @@ import {
 } from "../../utils/teamsFxTelemetryReporter";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ExecutionResult } from "../interface/stepDriver";
-import { TelemetryConstants } from "../../../common/telemetry";
+import { TelemetryConstants, TelemetryProperty } from "../../../common/telemetry";
 import { performance } from "perf_hooks";
 
 // Based on fx-core's design that a component should always return FxError instead of throw exception, no error handling is added
@@ -41,7 +41,7 @@ export function addStartAndEndTelemetry(eventName: string, componentName: string
     const telemetryConfig: TeamsFxTelemetryConfig = {
       eventName: eventName,
       properties: driverContext.telemetryProperties,
-      measurements: { [TelemetryConstants.properties.timeCost]: timeCost },
+      measurements: { [TelemetryProperty.TimeCost]: timeCost },
     };
 
     if (result.isOk()) {

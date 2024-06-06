@@ -4,7 +4,7 @@
 import { Context, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { TelemetryConstants } from "../../common/telemetry";
+import { TelemetryConstants, TelemetrySuccess } from "../../common/telemetry";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   SolutionTelemetryComponentName,
@@ -43,7 +43,7 @@ async function addSsoV3(
 
   context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    [SolutionTelemetryProperty.Success]: TelemetryConstants.values.yes,
+    [SolutionTelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
 
   return ok(undefined);

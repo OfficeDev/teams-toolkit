@@ -3,13 +3,18 @@
 
 import { FxError } from "@microsoft/teamsfx-api";
 import { TOOLS, globalVars } from "../common/globalVars";
-import { TelemetryConstants, telemetryUtils } from "../common/telemetry";
+import {
+  TelemetryConstants,
+  TelemetryProperty,
+  TelemetrySuccess,
+  telemetryUtils,
+} from "../common/telemetry";
 
 type TelemetryProps = { [key: string]: string };
 function getCommonProperties(): TelemetryProps {
   const props = {
-    [TelemetryConstants.properties.appId]: globalVars.teamsAppId,
-    [TelemetryConstants.properties.tenantId]: globalVars.m365TenantId,
+    [TelemetryProperty.AppId]: globalVars.teamsAppId,
+    [TelemetryProperty.TenantId]: globalVars.m365TenantId,
   };
   return props;
 }
@@ -34,7 +39,7 @@ export function sendSuccessEvent(
   const props = {
     ...getCommonProperties(),
     ...properties,
-    [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   };
   TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, props, measurements ?? {});
 }
@@ -51,6 +56,6 @@ export function sendErrorEvent(
   };
   telemetryUtils.fillInErrorProperties(props, error);
   TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, props, measurements ?? {}, [
-    TelemetryConstants.properties.errorMessage,
+    TelemetryProperty.ErrorMessage,
   ]);
 }

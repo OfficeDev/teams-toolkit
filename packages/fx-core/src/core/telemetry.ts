@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import { maskSecret } from "../common/stringUtils";
+import { TelemetryErrorType, TelemetryProperty, TelemetrySuccess } from "../common/telemetry";
 
 export const CoreTelemetryComponentName = "core";
 
@@ -12,18 +14,8 @@ export enum CoreTelemetryEvent {
 }
 
 export enum CoreTelemetryProperty {
-  Component = "component",
-  Capabilities = "capabilities",
-  Success = "success",
-  ErrorCode = "error-code",
-  ErrorMessage = "err-message",
   TdpTeamsAppId = "tdp-teams-app-id",
   TdpTeamsAppFeatures = "tdp-teams-app-features",
-}
-
-enum CoreTelemetrySuccess {
-  Yes = "yes",
-  No = "no",
 }
 
 export function sendErrorTelemetryThenReturnError(
@@ -38,19 +30,19 @@ export function sendErrorTelemetryThenReturnError(
     properties = {};
   }
 
-  if (CoreTelemetryProperty.Component in properties === false) {
-    properties[CoreTelemetryProperty.Component] = CoreTelemetryComponentName;
+  if (TelemetryProperty.Component in properties === false) {
+    properties[TelemetryProperty.Component] = CoreTelemetryComponentName;
   }
 
-  properties[CoreTelemetryProperty.Success] = CoreTelemetrySuccess.No;
+  properties[TelemetryProperty.Success] = TelemetrySuccess.No;
   if (error instanceof UserError) {
-    properties["error-type"] = "user";
+    properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
   } else {
-    properties["error-type"] = "system";
+    properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
   }
 
-  properties["error-code"] = `${error.source}.${error.name}`;
-  properties["err-message"] = error.message;
+  properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
+  properties[TelemetryProperty.ErrorMessage] = maskSecret(error.message);
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;

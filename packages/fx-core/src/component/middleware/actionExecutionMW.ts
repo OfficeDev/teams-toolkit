@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
 import { TOOLS, globalVars } from "../../common/globalVars";
-import { TelemetryConstants } from "../../common/telemetry";
+import { TelemetryProperty } from "../../common/telemetry";
 import { assembleError } from "../../error/common";
 import { traverse } from "../../ui/visitor";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -54,7 +54,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const methodName = ctx.method!;
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
-      [TelemetryConstants.properties.component]: telemetryComponentName,
+      [TelemetryProperty.Component]: telemetryComponentName,
       env: process.env.TEAMSFX_ENV || "",
     };
     const telemetryMeasures: Record<string, number> = {};
@@ -111,7 +111,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
-      merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
+      merge(telemetryMeasures, { [TelemetryProperty.TimeCost]: timeCost });
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
       }

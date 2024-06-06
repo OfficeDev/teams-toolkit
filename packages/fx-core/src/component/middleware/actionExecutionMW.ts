@@ -53,7 +53,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const errorSource = action.errorSource || componentName;
     const methodName = ctx.method!;
     const eventName = action.telemetryEventName || methodName;
-    const telemetryProps = {
+    const telemetryProps: any = {
       [TelemetryProperty.Component]: telemetryComponentName,
       env: process.env.TEAMSFX_ENV || "",
     };
@@ -70,7 +70,8 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           }
         }
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
-        if (globalVars.trackingId) telemetryProps["project-id"] = globalVars.trackingId; // add trackingId prop in telemetry
+        if (globalVars.trackingId)
+          telemetryProps[TelemetryProperty.ProjectId] = globalVars.trackingId; // add trackingId prop in telemetry
         sendStartEvent(eventName, telemetryProps);
       }
       // run question model

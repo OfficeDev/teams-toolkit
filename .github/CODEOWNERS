@@ -292,7 +292,7 @@
 /templates/**/custom-copilot-rag-microsoft365 @kimizhu @swatDong @kuojianlu @XiaofuHuang @xiaolang124
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/**/default-bot-message-extension @yuqizhou77
+/templates/**/default-bot-message-extension @yuqizhou77 @Yukun-dong
 /templates/**/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
 /templates/**/message-extension @yuqizhou77 @Yukun-dong

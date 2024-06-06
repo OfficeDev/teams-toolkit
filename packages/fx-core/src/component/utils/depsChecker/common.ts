@@ -42,5 +42,5 @@ export enum TelemetryMeasurement {
   OSArch = "os-arch",
   OSRelease = "os-release",
   Component = "component",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
 }

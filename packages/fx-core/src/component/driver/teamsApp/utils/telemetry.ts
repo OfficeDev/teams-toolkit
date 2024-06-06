@@ -5,7 +5,7 @@ export enum TelemetryPropertyKey {
   component = "component",
   errorType = "error-type",
   errorCode = "error-code",
-  errorMessage = "error-message",
+  errorMessage = "err-message",
   updateExistingApp = "update",
   success = "success",
   appId = "appid",

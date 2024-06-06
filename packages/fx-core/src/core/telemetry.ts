@@ -16,7 +16,7 @@ export enum CoreTelemetryProperty {
   Capabilities = "capabilities",
   Success = "success",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
   TdpTeamsAppId = "tdp-teams-app-id",
   TdpTeamsAppFeatures = "tdp-teams-app-features",
 }
@@ -50,7 +50,7 @@ export function sendErrorTelemetryThenReturnError(
   }
 
   properties["error-code"] = `${error.source}.${error.name}`;
-  properties["error-message"] = error.message;
+  properties["err-message"] = error.message;
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;

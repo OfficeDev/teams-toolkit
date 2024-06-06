@@ -32,7 +32,7 @@ export class TelemetryKey {
   static readonly Component = "component";
   static readonly Success = "success";
   static readonly ErrorType = "error-type";
-  static readonly ErrorMessage = "error-message";
+  static readonly ErrorMessage = "err-message";
   static readonly ErrorCode = "error-code";
 }
 

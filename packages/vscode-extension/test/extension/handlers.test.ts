@@ -1530,7 +1530,7 @@ describe("handlers", () => {
     chai.assert.isTrue(
       sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.ClickGetHelp, {
         "error-code": "test source.test name",
-        "error-message": "test displayMessage",
+        "err-message": "test displayMessage",
         "help-link": "test helpLink",
       })
     );
@@ -1555,7 +1555,7 @@ describe("handlers", () => {
     chai.assert.isFalse(
       sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.ClickGetHelp, {
         "error-code": "test source.test name",
-        "error-message": "test displayMessage",
+        "err-message": "test displayMessage",
         "help-link": "test helpLink",
       })
     );

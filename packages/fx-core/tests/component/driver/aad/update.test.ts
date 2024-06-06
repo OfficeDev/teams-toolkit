@@ -619,9 +619,6 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.properties.success).to.equal("no");
     expect(endTelemetry.properties["error-code"]).to.equal("aadAppUpdate.HttpServerError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
-    // expect(endTelemetry.properties["error-message"]).to.equal(
-    //   'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
-    // );
   });
 
   it("should throw error when missing required environment variable in manifest", async () => {

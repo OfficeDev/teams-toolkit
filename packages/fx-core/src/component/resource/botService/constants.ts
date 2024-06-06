@@ -34,7 +34,7 @@ export class TelemetryKeys {
   public static readonly Component = "component";
   public static readonly Success = "success";
   public static readonly ErrorType = "error-type";
-  public static readonly ErrorMessage = "error-message";
+  public static readonly ErrorMessage = "err-message";
   public static readonly ErrorCode = "error-code";
   public static readonly AppId = "appid";
   public static readonly HostType = "bot-host-type";

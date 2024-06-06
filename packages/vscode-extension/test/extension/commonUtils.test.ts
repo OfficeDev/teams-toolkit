@@ -7,101 +7,53 @@ import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
-import * as extensionPackage from "../../package.json";
 import * as globalVariables from "../../src/globalVariables";
-import * as handlers from "../../src/handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../src/utils/commonUtils";
+import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as mockfs from "mock-fs";
 
 describe("CommonUtils", () => {
-  describe("getPackageVersion", () => {
-    it("alpha version", () => {
-      const version = "1.1.1-alpha.4";
-
-      chai.expect(commonUtils.getPackageVersion(version)).equals("alpha");
-    });
-
-    it("beta version", () => {
-      const version = "1.1.1-beta.2";
-
-      chai.expect(commonUtils.getPackageVersion(version)).equals("beta");
-    });
-
-    it("rc version", () => {
-      const version = "1.0.0-rc.3";
-
-      chai.expect(commonUtils.getPackageVersion(version)).equals("rc");
-    });
-
-    it("formal version", () => {
-      const version = "4.6.0";
-
-      chai.expect(commonUtils.getPackageVersion(version)).equals("formal");
-    });
+  afterEach(() => {
+    // Restore the default sandbox here
+    sinon.restore();
   });
 
   describe("openFolderInExplorer", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("happy path", () => {
       const folderPath = "fakePath";
-      sinon.stub(cp, "exec");
+      sandbox.stub(cp, "exec");
       commonUtils.openFolderInExplorer(folderPath);
     });
   });
 
-  describe("isFeatureFlag", () => {
-    it("return true when enabled", () => {
-      sinon.stub(extensionPackage, "featureFlag").value("true");
-
-      chai.expect(commonUtils.isFeatureFlag()).equals(true);
-
-      sinon.restore();
-    });
-
-    it("return false when disabled", () => {
-      sinon.stub(extensionPackage, "featureFlag").value("false");
-
-      chai.expect(commonUtils.isFeatureFlag()).equals(false);
-
-      sinon.restore();
-    });
-  });
-
-  describe("sleep", () => {
-    it("sleep should be accurate", async () => {
-      const start = Date.now();
-
-      commonUtils.sleep(1000).then(() => {
-        const millis = Date.now() - start;
-
-        chai.expect(millis).gte(1000);
-
-        chai.expect(millis).lte(1100);
-      });
-    });
-  });
-
   describe("os assertion", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("should return exactly result according to os.type", async () => {
-      sinon.stub(os, "type").returns("Windows_NT");
-
+      sandbox.stub(os, "type").returns("Windows_NT");
       chai.expect(commonUtils.isWindows()).equals(true);
+      sandbox.restore();
 
-      sinon.restore();
-
-      sinon.stub(os, "type").returns("Linux");
-
+      sandbox.stub(os, "type").returns("Linux");
       chai.expect(commonUtils.isLinux()).equals(true);
+      sandbox.restore();
 
-      sinon.restore();
-
-      sinon.stub(os, "type").returns("Darwin");
-
+      sandbox.stub(os, "type").returns("Darwin");
       chai.expect(commonUtils.isMacOS()).equals(true);
-
-      sinon.restore();
+      sandbox.restore();
     });
   });
 
@@ -110,7 +62,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -120,24 +72,24 @@ describe("CommonUtils", () => {
     it("happy path", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").resolves(ok("mock-project-id"));
-      const result = await commonUtils.getProjectId();
+      const result = await telemetryUtils.getProjectId();
       chai.expect(result).equals("mock-project-id");
     });
     it("workspaceUri is undefined", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(undefined);
-      const result = await commonUtils.getProjectId();
+      const result = await telemetryUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").resolves(err(new UserError({})));
-      const result = await commonUtils.getProjectId();
+      const result = await telemetryUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").rejects(new UserError({}));
-      const result = await commonUtils.getProjectId();
+      const result = await telemetryUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
   });
@@ -147,7 +99,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -190,7 +142,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -427,50 +379,9 @@ describe("CommonUtils", () => {
     });
   });
 
-  describe("anonymizeFilePaths()", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      mockfs.restore();
-      sandbox.restore();
-    });
-
-    it("undefined", async () => {
-      const result = await commonUtils.anonymizeFilePaths();
-      chai.assert.equal(result, "");
-    });
-
-    it("happy path 1", async () => {
-      const result = await commonUtils.anonymizeFilePaths(
-        "at Object.require.extensions.<computed> [as .ts] (C:\\Users\\AppData\\Roaming\\npm\\node_modules\\ts-node\\src\\index.ts:1621:12)"
-      );
-      chai.assert.equal(
-        result,
-        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>/index.ts:1621:12)"
-      );
-    });
-    it("happy path 2", async () => {
-      const result = await commonUtils.anonymizeFilePaths(
-        "at Object.require.extensions.<computed> [as .ts] (/user/test/index.ts:1621:12)"
-      );
-      chai.assert.equal(
-        result,
-        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>/index.ts:1621:12)"
-      );
-    });
-    it("happy path 3", async () => {
-      const result = await commonUtils.anonymizeFilePaths(
-        "some user stack trace at (C:/fake_path/fake_file:1:1)"
-      );
-      chai.assert.equal(
-        result,
-        "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)"
-      );
-    });
-  });
-
   describe("getLocalDebugMessageTemplate()", () => {
     const sandbox = sinon.createSandbox();
+
     afterEach(() => {
       sandbox.restore();
     });

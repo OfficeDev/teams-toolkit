@@ -7,6 +7,8 @@
 import * as chai from "chai";
 import * as spies from "chai-spies";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
+import { VSCodeTelemetryReporter } from "../../src/commonlib/telemetry";
+import { getAllFeatureFlags } from "../../src/featureFlags";
 
 chai.use(spies);
 const expect = chai.expect;
@@ -41,9 +43,6 @@ mock("@vscode/extension-telemetry", {
     return reporterSpy;
   },
 });
-
-import { VSCodeTelemetryReporter } from "../../src/commonlib/telemetry";
-import { getAllFeatureFlags } from "../../src/utils/commonUtils";
 
 const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
 

@@ -5,11 +5,13 @@ import * as vscode from "vscode";
 import { UriHandler, setUriEventHandler } from "../../src/uriHandler";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 
+afterEach(() => {
+  sinon.restore();
+});
+
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();
-  beforeEach(() => {
-    sandbox.restore();
-  });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -131,7 +133,5 @@ describe("uri handler", () => {
   it("set uri handler", async () => {
     const uriHandler = new UriHandler();
     setUriEventHandler(uriHandler);
-
-    sinon.restore();
   });
 });

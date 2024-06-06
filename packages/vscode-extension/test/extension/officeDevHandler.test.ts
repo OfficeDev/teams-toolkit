@@ -7,15 +7,14 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { Terminal } from "vscode";
 import { OfficeDevTerminal, TriggerCmdType } from "../../src/debug/taskTerminal/officeDevTerminal";
-import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
 import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
+import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as teamsfxCore from "@microsoft/teamsfx-core";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("officeDevHandler", () => {
@@ -30,8 +29,8 @@ describe("officeDevHandler", () => {
     openLinkFunc: (args?: any[]) => Promise<Result<boolean, FxError>>,
     urlPath: string
   ) {
-    sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-    const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+    const openUrl = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
     const res = await openLinkFunc(undefined);
     chai.assert.isTrue(openUrl.calledOnce);
     chai.assert.isTrue(res.isOk());
@@ -278,17 +277,19 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 });
 
 describe("OfficeDevTerminal", () => {
+  const sandbox = sinon.createSandbox();
   let getInstanceStub: any, showStub: any, sendTextStub: any;
 
   beforeEach(() => {
-    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance");
-    showStub = sinon.stub();
-    sendTextStub = sinon.stub();
+    getInstanceStub = sandbox.stub(OfficeDevTerminal, "getInstance");
+    showStub = sandbox.stub();
+    sendTextStub = sandbox.stub();
     getInstanceStub.returns({ show: showStub, sendText: sendTextStub });
   });
 
   afterEach(() => {
     getInstanceStub.restore();
+    sandbox.restore();
   });
 
   it("should validate Office AddIn Manifest", async () => {
@@ -334,18 +335,22 @@ describe("stopOfficeAddInDebug", () => {
   let getInstanceStub: sinon.SinonStub;
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("should call getInstance, show and sendText", async () => {
     const terminalStub = new TerminalStub();
-    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
-    showStub = sinon.stub(terminalStub, "show");
-    sendTextStub = sinon.stub(terminalStub, "sendText");
+    getInstanceStub = sandbox.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
+    showStub = sandbox.stub(terminalStub, "show");
+    sendTextStub = sandbox.stub(terminalStub, "sendText");
     await stopOfficeAddInDebug();
 
     sinon.assert.calledOnce(getInstanceStub);
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
-    sinon.restore();
   });
 });
 
@@ -353,12 +358,17 @@ describe("generateManifestGUID", () => {
   let getInstanceStub: sinon.SinonStub;
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("should call getInstance, show and sendText with correct arguments", async () => {
     const terminalStub = new TerminalStub();
-    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
-    showStub = sinon.stub(terminalStub, "show");
-    sendTextStub = sinon.stub(terminalStub, "sendText");
+    getInstanceStub = sandbox.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
+    showStub = sandbox.stub(terminalStub, "show");
+    sendTextStub = sandbox.stub(terminalStub, "sendText");
 
     await generateManifestGUID();
 
@@ -366,6 +376,5 @@ describe("generateManifestGUID", () => {
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
     sinon.assert.calledWithExactly(sendTextStub, TriggerCmdType.triggerGenerateGUID);
-    sinon.restore();
   });
 });

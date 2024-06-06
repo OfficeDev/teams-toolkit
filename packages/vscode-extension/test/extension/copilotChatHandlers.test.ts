@@ -7,9 +7,14 @@ import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../../src/commonlib/log";
 
+after(() => {
+  sinon.restore();
+});
+
 describe("invokeTeamsAgent", async () => {
   const sandbox = sinon.createSandbox();
   let clock: sinon.SinonFakeTimers;
+
   afterEach(() => {
     sandbox.restore();
     if (clock) {

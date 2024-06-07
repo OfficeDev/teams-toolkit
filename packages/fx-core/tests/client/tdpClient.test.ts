@@ -107,8 +107,8 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       });
-      await teamsDevPortalClient.setRegionByToken("");
-      chai.assert.equal(teamsDevPortalClient.region, "https://xxx.xxx.xxx");
+      await teamsDevPortalClient.setRegionEndpointByToken("");
+      chai.assert.equal(teamsDevPortalClient.regionEndpoint, "https://xxx.xxx.xxx");
     });
   });
   describe("publishTeamsApp", () => {

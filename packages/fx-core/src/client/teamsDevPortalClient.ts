@@ -80,33 +80,33 @@ export class RetryHandler {
 }
 
 class TeamsDevPortalClient {
-  endpoint: string;
-  region?: string;
+  globalEndpoint: string;
+  regionEndpoint?: string;
   constructor() {
     if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-      this.endpoint = "https://dev-int.teams.microsoft.com";
+      this.globalEndpoint = "https://dev-int.teams.microsoft.com";
     } else {
-      this.endpoint = "https://dev.teams.microsoft.com";
+      this.globalEndpoint = "https://dev.teams.microsoft.com";
     }
   }
 
-  setRegion(region: string) {
-    this.region = region;
+  setRegionEndpoint(regionEndpoint: string) {
+    this.regionEndpoint = regionEndpoint;
   }
 
-  async setRegionByToken(regionToken: string) {
+  async setRegionEndpointByToken(regionToken: string) {
     const requester = WrappedAxiosClient.create({
       baseURL: "https://authsvc.teams.microsoft.com",
     });
     requester.defaults.headers.common["Authorization"] = `Bearer ${regionToken}`;
     requester.defaults.headers.common["Client-Source"] = "teamstoolkit";
     const response = await RetryHandler.Retry(() => requester.post("/v1.0/users/region"));
-    this.region = response?.data?.regionGtms?.teamsDevPortal as string;
+    this.regionEndpoint = response?.data?.regionGtms?.teamsDevPortal as string;
   }
 
   getEndpoint(regional = true) {
-    if (regional) return this.region!;
-    else return this.endpoint;
+    if (regional) return this.regionEndpoint!;
+    else return this.globalEndpoint;
   }
 
   /**
@@ -200,11 +200,11 @@ class TeamsDevPortalClient {
 
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async listApps(token: string): Promise<AppDefinition[]> {
-    if (!this.region) throw new Error("Failed to get region");
+    if (!this.regionEndpoint) throw new Error("Failed to get region");
     let requester: AxiosInstance;
     try {
       requester = this.createRequesterWithToken(token);
-      TOOLS.logProvider.debug(`Sent API Request: GET ${this.region}/api/appdefinitions`);
+      TOOLS.logProvider.debug(`Sent API Request: GET ${this.regionEndpoint}/api/appdefinitions`);
       const response = await RetryHandler.Retry(() => requester.get(`/api/appdefinitions`));
       const apps = <AppDefinition[]>response?.data;
       if (apps) {
@@ -220,7 +220,7 @@ class TeamsDevPortalClient {
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async deleteApp(appStudioToken: string, teamsAppId: string): Promise<boolean> {
-    if (!this.region) throw new Error("Failed to get region");
+    if (!this.regionEndpoint) throw new Error("Failed to get region");
     let requester: AxiosInstance;
     try {
       requester = this.createRequesterWithToken(appStudioToken);

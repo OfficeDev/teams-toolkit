@@ -1105,9 +1105,12 @@ export function apiAuthQuestion(): SingleSelectQuestion {
     staticOptions: ApiAuthOptions.all(),
     dynamicOptions: (inputs: Inputs) => {
       const options: OptionItem[] = [ApiAuthOptions.none()];
-      if (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id) {
+      if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
-      } else if (inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id) {
+      } else if (
+        featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id
+      ) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
       }
       return options;

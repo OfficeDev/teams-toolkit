@@ -54,7 +54,7 @@ import {
   isValidProjectV3,
 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { TelemetryEvent, telemetryUtils } from "../common/telemetry";
+import { TelemetryEvent, TelemetryProperty, telemetryUtils } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -1393,7 +1393,7 @@ export class FxCore {
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
           .join(";"),
-        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+        [TelemetryProperty.Component]: CoreTelemetryComponentName,
       });
 
       if (generateResult.warnings && generateResult.warnings.length > 0) {
@@ -1605,7 +1605,7 @@ export class FxCore {
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
           .join(";"),
-        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+        [TelemetryProperty.Component]: CoreTelemetryComponentName,
       });
 
       if (generateResult.warnings && generateResult.warnings.length > 0) {

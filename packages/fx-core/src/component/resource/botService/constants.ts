@@ -30,20 +30,6 @@ export class ErrorNames {
   public static readonly CONFLICT_RESULT_BOT_FRAMEWORK_ERROR = "ConflictResultBotFrameworkError";
 }
 
-export class TelemetryKeys {
-  public static readonly Component = "component";
-  public static readonly Success = "success";
-  public static readonly ErrorType = "error-type";
-  public static readonly ErrorMessage = "error-message";
-  public static readonly ErrorCode = "error-code";
-  public static readonly AppId = "appid";
-  public static readonly HostType = "bot-host-type";
-  public static readonly BotCapabilities = "bot-capabilities";
-  public static readonly StatusCode = "status-code";
-  public static readonly Url = "url";
-  public static readonly Method = "method";
-}
-
 export const TeamsFxUrlNames: { [index: string]: string } = {
   [APP_STUDIO_API_NAMES.CREATE_BOT]: "<create-bot-registration>",
   [APP_STUDIO_API_NAMES.GET_BOT]: "<get-bot-registration>",

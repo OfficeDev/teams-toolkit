@@ -191,6 +191,9 @@ export enum TelemetryEvent {
 
   ShowPreivewNotification = "show-preview-notification",
 
+  ShowProvisionNotification = "show-provision-notification",
+  ClickProvision = "click-provision",
+
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",
@@ -288,7 +291,7 @@ export enum TelemetryProperty {
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
   ErrorStack = "error-stack",
   Errors = "errors",
   Hub = "hub",

@@ -83,7 +83,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description Authentication Type */
-  "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
+  "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
   /** @description Chat With Your Data */
   "custom-copilot-rag"?:
     | "custom-copilot-rag-customize"

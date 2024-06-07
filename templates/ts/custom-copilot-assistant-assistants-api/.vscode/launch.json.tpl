@@ -64,6 +64,17 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Do Nothing",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/do_nothing.js",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
         }
     ],
     "compounds": [
@@ -102,6 +113,29 @@
                 "order": 2
             },
             "stopAll": true
+        },
+        {
+            "name": "Debug in Teams (Desktop)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client",
+            "presentation": {
+                "group": "2-local",
+                "order": 3
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Launch Remote (Desktop)",
+            "configurations": [
+                "Do Nothing"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "3-remote",
+                "order": 3
+            }
         },
         {
             "name": "Debug in Test Tool",

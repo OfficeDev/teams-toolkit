@@ -29,7 +29,6 @@ import {
   isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
-  isCopilotAuthEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
@@ -1407,7 +1406,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            (isCopilotAuthEnabled() &&
+            (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
               isCopilotPluginEnabled() &&
               inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
           );

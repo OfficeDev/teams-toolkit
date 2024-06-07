@@ -1237,11 +1237,15 @@ describe("handlers", () => {
 
   describe("checkUpgrade", function () {
     const sandbox = sinon.createSandbox();
-    const mockCore = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(environmentUtils, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(globalVariables, "core").value(mockCore);
+      sandbox.stub(environmentUtils, "getSystemInputs").returns({
+        locale: "en-us",
+        platform: "vsc",
+        projectPath: undefined,
+        vscodeEnv: "local",
+      } as Inputs);
+      sandbox.stub(globalVariables, "core").value(new MockCore());
     });
 
     afterEach(() => {
@@ -1250,7 +1254,7 @@ describe("handlers", () => {
 
     it("calls phantomMigrationV3 with isNonmodalMessage when auto triggered", async () => {
       const phantomMigrationV3Stub = sandbox
-        .stub(mockCore, "phantomMigrationV3")
+        .stub(globalVariables.core, "phantomMigrationV3")
         .resolves(ok(undefined));
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
       chai.assert.isTrue(
@@ -1266,7 +1270,7 @@ describe("handlers", () => {
 
     it("calls phantomMigrationV3 with skipUserConfirm trigger from sideBar and command palette", async () => {
       const phantomMigrationV3Stub = sandbox
-        .stub(mockCore, "phantomMigrationV3")
+        .stub(globalVariables.core, "phantomMigrationV3")
         .resolves(ok(undefined));
       await handlers.checkUpgrade([extTelemetryEvents.TelemetryTriggerFrom.SideBar]);
       chai.assert.isTrue(
@@ -1299,7 +1303,7 @@ describe("handlers", () => {
       );
       error.helpLink = "test helpLink";
       const phantomMigrationV3Stub = sandbox
-        .stub(mockCore, "phantomMigrationV3")
+        .stub(globalVariables.core, "phantomMigrationV3")
         .resolves(err(error));
       sandbox.stub(localizeUtils, "localize").returns("");
       const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
@@ -2286,6 +2290,7 @@ describe("handlers", () => {
       };
       const hideStub = sandbox.stub(stubQuickPick, "hide");
       sandbox.stub(vscode.window, "createQuickPick").returns(stubQuickPick as any);
+      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(ok({ result: "unknown" } as any));
 
       await handlers.cmpAccountsHandler([]);
@@ -2326,6 +2331,7 @@ describe("openPreviewAadFile", () => {
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
     sandbox.stub(fs, "existsSync").returns(false);
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
     sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(
       ok({
         type: "success",
@@ -2346,6 +2352,7 @@ describe("openPreviewAadFile", () => {
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
     sandbox.stub(fs, "existsSync").returns(true);
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
     sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(
       ok({
         type: "success",
@@ -2696,7 +2703,8 @@ describe("autoOpenProjectHandler", () => {
       }
     });
     const globalStateStub = sandbox.stub(globalState, "globalStateUpdate");
-    const runCommandStub = sandbox.stub(handlers, "runCommand");
+    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+    const runCommandStub = sandbox.stub(vsc_ui.VS_CODE_UI, "runCommand");
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await handlers.autoOpenProjectHandler();

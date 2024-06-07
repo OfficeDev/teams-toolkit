@@ -104,9 +104,8 @@ class TeamsDevPortalClient {
     this.regionEndpoint = response?.data?.regionGtms?.teamsDevPortal as string;
   }
 
-  getEndpoint(regional = true) {
-    if (regional) return this.regionEndpoint!;
-    else return this.globalEndpoint;
+  getEndpoint() {
+    return this.regionEndpoint || this.globalEndpoint;
   }
 
   /**
@@ -114,9 +113,9 @@ class TeamsDevPortalClient {
    * @param {string}  token
    * @returns {AxiosInstance}
    */
-  createRequesterWithToken(token: string, regional = true): AxiosInstance {
+  createRequesterWithToken(token: string): AxiosInstance {
     const instance = WrappedAxiosClient.create({
-      baseURL: this.getEndpoint(regional),
+      baseURL: this.getEndpoint(),
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     instance.defaults.headers.common["Client-Source"] = "teamstoolkit";
@@ -247,29 +246,27 @@ class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getApp(token: string, teamsAppId: string): Promise<AppDefinition> {
     let requester: AxiosInstance;
-    for (const regional of [true, false]) {
-      try {
-        requester = this.createRequesterWithToken(token, regional);
-        TOOLS.logProvider.debug(
-          `Sent API Request: GET ${this.getEndpoint()}/api/appdefinitions/${teamsAppId}`
-        );
-        const response = await RetryHandler.Retry(() =>
-          requester.get(`/api/appdefinitions/${teamsAppId}`)
-        );
-        if (response && response.data) {
-          const app = <AppDefinition>response.data;
-          if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-            return app;
-          } else {
-            TOOLS.logProvider?.error(
-              `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId as string}`
-            );
-          }
+    try {
+      requester = this.createRequesterWithToken(token);
+      TOOLS.logProvider.debug(
+        `Sent API Request: GET ${this.getEndpoint()}/api/appdefinitions/${teamsAppId}`
+      );
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/${teamsAppId}`)
+      );
+      if (response && response.data) {
+        const app = <AppDefinition>response.data;
+        if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+          return app;
+        } else {
+          TOOLS.logProvider?.error(
+            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId as string}`
+          );
         }
-      } catch (e) {
-        const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
-        throw error;
       }
+    } catch (e) {
+      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
+      throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }

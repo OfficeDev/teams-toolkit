@@ -9,6 +9,7 @@ import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
 import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
 import { setTools } from "../../src/common/globalVars";
+import * as telemetry from "../../src/common/telemetry";
 import { Constants, ErrorMessages } from "../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../src/component/driver/teamsApp/errors";
 import {
@@ -33,8 +34,6 @@ import { ErrorNames } from "../../src/component/resource/botService/constants";
 import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
 import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
-import mockFs from "mock-fs";
-import * as telemetry from "../../src/common/telemetry";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
@@ -299,7 +298,7 @@ describe("TeamsDevPortalClient Test", () => {
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
 
-      teamsDevPortalClient.region = "https://dev.teams.microsoft.com/amer";
+      teamsDevPortalClient.regionEndpoint = "https://dev.teams.microsoft.com/amer";
 
       const res = await teamsDevPortalClient.importApp(token, Buffer.from(""));
       chai.assert.equal(res, appDef);
@@ -313,7 +312,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: appDef,
       };
       sandbox.stub(fakeAxiosInstance, "post").resolves(response);
-      teamsDevPortalClient.region = "https://dev.teams.microsoft.com";
+      teamsDevPortalClient.regionEndpoint = "https://dev.teams.microsoft.com";
       const res = await teamsDevPortalClient.importApp(token, Buffer.from(""));
       chai.assert.equal(res, appDef);
     });
@@ -502,7 +501,7 @@ describe("TeamsDevPortalClient Test", () => {
     });
 
     it("region - 404", async () => {
-      teamsDevPortalClient.region = "https://dev.teams.microsoft.com/amer";
+      teamsDevPortalClient.regionEndpoint = "https://dev.teams.microsoft.com/amer";
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
@@ -521,7 +520,7 @@ describe("TeamsDevPortalClient Test", () => {
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       } finally {
-        teamsDevPortalClient.setRegion(undefined as unknown as string);
+        teamsDevPortalClient.setRegionEndpoint(undefined as unknown as string);
       }
     });
 
@@ -1223,7 +1222,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: [appDef],
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegionEndpoint("https://dev.teams.microsoft.com/amer");
       const res = await teamsDevPortalClient.listApps(token);
       chai.assert.deepEqual(res, [appDef]);
     });
@@ -1235,7 +1234,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: [appDef],
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-      teamsDevPortalClient.setRegion("");
+      teamsDevPortalClient.setRegionEndpoint("");
       try {
         await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
@@ -1247,7 +1246,7 @@ describe("TeamsDevPortalClient Test", () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "get").rejects(new Error());
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegionEndpoint("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
@@ -1263,7 +1262,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: undefined,
       };
       sandbox.stub(fakeAxiosInstance, "get").resolves(response);
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegionEndpoint("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
@@ -1281,7 +1280,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: true,
       };
       sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegionEndpoint("https://dev.teams.microsoft.com/amer");
       const res = await teamsDevPortalClient.deleteApp(token, "testid");
       chai.assert.isTrue(res);
     });
@@ -1293,7 +1292,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: [appDef],
       };
       sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
-      teamsDevPortalClient.setRegion("");
+      teamsDevPortalClient.setRegionEndpoint("");
       try {
         await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
@@ -1305,7 +1304,7 @@ describe("TeamsDevPortalClient Test", () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "delete").rejects(new Error());
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegionEndpoint("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
@@ -1321,7 +1320,7 @@ describe("TeamsDevPortalClient Test", () => {
         data: undefined,
       };
       sandbox.stub(fakeAxiosInstance, "delete").resolves(response);
-      teamsDevPortalClient.setRegion("https://dev.teams.microsoft.com/amer");
+      teamsDevPortalClient.setRegionEndpoint("https://dev.teams.microsoft.com/amer");
       try {
         await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");

@@ -82,10 +82,6 @@ export class RetryHandler {
 class TeamsDevPortalClient {
   endpoint: string;
   region?: string;
-
-  appId2region: Map<string, string> = new Map<string, string>();
-  botId2region: Map<string, string> = new Map<string, string>();
-
   constructor() {
     if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
       this.endpoint = "https://dev-int.teams.microsoft.com";
@@ -99,9 +95,12 @@ class TeamsDevPortalClient {
   }
 
   async setRegionByToken(regionToken: string) {
-    this.region = undefined;
-    const requester = this.createRequesterWithToken(regionToken);
-    const response = await RetryHandler.Retry(() => requester.post(`/v1.0/users/region`));
+    const requester = WrappedAxiosClient.create({
+      baseURL: "https://authsvc.teams.microsoft.com",
+    });
+    requester.defaults.headers.common["Authorization"] = `Bearer ${regionToken}`;
+    requester.defaults.headers.common["Client-Source"] = "teamstoolkit";
+    const response = await RetryHandler.Retry(() => requester.post("/v1.0/users/region"));
     this.region = response?.data?.regionGtms?.teamsDevPortal as string;
   }
 
@@ -152,7 +151,6 @@ class TeamsDevPortalClient {
         TOOLS.logProvider.debug(
           `Received data from Teams Developer Portal: ${JSON.stringify(app)}`
         );
-        this.appId2region.set(app.teamsAppId!, this.region!);
         return app;
       } else {
         throw new Error(`Cannot create teams app`);
@@ -261,8 +259,6 @@ class TeamsDevPortalClient {
         if (response && response.data) {
           const app = <AppDefinition>response.data;
           if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-            // store the app level region map
-            this.appId2region.set(teamsAppId, regional ? this.region! : this.endpoint);
             return app;
           } else {
             TOOLS.logProvider?.error(

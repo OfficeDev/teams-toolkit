@@ -1,19 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-
 import * as chai from "chai";
+import "mocha";
 import * as sinon from "sinon";
 import * as util from "util";
-
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import * as localizeUtils from "../../../../src/common/localizeUtils";
 import { CreateOrUpdateBotFrameworkBotDriver } from "../../../../src/component/driver/botFramework/createOrUpdateBot";
-import { teamsDevPortalClient } from "../../../../src/component/resource/botService/appStudio/teamsDevPortalClient";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
-import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import { InvalidActionInputError, UnhandledError } from "../../../../src/error/common";
-import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
+import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 
 describe("CreateOrUpdateM365BotDriver", () => {
   const mockedDriverContext: any = {

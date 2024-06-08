@@ -44,7 +44,7 @@ import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
-import { isCopilotAuthEnabled, isSMEOAuthEnabled } from "../../../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { sendRequestWithRetry } from "../../../common/requestUtils";
 import { MissingRequiredInputError } from "../../../error";
@@ -74,9 +74,9 @@ const enum telemetryEvents {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: isCopilotAuthEnabled(),
+  allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
   allowMultipleParameters: true,
-  allowOauth2: isCopilotAuthEnabled(),
+  allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
@@ -136,7 +136,7 @@ export async function listOperations(
         : {
             allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: true,
-            allowOauth2: isSMEOAuthEnabled(),
+            allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
           }
     );
     const validationRes = await specParser.validate();

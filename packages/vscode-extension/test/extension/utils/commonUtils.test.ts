@@ -7,11 +7,11 @@ import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
-import * as globalVariables from "../../src/globalVariables";
-import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
-import * as commonUtils from "../../src/utils/commonUtils";
-import * as telemetryUtils from "../../src/utils/telemetryUtils";
-import { MockCore } from "../mocks/mockCore";
+import * as globalVariables from "../../../src/globalVariables";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
+import * as commonUtils from "../../../src/utils/commonUtils";
+import * as telemetryUtils from "../../../src/utils/telemetryUtils";
+import { MockCore } from "../../mocks/mockCore";
 import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as mockfs from "mock-fs";
 

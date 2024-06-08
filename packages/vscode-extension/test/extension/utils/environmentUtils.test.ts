@@ -1,7 +1,7 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import * as environmentUtils from "../../src/utils/environmentUtils";
+import * as environmentUtils from "../../../src/utils/environmentUtils";
 import { Inputs, Platform, VsCodeEnv } from "@microsoft/teamsfx-api";
 
 describe("EnvironmentUtils", () => {

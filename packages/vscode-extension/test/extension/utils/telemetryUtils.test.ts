@@ -2,9 +2,9 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
-import * as globalVariables from "../../src/globalVariables";
-import * as telemetryUtils from "../../src/utils/telemetryUtils";
-import { MockCore } from "../mocks/mockCore";
+import * as globalVariables from "../../../src/globalVariables";
+import * as telemetryUtils from "../../../src/utils/telemetryUtils";
+import { MockCore } from "../../mocks/mockCore";
 
 describe("TelemetryUtils", () => {
   afterEach(() => {

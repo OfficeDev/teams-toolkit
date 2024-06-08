@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as fileSystemUtils from "../../src/utils/fileSystemUtils";
+import * as fileSystemUtils from "../../../src/utils/fileSystemUtils";
 import * as mockfs from "mock-fs";
 
 describe("FileSystemUtils", () => {

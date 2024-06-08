@@ -24,11 +24,9 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 
 export function getAllFeatureFlags(): string[] | undefined {
   const result = Object.values(FeatureFlags)
-
     .filter((featureFlag: string) => {
       return isFeatureFlagEnabled(featureFlag);
     })
-
     .map((featureFlag) => {
       return featureFlag;
     });

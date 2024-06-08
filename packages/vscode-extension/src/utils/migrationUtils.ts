@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as vscode from "vscode";
 import { Stage } from "@microsoft/teamsfx-api";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { core } from "../globalVariables";

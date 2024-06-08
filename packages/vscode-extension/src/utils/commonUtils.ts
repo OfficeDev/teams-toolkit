@@ -175,7 +175,9 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
   }
 }
 
-async function getProvisionResultJson(env: string): Promise<Record<string, string> | undefined> {
+export async function getProvisionResultJson(
+  env: string
+): Promise<Record<string, string> | undefined> {
   if (workspaceUri) {
     if (!isTeamsFxProject) {
       return undefined;

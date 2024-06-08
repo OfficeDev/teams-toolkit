@@ -307,6 +307,50 @@ describe("CommonUtils", () => {
       chai.expect(result).equals(false);
     });
   });
+
+  describe("getProvisionResultJson", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns undefined if no workspace Uri", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+      const result = await commonUtils.getProvisionResultJson("test");
+      chai.expect(result).equals(undefined);
+    });
+
+    it("returns undefined if is not TeamsFx project", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
+      const result = await commonUtils.getProvisionResultJson("test");
+      chai.expect(result).deep.equals(undefined);
+    });
+
+    it("returns undefined if provision output file does not exists", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "existsSync").returns(false);
+
+      const result = await commonUtils.getProvisionResultJson("test");
+      chai.expect(result).equals(undefined);
+    });
+
+    it("returns provision output file result", async () => {
+      const expectedResult = { test: "test" };
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "existsSync").returns(true);
+      sandbox.stub(fs, "readJSON").resolves(expectedResult);
+
+      const result = await commonUtils.getProvisionResultJson("test");
+      chai.expect(result).equals(expectedResult);
+    });
+  });
+
   describe("hasAdaptiveCardInWorkspace()", () => {
     const sandbox = sinon.createSandbox();
 

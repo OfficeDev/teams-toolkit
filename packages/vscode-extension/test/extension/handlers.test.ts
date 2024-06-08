@@ -2452,6 +2452,26 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandFunc.calledOnce);
   });
 
+  it("opens walk through if workspace Uri exists", async () => {
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openWalkThrough") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse("test"));
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandFunc = sandbox.stub(vscode.commands, "executeCommand");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+    chai.assert.isTrue(executeCommandFunc.calledOnce);
+    chai.assert.isTrue(globalStateUpdateStub.calledTwice);
+  });
+
   it("opens README", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);

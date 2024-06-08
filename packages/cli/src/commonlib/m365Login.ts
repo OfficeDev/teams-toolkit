@@ -3,24 +3,24 @@
 
 "use strict";
 
+import { LogLevel } from "@azure/msal-node";
 import {
+  BasicLogin,
   err,
   FxError,
   M365TokenProvider,
   ok,
   Result,
   TokenRequest,
-  BasicLogin,
 } from "@microsoft/teamsfx-api";
-import { LogLevel } from "@azure/msal-node";
-import { CodeFlowLogin, ConvertTokenToJson, ErrorMessage } from "./codeFlowLogin";
-import CLILogProvider from "./log";
+import { AuthSvcScopes, teamsDevPortalClient } from "@microsoft/teamsfx-core";
+import ui from "../userInteraction";
 import { CryptoCachePlugin } from "./cacheAccess";
+import { CodeFlowLogin, ConvertTokenToJson, ErrorMessage } from "./codeFlowLogin";
 import { m365CacheName, signedIn, signedOut } from "./common/constant";
 import { LoginStatus } from "./common/login";
+import CLILogProvider from "./log";
 import M365TokenProviderUserPassword from "./m365LoginUserPassword";
-import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core";
-import ui from "../userInteraction";
 
 const SERVER_PORT = 0;
 
@@ -78,7 +78,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       if (M365Login.codeFlowInstance.account) {
         const regionTokenRes = await M365Login.codeFlowInstance.getTokenByScopes(AuthSvcScopes);
         if (regionTokenRes.isOk()) {
-          await setRegion(regionTokenRes.value);
+          await teamsDevPortalClient.setRegionEndpointByToken(regionTokenRes.value);
         }
       } else {
         needLogin = true;
@@ -88,7 +88,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     if (needLogin == true && M365Login.codeFlowInstance.account) {
       const regionTokenRes = await M365Login.codeFlowInstance.getTokenByScopes(AuthSvcScopes);
       if (regionTokenRes.isOk()) {
-        await setRegion(regionTokenRes.value);
+        await teamsDevPortalClient.setRegionEndpointByToken(regionTokenRes.value);
       }
     }
 

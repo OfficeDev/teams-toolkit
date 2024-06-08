@@ -3,8 +3,8 @@
 
 "use strict";
 
-import * as vscode from "vscode";
 import * as semver from "semver";
+import * as vscode from "vscode";
 
 import {
   AppPackageFolderName,
@@ -18,9 +18,9 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  isChatParticipantEnabled,
-  setRegion,
   isApiCopilotPluginEnabled,
+  isChatParticipantEnabled,
+  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -29,15 +29,6 @@ import {
   IsChatParticipantEnabled,
   chatParticipantId,
 } from "./chat/consts";
-import {
-  officeChatParticipantId,
-  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-} from "./officeChat/consts";
-import {
-  officeChatRequestHandler,
-  chatCreateOfficeProjectCommandHandler,
-  handleOfficeFeedback,
-} from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
   chatExecuteCommandHandler,
@@ -65,6 +56,7 @@ import { CommandKey as CommandKeys } from "./constants";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import * as copilotChatHandlers from "./copilotChatHandlers";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
+import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -75,14 +67,25 @@ import {
   initializeGlobalVariables,
   isExistingUser,
   isOfficeAddInProject,
+  isOfficeManifestOnlyProject,
   isSPFxProject,
   isTeamsFxProject,
-  isOfficeManifestOnlyProject,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
+import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
+import {
+  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+  officeChatParticipantId,
+} from "./officeChat/consts";
+import {
+  chatCreateOfficeProjectCommandHandler,
+  handleOfficeFeedback,
+  officeChatRequestHandler,
+} from "./officeChat/handlers";
 import * as officeDevHandlers from "./officeDevHandlers";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
@@ -101,9 +104,6 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
-import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
-import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
-import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -226,7 +226,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
       if (status === "SignedIn") {
         const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
         if (tokenRes.isOk()) {
-          await setRegion(tokenRes.value);
+          await teamsDevPortalClient.setRegionEndpointByToken(tokenRes.value);
         }
       }
     }

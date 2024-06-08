@@ -8,18 +8,11 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
 import "mocha";
 import mockFs from "mock-fs";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import Sinon, * as sinon from "sinon";
 import { getProjectMetadata } from "../../src/common/projectSettingsHelper";
 import * as telemetry from "../../src/common/telemetry";
-import {
-  getSPFxToken,
-  getSideloadingStatus,
-  listDevTunnels,
-  setRegion,
-} from "../../src/common/tools";
-import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
+import { getSPFxToken, getSideloadingStatus, listDevTunnels } from "../../src/common/tools";
 import { PackageService } from "../../src/component/m365/packageService";
 import { isVideoFilterProject } from "../../src/core/middleware/videoFilterAppBlocker";
 import { isUserCancelError } from "../../src/error/common";
@@ -303,25 +296,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
-    });
-  });
-
-  describe("setRegion", async () => {
-    let mockedEnvRestore: RestoreFn;
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("set region", async () => {
-      sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
-      await setRegion("fakeToken");
-    });
-
-    it("INT env", async () => {
-      mockedEnvRestore = mockedEnv({ APP_STUDIO_ENV: "int" }, { clear: true });
-      sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
-      await setRegion("fakeToken");
-      mockedEnvRestore();
     });
   });
 

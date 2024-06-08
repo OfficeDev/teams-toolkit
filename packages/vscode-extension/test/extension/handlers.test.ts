@@ -1,14 +1,6 @@
 /**
  * @author HuihuiWu-Microsoft <73154171+HuihuiWu-Microsoft@users.noreply.github.com>
  */
-import * as chai from "chai";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as sinon from "sinon";
-import * as uuid from "uuid";
-import * as vscode from "vscode";
-import * as mockfs from "mock-fs";
-
 import {
   ConfigFolderName,
   FxError,
@@ -20,17 +12,12 @@ import {
   Stage,
   SystemError,
   UserError,
-  Void,
   VsCodeEnv,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AppDefinition,
-  AppStudioClient,
   CollaborationState,
   DepsManager,
   DepsType,
@@ -41,11 +28,22 @@ import {
   manifestUtils,
   pathUtils,
   pluginManifestUtils,
+  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
+import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as chai from "chai";
+import * as fs from "fs-extra";
+import * as mockfs from "mock-fs";
+import * as path from "path";
+import * as sinon from "sinon";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
 import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
-import { VsCodeLogProvider } from "../../src/commonlib/log";
+import VsCodeLogInstance, { VsCodeLogProvider } from "../../src/commonlib/log";
 import M365TokenInstance, { M365Login } from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink, GlobalKey } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
@@ -53,15 +51,19 @@ import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
 import * as debugConstants from "../../src/debug/constants";
 import * as launch from "../../src/debug/launch";
+import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
+import * as runIconHandlers from "../../src/debug/runIconHandler";
 import { ExtensionErrors } from "../../src/error";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
+import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 import { ProgressHandler } from "../../src/progressHandler";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
+import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
 import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
@@ -69,12 +71,6 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
-import VsCodeLogInstance from "../../src/commonlib/log";
-import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
-import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
-import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
-import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
-import * as runIconHandlers from "../../src/debug/runIconHandler";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1790,7 +1786,7 @@ describe("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
-      const getApp = sinon.stub(AppStudioClient, "getApp").throws("error");
+      const getApp = sinon.stub(teamsDevPortalClient, "getApp").throws("error");
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
@@ -1808,7 +1804,7 @@ describe("handlers", () => {
       const endProgress = sinon.stub(progressHandler, "end").resolves();
       sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
       sinon.stub(M365TokenInstance, "getAccessToken").resolves(ok("authSvcToken"));
-      sinon.stub(commonTools, "setRegion").resolves();
+      sinon.stub(teamsDevPortalClient, "setRegionEndpointByToken").resolves();
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
@@ -1819,7 +1815,7 @@ describe("handlers", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mock-id",
       };
-      sinon.stub(AppStudioClient, "getApp").resolves(appDefinition);
+      sinon.stub(teamsDevPortalClient, "getApp").resolves(appDefinition);
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler("appId", "testuser");
 

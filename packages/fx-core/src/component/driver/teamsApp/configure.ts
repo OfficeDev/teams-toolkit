@@ -7,6 +7,8 @@ import fs from "fs-extra";
 import { merge } from "lodash";
 import { Service } from "typedi";
 import isUUID from "validator/lib/isUUID";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 import { getAbsolutePath } from "../../utils/common";
@@ -14,12 +16,10 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { AppStudioClient } from "./clients/appStudioClient";
 import { AppStudioError } from "./errors";
 import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { AppStudioResultFactory } from "./results";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { AppStudioScopes } from "../../../common/constants";
 
 export const actionName = "teamsApp/update";
 
@@ -100,7 +100,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
     }
     try {
-      await AppStudioClient.getApp(teamsAppId, appStudioToken, context.logProvider);
+      await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
     } catch (error) {
       return err(
         AppStudioResultFactory.UserError(
@@ -114,10 +114,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     try {
       let message = getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage");
 
-      const appDefinition = await AppStudioClient.importApp(
-        archivedFile,
+      const appDefinition = await teamsDevPortalClient.importApp(
         appStudioToken,
-        context.logProvider,
+        archivedFile,
         true
       );
       message = getLocalizedString(

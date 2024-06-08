@@ -83,7 +83,7 @@ export class UpdateOauthDriver implements StepDriver {
       }
 
       const oauth = this.mapArgsToOauthRegistration(args, domain);
-      const updateApiKeyRes = await teamsDevPortalClient.updateOauthRegistration(
+      await teamsDevPortalClient.updateOauthRegistration(
         appStudioToken,
         oauth,
         args.configurationId

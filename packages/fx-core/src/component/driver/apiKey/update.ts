@@ -81,7 +81,7 @@ export class UpdateApiKeyDriver implements StepDriver {
       }
 
       const apiKey = this.mapArgsToApiSecretRegistration(args, domain);
-      const updateApiKeyRes = await teamsDevPortalClient.updateApiKeyRegistration(
+      await teamsDevPortalClient.updateApiKeyRegistration(
         appStudioToken,
         apiKey,
         args.registrationId

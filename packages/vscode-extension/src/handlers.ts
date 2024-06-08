@@ -3161,7 +3161,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   let appDefinition;
   try {
-    appDefinition = await teamsDevPortalClient.getApp(appId, token, VsCodeLogInstance);
+    appDefinition = await teamsDevPortalClient.getApp(token, appId);
   } catch (error: any) {
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.HandleUrlFromDeveloperProtal,

@@ -8,9 +8,9 @@ import chaiAsPromised from "chai-as-promised";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import { setTools } from "../../../../src/common/globalVars";
 import { CreateOauthDriver } from "../../../../src/component/driver/oauth/create";
-import { teamsDevPortalClient } from "../../../../src/component/driver/teamsApp/clients/teamsDevPortalClient";
 import {
   OauthRegistrationAppType,
   OauthRegistrationTargetAudience,

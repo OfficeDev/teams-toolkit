@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   ConditionFunc,
   FuncValidation,
@@ -23,35 +24,40 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
-import { CollaborationUtil } from "../../src/core/collaborator";
-import { setTools } from "../../src/core/globalVars";
-import { QuestionNames, SPFxImportFolderQuestion, questionNodes } from "../../src/question";
+import { FeatureFlagName } from "../../src/common/constants";
+import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
+import {
+  newResourceGroupOption,
+  resourceGroupHelper,
+  resourceGroupQuestionNode,
+  validateResourceGroupName,
+} from "../../src/component/utils/ResourceGroupHelper";
+import { envUtil } from "../../src/component/utils/envUtil";
+import { CollaborationConstants, CollaborationUtil } from "../../src/core/collaborator";
+import { setTools } from "../../src/common/globalVars";
+import { SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
   PluginAvailabilityOptions,
+  QuestionNames,
   TeamsAppValidationOptions,
+} from "../../src/question/constants";
+import {
   apiSpecApiKeyQuestion,
   createNewEnvQuestionNode,
   envQuestionCondition,
   isAadMainifestContainsPlaceholder,
   newEnvNameValidation,
-  newResourceGroupOption,
   oauthQuestion,
-  resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
   selectAadManifestQuestion,
   selectLocalTeamsAppManifestQuestion,
   selectPluginAvailabilityQuestion,
   selectTeamsAppManifestQuestion,
-  validateResourceGroupName,
 } from "../../src/question/other";
+import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
+import { MockedAzureTokenProvider } from "../core/other.test";
 import { MockTools, MockUserInteraction } from "../core/utils";
 import { callFuncs } from "./create.test";
-import { MockedAzureTokenProvider } from "../core/other.test";
-import { ResourceManagementClient } from "@azure/arm-resources";
-import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { FeatureFlagName } from "../../src/common/constants";
-import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 const ui = new MockUserInteraction();
 

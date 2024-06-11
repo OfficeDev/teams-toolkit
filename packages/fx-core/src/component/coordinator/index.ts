@@ -23,15 +23,14 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
-import { isNewGeneratorEnabled } from "../../common/featureFlags";
+import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
+import { isCopilotAuthEnabled, isNewGeneratorEnabled } from "../../common/featureFlags";
+import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
-import { ObjectIsUndefinedError } from "../../core/error";
-import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   InputValidationError,
@@ -47,9 +46,9 @@ import {
   MeArchitectureOptions,
   OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../question/create";
-import { QuestionNames } from "../../question/questionNames";
+} from "../../question/constants";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import { CoordinatorSource } from "../constants";
@@ -57,12 +56,15 @@ import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
-import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { Constants } from "../driver/teamsApp/constants";
 import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
+import { Generators } from "../generator/generatorProvider";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
+import { Feature2TemplateName } from "../generator/templates/templateNames";
+import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
@@ -71,9 +73,6 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { Generators } from "../generator/generatorProvider";
-import { Feature2TemplateName } from "../generator/templates/templateNames";
-import { convertToLangKey } from "../generator/utils";
 
 const M365Actions = [
   "botAadApp/create",
@@ -152,7 +151,7 @@ class Coordinator {
       const capability = inputs.capabilities as string;
       const projectType = inputs[QuestionNames.ProjectType];
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-      const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
+      const apiMEAuthType = inputs[QuestionNames.ApiAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -226,17 +225,6 @@ class Coordinator {
           } else {
             warnings = res.value.warnings;
           }
-        } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-          const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
-            context,
-            inputs,
-            projectPath
-          );
-          if (res.isErr()) {
-            return err(res.error);
-          } else {
-            warnings = res.value.warnings;
-          }
         } else {
           if (
             capability === CapabilityOptions.m365SsoLaunchPage().id ||
@@ -273,6 +261,14 @@ class Coordinator {
             meArchitecture === MeArchitectureOptions.newApi().id
           ) {
             feature = `${feature}:${apiMEAuthType}`;
+          }
+
+          if (capability === CapabilityOptions.copilotPluginNewApi().id) {
+            if (isCopilotAuthEnabled()) {
+              feature = `${feature}:${apiMEAuthType}`;
+            } else {
+              feature = `${feature}:none`;
+            }
           }
 
           if (capability === CapabilityOptions.customCopilotRag().id) {
@@ -776,8 +772,9 @@ class Coordinator {
         void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    ctx.logProvider.info(msg);
-
+    if (ctx.platform !== Platform.CLI) {
+      ctx.logProvider.info(msg);
+    }
     return ok(output);
   }
 
@@ -948,10 +945,10 @@ class Coordinator {
   ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {
-      return err(new ObjectIsUndefinedError("tokenProvider"));
+      return err(new InputValidationError("tokenProvider", "undefined"));
     }
     if (!inputs[QuestionNames.AppPackagePath]) {
-      return err(new ObjectIsUndefinedError("appPackagePath"));
+      return err(new InputValidationError("appPackagePath", "undefined"));
     }
     const updateRes = await updateTeamsAppV3ForPublish(ctx, inputs);
 

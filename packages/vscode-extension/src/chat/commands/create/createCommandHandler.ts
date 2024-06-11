@@ -30,8 +30,7 @@ export default async function createCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByParticipant(
     chatParticipantId,
-    TeamsChatCommand.Create,
-    request.location
+    TeamsChatCommand.Create
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 

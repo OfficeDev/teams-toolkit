@@ -3492,6 +3492,12 @@ describe("manifestUpdater", () => {
                   default: 123,
                 },
               },
+              {
+                name: "limit",
+                title: "Limit",
+                inputType: "number",
+                description: "Maximum number of pets to return",
+              },
             ],
           },
         },
@@ -3552,7 +3558,10 @@ describe("manifestUpdater", () => {
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
         content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
-        data: "getPets",
+        data: {
+          commandId: "getPets",
+          parameterName: "id",
+        },
       },
     ]);
   });
@@ -3776,10 +3785,6 @@ describe("manifestUpdater", () => {
           ],
         },
       ],
-      webApplicationInfo: {
-        id: "${{AAD_APP_CLIENT_ID}}",
-        resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
-      },
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const oauth2: AuthInfo = {
@@ -4071,7 +4076,10 @@ describe("manifestUpdater", () => {
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
         content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
-        data: "createPet",
+        data: {
+          commandId: "createPet",
+          parameterName: "name",
+        },
       },
     ]);
   });
@@ -4589,12 +4597,18 @@ describe("generateCommands", () => {
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
         content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
-        data: "getPets",
+        data: {
+          commandId: "getPets",
+          parameterName: "limit",
+        },
       },
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
         content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
-        data: "createPet",
+        data: {
+          commandId: "createPet",
+          parameterName: "id",
+        },
       },
     ]);
   });
@@ -4655,16 +4669,10 @@ describe("generateCommands", () => {
         type: "query",
       },
     ]);
-    expect(warnings).to.deep.equal([
-      {
-        type: WarningType.OperationOnlyContainsOptionalParam,
-        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
-        data: "createPet",
-      },
-    ]);
+    expect(warnings).to.deep.equal([]);
   });
 
-  it("should not show warning for each GET/POST operation in the spec if only contains 1 optional parameters", async () => {
+  it("should not show warning for each GET/POST operation in the spec if only contains 2 optional parameters", async () => {
     const spec: any = {
       paths: {
         "/pets": {
@@ -4685,6 +4693,10 @@ describe("generateCommands", () => {
                       name: {
                         type: "string",
                         description: "Name of the pet",
+                      },
+                      id: {
+                        type: "string",
+                        description: "Id of the pet",
                       },
                     },
                   },
@@ -4741,13 +4753,11 @@ describe("generateCommands", () => {
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
-        data: "getPets",
-      },
-      {
-        type: WarningType.OperationOnlyContainsOptionalParam,
         content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
-        data: "createPet",
+        data: {
+          commandId: "createPet",
+          parameterName: "name",
+        },
       },
     ]);
   });
@@ -4855,7 +4865,7 @@ describe("generateCommands", () => {
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
         content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
-        data: "getPets",
+        data: { commandId: "getPets", parameterName: "limit" },
       },
     ]);
   });

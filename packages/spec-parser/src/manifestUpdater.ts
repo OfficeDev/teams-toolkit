@@ -341,9 +341,6 @@ export class ManifestUpdater {
             `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
-            const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
-            );
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",
               apiSecretServiceAuthConfiguration: {
@@ -351,16 +348,12 @@ export class ManifestUpdater {
               },
             };
           } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
+            // TODO: below schema is coming from design doc, may need to update when shcema is finalized
             (composeExtension as any).authorization = {
               authType: "oAuth2.0",
               oAuthConfiguration: {
                 oauthConfigurationId: `\${{${safeRegistrationIdName}}}`,
               },
-            };
-
-            updatedPart.webApplicationInfo = {
-              id: "${{AAD_APP_CLIENT_ID}}",
-              resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
             };
           }
         }
@@ -408,15 +401,20 @@ export class ManifestUpdater {
                 ) {
                   command.parameters = command.parameters.filter((param) => param.isRequired);
                 } else if (command.parameters && command.parameters.length > 0) {
-                  command.parameters = [command.parameters[0]];
-                  warnings.push({
-                    type: WarningType.OperationOnlyContainsOptionalParam,
-                    content: Utils.format(
-                      ConstantString.OperationOnlyContainsOptionalParam,
-                      command.id
-                    ),
-                    data: command.id,
-                  });
+                  if (command.parameters.length > 1) {
+                    command.parameters = [command.parameters[0]];
+                    warnings.push({
+                      type: WarningType.OperationOnlyContainsOptionalParam,
+                      content: Utils.format(
+                        ConstantString.OperationOnlyContainsOptionalParam,
+                        command.id
+                      ),
+                      data: {
+                        commandId: command.id,
+                        parameterName: command.parameters[0].name,
+                      },
+                    });
+                  }
                 }
 
                 if (adaptiveCardFolder) {

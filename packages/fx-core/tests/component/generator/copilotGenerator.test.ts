@@ -6,83 +6,57 @@
  */
 
 import {
+  ErrorResult,
+  ErrorType,
+  SpecParser,
+  SpecParserError,
+  ValidationStatus,
+  WarningType,
+} from "@microsoft/m365-spec-parser";
+import {
   ApiOperation,
-  err,
   IComposeExtension,
   Inputs,
-  ok,
-  OpenAIManifestAuthType,
   Platform,
   ResponseTemplatesFolderName,
   SystemError,
   TeamsAppManifest,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import "mocha";
-import * as sinon from "sinon";
 import axios from "axios";
-import { Generator } from "../../../src/component/generator/generator";
-import { setTools } from "../../../src/core/globalVars";
-import { MockTools } from "../../core/utils";
-import {
-  SpecParser,
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-  SpecParserError,
-  AdaptiveCardGenerator,
-  ProjectType,
-} from "@microsoft/m365-spec-parser";
+import { assert, expect } from "chai";
+import fs from "fs-extra";
+import "mocha";
+import { OpenAPIV3 } from "openapi-types";
+import path from "path";
+import * as sinon from "sinon";
+import { format } from "util";
+import { createContext, setTools } from "../../../src/common/globalVars";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import {
   CopilotGenerator,
   CopilotPluginGenerator,
 } from "../../../src/component/generator/copilotPlugin/generator";
-import { assert, expect } from "chai";
-import { createContextV3 } from "../../../src/component/utils";
+import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
+import {
+  formatValidationErrors,
+  generateScaffoldingSummary,
+  isYamlSpecFile,
+  listPluginExistingOperations,
+} from "../../../src/component/generator/copilotPlugin/helper";
+import { Generator } from "../../../src/component/generator/generator";
 import {
   CapabilityOptions,
-  copilotPluginApiSpecOptionId,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
   QuestionNames,
+  copilotPluginApiSpecOptionId,
 } from "../../../src/question";
-import {
-  generateScaffoldingSummary,
-  OpenAIPluginManifestHelper,
-  isYamlSpecFile,
-  formatValidationErrors,
-  listPluginExistingOperations,
-} from "../../../src/component/generator/copilotPlugin/helper";
-import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
-import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import fs from "fs-extra";
-import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { ErrorResult } from "@microsoft/m365-spec-parser";
-import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
-import path from "path";
-import { OpenAPIV3 } from "openapi-types";
-import { format } from "util";
-import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
-import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
-
-const openAIPluginManifest = {
-  schema_version: "v1",
-  name_for_human: "TODO List",
-  name_for_model: "todo",
-  description_for_human: "Manage your TODO list. You can add, remove and view your TODOs.",
-  description_for_model:
-    "Help the user with managing a TODO list. You can add, remove and view your TODOs.",
-  auth: {
-    type: OpenAIManifestAuthType.None,
-  },
-  api: {
-    type: "openapi",
-    url: "http://localhost:3333/openapi.yaml",
-  },
-  logo_url: "http://localhost:3333/logo.png",
-  contact_email: "support@example.com",
-  legal_info_url: "http://www.example.com/legal",
-};
+import { MockTools } from "../../core/utils";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -146,7 +120,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -190,7 +164,7 @@ describe("copilotPluginGenerator", function () {
         serverUrl: "",
       },
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -223,7 +197,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -258,7 +232,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Warning,
       errors: [],
@@ -315,7 +289,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Warning,
       errors: [],
@@ -351,7 +325,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Warning,
       errors: [],
@@ -375,78 +349,6 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(result.isOk());
   });
 
-  it("success if starting from OpenAI Plugin", async function () {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: "path",
-      openAIPluginManifest: openAIPluginManifest,
-      [QuestionNames.ApiOperation]: ["operation1"],
-      supportedApisFromApiSpec: apiOperations,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(SpecParser.prototype, "validate")
-      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-    sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(true);
-    const generateBasedOnSpec = sandbox
-      .stub(SpecParser.prototype, "generate")
-      .resolves({ allSuccess: true, warnings: [] });
-    const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
-    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    const updateManifestBasedOnOpenAIPlugin = sandbox
-      .stub(OpenAIPluginManifestHelper, "updateManifest")
-      .resolves(ok(undefined));
-    const result = await CopilotPluginGenerator.generateFromOpenAIPlugin(
-      context,
-      inputs,
-      "projectPath"
-    );
-
-    assert.isTrue(result.isOk());
-    assert.isTrue(getDefaultVariables.calledOnce);
-    assert.isTrue(downloadTemplate.calledOnce);
-    assert.isTrue(generateBasedOnSpec.calledOnce);
-    assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
-  });
-
-  it("error if updating manifest based on OpenAI Plugin", async function () {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: "path",
-      openAIPluginManifest: openAIPluginManifest,
-      [QuestionNames.ApiOperation]: ["operation1"],
-      supportedApisFromApiSpec: apiOperations,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(SpecParser.prototype, "validate")
-      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-    sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").throws(new Error("test"));
-    const generateBasedOnSpec = sandbox
-      .stub(SpecParser.prototype, "generate")
-      .resolves({ allSuccess: true, warnings: [] });
-    const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
-    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    const updateManifestBasedOnOpenAIPlugin = sandbox
-      .stub(OpenAIPluginManifestHelper, "updateManifest")
-      .resolves(err(new SystemError("source", "name", "", "")));
-    const result = await CopilotPluginGenerator.generateFromOpenAIPlugin(
-      context,
-      inputs,
-      "projectPath"
-    );
-
-    assert.isTrue(result.isErr());
-    assert.isTrue(getDefaultVariables.calledOnce);
-    assert.isTrue(downloadTemplate.calledOnce);
-    assert.isTrue(generateBasedOnSpec.calledOnce);
-    assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
-  });
-
   it("failed to download template generator", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -455,7 +357,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "generate").resolves();
     sandbox
       .stub(Generator, "generateTemplate")
@@ -478,7 +380,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
       status: ValidationStatus.Error,
       errors: [{ type: ErrorType.NoServerInformation, content: "" }],
@@ -509,7 +411,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -541,7 +443,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
 
     const result = await CopilotPluginGenerator.generateMeFromApiSpec(
@@ -561,7 +463,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -594,7 +496,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -646,7 +548,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
     };
-    const context = createContextV3();
+    const context = createContext();
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
@@ -711,7 +613,7 @@ describe("copilotPluginGenerator", function () {
         },
       ] as ApiOperation[],
     };
-    const context = createContextV3();
+    const context = createContext();
 
     sandbox
       .stub(SpecParser.prototype, "validate")
@@ -734,50 +636,6 @@ describe("copilotPluginGenerator", function () {
     assert.equal(downloadTemplate.args[0][2], "api-plugin-existing-api");
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
-  });
-});
-
-describe("OpenAIManifestHelper", async () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(async () => {
-    sandbox.restore();
-  });
-
-  it("updateManifest: success", async () => {
-    let updatedManifestData = "";
-    const updateColor = false;
-    sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
-      if (file === "path") {
-        updatedManifestData = data;
-      } else {
-        throw new Error("not support " + file);
-      }
-    });
-
-    const result = await OpenAIPluginManifestHelper.updateManifest(
-      openAIPluginManifest,
-      teamsManifest,
-      "path"
-    );
-    assert.isTrue(result.isOk());
-    assert.isFalse(updateColor);
-
-    const updatedTeamsManifest = JSON.parse(updatedManifestData!) as TeamsAppManifest;
-    assert.equal(
-      updatedTeamsManifest!.description.short,
-      openAIPluginManifest.description_for_human
-    );
-    assert.equal(
-      updatedTeamsManifest!.description.full,
-      openAIPluginManifest.description_for_human
-    );
-    assert.equal(updatedTeamsManifest!.developer.privacyUrl, openAIPluginManifest.legal_info_url);
-    assert.equal(updatedTeamsManifest!.developer.websiteUrl, openAIPluginManifest.legal_info_url);
-    assert.equal(
-      updatedTeamsManifest!.developer.termsOfUseUrl,
-      openAIPluginManifest.legal_info_url
-    );
   });
 });
 
@@ -1087,6 +945,10 @@ describe("formatValidationErrors", () => {
         type: ErrorType.Unknown,
         content: "unknown",
       },
+      {
+        type: ErrorType.AddedAPINotInOriginalSpec,
+        content: "test",
+      },
     ];
 
     const res = formatValidationErrors(errors, {
@@ -1150,6 +1012,7 @@ describe("formatValidationErrors", () => {
       format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
     );
     expect(res[13].content).equals("unknown");
+    expect(res[14].content).equals(getLocalizedString("core.common.AddedAPINotInOriginalSpec"));
   });
 
   it("format validation errors from spec parser: copilot", () => {
@@ -1718,12 +1581,8 @@ describe("updateForCustomApi", async () => {
 });
 
 describe("listOperations", async () => {
-  const context = createContextV3();
+  const context = createContext();
   const sandbox = sinon.createSandbox();
-  const inputs = {
-    "custom-copilot-rag": "custom-copilot-rag-customApi",
-    platform: Platform.VSCode,
-  };
   const spec = {
     openapi: "3.0.0",
     info: {
@@ -1800,6 +1659,10 @@ describe("listOperations", async () => {
   });
 
   it("allow auth for teams ai project", async () => {
+    const inputs = {
+      "custom-copilot-rag": "custom-copilot-rag-customApi",
+      platform: Platform.VSCode,
+    };
     sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
     sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -1811,16 +1674,45 @@ describe("listOperations", async () => {
       .stub(SpecParser.prototype, "list")
       .resolves({ APIs: [], allAPICount: 1, validAPICount: 0 });
 
-    const res = await CopilotPluginHelper.listOperations(
-      context,
-      undefined,
-      "",
-      inputs,
-      true,
-      false,
-      ""
-    );
+    const res = await CopilotPluginHelper.listOperations(context, "", inputs, true, false, "");
     expect(res.isOk()).to.be.true;
+  });
+
+  it("should throw error if list api not from original OpenAPI spec", async () => {
+    const inputs = {
+      platform: Platform.VSCode,
+      "manifest-path": "fake-path",
+    };
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+    sandbox.stub(manifestUtils, "getOperationIds").returns(["getHello"]);
+    sandbox.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves(["getHello"]);
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "GET /api",
+          server: "https://test",
+          operationId: "getApi",
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 0,
+    });
+
+    const res = await CopilotPluginHelper.listOperations(context, "", inputs, false, false, "");
+    expect(res.isErr()).to.be.true;
+    if (res.isErr()) {
+      expect(res.error.length).to.be.equal(1);
+      expect(res.error[0].type).to.be.equal(ErrorType.AddedAPINotInOriginalSpec);
+    }
   });
 });
 
@@ -1828,7 +1720,7 @@ describe("CopilotGenerator", async () => {
   describe("activate", async () => {
     it("should activate and get correct template name", async () => {
       const generator = new CopilotGenerator();
-      const context = createContextV3();
+      const context = createContext();
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
@@ -1838,12 +1730,6 @@ describe("CopilotGenerator", async () => {
       let templateName = generator.getTemplateName(inputs);
       assert.isTrue(res);
       assert.equal(templateName, "api-plugin-existing-api");
-
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginOpenAIPlugin().id;
-      res = generator.activate(context, inputs);
-      templateName = generator.getTemplateName(inputs);
-      assert.isTrue(res);
-      assert.equal(templateName, "copilot-plugin-from-oai-plugin");
 
       delete inputs[QuestionNames.Capabilities];
       inputs[QuestionNames.MeArchitectureType] = MeArchitectureOptions.apiSpec().id;
@@ -1865,7 +1751,7 @@ describe("CopilotGenerator", async () => {
   describe("getTempalteInfos", async () => {
     it("happy path", async () => {
       const generator = new CopilotGenerator();
-      const context = createContextV3();
+      const context = createContext();
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",

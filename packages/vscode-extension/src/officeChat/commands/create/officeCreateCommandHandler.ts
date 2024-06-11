@@ -31,8 +31,7 @@ export default async function officeCreateCommandHandler(
 ): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    OfficeChatCommand.Create,
-    request.location
+    OfficeChatCommand.Create
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,

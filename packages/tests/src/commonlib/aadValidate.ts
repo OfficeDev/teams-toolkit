@@ -3,19 +3,19 @@
 
 "use strict";
 
-import * as chai from "chai";
 import axios from "axios";
+import * as chai from "chai";
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
 import MockM365TokenProvider from "@microsoft/teamsapp-cli/src/commonlib/m365LoginUserPassword";
+import { GraphScopes } from "@microsoft/teamsfx-core";
+import { EnvConstants } from "../commonlib/constants";
 import {
   IAADDefinition,
   IAadObject,
   IAadObjectLocal,
 } from "./interfaces/IAADDefinition";
-import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import { EnvConstants } from "../commonlib/constants";
 
 const baseUrl = "https://graph.microsoft.com/v1.0";
 

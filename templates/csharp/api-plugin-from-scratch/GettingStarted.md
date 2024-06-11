@@ -15,6 +15,7 @@
 4. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio
 5. When Teams launches in the browser, you can open the Copilot app and send a prompt to trigger your plugin.
 6. Send a message to Copilot to find an NuGet package information. For example: Find the NuGet package info on Microsoft.CSharp.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## Learn more
 

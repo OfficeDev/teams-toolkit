@@ -93,6 +93,7 @@ export enum ErrorType {
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  AddedAPINotInOriginalSpec = "added-api-not-in-original-spec",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",

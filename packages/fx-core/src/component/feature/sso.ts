@@ -4,12 +4,12 @@
 import { Context, err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
+import { TelemetryConstants } from "../../common/telemetry";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
-  TelemetryConstants,
 } from "../constants";
 import { createAuthFiles } from "./createAuthFiles";
 

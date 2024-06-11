@@ -16,7 +16,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import { ProgrammingLanguage, QuestionNames } from "../../../question";
+import { ProgrammingLanguage, QuestionNames } from "../../../question/constants";
 import { Generator, templateDefaultOnActionError } from "../generator";
 import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
 import { merge } from "lodash";

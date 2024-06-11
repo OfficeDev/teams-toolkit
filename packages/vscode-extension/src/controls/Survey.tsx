@@ -234,7 +234,7 @@ export default class Survey extends React.Component<any, any> {
             <div>&nbsp;</div>
             <div>
               <a href="https://go.microsoft.com/fwlink/?LinkId=521839">
-                <span>Learn more about how Microsoft protects your privacy</span>
+                <span>Get more info about how Microsoft protects your privacy</span>
               </a>
             </div>
           </div>

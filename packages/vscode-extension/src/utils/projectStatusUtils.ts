@@ -5,7 +5,7 @@ import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as os from "os";
-import { getFixedCommonProjectSettings } from "../chat/commands/nextstep/helper";
+import { getProjectMetadata } from "../chat/commands/nextstep/helper";
 import { ProjectActionStatus } from "../chat/commands/nextstep/types";
 import { CommandKey } from "../constants";
 
@@ -53,7 +53,7 @@ export async function updateProjectStatus(
   result: Result<unknown, Error>,
   forced = false
 ) {
-  const projectSettings = getFixedCommonProjectSettings(fsPath);
+  const projectSettings = getProjectMetadata(fsPath);
   const p = projectSettings?.projectId ?? fsPath;
   const actions = RecordedActions.map((x) => x.toString());
   if (actions.includes(commandName) || forced) {

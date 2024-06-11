@@ -58,11 +58,7 @@ async function defaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByParticipant(
-    chatParticipantId,
-    "",
-    request.location
-  );
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(chatParticipantId, "");
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   if (!request.prompt) {

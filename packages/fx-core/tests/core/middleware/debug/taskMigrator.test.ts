@@ -28,7 +28,7 @@ import { LocalCrypto } from "../../../../src/core/crypto";
 import { mockMigrationContext } from "./utils";
 import * as os from "os";
 import * as path from "path";
-import { NodeChecker } from "../../../../src/common/deps-checker/internal/nodeChecker";
+import { NodeChecker } from "../../../../src/component/deps-checker/internal/nodeChecker";
 
 describe("debugMigration", () => {
   const projectPath = ".";

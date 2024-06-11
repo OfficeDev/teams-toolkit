@@ -26,17 +26,16 @@ import { EOL } from "os";
 import * as path from "path";
 import semver from "semver";
 import * as util from "util";
-import { cpUtils } from "../../../common/deps-checker";
+import { cpUtils } from "../../deps-checker";
 import { jsonUtils } from "../../../common/jsonUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, UserCancelError } from "../../../error";
 import {
   CapabilityOptions,
   ProgrammingLanguage,
+  QuestionNames,
   SPFxVersionOptionIds,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
-import { SPFxQuestionNames } from "../../constants";
+} from "../../../question/constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { envUtil } from "../../utils/envUtil";
@@ -346,7 +345,7 @@ export class SPFxGenerator {
 
       try {
         await cpUtils.executeCommand(
-          isAddSPFx ? inputs[SPFxQuestionNames.SPFxFolder] : destinationPath,
+          isAddSPFx ? inputs[QuestionNames.SPFxFolder] : destinationPath,
           context.logProvider,
           {
             timeout: 2 * 60 * 1000,

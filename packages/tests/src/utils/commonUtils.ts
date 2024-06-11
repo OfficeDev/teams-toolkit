@@ -107,7 +107,8 @@ export async function getBotSiteEndpoint(
   );
   const endpointUrl =
     context.obj[`${endpoint}`] ??
-    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"];
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"] ??
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT"];
   const result = endpointUrl.includes("https://")
     ? endpointUrl
     : "https://" + endpointUrl;
@@ -306,7 +307,8 @@ export async function updateFunctionAuthorizationPolicy(
     policySnippets.locationKey2,
     policySnippets.locationValue2
   );
-  await fs.writeFileSync(functionBicepPath, content);
+  console.log(content);
+  fs.writeFileSync(functionBicepPath, content);
 
   if (version == "3.2.0") {
     const fileName = "simpleAuth.bicep";
@@ -328,7 +330,7 @@ export async function updateFunctionAuthorizationPolicy(
       policySnippets.locationKey2,
       policySnippets.locationValue2
     );
-    await fs.writeFileSync(simpleAuthBicepPath, content);
+    fs.writeFileSync(simpleAuthBicepPath, content);
   }
 }
 

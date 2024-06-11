@@ -286,6 +286,35 @@ describe("copilotGptManifestUtils", () => {
       chai.assert.isTrue(res.includes("errorAction1"));
     });
 
+    it("log if VSC and action error only", () => {
+      const validationRes: DeclarativeCopilotManifestValidationResult = {
+        id: "1",
+        filePath: "testPath",
+        validationResult: [],
+        actionValidationResult: [
+          {
+            id: "1",
+            filePath: "testPath",
+            validationResult: ["errorAction1"],
+          },
+          {
+            id: "2",
+            filePath: "pluginPath",
+            validationResult: ["errorAction2"],
+          },
+        ],
+      };
+
+      const res = copilotGptManifestUtils.logValidationErrors(
+        validationRes,
+        Platform.VSCode,
+        "pluginPath"
+      ) as string;
+
+      chai.assert.isFalse(res.includes("errorActions2"));
+      chai.assert.isTrue(res.includes("errorAction1"));
+    });
+
     it("log if CLI", () => {
       const validationRes: DeclarativeCopilotManifestValidationResult = {
         id: "1",
@@ -313,6 +342,34 @@ describe("copilotGptManifestUtils", () => {
       chai.assert.isTrue(res.find((item) => item.content.includes("error1")) !== undefined);
       chai.assert.isTrue(res.find((item) => item.content.includes("errorAction1")) !== undefined);
       chai.assert.isUndefined(res.find((item) => item.content.includes("errorAction2")));
+    });
+
+    it("log if CLI and action error only", () => {
+      const validationRes: DeclarativeCopilotManifestValidationResult = {
+        id: "1",
+        filePath: "testPath",
+        validationResult: [],
+        actionValidationResult: [
+          {
+            id: "1",
+            filePath: "testPath",
+            validationResult: ["errorAction1"],
+          },
+          {
+            id: "2",
+            filePath: "pluginPath",
+            validationResult: ["errorAction2"],
+          },
+        ],
+      };
+
+      const res = copilotGptManifestUtils.logValidationErrors(
+        validationRes,
+        Platform.CLI,
+        ""
+      ) as Array<{ content: string; color: Colors }>;
+      chai.assert.isTrue(res.find((item) => item.content.includes("errorAction2")) !== undefined);
+      chai.assert.isTrue(res.find((item) => item.content.includes("errorAction1")) !== undefined);
     });
   });
 });

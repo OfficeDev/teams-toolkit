@@ -73,7 +73,7 @@ export class QuestionNodes {
   addPlugin(): IQTreeNode {
     return addPluginQuestionNode();
   }
-  Uninstall(): IQTreeNode {
+  uninstall(): IQTreeNode {
     return uninstallQuestionNode();
   }
 }

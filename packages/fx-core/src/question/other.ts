@@ -886,6 +886,9 @@ export function uninstallQuestionNode(): IQTreeNode {
           name: "title-id",
           title: "Remove the acquired M365 App by Title ID",
         },
+        condition: () => {
+          return true;
+        },
       },
       {
         data: {
@@ -893,12 +896,18 @@ export function uninstallQuestionNode(): IQTreeNode {
           name: "manifest-id",
           title: "Remove the acquired M365 App by Manifest ID",
         },
+        condition: () => {
+          return true;
+        },
       },
       {
         data: {
           type: "text",
           name: "env",
           title: "Remove the acquired M365 App by local env",
+        },
+        condition: () => {
+          return true;
         },
       },
     ],

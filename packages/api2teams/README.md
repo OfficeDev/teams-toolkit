@@ -1,5 +1,7 @@
 # Welcome to `api2teams`
-> The `api2teams` and its generated project template is currently under active development. Report any issues to us [here](https://github.com/OfficeDev/TeamsFx/issues/new/choose)
+
+> Deprecation Notice: this library has been deprecated and is no longer maintained or updated. 
+For continued support and enhanced features, we recommend [using the TTK to build a RAG bot in Teams](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/build-a-rag-bot-in-teams). This will assist you in converting your Open API specification file into an AI chatbot.
 
 `api2teams` is a command line tool to generate a complete conversational style command and response [Teams application](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/conversations/command-bot-in-teams) based on your Open API specification file and represent the API response in the form of [Adaptive Cards](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#adaptive-card).
 

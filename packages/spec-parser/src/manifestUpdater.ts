@@ -341,9 +341,6 @@ export class ManifestUpdater {
             `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
-            const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
-            );
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",
               apiSecretServiceAuthConfiguration: {
@@ -351,16 +348,12 @@ export class ManifestUpdater {
               },
             };
           } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
+            // TODO: below schema is coming from design doc, may need to update when shcema is finalized
             (composeExtension as any).authorization = {
               authType: "oAuth2.0",
               oAuthConfiguration: {
                 oauthConfigurationId: `\${{${safeRegistrationIdName}}}`,
               },
-            };
-
-            updatedPart.webApplicationInfo = {
-              id: "${{AAD_APP_CLIENT_ID}}",
-              resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
             };
           }
         }

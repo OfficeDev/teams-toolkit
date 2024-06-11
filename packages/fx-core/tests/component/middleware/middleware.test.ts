@@ -1,13 +1,13 @@
-import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { MockTools } from "../../core/utils";
-import { setTools } from "../../../src/common/globalVars";
-import { MockDriver } from "./helper";
-import sinon from "sinon";
-import { TeamsFxTelemetryReporter } from "../../../src/component/utils/teamsFxTelemetryReporter";
+import "mocha";
 import { performance } from "perf_hooks";
-import { TelemetryConstants } from "../../../src/common/telemetry";
+import sinon from "sinon";
+import { setTools } from "../../../src/common/globalVars";
+import { TelemetryProperty } from "../../../src/common/telemetry";
+import { TeamsFxTelemetryReporter } from "../../../src/component/utils/teamsFxTelemetryReporter";
+import { MockTools } from "../../core/utils";
+import { MockDriver } from "./helper";
 
 chai.use(chaiAsPromised);
 
@@ -27,7 +27,7 @@ describe("Action Middleware", () => {
     sandbox.stub(TeamsFxTelemetryReporter.prototype, "sendStartEvent");
     const sendEndEventStub = sandbox.stub(TeamsFxTelemetryReporter.prototype, "sendEndEvent");
     sendEndEventStub.callsFake((config) => {
-      chai.assert.equal(config.measurements?.[TelemetryConstants.properties.timeCost], 1000);
+      chai.assert.equal(config.measurements?.[TelemetryProperty.TimeCost], 1000);
     });
 
     await new MockDriver().execute(undefined, { telemetryReporter: {} as any } as any);

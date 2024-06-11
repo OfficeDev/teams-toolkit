@@ -19,9 +19,12 @@ import { openUrlCommandHandler } from "../../src/chat/handlers";
 import { CommandKey } from "../../src/constants";
 
 describe("chat handlers", () => {
-  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe("chatRequestHandler()", () => {
+    const sandbox = sinon.createSandbox();
     const response = {
       markdown: sandbox.stub(),
       button: sandbox.stub(),
@@ -162,6 +165,7 @@ Usage: @teams Ask questions about Teams Development"`);
   });
 
   describe("chatExecuteCommandHandler()", () => {
+    const sandbox = sinon.createSandbox();
     afterEach(async () => {
       sandbox.restore();
     });
@@ -196,6 +200,7 @@ Usage: @teams Ask questions about Teams Development"`);
   });
 
   describe("openUrlCommandHandler()", () => {
+    const sandbox = sinon.createSandbox();
     afterEach(async () => {
       sandbox.restore();
     });
@@ -206,6 +211,7 @@ Usage: @teams Ask questions about Teams Development"`);
   });
 
   describe("handleFeedback()", () => {
+    const sandbox = sinon.createSandbox();
     afterEach(async () => {
       sandbox.restore();
     });

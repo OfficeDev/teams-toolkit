@@ -3,12 +3,16 @@
 
 import * as vscode from "vscode";
 import { FxError, Stage } from "@microsoft/teamsfx-api";
-import { Correlator, telemetryUtils } from "@microsoft/teamsfx-core";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  telemetryUtils,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import * as globalVariables from "../globalVariables";
-import { getProjectId } from "../utils/commonUtils";
+import { getProjectId } from "../utils/telemetryUtils";
 import { TelemetryComponentType, TelemetryEvent, TelemetryProperty } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";

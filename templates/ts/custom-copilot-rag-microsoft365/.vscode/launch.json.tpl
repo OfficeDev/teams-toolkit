@@ -66,15 +66,16 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Do Nothing",
+            "name": "Launch Remote (Desktop)",
             "type": "node",
             "request": "launch",
             "program": "${workspaceFolder}/do_nothing.js",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
             "presentation": {
-                "group": "all",
-                "hidden": true
+                "group": "3-remote",
+                "order": 3
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
         }
     ],
     "compounds": [
@@ -115,17 +116,6 @@
                 "order": 3
             },
             "stopAll": true
-        },
-        {
-            "name": "Launch Remote (Desktop)",
-            "configurations": [
-                "Do Nothing"
-            ],
-            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
-            "presentation": {
-                "group": "3-remote",
-                "order": 3
-            }
         }
     ]
 }

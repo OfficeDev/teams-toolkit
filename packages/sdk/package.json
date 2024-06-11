@@ -45,7 +45,7 @@
   "homepage": "https://github.com/OfficeDev/TeamsFx",
   "sideEffects": false,
   "dependencies": {
-    "@azure/identity": "^2.0.1",
+    "@azure/identity": "^4.2.1",
     "@azure/msal-browser": "^3.0.2",
     "@azure/msal-node": "^1.14.6",
     "@microsoft/adaptivecards-tools": "workspace:*",

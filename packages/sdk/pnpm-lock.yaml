@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@azure/identity':
-    specifier: ^2.0.1
-    version: 2.0.1(supports-color@9.4.0)
+    specifier: ^4.2.1
+    version: 4.2.1(supports-color@9.4.0)
   '@azure/msal-browser':
     specifier: ^3.0.2
     version: 3.0.2
@@ -19,7 +19,7 @@ dependencies:
     version: link:../adaptivecards-tools-sdk
   '@microsoft/microsoft-graph-client':
     specifier: ^3.0.7
-    version: 3.0.7(@azure/identity@2.0.1)(@azure/msal-browser@3.0.2)
+    version: 3.0.7(@azure/identity@4.2.1)(@azure/msal-browser@3.0.2)
   '@microsoft/teams-js':
     specifier: ^2.19.0
     version: 2.19.0(supports-color@9.4.0)
@@ -296,6 +296,12 @@ packages:
     dependencies:
       tslib: 2.3.1
 
+  /@azure/abort-controller@2.1.2:
+    resolution: {integrity: sha512-nBrLsEWm4J2u5LpAPjxADTlq3trDgVZZXHNKabeXZtpq3d3AbN/KGO82R87rdDz5/lYB024rtEf10/q0urNgsA==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      tslib: 2.6.3
+
   /@azure/core-auth@1.4.0:
     resolution: {integrity: sha512-HFrcTgmuSuukRf/EdPmqBrc5l6Q5Uu+2TbuhaKbgaCpP2TfAeiNaQPAadxO+CYBRHGUzIDteMAjFspFLDLnKVQ==}
     engines: {node: '>=12.0.0'}
@@ -303,12 +309,20 @@ packages:
       '@azure/abort-controller': 1.1.0
       tslib: 2.3.1
 
+  /@azure/core-auth@1.7.2:
+    resolution: {integrity: sha512-Igm/S3fDYmnMq1uKS38Ae1/m37B3zigdlZw+kocwEhh5GjyKjPrXKO2J6rzpC1wAxrNil/jX9BJRqBshyjnF3g==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-util': 1.6.1
+      tslib: 2.6.3
+
   /@azure/core-client@1.7.3(supports-color@9.4.0):
     resolution: {integrity: sha512-kleJ1iUTxcO32Y06dH9Pfi9K4U+Tlb111WXEnbt7R/ne+NLRwppZiTGJuTD5VVoxTMK5NTbEtm5t2vcdNCFe2g==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.4.0
+      '@azure/core-auth': 1.7.2
       '@azure/core-rest-pipeline': 1.13.0(supports-color@9.4.0)
       '@azure/core-tracing': 1.0.1
       '@azure/core-util': 1.6.1
@@ -371,7 +385,7 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.4.0
+      '@azure/core-auth': 1.7.2
       '@azure/core-tracing': 1.0.1
       '@azure/core-util': 1.6.1
       '@azure/logger': 1.0.4
@@ -401,31 +415,6 @@ packages:
       '@azure/abort-controller': 1.1.0
       tslib: 2.3.1
 
-  /@azure/identity@2.0.1(supports-color@9.4.0):
-    resolution: {integrity: sha512-gdGGuLKlKIQaf2RefA84keoBfmWfiAntbW2SzcdKvwLSGzsio/qkyY3sYUpXRz/sqLDxguuimgZukp7TPgwIlg==}
-    engines: {node: '>=12.0.0'}
-    dependencies:
-      '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.4.0
-      '@azure/core-client': 1.7.3(supports-color@9.4.0)
-      '@azure/core-rest-pipeline': 1.13.0(supports-color@9.4.0)
-      '@azure/core-tracing': 1.0.0-preview.13
-      '@azure/core-util': 1.6.1
-      '@azure/logger': 1.0.4
-      '@azure/msal-browser': 2.38.3
-      '@azure/msal-common': 4.5.1(supports-color@9.4.0)
-      '@azure/msal-node': 1.14.6
-      '@types/stoppable': 1.1.3
-      events: 3.3.0
-      jws: 4.0.0
-      open: 8.4.2
-      stoppable: 1.1.0
-      tslib: 2.3.1
-      uuid: 8.3.2
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   /@azure/identity@2.1.0(supports-color@9.4.0):
     resolution: {integrity: sha512-BPDz1sK7Ul9t0l9YKLEa8PHqWU4iCfhGJ+ELJl6c8CP3TpJt2urNCbm0ZHsthmxRsYoMPbz2Dvzj30zXZVmAFw==}
     engines: {node: '>=12.0.0'}
@@ -448,6 +437,28 @@ packages:
       uuid: 8.3.2
     transitivePeerDependencies:
       - supports-color
+
+  /@azure/identity@4.2.1(supports-color@9.4.0):
+    resolution: {integrity: sha512-U8hsyC9YPcEIzoaObJlRDvp7KiF0MGS7xcWbyJSVvXRkC/HXo1f0oYeBYmEvVgRfacw7GHf6D6yAoh9JHz6A5Q==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@azure/abort-controller': 1.1.0
+      '@azure/core-auth': 1.7.2
+      '@azure/core-client': 1.7.3(supports-color@9.4.0)
+      '@azure/core-rest-pipeline': 1.13.0(supports-color@9.4.0)
+      '@azure/core-tracing': 1.0.1
+      '@azure/core-util': 1.6.1
+      '@azure/logger': 1.0.4
+      '@azure/msal-browser': 3.17.0
+      '@azure/msal-node': 2.9.2
+      events: 3.3.0
+      jws: 4.0.0
+      open: 8.4.2
+      stoppable: 1.1.0
+      tslib: 2.3.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /@azure/keyvault-keys@4.7.2(supports-color@9.4.0):
     resolution: {integrity: sha512-VdIH6PjbQ3J5ntK+xeI8eOe1WsDxF9ndXw8BPR/9MZVnIj0vQNtNCS6gpR7EFQeGcs8XjzMfHm0AvKGErobqJQ==}
@@ -488,6 +499,13 @@ packages:
       '@azure/msal-common': 14.0.2
     dev: false
 
+  /@azure/msal-browser@3.17.0:
+    resolution: {integrity: sha512-csccKXmW2z7EkZ0I3yAoW/offQt+JECdTIV/KrnRoZyM7wCSsQWODpwod8ZhYy7iOyamcHApR9uCh0oD1M+0/A==}
+    engines: {node: '>=0.8.0'}
+    dependencies:
+      '@azure/msal-common': 14.12.0
+    dev: false
+
   /@azure/msal-common@13.3.1:
     resolution: {integrity: sha512-Lrk1ozoAtaP/cp53May3v6HtcFSVxdFrg2Pa/1xu5oIvsIwhxW6zSPibKefCOVgd5osgykMi5jjcZHv8XkzZEQ==}
     engines: {node: '>=0.8.0'}
@@ -496,13 +514,9 @@ packages:
     resolution: {integrity: sha512-yvVP63oXe20JFzvooTVxiX9UorxcL8VFoVwEtKuGlQnEnNGzrOpQZ6lKa1lqwGqxMtwKpW7oAFQhbbskG5RbYA==}
     engines: {node: '>=0.8.0'}
 
-  /@azure/msal-common@4.5.1(supports-color@9.4.0):
-    resolution: {integrity: sha512-/i5dXM+QAtO+6atYd5oHGBAx48EGSISkXNXViheliOQe+SIFMDo3gSq3lL54W0suOSAsVPws3XnTaIHlla0PIQ==}
+  /@azure/msal-common@14.12.0:
+    resolution: {integrity: sha512-IDDXmzfdwmDkv4SSmMEyAniJf6fDu3FJ7ncOjlxkDuT85uSnLEhZi3fGZpoR7T4XZpOMx9teM9GXBgrfJgyeBw==}
     engines: {node: '>=0.8.0'}
-    dependencies:
-      debug: 4.3.4(supports-color@9.4.0)
-    transitivePeerDependencies:
-      - supports-color
     dev: false
 
   /@azure/msal-common@7.6.0:
@@ -521,6 +535,15 @@ packages:
       '@azure/msal-common': 9.1.1
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
+
+  /@azure/msal-node@2.9.2:
+    resolution: {integrity: sha512-8tvi6Cos3m+0KmRbPjgkySXi+UQU/QiuVRFnrxIwt5xZlEEFa69O04RTaNESGgImyBBlYbo2mfE8/U8Bbdk1WQ==}
+    engines: {node: '>=16'}
+    dependencies:
+      '@azure/msal-common': 14.12.0
+      jsonwebtoken: 9.0.2
+      uuid: 8.3.2
+    dev: false
 
   /@babel/code-frame@7.23.5:
     resolution: {integrity: sha512-CgH3s1a96LipHCmSUmYFPwY7MNx8C3avkq7i4Wl3cfa662ldtUe4VM1TPXX70pfmrlWTb6jLqTYrZyT2ZTJBgA==}
@@ -861,7 +884,7 @@ packages:
       typescript: 4.5.5
     dev: true
 
-  /@microsoft/microsoft-graph-client@3.0.7(@azure/identity@2.0.1)(@azure/msal-browser@3.0.2):
+  /@microsoft/microsoft-graph-client@3.0.7(@azure/identity@4.2.1)(@azure/msal-browser@3.0.2):
     resolution: {integrity: sha512-/AazAV/F+HK4LIywF9C+NYHcJo038zEnWkteilcxC1FM/uK/4NVGDKGrxx7nNq1ybspAroRKT4I1FHfxQzxkUw==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -879,7 +902,7 @@ packages:
       stream-browserify:
         optional: true
     dependencies:
-      '@azure/identity': 2.0.1(supports-color@9.4.0)
+      '@azure/identity': 4.2.1(supports-color@9.4.0)
       '@azure/msal-browser': 3.0.2
       '@babel/runtime': 7.23.8
       tslib: 2.3.1
@@ -1289,12 +1312,6 @@ packages:
     dependencies:
       '@sinonjs/fake-timers': 7.1.2
     dev: true
-
-  /@types/stoppable@1.1.3:
-    resolution: {integrity: sha512-7wGKIBJGE4ZxFjk9NkjAxZMLlIXroETqP1FJCdoSvKmEznwmBxQFmTB1dsCkAvVcNemuSZM5qkkd9HE/NL2JTw==}
-    dependencies:
-      '@types/node': 16.11.7
-    dev: false
 
   /@types/tedious@4.0.5:
     resolution: {integrity: sha512-zlnChTP63Bds6kMBuKOR+qJPB9wcYf1zVm78qiXTnT1gbcU6wdTmSp28cd2BPxePy4mrGM6TnQG1fmHxQW1pZw==}
@@ -6269,7 +6286,7 @@ packages:
     resolution: {integrity: sha512-ioorVbzGpGOLF9gkd47EtlHGDh0HQc9zgjlf5lon8hDCRwYZ79Uolu9cXQZ/gOPVyG63evbU7XjzEBOQOvcHeQ==}
     engines: {node: '>= 12'}
     dependencies:
-      '@azure/identity': 2.0.1(supports-color@9.4.0)
+      '@azure/identity': 2.1.0(supports-color@9.4.0)
       '@azure/keyvault-keys': 4.7.2(supports-color@9.4.0)
       '@js-joda/core': 4.3.1
       bl: 5.1.0
@@ -6446,6 +6463,9 @@ packages:
 
   /tslib@2.3.1:
     resolution: {integrity: sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw==}
+
+  /tslib@2.6.3:
+    resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
 
   /tsutils@3.21.0(typescript@4.4.4):
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}

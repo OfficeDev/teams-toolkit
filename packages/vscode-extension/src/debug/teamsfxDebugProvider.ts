@@ -18,12 +18,15 @@ import {
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
 import { ExtensionSource } from "../error";
-import { core, getSystemInputs, showError } from "../handlers";
+import { showError } from "../handlers";
+import { core } from "../globalVariables";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import * as commonUtils from "./commonUtils";
+import { getLocalDebugSessionId, endLocalDebugSession } from "./commonUtils";
 import { accountHintPlaceholder, Host, sideloadingDisplayMessages } from "./constants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
+import { triggerV3Migration } from "../utils/migrationUtils";
+import { getSystemInputs } from "../utils/environmentUtils";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
@@ -40,7 +43,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
     token?: vscode.CancellationToken
   ): Promise<vscode.DebugConfiguration | undefined> {
     return await Correlator.runWithId(
-      commonUtils.getLocalDebugSessionId(),
+      getLocalDebugSessionId(),
       this._resolveDebugConfiguration,
       folder,
       debugConfiguration,
@@ -69,7 +72,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
       // migrate to v3
       if (!isValidProjectV3(folder.uri.fsPath)) {
-        await commonUtils.triggerV3Migration();
+        await triggerV3Migration();
         return debugConfiguration;
       }
 
@@ -121,7 +124,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
       // Attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
       // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
-      debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
+      debugConfiguration.teamsfxCorrelationId = getLocalDebugSessionId();
 
       const result = await localTelemetryReporter.runWithTelemetryExceptionProperties(
         TelemetryEvent.DebugProviderResolveDebugConfiguration,
@@ -197,7 +200,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       if (telemetryIsRemote === false) {
         await sendDebugAllEvent(error);
       }
-      commonUtils.endLocalDebugSession();
+      endLocalDebugSession();
     }
     return debugConfiguration;
   }

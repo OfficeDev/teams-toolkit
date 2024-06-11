@@ -58,14 +58,6 @@ export function isChatParticipantEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
 }
 
-export function isCopilotAuthEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
-}
-
-export function isSMEOAuthEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false

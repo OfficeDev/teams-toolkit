@@ -18,7 +18,18 @@ export enum TelemetryProperty {
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorCat = "error-cat",
+  ErrorCat1 = "error-cat1",
+  ErrorCat2 = "error-cat2",
+  ErrorCat3 = "error-cat3",
+  ErrorComponent = "error-component",
+  ErrorInnerCode = "error-inner-code",
+  ErrorMessage = "err-message",
+  ErrorMethod = "error-method",
+  ErrorName = "error-name",
+  ErrorSource = "error-source",
+  ErrorStack = "err-stack",
+  ErrorStage = "error-stage",
   SampleAppName = "sample-app-name",
   ProjectId = "project-id",
   NewProjectId = "new-project-id",
@@ -43,6 +54,8 @@ export enum TelemetryProperty {
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   TemplateName = "template-name",
+  TenantId = "tenant-id",
+  TimeCost = "time-cost",
   SampleDownloadDirectory = "sample-download-directory",
   Fallback = "fallback",
   HasSwitchedSubscription = "has-switched-subscription",
@@ -74,34 +87,6 @@ export enum TelemetryProperty {
 
 export const TelemetryConstants = {
   eventPrefix: "-start",
-  properties: {
-    component: "component",
-    appId: "appid",
-    tenantId: "tenant-id",
-    success: "success",
-    errorCode: "error-code",
-    errorType: "error-type",
-    errorMessage: "err-message", // change the error message property key
-    errorStack: "err-stack", // change the error stack property key
-    timeCost: "time-cost",
-    errorName: "error-name", // need classify, keep error name as a separate property for telemetry analysis, error name should has limited set of values
-    innerError: "inner-error", // need classify, JSON serialized raw inner error that is caused by internal error or external call error
-    errorCat: "error-cat", // need classify, error category
-    errorCat1: "error-cat1", // need classify, error category level 1
-    errorCat2: "error-cat2", // need classify, error category level 2
-    errorCat3: "error-cat3", // need classify, error category level 3
-    errorStage: "error-stage", // need classify
-    errorComponent: "error-component", // need classify
-    errorMethod: "error-method", // need classify
-    errorSource: "error-source", // need classify
-    errorInnerCode: "error-inner-code", // need classify
-  },
-  values: {
-    yes: "yes",
-    no: "no",
-    userError: "user",
-    systemError: "system",
-  },
 };
 
 export enum TelemetryEvent {
@@ -203,7 +188,6 @@ export enum Component {
   cli = "cli",
   vs = "vs",
   core = "core",
-  solution = "solution",
 }
 
 export enum CustomizeResourceGroupType {
@@ -278,42 +262,30 @@ class TelemetryUtils {
   fillInErrorProperties(props: Record<string, string>, error: FxError): void {
     const errorCode = error.source + "." + error.name;
     const errorType =
-      error instanceof SystemError
-        ? TelemetryConstants.values.systemError
-        : TelemetryConstants.values.userError;
-    props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
-    props[TelemetryConstants.properties.errorCode] =
-      props[TelemetryConstants.properties.errorCode] || errorCode;
-    props[TelemetryConstants.properties.errorType] = errorType;
-    props[TelemetryConstants.properties.errorMessage] = error.skipProcessInTelemetry
+      error instanceof SystemError ? TelemetryErrorType.SystemError : TelemetryErrorType.UserError;
+    props[TelemetryProperty.Success] = TelemetrySuccess.No;
+    props[TelemetryProperty.ErrorCode] = props[TelemetryProperty.ErrorCode] || errorCode;
+    props[TelemetryProperty.ErrorType] = errorType;
+    props[TelemetryProperty.ErrorMessage] = error.skipProcessInTelemetry
       ? error.message
       : maskSecret(error.message);
-    props[TelemetryConstants.properties.errorStack] = this.extractMethodNamesFromErrorStack(
-      error.stack
-    ); // error stack will not append in error-message any more
-    props[TelemetryConstants.properties.errorName] = error.name;
+    props[TelemetryProperty.ErrorStack] = this.extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
+    props[TelemetryProperty.ErrorName] = error.name;
 
     // append global context properties
-    props[TelemetryConstants.properties.errorComponent] = globalVars.component;
-    props[TelemetryConstants.properties.errorStage] = globalVars.stage;
-    props[TelemetryConstants.properties.errorMethod] = globalVars.method;
-    props[TelemetryConstants.properties.errorSource] = globalVars.source;
+    props[TelemetryProperty.ErrorComponent] = globalVars.component;
+    props[TelemetryProperty.ErrorStage] = globalVars.stage;
+    props[TelemetryProperty.ErrorMethod] = globalVars.method;
+    props[TelemetryProperty.ErrorSource] = globalVars.source;
     if (error.innerError && error.innerError["code"]) {
-      props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
+      props[TelemetryProperty.ErrorInnerCode] = error.innerError["code"];
     }
 
-    // if (error.innerError) {  // inner-error is retired
-    //   props[TelemetryConstants.properties.innerError] = JSON.stringify(
-    //     error.innerError,
-    //     Object.getOwnPropertyNames(error.innerError)
-    //   );
-    // }
-
     if (error.categories) {
-      props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
-      props[TelemetryConstants.properties.errorCat1] = error.categories[0];
-      props[TelemetryConstants.properties.errorCat2] = error.categories[1];
-      props[TelemetryConstants.properties.errorCat3] = error.categories[2];
+      props[TelemetryProperty.ErrorCat] = error.categories.join("|");
+      props[TelemetryProperty.ErrorCat1] = error.categories[0];
+      props[TelemetryProperty.ErrorCat2] = error.categories[1];
+      props[TelemetryProperty.ErrorCat3] = error.categories[2];
     }
   }
 

@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 
 import { FxError, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { assembleError } from "@microsoft/teamsfx-core";
+import { UserCancelError, sleep } from "@microsoft/vscode-ui";
 import VsCodeLogInstance from "./commonlib/log";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -13,9 +14,8 @@ import {
   TelemetrySuccess,
   TelemetryTriggerFrom,
 } from "./telemetry/extTelemetryEvents";
-import { getTriggerFromProperty } from "./utils/commonUtils";
+import { getTriggerFromProperty } from "./utils/telemetryUtils";
 import { localize } from "./utils/localizeUtils";
-import { UserCancelError, sleep } from "@microsoft/vscode-ui";
 import { showOutputChannel } from "./handlers";
 import { InstallCopilotChatLink } from "./constants";
 

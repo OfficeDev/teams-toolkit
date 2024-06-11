@@ -27,7 +27,6 @@ import {
   ManifestTemplateFileName,
   ManifestUtil,
   OptionItem,
-  Platform,
   Result,
   SelectFileConfig,
   SelectFolderConfig,
@@ -36,10 +35,8 @@ import {
   StaticOptions,
   SubscriptionInfo,
   SystemError,
-  Tools,
   UserError,
   Void,
-  VsCodeEnv,
   Warning,
   err,
   ok,
@@ -139,13 +136,13 @@ import {
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
-  getTriggerFromProperty,
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
 import { anonymizeFilePaths } from "./utils/fileSystemUtils";
-import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
+import { getDefaultString, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
+import { getTriggerFromProperty } from "./utils/telemetryUtils";
 import {
   openTestToolDisplayMessage,
   openTestToolMessage,

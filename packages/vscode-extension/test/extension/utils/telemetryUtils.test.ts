@@ -5,6 +5,7 @@ import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../../src/globalVariables";
 import * as telemetryUtils from "../../../src/utils/telemetryUtils";
 import { MockCore } from "../../mocks/mockCore";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
 
 describe("TelemetryUtils", () => {
   afterEach(() => {
@@ -72,5 +73,46 @@ describe("TelemetryUtils", () => {
       const result = await telemetryUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
+  });
+
+  describe("getTriggerFromProperty", () => {
+    it("Should return cmp with no args", () => {
+      const props = telemetryUtils.getTriggerFromProperty();
+
+      chai.expect(props).to.deep.equal({
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
+      });
+    });
+
+    it("Should return cmp with empty args", () => {
+      const props = telemetryUtils.getTriggerFromProperty([]);
+
+      chai.expect(props).to.deep.equal({
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
+      });
+    });
+
+    for (const triggerFrom of [
+      TelemetryTriggerFrom.Auto,
+      TelemetryTriggerFrom.CodeLens,
+      TelemetryTriggerFrom.EditorTitle,
+      TelemetryTriggerFrom.Webview,
+      TelemetryTriggerFrom.Notification,
+      TelemetryTriggerFrom.Other,
+      TelemetryTriggerFrom.QuickPick,
+      TelemetryTriggerFrom.SideBar,
+      TelemetryTriggerFrom.TreeView,
+      TelemetryTriggerFrom.Unknow,
+      TelemetryTriggerFrom.ViewTitleNavigation,
+      TelemetryTriggerFrom.WalkThrough,
+    ]) {
+      it(`Should return ${triggerFrom.toString()}`, () => {
+        const props = telemetryUtils.getTriggerFromProperty([triggerFrom]);
+
+        chai.expect(props).to.deep.equal({
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+        });
+      });
+    }
   });
 });

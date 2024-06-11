@@ -4,6 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
+
 import { UserState } from "./constants";
 import {
   FxCore,

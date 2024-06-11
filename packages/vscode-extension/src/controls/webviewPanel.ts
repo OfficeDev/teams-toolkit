@@ -23,7 +23,8 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";

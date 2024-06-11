@@ -8,7 +8,7 @@ import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
 import * as globalVariables from "../../../src/globalVariables";
-import { TelemetryProperty, TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
+import { TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as telemetryUtils from "../../../src/utils/telemetryUtils";
 import { MockCore } from "../../mocks/mockCore";
@@ -219,47 +219,6 @@ describe("CommonUtils", () => {
 
       chai.assert.equal(isFromWalkthrough, false);
     });
-  });
-
-  describe("getTriggerFromProperty", () => {
-    it("Should return cmp with no args", () => {
-      const props = commonUtils.getTriggerFromProperty();
-
-      chai.expect(props).to.deep.equal({
-        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
-      });
-    });
-
-    it("Should return cmp with empty args", () => {
-      const props = commonUtils.getTriggerFromProperty([]);
-
-      chai.expect(props).to.deep.equal({
-        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
-      });
-    });
-
-    for (const triggerFrom of [
-      TelemetryTriggerFrom.Auto,
-      TelemetryTriggerFrom.CodeLens,
-      TelemetryTriggerFrom.EditorTitle,
-      TelemetryTriggerFrom.Webview,
-      TelemetryTriggerFrom.Notification,
-      TelemetryTriggerFrom.Other,
-      TelemetryTriggerFrom.QuickPick,
-      TelemetryTriggerFrom.SideBar,
-      TelemetryTriggerFrom.TreeView,
-      TelemetryTriggerFrom.Unknow,
-      TelemetryTriggerFrom.ViewTitleNavigation,
-      TelemetryTriggerFrom.WalkThrough,
-    ]) {
-      it(`Should return ${triggerFrom.toString()}`, () => {
-        const props = commonUtils.getTriggerFromProperty([triggerFrom]);
-
-        chai.expect(props).to.deep.equal({
-          [TelemetryProperty.TriggerFrom]: triggerFrom,
-        });
-      });
-    }
   });
 
   describe("getProvisionSucceedFromEnv", () => {

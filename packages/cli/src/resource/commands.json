@@ -147,7 +147,8 @@
     "description": "Remove an acquired M365 App.",
     "options": {
       "title-id": "Title ID of the acquired M365 App.",
-      "manifest-id": "Manifest ID of the acquired M365 App."
+      "manifest-id": "Manifest ID of the acquired M365 App.",
+      "env": "Env of the acquired M365 App."
     }
   },
   "update": {

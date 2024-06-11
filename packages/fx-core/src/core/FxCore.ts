@@ -297,10 +297,10 @@ export class FxCore {
   }
 
   /**
-   * clean up provisioned resources
+   * uninstall provisioned resources
    */
   @hooks([
-    ErrorContextMW({ component: "FxCore", stage: "clean", reset: true }),
+    ErrorContextMW({ component: "FxCore", stage: "uninstall", reset: true }),
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     EnvLoaderMW(true, false),
@@ -308,7 +308,7 @@ export class FxCore {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async clean(inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
+  async uninstall(inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
     const templatePath = pathUtils.getYmlFilePath(inputs.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
@@ -349,24 +349,27 @@ export class FxCore {
     // const token = appStudioTokenRes.value;
     // await AppStudioClient.deleteApp(teamsAppId, token, TOOLS.logProvider);
     // TODO uninstall Teams app
-    const userInfoRes = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
-    if (userInfoRes.isErr()) {
-      return err(userInfoRes.error);
-    }
-    const uid = userInfoRes.value.aadId;
-    console.log(uid);
-    const aadClient = new AadAppClient(m365TokenProvider, TOOLS.logProvider);
-    const tokenResponse = await m365TokenProvider.getAccessToken({
-      scopes: ["TeamsAppInstallation.ReadWriteAndConsentForUser"],
-    });
-    if (tokenResponse.isErr()) {
-      throw tokenResponse.error;
-    }
-    const token = tokenResponse.value;
-    console.log(token);
-    if (m365TitleId) {
-      //TODO uninstall M365 app
-    }
+
+    // todo: add back
+    //const userInfoRes = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
+    //if (userInfoRes.isErr()) {
+    //  return err(userInfoRes.error);
+    //}
+    //const uid = userInfoRes.value.aadId;
+    //console.log(uid);
+    //const aadClient = new AadAppClient(m365TokenProvider, TOOLS.logProvider);
+    //const tokenResponse = await m365TokenProvider.getAccessToken({
+    //  scopes: ["TeamsAppInstallation.ReadWriteAndConsentForUser"],
+    //});
+    //if (tokenResponse.isErr()) {
+    //  throw tokenResponse.error;
+    //}
+    //const token = tokenResponse.value;
+    //console.log(token);
+    //if (m365TitleId) {
+    //  //TODO uninstall M365 app
+    //}
+
     // }
     // if (botId) {
     //   // delete bot reg in tdp

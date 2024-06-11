@@ -222,11 +222,6 @@ export class AadAppClient {
     });
   }
 
-  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async uninstallTeamsApp(uid: string, installId: string): Promise<void> {
-    await this.axios.delete(`users/${uid}/teamwork/installedApps/${installId}`);
-  }
-
   // only use it to retry 404 errors for create client secret / update Microsoft Entra app requests right after Microsoft Entra app creation
   private is404Error(error: AxiosError<any>): boolean {
     return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 404);

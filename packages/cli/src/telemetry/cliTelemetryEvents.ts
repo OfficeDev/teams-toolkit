@@ -118,7 +118,6 @@ export enum TelemetryEvent {
 
   Doctor = "doctor",
 
-  Clean = "clean",
   AddCopilotPlugin = "add-copilot-plugin",
 }
 

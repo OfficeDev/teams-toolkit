@@ -7,6 +7,7 @@ import { MissingRequiredOptionError } from "../../error";
 import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { m365utils, sideloadingServiceEndpoint } from "./m365Sideloading";
+import { getFxCore } from "../../activate";
 
 export const m365UnacquireCommand: CLICommand = {
   name: "uninstall",
@@ -23,6 +24,11 @@ export const m365UnacquireCommand: CLICommand = {
       description: commands.uninstall.options["manifest-id"],
       type: "string",
     },
+    {
+      name: "env",
+      description: commands.uninstall.options["env"],
+      type: "string",
+    },
   ],
   examples: [
     {
@@ -30,8 +36,12 @@ export const m365UnacquireCommand: CLICommand = {
       description: "Remove the acquired M365 App by Title ID",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx -i false --m365-app --app-refistration --bot-framework-registration`,
       description: "Remove the acquired M365 App by Manifest ID",
+    },
+    {
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall --env xxx -i false --m365-app --app-refistration --bot-framework-registration`,
+      description: "Remove the acquired M365 App by local env",
     },
   ],
   telemetry: {
@@ -39,19 +49,26 @@ export const m365UnacquireCommand: CLICommand = {
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {
-    const packageService = new PackageService(sideloadingServiceEndpoint, logger);
-    let titleId = ctx.optionValues["title-id"] as string;
-    const manifestId = ctx.optionValues["manifest-id"] as string;
-    if (titleId === undefined && manifestId === undefined) {
-      return err(
-        new MissingRequiredOptionError(ctx.command.fullName, `--title-id or --manifest-id`)
-      );
-    }
-    const tokenAndUpn = await m365utils.getTokenAndUpn();
-    if (titleId === undefined) {
-      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
-    }
-    await packageService.unacquire(tokenAndUpn[0], titleId);
+    const core = getFxCore();
+    await Promise.resolve();
     return ok(undefined);
+    //const res = await core.uninstall(inputs);
+    //return res;
+    //const packageService = new PackageService(sideloadingServiceEndpoint, logger);
+    //let titleId = ctx.optionValues["title-id"] as string;
+    //const manifestId = ctx.optionValues["manifest-id"] as string;
+    //const env = ctx.optionValues["env"] as string;
+    //if (titleId === undefined && manifestId === undefined && env === undefined) {
+    //  return err(
+    //    new MissingRequiredOptionError(ctx.command.fullName, `--title-id or --manifest-id or --env`)
+    //  );
+    //}
+    //// todo: set manifest Id if not provided
+    //const tokenAndUpn = await m365utils.getTokenAndUpn();
+    //if (titleId === undefined) {
+    //  titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
+    //}
+    //await packageService.unacquire(tokenAndUpn[0], titleId);
+    //return ok(undefined);
   },
 };

@@ -874,6 +874,37 @@ export function oauthQuestion(): IQTreeNode {
   };
 }
 
+export function uninstallQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: {
+          type: "text",
+          name: "title-id",
+          title: "Remove the acquired M365 App by Title ID",
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: "manifest-id",
+          title: "Remove the acquired M365 App by Manifest ID",
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: "env",
+          title: "Remove the acquired M365 App by local env",
+        },
+      },
+    ],
+  };
+}
+
 function oauthClientIdQuestion(): TextInputQuestion {
   return {
     type: "text",

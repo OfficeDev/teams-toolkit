@@ -8,8 +8,8 @@ import {
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
-  ChatUserActionEvent,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
   ProviderResult,
   Uri,
   commands,
@@ -61,14 +61,23 @@ async function officeDefaultHandler(
 ): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    "",
-    request.location
+    ""
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
-  const messages = [defaultOfficeSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+
+  if (!request.prompt) {
+    throw new Error(`
+Please specify a question when using this command.
+
+Usage: @office Ask questions about Office Add-ins development.`);
+  }
+  const messages = [
+    defaultOfficeSystemPrompt(),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+  ];
   officeChatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 
@@ -150,25 +159,6 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatFeedback,
-    telemetryData.properties,
-    telemetryData.measurements
-  );
-}
-
-export function handleOfficeUserAction(e: ChatUserActionEvent): void {
-  const result = e.result as ICopilotChatOfficeResult;
-  const telemetryData: ITelemetryData = {
-    properties: {
-      [TelemetryProperty.CopilotChatRequestId]: result.metadata?.requestId ?? "",
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
-      [TelemetryProperty.CorrelationId]: Correlator.getId(),
-      [TelemetryProperty.CopilotChatUserAction]: e.action.kind,
-    },
-    measurements: {},
-  };
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatUserAction,
     telemetryData.properties,
     telemetryData.measurements
   );

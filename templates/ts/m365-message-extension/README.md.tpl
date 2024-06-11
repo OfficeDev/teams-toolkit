@@ -20,7 +20,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableMETestToolByDefault}}
-2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 3. To trigger the Message Extension, you can click the `+` in compose message area and select `Search Command`
 
 **Congratulations**! You are running an application that can now search npm registries in Teams App Test Tool.

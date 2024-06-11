@@ -6,59 +6,57 @@
  */
 
 import {
-  Context,
-  FxError,
-  OpenAIManifestAuthType,
-  OpenAIPluginManifest,
-  Result,
-  UserError,
-  err,
-  ok,
-  TeamsAppManifest,
-  ApiOperation,
-  ManifestTemplateFileName,
-  Warning,
-  AppPackageFolderName,
-  ManifestUtil,
-  IMessagingExtensionCommand,
-  SystemError,
-  Inputs,
-} from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
-import { sendRequestWithRetry } from "../utils";
-import {
-  SpecParser,
+  AdaptiveCardGenerator,
+  ErrorResult as ApiSpecErrorResult,
   ErrorType as ApiSpecErrorType,
+  ErrorType,
+  InvalidAPIInfo,
+  ListAPIResult,
+  ParseOptions,
+  ProjectType,
+  SpecParser,
+  SpecParserError,
+  Utils,
   ValidationStatus,
   WarningResult,
   WarningType,
-  SpecParserError,
-  ErrorType,
-  ErrorResult as ApiSpecErrorResult,
-  ListAPIResult,
-  ProjectType,
-  ParseOptions,
-  AdaptiveCardGenerator,
-  Utils,
-  InvalidAPIInfo,
 } from "@microsoft/m365-spec-parser";
+import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import {
+  ApiOperation,
+  AppPackageFolderName,
+  Context,
+  FxError,
+  IMessagingExtensionCommand,
+  Inputs,
+  ManifestTemplateFileName,
+  ManifestUtil,
+  Result,
+  SystemError,
+  TeamsAppManifest,
+  UserError,
+  Warning,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import axios, { AxiosResponse } from "axios";
 import fs from "fs-extra";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
+import path from "path";
+import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { sendRequestWithRetry } from "../../../common/requestUtils";
+import { MissingRequiredInputError } from "../../../error";
+import {
+  CustomCopilotRagOptions,
+  ProgrammingLanguage,
+  QuestionNames,
+  copilotPluginApiSpecOptionId,
+} from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import path from "path";
-import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { copilotPluginApiSpecOptionId } from "../../../question/constants";
-import { OpenAPIV3 } from "openapi-types";
-import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
-import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
-import { isCopilotAuthEnabled } from "../../../common/featureFlags";
-
-const manifestFilePath = "/.well-known/ai-plugin.json";
-const componentName = "OpenAIPluginManifestHelper";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -71,20 +69,14 @@ const enum telemetryProperties {
 
 const enum telemetryEvents {
   validateApiSpec = "validate-api-spec",
-  validateOpenAiPluginManifest = "validate-openai-plugin-manifest",
   listApis = "spec-parser-list-apis-result",
-}
-
-enum OpenAIPluginManifestErrorType {
-  AuthNotSupported = "openai-pliugin-auth-not-supported",
-  ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: isCopilotAuthEnabled(),
+  allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
   allowMultipleParameters: true,
-  allowOauth2: isCopilotAuthEnabled(),
+  allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
@@ -110,7 +102,7 @@ export interface ErrorResult {
   /**
    * The type of error.
    */
-  type: ApiSpecErrorType | OpenAIPluginManifestErrorType;
+  type: ApiSpecErrorType;
 
   /**
    * The content of the error.
@@ -120,75 +112,14 @@ export interface ErrorResult {
   data?: any;
 }
 
-export class OpenAIPluginManifestHelper {
-  static async loadOpenAIPluginManifest(input: string): Promise<OpenAIPluginManifest> {
-    input = input.trim();
-    let path = input.endsWith("/") ? input.substring(0, input.length - 1) : input;
-    if (!input.toLowerCase().endsWith(manifestFilePath)) {
-      path = path + manifestFilePath;
-    }
-    if (!input.toLowerCase().startsWith("https://") && !input.toLowerCase().startsWith("http://")) {
-      path = "https://" + path;
-    }
-
-    try {
-      const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
-        return await axios.get(path);
-      }, 3);
-
-      return res.data;
-    } catch (e) {
-      throw new UserError(
-        componentName,
-        "loadOpenAIPluginManifest",
-        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path),
-        getLocalizedString("error.copilotPlugin.openAiPluginManifest.CannotGetManifest", path)
-      );
-    }
-  }
-
-  static async updateManifest(
-    openAiPluginManifest: OpenAIPluginManifest,
-    teamsAppManifest: TeamsAppManifest,
-    manifestPath: string
-  ): Promise<Result<undefined, FxError>> {
-    teamsAppManifest.description.full = openAiPluginManifest.description_for_human;
-    teamsAppManifest.description.short = openAiPluginManifest.description_for_human;
-    teamsAppManifest.developer.websiteUrl = openAiPluginManifest.legal_info_url;
-    teamsAppManifest.developer.privacyUrl = openAiPluginManifest.legal_info_url;
-    teamsAppManifest.developer.termsOfUseUrl = openAiPluginManifest.legal_info_url;
-
-    await fs.writeFile(manifestPath, JSON.stringify(teamsAppManifest, null, "\t"), "utf-8");
-    return ok(undefined);
-  }
-}
-
 export async function listOperations(
   context: Context,
-  manifest: OpenAIPluginManifest | undefined,
   apiSpecUrl: string | undefined,
   inputs: Inputs,
   includeExistingAPIs = true,
   shouldLogWarning = true,
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-  if (manifest) {
-    const errors = validateOpenAIPluginManifest(manifest);
-    logValidationResults(
-      errors,
-      [],
-      context,
-      false,
-      shouldLogWarning,
-      false,
-      existingCorrelationId
-    );
-    if (errors.length > 0) {
-      return err(errors);
-    }
-    apiSpecUrl = manifest.api.url;
-  }
-
   const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
@@ -205,7 +136,7 @@ export async function listOperations(
         : {
             allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: true,
-            allowOauth2: isCopilotAuthEnabled(),
+            allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
           }
     );
     const validationRes = await specParser.validate();
@@ -215,7 +146,6 @@ export async function listOperations(
       validationRes.errors,
       validationRes.warnings,
       context,
-      true,
       shouldLogWarning,
       false,
       existingCorrelationId
@@ -241,17 +171,41 @@ export async function listOperations(
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
       let existingOperations: string[] = [];
       if (manifest.isOk()) {
+        let isOriginalSpec;
+
         if (isPlugin) {
           existingOperations = await listPluginExistingOperations(
             manifest.value,
             teamsManifestPath,
             inputs[QuestionNames.DestinationApiSpecFilePath]
           );
+
+          const operationAPIs = operations.map((operation) => operation.api);
+          isOriginalSpec = existingOperations.every((operation) =>
+            operationAPIs.includes(operation)
+          );
         } else {
           const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
           existingOperations = operations
             .filter((operation) => existingOperationIds.includes(operation.operationId))
             .map((operation) => operation.api);
+
+          isOriginalSpec = existingOperations.length === existingOperationIds.length;
+        }
+
+        if (!isOriginalSpec) {
+          const errors = formatValidationErrors(
+            [
+              {
+                type: ApiSpecErrorType.AddedAPINotInOriginalSpec,
+                content: "",
+              },
+            ],
+            inputs
+          );
+
+          logValidationResults(errors, [], context, true, false, existingCorrelationId);
+          return err(errors);
         }
 
         operations = operations.filter(
@@ -268,7 +222,7 @@ export async function listOperations(
             ],
             inputs
           );
-          logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
+          logValidationResults(errors, [], context, true, false, existingCorrelationId);
           return err(errors);
         }
       } else {
@@ -370,7 +324,6 @@ export function logValidationResults(
   errors: ErrorResult[],
   warnings: WarningResult[],
   context: Context,
-  isApiSpec: boolean,
   shouldLogWarning: boolean,
   shouldSkipTelemetry: boolean,
   existingCorrelationId?: string
@@ -389,10 +342,7 @@ export function logValidationResults(
     if (existingCorrelationId) {
       properties["correlation-id"] = existingCorrelationId;
     }
-    context.telemetryReporter.sendTelemetryEvent(
-      isApiSpec ? telemetryEvents.validateApiSpec : telemetryEvents.validateOpenAiPluginManifest,
-      properties
-    );
+    context.telemetryReporter.sendTelemetryEvent(telemetryEvents.validateApiSpec, properties);
   }
 
   if (errors.length === 0 && (warnings.length === 0 || !shouldLogWarning)) {
@@ -428,47 +378,16 @@ export function logValidationResults(
     );
   }
 
-  const outputMessage = isApiSpec
-    ? EOL +
-      getLocalizedString(
-        "core.copilotPlugin.validate.apiSpec.summary",
-        summaryStr.join(", "),
-        errorMessage,
-        warningMessage
-      )
-    : EOL +
-      getLocalizedString(
-        "core.copilotPlugin.validate.openAIPluginManifest.summary",
-        summaryStr.join(", "),
-        errorMessage,
-        warningMessage
-      );
+  const outputMessage =
+    EOL +
+    getLocalizedString(
+      "core.copilotPlugin.validate.apiSpec.summary",
+      summaryStr.join(", "),
+      errorMessage,
+      warningMessage
+    );
 
   void context.logProvider.info(outputMessage);
-}
-
-function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResult[] {
-  const errors: ErrorResult[] = [];
-  if (!manifest.api?.url) {
-    errors.push({
-      type: OpenAIPluginManifestErrorType.ApiUrlMissing,
-      content: getLocalizedString(
-        "core.createProjectQuestion.openAiPluginManifest.validationError.missingApiUrl",
-        "api.url"
-      ),
-    });
-  }
-
-  if (manifest.auth?.type !== OpenAIManifestAuthType.None) {
-    errors.push({
-      type: OpenAIPluginManifestErrorType.AuthNotSupported,
-      content: getLocalizedString(
-        "core.createProjectQuestion.openAiPluginManifest.validationError.authNotSupported",
-        "none"
-      ),
-    });
-  }
-  return errors;
 }
 
 export function generateScaffoldingSummary(
@@ -590,35 +509,29 @@ function validateTeamsManifestLength(
       (o) => o.type === WarningType.OperationOnlyContainsOptionalParam
     );
 
-    const commands = teamsManifest.composeExtensions![0].commands;
     if (optionalParamsOnlyWarnings) {
       for (const optionalParamsOnlyWarning of optionalParamsOnlyWarnings) {
-        const command = commands.find(
-          (o: IMessagingExtensionCommand) => o.id === optionalParamsOnlyWarning.data
-        );
-
-        if (command && command.parameters) {
-          const parameterName = command.parameters[0]?.name;
-          resultWarnings.push(
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly",
+            optionalParamsOnlyWarning.data.commandId,
+            optionalParamsOnlyWarning.data.commandId
+          ) +
             getLocalizedString(
-              "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly",
-              optionalParamsOnlyWarning.data,
-              optionalParamsOnlyWarning.data
-            ) +
-              getLocalizedString(
-                "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation",
-                parameterName,
-                optionalParamsOnlyWarning.data,
-                path.join(AppPackageFolderName, ManifestTemplateFileName),
-                path.join(
-                  AppPackageFolderName,
-                  teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
-                )
+              "core.copilotPlugin.scaffold.summary.warning.api.optionalParametersOnly.mitigation",
+              optionalParamsOnlyWarning.data.parameterName,
+              optionalParamsOnlyWarning.data.commandId,
+              path.join(AppPackageFolderName, ManifestTemplateFileName),
+              path.join(
+                AppPackageFolderName,
+                teamsManifest.composeExtensions![0].apiSpecificationFile ?? ""
               )
-          );
-        }
+            )
+        );
       }
     }
+
+    const commands = teamsManifest.composeExtensions![0].commands;
 
     for (const command of commands) {
       if (command.type === "query") {
@@ -733,6 +646,8 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
       return getLocalizedString("core.common.invalidReason.MethodNotAllowed");
     case ErrorType.UrlPathNotExist:
       return getLocalizedString("core.common.invalidReason.UrlPathNotExist");
+    case ErrorType.CircularReferenceNotSupported:
+      return getLocalizedString("core.common.invalidReason.CircularReference");
     default:
       return reason.toString();
   }
@@ -750,8 +665,6 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
             .map((o) => o.trim())
             .join(". ");
           content = `${content}. ${getLocalizedString("core.common.ErrorFetchApiSpec")}`;
-        } else if (error.content.startsWith("RangeError: Maximum call stack size exceeded")) {
-          content = getLocalizedString("core.common.CircularReferenceNotSupported");
         }
         return content;
       }
@@ -791,6 +704,8 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
         return getLocalizedString("core.common.SwaggerNotSupported");
       case ErrorType.SpecVersionNotSupported:
         return getLocalizedString("core.common.SpecVersionNotSupported", error.data);
+      case ErrorType.AddedAPINotInOriginalSpec:
+        return getLocalizedString("core.common.AddedAPINotInOriginalSpec");
 
       default:
         return error.content;
@@ -867,7 +782,7 @@ async function updateAdaptiveCardForCustomApi(
 
     for (const item of specItems) {
       const name = item.item.operationId;
-      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item);
+      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
       const cardFilePath = path.join(adaptiveCardsFolderPath, `${name!}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }

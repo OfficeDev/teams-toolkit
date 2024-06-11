@@ -1,20 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
+import { LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
-import { stub, spy, restore, assert } from "sinon";
-import rewire from "rewire";
 import fs from "fs-extra";
-
-import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
+import "mocha";
+import rewire from "rewire";
+import { assert, restore, spy, stub } from "sinon";
+import { createContext, setTools } from "../../../../../src/common/globalVars";
+import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
 import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
-import { LogProvider, LogLevel, UserError } from "@microsoft/teamsfx-api";
-import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
-import { createContextV3 } from "../../../../../src/component/utils";
-import { setTools } from "../../../../../src/core/globalVars";
-import { MockTools } from "../../../../core/utils";
+import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
+import { MockTools } from "../../../../core/utils";
 
 const ryc = rewire("../../../../../src/component/generator/spfx/depsChecker/yoChecker");
 
@@ -94,7 +92,7 @@ describe("Yo checker", () => {
     try {
       await yc.install("latest");
     } catch (e) {
-      expect(e.name).equal("NpmInstallFailed");
+      expect(e.name).equal("NpmInstallError");
     }
   });
 
@@ -243,7 +241,7 @@ describe("Yo checker", () => {
         console.log("installing");
       });
 
-      const context = createContextV3();
+      const context = createContext();
 
       const result = await yc.ensureDependency(context, "latest");
       expect(result.isOk()).to.be.true;
@@ -255,7 +253,7 @@ describe("Yo checker", () => {
         throw new UserError("source", "name", "msg", "msg");
       });
 
-      const context = createContextV3();
+      const context = createContext();
 
       const result = await yc.ensureDependency(context, "latest");
       expect(result.isErr()).to.be.true;

@@ -10,8 +10,8 @@ import {
 import {
   CancellationToken,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
-  LanguageModelChatSystemMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { SampleProvider } from "../../../../src/officeChat/common/samples/sampleProvider";
@@ -43,7 +43,8 @@ describe("CodeIssueCorrector", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };
@@ -79,7 +80,7 @@ describe("CodeIssueCorrector", () => {
     chai.assert.equal(codeIssueCorrector.capability, "Fix code issues");
   });
 
-  it("canInvoke returns true", () => {
+  it("canInvoke returns true", async () => {
     const corrector = new CodeIssueCorrector();
     const spec = new Spec("Some user input");
     spec.taskSummary = "Some task summary";
@@ -108,16 +109,35 @@ describe("CodeIssueCorrector", () => {
       shouldContinue: false,
     };
 
-    const result = corrector.canInvoke(spec);
+    const result = await corrector.canInvoke(spec);
     chai.assert.isTrue(result);
   });
 
   it("fixIssueAsync no error return codeSnippet", async () => {
+    const sampleCodeLong =
+      `Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+    To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+    Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change to match the new theme.
+    Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your document, click it and a button for layout options appears next to it. When you work on a table, click where you want to add a row or a column, and then click the plus sign.
+    Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
+    `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
-
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
+      content: sampleCodeLong,
+      name: undefined,
+    };
+    sandbox
+      .stub(utils, "countMessagesTokens")
+      .onFirstCall()
+      .returns(4000)
+      .onSecondCall()
+      .returns(100);
     const result = await corrector.fixIssueAsync(
       {
         isCancellationRequested: false,
@@ -133,16 +153,30 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, "original code snippet");
   });
 
   it("fixIssueAsync error with the LLM output and Excel host, isCustomFunctions false", async () => {
+    const sampleCodeLong =
+      `Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+    To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+    Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change to match the new theme.
+    Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your document, click it and a button for layout options appears next to it. When you work on a table, click where you want to add a row or a column, and then click the plus sign.
+    Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
+    `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
+    };
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
+      content: sampleCodeLong,
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -151,8 +185,13 @@ describe("CodeIssueCorrector", () => {
     );
     sandbox.stub(console, "log");
     sandbox.stub(console, "error");
-    sandbox.stub(utils, "countMessagesTokens").returns(100);
-    sandbox.stub(utils, "countMessageTokens").returns(100);
+    sandbox
+      .stub(utils, "countMessagesTokens")
+      .onFirstCall()
+      .returns(4000)
+      .onSecondCall()
+      .returns(100);
+    // sandbox.stub(utils, "countMessageTokens").returns(100);
     sandbox.stub(RegExp.prototype, "exec").returns(null);
 
     const result = await corrector.fixIssueAsync(
@@ -170,17 +209,30 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, null);
   });
 
   it("fixIssueAsync error with the LLM output and Excel host, isCustomFunctions true", async () => {
+    const sampleCodeLong =
+      `Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+    To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+    Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change to match the new theme.
+    Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your document, click it and a button for layout options appears next to it. When you work on a table, click where you want to add a row or a column, and then click the plus sign.
+    Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
+    `.repeat(20);
     const corrector = new CodeIssueCorrector();
-
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
+    };
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
+      content: sampleCodeLong,
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -189,8 +241,13 @@ describe("CodeIssueCorrector", () => {
     );
     sandbox.stub(console, "log");
     sandbox.stub(console, "error");
-    sandbox.stub(utils, "countMessagesTokens").returns(100);
-    sandbox.stub(utils, "countMessageTokens").returns(100);
+    sandbox
+      .stub(utils, "countMessagesTokens")
+      .onFirstCall()
+      .returns(4000)
+      .onSecondCall()
+      .returns(100);
+    // sandbox.stub(utils, "countMessageTokens").returns(100);
     sandbox.stub(RegExp.prototype, "exec").returns(null);
 
     const result = await corrector.fixIssueAsync(
@@ -208,16 +265,30 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage, // sampleMessage
-      fakeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, null);
   });
 
   it("fixIssueAsync error with the LLM output and other host", async () => {
+    const sampleCodeLong =
+      `Video provides a powerful way to help you prove your point. When you click Online Video, you can paste in the embed code for the video you want to add. You can also type a keyword to search online for the video that best fits your document.
+    To make your document look professionally produced, Word provides header, footer, cover page, and text box designs that complement each other. For example, you can add a matching cover page, header, and sidebar. Click Insert and then choose the elements you want from the different galleries.
+    Themes and styles also help keep your document coordinated. When you click Design and choose a new Theme, the pictures, charts, and SmartArt graphics change to match your new theme. When you apply styles, your headings change to match the new theme.
+    Save time in Word with new buttons that show up where you need them. To change the way a picture fits in your document, click it and a button for layout options appears next to it. When you work on a table, click where you want to add a row or a column, and then click the plus sign.
+    Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
+    `.repeat(20);
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
+    };
+    const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
+      content: sampleCodeLong,
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -226,8 +297,13 @@ describe("CodeIssueCorrector", () => {
     );
     sandbox.stub(console, "log");
     sandbox.stub(console, "error");
-    sandbox.stub(utils, "countMessagesTokens").returns(100);
-    sandbox.stub(utils, "countMessageTokens").returns(100);
+    sandbox
+      .stub(utils, "countMessagesTokens")
+      .onFirstCall()
+      .returns(4000)
+      .onSecondCall()
+      .returns(100);
+    // sandbox.stub(utils, "countMessageTokens").returns(100);
     sandbox.stub(RegExp.prototype, "exec").returns(null);
 
     const result = await corrector.fixIssueAsync(
@@ -245,7 +321,7 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, null);
@@ -253,8 +329,10 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync error with code length reduced too much", async () => {
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -291,8 +369,10 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync return newCodeStr", async () => {
     const corrector = new CodeIssueCorrector();
-    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
+      role: LanguageModelChatMessageRole.System,
       content: "some sample message",
+      name: undefined,
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
@@ -338,6 +418,11 @@ describe("CodeIssueCorrector", () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
 
     spec.appendix.complexity = 10;
+    spec.appendix.codeSample = "some code sample";
+    spec.appendix.apiDeclarationsReference.set(
+      "definition",
+      new SampleData("key1", "docLink", "sample", "description", "definition", "usage")
+    );
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -436,6 +521,11 @@ describe("CodeIssueCorrector", () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
 
     spec.appendix.complexity = 80;
+    spec.appendix.codeSample = "some code sample";
+    spec.appendix.apiDeclarationsReference.set(
+      "definition",
+      new SampleData("key1", "docLink", "sample", "description", "definition", "usage")
+    );
     sandbox.stub(corrector, "fixIssueAsync").returns(Promise.resolve(null));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
@@ -486,12 +576,11 @@ describe("CodeIssueCorrector", () => {
     sandbox.stub(console, "debug");
 
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
-
     spec.appendix.complexity = 80;
 
     const fixIssueStub = sandbox
       .stub(corrector, "fixIssueAsync")
-      .returns(Promise.resolve("some more code"));
+      .returns(Promise.resolve("some more code; await main(); "));
     fixIssueStub.onCall(0).returns(Promise.resolve("less"));
     const detectorInstance = CodeIssueDetector.getInstance();
     const detectIssuesStub = sandbox.stub(detectorInstance, "detectIssuesAsync");

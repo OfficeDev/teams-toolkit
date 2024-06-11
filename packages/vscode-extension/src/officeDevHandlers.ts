@@ -7,14 +7,18 @@
 "use strict";
 
 import { FxError, Result, Warning, ok } from "@microsoft/teamsfx-api";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import {
+  globalStateGet,
+  globalStateUpdate,
+  isManifestOnlyOfficeAddinProject,
+} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { GlobalKey } from "./constants";
 import { OfficeDevTerminal, TriggerCmdType } from "./debug/taskTerminal/officeDevTerminal";
-import { VS_CODE_UI } from "./extension";
+import { VS_CODE_UI } from "./qm/vsc_ui";
 import * as globalVariables from "./globalVariables";
 import {
   ShowScaffoldingWarningSummary,
@@ -23,11 +27,15 @@ import {
   openSampleReadmeHandler,
   showLocalDebugMessage,
 } from "./handlers";
-import { TelemetryTriggerFrom, VSCodeWindowChoice } from "./telemetry/extTelemetryEvents";
+import {
+  TelemetryTriggerFrom,
+  VSCodeWindowChoice,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "./telemetry/extTelemetryEvents";
 import { isTriggerFromWalkThrough, getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]
@@ -248,12 +256,14 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    void popupOfficeAddInDependenciesMessage();
+    if (!isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? ""))
+      void popupOfficeAddInDependenciesMessage();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
   if (
     globalVariables.isOfficeAddInProject &&
-    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "")
+    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "") &&
+    !isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? "")
   ) {
     void popupOfficeAddInDependenciesMessage();
   }

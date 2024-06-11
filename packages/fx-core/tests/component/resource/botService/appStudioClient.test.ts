@@ -7,7 +7,7 @@
 import { assert, expect } from "chai";
 import "mocha";
 import { createSandbox } from "sinon";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { MockTools } from "../../../core/utils";
 import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";

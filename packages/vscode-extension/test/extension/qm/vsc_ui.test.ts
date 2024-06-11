@@ -19,26 +19,21 @@ import {
 
 import {
   err,
-  FxError,
-  InputResult,
   ok,
-  Result,
   SelectFileConfig,
-  SelectFileResult,
   SelectFolderConfig,
   SingleFileOrInputConfig,
   SingleSelectConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { FxQuickPickItem, UserCancelError } from "@microsoft/vscode-ui";
+import { FxQuickPickItem, sleep, UserCancelError } from "@microsoft/vscode-ui";
 import { VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
-import { sleep } from "../../../src/utils/commonUtils";
 import { VsCodeLogProvider } from "../../../src/commonlib/log";
 
 describe("UI Unit Tests", async () => {
-  before(() => {
-    // Mock user input.
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe("Manually", () => {
@@ -64,6 +59,12 @@ describe("UI Unit Tests", async () => {
   });
 
   describe("Select Folder", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("has returns default folder", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFolderConfig = {
@@ -90,10 +91,10 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      // const telemetryStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      // const telemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFolder(config);
 
@@ -106,7 +107,6 @@ describe("UI Unit Tests", async () => {
       //     "selected-option": "default",
       //   })
       // ).is.true;
-      sinon.restore();
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
@@ -135,11 +135,11 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "browse" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      sinon.stub(window, "showOpenDialog").resolves(undefined);
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(window, "showOpenDialog").resolves(undefined);
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFolder(config);
 
@@ -147,11 +147,16 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error instanceof UserCancelError).is.true;
       }
-      sinon.restore();
     });
   });
 
   describe("Select File", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("has returns default file", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SelectFileConfig = {
@@ -178,10 +183,10 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFile(config);
 
@@ -189,7 +194,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("default file");
       }
-      sinon.restore();
     });
 
     it("has returns user cancel", async function (this: Mocha.Context) {
@@ -218,11 +222,11 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "browse" } as FxQuickPickItem];
         onHideListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      sinon.stub(window, "showOpenDialog").resolves(undefined);
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(window, "showOpenDialog").resolves(undefined);
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFile(config);
 
@@ -230,7 +234,6 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error instanceof UserCancelError).is.true;
       }
-      sinon.restore();
     });
 
     it("has returns item in possible files", async function (this: Mocha.Context) {
@@ -269,10 +272,10 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFile(config);
 
@@ -280,7 +283,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("1");
       }
-      sinon.restore();
     });
 
     it("has returns invalid input item id", async function (this: Mocha.Context) {
@@ -304,7 +306,6 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error.name).to.equal("InvalidInput");
       }
-      sinon.restore();
     });
 
     it("selects a file which pass validation", async function (this: Mocha.Context) {
@@ -339,16 +340,14 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
 
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const res = await ui.selectFile(config);
       expect(res.isOk()).is.true;
-
-      sinon.restore();
     });
 
     it("selects a file with error thrown when validating result", async function (this: Mocha.Context) {
@@ -380,36 +379,39 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
 
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const res = await ui.selectFile(config);
       expect(res.isErr()).is.true;
-
-      sinon.restore();
     });
   });
 
   describe("Open File", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("open the preview of Markdown file", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
-      sinon.stub(workspace, "openTextDocument").resolves({} as TextDocument);
+      sandbox.stub(workspace, "openTextDocument").resolves({} as TextDocument);
       let executedCommand = "";
-      sinon.stub(commands, "executeCommand").callsFake((command: string, ...args: any[]) => {
+      sandbox.stub(commands, "executeCommand").callsFake((command: string, ...args: any[]) => {
         executedCommand = command;
         return Promise.resolve();
       });
-      const showTextStub = sinon.stub(window, "showTextDocument");
+      const showTextStub = sandbox.stub(window, "showTextDocument");
 
       const result = await ui.openFile("test.md");
 
       expect(result.isOk()).is.true;
       expect(showTextStub.calledOnce).to.be.false;
       expect(executedCommand).to.equal("markdown.showPreview");
-      sinon.restore();
     });
   });
 
@@ -452,8 +454,8 @@ describe("UI Unit Tests", async () => {
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
       const mockTerminal = {
-        show: sinon.stub(),
-        sendText: sinon.stub(),
+        show: sandbox.stub(),
+        sendText: sandbox.stub(),
         processId: new Promise((resolve: (value: string) => void, reject) => {
           const wait = setTimeout(() => {
             clearTimeout(wait);
@@ -527,10 +529,10 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectOption(config);
 
@@ -538,7 +540,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("1");
       }
-      sinon.restore();
     });
 
     it("select fail with validation", async function (this: Mocha.Context) {
@@ -574,16 +575,14 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(window, "createQuickPick").callsFake(() => {
+      sandbox.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectOption(config);
 
       expect(result.isErr()).is.true;
-
-      sinon.restore();
     });
 
     it("loads dynamic options in a short time", async function (this: Mocha.Context) {
@@ -772,6 +771,12 @@ describe("UI Unit Tests", async () => {
   });
 
   describe("Select local file or input", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("selects local file successfully", async function (this: Mocha.Context) {
       const ui = new VsCodeUI(<ExtensionContext>{});
       const config: SingleFileOrInputConfig = {
@@ -789,10 +794,10 @@ describe("UI Unit Tests", async () => {
         },
       };
 
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "selectFile")
         .resolves(ok({ type: "success", result: "file" }));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFileOrInput(config);
 
@@ -800,7 +805,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("file");
       }
-      sinon.restore();
     });
 
     it("selects local file error", async function (this: Mocha.Context) {
@@ -820,10 +824,10 @@ describe("UI Unit Tests", async () => {
         },
       };
 
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "selectFile")
         .resolves(err(new UserError("source", "name", "msg", "msg")));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFileOrInput(config);
 
@@ -831,7 +835,6 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error.name).to.equal("name");
       }
-      sinon.restore();
     });
 
     it("inputs a value sucessfully", async function (this: Mocha.Context) {
@@ -851,13 +854,13 @@ describe("UI Unit Tests", async () => {
         },
       };
 
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "selectFile")
         .resolves(ok({ type: "success", result: "input" }));
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "inputText")
         .resolves(ok({ type: "success", result: "testUrl" }));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFileOrInput(config);
 
@@ -865,7 +868,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("testUrl");
       }
-      sinon.restore();
     });
 
     it("inputs a value error", async function (this: Mocha.Context) {
@@ -885,13 +887,13 @@ describe("UI Unit Tests", async () => {
         },
       };
 
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "selectFile")
         .resolves(ok({ type: "success", result: "input" }));
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "inputText")
         .resolves(err(new UserError("source", "name", "msg", "msg")));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFileOrInput(config);
 
@@ -899,7 +901,6 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error.name).to.equal("name");
       }
-      sinon.restore();
     });
 
     it("inputs a value back and then sucessfully", async function (this: Mocha.Context) {
@@ -919,16 +920,16 @@ describe("UI Unit Tests", async () => {
         },
       };
 
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "selectFile")
         .resolves(ok({ type: "success", result: "input" }));
-      sinon
+      sandbox
         .stub(VsCodeUI.prototype, "inputText")
         .onFirstCall()
         .resolves(ok({ type: "back" }))
         .onSecondCall()
         .resolves(ok({ type: "success", result: "testUrl" }));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFileOrInput(config);
 
@@ -936,7 +937,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("testUrl");
       }
-      sinon.restore();
     });
   });
 });

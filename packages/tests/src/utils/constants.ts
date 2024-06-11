@@ -171,6 +171,8 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
+  CopilotPluginFromExistingAPI = "copilot-plugin-existing-api",
+  CopilotPluginFromScratch = "copilot-plugin-new-api",
 }
 
 export enum Trigger {
@@ -362,7 +364,8 @@ export type OptionType =
   | "aichat"
   | "aiassist"
   | "msgnewapi"
-  | "msgopenapi";
+  | "msgopenapi"
+  | "msgapikey";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -407,6 +410,7 @@ export class LocalDebugTaskResult {
 
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
+  PythonDebugConsole = "Python Debug Console",
 }
 
 export enum LocalDebugError {

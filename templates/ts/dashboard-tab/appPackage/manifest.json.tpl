@@ -32,7 +32,9 @@
             "contentUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
             "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
             "scopes": [
-                "personal"
+                "personal",
+                "groupChat",
+                "team"
             ]
         }
     ],

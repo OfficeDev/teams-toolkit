@@ -82,18 +82,18 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
-  /** @description OpenAPI Description Document */
-  "openapi-spec-location"?: string;
-  /** @description Select Operation(s) Teams Can Interact with */
-  "api-operation"?: string[];
   /** @description Authentication Type */
-  "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
+  "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
   /** @description Chat With Your Data */
   "custom-copilot-rag"?:
     | "custom-copilot-rag-customize"
     | "custom-copilot-rag-azureAISearch"
     | "custom-copilot-rag-customApi"
     | "custom-copilot-rag-microsoft365";
+  /** @description OpenAPI Description Document */
+  "openapi-spec-location"?: string;
+  /** @description Select Operation(s) Teams Can Interact with */
+  "api-operation"?: string[];
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */

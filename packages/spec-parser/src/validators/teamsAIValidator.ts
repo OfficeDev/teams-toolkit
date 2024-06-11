@@ -18,6 +18,7 @@ export class TeamsAIValidator extends Validator {
     this.projectType = ProjectType.TeamsAi;
     this.options = options;
     this.spec = spec;
+    this.checkCircularReference();
   }
 
   validateSpec(): SpecValidationResult {
@@ -42,6 +43,11 @@ export class TeamsAIValidator extends Validator {
     const methodAndPathResult = this.validateMethodAndPath(method, path);
     if (!methodAndPathResult.isValid) {
       return methodAndPathResult;
+    }
+
+    const circularReferenceResult = this.validateCircularReference(method, path);
+    if (!circularReferenceResult.isValid) {
+      return circularReferenceResult;
     }
 
     const operationObject = (this.spec.paths[path] as any)[method] as OpenAPIV3.OperationObject;

@@ -59,7 +59,7 @@ describe("TreeViewManager", () => {
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
     const command = (treeViewManager as any).commandMap.get("fx-extension.create");
-    const setStatusStub = sinon.stub(command, "setStatus");
+    const setStatusStub = sandbox.stub(command, "setStatus");
     treeViewManager.setRunningCommand("fx-extension.create", ["fx-extension.openSamples"]);
 
     chai.assert.equal(setStatusStub.callCount, 1);

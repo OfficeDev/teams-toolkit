@@ -12,7 +12,7 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import {
   OauthRegistrationAppType,
@@ -74,7 +74,7 @@ describe("CreateOauthDriver", () => {
         expect(oauthRegistration.targetAudience).to.equals(
           OauthRegistrationTargetAudience.AnyTenant
         );
-        expect(oauthRegistration.specificAppId).to.equal("");
+        expect(oauthRegistration.m365AppId).to.equal("");
         return {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
@@ -143,7 +143,7 @@ describe("CreateOauthDriver", () => {
         expect(oauthRegistration.targetAudience).to.equals(
           OauthRegistrationTargetAudience.AnyTenant
         );
-        expect(oauthRegistration.specificAppId).to.equal("");
+        expect(oauthRegistration.m365AppId).to.equal("");
         return {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
@@ -215,7 +215,7 @@ describe("CreateOauthDriver", () => {
         expect(oauthRegistration.targetAudience).to.equals(
           OauthRegistrationTargetAudience.AnyTenant
         );
-        expect(oauthRegistration.specificAppId).to.equal("");
+        expect(oauthRegistration.m365AppId).to.equal("");
         return {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
@@ -282,7 +282,7 @@ describe("CreateOauthDriver", () => {
         expect(oauthRegistration.tokenExchangeEndpoint).to.equals("mockedTokenUrl");
         expect(oauthRegistration.tokenRefreshEndpoint).to.equal("mockedRefreshUrl");
         expect(oauthRegistration.applicableToApps).to.equals(OauthRegistrationAppType.SpecificApp);
-        expect(oauthRegistration.specificAppId).to.equals("mockedAppId");
+        expect(oauthRegistration.m365AppId).to.equals("mockedAppId");
         expect(oauthRegistration.targetAudience).to.equals(
           OauthRegistrationTargetAudience.HomeTenant
         );

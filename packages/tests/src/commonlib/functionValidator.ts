@@ -1,22 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import glob from "glob";
 import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
-import { StateConfigKey, PluginId, EnvConstants } from "./constants";
+import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 import {
-  getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
   getWebappSettings,
   runWithRetry,
-  getWebappConfigs,
-  getExpectedM365ApplicationIdUri,
-  getExpectedM365ClientSecret,
 } from "./utilities";
 
 const baseUrlListDeployments = (

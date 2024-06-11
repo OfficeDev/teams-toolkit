@@ -2750,3 +2750,32 @@ export async function validateTodoListSpfx(page: Page) {
     throw error;
   }
 }
+
+export async function validateApiMeResult(page: Page) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    console.log("start to validate search command");
+    const searchcmdInput = await frame?.waitForSelector(
+      "div.ui-box input.ui-box"
+    );
+    await searchcmdInput?.type("Karin");
+    try {
+      await frame?.waitForSelector('ul[datatid="app-picker-list"]');
+      console.log("verify search successfully!!!");
+    } catch (error) {
+      await frame?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

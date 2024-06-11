@@ -4,6 +4,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import * as semver from "semver";
 
 import {
   AppPackageFolderName,
@@ -17,8 +18,9 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  initializePreviewFeatureFlags,
+  isChatParticipantEnabled,
   setRegion,
+  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -35,7 +37,6 @@ import {
   officeChatRequestHandler,
   chatCreateOfficeProjectCommandHandler,
   handleOfficeFeedback,
-  handleOfficeUserAction,
 } from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -76,42 +77,42 @@ import {
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
-  setUriEventHandler,
+  isOfficeManifestOnlyProject,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import * as officeDevHandlers from "./officeDevHandlers";
-import { VsCodeUI } from "./qm/vsc_ui";
+import { initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { UriHandler } from "./uriHandler";
-import {
-  FeatureFlags,
-  delay,
-  hasAdaptiveCardInWorkspace,
-  isM365Project,
-} from "./utils/commonUtils";
+import { UriHandler, setUriEventHandler } from "./uriHandler";
+import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import { FeatureFlags } from "./featureFlags";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
-
-export let VS_CODE_UI: VsCodeUI;
+import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
 export async function activate(context: vscode.ExtensionContext) {
-  initializePreviewFeatureFlags();
+  process.env[FeatureFlags.ChatParticipant] = (
+    IsChatParticipantEnabled &&
+    semver.gte(vscode.version, "1.90.0-insider") &&
+    vscode.version.includes("insider")
+  ).toString();
 
   configMgr.registerConfigChangeCallback();
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
-  VS_CODE_UI = new VsCodeUI(context);
+  initVSCodeUI(context);
   initializeGlobalVariables(context);
   loadLocalizedStrings();
 
@@ -123,9 +124,11 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  registerChatParticipant(context);
+  if (isChatParticipantEnabled()) {
+    registerChatParticipant(context);
 
-  registerOfficeChatParticipant(context);
+    registerOfficeChatParticipant(context);
+  }
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -148,15 +151,37 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
-    IsChatParticipantEnabled
+    isChatParticipantEnabled()
   );
 
-  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
+
+  // Flags for "Build Intelligent Apps" walkthrough.
+  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
+  // API_COPILOT_PLUGIN: boolean from ENV
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isApiCopilotPluginEnabled",
+    isApiCopilotPluginEnabled()
+  );
 
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isOfficeAddIn",
     isOfficeAddInProject
+  );
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isManifestOnlyOfficeAddIn",
+    isOfficeManifestOnlyProject
   );
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
@@ -264,7 +289,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
       const res: Result<CreateProjectResult, FxError> = await Correlator.run(
-        handlers.createProjectFromWalkthroughHandler,
+        createProjectFromWalkthroughHandler,
         args
       );
       if (res.isOk()) {
@@ -296,6 +321,11 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Quick start
   registerInCommandController(context, CommandKeys.OpenWelcome, handlers.openWelcomeHandler);
+  registerInCommandController(
+    context,
+    CommandKeys.BuildIntelligentAppsWalkthrough,
+    handlers.openBuildIntelligentAppsWalkthroughHandler
+  );
 
   // Tutorials
   registerInCommandController(
@@ -313,6 +343,9 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     CommandKeys.ValidateGetStartedPrerequisites,
     handlers.validateGetStartedPrerequisitesHandler
   );
+
+  // commmand: check copilot access
+  registerInCommandController(context, CommandKeys.CheckCopilotAccess, checkCopilotAccessHandler);
 
   // Upgrade command to update Teams manifest
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
@@ -459,7 +492,6 @@ function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
   participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
-  participant.onDidPerformAction((...args) => Correlator.run(handleOfficeUserAction, ...args));
 
   context.subscriptions.push(
     participant,

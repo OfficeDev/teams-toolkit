@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
 import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { EnvConstants } from "../commonlib/constants";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   parseFromResourceId,
 } from "./utilities";
-import { EnvConstants } from "../commonlib/constants";
 
 const baseUrlContainer = (
   subscriptionId: string,

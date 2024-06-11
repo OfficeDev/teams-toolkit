@@ -6,44 +6,14 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-
 import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { PluginNames, isValidProject } from "@microsoft/teamsfx-core";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import { glob } from "glob";
-import * as extensionPackage from "../../package.json";
-import * as commonUtils from "../debug/commonUtils";
-import { getV3TeamsAppId } from "../debug/commonUtils";
-import * as globalVariables from "../globalVariables";
-import { core } from "../handlers";
+import { workspace } from "vscode";
+import { getProjectRoot, getV3TeamsAppId } from "../debug/commonUtils";
+import { workspaceUri, isTeamsFxProject, core } from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { localize } from "./localizeUtils";
-import { workspace } from "vscode";
-
-export function getPackageVersion(versionStr: string): string {
-  if (versionStr.includes("alpha")) {
-    return "alpha";
-  }
-
-  if (versionStr.includes("beta")) {
-    return "beta";
-  }
-
-  if (versionStr.includes("rc")) {
-    return "rc";
-  }
-
-  return "formal";
-}
-
-export function isFeatureFlag(): boolean {
-  return extensionPackage.featureFlag === "true";
-}
-
-export async function sleep(ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms));
-
-  await new Promise((resolve) => setTimeout(resolve, 0));
-}
 
 export function isWindows() {
   return os.type() === "Windows_NT";
@@ -67,7 +37,7 @@ export async function getTeamsAppTelemetryInfoByEnv(
   env: string
 ): Promise<TeamsAppTelemetryInfo | undefined> {
   try {
-    const ws = globalVariables.workspaceUri!.fsPath;
+    const ws = workspaceUri!.fsPath;
     if (isValidProject(ws)) {
       const projectInfoRes = await core.getProjectInfo(ws, env);
       if (projectInfoRes.isOk()) {
@@ -82,26 +52,12 @@ export async function getTeamsAppTelemetryInfoByEnv(
   return undefined;
 }
 
-export async function getProjectId(): Promise<string | undefined> {
-  if (!globalVariables.workspaceUri) {
-    return undefined;
-  }
-  try {
-    const ws = globalVariables.workspaceUri.fsPath;
-    const projInfoRes = await core.getProjectId(ws);
-    if (projInfoRes.isOk()) {
-      return projInfoRes.value;
-    }
-  } catch (e) {}
-  return undefined;
-}
-
 export async function getAppName(): Promise<string | undefined> {
-  if (!globalVariables.workspaceUri) {
+  if (!workspaceUri) {
     return undefined;
   }
   try {
-    const ws = globalVariables.workspaceUri.fsPath;
+    const ws = workspaceUri.fsPath;
     const nameRes = await core.getTeamsAppName(ws);
     if (nameRes.isOk() && nameRes.value != "") {
       return nameRes.value;
@@ -129,50 +85,6 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   } else {
     return false;
   }
-}
-
-export function anonymizeFilePaths(stack?: string): string {
-  if (!stack) {
-    return "";
-  }
-  const filePathRegex = /\s\(([a-zA-Z]:(\\|\/)([^\\\/\s:]+(\\|\/))+|\/([^\s:\/]+\/)+)/g;
-  const redactedErrorMessage = stack.replace(filePathRegex, " (<REDACTED: user-file-path>/");
-  return redactedErrorMessage;
-}
-
-export class FeatureFlags {
-  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
-  static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
-  static readonly Preview = "TEAMSFX_PREVIEW";
-  static readonly DevelopCopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
-}
-
-// Determine whether feature flag is enabled based on environment variable setting
-
-export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
-  const flag = process.env[featureFlagName];
-
-  if (flag === undefined) {
-    return defaultValue; // allows consumer to set a default value when environment variable not set
-  } else {
-    return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
-  }
-}
-
-export function getAllFeatureFlags(): string[] | undefined {
-  const result = Object.values(FeatureFlags)
-
-    .filter((featureFlag: string) => {
-      return isFeatureFlagEnabled(featureFlag);
-    })
-
-    .map((featureFlag) => {
-      return featureFlag;
-    });
-
-  return result;
 }
 
 export async function getSubscriptionInfoFromEnv(
@@ -204,7 +116,20 @@ export async function getSubscriptionInfoFromEnv(
     return undefined;
   }
 }
-
+enum PluginNames {
+  SQL = "fx-resource-azure-sql",
+  MSID = "fx-resource-identity",
+  FE = "fx-resource-frontend-hosting",
+  SPFX = "fx-resource-spfx",
+  BOT = "fx-resource-bot",
+  AAD = "fx-resource-aad-app-for-teams",
+  FUNC = "fx-resource-function",
+  SA = "fx-resource-simple-auth",
+  LDEBUG = "fx-resource-local-debug",
+  APIM = "fx-resource-apim",
+  APPST = "fx-resource-appstudio",
+  SOLUTION = "solution",
+}
 export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
   let provisionResult: Record<string, any> | undefined;
 
@@ -243,23 +168,22 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
   // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
   try {
-    const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+    const teamsAppId = await getV3TeamsAppId(workspaceUri!.fsPath, env);
     return teamsAppId !== "";
   } catch (error) {
     return false;
   }
 }
 
-async function getProvisionResultJson(env: string): Promise<Record<string, string> | undefined> {
-  if (globalVariables.workspaceUri) {
-    if (!globalVariables.isTeamsFxProject) {
+export async function getProvisionResultJson(
+  env: string
+): Promise<Record<string, string> | undefined> {
+  if (workspaceUri) {
+    if (!isTeamsFxProject) {
       return undefined;
     }
 
-    const configRoot = await commonUtils.getProjectRoot(
-      globalVariables.workspaceUri.fsPath,
-      `.${ConfigFolderName}`
-    );
+    const configRoot = await getProjectRoot(workspaceUri.fsPath, `.${ConfigFolderName}`);
 
     const provisionOutputFile = path.join(configRoot!, path.join("states", `state.${env}.json`));
 
@@ -336,8 +260,8 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
   // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
   const fileSizeLimit = 1024 * 1024;
 
-  if (globalVariables.workspaceUri) {
-    const files = await glob(globalVariables.workspaceUri.path + "/**/*.json", {
+  if (workspaceUri) {
+    const files = await glob(workspaceUri.path + "/**/*.json", {
       ignore: ["**/node_modules/**", "./node_modules/**"],
     });
     for (const file of files) {

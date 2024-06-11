@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService, serviceEndpoint, serviceScope } from "@microsoft/teamsfx-core";
+import { PackageService, MosServiceEndpoint, MosServiceScope } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
@@ -9,8 +9,8 @@ import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const sideloadingServiceEndpoint =
-  process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
-export const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+  process.env.SIDELOADING_SERVICE_ENDPOINT ?? MosServiceEndpoint;
+export const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
 
 class M365Utils {
   async getTokenAndUpn(): Promise<[string, string]> {

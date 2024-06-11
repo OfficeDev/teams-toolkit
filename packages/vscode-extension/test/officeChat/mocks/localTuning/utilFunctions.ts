@@ -67,9 +67,15 @@ export async function getCopilotResponseAsString(
   token: CancellationToken
 ): Promise<string> {
   const sendRequest = async () => {
-    const chatRequest = await lm.sendChatRequest(model, messages, {}, token);
+    const [vendor, family] = model.split(/-(.*)/s);
+    const chatModels = await lm.selectChatModels({ vendor, family });
+    const familyMatch = chatModels?.find((chatModel) => chatModel.family === family);
+    if (!familyMatch) {
+      throw new Error("No chat models available for the specified family");
+    }
+    const chatRequest = await familyMatch.sendRequest(messages, {}, token);
     let response = "";
-    for await (const fragment of chatRequest.stream) {
+    for await (const fragment of chatRequest.text) {
       response += fragment;
     }
     return response;

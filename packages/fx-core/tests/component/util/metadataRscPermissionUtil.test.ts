@@ -9,7 +9,7 @@ import {
   ProjectModel,
 } from "../../../src/component/configManager/interface";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { MockTools } from "../../core/utils";
 import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";
 import {

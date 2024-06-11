@@ -22,7 +22,7 @@ import { NoConfigurationError } from "../../../../src/component/driver/add/error
 import { SPFxGenerator } from "../../../../src/component/generator/spfx/spfxGenerator";
 import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../../../src/component/driver/teamsApp/results";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { InstallSoftwareError } from "../../../../src/error/common";
 
 describe("Add web part driver", async () => {

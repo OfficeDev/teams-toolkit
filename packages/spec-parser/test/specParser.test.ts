@@ -11,7 +11,7 @@ import { ErrorType, ProjectType, ValidationStatus, WarningType } from "../src/in
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
-import { OpenAPIV3 } from "openapi-types";
+import { OpenAPI, OpenAPIV3 } from "openapi-types";
 import { SpecFilter } from "../src/specFilter";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
@@ -612,6 +612,105 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return a valid result if one api contains circular reference", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "Pet Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        components: {
+          schemas: {
+            Circular: {
+              type: "object",
+              properties: {
+                item: {
+                  $ref: "#/components/schemas/Circular",
+                },
+              },
+            },
+            Pet: {
+              type: "object",
+              properties: {
+                item: {
+                  type: "string",
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "getPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              tags: ["pet"],
+              operationId: "postPet",
+              summary: "Post pet information from the store",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Circular",
+                    },
+                  },
+                },
+              },
+              responses: {
+                "200": {
+                  description: "postPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(spec as any, { projectType: ProjectType.Copilot });
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+    });
+
     it("should only create validator once if already created", async () => {
       const specPath = "path/to/spec";
       const spec = {
@@ -984,7 +1083,7 @@ describe("SpecParser", () => {
 
       const updateManifestWithAiPluginStub = sinon
         .stub(ManifestUpdater, "updateManifestWithAiPlugin")
-        .resolves([{}, {}] as any);
+        .resolves([{}, {}, []] as any);
 
       const filter = ["get /hello"];
 
@@ -2907,7 +3006,12 @@ describe("SpecParser", () => {
       };
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .callsFake(async (api: string | OpenAPI.Document) => {
+          expect((api as OpenAPIV3.Document).servers![0].url == "https://server1");
+          return api as any;
+        });
 
       const result = await specParser.list();
 
@@ -2949,6 +3053,182 @@ describe("SpecParser", () => {
         expect(err.errorType).to.equal(ErrorType.GetSpecFailed);
         expect(err.message).to.equal("Error: parse error");
       }
+    });
+
+    it("should works fine when filter spec", async () => {
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      };
+      const specParser = new SpecParser(spec as any);
+
+      const filter = ["get /user/{userId}"];
+      const result = await specParser.getFilteredSpecs(filter);
+      expect(result[0]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
+      expect(result[1]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
     });
   });
 });

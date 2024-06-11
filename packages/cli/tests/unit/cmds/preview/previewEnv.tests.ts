@@ -3,7 +3,7 @@
 
 import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
 import { envUtil, FxCore, HubTypes, VersionCheckRes, VersionState } from "@microsoft/teamsfx-core";
-import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
+import * as packageJson from "@microsoft/teamsfx-core/build/component/local/packageJsonHelper";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import fs from "fs-extra";
 import { RestoreFn } from "mocked-env";

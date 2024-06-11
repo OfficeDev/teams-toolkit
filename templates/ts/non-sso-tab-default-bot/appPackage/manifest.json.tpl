@@ -54,24 +54,17 @@
         }
     ],
     "composeExtensions": [],
-    "configurableTabs": [
-        {
-            "configurationUrl": "${{TAB_ENDPOINT}}/index.html#/config",
-            "canUpdateConfiguration": true,
-            "scopes": [
-                "team",
-                "groupChat"
-            ]
-        }
-    ],
+    "configurableTabs": [],
     "staticTabs": [
         {
             "entityId": "index0",
-            "name": "Personal Tab",
+            "name": "Home",
             "contentUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
             "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
             "scopes": [
-                "personal"
+                "personal",
+                "groupChat",
+                "team"
             ]
         }
     ],

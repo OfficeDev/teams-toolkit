@@ -1,4 +1,5 @@
 {
+  "$schema": "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json",
   "schema_version": "v2.1",
   "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
   "namespace": "repairs",
@@ -75,5 +76,13 @@
       },
       "run_for_functions": ["listRepairs"]
     }
-  ]
+  ],
+  "capabilities": {
+    "localization": {},
+    "conversation_starters": [
+      {
+        "text": "List all repairs"
+      }
+    ]
+  }
 }

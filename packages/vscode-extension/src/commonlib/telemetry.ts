@@ -1,23 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as vscode from "vscode";
+import * as os from "os";
+import * as path from "path";
 // eslint-disable-next-line import/default
 import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
-import {
-  getAllFeatureFlags,
-  getPackageVersion,
-  isFeatureFlagEnabled,
-  FeatureFlags,
-  anonymizeFilePaths,
-} from "../utils/commonUtils";
+import { anonymizeFilePaths } from "../utils/fileSystemUtils";
+import { isFeatureFlagEnabled, FeatureFlags, getAllFeatureFlags } from "../featureFlags";
+import { getPackageVersion } from "../utils/telemetryUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getProjectMetadata } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator, getProjectMetadata } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
-import * as os from "os";
-import * as path from "path";
-import * as globalVariables from "../globalVariables";
+import { workspaceUri } from "../globalVariables";
 
 const TelemetryTestLoggerFile = "telemetryTest.log";
 
@@ -176,7 +171,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
   private checkAndOverwriteSharedProperty(properties: { [p: string]: string }) {
     if (!properties[TelemetryProperty.ProjectId]) {
-      const fixedProjectSettings = getProjectMetadata(globalVariables.workspaceUri?.fsPath);
+      const fixedProjectSettings = getProjectMetadata(workspaceUri?.fsPath);
 
       if (fixedProjectSettings?.projectId) {
         properties[TelemetryProperty.ProjectId] = fixedProjectSettings?.projectId;

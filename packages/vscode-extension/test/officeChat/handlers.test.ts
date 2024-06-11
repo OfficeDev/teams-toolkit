@@ -25,9 +25,8 @@ import { Correlator } from "@microsoft/teamsfx-core";
 chai.use(chaipromised);
 
 describe("File: officeChat/handlers.ts", () => {
-  const sandbox = sinon.createSandbox();
-
   describe("Method: officeChatRequestHandler", () => {
+    const sandbox = sinon.createSandbox();
     const response = {
       markdown: sandbox.stub(),
       button: sandbox.stub(),
@@ -165,6 +164,7 @@ Usage: @office Ask questions about Office Add-ins development.`);
   });
 
   describe("method: chatCreateOfficeProjectCommandHandler", () => {
+    const sandbox = sinon.createSandbox();
     afterEach(async () => {
       sandbox.restore();
     });
@@ -318,6 +318,8 @@ Usage: @office Ask questions about Office Add-ins development.`);
   });
 
   describe("Method: handleOfficeFeedback", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(() => {
       sandbox.restore();
     });

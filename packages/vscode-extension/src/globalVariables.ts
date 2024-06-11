@@ -6,10 +6,12 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { UserState } from "./constants";
 import {
+  FxCore,
   isValidProject,
   isValidOfficeAddInProject,
   isManifestOnlyOfficeAddinProject,
 } from "@microsoft/teamsfx-core";
+import { Tools } from "@microsoft/teamsfx-api";
 
 /**
  * Common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -23,6 +25,8 @@ export let isSPFxProject = false;
 export let isExistingUser = "no";
 export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
+export let core: FxCore;
+export let tools: Tools;
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {
@@ -74,4 +78,11 @@ export function setCommandIsRunning(isRunning: boolean) {
 // Only used by checkProjectUpgradable() when error happens
 export function unsetIsTeamsFxProject() {
   isTeamsFxProject = false;
+}
+
+export function setTools(toolsInstance: Tools) {
+  tools = toolsInstance;
+}
+export function setCore(coreInstance: FxCore) {
+  core = coreInstance;
 }

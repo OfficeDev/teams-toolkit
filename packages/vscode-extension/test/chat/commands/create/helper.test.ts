@@ -18,9 +18,13 @@ import { CancellationToken } from "../../../mocks/vsc";
 chai.use(chaiPromised);
 
 describe("chat create helper", () => {
-  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe("matchProject()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });
@@ -109,6 +113,7 @@ describe("chat create helper", () => {
   });
 
   describe("showFileTree()", () => {
+    const sandbox = sinon.createSandbox();
     afterEach(async () => {
       sandbox.restore();
     });

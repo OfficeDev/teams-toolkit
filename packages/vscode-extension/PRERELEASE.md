@@ -4,6 +4,21 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### June 12, 2024
+
+#### New Features
+
+- **Build AI Agent With Assistant API and Python**: Previously we have included the AI Assistant Bot app template to help you get started with building a GPT-like chat bot with AI capabilities using `Teams AI Library`. Now we have added a new AI Agent app template to help you build an AI agent with Assistant API and Python. This template showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
+
+#### Bug Fixes
+
+- Fixed an issue where sometimes you may not able to sroll down in Teams Toolkit CLI. [#11762](https://github.com/OfficeDev/teams-toolkit/pull/11762)
+- Fixed an issue where Teams Toolkit generated Adaptive Cards may contain empty property. [#11759](https://github.com/OfficeDev/teams-toolkit/pull/11759)
+- Fixed an issue where you may need to press enter twice after selecting resource group during provision using Teams Toolkit CLI. [#11724](https://github.com/OfficeDev/teams-toolkit/pull/11724)
+- Fixed an issue to enable shell option in Windows platform to avoid [command injection via args paramters](https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2#command-injection-via-args-parameter-of-child_processspawn-without-shell-option-enabled-on-windows-cve-2024-27980---high). [#11699](https://github.com/OfficeDev/teams-toolkit/pull/11699)
+- Fixed an issue where provision summary logs are printed twice. [#11658](https://github.com/OfficeDev/teams-toolkit/pull/11658)
+
+
 ### April 18, 2024
 
 #### New Features 
@@ -35,7 +50,8 @@
   ![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/30679a8c-b0b0-4b1c-ad4f-114547a12a6b)
   Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. Now you can see the above side pane offering a unified and centralized experience for checking dependencies, running and debugging add-ins, managing lifecycle, leveraging utility, getting help, and providing feedback.
 
-#### Enhancement
+#### Enhancements
+
 - Users may encounter issues when creating Microsoft Entra client secrete due to tenant regulations. We smooth this experience by enabling users to customize parameters when creating Microsoft Entra client secret and provide help docs to easily resolve issues. The parameters user can specify in teamsapp.yml file are `clientSecretExpireDays` and `clientSecretDescription`.
 ![create-aad-parameter](https://github.com/OfficeDev/TeamsFx/assets/113089977/76d219d6-6f40-464c-81c6-1b660953cc1f)
 

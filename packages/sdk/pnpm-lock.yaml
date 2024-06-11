@@ -12,8 +12,8 @@ dependencies:
     specifier: ^3.0.2
     version: 3.0.2
   '@azure/msal-node':
-    specifier: ^1.14.6
-    version: 1.14.6
+    specifier: ^2.9.2
+    version: 2.9.2
   '@microsoft/adaptivecards-tools':
     specifier: workspace:*
     version: link:../adaptivecards-tools-sdk
@@ -496,6 +496,11 @@ packages:
     resolution: {integrity: sha512-yvVP63oXe20JFzvooTVxiX9UorxcL8VFoVwEtKuGlQnEnNGzrOpQZ6lKa1lqwGqxMtwKpW7oAFQhbbskG5RbYA==}
     engines: {node: '>=0.8.0'}
 
+  /@azure/msal-common@14.12.0:
+    resolution: {integrity: sha512-IDDXmzfdwmDkv4SSmMEyAniJf6fDu3FJ7ncOjlxkDuT85uSnLEhZi3fGZpoR7T4XZpOMx9teM9GXBgrfJgyeBw==}
+    engines: {node: '>=0.8.0'}
+    dev: false
+
   /@azure/msal-common@4.5.1(supports-color@9.4.0):
     resolution: {integrity: sha512-/i5dXM+QAtO+6atYd5oHGBAx48EGSISkXNXViheliOQe+SIFMDo3gSq3lL54W0suOSAsVPws3XnTaIHlla0PIQ==}
     engines: {node: '>=0.8.0'}
@@ -521,6 +526,15 @@ packages:
       '@azure/msal-common': 9.1.1
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
+
+  /@azure/msal-node@2.9.2:
+    resolution: {integrity: sha512-8tvi6Cos3m+0KmRbPjgkySXi+UQU/QiuVRFnrxIwt5xZlEEFa69O04RTaNESGgImyBBlYbo2mfE8/U8Bbdk1WQ==}
+    engines: {node: '>=16'}
+    dependencies:
+      '@azure/msal-common': 14.12.0
+      jsonwebtoken: 9.0.2
+      uuid: 8.3.2
+    dev: false
 
   /@babel/code-frame@7.23.5:
     resolution: {integrity: sha512-CgH3s1a96LipHCmSUmYFPwY7MNx8C3avkq7i4Wl3cfa662ldtUe4VM1TPXX70pfmrlWTb6jLqTYrZyT2ZTJBgA==}

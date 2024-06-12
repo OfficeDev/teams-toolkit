@@ -18,6 +18,7 @@ import "mocha";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import Container from "typedi";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import { createContext, setTools } from "../../../../src/common/globalVars";
 import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
 import {
@@ -26,7 +27,6 @@ import {
   updateManifestV3,
   updateTeamsAppV3ForPublish,
 } from "../../../../src/component/driver/teamsApp/appStudio";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
@@ -57,7 +57,7 @@ describe.skip("appStudio", () => {
 
     it("get app successfully: returns false", async () => {
       m365TokenProvider.getAccessToken = sandbox.stub().returns(ok("token"));
-      sandbox.stub(AppStudioClient, "getApp").resolves();
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves();
 
       const res = await checkIfAppInDifferentAcountSameTenant(
         teamsAppId,
@@ -89,8 +89,8 @@ describe.skip("appStudio", () => {
 
     it("app in tenant but different account: returns true", async () => {
       m365TokenProvider.getAccessToken = sandbox.stub().returns(ok("token"));
-      sandbox.stub(AppStudioClient, "getApp").throws({ message: "404" });
-      sandbox.stub(AppStudioClient, "checkExistsInTenant").returns(Promise.resolve(true));
+      sandbox.stub(teamsDevPortalClient, "getApp").throws({ message: "404" });
+      sandbox.stub(teamsDevPortalClient, "checkExistsInTenant").returns(Promise.resolve(true));
       const res = await checkIfAppInDifferentAcountSameTenant(
         teamsAppId,
         m365TokenProvider,
@@ -105,7 +105,7 @@ describe.skip("appStudio", () => {
 
     it("get app error (not 404): returns false", async () => {
       m365TokenProvider.getAccessToken = sandbox.stub().returns(ok("token"));
-      sandbox.stub(AppStudioClient, "getApp").throws({ message: "401" });
+      sandbox.stub(teamsDevPortalClient, "getApp").throws({ message: "401" });
       const res = await checkIfAppInDifferentAcountSameTenant(
         teamsAppId,
         m365TokenProvider,

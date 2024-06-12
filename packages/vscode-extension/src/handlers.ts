@@ -42,7 +42,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import {
-  AppStudioClient,
   AppStudioScopes,
   AuthSvcScopes,
   ConcurrentError,
@@ -65,13 +64,13 @@ import {
   isValidProject,
   isValidOfficeAddInProject,
   pathUtils,
-  setRegion,
   manifestUtils,
   JSONSyntaxError,
   MetadataV3,
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
+  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 import commandController from "./commandController";
@@ -3109,7 +3108,7 @@ export async function scaffoldFromDeveloperPortalHandler(
     // set region
     const AuthSvcTokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
     if (AuthSvcTokenRes.isOk()) {
-      await setRegion(AuthSvcTokenRes.value);
+      await teamsDevPortalClient.setRegionEndpointByToken(AuthSvcTokenRes.value);
     }
 
     await progressBar.end(true);
@@ -3129,7 +3128,7 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   let appDefinition;
   try {
-    appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
+    appDefinition = await teamsDevPortalClient.getApp(token, appId);
   } catch (error: any) {
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.HandleUrlFromDeveloperProtal,

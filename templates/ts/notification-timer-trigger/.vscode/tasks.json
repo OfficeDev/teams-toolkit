@@ -272,12 +272,12 @@
                 "Provision",
                 "Deploy",
                 "Start application",
-                "Start Desktop Client"
+                "Start desktop client"
             ],
             "dependsOrder": "sequence"
         },
         {
-            "label": "Start Desktop Client",
+            "label": "Start desktop client",
             "type": "teamsfx",
             "command": "launch-desktop-client",
             "args": {
@@ -287,12 +287,12 @@
         {
             "label": "Start Teams App in Desktop Client (Remote)",
             "dependsOn": [
-                "Start Desktop Client (Remote)"
+                "Start desktop client (Remote)"
             ],
             "dependsOrder": "sequence"
         },
         {
-            "label": "Start Desktop Client (Remote)",
+            "label": "Start desktop client (Remote)",
             "type": "teamsfx",
             "command": "launch-desktop-client",
             "args": {

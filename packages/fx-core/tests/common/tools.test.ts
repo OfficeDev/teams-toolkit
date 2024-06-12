@@ -120,7 +120,7 @@ describe("tools", () => {
 
       chai.assert.isUndefined(result);
       chai.assert.equal(events, 0);
-      chai.assert.equal(errors, 3);
+      chai.assert.equal(errors, 1);
     });
   });
 

@@ -127,6 +127,7 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
 
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output TAB_DOMAIN string = siteDomain
+output TAB_HOSTNAME string = siteDomain
 output TAB_ENDPOINT string = 'https://${siteDomain}'
 output API_FUNCTION_ENDPOINT string = apiEndpoint
 output AZURE_STATIC_WEB_APPS_RESOURCE_ID string = swa.id

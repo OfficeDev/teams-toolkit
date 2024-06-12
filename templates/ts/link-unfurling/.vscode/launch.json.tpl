@@ -8,7 +8,7 @@
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "group 1: Teams",
-                "order": 3
+                "order": 4
             },
             "internalConsoleOptions": "neverOpen"
         },
@@ -19,7 +19,7 @@
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "group 1: Teams",
-                "order": 3
+                "order": 5
             },
             "internalConsoleOptions": "neverOpen"
         },
@@ -116,6 +116,18 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Teams (Desktop)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/do_nothing.js",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 6
+            },
+            "internalConsoleOptions": "neverOpen",
         }
     ],
     "compounds": [
@@ -172,6 +184,18 @@
             "presentation": {
                 "group": "group 2: Outlook",
                 "order": 1
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Teams (Desktop)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 3
             },
             "stopAll": true
         },

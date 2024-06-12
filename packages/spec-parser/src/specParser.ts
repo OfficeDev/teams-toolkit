@@ -187,19 +187,34 @@ export class SpecParser {
           reason: reason,
         };
 
-        if (isValid) {
+        // Try best to parse server url and auth type
+        try {
           const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
           if (serverObj) {
             apiResult.server = serverObj.url;
           }
+        } catch (err) {
+          // ignore
+        }
 
+        try {
           const authArray = Utils.getAuthArray(operation.security, spec);
-          for (const auths of authArray) {
-            if (auths.length === 1) {
-              apiResult.auth = auths[0];
-              break;
+
+          if (authArray.length !== 0) {
+            for (const auths of authArray) {
+              if (auths.length === 1) {
+                apiResult.auth = auths[0];
+                break;
+              } else {
+                apiResult.auth = {
+                  authScheme: { type: "multipleAuth" },
+                  name: auths.map((auth) => auth.name).join(", "),
+                };
+              }
             }
           }
+        } catch (err) {
+          // ignore
         }
 
         result.APIs.push(apiResult);

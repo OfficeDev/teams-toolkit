@@ -6,13 +6,10 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { glob } from "glob";
 import { workspace } from "vscode";
-import { getProjectRoot, getV3TeamsAppId } from "../debug/commonUtils";
-import { workspaceUri, isTeamsFxProject, core } from "../globalVariables";
-import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { workspaceUri } from "../globalVariables";
 import { localize } from "./localizeUtils";
 
 export function isWindows() {
@@ -25,45 +22,6 @@ export function isMacOS() {
 
 export function isLinux() {
   return os.type() === "Linux";
-}
-
-export interface TeamsAppTelemetryInfo {
-  appId: string;
-  tenantId: string;
-}
-
-// Only used for telemetry when multi-env is enabled
-export async function getTeamsAppTelemetryInfoByEnv(
-  env: string
-): Promise<TeamsAppTelemetryInfo | undefined> {
-  try {
-    const ws = workspaceUri!.fsPath;
-    if (isValidProject(ws)) {
-      const projectInfoRes = await core.getProjectInfo(ws, env);
-      if (projectInfoRes.isOk()) {
-        const projectInfo = projectInfoRes.value;
-        return {
-          appId: projectInfo.teamsAppId,
-          tenantId: projectInfo.m365TenantId,
-        };
-      }
-    }
-  } catch (e) {}
-  return undefined;
-}
-
-export async function getAppName(): Promise<string | undefined> {
-  if (!workspaceUri) {
-    return undefined;
-  }
-  try {
-    const ws = workspaceUri.fsPath;
-    const nameRes = await core.getTeamsAppName(ws);
-    if (nameRes.isOk() && nameRes.value != "") {
-      return nameRes.value;
-    }
-  } catch (e) {}
-  return undefined;
 }
 
 export function openFolderInExplorer(folderPath: string): void {
@@ -87,131 +45,8 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
   }
 }
 
-export async function getSubscriptionInfoFromEnv(
-  env: string
-): Promise<SubscriptionInfo | undefined> {
-  let provisionResult: Record<string, any> | undefined;
-
-  try {
-    provisionResult = await getProvisionResultJson(env);
-  } catch (error) {
-    // ignore error on tree view when load provision result failed.
-
-    return undefined;
-  }
-
-  if (!provisionResult) {
-    return undefined;
-  }
-
-  if (provisionResult.solution && provisionResult.solution.subscriptionId) {
-    return {
-      subscriptionName: provisionResult.solution.subscriptionName,
-
-      subscriptionId: provisionResult.solution.subscriptionId,
-
-      tenantId: provisionResult.solution.tenantId,
-    };
-  } else {
-    return undefined;
-  }
-}
-enum PluginNames {
-  SQL = "fx-resource-azure-sql",
-  MSID = "fx-resource-identity",
-  FE = "fx-resource-frontend-hosting",
-  SPFX = "fx-resource-spfx",
-  BOT = "fx-resource-bot",
-  AAD = "fx-resource-aad-app-for-teams",
-  FUNC = "fx-resource-function",
-  SA = "fx-resource-simple-auth",
-  LDEBUG = "fx-resource-local-debug",
-  APIM = "fx-resource-apim",
-  APPST = "fx-resource-appstudio",
-  SOLUTION = "solution",
-}
-export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Record<string, any> | undefined;
-
-  try {
-    provisionResult = await getProvisionResultJson(env);
-  } catch (error) {
-    // ignore error on tree view when load provision result failed.
-    return undefined;
-  }
-
-  if (!provisionResult) {
-    return undefined;
-  }
-
-  return provisionResult?.[PluginNames.SOLUTION]?.teamsAppTenantId;
-}
-
-export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
-  let provisionResult: Record<string, any> | undefined;
-
-  try {
-    provisionResult = await getProvisionResultJson(env);
-  } catch (error) {
-    // ignore error on tree view when load provision result failed.
-
-    return undefined;
-  }
-
-  if (!provisionResult) {
-    return undefined;
-  }
-
-  return provisionResult.solution?.resourceGroupName;
-}
-
-export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
-  // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
-  try {
-    const teamsAppId = await getV3TeamsAppId(workspaceUri!.fsPath, env);
-    return teamsAppId !== "";
-  } catch (error) {
-    return false;
-  }
-}
-
-export async function getProvisionResultJson(
-  env: string
-): Promise<Record<string, string> | undefined> {
-  if (workspaceUri) {
-    if (!isTeamsFxProject) {
-      return undefined;
-    }
-
-    const configRoot = await getProjectRoot(workspaceUri.fsPath, `.${ConfigFolderName}`);
-
-    const provisionOutputFile = path.join(configRoot!, path.join("states", `state.${env}.json`));
-
-    if (!fs.existsSync(provisionOutputFile)) {
-      return undefined;
-    }
-
-    const provisionResult = await fs.readJSON(provisionOutputFile);
-
-    return provisionResult;
-  }
-}
-
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export function isTriggerFromWalkThrough(args?: any[]): boolean {
-  if (!args || (args && args.length === 0)) {
-    return false;
-  } else if (
-    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.WalkThrough ||
-    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.Notification
-  ) {
-    return true;
-  }
-
-  return false;
 }
 
 export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {

@@ -5,7 +5,7 @@ import { runCommand } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { CreateProjectResult, FxError, Result, Stage } from "@microsoft/teamsfx-api";
-import { getSystemInputs } from "../utils/environmentUtils";
+import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 
 export async function createProjectFromWalkthroughHandler(

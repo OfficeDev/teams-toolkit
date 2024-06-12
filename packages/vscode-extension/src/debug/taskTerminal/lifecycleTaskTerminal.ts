@@ -14,7 +14,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryE
 import { getLocalDebugSession } from "../commonUtils";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { getSystemInputs } from "../../utils/environmentUtils";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 
 interface LifecycleArgs {
   template?: string;

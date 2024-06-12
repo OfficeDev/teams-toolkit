@@ -75,7 +75,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 import commandController from "./commandController";
-import AzureAccountManager from "./commonlib/azureLogin";
+import azureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
@@ -130,30 +130,28 @@ import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import {
-  getAppName,
-  getLocalDebugMessageTemplate,
-  getResourceGroupNameFromEnv,
-  getSubscriptionInfoFromEnv,
-  getTeamsAppTelemetryInfoByEnv,
-  isTriggerFromWalkThrough,
-  openFolderInExplorer,
-} from "./utils/commonUtils";
+import { getLocalDebugMessageTemplate, openFolderInExplorer } from "./utils/commonUtils";
+import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/envTreeUtils";
 import { anonymizeFilePaths } from "./utils/fileSystemUtils";
 import { getDefaultString, localize } from "./utils/localizeUtils";
+import { getAppName } from "./utils/appDefinitionUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { getTriggerFromProperty } from "./utils/telemetryUtils";
+import {
+  getTeamsAppTelemetryInfoByEnv,
+  getTriggerFromProperty,
+  isTriggerFromWalkThrough,
+} from "./utils/telemetryUtils";
 import {
   openTestToolDisplayMessage,
   openTestToolMessage,
   RecommendedOperations,
 } from "./debug/constants";
-import { openOfficeDevFolder } from "./officeDevHandlers";
-import { invokeTeamsAgent } from "./copilotChatHandlers";
+import { openOfficeDevFolder } from "./utils/workspaceUtils";
+import { invokeTeamsAgent } from "./handlers/copilotChatHandlers";
 import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
 import { isTestToolEnabledProject } from "./debug/commonUtils";
-import { getSystemInputs } from "./utils/environmentUtils";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
@@ -165,7 +163,7 @@ export function activate(): Result<Void, FxError> {
       fixedProjectSettings?.projectId as string
     );
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    void AzureAccountManager.setStatusChangeMap(
+    void azureAccountManager.setStatusChangeMap(
       "successfully-sign-in-azure",
       (status, token, accountInfo) => {
         if (status === signedIn) {
@@ -202,7 +200,7 @@ export function activate(): Result<Void, FxError> {
     setTools({
       logProvider: VsCodeLogInstance,
       tokenProvider: {
-        azureAccountProvider: AzureAccountManager,
+        azureAccountProvider: azureAccountManager,
         m365TokenProvider: m365Login,
       },
       telemetryReporter: ExtTelemetry.reporter,
@@ -668,12 +666,6 @@ export async function publishInDeveloperPortalHandler(
     );
   }
   return res;
-}
-
-export function showOutputChannel(args?: any[]): Result<any, FxError> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
-  VsCodeLogInstance.outputChannel.show();
-  return ok(null);
 }
 
 export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
@@ -2005,7 +1997,7 @@ export async function cmpAccountsHandler(args: any[]) {
     quickItemOptionArray.push(signInM365Option);
   }
 
-  const azureAccount = await AzureAccountManager.getStatus();
+  const azureAccount = await azureAccountManager.getStatus();
   if (azureAccount.status === "SignedIn") {
     const accountInfo = azureAccount.accountInfo;
     const email = (accountInfo as any).email || (accountInfo as any).upn;
@@ -3032,7 +3024,7 @@ export async function signinAzureCallback(...args: unknown[]): Promise<Result<nu
     }
   }
 
-  if (AzureAccountManager.getAccountInfo() === undefined) {
+  if (azureAccountManager.getAccountInfo() === undefined) {
     // make sure user has not logged in
     const triggerFrom = getTriggerFromProperty(args);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
@@ -3041,7 +3033,7 @@ export async function signinAzureCallback(...args: unknown[]): Promise<Result<nu
     });
   }
   try {
-    await AzureAccountManager.getIdentityCredentialAsync(true);
+    await azureAccountManager.getIdentityCredentialAsync(true);
   } catch (error) {
     if (!isUserCancelError(error)) {
       return err(error);
@@ -3062,7 +3054,7 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
     undefined
   );
   if (askSubRes.isErr()) return err(askSubRes.error);
-  await AzureAccountManager.setSubscription(askSubRes.value.subscriptionId);
+  await azureAccountManager.setSubscription(askSubRes.value.subscriptionId);
   return ok(null);
 }
 

@@ -26,7 +26,7 @@ import { accountHintPlaceholder, Host, sideloadingDisplayMessages } from "./cons
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 import { triggerV3Migration } from "../utils/migrationUtils";
-import { getSystemInputs } from "../utils/environmentUtils";
+import { getSystemInputs } from "../utils/systemEnvUtils";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;

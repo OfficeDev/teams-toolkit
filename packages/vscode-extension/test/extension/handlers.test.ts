@@ -66,7 +66,7 @@ import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvi
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as environmentUtils from "../../src/utils/environmentUtils";
+import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
 import VsCodeLogInstance from "../../src/commonlib/log";
@@ -75,6 +75,8 @@ import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import * as runIconHandlers from "../../src/debug/runIconHandler";
+import * as telemetryUtils from "../../src/utils/telemetryUtils";
+import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -189,7 +191,7 @@ describe("handlers", () => {
 
   it("getSettingsVersion", async () => {
     sandbox.stub(globalVariables, "core").value(new MockCore());
-    sandbox.stub(environmentUtils, "getSystemInputs").returns({} as Inputs);
+    sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
     sandbox
       .stub(MockCore.prototype, "projectVersionCheck")
       .resolves(ok({ currentVersion: "3.0.0" }));
@@ -267,7 +269,7 @@ describe("handlers", () => {
   });
 
   it("updateAutoOpenGlobalKey", async () => {
-    sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
+    sandbox.stub(telemetryUtils, "isTriggerFromWalkThrough").returns(true);
     sandbox.stub(globalVariables, "checkIsSPFx").returns(true);
     sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
@@ -385,7 +387,7 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(localizeUtils, "localize").returns("");
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sandbox.stub(environmentUtils, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
       const validateApplication = sandbox.spy(globalVariables.core, "validateApplication");
 
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -432,7 +434,7 @@ describe("handlers", () => {
       sandbox.stub(localizeUtils, "localize").returns("");
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(environmentUtils, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
       sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox
         .stub(globalVariables.core, "previewWithManifest")
@@ -447,7 +449,7 @@ describe("handlers", () => {
       sandbox.stub(localizeUtils, "localize").returns("");
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(environmentUtils, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
       sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(globalVariables.core, "previewWithManifest").resolves(ok("test-url"));
       sandbox.stub(launch, "openHubWebClient").resolves();
@@ -805,7 +807,7 @@ describe("handlers", () => {
     it("deployAadManifest", async () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
-      const input: Inputs = environmentUtils.getSystemInputs();
+      const input: Inputs = systemEnvUtils.getSystemInputs();
       await handlers.runCommand(Stage.deployAad, input);
 
       sandbox.assert.calledOnce(deployAadManifest);
@@ -813,7 +815,7 @@ describe("handlers", () => {
 
     it("deployAadManifest happy path", async () => {
       sandbox.stub(globalVariables.core, "deployAadManifest").resolves(ok(undefined));
-      const input: Inputs = environmentUtils.getSystemInputs();
+      const input: Inputs = systemEnvUtils.getSystemInputs();
       const res = await handlers.runCommand(Stage.deployAad, input);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -1239,7 +1241,7 @@ describe("handlers", () => {
     const sandbox = sinon.createSandbox();
 
     beforeEach(() => {
-      sandbox.stub(environmentUtils, "getSystemInputs").returns({
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({
         locale: "en-us",
         platform: "vsc",
         projectPath: undefined,
@@ -2745,7 +2747,8 @@ describe("autoOpenProjectHandler", () => {
   it("runUserTask() - error", async () => {
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     sandbox.stub(globalVariables, "core").value(undefined);
-    sandbox.stub(commonUtils, "getTeamsAppTelemetryInfoByEnv");
+    // eslint-disable-next-line no-secrets/no-secrets
+    sandbox.stub(telemetryUtils, "getTeamsAppTelemetryInfoByEnv");
     sandbox.stub(VsCodeLogInstance, "error");
 
     const result = await handlers.runUserTask({ namespace: "test", method: "test" }, "test", true);
@@ -2973,7 +2976,7 @@ describe("autoOpenProjectHandler", () => {
 
   it("showLocalDebugMessage() - no local env and non windows", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
-    sandbox.stub(commonUtils, "getAppName").resolves("");
+    sandbox.stub(appDefinitionUtils, "getAppName").resolves("");
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("linux");
     sandbox.stub(fs, "pathExists").resolves(false);

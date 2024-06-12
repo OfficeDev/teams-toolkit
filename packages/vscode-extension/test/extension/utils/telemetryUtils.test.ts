@@ -6,6 +6,7 @@ import * as globalVariables from "../../../src/globalVariables";
 import * as telemetryUtils from "../../../src/utils/telemetryUtils";
 import { MockCore } from "../../mocks/mockCore";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
+import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("TelemetryUtils", () => {
   afterEach(() => {
@@ -114,5 +115,91 @@ describe("TelemetryUtils", () => {
         });
       });
     }
+  });
+
+  describe("isTriggerFromWalkThrough", () => {
+    it("Should return false with no args", () => {
+      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough();
+
+      chai.assert.equal(isFromWalkthrough, false);
+    });
+
+    it("Should return false with empty args", () => {
+      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([]);
+
+      chai.assert.equal(isFromWalkthrough, false);
+    });
+
+    it("Should return true with walkthrough args", () => {
+      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([
+        TelemetryTriggerFrom.WalkThrough,
+      ]);
+
+      chai.assert.equal(isFromWalkthrough, true);
+    });
+
+    it("Should return true with notification args", () => {
+      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([
+        TelemetryTriggerFrom.Notification,
+      ]);
+
+      chai.assert.equal(isFromWalkthrough, true);
+    });
+
+    it("Should return false with other args", () => {
+      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([
+        TelemetryTriggerFrom.Other,
+      ]);
+
+      chai.assert.equal(isFromWalkthrough, false);
+    });
+  });
+
+  describe("getTeamsAppTelemetryInfoByEnv", async () => {
+    const sandbox = sinon.createSandbox();
+    const core = new MockCore();
+
+    beforeEach(() => {
+      sandbox.stub(globalVariables, "core").value(core);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      const info = {
+        projectId: "mock-project-id",
+        teamsAppId: "mock-app-id",
+        teamsAppName: "mock-app-name",
+        m365TenantId: "mock-tenant-id",
+      };
+      sandbox.stub(core, "getProjectInfo").resolves(ok(info));
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).deep.equals({
+        appId: "mock-app-id",
+        tenantId: "mock-tenant-id",
+      });
+    });
+    it("isValidProject is false", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(coreUtils, "isValidProject").returns(false);
+      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).equals(undefined);
+    });
+    it("return error", async () => {
+      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      sandbox.stub(core, "getProjectInfo").resolves(err(new UserError({})));
+      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).equals(undefined);
+    });
+    it("throw error", async () => {
+      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
+      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      chai.expect(result).equals(undefined);
+    });
   });
 });

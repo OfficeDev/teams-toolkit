@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 import { environmentNameManager, envUtil } from "@microsoft/teamsfx-core";
 import { environmentVariableRegex } from "./constants";
-import { getSystemInputs } from "./utils/environmentUtils";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 import { DotenvParseOutput } from "dotenv";
 
 export class ManifestTemplateHoverProvider implements vscode.HoverProvider {

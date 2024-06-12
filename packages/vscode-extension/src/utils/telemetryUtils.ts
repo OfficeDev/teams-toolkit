@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { isValidProject } from "@microsoft/teamsfx-core";
 import { workspaceUri, core } from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 
@@ -74,4 +75,42 @@ export function getTriggerFromProperty(args?: any[]) {
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }
+}
+
+export function isTriggerFromWalkThrough(args?: any[]): boolean {
+  if (!args || (args && args.length === 0)) {
+    return false;
+  } else if (
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.WalkThrough ||
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.Notification
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+export interface TeamsAppTelemetryInfo {
+  appId: string;
+  tenantId: string;
+}
+
+// Only used for telemetry when multi-env is enabled
+export async function getTeamsAppTelemetryInfoByEnv(
+  env: string
+): Promise<TeamsAppTelemetryInfo | undefined> {
+  try {
+    const ws = workspaceUri!.fsPath;
+    if (isValidProject(ws)) {
+      const projectInfoRes = await core.getProjectInfo(ws, env);
+      if (projectInfoRes.isOk()) {
+        const projectInfo = projectInfoRes.value;
+        return {
+          appId: projectInfo.teamsAppId,
+          tenantId: projectInfo.m365TenantId,
+        };
+      }
+    }
+  } catch (e) {}
+  return undefined;
 }

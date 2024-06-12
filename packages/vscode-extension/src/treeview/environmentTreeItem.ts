@@ -14,7 +14,7 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-} from "../utils/commonUtils";
+} from "../utils/envTreeUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
 

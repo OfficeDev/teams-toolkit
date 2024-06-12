@@ -14,7 +14,7 @@ import * as vscode from "vscode";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { core, workspaceUri } from "../../globalVariables";
-import { getSystemInputs } from "../../utils/environmentUtils";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession } from "../commonUtils";

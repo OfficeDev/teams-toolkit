@@ -11,6 +11,7 @@ import { DynamicNode } from "../../../src/treeview/dynamicNode";
 import { EnvironmentNode } from "../../../src/treeview/environmentTreeItem";
 import * as commonUtils from "../../../src/utils/commonUtils";
 import * as localizeUtils from "../../../src/utils/localizeUtils";
+import * as envTreeUtils from "../../../src/utils/envTreeUtils";
 
 describe("EnvironmentNode", () => {
   const sandbox = sinon.createSandbox();
@@ -53,9 +54,10 @@ describe("EnvironmentNode", () => {
         })
       )
     );
-    sandbox.stub(commonUtils, "getM365TenantFromEnv").returns(Promise.resolve("m365TenantId"));
+    sandbox.stub(envTreeUtils, "getM365TenantFromEnv").returns(Promise.resolve("m365TenantId"));
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
-    sandbox.stub(commonUtils, "getSubscriptionInfoFromEnv").returns(
+    // eslint-disable-next-line no-secrets/no-secrets
+    sandbox.stub(envTreeUtils, "getSubscriptionInfoFromEnv").returns(
       Promise.resolve<SubscriptionInfo | undefined>({
         subscriptionName: "subscriptionName",
         subscriptionId: "subscriptionId",
@@ -63,6 +65,7 @@ describe("EnvironmentNode", () => {
       })
     );
     sandbox.stub(localizeUtils, "localize").callsFake((key: string, _defValue?: string) => {
+      // eslint-disable-next-line no-secrets/no-secrets
       if (key === "teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch") {
         return "test string";
       }
@@ -91,9 +94,10 @@ describe("EnvironmentNode", () => {
         })
       )
     );
-    sandbox.stub(commonUtils, "getM365TenantFromEnv").returns(Promise.resolve("test"));
+    sandbox.stub(envTreeUtils, "getM365TenantFromEnv").returns(Promise.resolve("test"));
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
-    sandbox.stub(commonUtils, "getSubscriptionInfoFromEnv").returns(
+    // eslint-disable-next-line no-secrets/no-secrets
+    sandbox.stub(envTreeUtils, "getSubscriptionInfoFromEnv").returns(
       Promise.resolve<SubscriptionInfo | undefined>({
         subscriptionName: "subscriptionName",
         subscriptionId: "subscriptionId",
@@ -107,7 +111,7 @@ describe("EnvironmentNode", () => {
       return "";
     });
     sandbox
-      .stub(commonUtils, "getResourceGroupNameFromEnv")
+      .stub(envTreeUtils, "getResourceGroupNameFromEnv")
       .returns(Promise.resolve("resource group"));
 
     const children = await environmentNode.getChildren();

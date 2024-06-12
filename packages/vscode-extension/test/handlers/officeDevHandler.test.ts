@@ -1,5 +1,4 @@
-import { FxError, ManifestUtil, Result, ok } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as chai from "chai";
 import * as mockfs from "mock-fs";

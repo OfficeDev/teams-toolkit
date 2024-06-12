@@ -9,10 +9,6 @@ import { TelemetryProperty, TelemetryTriggerFrom } from "../../../src/telemetry/
 import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("TelemetryUtils", () => {
-  afterEach(() => {
-    sinon.restore();
-  });
-
   describe("getPackageVersion", () => {
     it("alpha version", () => {
       const version = "1.1.1-alpha.4";
@@ -97,6 +93,9 @@ describe("TelemetryUtils", () => {
       TelemetryTriggerFrom.Auto,
       TelemetryTriggerFrom.CodeLens,
       TelemetryTriggerFrom.EditorTitle,
+      TelemetryTriggerFrom.ExternalUrl,
+      TelemetryTriggerFrom.CopilotChat,
+      TelemetryTriggerFrom.CreateAppQuestionFlow,
       TelemetryTriggerFrom.Webview,
       TelemetryTriggerFrom.Notification,
       TelemetryTriggerFrom.Other,

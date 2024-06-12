@@ -5,8 +5,126 @@ import { Uri } from "vscode";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
 import * as envTreeUtils from "../../../src/utils/envTreeUtils";
 import { ok } from "@microsoft/teamsfx-api";
+import * as fileSystemUtils from "../../../src/utils/fileSystemUtils";
 
 describe("EnvTreeUtils", () => {
+  // eslint-disable-next-line no-secrets/no-secrets
+  describe("getSubscriptionInfoFromEnv", () => {
+    const sandbox = sinon.createSandbox();
+    const subscriptionInfo = {
+      subscriptionName: "subscriptionName",
+      subscriptionId: "subscriptionId",
+      tenantId: "tenantId",
+    };
+    const provisionResult: Record<string, any> = {
+      solution: subscriptionInfo,
+    };
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns subscription info successfully", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(provisionResult);
+      const result = await envTreeUtils.getSubscriptionInfoFromEnv("test");
+      chai.expect(result).deep.equals(subscriptionInfo);
+    });
+
+    it("returns undefined if get provision result throws error", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").rejects(new Error());
+      const result = await envTreeUtils.getSubscriptionInfoFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if get provision result is undefined", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(undefined);
+      const result = await envTreeUtils.getSubscriptionInfoFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if get provision result does not contain subscriptionId", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves({ solution: {} } as any);
+      const result = await envTreeUtils.getSubscriptionInfoFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+  });
+
+  describe("getM365TenantFromEnv", () => {
+    const sandbox = sinon.createSandbox();
+    const m365TenantId = {
+      teamsAppTenantId: "fakeTenantId",
+    };
+    const provisionResult: Record<string, any> = {
+      solution: m365TenantId,
+    };
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns m365 tenantId successfully", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(provisionResult);
+      const result = await envTreeUtils.getM365TenantFromEnv("test");
+      chai.expect(result).equal("fakeTenantId");
+    });
+
+    it("returns undefined if get provision result throws error", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").rejects(new Error());
+      const result = await envTreeUtils.getM365TenantFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if get provision result returns undefined", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(undefined);
+      const result = await envTreeUtils.getM365TenantFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if get provision result does not contain solution", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves({});
+      const result = await envTreeUtils.getM365TenantFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+  });
+
+  describe("getResourceGroupNameFromEnv", () => {
+    const sandbox = sinon.createSandbox();
+    const resourceGroupName = {
+      resourceGroupName: "fakeResourceGroupName",
+    };
+    const provisionResult: Record<string, any> = {
+      solution: resourceGroupName,
+    };
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns resource group name successfully", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(provisionResult);
+      const result = await envTreeUtils.getResourceGroupNameFromEnv("test");
+      chai.expect(result).equal("fakeResourceGroupName");
+    });
+
+    it("returns undefined if get provision result throws error", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").rejects(new Error());
+      const result = await envTreeUtils.getResourceGroupNameFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if get provision result returns undefined", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(undefined);
+      const result = await envTreeUtils.getResourceGroupNameFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if get provision result does not contain solution", async () => {
+      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves({});
+      const result = await envTreeUtils.getResourceGroupNameFromEnv("test");
+      chai.expect(result).is.undefined;
+    });
+  });
+
   describe("getProvisionSucceedFromEnv", () => {
     const sandbox = sinon.createSandbox();
 

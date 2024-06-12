@@ -3,7 +3,6 @@
 
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { getProvisionResultJson } from "./fileSystemUtils";
-import { PluginNames } from "../constants";
 import { workspaceUri } from "../globalVariables";
 import { getV3TeamsAppId } from "./appDefinitionUtils";
 
@@ -48,7 +47,7 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
     return undefined;
   }
 
-  return provisionResult?.[PluginNames.SOLUTION]?.teamsAppTenantId;
+  return provisionResult.solution?.teamsAppTenantId;
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {

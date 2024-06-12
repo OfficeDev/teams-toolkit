@@ -79,5 +79,114 @@ describe("AppDefinitionUtils", () => {
       const result = await appDefinitionUtils.getV3TeamsAppId("testProjectPath", "test");
       chai.expect(result).equals("testId");
     });
+
+    it("readEnv throws error", async () => {
+      sandbox.stub(envUtil, "readEnv").resolves(err("error") as any);
+
+      appDefinitionUtils.getV3TeamsAppId("testProjectPath", "test").catch((e) => {
+        chai.expect(e).equals("error");
+      });
+    });
+
+    it("throws error if Teams app id is missing", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(
+        ok({
+          provision: {
+            driverDefs: [
+              { uses: "teamsApp/create", writeToEnvironmentFile: { teamsAppId: "NonExist" } },
+            ],
+          },
+        } as any)
+      );
+      sandbox.stub(envUtil, "readEnv").resolves(ok({ TeamsAppId: "testId" } as any));
+
+      appDefinitionUtils.getV3TeamsAppId("testProjectPath", "test").catch((e) => {
+        chai.expect(e).to.be.an.instanceOf(UserError);
+        chai.expect(e.message).equals("TEAMS_APP_ID is missing in test environment.");
+      });
+    });
+  });
+
+  describe("getTeamsAppKeyName", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns teamsAppId successfully", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(
+        ok({
+          provision: {
+            driverDefs: [
+              { uses: "teamsApp/create", writeToEnvironmentFile: { teamsAppId: "TeamsAppId" } },
+            ],
+          },
+        } as any)
+      );
+
+      const result = await appDefinitionUtils.getTeamsAppKeyName("test");
+      chai.expect(result).equals("TeamsAppId");
+    });
+
+    it("returns undefined if failed to parse", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(err({ error: "error" } as any));
+
+      const result = await appDefinitionUtils.getTeamsAppKeyName("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if no driverDefs", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(
+        ok({
+          provision: {
+            driverDefs: [],
+          },
+        } as any)
+      );
+
+      const result = await appDefinitionUtils.getTeamsAppKeyName("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if no teamsApp/create in driverDefs", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(
+        ok({
+          provision: {
+            driverDefs: [
+              { uses: "teamsApp/fake", writeToEnvironmentFile: { teamsAppId: "TeamsAppId" } },
+            ],
+          },
+        } as any)
+      );
+
+      const result = await appDefinitionUtils.getTeamsAppKeyName("test");
+      chai.expect(result).is.undefined;
+    });
+
+    it("returns undefined if no writeToEnvironmentFile is defined", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(pathUtils, "getYmlFilePath");
+      sandbox.stub(metadataUtil, "parse").resolves(
+        ok({
+          provision: {
+            driverDefs: [{ uses: "teamsApp/create" }],
+          },
+        } as any)
+      );
+
+      const result = await appDefinitionUtils.getTeamsAppKeyName("test");
+      chai.expect(result).is.undefined;
+    });
   });
 });

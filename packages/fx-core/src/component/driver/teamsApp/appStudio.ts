@@ -26,13 +26,13 @@ import { basename, extname } from "path";
 import { Container } from "typedi";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes } from "../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
 import { QuestionNames } from "../../../question/constants";
 import { envUtil } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
-import { AppStudioClient } from "./clients/appStudioClient";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
 import { Constants, supportedLanguageCodes } from "./constants";
 import {
@@ -61,11 +61,10 @@ export async function checkIfAppInDifferentAcountSameTenant(
   const appStudioToken = appStudioTokenRes.value;
 
   try {
-    await AppStudioClient.getApp(teamsAppId, appStudioToken, logger);
+    await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
   } catch (error: any) {
     if (error.message && error.message.includes("404")) {
-      const exists = await AppStudioClient.checkExistsInTenant(teamsAppId, appStudioToken, logger);
-
+      const exists = await teamsDevPortalClient.checkExistsInTenant(appStudioToken, teamsAppId);
       return ok(exists);
     }
   }
@@ -156,7 +155,7 @@ export async function updateManifestV3(
   try {
     const localUpdateTime = process.env.TEAMS_APP_UPDATE_TIME;
     if (localUpdateTime) {
-      const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+      const app = await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
       const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
       if (new Date(localUpdateTime).getTime() < devPortalUpdateTime) {
         const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
@@ -312,11 +311,7 @@ export async function getAppPackage(
     return err(appStudioTokenRes.error);
   }
   try {
-    const data = await AppStudioClient.getAppPackage(
-      teamsAppId,
-      appStudioTokenRes.value,
-      logProvider
-    );
+    const data = await teamsDevPortalClient.getAppPackage(appStudioTokenRes.value, teamsAppId);
 
     const appPackage: AppPackage = {};
 

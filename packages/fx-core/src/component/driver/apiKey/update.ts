@@ -4,13 +4,13 @@
 import { hooks } from "@feathersjs/hooks";
 import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
@@ -50,7 +50,7 @@ export class UpdateApiKeyDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
 
-      const getApiKeyRes = await AppStudioClient.getApiKeyRegistrationById(
+      const getApiKeyRes = await teamsDevPortalClient.getApiKeyRegistrationById(
         appStudioToken,
         args.registrationId
       );
@@ -81,7 +81,7 @@ export class UpdateApiKeyDriver implements StepDriver {
       }
 
       const apiKey = this.mapArgsToApiSecretRegistration(args, domain);
-      const updateApiKeyRes = await AppStudioClient.updateApiKeyRegistration(
+      await teamsDevPortalClient.updateApiKeyRegistration(
         appStudioToken,
         apiKey,
         args.registrationId

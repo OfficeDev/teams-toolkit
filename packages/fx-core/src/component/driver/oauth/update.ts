@@ -4,13 +4,13 @@
 import { hooks } from "@feathersjs/hooks";
 import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   OauthRegistration,
   OauthRegistrationAppType,
@@ -51,7 +51,7 @@ export class UpdateOauthDriver implements StepDriver {
         throw appStudioTokenRes.error;
       }
       const appStudioToken = appStudioTokenRes.value;
-      const getOauthRes = await AppStudioClient.getOauthRegistrationById(
+      const getOauthRes = await teamsDevPortalClient.getOauthRegistrationById(
         appStudioToken,
         args.configurationId
       );
@@ -83,7 +83,7 @@ export class UpdateOauthDriver implements StepDriver {
       }
 
       const oauth = this.mapArgsToOauthRegistration(args, domain);
-      const updateApiKeyRes = await AppStudioClient.updateOauthRegistration(
+      await teamsDevPortalClient.updateOauthRegistration(
         appStudioToken,
         oauth,
         args.configurationId

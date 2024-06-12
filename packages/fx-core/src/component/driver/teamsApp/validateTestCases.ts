@@ -18,6 +18,7 @@ import { merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes, getAppStudioEndpoint } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { waitSeconds } from "../../../common/utils";
@@ -28,7 +29,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { AppStudioClient } from "./clients/appStudioClient";
 import { CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS, Constants } from "./constants";
 import {
   AsyncAppValidationResponse,
@@ -97,9 +97,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
       // Check if the app has ongoing validation
-      const existingValidationResponse = await AppStudioClient.getAppValidationRequestList(
-        manifest.id,
-        appStudioToken
+      const existingValidationResponse = await teamsDevPortalClient.getAppValidationRequestList(
+        appStudioToken,
+        manifest.id
       );
       if (existingValidationResponse.appValidations) {
         for (const validation of existingValidationResponse.appValidations) {
@@ -132,10 +132,8 @@ export class ValidateWithTestCasesDriver implements StepDriver {
           }
         }
       }
-      const response: AsyncAppValidationResponse = await AppStudioClient.submitAppValidationRequest(
-        manifest.id,
-        appStudioToken
-      );
+      const response: AsyncAppValidationResponse =
+        await teamsDevPortalClient.submitAppValidationRequest(appStudioToken, manifest.id);
 
       if (context.platform === Platform.CLI) {
         const message: Array<{ content: string; color: Colors }> = [
@@ -209,9 +207,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
           validationRequestListUrl
         );
         context.logProvider.info(message);
-        resultResp = await AppStudioClient.getAppValidationById(
-          resultResp.appValidationId,
-          appStudioToken
+        resultResp = await teamsDevPortalClient.getAppValidationById(
+          appStudioToken,
+          resultResp.appValidationId
         );
       }
       this.evaluateValidationResults(args, context, resultResp, teamsAppId);

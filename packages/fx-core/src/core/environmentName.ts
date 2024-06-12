@@ -7,9 +7,6 @@ class EnvironmentNameManager {
   public readonly envStateNameRegex = /^state\.(?<envName>[\w\d-_]+)\.json$/i;
 
   public readonly schema = "https://aka.ms/teamsfx-env-config-schema";
-  public readonly envConfigDescription =
-    `You can customize the TeamsFx config for different environments.` +
-    ` Visit https://aka.ms/teamsfx-env-config to get more info about this.`;
 
   private readonly defaultEnvName = "dev";
   private readonly localEnvName = "local";

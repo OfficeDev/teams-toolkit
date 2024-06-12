@@ -6,7 +6,13 @@ import * as vscode from "vscode";
 import * as util from "util";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { Correlator, envUtil, MissingEnvironmentVariablesError } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  Correlator,
+  envUtil,
+  MissingEnvironmentVariablesError,
+  UserCancelError,
+} from "@microsoft/teamsfx-core";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { getLocalDebugSession } from "../commonUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
@@ -14,8 +20,12 @@ import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { openTerminalDisplayMessage, openTerminalMessage } from "../constants";
 import { getSystemInputs } from "../../utils/systemEnvUtils";
-import { core } from "../../globalVariables";
+import { core, tools } from "../../globalVariables";
 import * as path from "path";
+import { dotenvUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import * as fs from "fs";
+
+const showDebugDesktopClientWizard = "SHOW_DEBUG_DESKTOP_CLIENT_WIZARD";
 
 interface LaunchDesktopClientArgs {
   url: string;
@@ -46,6 +56,66 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
 
   private async _do(): Promise<Result<Void, FxError>> {
     const inputs = getSystemInputs();
+    const configPath = inputs.projectPath! + "/.localConfigs";
+    if (!fs.existsSync(configPath)) {
+      fs.writeFileSync(configPath, "");
+    }
+    const config = dotenvUtil.deserialize(fs.readFileSync(configPath, "utf-8"));
+    const loginInfo = await tools.tokenProvider.m365TokenProvider.getStatus({
+      scopes: AppStudioScopes,
+    });
+    const readMore = `${localize("teamstoolkit.common.readMore")}`;
+    if (loginInfo.isOk() && loginInfo.value.status === "SignedIn") {
+      const accountInfo = await tools.tokenProvider.m365TokenProvider.getJsonObject({
+        scopes: AppStudioScopes,
+      });
+      let username = "";
+      if (accountInfo.isOk() && accountInfo.value["unique_name"]) {
+        username = "(" + (accountInfo.value["unique_name"] as string) + ")";
+      }
+      if (config.obj[showDebugDesktopClientWizard] === "false") {
+        void vscode.window
+          .showWarningMessage(
+            util.format(
+              localize("teamstoolkit.localDebug.launchTeamsDesktopClientMessage"),
+              username
+            ),
+            { modal: false },
+            readMore
+          )
+          .then((selection) => {
+            if (selection === readMore) {
+              void vscode.env.openExternal(
+                vscode.Uri.parse("https://aka.ms/teamsfx-debug-in-desktop-client")
+              );
+            }
+          });
+      } else {
+        let userSelected: string | undefined;
+        do {
+          userSelected = await vscode.window.showInformationMessage(
+            util.format(
+              localize("teamstoolkit.localDebug.launchTeamsDesktopClientMessage"),
+              username
+            ),
+            { modal: true },
+            "Continue",
+            `${localize("teamstoolkit.common.readMore")}`
+          );
+          if (userSelected === readMore) {
+            void vscode.env.openExternal(
+              vscode.Uri.parse("https://aka.ms/teamsfx-debug-in-desktop-client")
+            );
+          } else if (userSelected != "Continue") {
+            return err(new UserCancelError());
+          } else {
+            config.obj[showDebugDesktopClientWizard] = "false";
+            fs.writeFileSync(configPath, dotenvUtil.serialize(config));
+          }
+        } while (userSelected === readMore);
+      }
+    }
+
     let url: string = this.args.url;
     let env: string | undefined = undefined;
 
@@ -82,7 +152,7 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
         throw new MissingEnvironmentVariablesError(
           ExtensionSource,
           key,
-          path.normalize(path.join(inputs.projectPath!, ".vscode", "tasks.json")),
+          path.normalize(path.join(inputs.projectPath!, "env", ".env." + env)),
           "https://aka.ms/teamsfx-tasks"
         );
       }

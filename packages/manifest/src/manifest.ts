@@ -52,7 +52,7 @@ export interface IConfigurableTab {
   /**
    * Specifies whether the tab offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive. Currently, configurable tabs are only supported in the teams and groupchats scopes.
    */
-  scopes: ("team" | "groupchat")[];
+  scopes: ("team" | "groupchat" | "groupChat")[];
   /**
    * The set of contextItem scopes that a tab belong to
    */
@@ -184,7 +184,7 @@ export interface IWebApplicationInfo {
   applicationPermissions?: string[];
 }
 
-export type BotOrMeScopes = ("team" | "personal" | "groupchat")[];
+export type BotOrMeScopes = ("team" | "personal" | "groupchat" | "groupChat")[];
 
 export interface IComposeExtension {
   objectId?: string;
@@ -534,7 +534,7 @@ export class TeamsAppManifest implements AppManifest {
   /**
    * The install scope defined for this app by default. This will be the option displayed on the button when a user tries to add the app
    */
-  defaultInstallScope?: "personal" | "team" | "groupchat" | "meetings";
+  defaultInstallScope?: "personal" | "team" | "groupchat" | "groupChat" | "meetings";
   /**
    * When a group install scope is selected, this will define the default capability when the user installs the app
    */

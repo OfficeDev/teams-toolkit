@@ -48,7 +48,7 @@ import {
   TeamsAppYamlCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
-import AzureAccountManager from "./commonlib/azureLogin";
+import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import { configMgr } from "./config";
@@ -101,6 +101,10 @@ import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
 import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
+import { debugInTestToolHandler } from "./handlers/debugInTestTool";
+import { checkSideloadingCallback } from "./handlers/checkSideloading";
+import { downloadSampleApp } from "./handlers/downloadSample";
+import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -210,7 +214,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
   TreeViewManagerInstance.registerTreeViews(context);
   accountTreeViewProviderInstance.subscribeToStatusChanges({
-    azureAccountProvider: AzureAccountManager,
+    azureAccountProvider: azureAccountManager,
     m365TokenProvider: M365TokenInstance,
   });
   // Set region for M365 account every
@@ -296,7 +300,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
       if (res.isOk()) {
         const fileUri = vscode.Uri.file(res.value.projectPath);
         const warnings = res.value.warnings;
-        await handlers.updateAutoOpenGlobalKey(true, fileUri, warnings, args);
+        await updateAutoOpenGlobalKey(true, fileUri, warnings, args);
         await ExtTelemetry.dispose();
         await delay(2000);
         return { openFolder: fileUri };
@@ -394,7 +398,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 
   const createSampleCmd = vscode.commands.registerCommand(
     CommandKeys.DownloadSample,
-    (...args: unknown[]) => Correlator.run(handlers.downloadSampleApp, ...args)
+    (...args: unknown[]) => Correlator.run(downloadSampleApp, ...args)
   );
   context.subscriptions.push(createSampleCmd);
 
@@ -625,7 +629,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const checkSideloading = vscode.commands.registerCommand(
     "fx-extension.checkSideloading",
-    (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
+    (...args) => Correlator.run(checkSideloadingCallback, args)
   );
   context.subscriptions.push(checkSideloading);
 
@@ -680,13 +684,13 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     "fx-extension.debugInTestToolWithIcon",
-    handlers.debugInTestToolHandler("treeview")
+    debugInTestToolHandler("treeview")
   );
 
   registerInCommandController(
     context,
     CommandKeys.DebugInTestToolFromMessage,
-    handlers.debugInTestToolHandler("message")
+    debugInTestToolHandler("message")
   );
 
   const m365AccountSettingsCmd = vscode.commands.registerCommand(

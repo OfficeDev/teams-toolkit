@@ -16,7 +16,7 @@ import {
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { getLocalDebugSession } from "../commonUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { ExtensionErrors, ExtensionSource } from "../../error";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { openTerminalDisplayMessage, openTerminalMessage } from "../constants";
 import { getSystemInputs } from "../../utils/systemEnvUtils";

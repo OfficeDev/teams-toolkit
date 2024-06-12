@@ -18,7 +18,7 @@ import { err, FxError, ok, Result, SystemError, UserError, Void } from "@microso
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
-import { ExtensionErrors } from "../../error";
+import { ExtensionErrors } from "../../error/error";
 import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { tools } from "../../globalVariables";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";

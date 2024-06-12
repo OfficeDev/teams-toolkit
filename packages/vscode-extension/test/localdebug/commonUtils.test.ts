@@ -14,24 +14,4 @@ describe("[debug > commonUtils]", () => {
     await fs.ensureDir(testDataFolder);
     await fs.emptyDir(testDataFolder);
   });
-
-  describe("isTestToolEnabledProject", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(async () => {
-      sandbox.restore();
-    });
-
-    it("test tool yaml exist", async () => {
-      sandbox.stub(fs, "pathExistsSync").returns(true);
-      const res = commonUtils.isTestToolEnabledProject("testPath");
-      chai.assert.isTrue(res);
-    });
-
-    it("test tool yaml not exist", async () => {
-      sandbox.stub(fs, "pathExistsSync").returns(false);
-      const res = commonUtils.isTestToolEnabledProject("testPath");
-      chai.assert.isFalse(res);
-    });
-  });
 });

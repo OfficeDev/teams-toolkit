@@ -6,11 +6,20 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  FxError,
+  Result,
+  SystemError,
+  UserError,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { glob } from "glob";
 import { workspace } from "vscode";
-import { workspaceUri } from "../globalVariables";
+import { core, workspaceUri } from "../globalVariables";
 import { localize } from "./localizeUtils";
+import { ExtensionSource, ExtensionErrors } from "../error/error";
 
 export function isWindows() {
   return os.type() === "Windows_NT";
@@ -121,4 +130,17 @@ async function isTestToolEnabled(): Promise<boolean> {
   }
 
   return false;
+}
+
+export function checkCoreNotEmpty(): Result<null, SystemError> {
+  if (!core) {
+    return err(
+      new SystemError(
+        ExtensionSource,
+        ExtensionErrors.UnsupportedOperation,
+        localize("teamstoolkit.handlers.coreNotReady")
+      )
+    );
+  }
+  return ok(null);
 }

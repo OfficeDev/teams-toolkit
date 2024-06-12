@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
+import { Uri, commands } from "vscode";
 import { Warning } from "@microsoft/teamsfx-api";
 import { globalStateUpdate } from "@microsoft/teamsfx-core";
 import { GlobalKey } from "../constants";
@@ -12,9 +12,10 @@ import {
   VSCodeWindowChoice,
 } from "../telemetry/extTelemetryEvents";
 import { isTriggerFromWalkThrough } from "./telemetryUtils";
+import { updateAutoOpenGlobalKey } from "./globalStateUtils";
 
 export async function openOfficeDevFolder(
-  folderPath: vscode.Uri,
+  folderPath: Uri,
   showLocalDebugMessage: boolean,
   warnings?: Warning[] | undefined,
   args?: any[]
@@ -36,5 +37,18 @@ export async function openOfficeDevFolder(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.openNewOfficeAddInProject, {
     [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
   });
-  await vscode.commands.executeCommand("vscode.openFolder", folderPath, true);
+  await commands.executeCommand("vscode.openFolder", folderPath, true);
+}
+
+export async function openFolder(
+  folderPath: Uri,
+  showLocalDebugMessage: boolean,
+  warnings?: Warning[] | undefined,
+  args?: any[]
+) {
+  await updateAutoOpenGlobalKey(showLocalDebugMessage, folderPath, warnings, args);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
+    [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+  });
+  await commands.executeCommand("vscode.openFolder", folderPath, true);
 }

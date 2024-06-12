@@ -322,7 +322,7 @@
   "teamstoolkit.localDebug.useTestTool": "Alternatively, you can skip this step by choosing the %s option.",
   "teamstoolkit.localDebug.launchTeamsDesktopClientError": "Unable to launch Teams desktop client.",
   "teamstoolkit.localDebug.launchTeamsDesktopClientStoppedError": "Task to launch Teams desktop client stopped with exit code '%s'.",
-  "teamstoolkit.localDebug.launchTeamsDesktopClientMessage": "Please check that your Teams desktop login matches your current Microsoft 365 account %s used in Teams Toolkit before continuing.",
+  "teamstoolkit.localDebug.launchTeamsDesktopClientMessage": "Before proceeding, make sure your Teams desktop login matches your current Microsoft 365 account %s used in Teams Toolkit.",
   "teamstoolkit.migrateTeamsManifest.progressTitle": "Upgrade Teams Manifest to extend in Outlook and the Microsoft 365 app",
   "teamstoolkit.migrateTeamsManifest.selectFileConfig.name": "Select Teams Manifest to Upgrade",
   "teamstoolkit.migrateTeamsManifest.selectFileConfig.title": "Select Teams Manifest to Upgrade",

@@ -11,12 +11,14 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface UninstallInputs extends Inputs {
-  /** @description Remove the acquired M365 App by Title ID */
-  "title-id"?: string;
-  /** @description Remove the acquired M365 App by Manifest ID */
+  /** @description Choose Uninstall Mode */
+  "uninstall-mode"?: "uninstall-manifest-id" | "uninstall-env" | "uninstall-title-id";
+  /** @description Manifest ID */
   "manifest-id"?: string;
-  /** @description Remove the acquired M365 App by local env */
+  /** @description Env */
   env?: string;
-  /** @description project path */
+  /** @description Project path */
   projectPath?: string;
+  /** @description Title ID */
+  "titile-id"?: string;
 }

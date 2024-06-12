@@ -304,12 +304,14 @@ export class FxCore {
     ErrorContextMW({ component: "FxCore", stage: "uninstall", reset: true }),
     ErrorHandlerMW,
     ProjectMigratorMWV3,
-    EnvLoaderMW(true, false),
-    ConcurrentLockerMW,
+    QuestionMW("uninstall"),
     ContextInjectorMW,
-    EnvWriterMW,
   ])
   async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
+    if (inputs.env) {
+      return this.uninstallByEnv(inputs);
+    }
+    //return ok(undefined);
     const templatePath = pathUtils.getYmlFilePath(inputs.projectPath ?? "", inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
@@ -386,6 +388,15 @@ export class FxCore {
     // if (aadClientId) {
     //   // delete aad app
     // }
+    return ok(undefined);
+  }
+
+  /**
+   * uninstall provisioned resources by a given environment
+   */
+  @hooks([EnvLoaderMW(true, false), ConcurrentLockerMW, EnvWriterMW])
+  async uninstallByEnv(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
+    await Promise.resolve();
     return ok(undefined);
   }
 

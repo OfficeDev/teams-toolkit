@@ -120,7 +120,7 @@
       "name": "Launch uninstall command",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["uninstall", "--env", "dev"],
+      "args": ["uninstall"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

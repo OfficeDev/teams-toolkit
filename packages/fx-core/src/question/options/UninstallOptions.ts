@@ -12,29 +12,33 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const UninstallOptions: CLICommandOption[] = [
   {
-    name: "title-id",
+    name: "uninstall-mode",
     type: "string",
-    description: "Remove the acquired M365 App by Title ID",
+    description: "Choose Uninstall Mode",
     required: true,
+    default: "uninstall-env",
+    choices: ["uninstall-manifest-id", "uninstall-env", "uninstall-title-id"],
   },
   {
     name: "manifest-id",
     type: "string",
-    description: "Remove the acquired M365 App by Manifest ID",
-    required: true,
+    description: "Manifest ID",
   },
   {
     name: "env",
     type: "string",
-    description: "Remove the acquired M365 App by local env",
-    required: true,
+    description: "Env",
   },
   {
     name: "projectPath",
     type: "string",
     description: "Project Path for uninstall",
-    required: true,
     default: "./",
+  },
+  {
+    name: "titile-id",
+    type: "string",
+    description: "Title ID",
   },
 ];
 export const UninstallArguments: CLICommandArgument[] = [];

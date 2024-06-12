@@ -43,6 +43,7 @@ import {
   apiOperationQuestion,
   apiSpecLocationQuestion,
 } from "./create";
+import { UninstallInputs } from "./inputs";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -882,42 +883,76 @@ export function uninstallQuestionNode(): IQTreeNode {
     },
     children: [
       {
-        data: {
-          type: "text",
-          name: "title-id",
-          title: "Remove the acquired M365 App by Title ID",
-        },
+        data: uninstallModeQuestion(),
         condition: () => {
           return true;
         },
-      },
-      {
-        data: {
-          type: "text",
-          name: "manifest-id",
-          title: "Remove the acquired M365 App by Manifest ID",
-        },
-        condition: () => {
-          return true;
-        },
-      },
-      {
-        data: {
-          type: "text",
-          name: "env",
-          title: "Remove the acquired M365 App by local env",
-        },
-        condition: () => {
-          return true;
-        },
-      },
-      {
-        data: uninstallProjectPathQuestion(),
-        condition: () => {
-          return true;
-        },
+        children: [
+          {
+            data: {
+              type: "text",
+              name: "manifest-id",
+              title: "Manifest ID",
+            },
+            condition: (input: UninstallInputs) => {
+              return input["uninstall-mode"] == "uninstall-manifest-id";
+            },
+          },
+          {
+            data: {
+              type: "text",
+              name: "env",
+              title: "Env",
+            },
+            condition: (input: UninstallInputs) => {
+              return input["uninstall-mode"] === "uninstall-env";
+            },
+            children: [
+              {
+                data: uninstallProjectPathQuestion(),
+                condition: () => {
+                  return true;
+                },
+              },
+            ],
+          },
+          {
+            data: {
+              type: "text",
+              name: "titile-id",
+              title: "Title ID",
+            },
+            condition: (input: UninstallInputs) => {
+              return input["uninstall-mode"] === "uninstall-title-id";
+            },
+          },
+        ],
       },
     ],
+  };
+}
+
+function uninstallModeQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.UninstallMode,
+    // todo: change to localized string
+    title: "Choose Uninstall Mode",
+    type: "singleSelect",
+    staticOptions: [
+      {
+        id: "uninstall-manifest-id",
+        label: "By manifest id",
+      },
+      {
+        id: "uninstall-env",
+        label: "By env",
+      },
+      {
+        id: "uninstall-title-id",
+        label: "By title id",
+      },
+    ],
+    default: "uninstall-env",
   };
 }
 
@@ -926,7 +961,7 @@ function uninstallProjectPathQuestion(): FolderQuestion {
     type: "folder",
     name: QuestionNames.ProjectPath,
     // todo: use localized string
-    title: "project path",
+    title: "Project path",
     cliDescription: "Project Path for uninstall",
     placeholder: "./",
     default: "./",

@@ -4,7 +4,7 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import { RestoreFn } from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import * as FeatureFlags from "../../../src/common/featureFlags";
 import { createContext, setTools } from "../../../src/common/globalVars";
@@ -26,7 +26,7 @@ import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
@@ -45,7 +45,7 @@ const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
   describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
-    const mockedEnvRestore: RestoreFn = () => {};
+    let mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
     let generator: sinon.SinonStub;
@@ -672,7 +672,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
         [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
         [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-        [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -693,7 +693,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
         [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
         [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-        [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -916,6 +916,43 @@ const V3Version = MetadataV3.projectVersion;
       const res = await fxCore.createProject(inputs);
 
       assert.isTrue(res.isErr() && res.error.name === "test");
+    });
+
+    it("create API Plugin with none auth", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("create API Plugin with none auth (feature flag enabled)", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "true" });
+
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
     });
   });
 });

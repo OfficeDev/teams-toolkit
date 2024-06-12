@@ -9,22 +9,29 @@ import {
   parseLocale,
 } from "../../../src/utils/localizeUtils";
 
+afterEach(() => {
+  sinon.restore();
+});
+
 describe("localizeUtils", () => {
+  const sandbox = sinon.createSandbox();
+
   afterEach(() => {
     _resetCollections();
-    sinon.restore();
+    sandbox.restore();
   });
+
   describe("loadLocalizedStrings", () => {
     it("should log error if no default string collection", () => {
-      sinon.stub(fs, "pathExistsSync").callsFake((directory: string) => {
+      sandbox.stub(fs, "pathExistsSync").callsFake((directory: string) => {
         if (directory.includes("package.nls.json")) {
           return false;
         }
         return true;
       });
-      sinon.stub(fs, "readJsonSync").returns({});
-      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
-      const vscodeLogStub = sinon.stub(VsCodeLogInstance, "error");
+      sandbox.stub(fs, "readJsonSync").returns({});
+      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
+      const vscodeLogStub = sandbox.stub(VsCodeLogInstance, "error");
       _resetCollections();
 
       loadLocalizedStrings();
@@ -33,16 +40,16 @@ describe("localizeUtils", () => {
     });
 
     it("should log error if no string file found for current locale", () => {
-      sinon.stub(process, "env").value({ VSCODE_NLS_CONFIG: '{ "locale": "zh-cn" }' });
-      sinon.stub(fs, "pathExistsSync").callsFake((directory: string) => {
+      sandbox.stub(process, "env").value({ VSCODE_NLS_CONFIG: '{ "locale": "zh-cn" }' });
+      sandbox.stub(fs, "pathExistsSync").callsFake((directory: string) => {
         if (directory.includes("package.nls.json")) {
           return true;
         }
         return false;
       });
-      sinon.stub(fs, "readJsonSync").returns({});
-      sinon.stub(globalVariables, "context").value({ extensionPath: "" });
-      const vscodeLogStub = sinon.stub(VsCodeLogInstance, "error");
+      sandbox.stub(fs, "readJsonSync").returns({});
+      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
+      const vscodeLogStub = sandbox.stub(VsCodeLogInstance, "error");
       _resetCollections();
 
       loadLocalizedStrings();
@@ -53,7 +60,7 @@ describe("localizeUtils", () => {
 
   describe("parseLocale", () => {
     it("should return current locale", () => {
-      sinon.stub(process, "env").value({ VSCODE_NLS_CONFIG: '{ "locale": "zh-cn" }' });
+      sandbox.stub(process, "env").value({ VSCODE_NLS_CONFIG: '{ "locale": "zh-cn" }' });
 
       const locale = parseLocale();
 

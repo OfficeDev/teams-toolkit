@@ -5,12 +5,13 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { UserState } from "./constants";
-import { UriHandler } from "./uriHandler";
 import {
+  FxCore,
   isValidProject,
   isValidOfficeAddInProject,
   isManifestOnlyOfficeAddinProject,
 } from "@microsoft/teamsfx-core";
+import { Tools } from "@microsoft/teamsfx-api";
 
 /**
  * Common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -22,9 +23,10 @@ export let isOfficeAddInProject = false;
 export let isOfficeManifestOnlyProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
-export let uriEventHandler: UriHandler;
 export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
+export let core: FxCore;
+export let tools: Tools;
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {
@@ -41,6 +43,7 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
     isOfficeManifestOnlyProject = isManifestOnlyOfficeAddinProject(workspaceUri?.fsPath);
   }
   // Default Extension log path
+  // eslint-disable-next-line no-secrets/no-secrets
   // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
   defaultExtensionLogPath = ctx.logUri.fsPath;
   if (!fs.pathExistsSync(defaultExtensionLogPath)) {
@@ -68,10 +71,6 @@ export function checkIsSPFx(directory: string): boolean {
   return false;
 }
 
-export function setUriEventHandler(uriHandler: UriHandler) {
-  uriEventHandler = uriHandler;
-}
-
 export function setCommandIsRunning(isRunning: boolean) {
   commandIsRunning = isRunning;
 }
@@ -79,4 +78,11 @@ export function setCommandIsRunning(isRunning: boolean) {
 // Only used by checkProjectUpgradable() when error happens
 export function unsetIsTeamsFxProject() {
   isTeamsFxProject = false;
+}
+
+export function setTools(toolsInstance: Tools) {
+  tools = toolsInstance;
+}
+export function setCore(coreInstance: FxCore) {
+  core = coreInstance;
 }

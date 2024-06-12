@@ -515,6 +515,11 @@ describe("Generator utils", () => {
     };
     assert.isFalse(isApiLimitError(mockError));
   });
+
+  it("convertToLangKey for none", () => {
+    const key = generatorUtils.convertToLangKey(ProgrammingLanguage.None);
+    assert.equal(key, "common");
+  });
 });
 
 describe("Generator error", async () => {

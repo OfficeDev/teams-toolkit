@@ -18,7 +18,7 @@ import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { GlobalKey } from "./constants";
 import { OfficeDevTerminal, TriggerCmdType } from "./debug/taskTerminal/officeDevTerminal";
-import { VS_CODE_UI } from "./extension";
+import { VS_CODE_UI } from "./qm/vsc_ui";
 import * as globalVariables from "./globalVariables";
 import {
   ShowScaffoldingWarningSummary,
@@ -27,11 +27,15 @@ import {
   openSampleReadmeHandler,
   showLocalDebugMessage,
 } from "./handlers";
-import { TelemetryTriggerFrom, VSCodeWindowChoice } from "./telemetry/extTelemetryEvents";
+import {
+  TelemetryTriggerFrom,
+  VSCodeWindowChoice,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "./telemetry/extTelemetryEvents";
 import { isTriggerFromWalkThrough, getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]

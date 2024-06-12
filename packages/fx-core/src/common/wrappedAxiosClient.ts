@@ -13,7 +13,7 @@ import {
   TelemetryPropertyKey,
   TelemetryPropertyValue,
 } from "../component/driver/teamsApp/utils/telemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
 import { HttpMethod } from "../component/constant/commonConstant";
 
@@ -75,7 +75,7 @@ export class WrappedAxiosClient {
       url: `<${apiName}-url>`,
       method: method,
       params: this.generateParameters(response.config.params),
-      [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       "status-code": response.status.toString(),
       ...this.generateExtraProperties(fullPath, response.data),
     };
@@ -114,8 +114,8 @@ export class WrappedAxiosClient {
       url: `<${apiName}-url>`,
       method: method,
       params: this.generateParameters(error.config!.params),
-      [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
-      [TelemetryPropertyKey.errorMessage]: error.response
+      [TelemetryProperty.Success]: TelemetrySuccess.No,
+      [TelemetryProperty.ErrorMessage]: error.response
         ? JSON.stringify(error.response.data)
         : error.message ?? "undefined",
       "status-code": error.response?.status.toString() ?? "undefined",
@@ -134,9 +134,9 @@ export class WrappedAxiosClient {
         extraData
       );
       properties[
-        TelemetryPropertyKey.errorCode
+        TelemetryProperty.ErrorCode
       ] = `${TDPApiFailedError.source}.${TDPApiFailedError.name}`;
-      properties[TelemetryPropertyKey.errorMessage] = TDPApiFailedError.message;
+      properties[TelemetryProperty.ErrorMessage] = TDPApiFailedError.message;
       eventName = TelemetryEvent.AppStudioApi;
     } else {
       eventName = TelemetryEvent.DependencyApi;

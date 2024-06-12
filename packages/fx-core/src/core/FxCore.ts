@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { SpecParser, SpecParserError, Utils } from "@microsoft/m365-spec-parser";
+import { AuthType, SpecParser, SpecParserError, Utils } from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -54,7 +54,7 @@ import {
   isValidProjectV3,
 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { TelemetryEvent, telemetryUtils } from "../common/telemetry";
+import { TelemetryEvent, TelemetryProperty, telemetryUtils } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -1409,7 +1409,7 @@ export class FxCore {
     try {
       const authNames: Set<string> = new Set();
       const serverUrls: Set<string> = new Set();
-      let authScheme: OpenAPIV3.SecuritySchemeObject | undefined = undefined;
+      let authScheme: AuthType | undefined = undefined;
       for (const api of operations) {
         const operation = apiResultList.find((op) => op.api === api);
         if (
@@ -1489,7 +1489,7 @@ export class FxCore {
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
           .join(";"),
-        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+        [TelemetryProperty.Component]: CoreTelemetryComponentName,
       });
 
       if (generateResult.warnings && generateResult.warnings.length > 0) {
@@ -1701,7 +1701,7 @@ export class FxCore {
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
           .join(";"),
-        [CoreTelemetryProperty.Component]: CoreTelemetryComponentName,
+        [TelemetryProperty.Component]: CoreTelemetryComponentName,
       });
 
       if (generateResult.warnings && generateResult.warnings.length > 0) {

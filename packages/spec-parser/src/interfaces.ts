@@ -307,8 +307,10 @@ export interface ListAPIResult {
   APIs: ListAPIInfo[];
 }
 
+export type AuthType = OpenAPIV3.SecuritySchemeObject | { type: "multipleAuth" };
+
 export interface AuthInfo {
-  authScheme: OpenAPIV3.SecuritySchemeObject;
+  authScheme: AuthType;
   name: string;
 }
 

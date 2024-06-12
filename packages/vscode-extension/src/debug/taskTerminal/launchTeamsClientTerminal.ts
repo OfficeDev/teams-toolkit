@@ -13,8 +13,8 @@ import * as util from "util";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
-import * as globalVariables from "../../globalVariables";
-import { core, getSystemInputs } from "../../handlers";
+import { core, workspaceUri } from "../../globalVariables";
+import { getSystemInputs } from "../../utils/environmentUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession } from "../commonUtils";
@@ -89,7 +89,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   private openUrl(url: string): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>((resolve) => {
       const options: cp.SpawnOptions = {
-        cwd: globalVariables.workspaceUri?.fsPath ?? "",
+        cwd: workspaceUri?.fsPath ?? "",
         shell: false,
         detached: false,
       };

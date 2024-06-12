@@ -8,11 +8,7 @@ import "mocha";
 import mockedEnv from "mocked-env";
 import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
-import {
-  RetryHandler,
-  TeamsDevPortalClient,
-  teamsDevPortalClient,
-} from "../../src/client/teamsDevPortalClient";
+import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
 import { setTools } from "../../src/common/globalVars";
 import * as telemetry from "../../src/common/telemetry";
 import { Constants, ErrorMessages } from "../../src/component/driver/teamsApp/constants";

@@ -29,7 +29,7 @@ import {
   AccountType,
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
-import { VS_CODE_UI } from "../extension";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import { AzureScopes, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import {

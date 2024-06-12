@@ -13,7 +13,8 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryE
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { openTerminalDisplayMessage, openTerminalMessage } from "../constants";
-import { core, getSystemInputs } from "../../handlers";
+import { getSystemInputs } from "../../utils/environmentUtils";
+import { core } from "../../globalVariables";
 import * as path from "path";
 
 interface LaunchDesktopClientArgs {

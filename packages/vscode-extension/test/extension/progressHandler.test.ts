@@ -7,14 +7,20 @@ import * as chai from "chai";
 import { window } from "vscode";
 
 import { ProgressHandler } from "../../src/progressHandler";
-import * as commonUtils from "../../src/utils/commonUtils";
+import * as vsc_ui from "@microsoft/vscode-ui";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as vscodeMocks from "../mocks/vsc";
 
+afterEach(() => {
+  sinon.restore();
+});
+
 describe("ProgressHandler", () => {
   let message: string | undefined = undefined;
+  const sandbox = sinon.createSandbox();
+
   beforeEach(() => {
-    sinon.stub(window, "withProgress").callsFake(async (options, task) => {
+    sandbox.stub(window, "withProgress").callsFake(async (options, task) => {
       return await task(
         {
           report: (value) => {
@@ -24,8 +30,8 @@ describe("ProgressHandler", () => {
         new vscodeMocks.CancellationToken()
       );
     });
-    sinon.stub(commonUtils, "sleep").callsFake(async () => {});
-    sinon.stub(localizeUtils, "localize").callsFake((key) => {
+    sandbox.stub(vsc_ui, "sleep").callsFake(async () => {});
+    sandbox.stub(localizeUtils, "localize").callsFake((key) => {
       if (key === "teamstoolkit.progressHandler.showOutputLink") {
         return "Check [output window](%s) for details.";
       } else if (key === "teamstoolkit.progressHandler.showTerminalLink") {
@@ -40,7 +46,7 @@ describe("ProgressHandler", () => {
   });
 
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
   });
 
   it("terminal", async () => {
@@ -53,7 +59,6 @@ describe("ProgressHandler", () => {
     expected =
       "test title: [1/1] test message. Check [terminal window](command:workbench.action.terminal.focus) for details. (Notice: You can reload the window and retry if task spends too long time.)";
     chai.assert.equal(message, expected);
-    sinon.restore();
   });
 
   it("output", async () => {
@@ -66,7 +71,6 @@ describe("ProgressHandler", () => {
     expected =
       "test title: [1/1] test message. Check [output window](command:fx-extension.showOutputChannel) for details. (Notice: You can reload the window and retry if task spends too long time.)";
     chai.assert.equal(message, expected);
-    sinon.restore();
   });
 
   it("not started", async () => {

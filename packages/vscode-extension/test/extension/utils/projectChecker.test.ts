@@ -2,11 +2,14 @@ import { UserError, err, ok } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
 import * as global from "../../../src/globalVariables";
-import * as handler from "../../../src/handlers";
 import { checkProjectTypeAndSendTelemetry } from "../../../src/utils/projectChecker";
 import { MockCore } from "../../mocks/mockCore";
 import * as vscode from "vscode";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+
+afterEach(() => {
+  sinon.restore();
+});
 
 describe("checkProjectTypeAndSendTelemetry", () => {
   const sandbox = sinon.createSandbox();
@@ -16,7 +19,7 @@ describe("checkProjectTypeAndSendTelemetry", () => {
   });
   it("happy", async () => {
     sandbox.stub(global, "workspaceUri").value(vscode.Uri.file("./"));
-    sandbox.stub(handler, "core").value(core);
+    sandbox.stub(global, "core").value(core);
     sandbox.stub(core, "checkProjectType").resolves(
       ok({
         isTeamsFx: true,
@@ -30,7 +33,7 @@ describe("checkProjectTypeAndSendTelemetry", () => {
   });
   it("error", async () => {
     sandbox.stub(global, "workspaceUri").value(vscode.Uri.file("./"));
-    sandbox.stub(handler, "core").value(core);
+    sandbox.stub(global, "core").value(core);
     sandbox.stub(core, "checkProjectType").resolves(err(new UserError({})));
     await checkProjectTypeAndSendTelemetry();
   });

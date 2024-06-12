@@ -16,9 +16,14 @@ import {
 chai.use(chaiPromised);
 
 describe("chat utils", () => {
-  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    // Restore the default sandbox here
+    sinon.restore();
+  });
 
   describe("verbatimCopilotInteraction()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });
@@ -66,6 +71,8 @@ describe("chat utils", () => {
   });
 
   describe("getCopilotResponseAsString()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });
@@ -103,6 +110,8 @@ describe("chat utils", () => {
   });
 
   describe("getSampleDownloadUrlInfo()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });
@@ -114,7 +123,7 @@ describe("chat utils", () => {
         ref: "test",
         dir: "test",
       };
-      sinon.stub(sampleProvider, "SampleCollection").get(() => {
+      sandbox.stub(sampleProvider, "SampleCollection").get(() => {
         return Promise.resolve({
           samples: [
             {
@@ -129,7 +138,7 @@ describe("chat utils", () => {
     });
 
     it("throws error if not found", async () => {
-      sinon.stub(sampleProvider, "SampleCollection").get(() => {
+      sandbox.stub(sampleProvider, "SampleCollection").get(() => {
         return Promise.resolve({
           samples: [
             {
@@ -146,6 +155,8 @@ describe("chat utils", () => {
   });
 
   describe("countMessageTokens()", () => {
+    const sandbox = sinon.createSandbox();
+
     beforeEach(() => {
       sandbox.stub(Tokenizer.getInstance(), "tokenLength").callsFake((content): number => {
         return content.length;
@@ -189,6 +200,8 @@ describe("chat utils", () => {
   });
 
   describe("countMessagesTokens()", () => {
+    const sandbox = sinon.createSandbox();
+
     beforeEach(() => {
       sandbox.stub(Tokenizer.getInstance(), "tokenLength").callsFake((content): number => {
         return content.length;

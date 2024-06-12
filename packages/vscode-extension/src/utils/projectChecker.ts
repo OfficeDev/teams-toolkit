@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { telemetryUtils } from "@microsoft/teamsfx-core";
-import { workspaceUri } from "../globalVariables";
-import { core } from "../handlers";
+import { core, workspaceUri } from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 
 export async function checkProjectTypeAndSendTelemetry(): Promise<void> {

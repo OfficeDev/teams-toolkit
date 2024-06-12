@@ -64,6 +64,9 @@ const enum telemetryProperties {
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
+  bearerTokenAuthCount = "bearer-token-auth-count",
+  oauth2AuthCount = "oauth2-auth-count",
+  otherAuthCount = "other-auth-count",
   isFromAddingApi = "is-from-adding-api",
 }
 
@@ -155,11 +158,30 @@ export async function listOperations(
     }
 
     const listResult: ListAPIResult = await specParser.list();
+
+    const bearerTokenAuthAPIs = listResult.APIs.filter(
+      (api) => api.auth && Utils.isBearerTokenAuth(api.auth.authScheme)
+    );
+
+    const oauth2AuthAPIs = listResult.APIs.filter(
+      (api) => api.auth && Utils.isOAuthWithAuthCodeFlow(api.auth.authScheme)
+    );
+
+    const otherAuthAPIs = listResult.APIs.filter(
+      (api) =>
+        api.auth &&
+        !Utils.isOAuthWithAuthCodeFlow(api.auth.authScheme) &&
+        !Utils.isBearerTokenAuth(api.auth.authScheme)
+    );
+
     let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
+      [telemetryProperties.bearerTokenAuthCount]: bearerTokenAuthAPIs.length.toString(),
+      [telemetryProperties.oauth2AuthCount]: oauth2AuthAPIs.length.toString(),
+      [telemetryProperties.otherAuthCount]: otherAuthAPIs.length.toString(),
     });
 
     // Filter out exsiting APIs

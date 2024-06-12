@@ -297,6 +297,14 @@ export class ProjectTypeOptions {
 }
 
 export class CapabilityOptions {
+  // empty
+  static empty(): OptionItem {
+    return {
+      id: "empty",
+      label: "Empty",
+    };
+  }
+
   // bot
   static basicBot(): OptionItem {
     return {
@@ -505,6 +513,7 @@ export class CapabilityOptions {
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
+      CapabilityOptions.empty(),
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
@@ -633,6 +642,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
+      CapabilityOptions.empty(),
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),

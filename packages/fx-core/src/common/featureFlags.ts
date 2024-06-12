@@ -127,7 +127,7 @@ export class FeatureFlags {
   };
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
-  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "false" };
+  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,

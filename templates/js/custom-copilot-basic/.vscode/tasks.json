@@ -234,6 +234,6 @@
             "args": {
                 "url": "teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true"
             }
-        },
+        }
     ]
 }

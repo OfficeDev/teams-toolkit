@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService } from "@microsoft/teamsfx-core";
+import { CLICommand, Platform, err, ok } from "@microsoft/teamsfx-api";
+import { PackageService, UninstallInputs } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
 import { commands } from "../../resource";
@@ -47,13 +47,15 @@ export const m365UnacquireCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.M365Unacquire,
   },
-  defaultInteractiveOption: false,
+  defaultInteractiveOption: true,
   handler: async (ctx) => {
+    const inputs = ctx.optionValues as UninstallInputs;
     const core = getFxCore();
-    await Promise.resolve();
+    const res = await core.uninstall(inputs);
+    if (res.isErr()) {
+      return err(res.error);
+    }
     return ok(undefined);
-    //const res = await core.uninstall(inputs);
-    //return res;
     //const packageService = new PackageService(sideloadingServiceEndpoint, logger);
     //let titleId = ctx.optionValues["title-id"] as string;
     //const manifestId = ctx.optionValues["manifest-id"] as string;

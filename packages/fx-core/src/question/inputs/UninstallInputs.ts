@@ -17,4 +17,6 @@ export interface UninstallInputs extends Inputs {
   "manifest-id"?: string;
   /** @description Remove the acquired M365 App by local env */
   env?: string;
+  /** @description project path */
+  projectPath?: string;
 }

@@ -29,5 +29,12 @@ export const UninstallOptions: CLICommandOption[] = [
     description: "Remove the acquired M365 App by local env",
     required: true,
   },
+  {
+    name: "projectPath",
+    type: "string",
+    description: "Project Path for uninstall",
+    required: true,
+    default: "./",
+  },
 ];
 export const UninstallArguments: CLICommandArgument[] = [];

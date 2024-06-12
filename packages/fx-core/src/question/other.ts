@@ -14,6 +14,7 @@ import {
   SingleFileQuestion,
   SingleSelectQuestion,
   TextInputQuestion,
+  FolderQuestion,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -910,7 +911,25 @@ export function uninstallQuestionNode(): IQTreeNode {
           return true;
         },
       },
+      {
+        data: uninstallProjectPathQuestion(),
+        condition: () => {
+          return true;
+        },
+      },
     ],
+  };
+}
+
+function uninstallProjectPathQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: QuestionNames.ProjectPath,
+    // todo: use localized string
+    title: "project path",
+    cliDescription: "Project Path for uninstall",
+    placeholder: "./",
+    default: "./",
   };
 }
 

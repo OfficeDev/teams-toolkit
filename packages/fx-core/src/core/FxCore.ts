@@ -157,6 +157,7 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { UninstallInputs } from "../question";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -308,8 +309,8 @@ export class FxCore {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async uninstall(inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
-    const templatePath = pathUtils.getYmlFilePath(inputs.projectPath, inputs.env);
+  async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
+    const templatePath = pathUtils.getYmlFilePath(inputs.projectPath ?? "", inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

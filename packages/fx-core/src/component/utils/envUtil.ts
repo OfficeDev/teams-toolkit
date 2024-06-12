@@ -260,7 +260,7 @@ class EnvUtil {
   }
 
   extractEnvNameFromFileName(inputFileName: string): string | undefined {
-    const regex = /^\.env\.(\w+)$/;
+    const regex = /^\.env\.([\w\d-_]+)$/;
     const matches = inputFileName.match(regex);
     const envName = matches && matches[1];
     return envName || undefined;

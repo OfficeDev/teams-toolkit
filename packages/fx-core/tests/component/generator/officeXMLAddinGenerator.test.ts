@@ -16,6 +16,7 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { cpUtils } from "../../../src/component/deps-checker/";
 import { Generator } from "../../../src/component/generator/generator";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
@@ -23,8 +24,6 @@ import {
   OfficeXMLAddinGenerator,
   OfficeXmlAddinGeneratorNew,
 } from "../../../src/component/generator/officeXMLAddin/generator";
-import { createContextV3 } from "../../../src/component/utils";
-import { setTools } from "../../../src/core/globalVars";
 import {
   OfficeAddinHostOptions,
   ProgrammingLanguage,
@@ -44,7 +43,7 @@ describe("OfficeXMLAddinGenerator", function () {
     mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fse.ensureDir(testFolder);
     sinon.stub(fs, "stat").resolves();
@@ -216,7 +215,7 @@ describe("OfficeXmlAddinGeneratorNew", () => {
   const gtools = new MockTools();
   setTools(gtools);
   const generator = new OfficeXmlAddinGeneratorNew();
-  const context = createContextV3();
+  const context = createContext();
   describe("active()", () => {
     it(`should return true`, async () => {
       const inputs: Inputs = {

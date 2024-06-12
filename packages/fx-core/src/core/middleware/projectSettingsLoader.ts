@@ -16,7 +16,7 @@ import {
 } from "../../common/telemetry";
 import { MetadataV2, MetadataV3 } from "../../common/versionMetadata";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
-import { globalVars } from "../globalVars";
+import { globalVars } from "../../common/globalVars";
 import { CoreHookContext } from "../types";
 
 // export this for V2 -> V3 migration purpose

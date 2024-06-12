@@ -15,6 +15,11 @@ import * as officeSteps from "../../../../src/officeChat/commands/nextStep/offic
 import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../../src/chat/consts";
 import { OfficeWholeStatus } from "../../../../src/officeChat/commands/nextStep/types";
 
+afterEach(() => {
+  // Restore the default sandbox here
+  sinon.restore();
+});
+
 describe("office steps: officeNextStepCommandHandler", () => {
   const sandbox = sinon.createSandbox();
 
@@ -33,7 +38,6 @@ describe("office steps: officeNextStepCommandHandler", () => {
 
   afterEach(() => {
     sandbox.restore();
-    sinon.restore();
   });
 
   it("prompt is unempty", async () => {

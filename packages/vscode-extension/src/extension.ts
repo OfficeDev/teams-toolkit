@@ -18,7 +18,6 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  initializePreviewFeatureFlags,
   isChatParticipantEnabled,
   setRegion,
   isApiCopilotPluginEnabled,
@@ -79,26 +78,21 @@ import {
   isSPFxProject,
   isTeamsFxProject,
   isOfficeManifestOnlyProject,
-  setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import * as officeDevHandlers from "./officeDevHandlers";
-import { VsCodeUI } from "./qm/vsc_ui";
+import { initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { UriHandler } from "./uriHandler";
-import {
-  FeatureFlags,
-  delay,
-  hasAdaptiveCardInWorkspace,
-  isM365Project,
-} from "./utils/commonUtils";
+import { UriHandler, setUriEventHandler } from "./uriHandler";
+import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import { FeatureFlags } from "./featureFlags";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
@@ -107,21 +101,18 @@ import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
 import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
-export let VS_CODE_UI: VsCodeUI;
-
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
     IsChatParticipantEnabled &&
     semver.gte(vscode.version, "1.90.0-insider") &&
     vscode.version.includes("insider")
   ).toString();
-  initializePreviewFeatureFlags();
 
   configMgr.registerConfigChangeCallback();
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
-  VS_CODE_UI = new VsCodeUI(context);
+  initVSCodeUI(context);
   initializeGlobalVariables(context);
   loadLocalizedStrings();
 

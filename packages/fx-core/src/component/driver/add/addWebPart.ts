@@ -11,7 +11,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { QuestionNames } from "../../../question/constants";
 import { SPFxGenerator } from "../../generator/spfx/spfxGenerator";
 import { ManifestTemplate } from "../../generator/spfx/utils/constants";
-import { createContextV3 } from "../../utils";
+import { createContext } from "../../../common/globalVars";
 import { wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -71,7 +71,7 @@ export class AddWebPartDriver implements StepDriver {
       `SPFx web part name: ${webpartName}, SPFx folder: ${spfxFolder}, manifest path: ${manifestPath}, local manifest path: ${localManifestPath}`
     );
     const yeomanRes = await SPFxGenerator.doYeomanScaffold(
-      createContextV3(),
+      createContext(),
       inputs,
       context.projectPath
     );

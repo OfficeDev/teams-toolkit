@@ -8,6 +8,8 @@ import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 import { localize } from "./utils/localizeUtils";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 
+export let uriEventHandler: UriHandler;
+
 enum Referrer {
   DeveloperPortal = "developerportal",
   OfficeDoc = "officedoc",
@@ -80,4 +82,8 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
       );
     }
   }
+}
+
+export function setUriEventHandler(uriHandler: UriHandler) {
+  uriEventHandler = uriHandler;
 }

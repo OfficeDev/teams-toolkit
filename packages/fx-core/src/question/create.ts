@@ -29,11 +29,13 @@ import {
   isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
+  isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
+import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
-import { convertToAlphanumericOnly } from "../common/stringUtils";
+import { convertToAlphanumericOnly, isValidHttpUrl } from "../common/stringUtils";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { StaticTab } from "../component/driver/teamsApp/interfaces/appdefinitions/staticTab";
 import {
@@ -53,10 +55,9 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { createContextV3 } from "../component/utils";
 import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   AppNamePattern,
   CapabilityOptions,
   CliQuestionName,
@@ -73,7 +74,6 @@ import {
   capabilitiesHavePythonOption,
   getRuntime,
 } from "./constants";
-import { isValidHttpUrl } from "./util";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -760,7 +760,7 @@ export function appNameQuestion(): TextInputQuestion {
         };
         if (input.length === 25) {
           // show warning notification because it may exceed the Teams app name max length after appending suffix
-          const context = createContextV3();
+          const context = createContext();
           if (previousInputs?.platform === Platform.VSCode) {
             void context.userInteraction.showMessage(
               "warn",
@@ -1017,7 +1017,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       if (!inputs) {
         throw new Error("inputs is undefined"); // should never happen
       }
-      const context = createContextV3();
+      const context = createContext();
       const res = await listOperations(
         context,
         input.trim(),
@@ -1092,18 +1092,29 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
   };
 }
 
-export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
+export function apiAuthQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
-    name: QuestionNames.ApiMEAuth,
+    name: QuestionNames.ApiAuth,
     title: getLocalizedString("core.createProjectQuestion.apiMessageExtensionAuth.title"),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.apiMessageExtensionAuth.placeholder"
     ),
     cliDescription: "The authentication type for the API.",
-    staticOptions: ApiMessageExtensionAuthOptions.all(),
-    dynamicOptions: () => ApiMessageExtensionAuthOptions.all(),
-    default: ApiMessageExtensionAuthOptions.none().id,
+    staticOptions: ApiAuthOptions.all(),
+    dynamicOptions: (inputs: Inputs) => {
+      const options: OptionItem[] = [ApiAuthOptions.none()];
+      if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
+        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
+      } else if (
+        featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id
+      ) {
+        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
+      }
+      return options;
+    },
+    default: ApiAuthOptions.none().id,
   };
 }
 
@@ -1393,9 +1404,14 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
+          return (
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+            (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
+              isCopilotPluginEnabled() &&
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+          );
         },
-        data: apiMessageExtensionAuthQuestion(),
+        data: apiAuthQuestion(),
       },
       {
         condition: (inputs: Inputs) => {

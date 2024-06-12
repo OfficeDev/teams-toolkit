@@ -250,6 +250,8 @@
 /packages/tests/src/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
 /packages/tests/src/e2e/samples @LongOddCode @ayachensiyuan
 /packages/tests/src/e2e/scaffold @hund030 @eriolchan @huimiu
+/packages/tests/src/e2e/scaffold/CopilotPluginFromScratch.tests.ts @yuqizhou77 @huimiu @SLdragon
+/packages/tests/src/e2e/scaffold/CopilotPluginFromExistingApi.tests.ts @yuqizhou77 @huimiu @SLdragon
 
 /packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms @tecton
 /packages/vscode-extension/CHANGELOG.md @therealjohn @sffamily
@@ -290,7 +292,7 @@
 /templates/**/custom-copilot-rag-microsoft365 @kimizhu @swatDong @kuojianlu @XiaofuHuang @xiaolang124
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
-/templates/**/default-bot-message-extension @yuqizhou77
+/templates/**/default-bot-message-extension @yuqizhou77 @Yukun-dong
 /templates/**/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
 /templates/**/message-extension @yuqizhou77 @Yukun-dong

@@ -102,6 +102,7 @@ export const TaskCommand = Object.freeze({
   provision: "provision",
   deploy: "deploy",
   migrate: "migrate",
+  launchDesktopClient: "launch-desktop-client",
 });
 
 export const TeamsFxNpmCommands = Object.freeze({

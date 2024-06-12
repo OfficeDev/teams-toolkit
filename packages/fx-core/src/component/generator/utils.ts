@@ -11,7 +11,7 @@ import semver from "semver";
 import { sendRequestWithRetry, sendRequestWithTimeout } from "../../common/requestUtils";
 import { SampleConfig, SampleUrlInfo, sampleProvider } from "../../common/samples";
 import templateConfig from "../../common/templates-config.json";
-import { InvalidInputError } from "../../core/error";
+import { InputValidationError } from "../../error";
 import { ProgrammingLanguage } from "../../question/constants";
 import {
   defaultTimeoutInMs,
@@ -197,7 +197,7 @@ export async function getSampleInfoFromName(sampleName: string): Promise<SampleC
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
-    throw InvalidInputError(`sample '${sampleName}' not found`);
+    throw new InputValidationError(`sample '${sampleName}'`, "not found");
   }
   return sample;
 }
@@ -321,6 +321,9 @@ export function convertToLangKey(programmingLanguage: string): string {
     }
     case ProgrammingLanguage.PY: {
       return "python";
+    }
+    case ProgrammingLanguage.None: {
+      return "common";
     }
   }
   return programmingLanguage;

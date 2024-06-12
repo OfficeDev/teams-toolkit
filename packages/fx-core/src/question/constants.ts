@@ -7,6 +7,7 @@ import {
   featureFlagManager,
   isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
+  isChatParticipantEnabled,
   isCopilotPluginEnabled,
   isTdpTemplateCliTestEnabled,
 } from "../common/featureFlags";
@@ -50,7 +51,7 @@ export enum QuestionNames {
   MeArchitectureType = "me-architecture",
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
-  ApiMEAuth = "api-me-auth",
+  ApiAuth = "api-auth",
   OauthClientSecret = "oauth-client-secret",
   OauthClientId = "oauth-client-id",
   OauthConfirm = "oauth-confirm",
@@ -169,6 +170,11 @@ export class ScratchOptions {
 }
 
 export class ProjectTypeOptions {
+  static getCreateGroupName(): string | undefined {
+    return isChatParticipantEnabled()
+      ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
+      : undefined;
+  }
   static tab(platform?: Platform): OptionItem {
     return {
       id: "tab-type",
@@ -176,7 +182,7 @@ export class ProjectTypeOptions {
         "core.TabOption.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.tab.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -187,7 +193,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.bot.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.bot.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -202,7 +208,7 @@ export class ProjectTypeOptions {
             "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
           )
         : getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -213,7 +219,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.outlookAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -224,7 +230,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -235,7 +241,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.officeAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -254,7 +260,7 @@ export class ProjectTypeOptions {
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -265,7 +271,7 @@ export class ProjectTypeOptions {
         platform === Platform.VSCode ? "$(teamsfx-custom-copilot) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.customCopilot.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.customCopilot.detail"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 
@@ -285,7 +291,7 @@ export class ProjectTypeOptions {
       id: "customize-gpt-type",
       label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
       detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.title"),
-      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 }
@@ -858,7 +864,7 @@ export class OfficeAddinHostOptions {
   }
 }
 
-export class ApiMessageExtensionAuthOptions {
+export class ApiAuthOptions {
   static none(): OptionItem {
     return {
       id: "none",
@@ -879,11 +885,19 @@ export class ApiMessageExtensionAuthOptions {
     };
   }
 
+  static oauth(): OptionItem {
+    return {
+      id: "oauth",
+      label: "OAuth",
+    };
+  }
+
   static all(): OptionItem[] {
     return [
-      ApiMessageExtensionAuthOptions.none(),
-      ApiMessageExtensionAuthOptions.apiKey(),
-      ApiMessageExtensionAuthOptions.microsoftEntra(),
+      ApiAuthOptions.none(),
+      ApiAuthOptions.apiKey(),
+      ApiAuthOptions.microsoftEntra(),
+      ApiAuthOptions.oauth(),
     ];
   }
 }
@@ -1240,18 +1254,12 @@ export class TeamsAppValidationOptions {
     return {
       id: "validateAgainstSchema",
       label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
-      ),
     };
   }
   static package(): OptionItem {
     return {
       id: "validateAgainstPackage",
       label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
-      ),
     };
   }
   static testCases(): OptionItem {

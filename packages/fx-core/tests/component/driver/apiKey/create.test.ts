@@ -19,7 +19,7 @@ import {
   ApiSecretRegistrationTargetAudience,
 } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { SystemError, err } from "@microsoft/teamsfx-api";
-import { setTools } from "../../../../src/core/globalVars";
+import { setTools } from "../../../../src/common/globalVars";
 import { SpecParser } from "@microsoft/m365-spec-parser";
 import * as visitor from "../../../../src/ui/visitor";
 import { UserCancelError } from "../../../../src/error";

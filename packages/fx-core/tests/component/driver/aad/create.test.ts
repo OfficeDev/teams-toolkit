@@ -597,9 +597,6 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.properties.success).to.equal("no");
     expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.HttpClientError");
     expect(endTelemetry.properties["error-type"]).to.equal("user");
-    // expect(endTelemetry.properties["error-message"]).to.equal(
-    //   'A http client error happened while performing the aadApp/create task. The error response is: {"error":{"code":"Request_BadRequest","message":"Invalid value specified for property \'displayName\' of resource \'Application\'."}}'
-    // );
   });
 
   it("should send telemetries with error stack", async () => {

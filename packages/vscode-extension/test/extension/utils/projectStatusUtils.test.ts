@@ -60,12 +60,12 @@ describe("project status utils", () => {
     });
 
     it("command name is not in RecordedActions", async () => {
-      sandbox.stub(helper, "getFixedCommonProjectSettings").returns(undefined);
+      sandbox.stub(helper, "getProjectMetadata").returns(undefined);
       await projectStatusUtils.updateProjectStatus("test-path", "test-command", ok(undefined));
     });
 
     it("command name is in RecordedActions - project state file not exist", async () => {
-      sandbox.stub(helper, "getFixedCommonProjectSettings").returns({ projectId: "test-id" });
+      sandbox.stub(helper, "getProjectMetadata").returns({ projectId: "test-id" });
       sandbox.stub(Date, "now").returns(1711987200000);
       sandbox.stub(fs, "pathExists").resolves(false);
       const writeFileStub = sandbox.stub(fs, "writeFile").resolves();
@@ -93,7 +93,7 @@ describe("project status utils", () => {
     });
 
     it("command name is not in RecordedActions but forced - not json", async () => {
-      sandbox.stub(helper, "getFixedCommonProjectSettings").returns({ projectId: "test-id" });
+      sandbox.stub(helper, "getProjectMetadata").returns({ projectId: "test-id" });
       sandbox.stub(Date, "now").returns(1711987200000);
       sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
         return path === projectStatusUtils.projectStatusFilePath;
@@ -125,7 +125,7 @@ describe("project status utils", () => {
     });
 
     it("command name is not in RecordedActions but forced - json", async () => {
-      sandbox.stub(helper, "getFixedCommonProjectSettings").returns({ projectId: "test-id" });
+      sandbox.stub(helper, "getProjectMetadata").returns({ projectId: "test-id" });
       sandbox.stub(Date, "now").returns(1711987200000);
       sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
         return path === projectStatusUtils.projectStatusFilePath;

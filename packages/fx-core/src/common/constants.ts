@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 import { getLocalizedString } from "./localizeUtils";
 
 export class ConstantString {
@@ -54,6 +53,7 @@ export class FeatureFlagName {
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
   static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
   static readonly CopilotAuth = "API_COPILOT_PLUGIN_AUTH";
+  static readonly SMEOAuth = "SME_OAUTH";
   static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
 }
 
@@ -82,9 +82,17 @@ export function getResourceGroupInPortal(
     return undefined;
   }
 }
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
+  }
+}
 
 export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
 export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
+export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];

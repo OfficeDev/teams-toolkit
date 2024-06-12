@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "5.8.0",
+  "version": "5.8.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "private": true,
@@ -979,6 +979,10 @@
               {
                 "const": "launch-web-client",
                 "description": "%teamstoolkit.taskDefinitions.command.launchWebClient.description%"
+              },
+              {
+                "const": "launch-desktop-client",
+                "description": "%teamstoolkit.taskDefinitions.command.launchDesktopClient.description%"
               }
             ]
           },
@@ -1532,7 +1536,7 @@
         "fx-extension.developCopilotPlugin": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Get more info from [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)."
         },
         "fx-extension.logLevel": {
           "type": "string",
@@ -1551,7 +1555,6 @@
         "id": "ms-teams-vscode-extension.teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
-        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",
@@ -1567,7 +1570,6 @@
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
         "description": "%teamstoolkit.chatParticipants.officeAddIn.description%",
-        "when": "fx-extension.isChatParticipantEnabled",
         "commands": [
           {
             "name": "create",

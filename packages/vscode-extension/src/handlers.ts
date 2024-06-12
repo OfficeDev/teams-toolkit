@@ -44,13 +44,12 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core";
 import {
   AppStudioClient,
   AppStudioScopes,
   AuthSvcScopes,
   ConcurrentError,
-  CoreQuestionNames,
+  QuestionNames,
   Correlator,
   DepsManager,
   DepsType,
@@ -61,7 +60,7 @@ import {
   assembleError,
   environmentManager,
   generateScaffoldingSummary,
-  getFixedCommonProjectSettings,
+  getProjectMetadata,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
@@ -76,10 +75,8 @@ import {
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
-  serviceScope,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
-
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
@@ -94,7 +91,6 @@ import {
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
-import * as commonUtils from "./debug/commonUtils";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
@@ -103,8 +99,21 @@ import { selectAndDebug } from "./debug/runIconHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import { VS_CODE_UI } from "./extension";
-import * as globalVariables from "./globalVariables";
+import { VS_CODE_UI } from "./qm/vsc_ui";
+import {
+  checkIsSPFx,
+  context,
+  core,
+  initializeGlobalVariables,
+  isOfficeAddInProject,
+  isSPFxProject,
+  isTeamsFxProject,
+  setCommandIsRunning,
+  setCore,
+  setTools,
+  tools,
+  workspaceUri,
+} from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -125,7 +134,6 @@ import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
-  anonymizeFilePaths,
   getAppName,
   getLocalDebugMessageTemplate,
   getResourceGroupNameFromEnv,
@@ -135,6 +143,7 @@ import {
   isTriggerFromWalkThrough,
   openFolderInExplorer,
 } from "./utils/commonUtils";
+import { anonymizeFilePaths } from "./utils/fileSystemUtils";
 import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import {
@@ -145,17 +154,15 @@ import {
 import { openOfficeDevFolder } from "./officeDevHandlers";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
 import { updateProjectStatus } from "./utils/projectStatusUtils";
-
-export let core: FxCore;
-export let tools: Tools;
+import { triggerV3Migration } from "./utils/migrationUtils";
+import { isTestToolEnabledProject } from "./debug/commonUtils";
+import { getSystemInputs } from "./utils/environmentUtils";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
-  const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
+  const validProject = isValidProject(workspaceUri?.fsPath);
   if (validProject) {
-    const fixedProjectSettings = getFixedCommonProjectSettings(
-      globalVariables.workspaceUri?.fsPath
-    );
+    const fixedProjectSettings = getProjectMetadata(workspaceUri?.fsPath);
     ExtTelemetry.addSharedProperty(
       TelemetryProperty.ProjectId,
       fixedProjectSettings?.projectId as string
@@ -195,7 +202,7 @@ export function activate(): Result<Void, FxError> {
       m365NotificationCallback,
       false
     );
-    tools = {
+    setTools({
       logProvider: VsCodeLogInstance,
       tokenProvider: {
         azureAccountProvider: AzureAccountManager,
@@ -204,17 +211,17 @@ export function activate(): Result<Void, FxError> {
       telemetryReporter: ExtTelemetry.reporter,
       ui: VS_CODE_UI,
       expServiceProvider: exp.getExpService(),
-    };
-    core = new FxCore(tools);
+    });
+    setCore(new FxCore(tools));
     core.on(CoreCallbackEvent.lock, async (command: string) => {
-      globalVariables.setCommandIsRunning(true);
+      setCommandIsRunning(true);
       await commandController.lockedByOperation(command);
     });
     core.on(CoreCallbackEvent.unlock, async (command: string) => {
-      globalVariables.setCommandIsRunning(false);
+      setCommandIsRunning(false);
       await commandController.unlockedByOperation(command);
     });
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const workspacePath = workspaceUri?.fsPath;
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);
     }
@@ -296,7 +303,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 }
 
 export function addFileSystemWatcher(workspacePath: string) {
-  if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
+  if (isValidProject(workspaceUri?.fsPath)) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
     packageLockFileWatcher.onDidCreate(async (event) => {
@@ -321,7 +328,7 @@ export function addFileSystemWatcher(workspacePath: string) {
 }
 
 export function refreshSPFxTreeOnFileChanged() {
-  globalVariables.initializeGlobalVariables(globalVariables.context);
+  initializeGlobalVariables(context);
 
   TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
@@ -351,16 +358,6 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
   if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
     await envTreeProviderInstance.reloadEnvironments();
   }
-}
-
-export function getSystemInputs(): Inputs {
-  const answers: Inputs = {
-    projectPath: globalVariables.workspaceUri?.fsPath,
-    platform: Platform.VSCode,
-    vscodeEnv: detectVsCodeEnv(),
-    locale: loadedLocale,
-  };
-  return answers;
 }
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
@@ -434,7 +431,7 @@ export async function updateAutoOpenGlobalKey(
     await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
   }
 
-  if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
+  if (checkIsSPFx(projectUri.fsPath)) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
 }
@@ -483,7 +480,7 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
       throw result.error;
     }
 
-    const hub = inputs[CoreQuestionNames.M365Host] as Hub;
+    const hub = inputs[QuestionNames.M365Host] as Hub;
     const url = result.value;
     properties[TelemetryProperty.Hub] = hub;
 
@@ -506,16 +503,6 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
   return ok(null);
 }
 
-async function isVideoFilterProject(): Promise<boolean> {
-  const projPath = globalVariables.workspaceUri?.fsPath;
-  if (projPath) {
-    const result = await commonTools.isVideoFilterProject(projPath);
-    return result.isOk() && result.value;
-  } else {
-    return false;
-  }
-}
-
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.ValidateManifestStart,
@@ -530,7 +517,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
  * Ask user to select environment, local is included
  */
 export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
-  const projectPath = globalVariables.workspaceUri?.fsPath;
+  const projectPath = workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
   }
@@ -588,7 +575,7 @@ export async function publishInDeveloperPortalHandler(
     TelemetryEvent.PublishInDeveloperPortalStart,
     getTriggerFromProperty(args)
   );
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = workspaceUri?.fsPath;
   const zipDefaultFolder: string | undefined = path.join(
     workspacePath!,
     BuildFolderName,
@@ -881,26 +868,6 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
   return result;
 }
 
-export function detectVsCodeEnv(): VsCodeEnv {
-  // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
-  const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");
-
-  if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
-    // running remotely
-    // Codespaces browser-based editor will return UIKind.Web for uiKind
-    if (vscode.env.uiKind === vscode.UIKind.Web) {
-      return VsCodeEnv.codespaceBrowser;
-    } else if (vscode.env.remoteName === "codespaces") {
-      return VsCodeEnv.codespaceVsCode;
-    } else {
-      return VsCodeEnv.remote;
-    }
-  } else {
-    // running locally
-    return VsCodeEnv.local;
-  }
-}
-
 export async function runUserTask(
   func: Func,
   eventName: string,
@@ -1029,7 +996,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
   try {
-    await commonUtils.triggerV3Migration();
+    await triggerV3Migration();
     return undefined;
   } catch (error: any) {
     void showError(error as FxError);
@@ -1042,7 +1009,7 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   try {
-    await commonUtils.triggerV3Migration();
+    await triggerV3Migration();
     return undefined;
   } catch (error: any) {
     void showError(error as FxError);
@@ -1055,7 +1022,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
  */
 export async function installAppInTeams(): Promise<string | undefined> {
   try {
-    await commonUtils.triggerV3Migration();
+    await triggerV3Migration();
     return undefined;
   } catch (error: any) {
     void showError(error as FxError);
@@ -1087,7 +1054,7 @@ export async function validateGetStartedPrerequisitesHandler(
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
   try {
-    await commonUtils.triggerV3Migration();
+    await triggerV3Migration();
     return undefined;
   } catch (error: any) {
     void showError(error as FxError);
@@ -1128,7 +1095,7 @@ export async function getDotnetPathHandler(): Promise<string> {
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
-    await commonUtils.triggerV3Migration();
+    await triggerV3Migration();
     return undefined;
   } catch (error: any) {
     void showError(error as FxError);
@@ -1301,18 +1268,18 @@ export async function autoOpenProjectHandler(): Promise<void> {
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
 
-    if (globalVariables.workspaceUri?.fsPath) {
-      await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    if (workspaceUri?.fsPath) {
+      await ShowScaffoldingWarningSummary(workspaceUri.fsPath, createWarnings);
       await globalStateUpdate(GlobalKey.CreateWarnings, "");
     }
   }
-  if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
+  if (isOpenReadMe === workspaceUri?.fsPath) {
     await showLocalDebugMessage();
     await openReadMeHandler(TelemetryTriggerFrom.Auto);
-    await updateProjectStatus(globalVariables.workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
+    await updateProjectStatus(workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
-    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    await ShowScaffoldingWarningSummary(workspaceUri.fsPath, createWarnings);
     await globalStateUpdate(GlobalKey.CreateWarnings, "");
   }
   if (isOpenSampleReadMe) {
@@ -1328,7 +1295,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
 
 export async function openReadMeHandler(...args: unknown[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
-  if (!globalVariables.isTeamsFxProject && !globalVariables.isOfficeAddInProject) {
+  if (!isTeamsFxProject && !isOfficeAddInProject) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
@@ -1420,41 +1387,73 @@ export async function autoInstallDependencyHandler() {
 }
 
 export async function showLocalDebugMessage() {
-  const isShowLocalDebugMessage = (await globalStateGet(
+  const shouldShowLocalDebugMessage = (await globalStateGet(
     GlobalKey.ShowLocalDebugMessage,
     false
   )) as boolean;
 
-  if (!isShowLocalDebugMessage) {
+  if (!shouldShowLocalDebugMessage) {
     return;
   } else {
     await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, false);
   }
 
-  const localDebug = {
-    title: localize("teamstoolkit.handlers.localDebugTitle"),
-    run: async (): Promise<void> => {
-      await selectAndDebug();
-    },
-  };
+  const hasLocalEnv = await fs.pathExists(path.join(workspaceUri!.fsPath, "teamsapp.local.yml"));
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
-  const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
+  const folderLink = encodeURI(workspaceUri!.toString());
+  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
 
-  let message = util.format(messageTemplate, appName, globalVariables.workspaceUri?.fsPath);
-  if (isWindows) {
-    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
-    const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(messageTemplate, appName, openFolderCommand);
-  }
-  void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
-    if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-      selection.run();
+  if (hasLocalEnv) {
+    const localDebug = {
+      title: localize("teamstoolkit.handlers.localDebugTitle"),
+      run: async (): Promise<void> => {
+        await selectAndDebug();
+      },
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+
+    const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
+
+    let message = util.format(messageTemplate, appName, workspaceUri?.fsPath);
+    if (isWindows) {
+      message = util.format(messageTemplate, appName, openFolderCommand);
     }
-  });
+    void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
+      if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+        selection.run();
+      }
+    });
+  } else {
+    const provision = {
+      title: localize("teamstoolkit.handlers.provisionTitle"),
+      run: async (): Promise<void> => {
+        await vscode.commands.executeCommand(CommandKey.Provision, [
+          TelemetryTriggerFrom.Notification,
+        ]);
+      },
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowProvisionNotification);
+    const message = isWindows
+      ? util.format(
+          localize("teamstoolkit.handlers.provisionDescription"),
+          appName,
+          openFolderCommand
+        )
+      : util.format(
+          localize("teamstoolkit.handlers.provisionDescription.fallback"),
+          appName,
+          workspaceUri?.fsPath
+        );
+    void vscode.window.showInformationMessage(message, provision).then((selection) => {
+      if (selection?.title === localize("teamstoolkit.handlers.provisionTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickProvision);
+        selection.run();
+      }
+    });
+  }
 }
 
 export async function ShowScaffoldingWarningSummary(
@@ -1789,7 +1788,7 @@ export async function openAzureAccountHandler() {
 }
 
 export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
-  if (!isValidProject(globalVariables.workspaceUri?.fsPath)) {
+  if (!isValidProject(workspaceUri?.fsPath)) {
     return;
   }
 
@@ -1861,8 +1860,8 @@ export async function showError(e: UserError | SystemError) {
   };
   const recommendTestTool =
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&
-    globalVariables.workspaceUri?.fsPath &&
-    commonUtils.isTestToolEnabledProject(globalVariables.workspaceUri.fsPath);
+    workspaceUri?.fsPath &&
+    isTestToolEnabledProject(workspaceUri.fsPath);
 
   if (recommendTestTool) {
     const recommendTestToolMessage = openTestToolMessage();
@@ -2113,7 +2112,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.PreviewAadManifestFile,
     getTriggerFromProperty(args)
   );
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = workspaceUri?.fsPath;
   const validProject = isValidProject(workspacePath);
   if (!validProject) {
     ExtTelemetry.sendTelemetryErrorEvent(
@@ -2183,7 +2182,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
   }
 
   ExtTelemetry.sendTelemetryEvent(telemetryStartName);
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = workspaceUri?.fsPath;
   if (!workspacePath) {
     const noOpenWorkspaceError = new UserError(
       ExtensionSource,
@@ -2277,7 +2276,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
   const result = await runCommand(Stage.deployTeams, inputs);
 
   if (!args || args.length === 0) {
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const workspacePath = workspaceUri?.fsPath;
     const inputs = getSystemInputs();
     inputs.ignoreEnvInfo = true;
     const env = await core.getSelectedEnv(inputs);
@@ -2303,11 +2302,11 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
     const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
     if (!isFromApiPlugin) {
       // Codelens for API ME. Trigger from manifest.json
-      inputs[CoreQuestionNames.ManifestPath] = filePath;
+      inputs[QuestionNames.ManifestPath] = filePath;
     } else {
-      inputs[CoreQuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
-      inputs[CoreQuestionNames.DestinationApiSpecFilePath] = filePath;
-      inputs[CoreQuestionNames.ManifestPath] = args[0].manifestPath;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[QuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[QuestionNames.ManifestPath] = args[0].manifestPath;
     }
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
@@ -2320,7 +2319,7 @@ export function editAadManifestTemplate(args: any[]) {
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
   );
   if (args && args.length > 1) {
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const workspacePath = workspaceUri?.fsPath;
     const manifestPath = `${workspacePath as string}/${MetadataV3.aadManifestFileName}`;
     void workspace.openTextDocument(manifestPath).then((document) => {
       void window.showTextDocument(document);
@@ -2347,7 +2346,6 @@ export async function signOutM365(isFromTreeView: boolean) {
       : TelemetryTriggerFrom.CommandPalette,
     [TelemetryProperty.AccountType]: AccountType.M365,
   });
-  const vscodeEnv = detectVsCodeEnv();
   let result = false;
   result = await M365TokenInstance.signout();
   if (result) {
@@ -2559,7 +2557,7 @@ export async function openLifecycleTreeview(args?: any[]) {
     TelemetryEvent.ClickOpenLifecycleTreeview,
     getTriggerFromProperty(args)
   );
-  if (globalVariables.isTeamsFxProject) {
+  if (isTeamsFxProject) {
     await vscode.commands.executeCommand("teamsfx-lifecycle.focus");
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
@@ -2579,7 +2577,7 @@ export async function selectTutorialsHandler(
   const config: SingleSelectConfig = {
     name: "tutorialName",
     title: localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
-    options: globalVariables.isSPFxProject
+    options: isSPFxProject
       ? [
           {
             id: "cicdPipeline",
@@ -2840,7 +2838,7 @@ export async function selectTutorialsHandler(
         ],
     returnObject: true,
   };
-  if (TreatmentVariableValue.inProductDoc && !globalVariables.isSPFxProject) {
+  if (TreatmentVariableValue.inProductDoc && !isSPFxProject) {
     (config.options as StaticOptions).splice(0, 1, {
       id: "cardActionResponse",
       label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,

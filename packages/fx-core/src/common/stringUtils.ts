@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FailedToParseResourceIdError } from "../core/error";
-import * as Handlebars from "handlebars";
-import * as uuid from "uuid";
 import * as crypto from "crypto";
+import * as Handlebars from "handlebars";
+import { URL } from "url";
+import * as uuid from "uuid";
+import { FailedToParseResourceIdError } from "../error";
 import { getLocalizedString } from "./localizeUtils";
 
 const MIN_ENTROPY = 4;
@@ -158,7 +159,7 @@ Handlebars.registerHelper("equals", (value, target) => {
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw FailedToParseResourceIdError("resource group name", resourceId);
+    throw new FailedToParseResourceIdError("resource group name", resourceId);
   }
   return result;
 }
@@ -182,4 +183,14 @@ export function loadingOptionsPlaceholder(): string {
 
 export function loadingDefaultPlaceholder(): string {
   return getLocalizedString("ui.select.LoadingDefaultPlaceholder");
+}
+
+export function isValidHttpUrl(input: string): boolean {
+  let url;
+  try {
+    url = new URL(input);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (e) {
+    return false;
+  }
 }

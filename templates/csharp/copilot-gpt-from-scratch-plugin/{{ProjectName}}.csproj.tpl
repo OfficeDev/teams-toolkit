@@ -13,7 +13,6 @@
     <ProjectCapability Include="TeamsFx" />
     <ProjectCapability Include="CopilotPlugin" />
   </ItemGroup>
-{{/isNewProjectTypeEnabled}}
 
   <ItemGroup>
     <None Include="appPackage/**/*" />

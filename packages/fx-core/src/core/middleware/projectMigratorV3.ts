@@ -4,93 +4,93 @@
 /**
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
-import { AppPackageFolderName, err, FxError, ok, Platform } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { CoreHookContext } from "../types";
-import { backupFolder, MigrationContext } from "./utils/migrationContext";
+import { AppPackageFolderName, FxError, Platform, err, ok } from "@microsoft/teamsfx-api";
+import * as commentJson from "comment-json";
+import * as fs from "fs-extra";
+import { EOL } from "os";
 import * as path from "path";
-import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import { TOOLS } from "../../common/globalVars";
+import { getLocalizedString } from "../../common/localizeUtils";
 import {
   Component,
+  TelemetryEvent,
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
-  TelemetryEvent,
 } from "../../common/telemetry";
-import { TOOLS } from "../globalVars";
-import {
-  UpgradeV3CanceledError,
-  MigrationError,
-  AbandonedProjectError,
-  NotAllowedMigrationError,
-} from "../error";
-import { AppYmlGenerator } from "./utils/appYmlGenerator";
-import * as fs from "fs-extra";
+import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/driver/teamsApp/constants";
-import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
+import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
 import {
-  readAndConvertUserdata,
-  fsReadDirSync,
-  generateAppIdUri,
-  getProjectVersion,
-  jsonObjectNamesConvertV3,
-  getCapabilityStatus,
-  readBicepContent,
-  readJsonFile,
-  replaceAppIdUri,
-  updateAndSaveManifestForSpfx,
-  getTemplateFolderPath,
-  getParameterFromCxt,
-  migrationNotificationMessage,
-  outputCancelMessage,
-  getVersionState,
-  getTrackingIdFromPath,
-  buildEnvUserFileName,
-  tryExtractEnvFromUserdata,
-  buildEnvFileName,
-  addMissingValidDomainForManifest,
-  isValidDomainForBotOutputKey,
-} from "./utils/v3MigrationUtils";
-import * as commentJson from "comment-json";
+  AbandonedProjectError,
+  MigrationError,
+  NotAllowedMigrationError,
+  UpgradeV3CanceledError,
+  assembleError,
+} from "../../error";
+import { getTemplatesFolder } from "../../folder";
+import { CoreHookContext } from "../types";
+import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import { VersionForMigration } from "./types";
+import { FileType, replacePlaceholdersForV3 } from "./utils/MigrationUtils";
+import { AppYmlGenerator } from "./utils/appYmlGenerator";
+import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
+import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
+  OldProjectSettingsHelper,
   getPlaceholderMappings,
   ignoreDevToolsDir,
   isCommentObject,
   launchRemote,
-  OldProjectSettingsHelper,
   readJsonCommentFile,
 } from "./utils/debug/debugV3MigrationUtils";
 import {
-  migrateTransparentLocalTunnel,
-  migrateTransparentPrerequisite,
-  migrateTransparentNpmInstall,
-  migrateSetUpTab,
-  migrateSetUpSSO,
+  migrateAuthStart,
+  migrateBackendExtensionsInstall,
+  migrateBackendStart,
+  migrateBackendWatch,
+  migrateBotStart,
+  migrateFrontendStart,
+  migrateGetFuncPathCommand,
+  migrateInstallAppInTeams,
+  migrateNgrokStartCommand,
+  migrateNgrokStartTask,
+  migratePreDebugCheck,
   migratePrepareManifest,
   migrateSetUpBot,
+  migrateSetUpSSO,
+  migrateSetUpTab,
+  migrateTransparentLocalTunnel,
+  migrateTransparentNpmInstall,
+  migrateTransparentPrerequisite,
   migrateValidateDependencies,
-  migrateBackendExtensionsInstall,
-  migrateFrontendStart,
   migrateValidateLocalPrerequisites,
-  migrateNgrokStartTask,
-  migrateNgrokStartCommand,
-  migrateBotStart,
-  migrateAuthStart,
-  migrateBackendWatch,
-  migrateBackendStart,
-  migratePreDebugCheck,
-  migrateInstallAppInTeams,
-  migrateGetFuncPathCommand,
 } from "./utils/debug/taskMigrator";
-import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
-import { EOL } from "os";
-import { getTemplatesFolder } from "../../folder";
-import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { VersionForMigration } from "./types";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
-import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
-import { assembleError } from "../../error";
+import { MigrationContext, backupFolder } from "./utils/migrationContext";
+import {
+  addMissingValidDomainForManifest,
+  buildEnvFileName,
+  buildEnvUserFileName,
+  fsReadDirSync,
+  generateAppIdUri,
+  getCapabilityStatus,
+  getParameterFromCxt,
+  getProjectVersion,
+  getTemplateFolderPath,
+  getTrackingIdFromPath,
+  getVersionState,
+  isValidDomainForBotOutputKey,
+  jsonObjectNamesConvertV3,
+  migrationNotificationMessage,
+  outputCancelMessage,
+  readAndConvertUserdata,
+  readBicepContent,
+  readJsonFile,
+  replaceAppIdUri,
+  tryExtractEnvFromUserdata,
+  updateAndSaveManifestForSpfx,
+} from "./utils/v3MigrationUtils";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -171,7 +171,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       getLocalizedString("core.migrationV3.abandonedProject"),
       true
     );
-    ctx.result = err(AbandonedProjectError());
+    ctx.result = err(new AbandonedProjectError());
     return;
   }
   const projectPath = getParameterFromCxt(ctx, "projectPath", "");
@@ -386,7 +386,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const oldManifestExists = await fs.pathExists(oldManifestAbsolutePath);
   if (!oldManifestExists) {
     // templates/appPackage/manifest.template.json does not exist
-    throw MigrationError(
+    throw new MigrationError(
       new Error(getLocalizedString("core.migrationV3.manifestNotExist")),
       errorNames.manifestTemplateNotExist,
       learnMoreLink
@@ -399,7 +399,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
       path.join(context.projectPath, oldManifestPath)
     );
     if (res.isErr()) {
-      throw MigrationError(
+      throw new MigrationError(
         new Error(getLocalizedString("core.migrationV3.manifestInvalid")),
         errorNames.manifestTemplateInvalid
       );
@@ -480,7 +480,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile(MetadataV3.aadManifestFileName, aadManifest);
   } else if (aadRequired && !oldAadManifestExists) {
-    throw MigrationError(
+    throw new MigrationError(
       new Error(getLocalizedString("core.migrationV3.aadManifestNotExist")),
       errorNames.aadManifestTemplateNotExist,
       learnMoreLink
@@ -565,7 +565,7 @@ async function askUserConfirm(
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
     });
-    ctx.result = err(UpgradeV3CanceledError());
+    ctx.result = err(new UpgradeV3CanceledError());
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }

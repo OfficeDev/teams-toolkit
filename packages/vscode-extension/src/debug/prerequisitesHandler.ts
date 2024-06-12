@@ -28,9 +28,10 @@ import {
   TelemetryContext,
   V3NodeNotSupportedError,
   assembleError,
-  serviceScope,
-  getCopilotStatus,
+  MosServiceScope,
   getSideloadingStatus,
+  ErrorCategory,
+  PackageService,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 import * as util from "util";
@@ -40,9 +41,9 @@ import { signedOut } from "../commonlib/common/constant";
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
-import * as globalVariables from "../globalVariables";
-import { checkCopilotCallback, openAccountHelpHandler, tools } from "../handlers";
+import { VS_CODE_UI } from "../qm/vsc_ui";
+import { tools, workspaceUri } from "../globalVariables";
+import { checkCopilotCallback, openAccountHelpHandler } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -61,7 +62,6 @@ import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ProgressHelper } from "./progressHelper";
 import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
-import { ErrorCategory } from "@microsoft/teamsfx-core";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -427,7 +427,7 @@ function ensureM365Account(
   );
 }
 
-const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
 async function ensureCopilotAccess(
   showLoginPage: boolean
 ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {
@@ -447,7 +447,10 @@ async function ensureCopilotAccess(
       });
       let hasCopilotAccess: boolean | undefined = undefined;
       if (copilotTokenRes.isOk()) {
-        hasCopilotAccess = await getCopilotStatus(copilotTokenRes.value, false);
+        hasCopilotAccess = await PackageService.GetSharedInstance().getCopilotStatus(
+          copilotTokenRes.value,
+          false
+        );
       }
 
       // true, false or undefined for error
@@ -618,7 +621,7 @@ async function checkNode(
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
         const nodeStatus = await depsManager.ensureDependency(nodeDep, true, {
-          projectPath: globalVariables.workspaceUri?.fsPath,
+          projectPath: workspaceUri?.fsPath,
         });
         return {
           checker: nodeStatus.name,
@@ -787,7 +790,7 @@ async function checkFailure(
 }
 
 function getOrderedCheckersForGetStarted(): PrerequisiteOrderedChecker[] {
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = workspaceUri?.fsPath;
   return [
     {
       info: { checker: workspacePath ? DepsType.ProjectNode : DepsType.LtsNode },

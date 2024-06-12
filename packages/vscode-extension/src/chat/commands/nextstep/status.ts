@@ -7,12 +7,7 @@ import {
   getProjectStatus,
   getREADME,
 } from "../../../utils/projectStatusUtils";
-import {
-  checkCredential,
-  getFixedCommonProjectSettings,
-  globalStateGet,
-  globalStateUpdate,
-} from "./helper";
+import { checkCredential, getProjectMetadata, globalStateGet, globalStateUpdate } from "./helper";
 import { MachineStatus, WholeStatus } from "./types";
 
 export const firstInstalledKey = "first-installation";
@@ -23,7 +18,7 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
       machineStatus: await getMachineStatus(),
     };
   } else {
-    const projectSettings = getFixedCommonProjectSettings(folder);
+    const projectSettings = getProjectMetadata(folder);
     const projectId = projectSettings?.projectId;
     const actionStatus = await getProjectStatus(projectId ?? folder);
     const codeModifiedTime = {

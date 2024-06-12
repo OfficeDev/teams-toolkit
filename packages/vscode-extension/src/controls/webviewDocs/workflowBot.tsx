@@ -229,8 +229,8 @@ module.exports = {
       </ol>
       <p>
         The bot will respond by updating the existing Adaptive Card to show the workflow is now
-        complete! Continue reading to learn more about what&#39;s included in the template and how
-        to customize it.
+        complete! Continue reading to get more info about what&#39;s included in the template and
+        how to customize it.
       </p>
       <p>Here is a screen shot of the application running:</p>
       <p>
@@ -362,7 +362,8 @@ module.exports = {
           <p>
             Specifying the <code className="code">type</code> as{" "}
             <code className="code">Action.Execute</code> allows this Adaptive Card to respond with
-            another card, which will update the UI by replacing the existing card. Learn more about{" "}
+            another card, which will update the UI by replacing the existing card. Get more info
+            about{" "}
             <ExternalLink
               title="Adaptive Card Universal Actions in the documentation"
               link="https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions"
@@ -499,7 +500,7 @@ module.exports = {
         </CollapsibleStep>
       </div>
       <p>
-        Congratulations, you&#39;ve just created your own workflow! To learn more about extending
+        Congratulations, you&#39;ve just created your own workflow! To get more info about extending
         the Workflow bot template,{" "}
         <ExternalLink
           title="visit the documentation on GitHub"

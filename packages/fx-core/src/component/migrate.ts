@@ -5,8 +5,32 @@ import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
-import { ComponentNames } from "./constants";
 import { CapabilityOptions } from "../question/constants";
+
+export const ComponentNames = {
+  TeamsTab: "teams-tab",
+  TeamsBot: "teams-bot",
+  TeamsApi: "teams-api",
+  AppManifest: "app-manifest",
+  AadApp: "aad-app",
+  AzureWebApp: "azure-web-app",
+  AzureStorage: "azure-storage",
+  BotService: "bot-service",
+  SPFxTab: "spfx-tab",
+  SPFx: "spfx",
+  Identity: "identity",
+  APIM: "apim",
+  KeyVault: "key-vault",
+  AzureSQL: "azure-sql",
+  TabCode: "tab-code",
+  BotCode: "bot-code",
+  ApiCode: "api-code",
+  Function: "azure-function",
+  SimpleAuth: "simple-auth",
+  SSO: "sso",
+  ApiConnector: "api-connector",
+  CICD: "cicd",
+};
 
 export const EnvStateMigrationComponentNames = [
   ["solution", "solution"],

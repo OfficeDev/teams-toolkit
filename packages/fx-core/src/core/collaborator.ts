@@ -19,7 +19,7 @@ import axios from "axios";
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
 import { validate as uuidValidate } from "uuid";
-import { VSCodeExtensionCommand } from "../common/constants";
+import { GraphScopes, VSCodeExtensionCommand } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import {
   AadOwner,
@@ -29,13 +29,11 @@ import {
   PermissionsResult,
   ResourcePermission,
 } from "../common/permissionInterface";
-import { GraphScopes } from "../common/constants";
 import { SolutionError, SolutionSource, SolutionTelemetryProperty } from "../component/constants";
 import { AppUser } from "../component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AadCollaboration, TeamsCollaboration } from "../component/feature/collaboration";
-import { FileNotFoundError } from "../error/common";
+import { FailedToLoadManifestId, FileNotFoundError } from "../error/common";
 import { QuestionNames } from "../question/constants";
-import { CoreSource, FailedToLoadManifestId } from "./error";
 
 export class CollaborationConstants {
   // Collaboartion CLI parameters
@@ -536,7 +534,7 @@ export async function grantPermission(
     if (!email || email === result.value.userPrincipalName) {
       return err(
         new UserError(
-          CoreSource,
+          "core",
           SolutionError.EmailCannotBeEmptyOrSame,
           getDefaultString("core.collaboration.EmailCannotBeEmptyOrSame"),
           getLocalizedString("core.collaboration.EmailCannotBeEmptyOrSame")
@@ -549,7 +547,7 @@ export async function grantPermission(
     if (!userInfo) {
       return err(
         new UserError(
-          CoreSource,
+          "core",
           SolutionError.CannotFindUserInCurrentTenant,
           getDefaultString("core.collaboration.CannotFindUserInCurrentTenant"),
           getLocalizedString("core.collaboration.CannotFindUserInCurrentTenant")

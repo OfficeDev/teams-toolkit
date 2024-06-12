@@ -7,48 +7,8 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
-import {
-  FeatureFlags,
-  featureFlagManager,
-  initializePreviewFeatureFlags,
-  isCopilotAuthEnabled,
-} from "../../src/common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
-
-describe("featureFlags", () => {
-  describe("initializePreviewFeatureFlags()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-    });
-
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-
-    it("successfully open all feature flags", async () => {
-      initializePreviewFeatureFlags();
-    });
-  });
-
-  describe("isCopilotAuthEnabled()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "true" });
-      const res = isCopilotAuthEnabled();
-      chai.assert.isTrue(res);
-    });
-    it("is false", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "false" });
-      const res = isCopilotAuthEnabled();
-      chai.assert.isFalse(res);
-    });
-  });
-});
 
 describe("FeatureFlagManager", () => {
   let mockedEnvRestore: RestoreFn = () => {};

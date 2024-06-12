@@ -32,7 +32,7 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   {
     configurationUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/config`,
     canUpdateConfiguration: true,
-    scopes: ["team", "groupchat"],
+    scopes: ["team", "groupChat"],
   },
 ];
 
@@ -41,12 +41,12 @@ const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
     commandLists: [
       {
-        scopes: ["personal", "team", "groupchat"],
+        scopes: ["personal", "team", "groupChat"],
         commands: [
           {
             title: "helloWorld",
@@ -61,7 +61,7 @@ export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
 export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
   },
@@ -70,12 +70,12 @@ export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
 export const BOTS_TPL_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
     commandLists: [
       {
-        scopes: ["personal", "team", "groupchat"],
+        scopes: ["personal", "team", "groupChat"],
         commands: [
           {
             title: "welcome",
@@ -278,12 +278,12 @@ export const DEFAULT_DESCRIPTION = {
 export const BOTS_TPL_EXISTING_APP: IBot[] = [
   {
     botId: "{{config.manifest.botId}}",
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
     commandLists: [
       {
-        scopes: ["personal", "team", "groupchat"],
+        scopes: ["personal", "team", "groupChat"],
         commands: [],
       },
     ],
@@ -309,7 +309,7 @@ export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
   {
     configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
     canUpdateConfiguration: true,
-    scopes: ["team", "groupchat"],
+    scopes: ["team", "groupChat"],
   },
 ];
 

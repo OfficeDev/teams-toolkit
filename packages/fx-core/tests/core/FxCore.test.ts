@@ -1402,7 +1402,7 @@ describe("checkProjectType", async () => {
       hasTeamsManifest: true,
       manifestCapabilities: ["bot"],
       manifestAppId: "xxx",
-      manifestVersion: "1.16",
+      manifestVersion: "1.17",
       dependsOnTeamsJs: true,
     });
     const core = new FxCore(tools);

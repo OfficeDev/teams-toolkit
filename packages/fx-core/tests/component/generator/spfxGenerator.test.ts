@@ -61,8 +61,8 @@ describe("SPFxGenerator", function () {
       if (directory.includes("teams")) {
         return {
           $schema:
-            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-          manifestVersion: "1.16",
+            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+          manifestVersion: "1.17",
           id: "fakedId",
           name: {
             short: "thisisaverylongappnametotestifitwillbetruncated",

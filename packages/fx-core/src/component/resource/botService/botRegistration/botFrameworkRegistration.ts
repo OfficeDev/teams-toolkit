@@ -5,10 +5,10 @@
  * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { FxError, LogProvider, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioClient } from "../appStudio/appStudioClient";
+import { teamsDevPortalClient } from "../../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../../common/constants";
 import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { Utils } from "./utils";
-import { AppStudioScopes } from "../../../../common/constants";
 
 export async function createOrUpdateBotRegistration(
   m365TokenProvider: M365TokenProvider,
@@ -28,14 +28,14 @@ export async function createOrUpdateBotRegistration(
   }
   const appStudioToken = appStudioTokenRes.value;
   logger?.debug(`Input bot registration: ${JSON.stringify(botRegistration)}`);
-  const remoteBotRegistration = await AppStudioClient.getBotRegistration(
+  const remoteBotRegistration = await teamsDevPortalClient.getBotRegistration(
     appStudioToken,
     botRegistration.botId!
   );
   if (!remoteBotRegistration) {
     // Not Found case.
     logger?.verbose("Bot registration not found, create a new one.");
-    await AppStudioClient.createBotRegistration(appStudioToken, botRegistration, false);
+    await teamsDevPortalClient.createBotRegistration(appStudioToken, botRegistration, false);
   } else {
     // Update bot registration.
     logger?.verbose("Bot registration found, update it.");
@@ -45,7 +45,7 @@ export async function createOrUpdateBotRegistration(
       remoteBotRegistration
     );
     logger?.debug(`Merged bot registration: ${JSON.stringify(mergedBotRegistration)}`);
-    await AppStudioClient.updateBotRegistration(appStudioToken, mergedBotRegistration);
+    await teamsDevPortalClient.updateBotRegistration(appStudioToken, mergedBotRegistration);
   }
   return ok(remoteBotRegistration !== undefined);
 }

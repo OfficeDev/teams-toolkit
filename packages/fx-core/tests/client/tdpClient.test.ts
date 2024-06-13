@@ -5,6 +5,7 @@ import { TeamsAppManifest, err, ok } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import "mocha";
+import mockedEnv from "mocked-env";
 import { createSandbox } from "sinon";
 import { v4 as uuid } from "uuid";
 import { RetryHandler, teamsDevPortalClient } from "../../src/client/teamsDevPortalClient";
@@ -96,7 +97,7 @@ describe("TeamsDevPortalClient Test", () => {
     sandbox.restore();
   });
 
-  describe("setRegionByToken", () => {
+  describe("setRegionEndpointByToken", () => {
     it("Happy path", async () => {
       sandbox.stub(RetryHandler, "Retry").resolves({
         status: 200,
@@ -106,8 +107,17 @@ describe("TeamsDevPortalClient Test", () => {
           },
         },
       });
-      await teamsDevPortalClient.setRegionEndpointByToken("");
+      await teamsDevPortalClient.setRegionEndpointByToken("https://xxx.xxx.xxx");
       chai.assert.equal(teamsDevPortalClient.regionEndpoint, "https://xxx.xxx.xxx");
+    });
+    it("Not set region for int endpoint", async () => {
+      teamsDevPortalClient.regionEndpoint = undefined;
+      const restore = mockedEnv({
+        APP_STUDIO_ENV: "int",
+      });
+      await teamsDevPortalClient.setRegionEndpointByToken("https://xxx.xxx.xxx");
+      chai.assert.isUndefined(teamsDevPortalClient.regionEndpoint);
+      restore();
     });
   });
   describe("publishTeamsApp", () => {

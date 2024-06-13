@@ -21,7 +21,7 @@ import isUUID from "validator/lib/isUUID";
 import * as vscode from "vscode";
 import { environmentVariableRegex } from "./constants";
 import { commandIsRunning } from "./globalVariables";
-import { getSystemInputs } from "./utils/environmentUtils";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
 import * as _ from "lodash";

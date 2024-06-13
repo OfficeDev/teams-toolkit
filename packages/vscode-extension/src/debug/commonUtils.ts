@@ -1,15 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Stage, UserError } from "@microsoft/teamsfx-api";
-
-import {
-  LocalEnvManager,
-  MetadataV3,
-  envUtil,
-  metadataUtil,
-  pathUtils,
-} from "@microsoft/teamsfx-core";
+import { LocalEnvManager, MetadataV3 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -17,16 +9,6 @@ import VsCodeLogInstance from "../commonlib/log";
 import { workspaceUri } from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
-import { ExtensionErrors, ExtensionSource } from "../error";
-
-export async function getProjectRoot(
-  folderPath: string,
-  folderName: string
-): Promise<string | undefined> {
-  const projectRoot: string = path.join(folderPath, folderName);
-  const projectExists: boolean = await fs.pathExists(projectRoot);
-  return projectExists ? projectRoot : undefined;
-}
 
 export async function getNpmInstallLogInfo(): Promise<any> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
@@ -110,42 +92,6 @@ export class Step {
   getPrefix(): string {
     return `(${this.currentStep++}/${this.totalSteps})`;
   }
-}
-
-export async function getV3TeamsAppId(projectPath: string, env: string): Promise<string> {
-  const result = await envUtil.readEnv(projectPath, env, false);
-  if (result.isErr()) {
-    throw result.error;
-  }
-
-  const teamsAppIdKey = (await getTeamsAppKeyName(env)) || "TEAMS_APP_ID";
-  const teamsAppId = result.value[teamsAppIdKey];
-  if (teamsAppId === undefined) {
-    throw new UserError(
-      ExtensionSource,
-      ExtensionErrors.TeamsAppIdNotFoundError,
-      `TEAMS_APP_ID is missing in ${env} environment.`
-    );
-  }
-
-  return teamsAppId;
-}
-
-export async function getTeamsAppKeyName(env?: string): Promise<string | undefined> {
-  const templatePath = pathUtils.getYmlFilePath(workspaceUri!.fsPath, env);
-  const maybeProjectModel = await metadataUtil.parse(templatePath, env);
-  if (maybeProjectModel.isErr()) {
-    return undefined;
-  }
-  const projectModel = maybeProjectModel.value;
-  if (projectModel.provision?.driverDefs && projectModel.provision.driverDefs.length > 0) {
-    for (const driver of projectModel.provision.driverDefs) {
-      if (driver.uses === "teamsApp/create") {
-        return driver.writeToEnvironmentFile?.teamsAppId;
-      }
-    }
-  }
-  return undefined;
 }
 
 // Only work in ts/js project

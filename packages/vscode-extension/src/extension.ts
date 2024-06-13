@@ -54,9 +54,8 @@ import M365TokenInstance from "./commonlib/m365Login";
 import { configMgr } from "./config";
 import { CommandKey as CommandKeys } from "./constants";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
-import * as copilotChatHandlers from "./copilotChatHandlers";
+import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
-import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -74,8 +73,6 @@ import {
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
-import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
-import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
@@ -86,7 +83,7 @@ import {
   handleOfficeFeedback,
   officeChatRequestHandler,
 } from "./officeChat/handlers";
-import * as officeDevHandlers from "./officeDevHandlers";
+import * as officeDevHandlers from "./handlers/officeDevHandlers";
 import { initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
@@ -100,6 +97,10 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
+import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
+import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
+import { showOutputChannelHandler } from "./handlers/showOutputChannel";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -387,7 +388,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 
   const showOutputChannel = vscode.commands.registerCommand(
     "fx-extension.showOutputChannel",
-    (...args) => Correlator.run(handlers.showOutputChannel, args)
+    (...args) => Correlator.run(showOutputChannelHandler, args)
   );
   context.subscriptions.push(showOutputChannel);
 

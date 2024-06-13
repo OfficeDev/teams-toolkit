@@ -1,5 +1,6 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
+import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
 import { debugInTestToolHandler } from "../../src/handlers/debugInTestTool";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";

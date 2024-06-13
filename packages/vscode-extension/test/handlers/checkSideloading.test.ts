@@ -1,4 +1,5 @@
 import * as sinon from "sinon";
+import * as chai from "chai";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ok } from "@microsoft/teamsfx-api";

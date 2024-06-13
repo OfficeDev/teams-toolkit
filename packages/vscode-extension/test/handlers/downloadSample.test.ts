@@ -1,6 +1,7 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import * as globalVariables from "../../src/globalVariables";
+import * as vscode from "vscode";
 import { err, Inputs, Platform, Stage, SystemError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { MockCore } from "../mocks/mockCore";
@@ -8,19 +9,18 @@ import { downloadSample, downloadSampleApp } from "../../src/handlers/downloadSa
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
-describe("downloadSampleApp", function () {
+describe("downloadSampleApp", () => {
   const sandbox = sinon.createSandbox();
 
-  this.beforeEach(() => {
-    sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
-    sandbox.stub(vscode.commands, "executeCommand");
-  });
+  beforeEach(() => {});
 
-  this.afterEach(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
   it("happy path", async () => {
+    sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
+    sandbox.stub(vscode.commands, "executeCommand");
     sandbox.stub(globalVariables, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -33,6 +33,8 @@ describe("downloadSampleApp", function () {
   });
 
   it("has error", async () => {
+    sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
+    sandbox.stub(vscode.commands, "executeCommand");
     sandbox.stub(globalVariables, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");

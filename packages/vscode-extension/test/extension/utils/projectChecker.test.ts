@@ -1,6 +1,6 @@
 import { UserError, err, ok } from "@microsoft/teamsfx-api";
-import "mocha";
 import * as sinon from "sinon";
+import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as global from "../../../src/globalVariables";
 import {

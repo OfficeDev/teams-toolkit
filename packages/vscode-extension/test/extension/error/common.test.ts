@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import * as localizeUtils from "../../../src/utils/localizeUtils";
 import * as fs from "fs-extra";
 import * as globalVariables from "../../../src/globalVariables";
+import * as projectChecker from "../../../src/utils/projectChecker";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { showError } from "../../../src/error/common";
@@ -114,16 +115,20 @@ describe("common", () => {
     },
   ].forEach(({ type, buildError, buttonNum }) => {
     const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it(`showError - ${type} - recommend test tool`, async () => {
       sandbox.stub(localizeUtils, "localize").returns("");
-      const showErrorMessageStub = sandbox.stub<any, any>(vscode.window, "showErrorMessage");
-      //   sandbox.stub(commonUtils, "isTestToolEnabledProject").returns(true);
+      const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
+      sandbox.stub(projectChecker, "isTestToolEnabledProject").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(vscode.commands, "executeCommand");
       const error = buildError();
       await showError(error);
       chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
-      sandbox.restore();
     });
   });
 });

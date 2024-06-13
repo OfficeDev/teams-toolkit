@@ -1,5 +1,4 @@
-import { FxError, ManifestUtil, Result, ok } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as chai from "chai";
 import * as mockfs from "mock-fs";
@@ -9,13 +8,14 @@ import { Terminal } from "vscode";
 import { OfficeDevTerminal, TriggerCmdType } from "../../src/debug/taskTerminal/officeDevTerminal";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
-import * as officeDevHandlers from "../../src/officeDevHandlers";
-import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/officeDevHandlers";
+import * as officeDevHandlers from "../../src/handlers/officeDevHandlers";
+import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/handlers/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { openOfficeDevFolder } from "../../src/utils/workspaceUtils";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -167,11 +167,6 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 
   it("opens README", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
-    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
-    sandbox.stub(globalVariables, "isOfficeAddInProject").resolves(false);
-    const showMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .resolves(undefined);
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "fx-extension.openReadMe") {
         return vscode.Uri.file("test").fsPath;
@@ -179,14 +174,19 @@ describe("autoOpenOfficeDevProjectHandler", () => {
         return "";
       }
     });
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
-    sandbox.stub(ManifestUtil, "parseCommonProperties").resolves({ isCopilotPlugin: false });
-    sandbox.stub(globalState, "globalStateUpdate");
-    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    const openReadMeHandlerStub = sandbox.stub(handlers, "openReadMeHandler");
+    const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
+    const ShowScaffoldingWarningSummaryStub = sandbox.stub(
+      handlers,
+      "ShowScaffoldingWarningSummary"
+    );
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+    chai.assert.isTrue(openReadMeHandlerStub.calledOnce);
+    chai.assert.isTrue(globalStateUpdateStub.calledTwice);
+    chai.assert.isTrue(ShowScaffoldingWarningSummaryStub.calledOnce);
   });
 
   it("opens sample README", async () => {
@@ -266,9 +266,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
 
-    await officeDevHandlers.openOfficeDevFolder(folderPath, true, [
-      { type: "warnning", content: "test" },
-    ]);
+    await openOfficeDevFolder(folderPath, true, [{ type: "warnning", content: "test" }]);
 
     console.log(globalStateUpdateStub.callCount);
     chai.assert(globalStateUpdateStub.callCount == 5);

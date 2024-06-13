@@ -19,7 +19,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryE
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { openTerminalDisplayMessage, openTerminalMessage } from "../constants";
-import { getSystemInputs } from "../../utils/environmentUtils";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { core, tools } from "../../globalVariables";
 import * as path from "path";
 import { dotenvUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";

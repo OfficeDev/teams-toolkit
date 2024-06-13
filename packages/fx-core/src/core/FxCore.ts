@@ -308,9 +308,15 @@ export class FxCore {
     ContextInjectorMW,
   ])
   async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
-    if (inputs.env) {
-      return this.uninstallByEnv(inputs);
+    switch (inputs["uninstall-mode"]) {
+      case "uninstall-mode-env":
+        return this.uninstallByEnv(inputs);
+      case "uninstall-mode-manifest-id":
+        return this.uninstallByManifestId(inputs);
+      case "uninstall-mode-title-id":
+        return this.uninstallByTitleId(inputs);
     }
+
     //return ok(undefined);
     const templatePath = pathUtils.getYmlFilePath(inputs.projectPath ?? "", inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
@@ -396,6 +402,24 @@ export class FxCore {
    */
   @hooks([EnvLoaderMW(true, false), ConcurrentLockerMW, EnvWriterMW])
   async uninstallByEnv(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
+    await Promise.resolve();
+    return ok(undefined);
+  }
+
+  /**
+   * uninstall provisioned resources by manifest ID
+   */
+  @hooks([EnvLoaderMW(true, false), ConcurrentLockerMW, EnvWriterMW])
+  async uninstallByManifestId(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
+    await Promise.resolve();
+    return ok(undefined);
+  }
+
+  /**
+   * uninstall provisioned resources by title ID
+   */
+  @hooks([EnvLoaderMW(true, false), ConcurrentLockerMW, EnvWriterMW])
+  async uninstallByTitleId(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
     await Promise.resolve();
     return ok(undefined);
   }

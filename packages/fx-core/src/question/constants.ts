@@ -89,6 +89,7 @@ export enum QuestionNames {
   UserEmail = "email",
 
   UninstallMode = "uninstall-mode",
+  UnistallOption = "uninstall-option",
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",

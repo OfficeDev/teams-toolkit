@@ -895,7 +895,7 @@ export function uninstallQuestionNode(): IQTreeNode {
               title: "Manifest ID",
             },
             condition: (input: UninstallInputs) => {
-              return input["uninstall-mode"] == "uninstall-manifest-id";
+              return input[QuestionNames.UninstallMode] == "uninstall-mode-manifest-id";
             },
           },
           {
@@ -905,7 +905,7 @@ export function uninstallQuestionNode(): IQTreeNode {
               title: "Env",
             },
             condition: (input: UninstallInputs) => {
-              return input["uninstall-mode"] === "uninstall-env";
+              return input[QuestionNames.UninstallMode] === "uninstall-mode-env";
             },
             children: [
               {
@@ -917,13 +917,22 @@ export function uninstallQuestionNode(): IQTreeNode {
             ],
           },
           {
+            data: uninstallOptionQuestion(),
+            condition: (input: UninstallInputs) => {
+              return (
+                input[QuestionNames.UninstallMode] === "uninstall-mode-manifest-id" ||
+                input[QuestionNames.UninstallMode] === "uninstall-mode-env"
+              );
+            },
+          },
+          {
             data: {
               type: "text",
               name: "titile-id",
               title: "Title ID",
             },
             condition: (input: UninstallInputs) => {
-              return input["uninstall-mode"] === "uninstall-title-id";
+              return input[QuestionNames.UninstallMode] === "uninstall-mode-title-id";
             },
           },
         ],
@@ -936,19 +945,19 @@ function uninstallModeQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.UninstallMode,
     // todo: change to localized string
-    title: "Choose Uninstall Mode",
+    title: "Choose uninstall mode",
     type: "singleSelect",
     staticOptions: [
       {
-        id: "uninstall-manifest-id",
+        id: "uninstall-mode-manifest-id",
         label: "By manifest id",
       },
       {
-        id: "uninstall-env",
+        id: "uninstall-mode-env",
         label: "By env",
       },
       {
-        id: "uninstall-title-id",
+        id: "uninstall-mode-title-id",
         label: "By title id",
       },
     ],
@@ -956,6 +965,28 @@ function uninstallModeQuestion(): SingleSelectQuestion {
   };
 }
 
+function uninstallOptionQuestion(): MultiSelectQuestion {
+  return {
+    name: QuestionNames.UnistallOption,
+    // todo: change to localized string
+    title: "Choose resources to uninstall",
+    type: "multiSelect",
+    staticOptions: [
+      {
+        id: "uninstall-option-m365-app",
+        label: "M365 app",
+      },
+      {
+        id: "uninstall-option-app-registration",
+        label: "App registration",
+      },
+      {
+        id: "uninstall-option-bot-framework-registration",
+        label: "Bot framework registration",
+      },
+    ],
+  };
+}
 function uninstallProjectPathQuestion(): FolderQuestion {
   return {
     type: "folder",

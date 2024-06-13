@@ -16,7 +16,7 @@ import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { officeSampleProvider } from "../../../../src/officeChat/commands/create/officeSamples";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
-import { core } from "../../../../src/handlers";
+import { core } from "../../../../src/globalVariables";
 import { CreateProjectResult, ok } from "@microsoft/teamsfx-api";
 
 chai.use(chaiPromised);

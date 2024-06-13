@@ -10,7 +10,7 @@ import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
 import { CreateProjectResult, ok } from "@microsoft/teamsfx-api";
-import { core } from "../../../../src/handlers";
+import { core } from "../../../../src/globalVariables";
 
 describe("projectCreator", () => {
   let invokeParametersInit: () => any;

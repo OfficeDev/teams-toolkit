@@ -18,7 +18,6 @@ import {
   OfficeAddinGenerator,
   OfficeAddinGeneratorNew,
 } from "../../../src/component/generator/officeAddin/generator";
-import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
@@ -31,7 +30,6 @@ import {
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
-  OfficeAddinHostOptions,
   ProjectTypeOptions,
   QuestionNames,
   ScratchOptions,
@@ -226,44 +224,13 @@ const V3Version = MetadataV3.projectVersion;
         assert.isTrue(res.error instanceof InputValidationError);
       }
     });
-    it("create project for new office XML Addin MissingRequiredInputError missing App name", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        ignoreLockByUT: true,
-        folder: ".",
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      };
-      const context = createContext();
-      const res = await coordinator.create(context, inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.isTrue(res.error instanceof MissingRequiredInputError);
-      }
-    });
-    it("create project for new office XML Addin InputValidationError invalid App name", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        ignoreLockByUT: true,
-        folder: ".",
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-        [QuestionNames.AppName]: "__#$%___",
-      };
-      const context = createContext();
-      const res = await coordinator.create(context, inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.isTrue(res.error instanceof InputValidationError);
-      }
-    });
     it("create project for new office JSON Addin MissingRequiredInputError missing App name", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
         folder: ".",
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
       };
       const context = createContext();
       const res = await coordinator.create(context, inputs);
@@ -278,7 +245,7 @@ const V3Version = MetadataV3.projectVersion;
         ignoreLockByUT: true,
         folder: ".",
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
         "app-name": "__#$%___",
       };
       const context = createContext();
@@ -1041,86 +1008,6 @@ describe("Office Addin", async () => {
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "mockedError");
-  });
-});
-
-describe("Office XML Addin", async () => {
-  const sandbox = sinon.createSandbox();
-  const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
-  tools.ui = new MockedUserInteraction();
-  setTools(tools);
-
-  beforeEach(() => {
-    sandbox.stub(fs, "ensureDir").resolves();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-    mockedEnvRestore();
-  });
-
-  it("should scaffold project successfully", async () => {
-    const context = createContext();
-    context.userInteraction = new MockedUserInteraction();
-
-    sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(ok(undefined));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isOk());
-  });
-
-  it("should return error if app name is invalid", async () => {
-    const context = createContext();
-    context.userInteraction = new MockedUserInteraction();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: "__invalid__",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
-  });
-
-  it("should return error if app name is undefined", async () => {
-    const context = createContext();
-    context.userInteraction = new MockedUserInteraction();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: undefined,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
-  });
-
-  it("should return error if OfficeXMLAddinGenerator returns error", async () => {
-    const context = createContext();
-    context.userInteraction = new MockedUserInteraction();
-
-    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
-    sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(err(mockedError));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-    };
-    const res = await coordinator.create(context, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
   });
 });

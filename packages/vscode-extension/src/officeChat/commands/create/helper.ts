@@ -24,7 +24,7 @@ import { getOfficeSampleDownloadUrlInfo } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
 import { CreateProjectInputs } from "@microsoft/teamsfx-api";
-import { core } from "../../../handlers";
+import { core } from "../../../globalVariables";
 
 export async function matchOfficeProject(
   request: ChatRequest,

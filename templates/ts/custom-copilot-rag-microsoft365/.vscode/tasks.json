@@ -100,6 +100,41 @@
                     "endsPattern": "restify listening to|Bot/ME service listening at|[nodemon] app crashed"
                 }
             }
+        },
+        {
+            "label": "Start Teams App in Desktop Client",
+            "dependsOn": [
+                "Validate prerequisites",
+                "Start local tunnel",
+                "Provision",
+                "Deploy",
+                "Start application",
+                "Start desktop client"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Start desktop client",
+            "type": "teamsfx",
+            "command": "launch-desktop-client",
+            "args": {
+                "url": "teams.microsoft.com/l/app/${{local:TEAMS_APP_ID}}?installAppPackage=true"
+            }
+        },
+        {
+            "label": "Start Teams App in Desktop Client (Remote)",
+            "dependsOn": [
+                "Start desktop client (Remote)"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Start desktop client (Remote)",
+            "type": "teamsfx",
+            "command": "launch-desktop-client",
+            "args": {
+                "url": "teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true"
+            }
         }
     ]
 }

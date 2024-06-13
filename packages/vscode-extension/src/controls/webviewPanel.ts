@@ -15,7 +15,7 @@ import * as extensionPackage from "../../package.json";
 import { GlobalKey } from "../constants";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSampleApp } from "../handlers";
+import { downloadSampleApp } from "../handlers/downloadSample";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,
@@ -23,7 +23,7 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";

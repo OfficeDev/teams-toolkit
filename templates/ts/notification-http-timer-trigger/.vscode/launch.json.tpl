@@ -64,6 +64,17 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote (Desktop)",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "3-remote",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen",
         }
     ],
     "compounds": [
@@ -100,6 +111,18 @@
                 "group": "1-local",
 {{/enableTestToolByDefault}}
                 "order": 2
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Teams (Desktop)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client",
+            "presentation": {
+                "group": "2-local",
+                "order": 3
             },
             "stopAll": true
         },

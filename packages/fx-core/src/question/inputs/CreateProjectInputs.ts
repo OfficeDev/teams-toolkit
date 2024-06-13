@@ -25,6 +25,7 @@ export interface CreateProjectInputs extends Inputs {
   "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */
   capabilities?:
+    | "empty"
     | "bot"
     | "notification"
     | "command-bot"

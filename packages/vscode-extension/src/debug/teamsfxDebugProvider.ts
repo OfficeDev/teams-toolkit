@@ -17,8 +17,8 @@ import {
 
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
-import { ExtensionSource } from "../error";
-import { showError } from "../handlers";
+import { ExtensionSource } from "../error/error";
+import { showError } from "../error/common";
 import { core } from "../globalVariables";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getLocalDebugSessionId, endLocalDebugSession } from "./commonUtils";
@@ -26,7 +26,7 @@ import { accountHintPlaceholder, Host, sideloadingDisplayMessages } from "./cons
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 import { triggerV3Migration } from "../utils/migrationUtils";
-import { getSystemInputs } from "../utils/environmentUtils";
+import { getSystemInputs } from "../utils/systemEnvUtils";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;

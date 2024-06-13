@@ -1,15 +1,10 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import * as environmentUtils from "../../../src/utils/environmentUtils";
+import * as systemEnvUtils from "../../../src/utils/systemEnvUtils";
 import { Inputs, Platform, VsCodeEnv } from "@microsoft/teamsfx-api";
 
-describe("EnvironmentUtils", () => {
-  afterEach(() => {
-    // Restore the default sandbox here
-    sinon.restore();
-  });
-
+describe("SystemEnvUtils", () => {
   describe("detectVsCodeEnv()", function () {
     const sandbox = sinon.createSandbox();
 
@@ -34,7 +29,7 @@ describe("EnvironmentUtils", () => {
           return expectedResult;
         });
 
-      chai.expect(environmentUtils.detectVsCodeEnv()).equals(VsCodeEnv.local);
+      chai.expect(systemEnvUtils.detectVsCodeEnv()).equals(VsCodeEnv.local);
       getExtension.restore();
     });
 
@@ -56,7 +51,7 @@ describe("EnvironmentUtils", () => {
         });
 
       chai
-        .expect(environmentUtils.detectVsCodeEnv())
+        .expect(systemEnvUtils.detectVsCodeEnv())
         .oneOf([VsCodeEnv.remote, VsCodeEnv.codespaceVsCode, VsCodeEnv.codespaceBrowser]);
       getExtension.restore();
     });
@@ -70,7 +65,7 @@ describe("EnvironmentUtils", () => {
     });
 
     it("getSystemInputs()", () => {
-      const input: Inputs = environmentUtils.getSystemInputs();
+      const input: Inputs = systemEnvUtils.getSystemInputs();
 
       chai.expect(input.platform).equals(Platform.VSCode);
     });

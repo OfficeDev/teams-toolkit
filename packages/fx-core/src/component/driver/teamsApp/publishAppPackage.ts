@@ -7,6 +7,8 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
 import { getAbsolutePath } from "../../utils/common";
@@ -14,11 +16,9 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { AppStudioClient } from "./clients/appStudioClient";
 import { Constants } from "./constants";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { TelemetryPropertyKey } from "./utils/telemetry";
-import { AppStudioScopes } from "../../../common/constants";
 
 export const actionName = "teamsApp/publishAppPackage";
 
@@ -100,9 +100,9 @@ export class PublishAppPackageDriver implements StepDriver {
     context.addSummary(message);
 
     try {
-      const existApp = await AppStudioClient.getAppByTeamsAppId(
-        manifest.id,
-        appStudioTokenRes.value
+      const existApp = await teamsDevPortalClient.getStaggedApp(
+        appStudioTokenRes.value,
+        manifest.id
       );
       if (existApp) {
         context.addSummary(
@@ -132,10 +132,10 @@ export class PublishAppPackageDriver implements StepDriver {
           const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
           context.addSummary(message);
           context.logProvider.debug(message);
-          const appId = await AppStudioClient.publishTeamsAppUpdate(
+          const appId = await teamsDevPortalClient.publishTeamsAppUpdate(
+            appStudioTokenRes.value,
             manifest.id,
-            archivedFile,
-            appStudioTokenRes.value
+            archivedFile
           );
           result = new Map([[outputEnvVarNames.get("publishedAppId") as string, appId]]);
           merge(context.telemetryProperties, {
@@ -152,10 +152,10 @@ export class PublishAppPackageDriver implements StepDriver {
         const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
         context.addSummary(message);
         context.logProvider.debug(message);
-        const appId = await AppStudioClient.publishTeamsApp(
+        const appId = await teamsDevPortalClient.publishTeamsApp(
+          appStudioTokenRes.value,
           manifest.id,
-          archivedFile,
-          appStudioTokenRes.value
+          archivedFile
         );
         result = new Map([[outputEnvVarNames.get("publishedAppId") as string, appId]]);
         merge(context.telemetryProperties, {

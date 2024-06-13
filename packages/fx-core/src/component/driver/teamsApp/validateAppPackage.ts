@@ -23,6 +23,7 @@ import { merge } from "lodash";
 import { EOL } from "os";
 import * as path from "path";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes } from "../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
@@ -32,7 +33,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { AppStudioClient } from "./clients/appStudioClient";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
@@ -100,9 +100,9 @@ export class ValidateAppPackageDriver implements StepDriver {
     const appStudioToken = appStudioTokenRes.value;
 
     try {
-      const validationResult = await AppStudioClient.partnerCenterAppPackageValidation(
-        archivedFile,
-        appStudioToken
+      const validationResult = await teamsDevPortalClient.partnerCenterAppPackageValidation(
+        appStudioToken,
+        archivedFile
       );
 
       if (context.platform === Platform.CLI) {

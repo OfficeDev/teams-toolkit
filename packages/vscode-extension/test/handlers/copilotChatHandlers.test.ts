@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import * as handlers from "../../src/copilotChatHandlers";
+import * as handlers from "../../src/handlers/copilotChatHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../../src/commonlib/log";

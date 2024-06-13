@@ -5,19 +5,19 @@ import * as vscode from "vscode";
 
 import { FxError, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { assembleError } from "@microsoft/teamsfx-core";
-import VsCodeLogInstance from "./commonlib/log";
-import { ExtTelemetry } from "./telemetry/extTelemetry";
+import { UserCancelError, sleep } from "@microsoft/vscode-ui";
+import VsCodeLogInstance from "../commonlib/log";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
   TelemetryTriggerFrom,
-} from "./telemetry/extTelemetryEvents";
-import { getTriggerFromProperty } from "./utils/commonUtils";
-import { localize } from "./utils/localizeUtils";
-import { UserCancelError, sleep } from "@microsoft/vscode-ui";
-import { showOutputChannel } from "./handlers";
-import { InstallCopilotChatLink } from "./constants";
+} from "../telemetry/extTelemetryEvents";
+import { getTriggerFromProperty } from "../utils/telemetryUtils";
+import { localize } from "../utils/localizeUtils";
+import { showOutputChannelHandler } from "./showOutputChannel";
+import { InstallCopilotChatLink } from "../constants";
 
 const githubCopilotChatExtensionId = "github.copilot-chat";
 
@@ -134,7 +134,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
         InstallCopilotChatLink
       )
     );
-    showOutputChannel();
+    showOutputChannelHandler();
 
     const maxRetry = 5;
     const installRes = await installGithubCopilotChatExtension(

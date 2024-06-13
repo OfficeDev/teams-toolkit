@@ -21,19 +21,19 @@ import {
 import {
   CoreDepsLoggerAdapter,
   CoreDepsTelemetryAdapter,
-  QuestionNames,
   Correlator,
   DepsManager,
   DepsType,
   EmptyTelemetry,
   FxCore,
   PackageService,
+  QuestionNames,
   TestToolInstallOptions,
   assembleError,
   environmentNameManager,
   getSideloadingStatus,
   listDevTunnels,
-  setRegion,
+  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
@@ -407,7 +407,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<any, FxError>> {
-    await setRegion(accountToken.token);
+    await teamsDevPortalClient.setRegionEndpointByToken(accountToken.token);
     return ok(true);
   }
 

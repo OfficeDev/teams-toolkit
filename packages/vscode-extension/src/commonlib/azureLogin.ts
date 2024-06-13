@@ -14,7 +14,7 @@ import {
   SingleSelectConfig,
   OptionItem,
 } from "@microsoft/teamsfx-api";
-import { ExtensionErrors } from "../error";
+import { ExtensionErrors } from "../error/error";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";

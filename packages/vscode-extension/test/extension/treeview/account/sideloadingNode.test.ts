@@ -1,13 +1,11 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
-
 import { errorIcon, infoIcon, passIcon } from "../../../../src/treeview/account/common";
 import { SideloadingNode } from "../../../../src/treeview/account/sideloadingNode";
 import { DynamicNode } from "../../../../src/treeview/dynamicNode";
-import * as handlers from "../../../../src/handlers";
+import * as checkSideloading from "../../../../src/handlers/checkSideloading";
 
 describe("sideloadingNode", () => {
   const sandbox = sinon.createSandbox();
@@ -26,7 +24,7 @@ describe("sideloadingNode", () => {
 
   it("getTreeItem with invalid token", async () => {
     sandbox.stub(tools, "getSideloadingStatus").returns(Promise.resolve(false));
-    sandbox.stub(handlers, "checkSideloadingCallback");
+    sandbox.stub(checkSideloading, "checkSideloadingCallback");
     const sideloadingNode = new SideloadingNode(eventEmitter, "token");
     const treeItem = await sideloadingNode.getTreeItem();
 

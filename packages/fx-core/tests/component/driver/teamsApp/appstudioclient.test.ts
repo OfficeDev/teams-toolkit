@@ -531,7 +531,7 @@ describe("App Studio API Test", () => {
             displayName: "fakeApp",
             developerName: "Teams",
             version: "0.0.1",
-            manifestVersion: "1.16",
+            manifestVersion: "1.17",
           },
         },
       };
@@ -1275,7 +1275,7 @@ describe("App Studio API Test", () => {
           appId: "fakeAppId",
           status: AsyncAppValidationStatus.Completed,
           appVersion: "1.0.0",
-          manifestVersion: "1.16",
+          manifestVersion: "1.17",
           createdAt: Date(),
           updatedAt: Date(),
           validationResults: {

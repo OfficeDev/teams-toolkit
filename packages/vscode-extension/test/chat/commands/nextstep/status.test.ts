@@ -4,18 +4,19 @@ import * as sinon from "sinon";
 import * as status from "../../../../src/chat/commands/nextstep/status";
 import * as helper from "../../../../src/chat/commands/nextstep/helper";
 import { MachineStatus, WholeStatus } from "../../../../src/chat/commands/nextstep/types";
-import { CommandKey } from "../../../../src/constants";
 import * as projectStatusUtils from "../../../../src/utils/projectStatusUtils";
 
 chai.use(chaiPromised);
 
 describe("chat nextstep status", () => {
-  const sandbox = sinon.createSandbox();
   afterEach(() => {
-    sandbox.restore();
+    // Restore the default sandbox here
+    sinon.restore();
   });
 
   describe("func: getWholeStatus", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(() => {
       sandbox.restore();
     });
@@ -96,14 +97,22 @@ describe("chat nextstep status", () => {
     });
   });
 
-  it("func: getMachineStatus", async () => {
-    sandbox.stub(helper, "checkCredential").resolves({ m365LoggedIn: true, azureLoggedIn: true });
-    sandbox.stub(helper, "globalStateGet").resolves(true);
-    sandbox.stub(helper, "globalStateUpdate");
-    await chai.expect(status.getMachineStatus()).to.eventually.deep.equal({
-      azureLoggedIn: true,
-      firstInstalled: true,
-      m365LoggedIn: true,
-    } as MachineStatus);
+  describe("func: getMachineStatus", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("func: getMachineStatus", async () => {
+      sandbox.stub(helper, "checkCredential").resolves({ m365LoggedIn: true, azureLoggedIn: true });
+      sandbox.stub(helper, "globalStateGet").resolves(true);
+      sandbox.stub(helper, "globalStateUpdate");
+      await chai.expect(status.getMachineStatus()).to.eventually.deep.equal({
+        azureLoggedIn: true,
+        firstInstalled: true,
+        m365LoggedIn: true,
+      } as MachineStatus);
+    });
   });
 });

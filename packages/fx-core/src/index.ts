@@ -13,13 +13,14 @@
  */
 
 import "reflect-metadata";
+export { teamsDevPortalClient } from "./client/teamsDevPortalClient";
 export { askSubscription } from "./common/azureUtils";
 export {
   AppStudioScopes,
   AuthSvcScopes,
   AzureScopes,
-  GraphScopes,
   GraphReadUserScopes,
+  GraphScopes,
   SPFxScopes,
   getAllowedAppMaps,
 } from "./common/constants";
@@ -57,7 +58,7 @@ export {
   parseFromResourceId,
 } from "./common/stringUtils";
 export { telemetryUtils } from "./common/telemetry";
-export { getSPFxTenant, getSideloadingStatus, listDevTunnels, setRegion } from "./common/tools";
+export { getSPFxTenant, getSideloadingStatus, listDevTunnels } from "./common/tools";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export { SummaryConstant } from "./component/configManager/constant";
 export { CheckerFactory } from "./component/deps-checker/checkerFactory";
@@ -75,7 +76,6 @@ export { DepsTelemetry, EmptyTelemetry } from "./component/deps-checker/depsTele
 export { FuncToolChecker } from "./component/deps-checker/internal/funcToolChecker";
 export { LtsNodeChecker } from "./component/deps-checker/internal/nodeChecker";
 export { getPermissionMap } from "./component/driver/aad/permissions/index";
-export { AppStudioClient } from "./component/driver/teamsApp/clients/appStudioClient";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
 export { pluginManifestUtils } from "./component/driver/teamsApp/utils/PluginManifestUtils";
@@ -91,15 +91,15 @@ export { loadTeamsFxDevScript } from "./component/local/packageJsonHelper";
 export { Hub } from "./component/m365/constants";
 export { PackageService } from "./component/m365/packageService";
 export { MosServiceEndpoint, MosServiceScope } from "./component/m365/serviceConstant";
-export { newResourceGroupOption, resourceGroupHelper } from "./component/utils/ResourceGroupHelper";
 export { DotenvOutput, envUtil } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";
 export { pathUtils } from "./component/utils/pathUtils";
-export { FxCore } from "./core/FxCore";
+export { newResourceGroupOption, resourceGroupHelper } from "./component/utils/ResourceGroupHelper";
 export { CoreCallbackFunc } from "./core/callback";
 export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";
+export { FxCore } from "./core/FxCore";
 export { PreProvisionResForVS, VersionCheckRes } from "./core/types";
 export * from "./error/index";
 export * from "./question/constants";

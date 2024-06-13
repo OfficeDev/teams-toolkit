@@ -5,7 +5,7 @@ import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as telemetryModule from "../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import sinon = require("sinon");
-import * as commonUtils from "../../src/utils/commonUtils";
+import * as vscTelemetryUtils from "../../src/utils/telemetryUtils";
 import * as fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import { Uri } from "vscode";
@@ -35,6 +35,10 @@ const reporterSpy = spy.interface({
 });
 
 describe("ExtTelemetry", () => {
+  afterEach(() => {
+    // Restore the default sandbox here
+    sinon.restore();
+  });
   describe("setHasSentTelemetry", () => {
     it("query-expfeature", () => {
       const eventName = "query-expfeature";
@@ -93,7 +97,7 @@ describe("ExtTelemetry", () => {
 
   describe("Send Telemetry", () => {
     const sandbox = sinon.createSandbox();
-    before(() => {
+    beforeEach(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       chai.util.addProperty(ExtTelemetry, "settingsVersion", () => "1.0.0");
       sandbox.stub(fs, "pathExistsSync").returns(false);
@@ -102,7 +106,7 @@ describe("ExtTelemetry", () => {
       sandbox.stub(globalVariables, "isExistingUser").value("no");
     });
 
-    after(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
@@ -193,10 +197,10 @@ describe("ExtTelemetry", () => {
       sandbox.restore();
     });
     it("cacheTelemetryEventAsync", async () => {
-      const clock = sinon.useFakeTimers();
+      const clock = sandbox.useFakeTimers();
       let state = "";
       sandbox.stub(telemetryModule, "lastCorrelationId").value("correlation-id");
-      sandbox.stub(commonUtils, "getProjectId").resolves("project-id");
+      sandbox.stub(vscTelemetryUtils, "getProjectId").resolves("project-id");
       const globalStateUpdateStub = sandbox
         .stub(globalState, "globalStateUpdate")
         .callsFake(async (key, value) => (state = value));

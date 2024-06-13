@@ -247,7 +247,7 @@ export class CopilotPluginGenerator {
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
         [telemetryProperties.generateType]: type.toString(),
-        [telemetryProperties.authType]: authData?.authName ?? "None",
+        [telemetryProperties.authType]: authData?.authType ?? "None",
       });
 
       const newGenerator = new CopilotGenerator();

@@ -13,22 +13,20 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   assembleError,
+  isValidHttpUrl,
   loadingDefaultPlaceholder,
   loadingOptionsPlaceholder,
 } from "@microsoft/teamsfx-core";
-import { Localizer, VSCodeUI } from "@microsoft/vscode-ui";
+import { InternalUIError, Localizer, sleep, VSCodeUI } from "@microsoft/vscode-ui";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { InternalUIError } from "@microsoft/vscode-ui";
 import {
   SelectFileOrInputResultType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { isValidHttpUrl } from "@microsoft/teamsfx-core";
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {
@@ -76,6 +74,7 @@ export class TTKLocalizer implements Localizer {
 }
 
 export const ttkLocalizer = new TTKLocalizer();
+export let VS_CODE_UI: VsCodeUI;
 
 export class VsCodeUI extends VSCodeUI {
   context: ExtensionContext;
@@ -137,4 +136,8 @@ export class VsCodeUI extends VSCodeUI {
     }
     return res;
   }
+}
+
+export function initVSCodeUI(context: ExtensionContext) {
+  VS_CODE_UI = new VsCodeUI(context);
 }

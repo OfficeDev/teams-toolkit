@@ -3,8 +3,8 @@
 
 "use strict";
 
-import * as vscode from "vscode";
 import * as semver from "semver";
+import * as vscode from "vscode";
 
 import {
   AppPackageFolderName,
@@ -18,9 +18,9 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  isChatParticipantEnabled,
-  setRegion,
   isApiCopilotPluginEnabled,
+  isChatParticipantEnabled,
+  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -29,15 +29,6 @@ import {
   IsChatParticipantEnabled,
   chatParticipantId,
 } from "./chat/consts";
-import {
-  officeChatParticipantId,
-  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-} from "./officeChat/consts";
-import {
-  officeChatRequestHandler,
-  chatCreateOfficeProjectCommandHandler,
-  handleOfficeFeedback,
-} from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
   chatExecuteCommandHandler,
@@ -57,13 +48,13 @@ import {
   TeamsAppYamlCodeLensProvider,
 } from "./codeLensProvider";
 import commandController from "./commandController";
-import AzureAccountManager from "./commonlib/azureLogin";
+import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import { configMgr } from "./config";
 import { CommandKey as CommandKeys } from "./constants";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
-import * as copilotChatHandlers from "./copilotChatHandlers";
+import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
@@ -75,28 +66,33 @@ import {
   initializeGlobalVariables,
   isExistingUser,
   isOfficeAddInProject,
+  isOfficeManifestOnlyProject,
   isSPFxProject,
   isTeamsFxProject,
-  isOfficeManifestOnlyProject,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
-import * as officeDevHandlers from "./officeDevHandlers";
-import { VsCodeUI } from "./qm/vsc_ui";
+import {
+  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+  officeChatParticipantId,
+} from "./officeChat/consts";
+import {
+  chatCreateOfficeProjectCommandHandler,
+  handleOfficeFeedback,
+  officeChatRequestHandler,
+} from "./officeChat/handlers";
+import * as officeDevHandlers from "./handlers/officeDevHandlers";
+import { initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler, setUriEventHandler } from "./uriHandler";
-import {
-  FeatureFlags,
-  delay,
-  hasAdaptiveCardInWorkspace,
-  isM365Project,
-} from "./utils/commonUtils";
+import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import { FeatureFlags } from "./featureFlags";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
@@ -104,8 +100,11 @@ import { ExtensionSurvey } from "./utils/survey";
 import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
 import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
-
-export let VS_CODE_UI: VsCodeUI;
+import { showOutputChannelHandler } from "./handlers/showOutputChannel";
+import { debugInTestToolHandler } from "./handlers/debugInTestTool";
+import { checkSideloadingCallback } from "./handlers/checkSideloading";
+import { downloadSampleApp } from "./handlers/downloadSample";
+import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -118,7 +117,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
-  VS_CODE_UI = new VsCodeUI(context);
+  initVSCodeUI(context);
   initializeGlobalVariables(context);
   loadLocalizedStrings();
 
@@ -215,7 +214,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
   TreeViewManagerInstance.registerTreeViews(context);
   accountTreeViewProviderInstance.subscribeToStatusChanges({
-    azureAccountProvider: AzureAccountManager,
+    azureAccountProvider: azureAccountManager,
     m365TokenProvider: M365TokenInstance,
   });
   // Set region for M365 account every
@@ -226,7 +225,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
       if (status === "SignedIn") {
         const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
         if (tokenRes.isOk()) {
-          await setRegion(tokenRes.value);
+          await teamsDevPortalClient.setRegionEndpointByToken(tokenRes.value);
         }
       }
     }
@@ -301,7 +300,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
       if (res.isOk()) {
         const fileUri = vscode.Uri.file(res.value.projectPath);
         const warnings = res.value.warnings;
-        await handlers.updateAutoOpenGlobalKey(true, fileUri, warnings, args);
+        await updateAutoOpenGlobalKey(true, fileUri, warnings, args);
         await ExtTelemetry.dispose();
         await delay(2000);
         return { openFolder: fileUri };
@@ -393,13 +392,13 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 
   const showOutputChannel = vscode.commands.registerCommand(
     "fx-extension.showOutputChannel",
-    (...args) => Correlator.run(handlers.showOutputChannel, args)
+    (...args) => Correlator.run(showOutputChannelHandler, args)
   );
   context.subscriptions.push(showOutputChannel);
 
   const createSampleCmd = vscode.commands.registerCommand(
     CommandKeys.DownloadSample,
-    (...args: unknown[]) => Correlator.run(handlers.downloadSampleApp, ...args)
+    (...args: unknown[]) => Correlator.run(downloadSampleApp, ...args)
   );
   context.subscriptions.push(createSampleCmd);
 
@@ -630,7 +629,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const checkSideloading = vscode.commands.registerCommand(
     "fx-extension.checkSideloading",
-    (...args) => Correlator.run(handlers.checkSideloadingCallback, args)
+    (...args) => Correlator.run(checkSideloadingCallback, args)
   );
   context.subscriptions.push(checkSideloading);
 
@@ -685,13 +684,13 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     "fx-extension.debugInTestToolWithIcon",
-    handlers.debugInTestToolHandler("treeview")
+    debugInTestToolHandler("treeview")
   );
 
   registerInCommandController(
     context,
     CommandKeys.DebugInTestToolFromMessage,
-    handlers.debugInTestToolHandler("message")
+    debugInTestToolHandler("message")
   );
 
   const m365AccountSettingsCmd = vscode.commands.registerCommand(

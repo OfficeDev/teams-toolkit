@@ -1,37 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Stage, UserError } from "@microsoft/teamsfx-api";
-
-import {
-  LocalEnvManager,
-  MetadataV3,
-  envUtil,
-  metadataUtil,
-  pathUtils,
-} from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import * as uuid from "uuid";
-import * as vscode from "vscode";
 import VsCodeLogInstance from "../commonlib/log";
-
-import * as globalVariables from "../globalVariables";
-import { core, getSystemInputs } from "../handlers";
+import { workspaceUri } from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
-
-import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
-
-export async function getProjectRoot(
-  folderPath: string,
-  folderName: string
-): Promise<string | undefined> {
-  const projectRoot: string = path.join(folderPath, folderName);
-  const projectExists: boolean = await fs.pathExists(projectRoot);
-  return projectExists ? projectRoot : undefined;
-}
 
 export async function getNpmInstallLogInfo(): Promise<any> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
@@ -40,10 +15,10 @@ export async function getNpmInstallLogInfo(): Promise<any> {
 
 export async function getTestToolLogInfo(): Promise<string | undefined> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  if (!globalVariables.workspaceUri?.fsPath) {
+  if (!workspaceUri?.fsPath) {
     return undefined;
   }
-  return await localEnvManager.getTestToolLogInfo(globalVariables.workspaceUri?.fsPath);
+  return await localEnvManager.getTestToolLogInfo(workspaceUri?.fsPath);
 }
 
 export class LocalDebugSession {
@@ -115,61 +90,4 @@ export class Step {
   getPrefix(): string {
     return `(${this.currentStep++}/${this.totalSteps})`;
   }
-}
-
-export async function getV3TeamsAppId(projectPath: string, env: string): Promise<string> {
-  const result = await envUtil.readEnv(projectPath, env, false);
-  if (result.isErr()) {
-    throw result.error;
-  }
-
-  const teamsAppIdKey = (await getTeamsAppKeyName(env)) || "TEAMS_APP_ID";
-  const teamsAppId = result.value[teamsAppIdKey];
-  if (teamsAppId === undefined) {
-    throw new UserError(
-      ExtensionSource,
-      ExtensionErrors.TeamsAppIdNotFoundError,
-      `TEAMS_APP_ID is missing in ${env} environment.`
-    );
-  }
-
-  return teamsAppId;
-}
-
-export async function getTeamsAppKeyName(env?: string): Promise<string | undefined> {
-  const templatePath = pathUtils.getYmlFilePath(globalVariables.workspaceUri!.fsPath, env);
-  const maybeProjectModel = await metadataUtil.parse(templatePath, env);
-  if (maybeProjectModel.isErr()) {
-    return undefined;
-  }
-  const projectModel = maybeProjectModel.value;
-  if (projectModel.provision?.driverDefs && projectModel.provision.driverDefs.length > 0) {
-    for (const driver of projectModel.provision.driverDefs) {
-      if (driver.uses === "teamsApp/create") {
-        return driver.writeToEnvironmentFile?.teamsAppId;
-      }
-    }
-  }
-  return undefined;
-}
-
-export async function triggerV3Migration(): Promise<void> {
-  const inputs = getSystemInputs();
-  inputs.stage = Stage.debug;
-  const result = await core.phantomMigrationV3(inputs);
-  if (result.isErr()) {
-    await vscode.debug.stopDebugging();
-    throw result.error;
-  }
-  // reload window to terminate debugging
-  await VS_CODE_UI.reload();
-}
-
-// Only work in ts/js project
-export function isTestToolEnabledProject(workspacePath: string): boolean {
-  const testToolYmlPath = path.join(workspacePath, MetadataV3.testToolConfigFile);
-  if (fs.pathExistsSync(testToolYmlPath)) {
-    return true;
-  }
-  return false;
 }

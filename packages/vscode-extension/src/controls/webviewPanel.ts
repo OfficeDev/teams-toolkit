@@ -16,7 +16,7 @@ import * as extensionPackage from "../../package.json";
 import { GlobalKey } from "../constants";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSampleApp } from "../handlers";
+import { downloadSampleApp } from "../handlers/downloadSample";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,

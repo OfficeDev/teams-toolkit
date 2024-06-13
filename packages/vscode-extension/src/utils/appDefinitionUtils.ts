@@ -4,7 +4,7 @@
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
 import { core, workspaceUri } from "../globalVariables";
 import { UserError } from "@microsoft/teamsfx-api";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 
 export async function getAppName(): Promise<string | undefined> {
   if (!workspaceUri) {

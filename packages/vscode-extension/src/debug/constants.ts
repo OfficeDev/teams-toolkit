@@ -3,7 +3,7 @@
 import * as util from "util";
 
 import { Hub, TaskLabel } from "@microsoft/teamsfx-core";
-import { ExtensionErrors } from "../error";
+import { ExtensionErrors } from "../error/error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";

@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LocalEnvManager, MetadataV3 } from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import * as uuid from "uuid";
 import VsCodeLogInstance from "../commonlib/log";
 import { workspaceUri } from "../globalVariables";
@@ -92,13 +90,4 @@ export class Step {
   getPrefix(): string {
     return `(${this.currentStep++}/${this.totalSteps})`;
   }
-}
-
-// Only work in ts/js project
-export function isTestToolEnabledProject(workspacePath: string): boolean {
-  const testToolYmlPath = path.join(workspacePath, MetadataV3.testToolConfigFile);
-  if (fs.pathExistsSync(testToolYmlPath)) {
-    return true;
-  }
-  return false;
 }

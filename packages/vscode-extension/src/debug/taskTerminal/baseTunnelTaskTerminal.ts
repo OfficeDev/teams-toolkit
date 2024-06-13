@@ -13,7 +13,7 @@ import { LocalTelemetryReporter } from "@microsoft/teamsfx-core";
 import { DotenvOutput } from "@microsoft/teamsfx-core";
 import { pathUtils } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../../error";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import * as globalVariables from "../../globalVariables";
 import { ProgressHandler } from "../../progressHandler";
 import {

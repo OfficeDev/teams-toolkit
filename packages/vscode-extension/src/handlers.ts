@@ -44,7 +44,6 @@ import {
 import {
   AppStudioScopes,
   AuthSvcScopes,
-  ConcurrentError,
   QuestionNames,
   Correlator,
   DepsManager,
@@ -92,12 +91,11 @@ import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
-import { ExtensionErrors, ExtensionSource } from "./error";
+import { ExtensionErrors, ExtensionSource } from "./error/error";
 import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./qm/vsc_ui";
 import {
-  checkIsSPFx,
   context,
   core,
   initializeGlobalVariables,
@@ -120,7 +118,6 @@ import {
   TelemetrySuccess,
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
-  VSCodeWindowChoice,
 } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import { AzureAccountNode } from "./treeview/account/azureNode";
@@ -129,9 +126,12 @@ import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
-import { getLocalDebugMessageTemplate, openFolderInExplorer } from "./utils/commonUtils";
+import {
+  checkCoreNotEmpty,
+  getLocalDebugMessageTemplate,
+  openFolderInExplorer,
+} from "./utils/commonUtils";
 import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/envTreeUtils";
-import { anonymizeFilePaths } from "./utils/fileSystemUtils";
 import { getDefaultString, localize } from "./utils/localizeUtils";
 import { getAppName } from "./utils/appDefinitionUtils";
 import { ExtensionSurvey } from "./utils/survey";
@@ -140,17 +140,13 @@ import {
   getTriggerFromProperty,
   isTriggerFromWalkThrough,
 } from "./utils/telemetryUtils";
-import {
-  openTestToolDisplayMessage,
-  openTestToolMessage,
-  RecommendedOperations,
-} from "./debug/constants";
-import { openOfficeDevFolder } from "./utils/workspaceUtils";
+import { RecommendedOperations } from "./debug/constants";
+import { openFolder, openOfficeDevFolder } from "./utils/workspaceUtils";
 import { invokeTeamsAgent } from "./handlers/copilotChatHandlers";
 import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
-import { isTestToolEnabledProject } from "./debug/commonUtils";
 import { getSystemInputs } from "./utils/systemEnvUtils";
+import { isLoginFailureError, showError, wrapError } from "./error/common";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
@@ -390,46 +386,6 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   return result;
 }
 
-export async function openFolder(
-  folderPath: Uri,
-  showLocalDebugMessage: boolean,
-  warnings?: Warning[] | undefined,
-  args?: any[]
-) {
-  await updateAutoOpenGlobalKey(showLocalDebugMessage, folderPath, warnings, args);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenNewProject, {
-    [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
-  });
-  await commands.executeCommand("vscode.openFolder", folderPath, true);
-}
-
-export async function updateAutoOpenGlobalKey(
-  showLocalDebugMessage: boolean,
-  projectUri: Uri,
-  warnings: Warning[] | undefined,
-  args?: any[]
-): Promise<void> {
-  if (isTriggerFromWalkThrough(args)) {
-    await globalStateUpdate(GlobalKey.OpenWalkThrough, true);
-    await globalStateUpdate(GlobalKey.OpenReadMe, "");
-  } else {
-    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
-    await globalStateUpdate(GlobalKey.OpenReadMe, projectUri.fsPath);
-  }
-
-  if (showLocalDebugMessage) {
-    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
-  }
-
-  if (warnings?.length) {
-    await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
-  }
-
-  if (checkIsSPFx(projectUri.fsPath)) {
-    globalStateUpdate(GlobalKey.AutoInstallDependency, true);
-  }
-}
-
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
   const result = await selectAndDebug();
@@ -442,18 +398,6 @@ export async function treeViewLocalDebugHandler(): Promise<Result<null, FxError>
   await vscode.commands.executeCommand("workbench.action.quickOpen", "debug ");
 
   return ok(null);
-}
-
-export function debugInTestToolHandler(source: "treeview" | "message") {
-  return async () => {
-    if (source === "treeview") {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewDebugInTestTool);
-    } else {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MessageDebugInTestTool);
-    }
-    await vscode.commands.executeCommand("workbench.action.quickOpen", "debug Debug in Test Tool");
-    return ok<unknown, FxError>(null);
-  };
 }
 
 export async function treeViewPreviewHandler(...args: any[]): Promise<Result<null, FxError>> {
@@ -797,65 +741,6 @@ export async function runCommand(
   return result;
 }
 
-export async function downloadSampleApp(...args: unknown[]) {
-  const sampleId = args[1] as string;
-  const props: any = {
-    [TelemetryProperty.TriggerFrom]: getTriggerFromProperty(args),
-    [TelemetryProperty.SampleAppName]: sampleId,
-  };
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
-  const inputs: Inputs = getSystemInputs();
-  inputs["samples"] = sampleId;
-  inputs.projectId = inputs.projectId ?? uuid.v4();
-
-  const res = await downloadSample(inputs);
-  if (inputs.projectId) {
-    props[TelemetryProperty.NewProjectId] = inputs.projectId;
-  }
-  if (res.isOk()) {
-    props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-    await openFolder(res.value, true);
-  } else {
-    props[TelemetryProperty.Success] = TelemetrySuccess.No;
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
-  }
-}
-
-export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(null);
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    inputs.stage = Stage.create;
-    const tmpResult = await core.createSampleProject(inputs);
-    if (tmpResult.isErr()) {
-      result = err(tmpResult.error);
-    } else {
-      const uri = Uri.file(tmpResult.value.projectPath);
-      result = ok(uri);
-    }
-  } catch (e) {
-    result = wrapError(e as Error);
-  }
-
-  if (result.isErr()) {
-    const error = result.error;
-    if (!isUserCancelError(error)) {
-      if (isLoginFailureError(error)) {
-        void window.showErrorMessage(localize("teamstoolkit.handlers.loginFailed"));
-      } else {
-        void showError(error);
-      }
-    }
-  }
-
-  return result;
-}
-
 export async function runUserTask(
   func: Func,
   eventName: string,
@@ -882,11 +767,6 @@ export async function runUserTask(
   await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
-}
-
-//TODO workaround
-function isLoginFailureError(error: FxError): boolean {
-  return !!error.message && error.message.includes("Cannot get user login information");
 }
 
 async function processResult(
@@ -952,34 +832,6 @@ async function processResult(
       });
     }
   }
-}
-
-export function wrapError(e: Error): Result<null, FxError> {
-  if (
-    e instanceof UserError ||
-    e instanceof SystemError ||
-    (e.constructor &&
-      e.constructor.name &&
-      (e.constructor.name === "SystemError" || e.constructor.name === "UserError"))
-  ) {
-    return err(e as FxError);
-  }
-  return err(
-    new SystemError({ error: e, source: ExtensionSource, name: ExtensionErrors.UnknwonError })
-  );
-}
-
-function checkCoreNotEmpty(): Result<null, SystemError> {
-  if (!core) {
-    return err(
-      new SystemError(
-        ExtensionSource,
-        ExtensionErrors.UnsupportedOperation,
-        localize("teamstoolkit.handlers.coreNotReady")
-      )
-    );
-  }
-  return ok(null);
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
@@ -1837,98 +1689,6 @@ export function registerAccountMenuCommands(context: ExtensionContext) {
 
 export function cmdHdlDisposeTreeView() {
   TreeViewManagerInstance.dispose();
-}
-
-export async function showError(e: UserError | SystemError) {
-  let notificationMessage = e.displayMessage ?? e.message;
-  const errorCode = `${e.source}.${e.name}`;
-  const runTestTool = {
-    title: localize("teamstoolkit.handlers.debugInTestTool"),
-    run: () => debugInTestToolHandler("message")(),
-  };
-  const recommendTestTool =
-    e.recommendedOperation === RecommendedOperations.DebugInTestTool &&
-    workspaceUri?.fsPath &&
-    isTestToolEnabledProject(workspaceUri.fsPath);
-
-  if (recommendTestTool) {
-    const recommendTestToolMessage = openTestToolMessage();
-    const recommendTestToolDisplayMessage = openTestToolDisplayMessage();
-    e.message += ` ${recommendTestToolMessage}`;
-    notificationMessage += ` ${recommendTestToolDisplayMessage}`;
-  }
-  if (isUserCancelError(e)) {
-    return;
-  } else if ("helpLink" in e && e.helpLink && typeof e.helpLink != "undefined") {
-    const helpLinkUrl = Uri.parse(`${e.helpLink}`);
-    const help = {
-      title: localize("teamstoolkit.handlers.getHelp"),
-      run: () => {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickGetHelp, {
-          [TelemetryProperty.ErrorCode]: errorCode,
-          [TelemetryProperty.ErrorMessage]: notificationMessage,
-          [TelemetryProperty.HelpLink]: e.helpLink!,
-        });
-        commands.executeCommand("vscode.open", helpLinkUrl);
-      },
-    };
-    VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}\n Help link: ${e.helpLink}`);
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
-    const buttons = recommendTestTool ? [runTestTool, help] : [help];
-    const button = await window.showErrorMessage(
-      `[${errorCode}]: ${notificationMessage}`,
-      ...buttons
-    );
-    if (button) button.run();
-  } else if (e instanceof SystemError) {
-    const sysError = e;
-    const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
-    const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
-      e.message
-    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
-      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
-    }`;
-    const issueLink = Uri.parse(`${path}${param}`);
-    const issue = {
-      title: localize("teamstoolkit.handlers.reportIssue"),
-      run: () => {
-        commands.executeCommand("vscode.open", issueLink);
-      },
-    };
-    const similarIssueLink = Uri.parse(
-      `https://github.com/OfficeDev/TeamsFx/issues?q=is:issue+in:title+${errorCode}`
-    );
-    const similarIssues = {
-      title: localize("teamstoolkit.handlers.similarIssues"),
-      run: async (): Promise<void> => {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.FindSimilarIssues);
-        await commands.executeCommand("vscode.open", similarIssueLink);
-      },
-    };
-    VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}`);
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
-    const buttons = recommendTestTool
-      ? [runTestTool, issue, similarIssues]
-      : [issue, similarIssues];
-    const button = await window.showErrorMessage(
-      `[${errorCode}]: ${notificationMessage}`,
-      ...buttons
-    );
-    if (button) button.run();
-  } else {
-    if (!(e instanceof ConcurrentError)) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
-      const buttons = recommendTestTool ? [runTestTool] : [];
-      const button = await window.showErrorMessage(
-        `[${errorCode}]: ${notificationMessage}`,
-        ...buttons
-      );
-      if (button) button.run();
-    }
-  }
 }
 
 export async function cmpAccountsHandler(args: any[]) {
@@ -2923,10 +2683,6 @@ export async function azureAccountSignOutHelpHandler(
   return Promise.resolve(ok(false));
 }
 
-export function openAccountHelpHandler(args?: any[]) {
-  WebviewPanel.createOrShow(PanelType.AccountHelp);
-}
-
 export async function signinM365Callback(...args: unknown[]): Promise<Result<null, FxError>> {
   let node: M365AccountNode | undefined;
   if (args && args.length > 1) {
@@ -2971,30 +2727,6 @@ export async function refreshCopilotCallback(args?: any[]): Promise<Result<null,
   }
 
   return ok(null);
-}
-
-export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
-  VS_CODE_UI.showMessage(
-    "error",
-    localize("teamstoolkit.accountTree.sideloadingMessage"),
-    false,
-    localize("teamstoolkit.accountTree.sideloadingLearnMore")
-  )
-    .then((result) => {
-      if (
-        result.isOk() &&
-        result.value === localize("teamstoolkit.accountTree.sideloadingLearnMore")
-      ) {
-        openAccountHelpHandler();
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingLearnMore);
-      }
-    })
-    .catch((_error) => {});
-  openAccountHelpHandler();
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
-  });
-  return Promise.resolve(ok(null));
 }
 
 export async function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {

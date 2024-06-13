@@ -12,7 +12,7 @@ import * as cp from "child_process";
 import * as util from "util";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "../../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../../error";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { core, workspaceUri } from "../../globalVariables";
 import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";

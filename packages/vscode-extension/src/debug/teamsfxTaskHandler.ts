@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
 import {

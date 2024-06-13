@@ -27,10 +27,6 @@ import {
   FeatureFlags,
   featureFlagManager,
   isApiCopilotPluginEnabled,
-  isCLIDotNetEnabled,
-  isChatParticipantEnabled,
-  isCopilotPluginEnabled,
-  isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -120,7 +116,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
           //only for @office agent, officeXMLAddin are supported
           staticOptions.push(ProjectTypeOptions.officeXMLAddin(inputs.platform));
         } else {
-          if (isOfficeJSONAddinEnabled()) {
+          if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
             staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
           } else {
             staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
@@ -130,7 +126,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
 
       if (
         inputs.platform === Platform.VSCode &&
-        isChatParticipantEnabled() &&
+        featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant) &&
         !inputs.teamsAppFromTdp
       ) {
         staticOptions.push(ProjectTypeOptions.startWithGithubCopilot());
@@ -1407,7 +1403,7 @@ export function capabilitySubTree(): IQTreeNode {
           return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
             (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
-              isCopilotPluginEnabled() &&
+              featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin) &&
               inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
           );
         },
@@ -1528,7 +1524,8 @@ export function createProjectQuestionNode(): IQTreeNode {
     children: [
       {
         condition: (inputs: Inputs) =>
-          isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform),
+          featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet) &&
+          CLIPlatforms.includes(inputs.platform),
         data: runtimeQuestion(),
       },
       {
@@ -1599,7 +1596,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
     QuestionNames.ReplaceBotIds,
     QuestionNames.Samples,
   ];
-  if (!isCLIDotNetEnabled()) {
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     deleteNames.push(QuestionNames.Runtime);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);

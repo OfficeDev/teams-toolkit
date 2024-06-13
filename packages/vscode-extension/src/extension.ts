@@ -18,9 +18,10 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
+  featureFlagManager,
   isApiCopilotPluginEnabled,
-  isChatParticipantEnabled,
   teamsDevPortalClient,
+  FeatureFlags as CoreFeatureFlags,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -124,7 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (isChatParticipantEnabled()) {
+  if (featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)) {
     registerChatParticipant(context);
 
     registerOfficeChatParticipant(context);
@@ -151,7 +152,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
-    isChatParticipantEnabled()
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.

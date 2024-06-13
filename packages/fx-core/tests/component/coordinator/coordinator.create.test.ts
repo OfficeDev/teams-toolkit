@@ -44,7 +44,7 @@ import { validationUtils } from "../../../src/ui/validationUtils";
 const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
-  describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
+  describe(`coordinator create with new generator enabled = ${newGeneratorFlag}`, () => {
     let mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
@@ -52,7 +52,7 @@ const V3Version = MetadataV3.projectVersion;
     setTools(tools);
     beforeEach(() => {
       sandbox.stub(fs, "ensureDir").resolves();
-      sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(newGeneratorFlag);
+      sandbox.stub(FeatureFlags.featureFlagManager, "getBooleanValue").returns(newGeneratorFlag);
       generator = newGeneratorFlag
         ? sandbox
             .stub(DefaultTemplateGenerator.prototype, <any>"scaffolding")
@@ -1268,13 +1268,13 @@ describe("Copilot plugin", async () => {
   });
 });
 
-describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
+describe(`coordinator create with new generator enabled = true`, () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(true);
+    sandbox.stub(FeatureFlags.featureFlagManager, "getBooleanValue").returns(true);
   });
   afterEach(() => {
     sandbox.restore();

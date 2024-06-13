@@ -28,6 +28,7 @@ import {
   pathUtils,
   pluginManifestUtils,
   teamsDevPortalClient,
+  featureFlagManager,
 } from "@microsoft/teamsfx-core";
 import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -855,7 +856,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler", async () => {
-    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(false);
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -869,7 +870,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler with chat", async () => {
-    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(true);
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -883,7 +884,7 @@ describe("handlers", () => {
   });
 
   it("walkthrough: build intelligent apps", async () => {
-    sandbox.stub(featureFlags, "isApiCopilotPluginEnabled").returns(true);
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
 
     await handlers.openBuildIntelligentAppsWalkthroughHandler();

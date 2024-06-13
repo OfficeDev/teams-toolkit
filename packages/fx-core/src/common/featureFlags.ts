@@ -12,50 +12,11 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
-export function isCLIDotNetEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
-}
-
-export function isCopilotPluginEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin);
-}
-
 export function isApiCopilotPluginEnabled(): boolean {
   return (
-    featureFlagManager.getBooleanValue(FeatureFlags.ApiCopilotPlugin) && isCopilotPluginEnabled()
+    featureFlagManager.getBooleanValue(FeatureFlags.ApiCopilotPlugin) &&
+    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
   );
-}
-
-export function enableTestToolByDefault(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TestTool);
-}
-
-export function enableMETestToolByDefault(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.METestTool);
-}
-
-export function isNewGeneratorEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator);
-}
-
-export function isOfficeJSONAddinEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin);
-}
-
-export function isTdpTemplateCliTestEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest);
-}
-
-export function isAsyncAppValidationEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation);
-}
-
-export function isNewProjectTypeEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType);
-}
-
-export function isChatParticipantEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

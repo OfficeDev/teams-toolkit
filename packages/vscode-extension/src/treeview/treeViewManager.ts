@@ -3,15 +3,15 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { isChatParticipantEnabled, manifestUtils } from "@microsoft/teamsfx-core";
+import { featureFlagManager, FeatureFlags, manifestUtils } from "@microsoft/teamsfx-core";
 
 import { isSPFxProject, workspaceUri } from "../globalVariables";
+import { hasAdaptiveCardInWorkspace } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
-import { hasAdaptiveCardInWorkspace } from "../utils/commonUtils";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -231,7 +231,7 @@ class TreeViewManager {
         undefined,
         { name: "debug-alt", custom: false }
       ),
-      ...(isChatParticipantEnabled()
+      ...(featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
         ? [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle"),

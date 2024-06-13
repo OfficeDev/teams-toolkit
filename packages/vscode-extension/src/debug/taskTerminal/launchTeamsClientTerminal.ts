@@ -17,12 +17,12 @@ import { core, workspaceUri } from "../../globalVariables";
 import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { getLocalDebugSession } from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import {
   launchingTeamsClientDisplayMessages,
   openTerminalDisplayMessage,
   openTerminalMessage,
-} from "../constants";
+} from "../common/debugConstants";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 

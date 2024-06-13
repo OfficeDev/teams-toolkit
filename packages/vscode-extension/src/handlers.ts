@@ -89,7 +89,7 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
-import * as localPrerequisites from "./debug/prerequisitesHandler";
+import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
 import * as exp from "./exp/index";
@@ -140,7 +140,7 @@ import {
   getTriggerFromProperty,
   isTriggerFromWalkThrough,
 } from "./utils/telemetryUtils";
-import { RecommendedOperations } from "./debug/constants";
+import { RecommendedOperations } from "./debug/common/debugConstants";
 import { openFolder, openOfficeDevFolder } from "./utils/workspaceUtils";
 import { invokeTeamsAgent } from "./handlers/copilotChatHandlers";
 import { updateProjectStatus } from "./utils/projectStatusUtils";
@@ -880,7 +880,7 @@ export async function validateGetStartedPrerequisitesHandler(
     TelemetryEvent.ClickValidatePrerequisites,
     getTriggerFromProperty(args)
   );
-  const result = await localPrerequisites.checkPrerequisitesForGetStarted();
+  const result = await checkPrerequisitesForGetStarted();
   if (result.isErr()) {
     void showError(result.error);
     // // return non-zero value to let task "exit ${command:xxx}" to exit
@@ -2727,23 +2727,6 @@ export async function refreshCopilotCallback(args?: any[]): Promise<Result<null,
   }
 
   return ok(null);
-}
-
-export async function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
-  VS_CODE_UI.showMessage(
-    "warn",
-    localize("teamstoolkit.accountTree.copilotMessage"),
-    false,
-    localize("teamstoolkit.accountTree.copilotEnroll")
-  )
-    .then(async (result) => {
-      if (result.isOk() && result.value === localize("teamstoolkit.accountTree.copilotEnroll")) {
-        await VS_CODE_UI.openUrl("https://aka.ms/PluginsEarlyAccess");
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenCopilotEnroll);
-      }
-    })
-    .catch((_error) => {});
-  return Promise.resolve(ok(null));
 }
 
 export async function signinAzureCallback(...args: unknown[]): Promise<Result<null, FxError>> {

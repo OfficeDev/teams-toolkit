@@ -8,7 +8,7 @@ import {
   RecommendedOperations,
   openTestToolMessage,
   openTestToolDisplayMessage,
-} from "../debug/constants";
+} from "../debug/common/debugConstants";
 import { workspaceUri } from "../globalVariables";
 import { debugInTestToolHandler } from "../handlers/debugInTestTool";
 import { ExtTelemetry } from "../telemetry/extTelemetry";

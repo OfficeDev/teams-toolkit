@@ -21,20 +21,13 @@ import { ExtensionSource } from "../error/error";
 import { showError } from "../error/common";
 import { core } from "../globalVariables";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getLocalDebugSessionId, endLocalDebugSession } from "./commonUtils";
-import { accountHintPlaceholder, Host, sideloadingDisplayMessages } from "./constants";
+import { getLocalDebugSessionId, endLocalDebugSession } from "./common/localDebugSession";
+import { accountHintPlaceholder, Host, sideloadingDisplayMessages } from "./common/debugConstants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 import { triggerV3Migration } from "../utils/migrationUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
-
-export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
-  teamsfxIsRemote?: boolean;
-  teamsfxEnv?: string;
-  teamsfxAppId?: string;
-  teamsfxCorrelationId?: string;
-  teamsfxHub?: Hub;
-}
+import { TeamsfxDebugConfiguration } from "./common/teamsfxDebugConfiguration";
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   public async resolveDebugConfiguration?(

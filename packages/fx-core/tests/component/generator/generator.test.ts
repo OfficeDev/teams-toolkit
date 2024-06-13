@@ -544,7 +544,7 @@ describe("Generator error", async () => {
 
   [false, true].forEach((newGeneratorFlag) => {
     it("template fallback error", async () => {
-      sandbox.stub(featurefalgs.featureFlagManager, "getBooleanValue").returns(newGeneratorFlag);
+      sandbox.stub(process, "env").value({ TEAMSFX_NEW_GENERATOR: `${newGeneratorFlag}` });
       sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
       sandbox.stub(folderUtils, "getTemplatesFolder").resolves("foobar");
       const result = newGeneratorFlag
@@ -558,7 +558,7 @@ describe("Generator error", async () => {
     });
 
     it("template not found error", async () => {
-      sandbox.stub(featurefalgs.featureFlagManager, "getBooleanValue").returns(newGeneratorFlag);
+      sandbox.stub(process, "env").value({ TEAMSFX_NEW_GENERATOR: `${newGeneratorFlag}` });
       sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
       sandbox.stub(generatorUtils, "unzip").resolves();
       const result = newGeneratorFlag
@@ -794,7 +794,7 @@ describe("render template", () => {
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
         [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       } as Inputs;
-      sandbox.stub(featurefalgs.featureFlagManager, "getBooleanValue").returns(newGeneratorFlag);
+      sandbox.stub(process, "env").value({ TEAMSFX_NEW_GENERATOR: "true" });
     });
 
     afterEach(async () => {

@@ -6,7 +6,7 @@ import * as constants from "@microsoft/teamsfx-core";
 import * as sinon from "sinon";
 import { expect } from "../../utils";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
-import { openHubWebClientNew } from "../../../../src/cmds/preview/launch";
+import { openHubWebClientNew, openTeamsDesktopClient } from "../../../../src/cmds/preview/launch";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import cliLogger from "../../../../src/commonlib/log";
 import CLIUIInstance from "../../../../src/userInteraction";
@@ -84,6 +84,58 @@ describe("launch", () => {
     it("openBrowser error", async () => {
       sandbox.stub(commonUtils, "openBrowser").throws();
       await openHubWebClientNew(constants.HubTypes.teams, "test-url", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
+    });
+  });
+
+  describe("openTeamsDesktopClientNew", () => {
+    let telemetries: any[] = [];
+    const telemetryProperties = {
+      key1: "value1",
+      key2: "value2",
+    };
+    let sideloadingUrl: string;
+
+    beforeEach(() => {
+      telemetries = [];
+
+      sandbox.stub(cliTelemetry, "sendTelemetryEvent").callsFake((eventName, properties) => {
+        telemetries.push([eventName, properties]);
+      });
+      sandbox
+        .stub(cliTelemetry, "sendTelemetryErrorEvent")
+        .callsFake((eventName, error, properties) => {
+          telemetries.push([eventName, error, properties]);
+        });
+      sandbox.stub(cliLogger, "necessaryLog").callsFake(() => {});
+      sandbox.stub(CLIUIInstance, "createProgressBar").returns(new MockProgressHandler());
+    });
+
+    it("happy path windows", async () => {
+      sandbox.stub(process, "platform").value("win32");
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
+    });
+
+    it("happy path mac", async () => {
+      sandbox.stub(process, "platform").value("darwin");
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
+    });
+
+    it("happy path others", async () => {
+      sandbox.stub(process, "platform").value("linux");
+      sandbox
+        .stub(commonUtils, "openBrowser")
+        .callsFake(async (browser, url, browserArguments) => {});
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
+    });
+
+    it("openBrowser error", async () => {
+      sandbox.stub(process, "platform").value("linux");
+      sandbox.stub(commonUtils, "openBrowser").throws();
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
       expect(telemetries.length).to.deep.equals(0);
     });
   });

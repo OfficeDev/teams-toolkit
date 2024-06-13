@@ -45,7 +45,7 @@ export async function downloadSampleApp(...args: unknown[]) {
 }
 
 export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(null);
+  let result: Result<any, FxError>;
   try {
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {

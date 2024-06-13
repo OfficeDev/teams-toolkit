@@ -6,15 +6,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-import {
-  ConfigFolderName,
-  FxError,
-  Result,
-  SystemError,
-  UserError,
-  err,
-  ok,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { glob } from "glob";
 import { workspace } from "vscode";
 import { core, workspaceUri } from "../globalVariables";

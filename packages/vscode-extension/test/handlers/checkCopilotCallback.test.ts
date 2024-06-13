@@ -7,6 +7,11 @@ import { ok } from "@microsoft/teamsfx-api";
 
 describe("checkCopilotCallback", () => {
   const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("checkCopilotCallback()", async () => {
     sandbox.stub(localizeUtils, "localize").returns("");
     let showMessageCalledCount = 0;

@@ -151,6 +151,7 @@ import {
   getTriggerFromProperty,
   isTriggerFromWalkThrough,
 } from "./utils/telemetryUtils";
+import { openOfficeDevFolder } from "./utils/workspaceUtils";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);

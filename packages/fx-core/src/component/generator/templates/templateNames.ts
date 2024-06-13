@@ -13,6 +13,7 @@ import {
 } from "../../../question/constants";
 
 export enum TemplateNames {
+  Empty = "empty",
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   SsoTabObo = "sso-tab-with-obo-flow",
@@ -59,6 +60,7 @@ export enum TemplateNames {
 
 // TODO: remove this mapping after all generators are migrated to new generator pattern
 export const Feature2TemplateName = {
+  [`${CapabilityOptions.empty().id}:undefined`]: TemplateNames.Empty,
   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
   [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,

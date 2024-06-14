@@ -173,7 +173,6 @@
             "name": "Launch Remote in Teams (Desktop)",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/do_nothing.js",
             "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
             "presentation": {
                 "group": "group 1: Teams",

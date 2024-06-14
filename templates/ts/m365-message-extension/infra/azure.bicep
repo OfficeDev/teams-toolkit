@@ -3,13 +3,6 @@
 @description('Used to generate names for all resources in this file')
 param resourceBaseName string
 
-@description('Required when create Azure Bot service')
-param botAadAppClientId string
-
-@secure()
-@description('Required by Bot Framework package in your bot project')
-param botAadAppClientSecret string
-
 param webAppSKU string
 
 @maxLength(42)

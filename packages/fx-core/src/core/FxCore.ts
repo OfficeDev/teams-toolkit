@@ -418,13 +418,27 @@ export class FxCore {
         return err(res.error);
       }
     }
+
     const tdpOption = inputs[QuestionNames.UninstallOption as string]?.includes(
       QuestionNames.UninstallOptionTDP
     );
+    if (tdpOption) {
+      const res = await this.uninstallAppRegistration(manifestId);
+      if (res.isErr()) {
+        return err(res.error);
+      }
+    }
+
+    // todo: get bot id from manifest id
     const botOption = inputs[QuestionNames.UninstallOption as string]?.includes(
       QuestionNames.UninstallOptionBot
     );
-    await Promise.resolve();
+    if (botOption) {
+      const res = await this.uninstallBotFrameworRegistration("");
+      if (res.isErr()) {
+        return err(res.error);
+      }
+    }
     return ok(undefined);
   }
 

@@ -29,7 +29,7 @@ import {
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
-import { writeLogToFile } from "../utils";
+// import { writeLogToFile } from "../utils";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast

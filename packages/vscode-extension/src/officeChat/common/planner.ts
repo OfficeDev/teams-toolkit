@@ -157,7 +157,7 @@ export class Planner {
       ${Math.ceil(spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection])} 
       `;
     console.debug(debugInfo);
-    response.markdown(debugInfo);
+    // response.markdown(debugInfo);
 
     return chatResult;
   }

@@ -31,12 +31,11 @@ import {
   getGenerateCodeUserPrompt,
   getGenerateCodeSamplePrompt,
   getCodeSamplePrompt,
-  getGenerateCodeDeclarationPrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
-import { SampleData } from "../samples/sampleData";
-import { DeclarationFinder } from "../declarationFinder";
+// import { SampleData } from "../samples/sampleData";
+// import { DeclarationFinder } from "../declarationFinder";
 
 export class CodeGenerator implements ISkill {
   name: string;

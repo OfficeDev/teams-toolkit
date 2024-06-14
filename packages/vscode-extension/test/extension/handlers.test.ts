@@ -1498,10 +1498,10 @@ describe("handlers", () => {
       const createProgressBar = sandbox
         .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
-      sinon.stub(globalVariables, "core").value(new MockCore());
-      sinon.stub(vscode.commands, "executeCommand");
-      sinon.stub(globalState, "globalStateUpdate");
-      const getApp = sinon.stub(teamsDevPortalClient, "getApp").throws("error");
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox.stub(vscode.commands, "executeCommand");
+      sandbox.stub(globalState, "globalStateUpdate");
+      const getApp = sandbox.stub(teamsDevPortalClient, "getApp").throws("error");
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
@@ -1530,7 +1530,7 @@ describe("handlers", () => {
       const appDefinition: AppDefinition = {
         teamsAppId: "mock-id",
       };
-      sinon.stub(teamsDevPortalClient, "getApp").resolves(appDefinition);
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves(appDefinition);
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler("appId", "testuser");
 

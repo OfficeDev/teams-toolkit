@@ -79,16 +79,16 @@ export class CodeIssueCorrector implements ISkill {
     let issueTolerance: number;
 
     if (spec.appendix.complexity < 25) {
-      maxRetryCount = 1;
+      maxRetryCount = 2;
       issueTolerance = 1;
     } else if (spec.appendix.complexity < 50) {
-      maxRetryCount = 1;
+      maxRetryCount = 2;
       issueTolerance = 1;
     } else if (spec.appendix.complexity < 75) {
-      maxRetryCount = 1;
+      maxRetryCount = 2;
       issueTolerance = 1;
     } else {
-      maxRetryCount = 1;
+      maxRetryCount = 2;
       issueTolerance = 1;
     }
 

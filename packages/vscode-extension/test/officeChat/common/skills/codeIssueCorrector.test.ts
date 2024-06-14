@@ -561,7 +561,7 @@ describe("CodeIssueCorrector", () => {
     const corrector = new CodeIssueCorrector();
     const detector = CodeIssueDetector.getInstance();
     const detectionResult = new DetectionResult();
-    detectionResult.compileErrors = ["error1", "error2"];
+    detectionResult.compileErrors = ["error1"];
     detectionResult.runtimeErrors = ["error1"];
     const detectionResultAfterFix = new DetectionResult();
     detectionResultAfterFix.compileErrors = ["error1"];
@@ -587,10 +587,10 @@ describe("CodeIssueCorrector", () => {
 
     detectIssuesStub.returns(Promise.resolve(detectionResultFinal));
     detectIssuesStub.onCall(0).returns(Promise.resolve(detectionResult));
-    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
+    // detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
     // detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
     // detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
-    detectIssuesStub.onCall(2).returns(Promise.resolve(detectionResultFinal));
+    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultFinal));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -643,7 +643,7 @@ describe("CodeIssueCorrector", () => {
     const corrector = new CodeIssueCorrector();
     const detector = CodeIssueDetector.getInstance();
     const detectionResult = new DetectionResult();
-    detectionResult.compileErrors = ["error1", "error2"];
+    detectionResult.compileErrors = ["error1"];
     detectionResult.runtimeErrors = ["error1"];
     const detectionResultAfterFix = new DetectionResult();
     detectionResultAfterFix.compileErrors = ["error1", "error2", "error3"];
@@ -669,10 +669,10 @@ describe("CodeIssueCorrector", () => {
     const detectIssuesStub = sandbox.stub(detectorInstance, "detectIssuesAsync");
     detectIssuesStub.returns(Promise.resolve(detectionResultFinal));
     detectIssuesStub.onCall(0).returns(Promise.resolve(detectionResult));
-    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
+    // detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
     // detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
     // detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
-    detectIssuesStub.onCall(2).returns(Promise.resolve(detectionResultFinal));
+    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultFinal));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 

@@ -258,15 +258,13 @@ export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): st
   \`\`\`
 
   The output must be a JSON object wrapped into a markdown json block, and it will contain the following keys:
-  - spec. value is a string.
-  - funcs. value is a array of string.
+  - "spec". value is a string.
+  - "funcs". value is a array of string.
 
   # Your tasks:
-  Read the input, understand the intention and request of the ask, and think about how Office JavaScript API could help to address them. Then deduce your think result to two parts:
-  1. Write a clear specification that explains the user scenario. Keep the scenario simple and meet the user'ask. And guidance how you will write the code using Office JavaScript API to fulfill that needs step by step, add details for parts that interact with Office applications. List methods, and properties you will use in the code in this guidance, using the format of "get xxx property using xxx API", or "call xxx method to take the action xxx". Add the specification to the "spec" field of the output JSON object. 
-  2. Based on the spec, think about how to wrap the code into functions, suggest a name for TypeScript functions. And provide a one-line description for functions, that includes the function's core functionality and actions in details. Add the function description to the "funcs" field of the output JSON object.
+  Summarize the main needs of the user's ask. Write a step by step coding instructions based on the summary using Office JavaScript API, focus on parts that interact with Office applications. Keep instructions short and attach to the main needs. Don't generate extra or additional steps. Don't generate steps those optional. Use apostrophe rather than double quotes. Add the instruction to the "spec" field of the output JSON object. Suggest a function name with description to the "funcs" field of the output JSON object.
 
-  # Example of specification:
+  # Example of instruction:
 
   \`\`\`text
   To retrieve the content of the initial footnote in a Word document using Office JavaScript APIs, you can follow these steps:
@@ -284,8 +282,8 @@ export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): st
   Beyond the JSON object. You should not add anything else to the output.
   The example of output you must to follow: 
   { 
-    spec: "The functional spec",
-    funcs: ["function1 description"] 
+    "spec": "The functional spec",
+    "funcs": ["function1 description"] 
   }
   `;
 }

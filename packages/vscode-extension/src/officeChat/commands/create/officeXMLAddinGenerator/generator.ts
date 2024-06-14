@@ -12,7 +12,7 @@ import {
 import { Context, FxError, GeneratorResult, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import { merge, toLower } from "lodash";
 import { promisify } from "util";
-import { getOfficeAddinTemplateConfig } from "./projectConfig";
+import { getOfficeXMLAddinTemplateConfig } from "./projectConfig";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { join } from "path";
 import * as childProcess from "child_process";
@@ -49,7 +49,7 @@ export class OfficeXMLAddinGenerator extends DefaultTemplateGenerator {
     const host = inputs[QuestionNames.OfficeAddinHost] as string;
     const capability = inputs[QuestionNames.Capabilities];
     const lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as "javascript" | "typescript";
-    const templateConfig = getOfficeAddinTemplateConfig(host);
+    const templateConfig = getOfficeXMLAddinTemplateConfig(host);
     const templateName = templateConfig[capability].localTemplate;
     const projectLink = templateConfig[capability].framework["default"][lang];
     merge(actionContext?.telemetryProps, {

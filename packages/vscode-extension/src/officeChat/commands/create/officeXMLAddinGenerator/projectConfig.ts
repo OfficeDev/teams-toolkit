@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-interface IOfficeAddinHostConfig {
+interface IOfficeXMLAddinHostConfig {
   [property: string]: {
-    title: string;
-    detail: string;
     localTemplate: string;
     manifestPath?: string;
     framework: {
@@ -16,14 +14,12 @@ interface IOfficeAddinHostConfig {
   };
 }
 
-interface IOfficeAddinProjectConfig {
-  [property: string]: IOfficeAddinHostConfig;
+interface IOfficeXMLAddinProjectConfig {
+  [property: string]: IOfficeXMLAddinHostConfig;
 }
 
 const CommonProjectConfig = {
   taskpane: {
-    title: "core.createProjectQuestion.officeXMLAddin.taskpane.title",
-    detail: "core.createProjectQuestion.officeXMLAddin.taskpane.detail",
     framework: {
       default: {
         typescript: "https://aka.ms/ccdevx-fx-taskpane-ts",
@@ -48,29 +44,23 @@ const CommonProjectConfig = {
     },
   },
   manifest: {
-    title: "core.createProjectQuestion.officeXMLAddin.manifestOnly.title",
-    detail: "core.createProjectQuestion.officeXMLAddin.manifestOnly.detail",
     framework: {
       default: {},
     },
   },
 };
 
-export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
+export const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
   word: {
     "word-taskpane": {
       localTemplate: "word-taskpane",
       ...CommonProjectConfig.taskpane,
     },
     "word-sso": {
-      title: "core.createProjectQuestion.officeXMLAddin.word.sso.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.word.sso.detail",
       localTemplate: "word-sso",
       ...CommonProjectConfig.sso,
     },
     "word-react": {
-      title: "core.createProjectQuestion.officeXMLAddin.word.react.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.word.react.detail",
       localTemplate: "word-react",
       ...CommonProjectConfig.react,
     },
@@ -85,20 +75,14 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
       ...CommonProjectConfig.taskpane,
     },
     "excel-sso": {
-      title: "core.createProjectQuestion.officeXMLAddin.excel.sso.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.excel.sso.detail",
       localTemplate: "excel-sso",
       ...CommonProjectConfig.sso,
     },
     "excel-react": {
-      title: "core.createProjectQuestion.officeXMLAddin.excel.react.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.excel.react.detail",
       localTemplate: "excel-react",
       ...CommonProjectConfig.react,
     },
     "excel-custom-functions-shared": {
-      title: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.detail",
       localTemplate: "excel-cf",
       framework: {
         default: {
@@ -108,8 +92,6 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
       },
     },
     "excel-custom-functions-js": {
-      title: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.detail",
       localTemplate: "excel-cf",
       framework: {
         default: {
@@ -130,14 +112,10 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
     },
     "powerpoint-sso": {
       localTemplate: "powerpoint-sso",
-      title: "core.createProjectQuestion.officeXMLAddin.powerpoint.sso.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.powerpoint.sso.detail",
       ...CommonProjectConfig.sso,
     },
     "powerpoint-react": {
       localTemplate: "powerpoint-react",
-      title: "core.createProjectQuestion.officeXMLAddin.powerpoint.react.title",
-      detail: "core.createProjectQuestion.officeXMLAddin.powerpoint.react.detail",
       ...CommonProjectConfig.react,
     },
     "powerpoint-manifest": {
@@ -147,6 +125,6 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
   },
 };
 
-export function getOfficeAddinTemplateConfig(addinHost: string): IOfficeAddinHostConfig {
-  return OfficeAddinProjectConfig[addinHost];
+export function getOfficeXMLAddinTemplateConfig(addinHost: string): IOfficeXMLAddinHostConfig {
+  return OfficeXMLAddinProjectConfig[addinHost];
 }

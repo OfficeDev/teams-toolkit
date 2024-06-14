@@ -4,6 +4,7 @@
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import {
   FeatureFlags,
+  featureFlagManager,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
   isCopilotPluginEnabled,

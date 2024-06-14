@@ -28,7 +28,6 @@ export { Correlator } from "./common/correlator";
 export {
   FeatureFlags,
   featureFlagManager,
-  isApiCopilotPluginEnabled,
   isChatParticipantEnabled,
   isCopilotPluginEnabled,
   isFeatureFlagEnabled,

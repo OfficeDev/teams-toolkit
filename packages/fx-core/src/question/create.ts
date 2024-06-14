@@ -26,7 +26,6 @@ import { Correlator } from "../common/correlator";
 import {
   FeatureFlags,
   featureFlagManager,
-  isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
   isCopilotPluginEnabled,
@@ -100,11 +99,9 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         staticOptions.push(ProjectTypeOptions.customizeGpt());
       }
 
-      if (isApiCopilotPluginEnabled()) {
-        staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
-      }
-      staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
       staticOptions.push(
+        ProjectTypeOptions.copilotPlugin(inputs.platform),
+        ProjectTypeOptions.customCopilot(inputs.platform),
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
         ProjectTypeOptions.me(inputs.platform)
@@ -1107,7 +1104,6 @@ export function apiAuthQuestion(): SingleSelectQuestion {
       if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
       } else if (
-        featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
         inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id
       ) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
@@ -1406,8 +1402,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
-              isCopilotPluginEnabled() &&
+            (isCopilotPluginEnabled() &&
               inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
           );
         },

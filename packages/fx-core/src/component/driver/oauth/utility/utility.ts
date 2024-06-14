@@ -37,9 +37,9 @@ export async function getandValidateOauthInfoFromSpec(
   const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
   const parser = new SpecParser(absolutePath, {
     allowAPIKeyAuth: false,
-    allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+    allowBearerTokenAuth: true,
     allowMultipleParameters: true,
-    allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+    allowOauth2: true,
     projectType: ProjectType.Copilot,
     allowMissingId: true,
     allowSwagger: true,

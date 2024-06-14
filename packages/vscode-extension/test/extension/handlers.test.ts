@@ -880,7 +880,6 @@ describe("handlers", () => {
   });
 
   it("walkthrough: build intelligent apps", async () => {
-    sandbox.stub(featureFlags, "isApiCopilotPluginEnabled").returns(true);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
 
     await handlers.openBuildIntelligentAppsWalkthroughHandler();

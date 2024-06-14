@@ -4,8 +4,6 @@
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import {
   FeatureFlags,
-  featureFlagManager,
-  isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
   isCopilotPluginEnabled,
@@ -663,10 +661,8 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
+      ...CapabilityOptions.copilotPlugins(),
     ];
-    if (isApiCopilotPluginEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
-    }
     if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
       capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
     }

@@ -42,7 +42,6 @@ export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
@@ -52,7 +51,6 @@ export class FeatureFlagName {
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
   static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
-  static readonly CopilotAuth = "API_COPILOT_PLUGIN_AUTH";
   static readonly SMEOAuth = "SME_OAUTH";
   static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
 }

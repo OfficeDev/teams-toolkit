@@ -23,7 +23,6 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
-import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import * as utils from "../../src/common/globalVars";
 import { setTools } from "../../src/common/globalVars";
 import { getLocalizedString } from "../../src/common/localizeUtils";
@@ -1660,9 +1659,6 @@ describe("scaffold question", () => {
       });
 
       it("traverse in vscode Copilot Plugin from new API with auth enabled", async () => {
-        mockedEnvRestore = mockedEnv({
-          API_COPILOT_PLUGIN_AUTH: "true",
-        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1715,9 +1711,6 @@ describe("scaffold question", () => {
       });
 
       it("traverse in vscode Copilot Plugin from new API with api key auth", async () => {
-        mockedEnvRestore = mockedEnv({
-          API_COPILOT_PLUGIN_AUTH: "true",
-        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -3559,9 +3552,6 @@ describe("scaffold question", () => {
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);
-    });
-    it("api copilot plugin feature flag", async () => {
-      assert.isFalse(isApiCopilotPluginEnabled());
     });
   });
   describe("programmingLanguageQuestion", () => {

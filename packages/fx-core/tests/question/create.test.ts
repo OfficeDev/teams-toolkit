@@ -3919,7 +3919,6 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "true",
-        [FeatureFlagName.ApiCopilotPlugin]: "true",
       });
     });
 
@@ -3946,7 +3945,6 @@ describe("scaffold question", () => {
     });
 
     it("api plugin from scratch with auth enabled", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.CopilotAuth]: "true" });
       const question = apiAuthQuestion();
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -3960,20 +3958,6 @@ describe("scaffold question", () => {
           ApiAuthOptions.apiKey(),
           ApiAuthOptions.oauth(),
         ]);
-      }
-    });
-
-    it("api plugin from scratch with auth disabled", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.CopilotAuth]: "false" });
-      const question = apiAuthQuestion();
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-      };
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginNewApi().id;
-      assert.isDefined(question.dynamicOptions);
-      if (question.dynamicOptions) {
-        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
-        assert.deepEqual(options, [ApiAuthOptions.none()]);
       }
     });
   });

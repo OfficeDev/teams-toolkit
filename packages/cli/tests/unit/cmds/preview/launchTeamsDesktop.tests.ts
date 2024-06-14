@@ -46,11 +46,11 @@ describe("launch Teams desktop client", () => {
       expect(telemetries.length).to.deep.equals(0);
     });
 
-    // it("happy path mac", async () => {
-    //   sandbox.stub(process, "platform").value("darwin");
-    //   await openTeamsDesktopClient("http://test-url", "username", Browser.default);
-    //   expect(telemetries.length).to.deep.equals(0);
-    // });
+    it("happy path mac", async () => {
+      sandbox.stub(process, "platform").value("darwin");
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
+    });
 
     // it("happy path others", async () => {
     //   sandbox.stub(process, "platform").value("linux");

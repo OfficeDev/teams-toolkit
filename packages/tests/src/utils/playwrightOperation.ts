@@ -2410,10 +2410,7 @@ export async function delPerson(
 
 export async function validateCreatedCard(page: Page) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     console.log("start to created card");
     try {
       await frame

@@ -1603,7 +1603,6 @@ describe("scaffold question", () => {
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotPlugin]: "true",
-          [FeatureFlagName.ApiCopilotPlugin]: "true",
         });
       });
 
@@ -2939,7 +2938,6 @@ describe("scaffold question", () => {
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotPlugin]: "true",
-          [FeatureFlagName.ApiCopilotPlugin]: "true",
           [FeatureFlagName.CustomizeGpt]: "true",
         });
       });
@@ -3490,7 +3488,6 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "true",
-        [FeatureFlagName.ApiCopilotPlugin]: "false",
         [FeatureFlagName.ChatParticipant]: "false",
       });
     });

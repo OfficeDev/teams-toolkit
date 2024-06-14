@@ -1546,47 +1546,6 @@ describe("getQuestions", async () => {
   it("happy path: API Copilot plugin enabled", async () => {
     const restore = mockedEnv({
       [FeatureFlagName.CopilotPlugin]: "true",
-      [FeatureFlagName.ApiCopilotPlugin]: "true",
-    });
-    const core = new FxCore(tools);
-    const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
-    assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      const node = res.value;
-      const names: string[] = [];
-      collectNodeNames(node!, names);
-      assert.deepEqual(names, [
-        "capabilities",
-        "bot-host-type-trigger",
-        "spfx-solution",
-        "spfx-install-latest-package",
-        "spfx-framework-type",
-        "spfx-webpart-name",
-        "spfx-folder",
-        "me-architecture",
-        "api-auth",
-        "custom-copilot-rag",
-        "openapi-spec-location",
-        "api-operation",
-        "custom-copilot-agent",
-        "programming-language",
-        "llm-service",
-        "azure-openai-key",
-        "azure-openai-endpoint",
-        "azure-openai-deployment-name",
-        "openai-key",
-        "office-addin-framework-type",
-        "folder",
-        "app-name",
-      ]);
-    }
-    restore();
-  });
-
-  it("happy path: copilot feature enabled but not API Copilot plugin", async () => {
-    const restore = mockedEnv({
-      [FeatureFlagName.CopilotPlugin]: "true",
-      [FeatureFlagName.ApiCopilotPlugin]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });

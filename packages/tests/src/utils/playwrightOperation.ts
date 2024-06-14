@@ -224,28 +224,13 @@ export async function initPage(
     await page?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
-    /* Todo: need update:
     try {
-      try {
-        await page?.waitForSelector(".team-information span:has-text('About')");
-      } catch (error) {
-        try {
-          await page?.waitForSelector(
-            ".ts-messages-header span:has-text('About')"
-          );
-        } catch (error) {
-          try {
-            await page?.waitForSelector(
-              ".team-information span:has-text('Chat')"
-            );
-          } catch (error) {
-            await page?.waitForSelector(
-              ".ts-messages-header span:has-text('Chat')"
-            );
-          }
-        }
-      }
-      console.log("[success] app loaded");
+      await page?.waitForSelector(
+        ".ui-menu__itemwrapper span:has-text('About')"
+      );
+      await page?.waitForSelector(
+        ".ui-menu__itemwrapper span:has-text('Chat')"
+      );
     } catch (error) {
       await page.screenshot({
         path: getPlaywrightScreenshotPath("error"),
@@ -253,7 +238,6 @@ export async function initPage(
       });
       assert.fail("[Error] add app failed");
     }
-      */
     console.log("[success] app loaded");
     await page.waitForTimeout(Timeout.shortTimeLoading);
   });
@@ -325,16 +309,10 @@ export async function reopenPage(
       path: getPlaywrightScreenshotPath("reopen_page"),
       fullPage: true,
     });
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
     await page.waitForTimeout(Timeout.shortTimeLoading);
     if (addApp) {
       console.log("click add button");
-      const addBtn = await frame?.waitForSelector(
-        "button>span:has-text('Add')"
-      );
+      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
 
       // dashboard template will have a popup
       if (options?.dashboardFlag) {
@@ -378,7 +356,7 @@ export async function reopenPage(
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       // verify add page is closed
-      await frame?.waitForSelector("button>span:has-text('Add')", {
+      await page?.waitForSelector("button>span:has-text('Add')", {
         state: "detached",
       });
     }
@@ -485,10 +463,6 @@ export async function initTeamsPage(
       ]);
       await page.waitForTimeout(Timeout.longTimeWait);
       console.log("click add button");
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      const frame = await frameElementHandle?.contentFrame();
 
       try {
         console.log("dismiss message");
@@ -498,24 +472,18 @@ export async function initTeamsPage(
       }
 
       // default
-      const addBtn = await frame?.waitForSelector(
-        "button>span:has-text('Add')"
-      );
+      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
       if (options?.type === "meeting") {
         // verify add page is closed
-        const frameElementHandle = await page.waitForSelector(
-          "iframe.embedded-page-content"
-        );
-        const frame = await frameElementHandle?.contentFrame();
         try {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a team')`
           );
         } catch (error) {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
           );
         }
@@ -526,36 +494,31 @@ export async function initTeamsPage(
 
       try {
         // verify add page is closed
-        await frame?.waitForSelector(`h1:has-text('to a team')`);
+        await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
-          const frameElementHandle = await page.waitForSelector(
-            "iframe.embedded-page-content"
-          );
-          const frame = await frameElementHandle?.contentFrame();
-
           try {
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
-            const searchBtn = await frame?.waitForSelector(
+            const searchBtn = await page?.waitForSelector(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
 
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
           }
 
-          const setUpBtn = await frame?.waitForSelector(
+          const setUpBtn = await page?.waitForSelector(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
           console.log("click 'set up a tab' button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
-          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+          await page?.waitForSelector('button span:has-text("Set up a tab")', {
             state: "detached",
           });
         } catch (error) {
@@ -649,10 +612,6 @@ export async function reopenTeamsPage(
         ),
         page.waitForNavigation(),
       ]);
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      const frame = await frameElementHandle?.contentFrame();
 
       try {
         console.log("dismiss message");
@@ -664,7 +623,7 @@ export async function reopenTeamsPage(
         await page.waitForTimeout(Timeout.longTimeWait);
         console.log("click add button");
         // default
-        const addBtn = await frame?.waitForSelector(
+        const addBtn = await page?.waitForSelector(
           "button>span:has-text('Add')"
         );
         await addBtn?.click();
@@ -673,16 +632,12 @@ export async function reopenTeamsPage(
 
       if (options?.type === "meeting") {
         // verify add page is closed
-        const frameElementHandle = await page.waitForSelector(
-          "iframe.embedded-page-content"
-        );
-        const frame = await frameElementHandle?.contentFrame();
         try {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a team')`
           );
         } catch (error) {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
           );
         }
@@ -693,36 +648,31 @@ export async function reopenTeamsPage(
 
       try {
         // verify add page is closed
-        await frame?.waitForSelector(`h1:has-text('to a team')`);
+        await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
-          const frameElementHandle = await page.waitForSelector(
-            "iframe.embedded-page-content"
-          );
-          const frame = await frameElementHandle?.contentFrame();
-
           try {
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
-            const searchBtn = await frame?.waitForSelector(
+            const searchBtn = await page?.waitForSelector(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
 
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
           }
 
-          const setUpBtn = await frame?.waitForSelector(
+          const setUpBtn = await page?.waitForSelector(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
           console.log("click 'set up a tab' button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
-          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+          await page?.waitForSelector('button span:has-text("Set up a tab")', {
             state: "detached",
           });
         } catch (error) {

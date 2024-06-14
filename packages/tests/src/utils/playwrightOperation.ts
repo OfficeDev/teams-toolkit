@@ -361,29 +361,15 @@ export async function reopenPage(
       });
     }
     try {
-      try {
-        await page?.waitForSelector(".team-information span:has-text('About')");
-      } catch (error) {
-        try {
-          await page?.waitForSelector(
-            ".ts-messages-header span:has-text('About')"
-          );
-        } catch (error) {
-          try {
-            await page?.waitForSelector(
-              ".team-information span:has-text('Chat')"
-            );
-          } catch (error) {
-            await page?.waitForSelector(
-              ".ts-messages-header span:has-text('Chat')"
-            );
-          }
-        }
-      }
-      console.log("[success] app loaded");
+      await page?.waitForSelector(
+        ".ui-menu__itemwrapper span:has-text('About')"
+      );
+      await page?.waitForSelector(
+        ".ui-menu__itemwrapper span:has-text('Chat')"
+      );
     } catch (error) {
       await page.screenshot({
-        path: getPlaywrightScreenshotPath("add_error"),
+        path: getPlaywrightScreenshotPath("error"),
         fullPage: true,
       });
       assert.fail("[Error] add app failed");
@@ -1232,10 +1218,7 @@ export async function validateEchoBot(
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1260,11 +1243,12 @@ export async function validateEchoBot(
 
     await RetryHandler.retry(async () => {
       console.log("sending message ", options?.botCommand);
-      await frame?.fill(
-        'div.ck-content[role="textbox"]',
-        options?.botCommand || "helloWorld"
+      const textbox = await frame?.waitForSelector(
+        'div.ck-content[role="textbox"]'
       );
-      await frame?.click('button[name="send"]');
+      await textbox?.fill(options?.botCommand || "helloWorld");
+      const sendButton = await frame?.waitForSelector('button[name="send"]');
+      await sendButton?.click();
       const expectedContent = options?.botCommand
         ? `Echo: ${options?.botCommand}`
         : `Echo: helloWorld`;
@@ -1300,10 +1284,7 @@ export async function validateWelcomeAndReplyBot(
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1335,11 +1316,12 @@ export async function validateWelcomeAndReplyBot(
     if (options.hasCommandReplyValidation) {
       await RetryHandler.retry(async () => {
         console.log("sending message ", options?.botCommand || "helloWorld");
-        await frame?.fill(
-          'div.ck-content[role="textbox"]',
-          options?.botCommand || "helloWorld"
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
         );
-        await frame?.click('button[name="send"]');
+        await textbox?.fill(options?.botCommand || "helloWorld");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
         await frame?.waitForSelector(
           `p:has-text("${options?.expectedReplyMessage}")`
         );
@@ -1369,10 +1351,7 @@ export async function validateBot(
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1389,8 +1368,14 @@ export async function validateBot(
       if (options?.botCommand === "show") {
         try {
           console.log("sending message ", options?.botCommand);
-          await executeBotSuggestionCommand(page, frame, options?.botCommand);
-          await frame?.click('button[name="send"]');
+          const textbox = await frame?.waitForSelector(
+            'div.ck-content[role="textbox"]'
+          );
+          await textbox?.fill(options?.botCommand || "helloWorld");
+          const sendButton = await frame?.waitForSelector(
+            'button[name="send"]'
+          );
+          await sendButton?.click();
         } catch (e: any) {
           console.log(
             `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
@@ -1441,12 +1426,14 @@ export async function validateBot(
       } else {
         await RetryHandler.retry(async () => {
           console.log("sending message ", options?.botCommand);
-          await executeBotSuggestionCommand(
-            page,
-            frame,
-            options?.botCommand || "welcome"
+          const textbox = await frame?.waitForSelector(
+            'div.ck-content[role="textbox"]'
           );
-          await frame?.click('button[name="send"]');
+          await textbox?.fill(options?.botCommand || "helloWorld");
+          const sendButton = await frame?.waitForSelector(
+            'button[name="send"]'
+          );
+          await sendButton?.click();
           await frame?.waitForSelector(
             `p:has-text("${options?.expected || ValidationContent.Bot}")`
           );
@@ -1800,15 +1787,9 @@ export async function validateShareNow(page: Page) {
 
 export async function validateWorkFlowBot(page: Page) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
-    await frame
-      ?.click('button:has-text("DoStuff")', {
-        timeout: Timeout.playwrightDefaultTimeout,
-      })
-      .catch(() => {});
+    const frame = await page.waitForSelector("div#app");
+    const button = await frame?.waitForSelector('button:has-text("DoStuff")');
+    await button?.click();
     await frame?.waitForSelector(`p:has-text("[ACK] Hello World Bot")`);
   } catch (error) {
     await page.screenshot({
@@ -1824,10 +1805,7 @@ export async function validateNotificationBot(
   notificationEndpoint = "http://127.0.0.1:3978/api/notification"
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await page
       .click('button:has-text("Dismiss")', {
@@ -1854,8 +1832,12 @@ export async function validateNotificationBot(
         );
       } catch (e) {
         console.log("sending any message ", "helloWorld");
-        await frame?.fill('div.ck-content[role="textbox"]', "helloWorld");
-        await frame?.click('button[name="send"]');
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
+        );
+        await textbox?.fill("helloWorld");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
         throw e;
       }
     }, 2);
@@ -1873,10 +1855,7 @@ export async function validateStockUpdate(page: Page) {
   try {
     console.log("start to verify stock update");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("click stock update");
       await frame?.waitForSelector('p:has-text("Microsoft Corporation")');
@@ -1984,10 +1963,7 @@ export async function validateProactiveMessaging(
 ): Promise<void> {
   console.log(`validating proactive messaging`);
   await page.waitForTimeout(Timeout.shortTimeLoading);
-  const frameElementHandle = await page.waitForSelector(
-    "iframe.embedded-page-content"
-  );
-  const frame = await frameElementHandle?.contentFrame();
+  const frame = await page.waitForSelector("div#app");
   try {
     console.log("dismiss message");
     await frame?.waitForSelector("div.ui-box");
@@ -2001,8 +1977,12 @@ export async function validateProactiveMessaging(
   }
   try {
     console.log("sending message ", "welcome");
-    await executeBotSuggestionCommand(page, frame, "welcome");
-    await frame?.click('button[name="send"]');
+    const textbox = await frame?.waitForSelector(
+      'div.ck-content[role="textbox"]'
+    );
+    await textbox?.fill("welcome");
+    const sendButton = await frame?.waitForSelector('button[name="send"]');
+    await sendButton?.click();
     // verify command
     const expectedContent = "You sent 'welcome '.";
     await frame?.waitForSelector(`p:has-text("${expectedContent}")`);

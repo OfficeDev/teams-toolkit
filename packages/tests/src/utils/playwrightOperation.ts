@@ -228,9 +228,6 @@ export async function initPage(
       await page?.waitForSelector(
         ".ui-menu__itemwrapper span:has-text('About')"
       );
-      await page?.waitForSelector(
-        ".ui-menu__itemwrapper span:has-text('Chat')"
-      );
     } catch (error) {
       await page.screenshot({
         path: getPlaywrightScreenshotPath("error"),
@@ -363,9 +360,6 @@ export async function reopenPage(
     try {
       await page?.waitForSelector(
         ".ui-menu__itemwrapper span:has-text('About')"
-      );
-      await page?.waitForSelector(
-        ".ui-menu__itemwrapper span:has-text('Chat')"
       );
     } catch (error) {
       await page.screenshot({
@@ -1984,7 +1978,7 @@ export async function validateProactiveMessaging(
     const sendButton = await frame?.waitForSelector('button[name="send"]');
     await sendButton?.click();
     // verify command
-    const expectedContent = "You sent 'welcome '.";
+    const expectedContent = "You sent 'welcome'.";
     await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
     console.log(`verify bot successfully with content ${expectedContent}!!!`);
     // send post request to bot

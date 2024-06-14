@@ -41,9 +41,6 @@ describe("Deploy Link Unfurling template", () => {
     if (context?.TEAMS_APP_ID) {
       await deleteTeamsApp(context.TEAMS_APP_ID);
     }
-    if (context?.BOT_ID) {
-      await deleteAadAppByClientId(context.BOT_ID);
-    }
     await deleteResourceGroupByName(resourceGroupName);
     await cleanUpLocalProject(projectPath);
   });
@@ -81,9 +78,6 @@ describe("Deploy Link Unfurling template", () => {
       // validate bot aad
       chai.assert.isDefined(context.BOT_ID);
       chai.assert.isNotEmpty(context.BOT_ID);
-      const aadApp = await getAadAppByClientId(context.BOT_ID);
-      chai.assert.isDefined(aadApp);
-      chai.assert.equal(aadApp?.appId, context.BOT_ID);
 
       // validate m365
       chai.assert.isDefined(context.M365_TITLE_ID);

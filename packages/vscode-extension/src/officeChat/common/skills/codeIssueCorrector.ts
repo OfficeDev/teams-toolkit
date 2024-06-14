@@ -108,7 +108,7 @@ export class CodeIssueCorrector implements ISkill {
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
-    const setDeclartionPrompt = getDeclarationsPrompt();
+    // const setDeclartionPrompt = getDeclarationsPrompt();
 
     //     if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
     //       const groupedMethodsOrProperties = new Map<string, SampleData[]>();

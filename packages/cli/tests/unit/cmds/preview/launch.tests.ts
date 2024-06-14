@@ -16,7 +16,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../../../src/telemetry/cliTelemetryEvents";
-import * as cp from "child_process";
+import cp from "child_process";
 
 describe("launch", () => {
   const sandbox = sinon.createSandbox();
@@ -117,7 +117,7 @@ describe("launch Teams desktop client", () => {
         });
       sandbox.stub(cliLogger, "necessaryLog").callsFake(() => {});
       sandbox.stub(CLIUIInstance, "createProgressBar").returns(new MockProgressHandler());
-      sandbox.stub(cp);
+      sandbox.stub(cp, "exec");
     });
 
     it("happy path windows", async () => {

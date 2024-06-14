@@ -11,7 +11,7 @@ import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import { OpeningBrowserFailed, OpeningTeamsDesktopClientFailed } from "./errors";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import * as cp from "child_process";
+import cp from "child_process";
 import cliLogger from "../../commonlib/log";
 
 export async function openHubWebClientNew(

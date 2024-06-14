@@ -24,7 +24,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
-import { isCopilotAuthEnabled, isNewGeneratorEnabled } from "../../common/featureFlags";
+import { FeatureFlags, featureFlagManager, isNewGeneratorEnabled } from "../../common/featureFlags";
 import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/stringUtils";
@@ -264,7 +264,7 @@ class Coordinator {
           }
 
           if (capability === CapabilityOptions.copilotPluginNewApi().id) {
-            if (isCopilotAuthEnabled()) {
+            if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth)) {
               feature = `${feature}:${apiMEAuthType}`;
             } else {
               feature = `${feature}:none`;

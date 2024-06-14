@@ -1320,6 +1320,7 @@ describe("SpecParser", () => {
         paths: {
           "/hello": {
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -1395,6 +1396,7 @@ describe("SpecParser", () => {
           "/hello": {
             description: "additional description",
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -2041,13 +2043,17 @@ describe("SpecParser", () => {
               name: "api_key",
               in: "header",
             },
+            BearerAuth: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         paths: {
           "/pets": {
             get: {
               operationId: "getPetById",
-              security: [{ api_key: [] }],
+              security: [{ api_key: [], BearerAuth: [] }],
             },
           },
           "/user/{userId}": {
@@ -2101,28 +2107,43 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /pets",
-            server: "",
+            server: "https://server1",
             operationId: "getPetById",
+            auth: {
+              authScheme: {
+                type: "multipleAuth",
+              },
+              name: "api_key, BearerAuth",
+            },
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
           },
           {
             api: "GET /user/{userId}",
             server: "https://server1",
+
             operationId: "getUserById",
             isValid: true,
             reason: [],
           },
           {
             api: "POST /user/{userId}",
-            server: "",
+            auth: {
+              authScheme: {
+                in: "header",
+                name: "api_key",
+                type: "apiKey",
+              },
+              name: "api_key",
+            },
+            server: "https://server1",
             operationId: "createUser",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
           },
           {
             api: "POST /store/order",
-            server: "",
+            server: "https://server1",
             operationId: "placeOrder",
             reason: ["response-json-is-empty", "no-parameter"],
             isValid: false,
@@ -2853,7 +2874,7 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /user/{userId}",
-            server: "",
+            server: "https://server1",
             operationId: "getUserUserId",
             isValid: false,
             reason: ["missing-operation-id"],

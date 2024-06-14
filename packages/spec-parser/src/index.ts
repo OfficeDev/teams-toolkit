@@ -17,6 +17,7 @@ export {
   AdaptiveCard,
   ProjectType,
   InvalidAPIInfo,
+  AuthType,
 } from "./interfaces";
 
 export { ConstantString } from "./constants";

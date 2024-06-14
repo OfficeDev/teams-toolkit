@@ -6,7 +6,7 @@
  */
 "use strict";
 
-import { FxError, Result, Warning, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import {
   globalStateGet,
   globalStateUpdate,
@@ -15,23 +15,25 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { Uri } from "vscode";
-import { GlobalKey } from "./constants";
-import { OfficeDevTerminal, TriggerCmdType } from "./debug/taskTerminal/officeDevTerminal";
-import { VS_CODE_UI } from "./extension";
-import * as globalVariables from "./globalVariables";
+import { GlobalKey } from "../constants";
+import { OfficeDevTerminal, TriggerCmdType } from "../debug/taskTerminal/officeDevTerminal";
+import { VS_CODE_UI } from "../qm/vsc_ui";
+import * as globalVariables from "../globalVariables";
 import {
   ShowScaffoldingWarningSummary,
   autoInstallDependencyHandler,
   openReadMeHandler,
   openSampleReadmeHandler,
   showLocalDebugMessage,
-} from "./handlers";
-import { TelemetryTriggerFrom, VSCodeWindowChoice } from "./telemetry/extTelemetryEvents";
-import { isTriggerFromWalkThrough, getTriggerFromProperty } from "./utils/commonUtils";
-import { localize } from "./utils/localizeUtils";
-import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
+} from "../handlers";
+import {
+  TelemetryTriggerFrom,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
+import { getTriggerFromProperty } from "../utils/telemetryUtils";
+import { localize } from "../utils/localizeUtils";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]
@@ -200,33 +202,6 @@ export function generateManifestGUID(args?: any[]): Promise<Result<null, FxError
   terminal.show();
   terminal.sendText(TriggerCmdType.triggerGenerateGUID);
   return Promise.resolve(ok(null));
-}
-
-// refer to handlers.openFolder
-export async function openOfficeDevFolder(
-  folderPath: Uri,
-  showLocalDebugMessage: boolean,
-  warnings?: Warning[] | undefined,
-  args?: any[]
-) {
-  // current the welcome walkthrough is not supported for wxp add in
-  await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
-  await globalStateUpdate(GlobalKey.AutoInstallDependency, true);
-  if (isTriggerFromWalkThrough(args)) {
-    await globalStateUpdate(GlobalKey.OpenReadMe, "");
-  } else {
-    await globalStateUpdate(GlobalKey.OpenReadMe, folderPath.fsPath);
-  }
-  if (showLocalDebugMessage) {
-    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
-  }
-  if (warnings?.length) {
-    await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
-  }
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.openNewOfficeAddInProject, {
-    [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
-  });
-  await vscode.commands.executeCommand("vscode.openFolder", folderPath, true);
 }
 
 export async function autoOpenOfficeDevProjectHandler(): Promise<void> {

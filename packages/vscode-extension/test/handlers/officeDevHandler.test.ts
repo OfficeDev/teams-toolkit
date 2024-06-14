@@ -1,5 +1,4 @@
-import { FxError, ManifestUtil, Result, ok } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as chai from "chai";
 import * as mockfs from "mock-fs";
@@ -7,16 +6,16 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { Terminal } from "vscode";
 import { OfficeDevTerminal, TriggerCmdType } from "../../src/debug/taskTerminal/officeDevTerminal";
-import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
-import * as officeDevHandlers from "../../src/officeDevHandlers";
-import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/officeDevHandlers";
+import * as officeDevHandlers from "../../src/handlers/officeDevHandlers";
+import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/handlers/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
+import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as teamsfxCore from "@microsoft/teamsfx-core";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { openOfficeDevFolder } from "../../src/utils/workspaceUtils";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -30,8 +29,8 @@ describe("officeDevHandler", () => {
     openLinkFunc: (args?: any[]) => Promise<Result<boolean, FxError>>,
     urlPath: string
   ) {
-    sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-    const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+    const openUrl = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
     const res = await openLinkFunc(undefined);
     chai.assert.isTrue(openUrl.calledOnce);
     chai.assert.isTrue(res.isOk());
@@ -168,11 +167,6 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 
   it("opens README", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
-    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
-    sandbox.stub(globalVariables, "isOfficeAddInProject").resolves(false);
-    const showMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .resolves(undefined);
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "fx-extension.openReadMe") {
         return vscode.Uri.file("test").fsPath;
@@ -180,14 +174,19 @@ describe("autoOpenOfficeDevProjectHandler", () => {
         return "";
       }
     });
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
-    sandbox.stub(ManifestUtil, "parseCommonProperties").resolves({ isCopilotPlugin: false });
-    sandbox.stub(globalState, "globalStateUpdate");
-    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    const openReadMeHandlerStub = sandbox.stub(handlers, "openReadMeHandler");
+    const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
+    const ShowScaffoldingWarningSummaryStub = sandbox.stub(
+      handlers,
+      "ShowScaffoldingWarningSummary"
+    );
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+    chai.assert.isTrue(openReadMeHandlerStub.calledOnce);
+    chai.assert.isTrue(globalStateUpdateStub.calledTwice);
+    chai.assert.isTrue(ShowScaffoldingWarningSummaryStub.calledOnce);
   });
 
   it("opens sample README", async () => {
@@ -267,9 +266,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
 
-    await officeDevHandlers.openOfficeDevFolder(folderPath, true, [
-      { type: "warnning", content: "test" },
-    ]);
+    await openOfficeDevFolder(folderPath, true, [{ type: "warnning", content: "test" }]);
 
     console.log(globalStateUpdateStub.callCount);
     chai.assert(globalStateUpdateStub.callCount == 5);
@@ -278,17 +275,19 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 });
 
 describe("OfficeDevTerminal", () => {
+  const sandbox = sinon.createSandbox();
   let getInstanceStub: any, showStub: any, sendTextStub: any;
 
   beforeEach(() => {
-    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance");
-    showStub = sinon.stub();
-    sendTextStub = sinon.stub();
+    getInstanceStub = sandbox.stub(OfficeDevTerminal, "getInstance");
+    showStub = sandbox.stub();
+    sendTextStub = sandbox.stub();
     getInstanceStub.returns({ show: showStub, sendText: sendTextStub });
   });
 
   afterEach(() => {
     getInstanceStub.restore();
+    sandbox.restore();
   });
 
   it("should validate Office AddIn Manifest", async () => {
@@ -334,18 +333,22 @@ describe("stopOfficeAddInDebug", () => {
   let getInstanceStub: sinon.SinonStub;
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("should call getInstance, show and sendText", async () => {
     const terminalStub = new TerminalStub();
-    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
-    showStub = sinon.stub(terminalStub, "show");
-    sendTextStub = sinon.stub(terminalStub, "sendText");
+    getInstanceStub = sandbox.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
+    showStub = sandbox.stub(terminalStub, "show");
+    sendTextStub = sandbox.stub(terminalStub, "sendText");
     await stopOfficeAddInDebug();
 
     sinon.assert.calledOnce(getInstanceStub);
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
-    sinon.restore();
   });
 });
 
@@ -353,12 +356,17 @@ describe("generateManifestGUID", () => {
   let getInstanceStub: sinon.SinonStub;
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("should call getInstance, show and sendText with correct arguments", async () => {
     const terminalStub = new TerminalStub();
-    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
-    showStub = sinon.stub(terminalStub, "show");
-    sendTextStub = sinon.stub(terminalStub, "sendText");
+    getInstanceStub = sandbox.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
+    showStub = sandbox.stub(terminalStub, "show");
+    sendTextStub = sandbox.stub(terminalStub, "sendText");
 
     await generateManifestGUID();
 
@@ -366,6 +374,5 @@ describe("generateManifestGUID", () => {
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
     sinon.assert.calledWithExactly(sendTextStub, TriggerCmdType.triggerGenerateGUID);
-    sinon.restore();
   });
 });

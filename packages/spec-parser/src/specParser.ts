@@ -187,19 +187,34 @@ export class SpecParser {
           reason: reason,
         };
 
-        if (isValid) {
+        // Try best to parse server url and auth type
+        try {
           const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
           if (serverObj) {
             apiResult.server = serverObj.url;
           }
+        } catch (err) {
+          // ignore
+        }
 
+        try {
           const authArray = Utils.getAuthArray(operation.security, spec);
-          for (const auths of authArray) {
-            if (auths.length === 1) {
-              apiResult.auth = auths[0];
-              break;
+
+          if (authArray.length !== 0) {
+            for (const auths of authArray) {
+              if (auths.length === 1) {
+                apiResult.auth = auths[0];
+                break;
+              } else {
+                apiResult.auth = {
+                  authScheme: { type: "multipleAuth" },
+                  name: auths.map((auth) => auth.name).join(", "),
+                };
+              }
             }
           }
+        } catch (err) {
+          // ignore
         }
 
         result.APIs.push(apiResult);
@@ -351,12 +366,13 @@ export class SpecParser {
               const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
               try {
                 const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
-                const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
+                const safeAdaptiveCardName = operation.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
+                const fileName = path.join(adaptiveCardFolder, `${safeAdaptiveCardName}.json`);
                 const wrappedCard = wrapAdaptiveCard(card, jsonPath);
                 await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
                 const dataFileName = path.join(
                   adaptiveCardFolder,
-                  `${operation.operationId!}.data.json`
+                  `${safeAdaptiveCardName}.data.json`
                 );
                 await fs.outputJSON(dataFileName, {}, { spaces: 2 });
               } catch (err) {

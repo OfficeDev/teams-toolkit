@@ -4,7 +4,7 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import { RestoreFn } from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import * as FeatureFlags from "../../../src/common/featureFlags";
 import { createContext, setTools } from "../../../src/common/globalVars";
@@ -45,7 +45,7 @@ const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
   describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
-    const mockedEnvRestore: RestoreFn = () => {};
+    let mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
     let generator: sinon.SinonStub;
@@ -936,7 +936,8 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API Plugin with none auth (feature flag enabled)", async () => {
-      sandbox.stub(FeatureFlags, "isCopilotAuthEnabled").returns(true);
+      mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "true" });
+
       const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 

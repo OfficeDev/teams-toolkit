@@ -44,7 +44,7 @@ import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
-import { isCopilotAuthEnabled, isSMEOAuthEnabled } from "../../../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { sendRequestWithRetry } from "../../../common/requestUtils";
 import { MissingRequiredInputError } from "../../../error";
@@ -64,6 +64,9 @@ const enum telemetryProperties {
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
+  bearerTokenAuthCount = "bearer-token-auth-count",
+  oauth2AuthCount = "oauth2-auth-count",
+  otherAuthCount = "other-auth-count",
   isFromAddingApi = "is-from-adding-api",
 }
 
@@ -74,9 +77,9 @@ const enum telemetryEvents {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: isCopilotAuthEnabled(),
+  allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
   allowMultipleParameters: true,
-  allowOauth2: isCopilotAuthEnabled(),
+  allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
@@ -136,7 +139,7 @@ export async function listOperations(
         : {
             allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: true,
-            allowOauth2: isSMEOAuthEnabled(),
+            allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
           }
     );
     const validationRes = await specParser.validate();
@@ -155,11 +158,30 @@ export async function listOperations(
     }
 
     const listResult: ListAPIResult = await specParser.list();
+
+    const bearerTokenAuthAPIs = listResult.APIs.filter(
+      (api) => api.auth && Utils.isBearerTokenAuth(api.auth.authScheme)
+    );
+
+    const oauth2AuthAPIs = listResult.APIs.filter(
+      (api) => api.auth && Utils.isOAuthWithAuthCodeFlow(api.auth.authScheme)
+    );
+
+    const otherAuthAPIs = listResult.APIs.filter(
+      (api) =>
+        api.auth &&
+        !Utils.isOAuthWithAuthCodeFlow(api.auth.authScheme) &&
+        !Utils.isBearerTokenAuth(api.auth.authScheme)
+    );
+
     let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
+      [telemetryProperties.bearerTokenAuthCount]: bearerTokenAuthAPIs.length.toString(),
+      [telemetryProperties.oauth2AuthCount]: oauth2AuthAPIs.length.toString(),
+      [telemetryProperties.otherAuthCount]: otherAuthAPIs.length.toString(),
     });
 
     // Filter out exsiting APIs
@@ -781,9 +803,9 @@ async function updateAdaptiveCardForCustomApi(
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
-      const name = item.item.operationId;
+      const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
       const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
-      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name!}.json`);
+      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }
   }
@@ -852,7 +874,8 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
     const result = await path.{{method}}(parameter.path, parameter.body, {
       params: parameter.query,
     });
-    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    const cardName = "{{operationId}}".replace(/[^a-zA-Z0-9]/g, "_");
+    const card = generateAdaptiveCard("../adaptiveCards/" + cardName + ".json", result);
     await context.sendActivity({ attachments: [card] });
   } else {
     await context.sendActivity("no result");
@@ -869,7 +892,8 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
     const result = await path.{{method}}(parameter.path, parameter.body, {
       params: parameter.query,
     });
-    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    const cardName = "{{operationId}}".replace(/[^a-zA-Z0-9]/g, "_");
+    const card = generateAdaptiveCard("../adaptiveCards/" + cardName + ".json", result);
     await context.sendActivity({ attachments: [card] });
   } else {
     await context.sendActivity("no result");

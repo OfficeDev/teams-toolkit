@@ -13,9 +13,13 @@ import { CancellationToken } from "../../../mocks/vsc";
 chai.use(chaiPromised);
 
 describe("chat create command", () => {
-  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe("createCommandHandler()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });

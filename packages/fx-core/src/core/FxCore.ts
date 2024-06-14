@@ -404,7 +404,6 @@ export class FxCore {
   /**
    * uninstall provisioned resources by manifest ID
    */
-  @hooks([EnvLoaderMW(true, true)])
   async uninstallByManifestId(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
     const manifestId = inputs["manifest-id"] as string;
     if (!manifestId) {
@@ -412,6 +411,18 @@ export class FxCore {
     }
     const m356AppOption = inputs[QuestionNames.UninstallOption as string]?.includes(
       QuestionNames.UninstallOptionM365
+    );
+    if (m356AppOption) {
+      const res = await this.uninstallM365App(undefined, manifestId);
+      if (res.isErr()) {
+        return err(res.error);
+      }
+    }
+    const tdpOption = inputs[QuestionNames.UninstallOption as string]?.includes(
+      QuestionNames.UninstallOptionTDP
+    );
+    const botOption = inputs[QuestionNames.UninstallOption as string]?.includes(
+      QuestionNames.UninstallOptionBot
     );
     await Promise.resolve();
     return ok(undefined);
@@ -429,7 +440,6 @@ export class FxCore {
   /**
    * uninstall provisioned resources by title ID. Titlle mode only uninstalls M365 app.
    */
-  @hooks([EnvLoaderMW(true, true)])
   async uninstallByTitleId(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
     const titleId = inputs["title-id"] as string;
     if (!titleId) {
@@ -445,7 +455,13 @@ export class FxCore {
   /**
    * uninstall sideloaded appps in M365
    */
-  async uninstallM365App(manifestIdOrTitleId: string): Promise<Result<undefined, FxError>> {
+  async uninstallM365App(
+    titleId?: string,
+    manifestId?: string
+  ): Promise<Result<undefined, FxError>> {
+    if (titleId === undefined && manifestId === undefined) {
+      return err(new MissingRequiredInputError("title id or manifest id", "FxCore"));
+    }
     const sideloadingServiceEndpoint =
       process.env.SIDELOADING_SERVICE_ENDPOINT ?? MosServiceEndpoint;
     const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
@@ -456,7 +472,10 @@ export class FxCore {
       return err(sideloadingTokenRes.error);
     }
     const packageService = new PackageService(sideloadingServiceEndpoint, TOOLS.logProvider);
-    await packageService.unacquire(sideloadingTokenRes.value, manifestIdOrTitleId);
+    if (titleId === undefined) {
+      titleId = await packageService.retrieveTitleId(sideloadingTokenRes.value, manifestId ?? "");
+    }
+    await packageService.unacquire(sideloadingTokenRes.value, titleId);
     return ok(undefined);
   }
 

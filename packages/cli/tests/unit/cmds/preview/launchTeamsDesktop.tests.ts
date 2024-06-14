@@ -35,8 +35,7 @@ describe("launch Teams desktop client", () => {
         });
       sandbox.stub(cliLogger, "necessaryLog").callsFake(() => {});
       sandbox.stub(CLIUIInstance, "createProgressBar").returns(new MockProgressHandler());
-
-      sandbox.stub(cp, "exec").resolves({ stdout: "test" });
+      sandbox.stub(cp, "exec");
     });
 
     afterEach(() => {

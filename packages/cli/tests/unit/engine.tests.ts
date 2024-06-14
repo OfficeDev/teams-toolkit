@@ -322,7 +322,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      engine.processResult(ctx, new InputValidationError("test", "no reason"));
+      await engine.processResult(ctx, new InputValidationError("test", "no reason"));
       assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
     it("sendTelemetryEvent", async () => {
@@ -334,7 +334,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      engine.processResult(ctx, undefined);
+      await engine.processResult(ctx, undefined);
       assert.isTrue(sendTelemetryEventStub.calledOnce);
     });
     it("skip telemetry when reporter is disabled", async () => {
@@ -348,14 +348,14 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      engine.processResult(ctx, undefined);
+      await engine.processResult(ctx, undefined);
       assert.isTrue(spy.notCalled);
     });
     it("skip telemetry when context is undefined", async () => {
       CliTelemetry.reporter = new CliTelemetryReporter("real", "real", "real", "real");
       CliTelemetry.enable = false;
       const spy = sandbox.spy(CliTelemetry.reporter.reporter, "sendTelemetryEvent");
-      engine.processResult(undefined, undefined);
+      await engine.processResult(undefined, undefined);
       assert.isTrue(spy.notCalled);
     });
     it("skip telemetry when command telemetry is undefined", async () => {
@@ -373,7 +373,7 @@ describe("CLI Engine", () => {
         argumentValues: [],
         telemetryProperties: {},
       };
-      engine.processResult(ctx, undefined);
+      await engine.processResult(ctx, undefined);
       assert.isTrue(spy.notCalled);
     });
   });
@@ -392,7 +392,7 @@ describe("CLI Engine", () => {
     it("parseArg return error", async () => {
       sandbox.stub(process, "argv").value(["node", "cli", "new", "--xxx"]);
       let error;
-      sandbox.stub(engine, "processResult").callsFake((ctx, fxError) => {
+      sandbox.stub(engine, "processResult").callsFake(async (ctx, fxError) => {
         error = fxError;
       });
       await engine.start(rootCommand);

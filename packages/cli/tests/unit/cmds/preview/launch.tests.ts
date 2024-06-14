@@ -87,14 +87,16 @@ describe("launch", () => {
       expect(telemetries.length).to.deep.equals(0);
     });
   });
+});
+
+describe("launch Teams desktop client", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   describe("openTeamsDesktopClientNew", () => {
     let telemetries: any[] = [];
-    const telemetryProperties = {
-      key1: "value1",
-      key2: "value2",
-    };
-    let sideloadingUrl: string;
 
     beforeEach(() => {
       telemetries = [];

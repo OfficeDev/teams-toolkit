@@ -119,6 +119,12 @@ describe("launch Teams desktop client", () => {
       expect(telemetries.length).to.deep.equals(0);
     });
 
+    it("happy path windows - with telemetry", async () => {
+      sandbox.stub(process, "platform").value("win32");
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default, []);
+      expect(telemetries.length).to.deep.equals(0);
+    });
+
     it("happy path others", async () => {
       sandbox.stub(process, "platform").value("linux");
       sandbox

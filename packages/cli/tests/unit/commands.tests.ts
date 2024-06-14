@@ -1173,7 +1173,7 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("json: bot Copilot plugin enabled only", async () => {
+    it("json: Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "true",
       });
@@ -1186,7 +1186,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
     });
   });
   describe("listSamplesCommand", async () => {

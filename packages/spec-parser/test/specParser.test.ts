@@ -1320,6 +1320,7 @@ describe("SpecParser", () => {
         paths: {
           "/hello": {
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -1395,6 +1396,7 @@ describe("SpecParser", () => {
           "/hello": {
             description: "additional description",
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {

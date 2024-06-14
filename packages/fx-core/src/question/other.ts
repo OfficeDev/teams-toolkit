@@ -967,21 +967,21 @@ function uninstallModeQuestion(): SingleSelectQuestion {
 
 function uninstallOptionQuestion(): MultiSelectQuestion {
   return {
-    name: QuestionNames.UnistallOption,
+    name: QuestionNames.UninstallOption,
     // todo: change to localized string
     title: "Choose resources to uninstall",
     type: "multiSelect",
     staticOptions: [
       {
-        id: "uninstall-option-m365-app",
+        id: QuestionNames.UninstallOptionM365,
         label: "M365 app",
       },
       {
-        id: "uninstall-option-app-registration",
+        id: QuestionNames.UninstallOptionTDP,
         label: "App registration",
       },
       {
-        id: "uninstall-option-bot-framework-registration",
+        id: QuestionNames.UninstallOptionBot,
         label: "Bot framework registration",
       },
     ],

@@ -108,40 +108,40 @@ export class CodeIssueCorrector implements ISkill {
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
-    let setDeclartionPrompt = getDeclarationsPrompt();
+    const setDeclartionPrompt = getDeclarationsPrompt();
 
-    if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
-      const groupedMethodsOrProperties = new Map<string, SampleData[]>();
-      for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
-        if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
-          groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
-        }
-        groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
-      }
+    //     if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
+    //       const groupedMethodsOrProperties = new Map<string, SampleData[]>();
+    //       for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
+    //         if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
+    //           groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
+    //         }
+    //         groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
+    //       }
 
-      let tempClassDeclaration = "";
-      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
-        tempClassDeclaration += `
-class ${className} extends OfficeExtension.ClientObject {
-  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
-}
-\n\n
-        `;
-      });
+    //       let tempClassDeclaration = "";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+    // }
+    // \n\n
+    //         `;
+    //       });
 
-      setDeclartionPrompt += `
+    //       setDeclartionPrompt += `
 
-      \`\`\`typescript
-      ${tempClassDeclaration};
-      \`\`\`
+    //       \`\`\`typescript
+    //       ${tempClassDeclaration};
+    //       \`\`\`
 
-      Let's think step by step.
-      `;
-    }
-    const declarationMessage: LanguageModelChatMessage | null =
-      spec.appendix.apiDeclarationsReference.size > 0
-        ? new LanguageModelChatMessage(LanguageModelChatMessageRole.System, setDeclartionPrompt)
-        : null;
+    //       Let's think step by step.
+    //       `;
+    //     }
+    //     const declarationMessage: LanguageModelChatMessage | null =
+    //       spec.appendix.apiDeclarationsReference.size > 0
+    //         ? new LanguageModelChatMessage(LanguageModelChatMessageRole.System, setDeclartionPrompt)
+    //         : null;
 
     const sampleMessage: LanguageModelChatMessage | null =
       spec.appendix.codeSample.length > 0
@@ -155,15 +155,15 @@ class ${className} extends OfficeExtension.ClientObject {
     const historicalErrors: string[] = [];
     let additionalInfo = "";
     for (let index = 0; index < maxRetryCount; index++) {
-      if (baseLineResuult.compileErrors.length > maxRetryCount - index) {
-        // Let's fail fast, as if the error is too many, it's hard to fix in a few rounds
-        console.debug(
-          `${baseLineResuult.compileErrors.length} compile errors need to fix in next ${
-            maxRetryCount - index
-          } rounds, fail fast.`
-        );
-        break;
-      }
+      // if (baseLineResuult.compileErrors.length > maxRetryCount - index) {
+      //   // Let's fail fast, as if the error is too many, it's hard to fix in a few rounds
+      //   console.debug(
+      //     `${baseLineResuult.compileErrors.length} compile errors need to fix in next ${
+      //       maxRetryCount - index
+      //     } rounds, fail fast.`
+      //   );
+      //   break;
+      // }
       response.progress(
         localize("teamstoolkit.chatParticipants.officeAddIn.issueDetector.fixingErrors")
       );
@@ -179,7 +179,7 @@ class ${className} extends OfficeExtension.ClientObject {
         historicalErrors,
         additionalInfo,
         model,
-        declarationMessage,
+        null, //declarationMessage,
         sampleMessage
       );
       t1 = performance.now();
@@ -336,9 +336,9 @@ class ${className} extends OfficeExtension.ClientObject {
       messages.push(sampleMessage);
     }
 
-    if (!!declarationMessage) {
-      messages.push(declarationMessage);
-    }
+    // if (!!declarationMessage) {
+    //   messages.push(declarationMessage);
+    // }
 
     messages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)

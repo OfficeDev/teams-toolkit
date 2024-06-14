@@ -28,7 +28,6 @@ import {
   featureFlagManager,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
-  isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
 } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
@@ -99,8 +98,11 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         staticOptions.push(ProjectTypeOptions.customizeGpt());
       }
 
+      if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
+        staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
+      }
+
       staticOptions.push(
-        ProjectTypeOptions.copilotPlugin(inputs.platform),
         ProjectTypeOptions.customCopilot(inputs.platform),
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
@@ -1402,8 +1404,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            (isCopilotPluginEnabled() &&
-              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
           );
         },
         data: apiAuthQuestion(),

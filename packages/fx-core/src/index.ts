@@ -29,7 +29,6 @@ export {
   FeatureFlags,
   featureFlagManager,
   isChatParticipantEnabled,
-  isCopilotPluginEnabled,
   isFeatureFlagEnabled,
 } from "./common/featureFlags";
 export { globalStateGet, globalStateUpdate } from "./common/globalState";

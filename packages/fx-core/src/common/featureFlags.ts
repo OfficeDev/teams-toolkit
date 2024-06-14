@@ -16,10 +16,6 @@ export function isCLIDotNetEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
 }
 
-export function isCopilotPluginEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin);
-}
-
 export function enableTestToolByDefault(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.TestTool);
 }

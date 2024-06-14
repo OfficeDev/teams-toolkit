@@ -7,6 +7,8 @@ import * as chatUtils from "../../src/chat/utils";
 import * as dynamicPrompt from "../../src/officeChat/dynamicPrompt";
 import { CancellationToken } from "../mocks/vsc";
 import { officeSampleProvider } from "../../src/officeChat/commands/create/officeSamples";
+import * as telemetry from "../../src/chat/telemetry";
+import { Spec } from "../../src/officeChat/common/skills/spec";
 
 chai.use(chaipromised);
 
@@ -23,7 +25,8 @@ describe("File: officeChat/utils.ts", () => {
       const getCopilotResponseAsStringStub = sandbox
         .stub(chatUtils, "getCopilotResponseAsString")
         .resolves("purified message");
-      const result = await utils.purifyUserMessage("test", token);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const result = await utils.purifyUserMessage("test", token, officeChatTelemetryDataMock);
       chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
       chai.expect(result).equal("purified message");
     });
@@ -33,7 +36,8 @@ describe("File: officeChat/utils.ts", () => {
       const getCopilotResponseAsStringStub = sandbox
         .stub(chatUtils, "getCopilotResponseAsString")
         .resolves("");
-      const result = await utils.purifyUserMessage("test", token);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const result = await utils.purifyUserMessage("test", token, officeChatTelemetryDataMock);
       chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
       chai.expect(result).equal("test");
     });
@@ -53,9 +57,11 @@ describe("File: officeChat/utils.ts", () => {
     it("check the input is harmful", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": true}```');
       const token = new CancellationToken();
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       const result = await utils.isInputHarmful(
         { prompt: "test" } as unknown as vscode.ChatRequest,
-        token
+        token,
+        officeChatTelemetryDataMock
       );
       chai.assert.isTrue(result);
     });
@@ -63,9 +69,11 @@ describe("File: officeChat/utils.ts", () => {
     it("check the input is harmless", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": false}');
       const token = new CancellationToken();
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       const result = await utils.isInputHarmful(
         { prompt: "test" } as unknown as vscode.ChatRequest,
-        token
+        token,
+        officeChatTelemetryDataMock
       );
       chai.assert.isFalse(result);
     });
@@ -73,8 +81,13 @@ describe("File: officeChat/utils.ts", () => {
     it("get empty response", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves(undefined);
       const token = new CancellationToken();
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       try {
-        await utils.isInputHarmful({ prompt: "test" } as unknown as vscode.ChatRequest, token);
+        await utils.isInputHarmful(
+          { prompt: "test" } as unknown as vscode.ChatRequest,
+          token,
+          officeChatTelemetryDataMock
+        );
         chai.assert.fail("Should not reach here.");
       } catch (error) {
         chai.expect((error as Error).message).equal("Got empty response");
@@ -84,8 +97,13 @@ describe("File: officeChat/utils.ts", () => {
     it("isHarmful is not boolean", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": "test"}');
       const token = new CancellationToken();
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       try {
-        await utils.isInputHarmful({ prompt: "test" } as unknown as vscode.ChatRequest, token);
+        await utils.isInputHarmful(
+          { prompt: "test" } as unknown as vscode.ChatRequest,
+          token,
+          officeChatTelemetryDataMock
+        );
         chai.assert.fail("Should not reach here.");
       } catch (error) {
         chai
@@ -109,14 +127,16 @@ describe("File: officeChat/utils.ts", () => {
     it("output is harmful", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves("");
       const token = new CancellationToken();
-      const result = await utils.isOutputHarmful("test", token);
+      const spec = new Spec("Some user input");
+      const result = await utils.isOutputHarmful("test", token, spec);
       chai.assert.isTrue(result);
     });
 
     it("output is harmless", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves("0");
       const token = new CancellationToken();
-      const result = await utils.isOutputHarmful("test", token);
+      const spec = new Spec("Some user input");
+      const result = await utils.isOutputHarmful("test", token, spec);
       chai.assert.isFalse(result);
     });
   });

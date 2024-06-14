@@ -33,6 +33,7 @@ import {
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
+import { Tokenizer } from "../../../chat/tokenizer";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -84,6 +85,13 @@ export class CodeGenerator implements ISkill {
       );
       if (samples.size > 0) {
         console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
+        spec.appendix.telemetryData.relatedSampleName = Array.from(samples.values()).map(
+          (sample) => {
+            // remove the '-1' behind the sample name
+            const lastIndex = sample.name.lastIndexOf("-");
+            return lastIndex !== -1 ? sample.name.substring(0, lastIndex) : sample.name;
+          }
+        );
         spec.appendix.codeSample = Array.from(samples.values())[0].codeSample;
       }
     }
@@ -98,7 +106,8 @@ export class CodeGenerator implements ISkill {
         spec.appendix.isCustomFunction,
         spec.appendix.host,
         spec.userInput,
-        spec.appendix.codeSample
+        spec.appendix.codeSample,
+        spec
       );
 
       console.debug(`functional spec: ${breakdownResult?.spec || ""}`);
@@ -185,11 +194,17 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
       new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
+    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
+    const t1 = performance.now();
+    const requestTokens = countMessagesTokens(messages);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
     let copilotRet: {
       host: string;
       shouldContinue: boolean;
@@ -227,7 +242,8 @@ export class CodeGenerator implements ISkill {
     isCustomFunctions: boolean,
     host: string,
     userInput: string,
-    sampleCode: string
+    sampleCode: string,
+    spec: Spec
   ): Promise<null | {
     spec: string;
     funcs: string[];
@@ -252,11 +268,17 @@ export class CodeGenerator implements ISkill {
       );
     }
 
+    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
+    const t1 = performance.now();
+    const requestTokens = countMessagesTokens(messages);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
     let copilotRet: {
       spec: string;
       funcs: string[];
@@ -318,7 +340,8 @@ export class CodeGenerator implements ISkill {
         token,
         host,
         codeSpec,
-        "" //sampleCode
+        "", //sampleCode
+        spec
       );
 
       spec.appendix.apiDeclarationsReference = declarations;
@@ -343,8 +366,21 @@ class ${className} extends OfficeExtension.ClientObject {
 \n
       `;
       });
+      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+        for (let i = 0; i < methodsOrPropertiesCandidates.length; i++) {
+          let methodOrProperty = methodsOrPropertiesCandidates[i].codeSample;
+          if (methodOrProperty.startsWith("readonly ")) {
+            methodOrProperty = methodOrProperty.replace("readonly ", "");
+          }
+          const lastColonIndex = methodOrProperty.lastIndexOf(":");
+          if (lastColonIndex !== -1) {
+            methodOrProperty = methodOrProperty.substring(0, lastColonIndex);
+          }
+          const classCode = `${className}.${methodOrProperty}`;
+          spec.appendix.telemetryData.codeClassAndMembers.push(classCode);
+        }
+      });
       tempClassDeclaration += "```\n";
-
       declarationPrompt += tempClassDeclaration;
       console.debug(`API declarations: \n${declarationPrompt}`);
     }
@@ -390,8 +426,13 @@ class ${className} extends OfficeExtension.ClientObject {
     }
     console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
 
+    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-
+    const t1 = performance.now();
+    const requestTokens = countMessagesTokens(messages);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);
     if (!codeSnippetRet) {

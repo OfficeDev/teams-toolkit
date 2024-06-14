@@ -13,7 +13,7 @@ import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
 import { ICopilotChatOfficeResult } from "../types";
 import { ChatTelemetryData } from "../../chat/telemetry";
-import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { ExecutionResultEnum } from "./skills/executionResultEnum";
 import {
@@ -75,8 +75,9 @@ export class Planner {
     }
 
     // dispatcher
-    const purified = await purifyUserMessage(request.prompt, token);
+    const purified = await purifyUserMessage(request.prompt, token, telemetryData);
     const spec = new Spec(purified);
+    spec.appendix.telemetryData.requestId = telemetryData.requestId;
     try {
       for (let index = 0; index < candidates.length; index++) {
         const candidate = candidates[index];
@@ -90,6 +91,9 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemRequestFailed] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
+          if (spec.appendix.telemetryData.isHarmful) {
+            telemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "RAI";
+          }
           throw new Error("Failed to process the request.");
         }
 
@@ -99,6 +103,7 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemRequesRejected] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
+          telemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "Off Topic";
           throw new Error(
             `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
           );
@@ -128,6 +133,19 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
+    telemetryData.properties[TelemetryProperty.HostType] = spec.appendix.host.toLowerCase();
+    telemetryData.properties[TelemetryProperty.CopilotChatRelatedSampleName] =
+      spec.appendix.telemetryData.relatedSampleName.toString();
+    telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
+      spec.appendix.telemetryData.codeClassAndMembers.toString();
+    telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
+      spec.appendix.telemetryData.timeToFirstToken - telemetryData.startTime;
+    telemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
+      spec.appendix.telemetryData.totalTokens;
+    for (const responseTokensPerSecond of spec.appendix.telemetryData.responseTokensPerSecond) {
+      telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
+        responseTokensPerSecond.toString() + ",";
+    }
     console.log("User ask processing time cost: ", duration, " seconds.");
 
     return chatResult;

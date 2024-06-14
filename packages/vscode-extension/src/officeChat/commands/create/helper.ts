@@ -18,15 +18,16 @@ import {
 } from "vscode";
 import { IChatTelemetryData } from "../../../chat/types";
 import { ProjectMetadata } from "../../../chat/commands/create/types";
-import { getCopilotResponseAsString } from "../../../chat/utils";
+import { countMessagesTokens, getCopilotResponseAsString } from "../../../chat/utils";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
 import { CommandKey } from "../../../constants";
-import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
 import { getOfficeSampleDownloadUrlInfo } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
+import { Tokenizer } from "../../../chat/tokenizer";
 
 export async function matchOfficeProject(
   request: ChatRequest,
@@ -42,7 +43,15 @@ export async function matchOfficeProject(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
   ];
   telemetryMetadata.chatMessages.push(...messages);
+  const t0 = performance.now();
   const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  const t1 = performance.now();
+  const requestTokens = countMessagesTokens(messages);
+  const responseTokens = Tokenizer.getInstance().tokenLength(response);
+  telemetryMetadata.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
+    requestTokens + responseTokens;
+  telemetryMetadata.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
+    (responseTokens / ((t1 - t0) / 1000)).toString() + ",";
   let matchedProjectId: string;
   if (response) {
     try {
@@ -97,11 +106,11 @@ export function getOfficeTemplateMetadata(): ProjectMetadata[] {
 export async function showOfficeSampleFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
-): Promise<string> {
+): Promise<string[]> {
   response.markdown(
     "\nWe've found a sample project that matches your description. Take a look at it below."
   );
-  const downloadUrlInfo = await getOfficeSampleDownloadUrlInfo(projectMetadata.id);
+  const { downloadUrlInfo, host } = await getOfficeSampleDownloadUrlInfo(projectMetadata.id);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
   const nodes = await buildFileTree(
@@ -113,7 +122,7 @@ export async function showOfficeSampleFileTree(
     20
   );
   response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
-  return path.join(tempFolder, downloadUrlInfo.dir);
+  return [path.join(tempFolder, downloadUrlInfo.dir), host];
 }
 
 export async function showOfficeTemplateFileTree(

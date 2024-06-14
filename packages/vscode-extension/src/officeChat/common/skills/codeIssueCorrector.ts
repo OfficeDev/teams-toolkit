@@ -28,6 +28,7 @@ import {
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
+import { Tokenizer } from "../../../chat/tokenizer";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -172,7 +173,8 @@ class ${className} extends OfficeExtension.ClientObject {
         additionalInfo,
         model,
         declarationMessage,
-        sampleMessage
+        sampleMessage,
+        spec
       );
       if (!fixedCode) {
         // something wrong, just to the next round
@@ -268,7 +270,8 @@ class ${className} extends OfficeExtension.ClientObject {
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
     declarationMessage: LanguageModelChatMessage | null,
-    sampleMessage: LanguageModelChatMessage | null
+    sampleMessage: LanguageModelChatMessage | null,
+    spec: Spec
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
@@ -321,8 +324,13 @@ class ${className} extends OfficeExtension.ClientObject {
       msgCount = countMessagesTokens(messages);
     }
     console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
+    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-
+    const t1 = performance.now();
+    const requestTokens = countMessagesTokens(messages);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / (t1 - t0) / 1000);
     // extract the code snippet
     const regex = /```[\s]*typescript([\s\S]*?)```/gm;
     const matches = regex.exec(copilotResponse);

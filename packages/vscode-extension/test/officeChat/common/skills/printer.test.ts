@@ -32,6 +32,13 @@ describe("printer", () => {
         apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
+          requestId: "Id",
+          isHarmful: false,
+          relatedSampleName: ["sample1", "sample2"],
+          codeClassAndMembers: ["class1", "class2"],
+          timeToFirstToken: 0,
+          totalTokens: 0,
+          responseTokensPerSecond: [1, 2],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -92,6 +99,13 @@ describe("printer", () => {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
+        requestId: "Id",
+        isHarmful: false,
+        relatedSampleName: ["sample1", "sample2"],
+        codeClassAndMembers: ["class1", "class2"],
+        timeToFirstToken: 0,
+        totalTokens: 0,
+        responseTokensPerSecond: [1, 2],
         properties: {
           property1: "value1",
           property2: "value2",

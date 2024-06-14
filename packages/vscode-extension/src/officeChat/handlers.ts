@@ -90,7 +90,22 @@ Usage: @office Ask questions about Office Add-ins development.`);
   return { metadata: { command: undefined, requestId: officeChatTelemetryData.requestId } };
 }
 
-export async function chatCreateOfficeProjectCommandHandler(folder: string) {
+export async function chatCreateOfficeProjectCommandHandler(
+  folder: string,
+  requestId: string,
+  matchResultInfo: string
+) {
+  const officeChatTelemetryData = ChatTelemetryData.get(requestId);
+  if (officeChatTelemetryData) {
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChatClickButton,
+      {
+        ...officeChatTelemetryData.properties,
+        [TelemetryProperty.CopilotMatchResultType]: matchResultInfo,
+      },
+      officeChatTelemetryData.measurements
+    );
+  }
   // Let user choose the project folder
   let dstPath = "";
   let folderChoice: string | undefined = undefined;
@@ -151,6 +166,10 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
       [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
       [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
       [TelemetryProperty.CorrelationId]: Correlator.getId(),
+      [TelemetryProperty.HostType]:
+        ChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+          TelemetryProperty.HostType
+        ] ?? "",
     },
     measurements: {
       [TelemetryProperty.CopilotChatFeedbackHelpful]: e.kind,

@@ -12,7 +12,7 @@ import {
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import followupProvider from "../../../chat/followupProvider";
@@ -43,7 +43,11 @@ export default async function officeNextStepCommandHandler(
   );
 
   if (request.prompt) {
+    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
+      Date.now() - officeChatTelemetryData.startTime;
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
+    officeChatTelemetryData.properties[TelemetryProperty.CopilotChatBlockReason] =
+      "Unsupported Input";
     officeChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -65,6 +69,8 @@ export default async function officeNextStepCommandHandler(
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);
   if (steps.length > 1) {
+    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
+      Date.now() - officeChatTelemetryData.startTime;
     response.markdown("Here are the next steps you can do:\n");
   }
   for (let index = 0; index < Math.min(3, steps.length); index++) {
@@ -77,6 +83,8 @@ export default async function officeNextStepCommandHandler(
     if (steps.length > 1) {
       response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);
     } else {
+      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
+        Date.now() - officeChatTelemetryData.startTime;
       response.markdown(`${title}: ${stepDescription}\n`);
     }
     s.commands.forEach((c) => {

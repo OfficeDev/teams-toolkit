@@ -33,6 +33,13 @@ describe("codeGenerator", () => {
         apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
+          requestId: "Id",
+          isHarmful: false,
+          relatedSampleName: ["sample1", "sample2"],
+          codeClassAndMembers: ["class1", "class2"],
+          timeToFirstToken: 0,
+          totalTokens: 0,
+          responseTokensPerSecond: [1, 2],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -93,6 +100,13 @@ describe("codeGenerator", () => {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
+        requestId: "Id",
+        isHarmful: false,
+        relatedSampleName: ["sample1", "sample2"],
+        codeClassAndMembers: ["class1", "class2"],
+        timeToFirstToken: 0,
+        totalTokens: 0,
+        responseTokensPerSecond: [1, 2],
         properties: {
           property1: "value1",
           property2: "value2",
@@ -237,7 +251,8 @@ describe("codeGenerator", () => {
       true, //isCustomFunction
       spec.appendix.host,
       spec.userInput,
-      "Some code sample"
+      "Some code sample",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -258,7 +273,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -285,7 +301,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -316,7 +333,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -347,7 +365,8 @@ describe("codeGenerator", () => {
       false,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     const mainFunc =

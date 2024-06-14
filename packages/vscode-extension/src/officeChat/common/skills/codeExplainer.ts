@@ -9,8 +9,9 @@ import {
 } from "vscode";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
-import { getCopilotResponseAsString } from "../../../chat/utils";
+import { countMessagesTokens, getCopilotResponseAsString } from "../../../chat/utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
+import { Tokenizer } from "../../../chat/tokenizer";
 
 export class Explainer implements ISkill {
   name: string | undefined;
@@ -56,11 +57,17 @@ Let's think it step by step.
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, systemPrompt),
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
+    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo",
       messages,
       token
     );
+    const t1 = performance.now();
+    const requestTokens = countMessagesTokens(messages);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
 
     if (!copilotResponse) {
       // something wrong with the LLM output

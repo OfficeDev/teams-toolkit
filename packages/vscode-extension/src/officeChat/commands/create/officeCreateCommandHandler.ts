@@ -11,11 +11,11 @@ import {
 } from "vscode";
 
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
-import { verbatimCopilotInteraction } from "../../../chat/utils";
+import { countMessagesTokens, verbatimCopilotInteraction } from "../../../chat/utils";
 import { isInputHarmful } from "../../utils";
 import { ICopilotChatOfficeResult } from "../../types";
 import { describeOfficeProjectSystemPrompt } from "../../officePrompts";
-import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { ChatTelemetryData } from "../../../chat/telemetry";
 import { matchOfficeProject, showOfficeSampleFileTree, showOfficeTemplateFileTree } from "./helper";
@@ -40,7 +40,7 @@ export default async function officeCreateCommandHandler(
 
   if (request.prompt.trim() === "") {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.create.noPromptAnswer"));
-
+    officeChatTelemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "Empty Input";
     officeChatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -54,11 +54,14 @@ export default async function officeCreateCommandHandler(
       },
     };
   }
-
-  const isHarmful = await isInputHarmful(request, token);
+  officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] = 0;
+  officeChatTelemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] = "";
+  const isHarmful = await isInputHarmful(request, token, officeChatTelemetryData);
   if (!isHarmful) {
     const matchedResult = await matchOfficeProject(request, token, officeChatTelemetryData);
     if (matchedResult) {
+      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
+        Date.now() - officeChatTelemetryData.startTime;
       response.markdown(
         localize("teamstoolkit.chatParticipants.officeAddIn.create.projectMatched")
       );
@@ -70,27 +73,41 @@ export default async function officeCreateCommandHandler(
         ),
       ];
       officeChatTelemetryData.chatMessages.push(...describeProjectChatMessages);
-
+      const t0 = performance.now();
       await verbatimCopilotInteraction(
         "copilot-gpt-3.5-turbo",
         describeProjectChatMessages,
         response,
         token
       );
+      const t1 = performance.now();
+      const requestTokens = countMessagesTokens(describeProjectChatMessages);
+      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
+        requestTokens;
+      officeChatTelemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
+        (requestTokens / ((t1 - t0) / 1000)).toString() + ",";
+
       if (matchedResult.type === "sample") {
-        const folder = await showOfficeSampleFileTree(matchedResult, response);
+        const sampleInfos = await showOfficeSampleFileTree(matchedResult, response);
+        const folder = sampleInfos[0];
+        const hostType = sampleInfos[1].toLowerCase();
+        const matchResultInfo = "sample";
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+        officeChatTelemetryData.properties[TelemetryProperty.HostType] = hostType;
         response.button({
           command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-          arguments: [folder],
+          arguments: [folder, officeChatTelemetryData.requestId, matchResultInfo],
           title: sampleTitle,
         });
       } else {
-        const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
+        const tmpmatchResultInfo = "template";
+        const tmpHostType = (matchedResult.data as any)["addin-host"].toLowerCase();
+        const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data as any, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
+        officeChatTelemetryData.properties[TelemetryProperty.HostType] = tmpHostType;
         response.button({
           command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-          arguments: [tmpFolder],
+          arguments: [tmpFolder, officeChatTelemetryData.requestId, tmpmatchResultInfo],
           title: templateTitle,
         });
       }
@@ -104,6 +121,9 @@ export default async function officeCreateCommandHandler(
         officeChatTelemetryData
       );
       officeChatTelemetryData.markComplete();
+      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokensPerSecond] =
+        officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] /
+        (officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] / 1000);
       ExtTelemetry.sendTelemetryEvent(
         TelemetryEvent.CopilotChat,
         officeChatTelemetryData.properties,
@@ -112,9 +132,15 @@ export default async function officeCreateCommandHandler(
       return chatResult;
     }
   } else {
+    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
+      Date.now() - officeChatTelemetryData.startTime;
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
+    officeChatTelemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "RAI";
   }
   officeChatTelemetryData.markComplete();
+  officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokensPerSecond] =
+    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] /
+    (officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] / 1000);
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChat,
     officeChatTelemetryData.properties,

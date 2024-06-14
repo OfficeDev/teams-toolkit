@@ -14,6 +14,8 @@ import {
 } from "../../officePrompts";
 import { DeclarationFinder } from "../declarationFinder";
 import { getTokenLimitation } from "../../consts";
+import { Tokenizer } from "../../../chat/tokenizer";
+import { Spec } from "../skills/spec";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;
@@ -68,7 +70,8 @@ export class SampleProvider {
     token: CancellationToken,
     host: string,
     codeSpec: string,
-    sample: string
+    sample: string,
+    spec: Spec
   ): Promise<Map<string, SampleData>> {
     const pickedDeclarations: Map<string, SampleData> = new Map<string, SampleData>();
     const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-4";
@@ -101,8 +104,15 @@ export class SampleProvider {
     }
 
     countOfLLMInvoke += 1;
+    const timeStart = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
-
+    const timeEnd = performance.now();
+    const requestTokens = countMessagesTokens([sampleMessage]);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(
+      responseTokens / ((timeEnd - timeStart) / 1000)
+    );
     const returnObject: { picked: string[] } = JSON.parse(
       copilotResponse.replace("```json", "").replace("```", "").replace(/\\n/g, "")
     );
@@ -195,7 +205,8 @@ export class SampleProvider {
         sample,
         methodsOrProperties,
         token,
-        model
+        model,
+        spec
       );
       picked.forEach((value, key) => {
         if (!pickedDeclarations.has(key)) {
@@ -242,7 +253,8 @@ export class SampleProvider {
             sample,
             methodOrPropertyDeclarations,
             token,
-            model
+            model,
+            spec
           );
           picked.forEach((value, key) => {
             if (!pickedDeclarations.has(key)) {
@@ -274,7 +286,8 @@ export class SampleProvider {
     sample: string,
     methodsOrProperties: SampleData[],
     token: CancellationToken,
-    model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4"
+    model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
+    spec: Spec
   ): Promise<Map<string, SampleData>> {
     const pickedDeclarations: Map<string, SampleData> = new Map<string, SampleData>();
     const getMoreRelevantMethodsOrPropertiesPrompt = getMostRelevantMethodPropertyPrompt(
@@ -287,8 +300,13 @@ export class SampleProvider {
       LanguageModelChatMessageRole.User,
       getMoreRelevantMethodsOrPropertiesPrompt
     );
+    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
-
+    const t1 = performance.now();
+    const requestTokens = countMessagesTokens([sampleMessage]);
+    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
+    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
+    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / (t1 - t0) / 1000);
     let returnObject: { picked: string[] } = { picked: [] };
     try {
       returnObject = JSON.parse(

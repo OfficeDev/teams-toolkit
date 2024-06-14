@@ -96,10 +96,13 @@ describe("File: office chat create helper", () => {
 
     it("call filetree API", async () => {
       sandbox.stub(officeChatUtils, "getOfficeSampleDownloadUrlInfo").resolves({
-        owner: "test",
-        repository: "testRepo",
-        ref: "testRef",
-        dir: "testDir",
+        downloadUrlInfo: {
+          owner: "test",
+          repository: "testRepo",
+          ref: "testRef",
+          dir: "testDir",
+        },
+        host: "testHost",
       });
       sandbox.stub(generatorUtils, "getSampleFileInfo").resolves({
         samplePaths: ["test"],
@@ -134,7 +137,7 @@ describe("File: office chat create helper", () => {
         response as unknown as vscode.ChatResponseStream
       );
       chai.assert.isTrue(response.filetree.calledOnce);
-      chai.assert.strictEqual(result, path.join("tempDir", "testDir"));
+      chai.assert.strictEqual(result, [path.join("tempDir", "testDir"), "testHost"]);
     });
   });
 

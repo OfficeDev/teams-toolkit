@@ -19,6 +19,13 @@ export class Spec {
     apiDeclarationsReference: Map<string, SampleData>;
     isCustomFunction: boolean;
     telemetryData: {
+      requestId: string;
+      isHarmful: boolean;
+      relatedSampleName: string[];
+      codeClassAndMembers: string[];
+      timeToFirstToken: number;
+      totalTokens: number;
+      responseTokensPerSecond: number[];
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
@@ -41,6 +48,13 @@ export class Spec {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: false,
       telemetryData: {
+        requestId: "",
+        isHarmful: false,
+        relatedSampleName: [],
+        codeClassAndMembers: [],
+        timeToFirstToken: 0,
+        totalTokens: 0,
+        responseTokensPerSecond: [],
         properties: {},
         measurements: {},
       },

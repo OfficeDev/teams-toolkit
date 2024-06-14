@@ -16,6 +16,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../../../src/telemetry/cliTelemetryEvents";
+import * as cp from "child_process";
 
 describe("launch", () => {
   const sandbox = sinon.createSandbox();
@@ -98,6 +99,11 @@ describe("launch Teams desktop client", () => {
   describe("openTeamsDesktopClientNew", () => {
     let telemetries: any[] = [];
 
+    const telemetryProperties = {
+      key1: "value1",
+      key2: "value2",
+    };
+
     beforeEach(() => {
       telemetries = [];
 
@@ -111,6 +117,7 @@ describe("launch Teams desktop client", () => {
         });
       sandbox.stub(cliLogger, "necessaryLog").callsFake(() => {});
       sandbox.stub(CLIUIInstance, "createProgressBar").returns(new MockProgressHandler());
+      sandbox.stub(cp);
     });
 
     it("happy path windows", async () => {
@@ -119,10 +126,22 @@ describe("launch Teams desktop client", () => {
       expect(telemetries.length).to.deep.equals(0);
     });
 
+    it("happy path mac", async () => {
+      sandbox.stub(process, "platform").value("darwin");
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
+      expect(telemetries.length).to.deep.equals(0);
+    });
+
     it("happy path windows - with telemetry", async () => {
       sandbox.stub(process, "platform").value("win32");
-      await openTeamsDesktopClient("http://test-url", "username", Browser.default, []);
-      expect(telemetries.length).to.deep.equals(0);
+      await openTeamsDesktopClient(
+        "http://test-url",
+        "username",
+        Browser.default,
+        [],
+        telemetryProperties
+      );
+      expect(telemetries.length).to.deep.equals(2);
     });
 
     it("happy path others", async () => {
@@ -130,7 +149,7 @@ describe("launch Teams desktop client", () => {
       sandbox
         .stub(commonUtils, "openBrowser")
         .callsFake(async (browser, url, browserArguments) => {});
-      await openTeamsDesktopClient("http://test-url", "username", Browser.default);
+      await openTeamsDesktopClient("http://test-url", "username", Browser.default, ["test"]);
       expect(telemetries.length).to.deep.equals(0);
     });
 

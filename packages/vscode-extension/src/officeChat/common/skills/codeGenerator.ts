@@ -99,10 +99,8 @@ export class CodeGenerator implements ISkill {
       }
     }
 
-    if (
-      spec.appendix.codeTaskBreakdown.length === 0 &&
-      spec.appendix.codeExplanation.length === 0
-    ) {
+    // Always generate the breakdown
+    {
       const t0 = performance.now();
       const breakdownResult = await this.userAskBreakdownAsync(
         token,
@@ -203,7 +201,7 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
       new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
-    const copilotResponse = await getCopilotResponseAsString(
+    let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
@@ -219,6 +217,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
+      copilotResponse = copilotResponse.replace(/\\n/g, "").replace(/\n/g, "");
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
@@ -251,11 +250,11 @@ export class CodeGenerator implements ISkill {
     spec: string;
     funcs: string[];
   }> {
-    let userPrompt = getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+    let userPrompt: string = getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
     if (isCustomFunctions) {
       userPrompt = `This is a task about Excel custom functions, pay attention if this is a regular custom functions or streaming custom functions:\n\n ${userPrompt}`;
     }
-    userPrompt += "\nThink about that step by step.";
+    userPrompt += "\nDo not generate code snippets.\n\nThink about that step by step.";
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
@@ -310,7 +309,7 @@ export class CodeGenerator implements ISkill {
       );
     }
 
-    const copilotResponse = await getCopilotResponseAsString(
+    let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
@@ -324,6 +323,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
+      copilotResponse = copilotResponse.replace(/\\n/g, "  ").replace(/\n/g, "  ");
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
@@ -357,19 +357,6 @@ export class CodeGenerator implements ISkill {
     sampleCode: string
   ) {
     const userPrompt = getGenerateCodeUserPrompt(codeSpec, host, suggestedFunction);
-    let referenceUserPrompt = "";
-    switch (host) {
-      case "Excel":
-        if (!isCustomFunctions) {
-          referenceUserPrompt = excelSystemPrompt;
-        } else {
-          referenceUserPrompt = customFunctionSystemPrompt;
-        }
-        break;
-      default:
-        referenceUserPrompt = "";
-        break;
-    }
 
     //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
     //       const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
@@ -414,6 +401,23 @@ export class CodeGenerator implements ISkill {
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
+
+    let referenceUserPrompt = "";
+    switch (host) {
+      case "Excel":
+        if (!isCustomFunctions) {
+          referenceUserPrompt = excelSystemPrompt;
+        } else {
+          referenceUserPrompt = customFunctionSystemPrompt;
+        }
+        messages.push(
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+        );
+        break;
+      default:
+        referenceUserPrompt = "";
+        break;
+    }
     // // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
     // if (isCustomFunctions) {
     //   messages.push(

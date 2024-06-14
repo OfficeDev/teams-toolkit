@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  LogProvider,
+  M365TokenProvider,
+  ManifestProperties,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 
 import { hooks } from "@feathersjs/hooks";
 import { AppStudioScopes } from "../../common/constants";
@@ -25,9 +33,10 @@ export class LaunchHelper {
   public async getLaunchUrl(
     hub: HubTypes,
     teamsAppId: string,
-    capabilities: string[],
+    properties: ManifestProperties,
     withLoginHint = true
   ): Promise<Result<string, FxError>> {
+    const capabilities = properties.capabilities;
     const loginHint = withLoginHint
       ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
       : undefined;
@@ -43,7 +52,7 @@ export class LaunchHelper {
             (!capabilities.includes("staticTab") &&
               !capabilities.includes("Bot") &&
               !capabilities.includes("configurableTab") &&
-              capabilities.includes("apiMeAAD")))
+              properties.isApiMeAAD))
         ) {
           installAppPackage = false;
         }

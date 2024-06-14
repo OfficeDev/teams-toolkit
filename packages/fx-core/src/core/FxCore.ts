@@ -722,7 +722,7 @@ export class FxCore {
     const properties = ManifestUtil.parseCommonProperties(manifestRes.value);
 
     const launchHelper = new LaunchHelper(TOOLS.tokenProvider.m365TokenProvider, TOOLS.logProvider);
-    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, properties.capabilities, true);
+    const result = await launchHelper.getLaunchUrl(hub, teamsAppId, properties, true);
     return result;
   }
   /**

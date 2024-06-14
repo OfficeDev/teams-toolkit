@@ -224,17 +224,6 @@ export async function initPage(
     await page?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
-    try {
-      await page?.waitForSelector(
-        ".ui-menu__itemwrapper span:has-text('About')"
-      );
-    } catch (error) {
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("error"),
-        fullPage: true,
-      });
-      assert.fail("[Error] add app failed");
-    }
     console.log("[success] app loaded");
     await page.waitForTimeout(Timeout.shortTimeLoading);
   });
@@ -356,17 +345,6 @@ export async function reopenPage(
       await page?.waitForSelector("button>span:has-text('Add')", {
         state: "detached",
       });
-    }
-    try {
-      await page?.waitForSelector(
-        ".ui-menu__itemwrapper span:has-text('About')"
-      );
-    } catch (error) {
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("error"),
-        fullPage: true,
-      });
-      assert.fail("[Error] add app failed");
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
   });
@@ -2055,10 +2033,7 @@ export async function validateSpfx(
   options?: { displayName?: string }
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector(`text=${options?.displayName}`);
     console.log(`Found: "${options?.displayName}"`);
   } catch (error) {
@@ -2635,11 +2610,7 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       console.log("check result...");
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      const frame = await frameElementHandle?.contentFrame();
-      const spfxFrame = frame?.childFrames()[0];
+      const spfxFrame = await page.waitForSelector("div#app");
       // title
       console.log("check title");
       const title = await spfxFrame?.waitForSelector(

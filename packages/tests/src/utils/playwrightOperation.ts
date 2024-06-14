@@ -224,7 +224,7 @@ export async function initPage(
     await page?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
-    /* Todo: need update
+    /* Todo: need update:
     try {
       try {
         await page?.waitForSelector(".team-information span:has-text('About')");
@@ -253,7 +253,7 @@ export async function initPage(
       });
       assert.fail("[Error] add app failed");
     }
-      */    
+      */
     console.log("[success] app loaded");
     await page.waitForTimeout(Timeout.shortTimeLoading);
   });

@@ -916,13 +916,16 @@ export async function validateReactTab(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          frame?.click('button:has-text("Call Azure Function")', {
-            timeout: Timeout.playwrightAddAppButton,
-            force: true,
-            noWaitAfter: true,
-            clickCount: 2,
-            delay: 10000,
-          }),
+          frame?.click(
+            'button:has-text("Authorize and call Azure Functions")',
+            {
+              timeout: Timeout.playwrightAddAppButton,
+              force: true,
+              noWaitAfter: true,
+              clickCount: 2,
+              delay: 10000,
+            }
+          ),
         ]);
         console.log("after popup");
 

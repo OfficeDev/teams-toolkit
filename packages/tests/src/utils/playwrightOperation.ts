@@ -2408,19 +2408,33 @@ export async function delPerson(
   );
 }
 
-export async function validateCreatedCard(page: Page) {
+export async function messageExtensionActivate(page: Page, appName: string) {
+  console.log("start to activate message extension");
+  const extButton = await page.waitForSelector(
+    "button:has-text('Actions and apps')"
+  );
+  console.log("click Actions and apps");
+  await extButton?.click();
+  const extBox = await page.waitForSelector("div.ui-popup__content__content");
+  const extList = await extBox?.waitForSelector("ul");
+  console.log("finding app:", appName);
+  // roop items
+  const items = await extList?.$$("li");
+  for (const item of items) {
+    const text = await item.innerText();
+    if (text.includes(appName)) {
+      console.log("click app:", appName);
+      await item.click();
+      break;
+    }
+  }
+}
+
+export async function validateCreatedCard(page: Page, appName: string) {
   try {
     const frame = await page.waitForSelector("div#app");
     console.log("start to created card");
-    try {
-      await frame
-        ?.waitForSelector('div.ui-box button:has-text("Submit")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no created card window");
-    }
+    await messageExtensionActivate(page, appName);
     const submitBtn = await frame?.waitForSelector(
       'div.ui-box button:has-text("Submit")'
     );

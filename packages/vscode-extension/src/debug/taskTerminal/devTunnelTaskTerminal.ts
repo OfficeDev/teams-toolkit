@@ -28,7 +28,7 @@ import {
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
 import { FeatureFlags, isFeatureFlagEnabled } from "../../featureFlags";
-import { devTunnelDisplayMessages } from "../constants";
+import { devTunnelDisplayMessages } from "../common/debugConstants";
 import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {

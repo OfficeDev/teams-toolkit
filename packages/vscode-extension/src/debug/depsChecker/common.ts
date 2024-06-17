@@ -11,7 +11,6 @@ import {
   SystemError,
   UserError,
   UserErrorOptions,
-  Void,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -24,11 +23,9 @@ import {
   LocalEnvManager,
   NodeNotFoundError,
   NodeNotLtsError,
-  Prerequisite,
   TelemetryContext,
   V3NodeNotSupportedError,
   assembleError,
-  MosServiceScope,
   getSideloadingStatus,
   ErrorCategory,
   PackageService,
@@ -37,244 +34,41 @@ import * as os from "os";
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { signedOut } from "../commonlib/common/constant";
-import VsCodeLogInstance from "../commonlib/log";
-import M365TokenInstance from "../commonlib/m365Login";
-import { ExtensionErrors, ExtensionSource } from "../error/error";
-import { VS_CODE_UI } from "../qm/vsc_ui";
-import { tools, workspaceUri } from "../globalVariables";
-import { checkCopilotCallback } from "../handlers";
-import { ProgressHandler } from "../progressHandler";
-import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getDefaultString, localize } from "../utils/localizeUtils";
-import * as commonUtils from "./commonUtils";
-import { Step } from "./commonUtils";
+import { signedOut } from "../../commonlib/common/constant";
+import VsCodeLogInstance from "../../commonlib/log";
+import M365TokenInstance from "../../commonlib/m365Login";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
+import { VS_CODE_UI } from "../../qm/vsc_ui";
+import { tools, workspaceUri } from "../../globalVariables";
+import { checkCopilotCallback } from "../../handlers/checkCopilotCallback";
+import { ProgressHandler } from "../../progressHandler";
+import { ExtTelemetry } from "../../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
+import { Step } from "../common/step";
+import { DisplayMessages, RecommendedOperations } from "../common/debugConstants";
+import { doctorConstant } from "./doctorConstant";
+import { vscodeLogger } from "./vscodeLogger";
+import { vscodeTelemetry } from "./vscodeTelemetry";
+import { localTelemetryReporter } from "../localTelemetryReporter";
+import { ProgressHelper } from "../progressHelper";
+import { WebviewPanel } from "../../controls/webviewPanel";
+import { PanelType } from "../../controls/PanelType";
 import {
-  DisplayMessages,
-  prerequisiteCheckForGetStartedDisplayMessages,
-  RecommendedOperations,
-  v3PrerequisiteCheckTaskDisplayMessages,
-} from "./constants";
-import { doctorConstant } from "./depsChecker/doctorConstant";
-import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
-import { localTelemetryReporter } from "./localTelemetryReporter";
-import { ProgressHelper } from "./progressHelper";
-import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
-import { WebviewPanel } from "../controls/webviewPanel";
-import { PanelType } from "../controls/PanelType";
+  ResultStatus,
+  Checker,
+  ProgressMessage,
+  copilotCheckServiceScope,
+  DepsDisplayName,
+} from "./prerequisitesCheckerConstants";
+import {
+  CheckResult,
+  PrerequisiteOrderedChecker,
+  PrerequisiteCheckerInfo,
+  PortCheckerInfo,
+} from "../common/types";
 
-enum Checker {
-  M365Account = "Microsoft 365 Account",
-  CopilotAccess = "Copilot Access",
-  Ports = "ports occupancy",
-}
-
-const DepsDisplayName = {
-  [DepsType.LtsNode]: "Node.js",
-  [DepsType.ProjectNode]: "Node.js",
-};
-
-interface CheckResult {
-  checker: string;
-  result: ResultStatus;
-  error?: FxError;
-  successMsg?: string;
-  warnMsg?: string;
-  failureMsg?: string;
-}
-
-enum ResultStatus {
-  success = "success",
-  warn = "warn",
-  failed = "failed",
-}
-
-const ProgressMessage = Object.freeze({
-  [Checker.M365Account]: `Checking ${Checker.M365Account}`,
-  [Checker.CopilotAccess]: `Checking ${Checker.CopilotAccess}`,
-  [Checker.Ports]: `Checking ${Checker.Ports}`,
-  [DepsType.LtsNode]: `Checking ${DepsDisplayName[DepsType.LtsNode]}`,
-  [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
-});
-
-type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
-type PrerequisiteCheckerInfo = {
-  checker:
-    | Checker
-    | Checker.M365Account
-    | Checker.CopilotAccess
-    | Checker.Ports
-    | DepsType.LtsNode
-    | DepsType.ProjectNode;
-  [key: string]: any;
-};
-
-type PrerequisiteOrderedChecker = {
-  info: PrerequisiteCheckerInfo;
-  fastFail: boolean;
-};
-
-async function runWithCheckResultTelemetryProperties(
-  eventName: string,
-  initialProperties: { [key: string]: string },
-  action: (ctx: TelemetryContext) => Promise<CheckResult>
-): Promise<CheckResult> {
-  return await localTelemetryReporter.runWithTelemetryGeneric(
-    eventName,
-    action,
-    (result: CheckResult) => {
-      return result.result === ResultStatus.success ? undefined : result.error;
-    },
-    initialProperties
-  );
-}
-
-// Mainly addresses two issues:
-// 1. Some error messages contain special characters which will cause the whole debug-check-results to be redacted.
-// 2. CheckResult[] is hard to parse in kusto query (an array of objects).
-//
-// `debug-check-results` contains only known content and we know it will not be redacted.
-// `debug-check-results-raw` might contain arbitrary string and be redacted.
-function convertCheckResultsForTelemetry(checkResults: CheckResult[]): [string, string] {
-  const resultRaw: { [checker: string]: unknown } = {};
-  const resultSafe: { [checker: string]: { [key: string]: string | undefined } } = {};
-  for (const checkResult of checkResults) {
-    resultRaw[checkResult.checker] = checkResult;
-    resultSafe[checkResult.checker] = {
-      result: checkResult.result,
-      source: checkResult.error?.source,
-      errorCode: checkResult.error?.name,
-      errorType:
-        checkResult.error === undefined
-          ? undefined
-          : checkResult.error instanceof UserError
-          ? "user"
-          : checkResult.error instanceof SystemError
-          ? "system"
-          : "unknown",
-    };
-  }
-
-  return [JSON.stringify(resultRaw), JSON.stringify(resultSafe)];
-}
-
-function addCheckResultsForTelemetry(
-  checkResults: CheckResult[],
-  properties: { [key: string]: string },
-  errorProps: string[]
-): void {
-  const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
-  properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
-  properties[TelemetryProperty.DebugCheckResults] = resultRaw;
-  // only the raw event contains error message
-  errorProps.push(TelemetryProperty.DebugCheckResults);
-}
-
-async function checkPort(
-  localEnvManager: LocalEnvManager,
-  ports: number[],
-  displayMessage: string,
-  additionalTelemetryProperties: { [key: string]: string }
-): Promise<CheckResult> {
-  return await runWithCheckResultTelemetryProperties(
-    TelemetryEvent.DebugPrereqsCheckPorts,
-    additionalTelemetryProperties,
-    async (ctx: TelemetryContext) => {
-      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
-      const portsInUse = await localEnvManager.getPortsInUse(ports);
-      const formatPortStr = (ports: number[]) =>
-        ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
-      if (portsInUse.length > 0) {
-        ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
-        const message = util.format(
-          getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
-        );
-        const displayMessage = util.format(
-          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
-        );
-
-        return {
-          checker: Checker.Ports,
-          result: ResultStatus.failed,
-          failureMsg: doctorConstant.Port,
-          error: new UserError(
-            ExtensionSource,
-            ExtensionErrors.PortAlreadyInUse,
-            message,
-            displayMessage
-          ),
-        };
-      }
-      return {
-        checker: Checker.Ports,
-        result: ResultStatus.success,
-        successMsg: doctorConstant.PortSuccess.replace("@port", formatPortStr(ports)),
-      };
-    }
-  );
-}
-
-export async function checkPrerequisitesForGetStarted(): Promise<Result<void, FxError>> {
-  const nodeChecker = getOrderedCheckersForGetStarted();
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
-  const res = await _checkAndInstall(prerequisiteCheckForGetStartedDisplayMessages, nodeChecker, {
-    [TelemetryProperty.DebugIsTransparentTask]: "false",
-  });
-  if (res.error) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, res.error);
-    return err(res.error);
-  }
-  return ok(undefined);
-}
-
-export async function checkAndInstallForTask(
-  prerequisites: string[],
-  ports: number[] | undefined,
-  telemetryProperties: { [key: string]: string }
-): Promise<Result<Void, FxError>> {
-  const orderedCheckers = getOrderedCheckersForTask(prerequisites, ports);
-
-  const additionalTelemetryProperties = Object.assign(
-    {
-      [TelemetryProperty.DebugIsTransparentTask]: "true",
-    },
-    telemetryProperties
-  );
-  return await localTelemetryReporter.runWithTelemetryProperties(
-    TelemetryEvent.DebugPrerequisites,
-    additionalTelemetryProperties,
-    async (ctx: TelemetryContext) => {
-      // terminate all running teamsfx tasks
-      if (allRunningTeamsfxTasks.size > 0) {
-        VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
-        terminateAllRunningTeamsfxTasks();
-      }
-
-      const res = await _checkAndInstall(
-        v3PrerequisiteCheckTaskDisplayMessages,
-        orderedCheckers,
-        additionalTelemetryProperties
-      );
-      if (res.error) {
-        const debugSession = commonUtils.getLocalDebugSession();
-        addCheckResultsForTelemetry(
-          res.checkResults,
-          debugSession.properties,
-          debugSession.errorProps
-        );
-        addCheckResultsForTelemetry(res.checkResults, ctx.properties, ctx.errorProps);
-        return err(res.error);
-      }
-      return ok(Void);
-    }
-  );
-}
-
-async function _checkAndInstall(
+export async function _checkAndInstall(
   displayMessages: DisplayMessages,
   orderedCheckers: PrerequisiteOrderedChecker[],
   additionalTelemetryProperties: { [key: string]: string }
@@ -336,6 +130,69 @@ async function _checkAndInstall(
     return { checkResults: checkResults, error: fxError };
   }
   return { checkResults: checkResults };
+}
+
+async function runWithCheckResultTelemetryProperties(
+  eventName: string,
+  initialProperties: { [key: string]: string },
+  action: (ctx: TelemetryContext) => Promise<CheckResult>
+): Promise<CheckResult> {
+  return await localTelemetryReporter.runWithTelemetryGeneric(
+    eventName,
+    action,
+    (result: CheckResult) => {
+      return result.result === ResultStatus.success ? undefined : result.error;
+    },
+    initialProperties
+  );
+}
+
+async function checkPort(
+  localEnvManager: LocalEnvManager,
+  ports: number[],
+  displayMessage: string,
+  additionalTelemetryProperties: { [key: string]: string }
+): Promise<CheckResult> {
+  return await runWithCheckResultTelemetryProperties(
+    TelemetryEvent.DebugPrereqsCheckPorts,
+    additionalTelemetryProperties,
+    async (ctx: TelemetryContext) => {
+      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+      const portsInUse = await localEnvManager.getPortsInUse(ports);
+      const formatPortStr = (ports: number[]) =>
+        ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
+      if (portsInUse.length > 0) {
+        ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
+        const message = util.format(
+          // eslint-disable-next-line no-secrets/no-secrets
+          getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
+          formatPortStr(portsInUse)
+        );
+        const displayMessage = util.format(
+          // eslint-disable-next-line no-secrets/no-secrets
+          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+          formatPortStr(portsInUse)
+        );
+
+        return {
+          checker: Checker.Ports,
+          result: ResultStatus.failed,
+          failureMsg: doctorConstant.Port,
+          error: new UserError(
+            ExtensionSource,
+            ExtensionErrors.PortAlreadyInUse,
+            message,
+            displayMessage
+          ),
+        };
+      }
+      return {
+        checker: Checker.Ports,
+        result: ResultStatus.success,
+        successMsg: doctorConstant.PortSuccess.replace("@port", formatPortStr(ports)),
+      };
+    }
+  );
 }
 
 function getCheckPromise(
@@ -429,7 +286,6 @@ function ensureM365Account(
   );
 }
 
-const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
 async function ensureCopilotAccess(
   showLoginPage: boolean
 ): Promise<Result<{ token: string; tenantId?: string; loginHint?: string }, FxError>> {
@@ -789,34 +645,4 @@ async function checkFailure(
   if (checkResults.some((r) => r.result === ResultStatus.failed)) {
     await handleCheckResults(checkResults, displayMessages, progressHelper);
   }
-}
-
-function getOrderedCheckersForGetStarted(): PrerequisiteOrderedChecker[] {
-  const workspacePath = workspaceUri?.fsPath;
-  return [
-    {
-      info: { checker: workspacePath ? DepsType.ProjectNode : DepsType.LtsNode },
-      fastFail: false,
-    },
-  ];
-}
-
-function getOrderedCheckersForTask(
-  prerequisites: string[],
-  ports?: number[]
-): PrerequisiteOrderedChecker[] {
-  const checkers: PrerequisiteOrderedChecker[] = [];
-  if (prerequisites.includes(Prerequisite.nodejs)) {
-    checkers.push({ info: { checker: DepsType.ProjectNode }, fastFail: true });
-  }
-  if (prerequisites.includes(Prerequisite.m365Account)) {
-    checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });
-  }
-  if (prerequisites.includes(Prerequisite.copilotAccess)) {
-    checkers.push({ info: { checker: Checker.CopilotAccess }, fastFail: false });
-  }
-  if (prerequisites.includes(Prerequisite.portOccupancy)) {
-    checkers.push({ info: { checker: Checker.Ports, ports: ports }, fastFail: false });
-  }
-  return checkers;
 }

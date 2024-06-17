@@ -1,18 +1,18 @@
 import { TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core";
+import { featureFlagManager, manifestUtils } from "@microsoft/teamsfx-core";
+import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as globalVariables from "../../../src/globalVariables";
 import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
 import treeViewManager from "../../../src/treeview/treeViewManager";
-import mockedEnv, { RestoreFn } from "mocked-env";
+
 describe("TreeViewManager", () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn = () => {};
+
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("registerTreeViews", () => {
@@ -30,7 +30,7 @@ describe("TreeViewManager", () => {
   it("Development Treeview", () => {
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
-    sandbox.stub(process.env, "TEAMSFX_CHAT_PARTICIPANT").value("false");
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -43,7 +43,7 @@ describe("TreeViewManager", () => {
   it("Development Treeview when ChatParticipant is enabled", () => {
     sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
-    mockedEnvRestore = mockedEnv({ TEAMSFX_CHAT_PARTICIPANT: "true" });
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -69,7 +69,7 @@ describe("TreeViewManager", () => {
 
   it("updateTreeViewsOnSPFxChanged", () => {
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
-    mockedEnvRestore = mockedEnv({ TEAMSFX_CHAT_PARTICIPANT: "false" });
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     treeViewManager.registerTreeViews({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
@@ -89,7 +89,7 @@ describe("TreeViewManager", () => {
 
   it("updateTreeViewsByContent if remove project related commands", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value("");
-    mockedEnvRestore = mockedEnv({ TEAMSFX_CHAT_PARTICIPANT: "false" });
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(manifestUtils, "getCapabilities").returns(["tab"]);
     treeViewManager.registerTreeViews({
@@ -113,7 +113,7 @@ describe("TreeViewManager", () => {
 
   it("updateTreeViewsByContent if remove project related commands when ChatParticipant is enabled", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value("");
-    mockedEnvRestore = mockedEnv({ TEAMSFX_CHAT_PARTICIPANT: "true" });
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(manifestUtils, "getCapabilities").returns(["tab"]);
     treeViewManager.registerTreeViews({

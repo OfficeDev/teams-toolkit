@@ -9,20 +9,27 @@ import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { validateNpm } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
+import { SampledebugContext } from "./sampledebugContext";
 
 class NpmSearchTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    options?: { npmName: string }
+    options?: { npmName: string; context: SampledebugContext }
   ): Promise<void> {
-    return await validateNpm(page, { npmName: options?.npmName });
+    return await validateNpm(page, {
+      npmName: options?.npmName,
+      appName: options?.context.appName || "",
+    });
   }
 
   override async onCliValidate(
     page: Page,
-    options?: { npmName: string }
+    options?: { npmName: string; context: SampledebugContext }
   ): Promise<void> {
-    return await validateNpm(page, { npmName: options?.npmName });
+    return await validateNpm(page, {
+      npmName: options?.npmName,
+      appName: options?.context.appName || "",
+    });
   }
 }
 

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BrowserContext, Page, Frame } from "playwright";
+import { BrowserContext, Page, Frame, ElementHandle } from "playwright";
 import { assert, expect } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
@@ -1428,15 +1428,16 @@ export async function validateBot(
   }
 }
 
-export async function validateNpm(page: Page, options?: { npmName?: string }) {
+export async function validateNpm(
+  page: Page,
+  options: { npmName?: string; appName: string }
+) {
   try {
     const searchPack = options?.npmName || "axios";
     console.log("start to verify npm search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
+    await messageExtensionActivate(page, options.appName);
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1457,7 +1458,8 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
       );
       await targetItem?.click();
       await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
-      await frame?.click('button[name="send"]');
+      const sendBtn = await frame?.waitForSelector('button[name="send"]');
+      await sendBtn?.click();
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
@@ -1685,10 +1687,7 @@ export async function validateShareNow(page: Page) {
   try {
     console.log("start to verify share now");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -2069,10 +2068,7 @@ export async function validateContact(
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await page
@@ -2153,10 +2149,8 @@ export async function validateGraphConnector(
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
+    const startBtn = await frame.waitForSelector('button:has-text("Start")');
     try {
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -2171,7 +2165,7 @@ export async function validateGraphConnector(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          frame?.click('button:has-text("Start")', {
+          startBtn?.click({
             timeout: Timeout.playwrightAddAppButton,
             force: true,
             noWaitAfter: true,
@@ -2327,10 +2321,7 @@ export async function validateAdaptiveCard(
   options?: { context?: SampledebugContext; env?: "local" | "dev" }
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await page
       .click('button:has-text("Dismiss")', {
@@ -2379,7 +2370,7 @@ export async function validateAdaptiveCard(
 }
 
 export async function addPerson(
-  frame: Frame | null,
+  frame: ElementHandle<SVGElement | HTMLElement> | null,
   displayName: string
 ): Promise<void> {
   console.log(`add person: ${displayName}`);
@@ -2396,7 +2387,7 @@ export async function addPerson(
 }
 
 export async function delPerson(
-  frame: Frame | null,
+  frame: ElementHandle<SVGElement | HTMLElement> | null,
   displayName: string
 ): Promise<void> {
   console.log(`delete person: ${displayName}`);
@@ -2586,10 +2577,7 @@ export async function validateLargeNotificationBot(
   notificationEndpoint = "http://127.0.0.1:3978/api/notification"
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await page
       .click('button:has-text("Dismiss")', {

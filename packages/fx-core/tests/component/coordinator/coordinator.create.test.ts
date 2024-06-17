@@ -947,6 +947,7 @@ describe("Office Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -1035,6 +1036,7 @@ describe("Office XML Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -1115,6 +1117,7 @@ describe("Office Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -1202,6 +1205,7 @@ describe("Copilot plugin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {

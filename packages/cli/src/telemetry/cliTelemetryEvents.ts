@@ -85,6 +85,7 @@ export enum TelemetryEvent {
   PreviewSideloadingStart = "preview-sideloading-start",
   PreviewPrereqsCheckM365Account = "preview-prereqs-check-m365-account",
   PreviewStartServices = "preview-start-services",
+  PreviewTeamsDesktopClient = "preview-teams-desktop-client",
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",

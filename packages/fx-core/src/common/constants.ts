@@ -11,7 +11,6 @@ export class ConstantString {
 
 export class HelpLinks {
   static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
-  static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
   static readonly SwitchTenant = "https://aka.ms/teamsfx-switch-tenant";
 }
 

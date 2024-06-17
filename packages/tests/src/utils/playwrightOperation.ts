@@ -902,6 +902,10 @@ export async function validateReactTab(
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
+    const callFunctionBtn = await frame?.waitForSelector(
+      "button:has-text('Authorize and call Azure Functions')"
+    );
+    console.log("click callFunctionBtn");
     if (includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -916,16 +920,13 @@ export async function validateReactTab(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          frame?.click(
-            'button:has-text("Authorize and call Azure Functions")',
-            {
-              timeout: Timeout.playwrightAddAppButton,
-              force: true,
-              noWaitAfter: true,
-              clickCount: 2,
-              delay: 10000,
-            }
-          ),
+          callFunctionBtn?.click({
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
         ]);
         console.log("after popup");
 

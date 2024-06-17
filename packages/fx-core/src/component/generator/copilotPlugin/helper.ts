@@ -86,7 +86,7 @@ export const copilotPluginParserOptions: ParseOptions = {
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
   allowResponseSemantics: true,
   allowConversationStarters: true,
-  allowConfirmation: true,
+  allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";

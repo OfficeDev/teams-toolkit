@@ -2422,6 +2422,7 @@ export async function messageExtensionActivate(page: Page, appName: string) {
   const items = await extList?.$$("li");
   for (const item of items) {
     const text = await item.innerText();
+    console.log("app name:", text);
     if (text.includes(appName)) {
       console.log("click app:", appName);
       await item.click();

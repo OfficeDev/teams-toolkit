@@ -1,11 +1,10 @@
+import { featureFlagManager } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-
-import { M365AccountNode } from "../../../../src/treeview/account/m365Node";
 import { AccountItemStatus, loadingIcon, m365Icon } from "../../../../src/treeview/account/common";
+import { M365AccountNode } from "../../../../src/treeview/account/m365Node";
 import { DynamicNode } from "../../../../src/treeview/dynamicNode";
-import { featureFlagManager } from "@microsoft/teamsfx-core";
 
 describe("m365Node", () => {
   const sandbox = sinon.createSandbox();
@@ -71,7 +70,6 @@ describe("m365Node", () => {
     m365Node.updateChecks("test token", true, false);
     chai.assert.isDefined(m365Node.getChildren());
     chai.assert.equal(1, (m365Node.getChildren() as any).length);
-
     sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     const m365NodeWithCopilot = new M365AccountNode(eventEmitter);
     m365NodeWithCopilot.updateChecks("test token", false, true);

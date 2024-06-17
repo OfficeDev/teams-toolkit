@@ -17,11 +17,10 @@ import {
 import {
   AuthSvcScopes,
   Correlator,
+  FeatureFlags as CoreFeatureFlags,
   VersionState,
   featureFlagManager,
-  isChatParticipantEnabled,
   teamsDevPortalClient,
-  FeatureFlags as FxCoreFeatureFlags,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -55,14 +54,16 @@ import M365TokenInstance from "./commonlib/m365Login";
 import { configMgr } from "./config";
 import { CommandKey as CommandKeys } from "./constants";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
-import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
+import { TeamsFxTaskType } from "./debug/common/debugConstants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/common/localDebugSession";
+import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
+import { FeatureFlags } from "./featureFlags";
 import {
   initializeGlobalVariables,
   isExistingUser,
@@ -74,6 +75,15 @@ import {
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
+import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
+import { checkSideloadingCallback } from "./handlers/checkSideloading";
+import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
+import { debugInTestToolHandler } from "./handlers/debugInTestTool";
+import { downloadSampleApp } from "./handlers/downloadSample";
+import * as officeDevHandlers from "./handlers/officeDevHandlers";
+import { showOutputChannelHandler } from "./handlers/showOutputChannel";
+import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
@@ -84,7 +94,6 @@ import {
   handleOfficeFeedback,
   officeChatRequestHandler,
 } from "./officeChat/handlers";
-import * as officeDevHandlers from "./handlers/officeDevHandlers";
 import { initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
@@ -93,21 +102,11 @@ import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler, setUriEventHandler } from "./uriHandler";
 import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
-import { FeatureFlags } from "./featureFlags";
+import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
-import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
-import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
-import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
-import { showOutputChannelHandler } from "./handlers/showOutputChannel";
-import { debugInTestToolHandler } from "./handlers/debugInTestTool";
-import { checkSideloadingCallback } from "./handlers/checkSideloading";
-import { downloadSampleApp } from "./handlers/downloadSample";
-import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
-import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
-import { TeamsFxTaskType } from "./debug/common/debugConstants";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -132,7 +131,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (isChatParticipantEnabled()) {
+  if (featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)) {
     registerChatParticipant(context);
 
     registerOfficeChatParticipant(context);
@@ -159,7 +158,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
-    isChatParticipantEnabled()
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.
@@ -167,15 +166,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin)
-  );
-
-  // Flags for "Build Intelligent Apps" walkthrough.
-  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin)
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotPlugin)
   );
 
   await vscode.commands.executeCommand(

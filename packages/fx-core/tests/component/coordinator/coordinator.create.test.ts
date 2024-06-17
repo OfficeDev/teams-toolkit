@@ -4,9 +4,7 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import * as FeatureFlags from "../../../src/common/featureFlags";
 import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
@@ -25,6 +23,7 @@ import { TemplateNames } from "../../../src/component/generator/templates/templa
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
+import { CreateSampleProjectInputs } from "../../../src/question";
 import {
   ApiAuthOptions,
   CapabilityOptions,
@@ -36,23 +35,23 @@ import {
   QuestionNames,
   ScratchOptions,
 } from "../../../src/question/constants";
+import { validationUtils } from "../../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { CreateSampleProjectInputs } from "../../../src/question";
-import { validationUtils } from "../../../src/ui/validationUtils";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
-  describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
-    const mockedEnvRestore: RestoreFn = () => {};
+  describe(`coordinator create with new generator enabled = ${newGeneratorFlag}`, () => {
+    let mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
     let generator: sinon.SinonStub;
     setTools(tools);
     beforeEach(() => {
       sandbox.stub(fs, "ensureDir").resolves();
-      sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(newGeneratorFlag);
+      mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: `${newGeneratorFlag}` });
       generator = newGeneratorFlag
         ? sandbox
             .stub(DefaultTemplateGenerator.prototype, <any>"scaffolding")
@@ -939,15 +938,15 @@ const V3Version = MetadataV3.projectVersion;
 });
 
 describe("Office Addin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
@@ -1028,15 +1027,15 @@ describe("Office Addin", async () => {
 });
 
 describe("Office XML Addin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
@@ -1109,15 +1108,15 @@ describe("Office XML Addin", async () => {
 });
 
 describe("Office Addin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
@@ -1198,6 +1197,7 @@ describe("Office Addin", async () => {
 });
 
 describe("Copilot plugin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   tools.ui = new MockedUserInteraction();
@@ -1205,11 +1205,12 @@ describe("Copilot plugin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold from API spec successfully", async () => {
@@ -1253,16 +1254,18 @@ describe("Copilot plugin", async () => {
   });
 });
 
-describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
+describe(`coordinator create with new generator enabled = true`, () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(true);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "true" });
   });
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold by OfficeAddinGeneratorNew successfully", async () => {

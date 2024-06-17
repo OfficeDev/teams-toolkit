@@ -2,13 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isCLIDotNetEnabled,
-  isChatParticipantEnabled,
-  isTdpTemplateCliTestEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 
@@ -137,7 +131,7 @@ export class RuntimeOptions {
 
 export function getRuntime(inputs: Inputs): string {
   let runtime = RuntimeOptions.NodeJS().id;
-  if (isCLIDotNetEnabled()) {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
   } else {
     if (inputs?.platform === Platform.VS) {
@@ -169,7 +163,7 @@ export class ScratchOptions {
 
 export class ProjectTypeOptions {
   static getCreateGroupName(): string | undefined {
-    return isChatParticipantEnabled()
+    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
       ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
       : undefined;
   }
@@ -518,7 +512,7 @@ export class CapabilityOptions {
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isTdpTemplateCliTestEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       capabilities.push(CapabilityOptions.me());
     }
 
@@ -669,7 +663,7 @@ export class CapabilityOptions {
       capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
     }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
-    if (isTdpTemplateCliTestEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
       capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
     }

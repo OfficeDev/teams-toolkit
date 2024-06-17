@@ -44,30 +44,31 @@ import {
 import {
   AppStudioScopes,
   AuthSvcScopes,
-  QuestionNames,
+  CapabilityOptions,
   Correlator,
   DepsManager,
   DepsType,
+  FeatureFlags,
   FxCore,
   Hub,
   InvalidProjectError,
+  JSONSyntaxError,
+  MetadataV3,
+  QuestionNames,
   askSubscription,
   assembleError,
   environmentManager,
+  featureFlagManager,
   generateScaffoldingSummary,
-  getProjectMetadata,
   getHashedEnv,
+  getProjectMetadata,
   globalStateGet,
   globalStateUpdate,
   isUserCancelError,
-  isValidProject,
   isValidOfficeAddInProject,
-  pathUtils,
+  isValidProject,
   manifestUtils,
-  JSONSyntaxError,
-  MetadataV3,
-  CapabilityOptions,
-  isChatParticipantEnabled,
+  pathUtils,
   pluginManifestUtils,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
@@ -86,15 +87,16 @@ import {
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
+import { RecommendedOperations } from "./debug/common/debugConstants";
+import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { openHubWebClient } from "./debug/launch";
-import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
 import { selectAndDebug } from "./debug/runIconHandler";
+import { isLoginFailureError, showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
 import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import { VS_CODE_UI } from "./qm/vsc_ui";
 import {
   context,
   core,
@@ -108,7 +110,9 @@ import {
   tools,
   workspaceUri,
 } from "./globalVariables";
+import { invokeTeamsAgent } from "./handlers/copilotChatHandlers";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
+import { VS_CODE_UI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   AccountType,
@@ -126,6 +130,7 @@ import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
+import { getAppName } from "./utils/appDefinitionUtils";
 import {
   checkCoreNotEmpty,
   getLocalDebugMessageTemplate,
@@ -133,20 +138,16 @@ import {
 } from "./utils/commonUtils";
 import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/envTreeUtils";
 import { getDefaultString, localize } from "./utils/localizeUtils";
-import { getAppName } from "./utils/appDefinitionUtils";
+import { triggerV3Migration } from "./utils/migrationUtils";
+import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { ExtensionSurvey } from "./utils/survey";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 import {
   getTeamsAppTelemetryInfoByEnv,
   getTriggerFromProperty,
   isTriggerFromWalkThrough,
 } from "./utils/telemetryUtils";
-import { RecommendedOperations } from "./debug/common/debugConstants";
 import { openFolder, openOfficeDevFolder } from "./utils/workspaceUtils";
-import { invokeTeamsAgent } from "./handlers/copilotChatHandlers";
-import { updateProjectStatus } from "./utils/projectStatusUtils";
-import { triggerV3Migration } from "./utils/migrationUtils";
-import { getSystemInputs } from "./utils/systemEnvUtils";
-import { isLoginFailureError, showError, wrapError } from "./error/common";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
@@ -2876,7 +2877,7 @@ export async function projectVersionCheck() {
 }
 
 function getWalkThroughId(): string {
-  return isChatParticipantEnabled()
+  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
     ? "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
     : "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted";
 }

@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
-
 import { featureFlagManager, FeatureFlags as FxCoreFeatureFlags } from "@microsoft/teamsfx-core";
+import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
 import { AccountItemStatus, loadingIcon, m365Icon } from "./common";
-import { SideloadingNode } from "./sideloadingNode";
 import { CopilotNode } from "./copilotNode";
+import { SideloadingNode } from "./sideloadingNode";
 
 export class M365AccountNode extends DynamicNode {
   public status: AccountItemStatus;

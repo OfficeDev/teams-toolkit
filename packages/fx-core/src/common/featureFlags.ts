@@ -12,42 +12,6 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
-export function isCLIDotNetEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
-}
-
-export function enableTestToolByDefault(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TestTool);
-}
-
-export function enableMETestToolByDefault(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.METestTool);
-}
-
-export function isNewGeneratorEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator);
-}
-
-export function isOfficeJSONAddinEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin);
-}
-
-export function isTdpTemplateCliTestEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest);
-}
-
-export function isAsyncAppValidationEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation);
-}
-
-export function isNewProjectTypeEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType);
-}
-
-export function isChatParticipantEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false

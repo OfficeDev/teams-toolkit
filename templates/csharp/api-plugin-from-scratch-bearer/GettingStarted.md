@@ -13,8 +13,9 @@
 2. Right-click your project and select `Teams Toolkit > Prepare Teams App Dependencies`.
 3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
 4. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio
-5. When Teams launches in the browser, you can open the Copilot app and send a prompt to trigger your plugin.
-6. Send a message to Copilot to find an NuGet package information. For example: Find the NuGet package info on Microsoft.CSharp.
+5. When Teams launches in the browser, click the Apps icon from Teams client left rail to open Teams app store and search for Copilot.
+6. Open the `Copilot` app, select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
+7. Send a message to Copilot to query the repair record. For example: List all repairs.
    > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## Learn more

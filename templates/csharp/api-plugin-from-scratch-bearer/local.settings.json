@@ -1,7 +1,6 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
-    "API_KEY": " "
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
   }
 }

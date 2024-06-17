@@ -80,7 +80,7 @@ provision:
       target: ./Properties/launchSettings.json
       content:
         profiles:
-          Microsoft Teams (browser):
+          Copilot (browser):
             commandName: "Project"
             commandLineArgs: "host start --port 5130 --pause-on-error"
             dotnetRunMessages: true

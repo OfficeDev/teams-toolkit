@@ -264,11 +264,7 @@ class Coordinator {
           }
 
           if (capability === CapabilityOptions.copilotPluginNewApi().id) {
-            if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth)) {
-              feature = `${feature}:${apiMEAuthType}`;
-            } else {
-              feature = `${feature}:none`;
-            }
+            feature = `${feature}:${apiMEAuthType}`;
           }
 
           if (capability === CapabilityOptions.customCopilotRag().id) {

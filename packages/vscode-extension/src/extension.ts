@@ -18,9 +18,10 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  isApiCopilotPluginEnabled,
+  featureFlagManager,
   isChatParticipantEnabled,
   teamsDevPortalClient,
+  FeatureFlags as FxCoreFeatureFlags,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -163,20 +164,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  // API_COPILOT_PLUGIN: boolean from ENV
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    isApiCopilotPluginEnabled()
+    featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  // API_COPILOT_PLUGIN: boolean from ENV
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    isApiCopilotPluginEnabled()
+    featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin)
   );
 
   await vscode.commands.executeCommand(

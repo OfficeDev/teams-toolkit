@@ -77,9 +77,9 @@ const enum telemetryEvents {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+  allowBearerTokenAuth: true,
   allowMultipleParameters: true,
-  allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+  allowOauth2: true,
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,

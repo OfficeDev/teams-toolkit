@@ -135,28 +135,28 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
-    // const debugInfo = `
-    //   ## Time cost:\n
-    //   In total ${Math.ceil(duration)} seconds.\n
-    //   - Task pre scan: ${Math.ceil(
-    //     spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec]
-    //   )} seconds.
-    //   - Task breakdown: ${Math.ceil(
-    //     spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec]
-    //   )} seconds.
-    //   - Download sample: ${Math.ceil(
-    //     spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec]
-    //   )} seconds.
-    //   - Code gen: ${Math.ceil(
-    //     spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec]
-    //   )} seconds.
-    //   - Self reflection: ${Math.ceil(
-    //     spec.appendix.telemetryData.measurements[MeasurementSelfReflectionExecutionTimeInTotalSec]
-    //   )} seconds.\n\n
-    //   ## Compile error remains:\n
-    //   ${Math.ceil(spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection])}
-    //   `;
-    // console.debug(debugInfo);
+    const debugInfo = `
+      ## Time cost:\n
+      In total ${Math.ceil(duration)} seconds.\n
+      - Task pre scan: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec]
+      )} seconds.
+      - Task breakdown: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec]
+      )} seconds.
+      - Download sample: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec]
+      )} seconds.
+      - Code gen: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec]
+      )} seconds.
+      - Self reflection: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementSelfReflectionExecutionTimeInTotalSec]
+      )} seconds.\n\n
+      ## Compile error remains:\n
+      ${Math.ceil(spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection])}
+      `;
+    console.debug(debugInfo);
     // response.markdown(debugInfo);
 
     return chatResult;

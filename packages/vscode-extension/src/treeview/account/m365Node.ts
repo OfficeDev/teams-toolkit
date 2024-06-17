@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { featureFlagManager, FeatureFlags as FxCoreFeatureFlags } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
@@ -8,7 +9,6 @@ import { DynamicNode } from "../dynamicNode";
 import { AccountItemStatus, loadingIcon, m365Icon } from "./common";
 import { CopilotNode } from "./copilotNode";
 import { SideloadingNode } from "./sideloadingNode";
-import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class M365AccountNode extends DynamicNode {
   public status: AccountItemStatus;
@@ -72,7 +72,7 @@ export class M365AccountNode extends DynamicNode {
       refreshSideloading = true;
     }
     if (
-      featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin) &&
+      featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin) &&
       copilot &&
       this.copilotNode !== undefined
     ) {
@@ -91,7 +91,7 @@ export class M365AccountNode extends DynamicNode {
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
-    return featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin) &&
+    return featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin) &&
       this.copilotNode !== undefined
       ? [this.sideloadingNode, this.copilotNode]
       : [this.sideloadingNode];

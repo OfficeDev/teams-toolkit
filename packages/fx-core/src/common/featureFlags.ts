@@ -12,13 +12,6 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
-export function isApiCopilotPluginEnabled(): boolean {
-  return (
-    featureFlagManager.getBooleanValue(FeatureFlags.ApiCopilotPlugin) &&
-    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
-  );
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false
@@ -82,13 +75,9 @@ export interface FeatureFlag {
 export class FeatureFlags {
   static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
   static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
-  static readonly ApiCopilotPlugin = {
-    name: FeatureFlagName.ApiCopilotPlugin,
-    defaultValue: "false",
-  };
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
-  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "false" };
+  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,
@@ -103,7 +92,6 @@ export class FeatureFlags {
     name: FeatureFlagName.ChatParticipant,
     defaultValue: "false",
   };
-  static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
 }

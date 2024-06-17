@@ -24,6 +24,8 @@ export type DevPreviewManifestJSONSchema = JSONSchemaType<DevPreviewSchema>;
 
 export type Manifest = TeamsAppManifest | DevPreviewSchema;
 
+export type ManifestProperties = ManifestCommonProperties;
+
 export class ManifestUtil {
   /**
    * Loads the manifest from the given path without validating its schema.
@@ -143,15 +145,6 @@ export class ManifestUtil {
     if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
       capabilities.push("MessageExtension");
     }
-    if (
-      manifest.composeExtensions &&
-      manifest.composeExtensions.length > 0 &&
-      (manifest.composeExtensions[0] as IComposeExtension).composeExtensionType == "apiBased" &&
-      (manifest.composeExtensions[0] as IComposeExtension).authorization?.authType ==
-        "microsoftEntra"
-    ) {
-      capabilities.push("apiMeAAD");
-    }
 
     const properties: ManifestCommonProperties = {
       id: manifest.id,
@@ -160,6 +153,7 @@ export class ManifestUtil {
       manifestVersion: manifest.manifestVersion,
       isApiME: false,
       isSPFx: false,
+      isApiMeAAD: false,
     };
 
     // If it's copilot plugin app
@@ -178,6 +172,17 @@ export class ManifestUtil {
       manifest.webApplicationInfo.id == SharePointAppId
     ) {
       properties.isSPFx = true;
+    }
+
+    // If it's API ME with AAD auth
+    if (
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      (manifest.composeExtensions[0] as IComposeExtension).composeExtensionType == "apiBased" &&
+      (manifest.composeExtensions[0] as IComposeExtension).authorization?.authType ==
+        "microsoftEntra"
+    ) {
+      properties.isApiMeAAD = true;
     }
 
     if ((manifest as TeamsAppManifest).copilotExtensions?.plugins) {

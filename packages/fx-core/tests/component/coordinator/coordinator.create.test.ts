@@ -4,9 +4,7 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import * as FeatureFlags from "../../../src/common/featureFlags";
 import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
@@ -25,6 +23,7 @@ import { TemplateNames } from "../../../src/component/generator/templates/templa
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
+import { CreateSampleProjectInputs } from "../../../src/question";
 import {
   ApiAuthOptions,
   CapabilityOptions,
@@ -36,23 +35,21 @@ import {
   QuestionNames,
   ScratchOptions,
 } from "../../../src/question/constants";
+import { validationUtils } from "../../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { CreateSampleProjectInputs } from "../../../src/question";
-import { validationUtils } from "../../../src/ui/validationUtils";
 
 const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
   describe(`coordinator create with new generator enabled = ${newGeneratorFlag}`, () => {
-    let mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
     let generator: sinon.SinonStub;
     setTools(tools);
     beforeEach(() => {
       sandbox.stub(fs, "ensureDir").resolves();
-      sandbox.stub(FeatureFlags.featureFlagManager, "getBooleanValue").returns(newGeneratorFlag);
+      sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`${newGeneratorFlag}`);
       generator = newGeneratorFlag
         ? sandbox
             .stub(DefaultTemplateGenerator.prototype, <any>"scaffolding")
@@ -61,7 +58,6 @@ const V3Version = MetadataV3.projectVersion;
     });
     afterEach(() => {
       sandbox.restore();
-      mockedEnvRestore();
     });
 
     it("create project from sample", async () => {
@@ -918,26 +914,7 @@ const V3Version = MetadataV3.projectVersion;
       assert.isTrue(res.isErr() && res.error.name === "test");
     });
 
-    it("create API Plugin with none auth", async () => {
-      const v3ctx = createContext();
-      v3ctx.userInteraction = new MockedUserInteraction();
-
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.AppName]: randomAppName(),
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      };
-      const res = await coordinator.create(v3ctx, inputs);
-      assert.isTrue(res.isOk());
-    });
-
     it("create API Plugin with none auth (feature flag enabled)", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "true" });
-
       const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
@@ -960,17 +937,16 @@ const V3Version = MetadataV3.projectVersion;
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("should scaffold taskpane successfully", async () => {
@@ -1048,17 +1024,16 @@ describe("Office Addin", async () => {
 describe("Office XML Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("should scaffold project successfully", async () => {
@@ -1128,17 +1103,16 @@ describe("Office XML Addin", async () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("should scaffold taskpane successfully", async () => {
@@ -1221,6 +1195,7 @@ describe("Copilot plugin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
   afterEach(() => {
@@ -1274,7 +1249,7 @@ describe(`coordinator create with new generator enabled = true`, () => {
   setTools(tools);
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags.featureFlagManager, "getBooleanValue").returns(true);
+    sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`true`);
   });
   afterEach(() => {
     sandbox.restore();

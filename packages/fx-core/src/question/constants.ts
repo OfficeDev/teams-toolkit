@@ -2,11 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isApiCopilotPluginEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 
@@ -293,6 +289,14 @@ export class ProjectTypeOptions {
 }
 
 export class CapabilityOptions {
+  // empty
+  static empty(): OptionItem {
+    return {
+      id: "empty",
+      label: "Empty",
+    };
+  }
+
   // bot
   static basicBot(): OptionItem {
     return {
@@ -501,6 +505,7 @@ export class CapabilityOptions {
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
+      CapabilityOptions.empty(),
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
@@ -629,6 +634,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
+      CapabilityOptions.empty(),
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
@@ -650,7 +656,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isApiCopilotPluginEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
     if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {

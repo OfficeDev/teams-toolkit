@@ -98,6 +98,7 @@ deploy:
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        BOT_TYPE: 'MultiTenant'
         BOT_DOMAIN: ${{BOT_DOMAIN}}
         AAD_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
         AAD_APP_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}

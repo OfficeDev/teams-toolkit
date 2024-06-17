@@ -3,8 +3,9 @@
 import * as util from "util";
 
 import { Hub, TaskLabel } from "@microsoft/teamsfx-core";
-import { ExtensionErrors } from "../error/error";
-import { getDefaultString, localize } from "../utils/localizeUtils";
+import { ExtensionErrors } from "../../error/error";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
+import { ProductName } from "@microsoft/teamsfx-api";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -255,3 +256,7 @@ export const DebugSessionExists = "Debug session exists";
 export const RecommendedOperations = Object.freeze({
   DebugInTestTool: "debug-in-test-tool",
 });
+
+export const TeamsFxTaskType = ProductName;
+
+export const DebugNoSessionId = "no-session-id";

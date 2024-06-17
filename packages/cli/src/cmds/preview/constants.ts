@@ -87,6 +87,7 @@ export const previewTitle = "preview";
 export const previewStartMessage = "opening Teams web client.";
 export const previewSPFxTitle = "spfx preview";
 export const previewSPFxStartMessage = "opening SharePoint workbench.";
+export const previewTeamsDesktopClientMessage = "opening Teams desktop client.";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";

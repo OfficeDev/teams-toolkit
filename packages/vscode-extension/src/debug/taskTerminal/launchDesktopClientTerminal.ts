@@ -14,11 +14,11 @@ import {
   UserCancelError,
 } from "@microsoft/teamsfx-core";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
-import { getLocalDebugSession } from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { openTerminalDisplayMessage, openTerminalMessage } from "../constants";
+import { openTerminalDisplayMessage, openTerminalMessage } from "../common/debugConstants";
 import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { core, tools } from "../../globalVariables";
 import * as path from "path";

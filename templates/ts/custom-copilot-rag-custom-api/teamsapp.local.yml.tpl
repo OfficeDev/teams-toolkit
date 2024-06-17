@@ -80,6 +80,7 @@ deploy:
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        BOT_TYPE: 'MultiTenant'
         {{#useOpenAI}}
         OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
         {{/useOpenAI}}

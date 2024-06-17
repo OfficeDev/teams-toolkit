@@ -2411,7 +2411,7 @@ export async function delPerson(
 export async function messageExtensionActivate(page: Page, appName: string) {
   console.log("start to activate message extension");
   const extButton = await page.waitForSelector(
-    "button:has-text('Actions and apps')"
+    "button[title='Actions and apps']"
   );
   console.log("click Actions and apps");
   await extButton?.click();

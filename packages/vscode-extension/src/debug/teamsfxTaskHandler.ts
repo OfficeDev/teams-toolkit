@@ -25,7 +25,7 @@ import {
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
-import { getNpmInstallLogInfo, getTestToolLogInfo } from "../utils/localEnvUtils";
+import { getNpmInstallLogInfo, getTestToolLogInfo } from "../utils/localEnvManagerUtils";
 import {
   DebugNoSessionId,
   errorDetail,

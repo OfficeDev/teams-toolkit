@@ -8,6 +8,7 @@
 >
 > - [Visual Studio 2022](https://aka.ms/vs) 17.9 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
+> - [Copilot for Microsoft 365 license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
 
 1. In the debug dropdown menu, select `Dev Tunnels > Create a Tunnel` (set authentication type to Public) or select an existing public dev tunnel.
 2. Right-click your project and select `Teams Toolkit > Prepare Teams App Dependencies`.
@@ -20,7 +21,7 @@
 
 ## Learn more
 
-- [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)
+- [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
 
 ## Report an issue
 

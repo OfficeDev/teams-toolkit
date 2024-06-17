@@ -182,7 +182,7 @@ export class LocalDebugTestContext extends TestContext {
       case "m365lp":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name test02 --interactive false --capability sso-launch-page --programming-language typescript --telemetry false`
         );
         break;
       case "workflow":

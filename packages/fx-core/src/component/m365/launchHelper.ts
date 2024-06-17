@@ -20,7 +20,7 @@ import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { MosServiceEndpoint, MosServiceScope } from "./serviceConstant";
-import { outlookCopilotAppId } from "./constants";
+import { officeBaseUrl, outlookBaseUrl, outlookCopilotAppId } from "./constants";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -76,10 +76,10 @@ export class LaunchHelper {
           return err(result.error);
         }
         const baseUrl = hasCopilotExtensionOnly
-          ? `https://outlook.office.com/host/${outlookCopilotAppId}`
+          ? `${outlookBaseUrl}/host/${outlookCopilotAppId}`
           : capabilities.includes("staticTab")
-          ? `https://outlook.office.com/host/${result.value}`
-          : "https://outlook.office.com/mail";
+          ? `${outlookBaseUrl}/host/${result.value}`
+          : `${outlookBaseUrl}/mail`;
         url = new URL(baseUrl);
         break;
       }
@@ -90,8 +90,8 @@ export class LaunchHelper {
             return err(result.error);
           }
           const baseUrl = hasCopilotExtensionOnly
-            ? `https://www.office.com/chat?auth=2`
-            : `https://www.office.com/m365apps/${result.value}?auth=2`;
+            ? `${officeBaseUrl}/chat?auth=2`
+            : `${officeBaseUrl}/m365apps/${result.value}?auth=2`;
           url = new URL(baseUrl);
         }
         break;

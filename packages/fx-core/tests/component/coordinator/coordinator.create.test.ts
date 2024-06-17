@@ -49,6 +49,7 @@ const V3Version = MetadataV3.projectVersion;
     setTools(tools);
     beforeEach(() => {
       sandbox.stub(fs, "ensureDir").resolves();
+      process.env.TEAMSFX_NEW_GENERATOR = "false";
       sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`${newGeneratorFlag}`);
       generator = newGeneratorFlag
         ? sandbox
@@ -942,6 +943,7 @@ describe("Office Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    process.env.TEAMSFX_NEW_GENERATOR = "false";
     sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
@@ -1029,6 +1031,7 @@ describe("Office XML Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    process.env.TEAMSFX_NEW_GENERATOR = "false";
     sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
@@ -1108,6 +1111,7 @@ describe("Office Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    process.env.TEAMSFX_NEW_GENERATOR = "false";
     sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
@@ -1195,6 +1199,7 @@ describe("Copilot plugin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    process.env.TEAMSFX_NEW_GENERATOR = "false";
     sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`false`);
   });
 
@@ -1249,6 +1254,7 @@ describe(`coordinator create with new generator enabled = true`, () => {
   setTools(tools);
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    process.env.TEAMSFX_NEW_GENERATOR = "false";
     sandbox.stub(process.env, "TEAMSFX_NEW_GENERATOR").value(`true`);
   });
   afterEach(() => {

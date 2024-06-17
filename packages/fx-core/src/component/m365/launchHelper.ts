@@ -20,6 +20,7 @@ import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { MosServiceEndpoint, MosServiceScope } from "./serviceConstant";
+import { outlookCopilotAppId } from "./constants";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -42,13 +43,16 @@ export class LaunchHelper {
       : undefined;
     let url: URL;
     const copilotCapabilities = ["plugin", "copilotGpt"];
+    const hasCopilotExtensionOnly =
+      capabilities.length > 0 &&
+      capabilities.filter((capability: string) => !copilotCapabilities.includes(capability))
+        .length === 0;
     switch (hub) {
       case HubTypes.teams: {
         let installAppPackage = true;
         if (
           capabilities.length > 0 &&
-          (capabilities.filter((capability) => !copilotCapabilities.includes(capability)).length ==
-            0 ||
+          (hasCopilotExtensionOnly ||
             (!capabilities.includes("staticTab") &&
               !capabilities.includes("Bot") &&
               !capabilities.includes("configurableTab") &&
@@ -71,7 +75,9 @@ export class LaunchHelper {
         if (result.isErr()) {
           return err(result.error);
         }
-        const baseUrl = capabilities.includes("staticTab")
+        const baseUrl = hasCopilotExtensionOnly
+          ? `https://outlook.office.com/host/${outlookCopilotAppId}`
+          : capabilities.includes("staticTab")
           ? `https://outlook.office.com/host/${result.value}`
           : "https://outlook.office.com/mail";
         url = new URL(baseUrl);
@@ -83,7 +89,9 @@ export class LaunchHelper {
           if (result.isErr()) {
             return err(result.error);
           }
-          const baseUrl = `https://www.office.com/m365apps/${result.value}?auth=2`;
+          const baseUrl = hasCopilotExtensionOnly
+            ? `https://www.office.com/chat?auth=2`
+            : `https://www.office.com/m365apps/${result.value}?auth=2`;
           url = new URL(baseUrl);
         }
         break;

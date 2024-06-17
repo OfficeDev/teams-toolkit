@@ -2444,8 +2444,8 @@ export async function validateCreatedCard(page: Page, appName: string) {
     const frame = await page.waitForSelector("div#app");
     console.log("start to created card");
     await messageExtensionActivate(page, appName);
-    const submitBtn = await frame?.waitForSelector(
-      'div.ui-box button:has-text("Submit")'
+    const submitBtn = await page?.waitForSelector(
+      'div.ui-box button[title="Submit"]'
     );
     await submitBtn?.click();
     try {

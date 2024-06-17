@@ -10,6 +10,7 @@ import { LaunchHelper } from "../../../src/component/m365/launchHelper";
 import { PackageService } from "../../../src/component/m365/packageService";
 import { HubTypes } from "../../../src/question";
 import { MockM365TokenProvider } from "../../core/utils";
+import { outlookCopilotAppId } from "../../../src/component/m365/constants";
 
 describe("LaunchHelper", () => {
   const m365TokenProvider = new MockM365TokenProvider();
@@ -284,6 +285,62 @@ describe("LaunchHelper", () => {
       chai.assert.equal(
         (result as any).value,
         "https://www.office.com/m365apps/test-app-id?auth=2&login_hint=test-upn"
+      );
+    });
+
+    it("Outlook, copilot extension", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const properties: ManifestProperties = {
+        capabilities: ["plugin"],
+        id: "test-id",
+        version: "1.0.0",
+        manifestVersion: "1.16",
+        isApiME: false,
+        isSPFx: false,
+        isApiMeAAD: false,
+      };
+      sinon.stub(LaunchHelper.prototype, <any>"getM365AppId").resolves(ok("test-app-id"));
+      const result = await launchHelper.getLaunchUrl(HubTypes.outlook, "test-id", properties);
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        `https://outlook.office.com/host/${outlookCopilotAppId}?login_hint=test-upn`
+      );
+    });
+
+    it("Office, copilot extension", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      sinon.stub(LaunchHelper.prototype, <any>"getM365AppId").resolves(ok("test-app-id"));
+      const properties: ManifestProperties = {
+        capabilities: ["copilotGpt"],
+        id: "test-id",
+        version: "1.0.0",
+        manifestVersion: "1.16",
+        isApiME: false,
+        isSPFx: false,
+        isApiMeAAD: false,
+      };
+      const result = await launchHelper.getLaunchUrl(HubTypes.office, "test-id", properties);
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://www.office.com/chat?auth=2&login_hint=test-upn"
       );
     });
   });

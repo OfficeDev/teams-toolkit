@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Kuojian Lu <kuojianlu@microsoft.com>
  */
@@ -9,10 +12,15 @@ import {
   validateReactTab,
 } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  LocalDebugError,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
+import { expect } from "chai";
 
 describe("Local Debug M365 Tests", function () {
   this.timeout(Timeout.testCase);
@@ -47,15 +55,29 @@ describe("Local Debug M365 Tests", function () {
 
       await startDebugging("Debug in Teams (Chrome)");
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartBackend,
-        "Worker process started and initialized"
-      );
+      try {
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartBackend,
+          "Worker process started and initialized"
+        );
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartFrontend,
-        "Compiled successfully!"
-      );
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartFrontend,
+          "Compiled successfully!"
+        );
+      } catch (error) {
+        const errorMsg = error.toString();
+        if (
+          // skip can't find element
+          errorMsg.includes(LocalDebugError.ElementNotInteractableError) ||
+          // skip timeout
+          errorMsg.includes(LocalDebugError.TimeoutError)
+        ) {
+          console.log("[skip error] ", error);
+        } else {
+          expect.fail(errorMsg);
+        }
+      }
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(

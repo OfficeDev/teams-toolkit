@@ -77,16 +77,16 @@ const enum telemetryEvents {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+  allowBearerTokenAuth: true,
   allowMultipleParameters: true,
-  allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+  allowOauth2: true,
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
   allowResponseSemantics: true,
   allowConversationStarters: true,
-  allowConfirmation: true,
+  allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";

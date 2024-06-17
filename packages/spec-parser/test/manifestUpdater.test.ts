@@ -1601,6 +1601,133 @@ describe("updateManifestWithAiPlugin", () => {
     expect(warnings).to.deep.equal([]);
   });
 
+  it("should use safe function name if operation id contains special characters", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "get/Pets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "create/Pet:new",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "get_Pets",
+          description: "Returns all pets from the system that the user has access to",
+        },
+        {
+          name: "create_Pet_new",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["get_Pets", "create_Pet_new"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
+  });
+
   describe("conversationStarter", () => {
     it("should not add conversation starter property if there is no description for each API", async () => {
       const spec: any = {

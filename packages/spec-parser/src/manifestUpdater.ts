@@ -137,6 +137,7 @@ export class ManifestUpdater {
             const confirmationBodies: string[] = [];
             if (operationItem) {
               const operationId = operationItem.operationId!;
+              const safeFunctionName = operationId.replace(/[^a-zA-Z0-9]/g, "_");
               const description = operationItem.description ?? "";
               const summary = operationItem.summary;
               const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
@@ -174,7 +175,7 @@ export class ManifestUpdater {
               }
 
               const funcObj: FunctionObject = {
-                name: operationId,
+                name: safeFunctionName,
                 description: description,
               };
 
@@ -216,7 +217,7 @@ export class ManifestUpdater {
               }
 
               functions.push(funcObj);
-              functionNames.push(operationId);
+              functionNames.push(safeFunctionName);
               const conversationStarterStr = (summary ?? description).slice(
                 0,
                 ConstantString.ConversationStarterMaxLens

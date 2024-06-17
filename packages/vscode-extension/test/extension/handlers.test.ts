@@ -47,11 +47,10 @@ import M365TokenInstance, { M365Login } from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink, GlobalKey } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
-import * as debugCommonUtils from "../../src/debug/commonUtils";
-import * as debugConstants from "../../src/debug/constants";
+import * as debugConstants from "../../src/debug/common/debugConstants";
 import * as migrationUtils from "../../src/utils/migrationUtils";
 import * as launch from "../../src/debug/launch";
-import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
+import * as localPrerequisites from "../../src/debug/depsChecker/common";
 import * as runIconHandlers from "../../src/debug/runIconHandler";
 import { ExtensionErrors } from "../../src/error/error";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
@@ -75,6 +74,7 @@ import { MockCore } from "../mocks/mockCore";
 import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
 import { updateAutoOpenGlobalKey } from "../../src/utils/globalStateUtils";
+import * as getStartedChecker from "../../src/debug/depsChecker/getStartedChecker";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -880,7 +880,6 @@ describe("handlers", () => {
   });
 
   it("walkthrough: build intelligent apps", async () => {
-    sandbox.stub(featureFlags, "isApiCopilotPluginEnabled").returns(true);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
 
     await handlers.openBuildIntelligentAppsWalkthroughHandler();
@@ -1689,21 +1688,6 @@ describe("handlers", () => {
   });
 
   describe("callBackFunctions", () => {
-    it("checkCopilotCallback()", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      let showMessageCalledCount = 0;
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        showMessage: async () => {
-          showMessageCalledCount += 1;
-          return Promise.resolve(ok("Enroll"));
-        },
-      });
-
-      handlers.checkCopilotCallback();
-
-      chai.expect(showMessageCalledCount).to.be.equal(1);
-    });
-
     it("signinAzureCallback", async () => {
       sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
       const getIdentityCredentialStub = sandbox.stub(
@@ -2543,7 +2527,7 @@ describe("autoOpenProjectHandler", () => {
   it("validateGetStartedPrerequisitesHandler() - error", async () => {
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox
-      .stub(localPrerequisites, "checkPrerequisitesForGetStarted")
+      .stub(getStartedChecker, "checkPrerequisitesForGetStarted")
       .resolves(err(new SystemError("test", "test", "test")));
 
     const result = await handlers.validateGetStartedPrerequisitesHandler();

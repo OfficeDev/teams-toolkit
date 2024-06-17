@@ -9,7 +9,7 @@ import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { showError } from "../../../src/error/common";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
-import { RecommendedOperations } from "../../../src/debug/constants";
+import { RecommendedOperations } from "../../../src/debug/common/debugConstants";
 
 describe("common", () => {
   const sandbox = sinon.createSandbox();

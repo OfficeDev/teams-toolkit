@@ -45,7 +45,7 @@ const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
   describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
-    let mockedEnvRestore: RestoreFn = () => {};
+    const mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
     let generator: sinon.SinonStub;
@@ -918,26 +918,7 @@ const V3Version = MetadataV3.projectVersion;
       assert.isTrue(res.isErr() && res.error.name === "test");
     });
 
-    it("create API Plugin with none auth", async () => {
-      const v3ctx = createContext();
-      v3ctx.userInteraction = new MockedUserInteraction();
-
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-        [QuestionNames.ProgrammingLanguage]: "javascript",
-        [QuestionNames.AppName]: randomAppName(),
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      };
-      const res = await coordinator.create(v3ctx, inputs);
-      assert.isTrue(res.isOk());
-    });
-
     it("create API Plugin with none auth (feature flag enabled)", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "true" });
-
       const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
@@ -966,6 +947,7 @@ describe("Office Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -1054,6 +1036,7 @@ describe("Office XML Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -1134,6 +1117,7 @@ describe("Office Addin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {
@@ -1221,6 +1205,7 @@ describe("Copilot plugin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(false);
   });
 
   afterEach(() => {

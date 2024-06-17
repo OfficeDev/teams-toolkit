@@ -2,11 +2,10 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
-
 import { M365AccountNode } from "../../../../src/treeview/account/m365Node";
 import { AccountItemStatus, loadingIcon, m365Icon } from "../../../../src/treeview/account/common";
 import { DynamicNode } from "../../../../src/treeview/dynamicNode";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
 
 describe("m365Node", () => {
   const sandbox = sinon.createSandbox();
@@ -73,7 +72,7 @@ describe("m365Node", () => {
     chai.assert.isDefined(m365Node.getChildren());
     chai.assert.equal(1, (m365Node.getChildren() as any).length);
 
-    sandbox.stub(featureFlags, "isCopilotPluginEnabled").returns(true);
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     const m365NodeWithCopilot = new M365AccountNode(eventEmitter);
     m365NodeWithCopilot.updateChecks("test token", false, true);
     chai.assert.isDefined(m365NodeWithCopilot.getChildren());

@@ -5,10 +5,8 @@ import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import {
   FeatureFlags,
   featureFlagManager,
-  isApiCopilotPluginEnabled,
   isCLIDotNetEnabled,
   isChatParticipantEnabled,
-  isCopilotPluginEnabled,
   isTdpTemplateCliTestEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -203,7 +201,7 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: isCopilotPluginEnabled()
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
         ? getLocalizedString(
             "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
           )
@@ -454,7 +452,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: isCopilotPluginEnabled()
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
         ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
         : getLocalizedString("core.M365SearchAppOptionItem.detail"),
     };
@@ -664,7 +662,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isApiCopilotPluginEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
     if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
@@ -967,7 +965,9 @@ export class MeArchitectureOptions {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
-      isCopilotPluginEnabled() ? MeArchitectureOptions.botPlugin() : MeArchitectureOptions.botMe(),
+      featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
+        ? MeArchitectureOptions.botPlugin()
+        : MeArchitectureOptions.botMe(),
     ];
   }
 

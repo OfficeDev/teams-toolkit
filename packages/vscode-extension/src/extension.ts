@@ -18,9 +18,10 @@ import {
   AuthSvcScopes,
   Correlator,
   VersionState,
-  isApiCopilotPluginEnabled,
+  featureFlagManager,
   isChatParticipantEnabled,
   teamsDevPortalClient,
+  FeatureFlags as FxCoreFeatureFlags,
 } from "@microsoft/teamsfx-core";
 
 import {
@@ -55,7 +56,7 @@ import { configMgr } from "./config";
 import { CommandKey as CommandKeys } from "./constants";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
-import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
+import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/common/localDebugSession";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
@@ -104,7 +105,9 @@ import { showOutputChannelHandler } from "./handlers/showOutputChannel";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { checkSideloadingCallback } from "./handlers/checkSideloading";
 import { downloadSampleApp } from "./handlers/downloadSample";
+import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
 import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
+import { TeamsFxTaskType } from "./debug/common/debugConstants";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -161,20 +164,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  // API_COPILOT_PLUGIN: boolean from ENV
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    isApiCopilotPluginEnabled()
+    featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  // API_COPILOT_PLUGIN: boolean from ENV
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    isApiCopilotPluginEnabled()
+    featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin)
   );
 
   await vscode.commands.executeCommand(
@@ -246,9 +247,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
   // Register teamsfx task provider
   const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
-  context.subscriptions.push(
-    vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
-  );
+  context.subscriptions.push(vscode.tasks.registerTaskProvider(TeamsFxTaskType, taskProvider));
 
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
@@ -633,11 +632,11 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(checkSideloading);
 
-  const checkCopilotCallback = vscode.commands.registerCommand(
+  const checkCopilotCallbackCmd = vscode.commands.registerCommand(
     "fx-extension.checkCopilotCallback",
-    (...args) => Correlator.run(handlers.checkCopilotCallback, args)
+    (...args) => Correlator.run(checkCopilotCallback, args)
   );
-  context.subscriptions.push(checkCopilotCallback);
+  context.subscriptions.push(checkCopilotCallbackCmd);
 }
 
 /**

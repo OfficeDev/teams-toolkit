@@ -307,7 +307,6 @@ export class FxCore {
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     QuestionMW("uninstall"),
-    ContextInjectorMW,
   ])
   async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
     switch (inputs["uninstall-mode"]) {
@@ -362,7 +361,7 @@ export class FxCore {
     // const token = appStudioTokenRes.value;
     // await AppStudioClient.deleteApp(teamsAppId, token, TOOLS.logProvider);
     // TODO uninstall Teams app
-
+    //
     // todo: add back
     //const userInfoRes = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
     //if (userInfoRes.isErr()) {
@@ -382,7 +381,7 @@ export class FxCore {
     //if (m365TitleId) {
     //  //TODO uninstall M365 app
     //}
-
+    //
     // }
     // if (botId) {
     //   // delete bot reg in tdp
@@ -398,7 +397,7 @@ export class FxCore {
     // if (aadClientId) {
     //   // delete aad app
     // }
-    return ok(undefined);
+    //return ok(undefined);
   }
 
   /**
@@ -409,9 +408,11 @@ export class FxCore {
     if (!manifestId) {
       return err(new MissingRequiredInputError("manifest-id", "FxCore"));
     }
-    const m356AppOption = inputs[QuestionNames.UninstallOption as string]?.includes(
-      QuestionNames.UninstallOptionM365
-    );
+    const uninstallOptions = inputs[QuestionNames.UninstallOption as string];
+    const m356AppOption = uninstallOptions?.includes(QuestionNames.UninstallOptionM365);
+    const tdpOption = uninstallOptions?.includes(QuestionNames.UninstallOptionTDP);
+    const botOption = uninstallOptions?.includes(QuestionNames.UninstallOptionBot);
+
     if (m356AppOption) {
       const res = await this.uninstallM365App(undefined, manifestId);
       if (res.isErr()) {
@@ -419,9 +420,6 @@ export class FxCore {
       }
     }
 
-    const tdpOption = inputs[QuestionNames.UninstallOption as string]?.includes(
-      QuestionNames.UninstallOptionTDP
-    );
     if (tdpOption) {
       const res = await this.uninstallAppRegistration(manifestId);
       if (res.isErr()) {
@@ -430,9 +428,6 @@ export class FxCore {
     }
 
     // todo: get bot id from manifest id
-    const botOption = inputs[QuestionNames.UninstallOption as string]?.includes(
-      QuestionNames.UninstallOptionBot
-    );
     if (botOption) {
       const res = await this.uninstallBotFrameworRegistration("");
       if (res.isErr()) {
@@ -445,9 +440,72 @@ export class FxCore {
   /**
    * uninstall provisioned resources by a given environment
    */
-  @hooks([EnvLoaderMW(true, false), ConcurrentLockerMW, EnvWriterMW])
-  async uninstallByEnv(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
-    await Promise.resolve();
+  @hooks([EnvLoaderMW(true, false), ConcurrentLockerMW, ContextInjectorMW, EnvWriterMW])
+  async uninstallByEnv(
+    inputs: UninstallInputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<undefined, FxError>> {
+    const teamsappYamlPath = pathUtils.getYmlFilePath(inputs.projectPath ?? "", inputs.env);
+    const yamlProjectModel = await metadataUtil.parse(teamsappYamlPath, inputs.env);
+    if (yamlProjectModel.isErr()) {
+      return err(yamlProjectModel.error);
+    }
+    const projectModel = yamlProjectModel.value;
+
+    let teamsAppId;
+    let botId;
+    let m365TitleId;
+    let teamsAppIdKeyName = "";
+    let botIdKeyName = "";
+    let m365TitleIdKeyName = "";
+    for (const action of projectModel.provision?.driverDefs ?? []) {
+      if (action.uses === "teamsApp/create") {
+        teamsAppIdKeyName = action.writeToEnvironmentFile?.teamsAppId || "TEAMS_APP_ID";
+        teamsAppId = process.env[teamsAppIdKeyName];
+      } else if (action.uses === "botFramework/create") {
+        botIdKeyName = action.writeToEnvironmentFile?.botId || "BOT_ID";
+        botId = process.env[botIdKeyName];
+      } else if (action.uses === "teamsApp/extendToM365") {
+        m365TitleIdKeyName = action.writeToEnvironmentFile?.titleId || "M365_TITLE_ID";
+        m365TitleId = process.env[m365TitleIdKeyName];
+      }
+    }
+
+    const uninstallOptions = inputs[QuestionNames.UninstallOption as string];
+    const m356AppOption = uninstallOptions?.includes(QuestionNames.UninstallOptionM365);
+    const tdpOption = uninstallOptions?.includes(QuestionNames.UninstallOptionTDP);
+    const botOption = uninstallOptions?.includes(QuestionNames.UninstallOptionBot);
+
+    if (ctx && ctx.envVars == undefined) {
+      ctx.envVars = {};
+    }
+
+    // todo: if a app does not have entends to M365 action, do we still need to uninstall the sideloaded apps?
+    if (teamsAppId && m365TitleId && m356AppOption) {
+      const res = await this.uninstallM365App(m365TitleId);
+      if (res.isErr()) {
+        return err(res.error);
+      } else if (ctx && ctx.envVars) {
+        ctx.envVars[m365TitleIdKeyName] = "";
+      }
+    }
+    if (teamsAppId && tdpOption) {
+      const res = await this.uninstallAppRegistration(teamsAppId);
+      if (res.isErr()) {
+        return err(res.error);
+      } else if (ctx && ctx.envVars) {
+        ctx.envVars[teamsAppIdKeyName] = "";
+      }
+    }
+
+    if (botId && botOption) {
+      const res = await this.uninstallBotFrameworRegistration(botId);
+      if (res.isErr()) {
+        return err(res.error);
+      } else if (ctx && ctx.envVars) {
+        ctx.envVars[botIdKeyName] = "";
+      }
+    }
     return ok(undefined);
   }
 

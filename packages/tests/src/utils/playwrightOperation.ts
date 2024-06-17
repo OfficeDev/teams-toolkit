@@ -2420,8 +2420,10 @@ export async function messageExtensionActivate(page: Page, appName: string) {
   console.log("click Actions and apps");
   await extButton?.click();
   const extBox = await page.waitForSelector("div.ui-popup__content__content");
-  // select secend ul
-  const extList = await extBox?.waitForSelector("ul:nth-child(1)");
+  // select secend second ul
+  const extList = await extBox?.waitForSelector(
+    "div div div div:nth-child(2) ul"
+  );
   console.log("finding app:", appName);
   // roop items
   const items = await extList?.$$("li");

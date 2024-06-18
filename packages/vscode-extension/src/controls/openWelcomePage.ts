@@ -4,7 +4,8 @@
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { openBuildIntelligentAppsWalkthroughHandler, openWelcomeHandler } from "../handlers";
+import { openBuildIntelligentAppsWalkthroughHandler } from "../handlers";
+import { openWelcomeHandler } from "../handlers/openLinkHandlers";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
 

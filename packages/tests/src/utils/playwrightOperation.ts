@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BrowserContext, Page, Frame, ElementHandle } from "playwright";
+import { BrowserContext, Page, Frame } from "playwright";
 import { assert, expect } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
@@ -2068,7 +2068,10 @@ export async function validateContact(
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frame = await page.waitForSelector("div#app");
+    const frameElementHandle = await page.waitForSelector(
+      "iframe[name='embedded-page-container']"
+    );
+    const frame = await frameElementHandle?.contentFrame();
     try {
       console.log("dismiss message");
       await page
@@ -2149,8 +2152,11 @@ export async function validateGraphConnector(
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frame = await page.waitForSelector("div#app");
-    const startBtn = await frame.waitForSelector('button:has-text("Start")');
+    const frameElementHandle = await page.waitForSelector(
+      "iframe[name='embedded-page-container']"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    const startBtn = await frame?.waitForSelector('button:has-text("Start")');
     try {
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -2370,7 +2376,7 @@ export async function validateAdaptiveCard(
 }
 
 export async function addPerson(
-  frame: ElementHandle<SVGElement | HTMLElement> | null,
+  frame: Frame | null,
   displayName: string
 ): Promise<void> {
   console.log(`add person: ${displayName}`);
@@ -2387,7 +2393,7 @@ export async function addPerson(
 }
 
 export async function delPerson(
-  frame: ElementHandle<SVGElement | HTMLElement> | null,
+  frame: Frame | null,
   displayName: string
 ): Promise<void> {
   console.log(`delete person: ${displayName}`);

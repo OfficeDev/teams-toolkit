@@ -18,7 +18,7 @@ class NpmSearchTestCase extends CaseFactory {
   ): Promise<void> {
     return await validateNpm(page, {
       npmName: options?.npmName,
-      appName: options?.context.appName || "",
+      appName: options?.context.appName.substring(0, 10) || "",
     });
   }
 
@@ -28,7 +28,7 @@ class NpmSearchTestCase extends CaseFactory {
   ): Promise<void> {
     return await validateNpm(page, {
       npmName: options?.npmName,
-      appName: options?.context.appName || "",
+      appName: options?.context.appName.substring(0, 10) || "",
     });
   }
 }

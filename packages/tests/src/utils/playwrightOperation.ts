@@ -234,8 +234,8 @@ export async function initPage(
 export async function reopenPage(
   context: BrowserContext,
   teamsAppId: string,
-  username: string,
-  password: string,
+  username?: string,
+  password?: string,
   options?: {
     teamsAppName?: string;
     dashboardFlag?: boolean;
@@ -255,7 +255,7 @@ export async function reopenPage(
     page.waitForNavigation(),
   ]);
 
-  if (inputPassword) {
+  if (inputPassword && password) {
     // input password
     console.log(`fill in password`);
     await page.fill("input.input[type='password'][name='passwd']", password);
@@ -301,7 +301,7 @@ export async function reopenPage(
       const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
 
       // dashboard template will have a popup
-      if (options?.dashboardFlag) {
+      if (options?.dashboardFlag && password) {
         console.log("Before popup");
         const [popup] = await Promise.all([
           page
@@ -1687,7 +1687,10 @@ export async function validateShareNow(page: Page) {
   try {
     console.log("start to verify share now");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frame = await page.waitForSelector("div#app");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");

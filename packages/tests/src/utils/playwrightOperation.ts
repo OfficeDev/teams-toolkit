@@ -2086,10 +2086,8 @@ export async function validateContact(
       console.log("no message to dismiss");
     }
     try {
+      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
       if (!rerun) {
-        const startBtn = await frame?.waitForSelector(
-          'button:has-text("Start")'
-        );
         await RetryHandler.retry(async () => {
           console.log("Before popup");
           const [popup] = await Promise.all([
@@ -2120,6 +2118,8 @@ export async function validateContact(
             `div:has-text("${options?.displayName}")`
           );
         });
+      } else {
+        await startBtn?.click();
       }
       await page.waitForTimeout(10000);
 
@@ -2419,6 +2419,7 @@ export async function messageExtensionActivate(page: Page, appName: string) {
   );
   console.log("click Actions and apps");
   await extButton?.click();
+  await page.waitForTimeout(Timeout.shortTimeLoading);
   const extBox = await page.waitForSelector("div.ui-popup__content__content");
   // select secend second ul
   const extList = await extBox?.waitForSelector(

@@ -1450,20 +1450,20 @@ export async function validateNpm(
       console.log("no message to dismiss");
     }
     console.log("search npm ", searchPack);
-    const input = await frame?.waitForSelector("div.ui-box input.ui-box");
+    const input = await page?.waitForSelector("div.ui-box input.ui-box");
     await input?.fill(searchPack);
     try {
-      const targetItem = await frame?.waitForSelector(
+      const targetItem = await page?.waitForSelector(
         `span:has-text("${searchPack}")`
       );
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
+      await page?.waitForSelector(`card span:has-text("${searchPack}")`);
       const sendBtn = await frame?.waitForSelector('button[name="send"]');
       await sendBtn?.click();
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
-      await frame?.waitForSelector(
+      await page?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
       await page.screenshot({
@@ -2118,7 +2118,10 @@ export async function validateContact(
       });
     }
     await page.waitForTimeout(10000);
-
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("page_actived"),
+      fullPage: true,
+    });
     // verify add person
     await addPerson(frame, options?.displayName || "");
     // verify delete person

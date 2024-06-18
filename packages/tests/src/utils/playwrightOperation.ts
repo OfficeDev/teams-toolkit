@@ -2130,7 +2130,7 @@ export async function validateContact(
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({
-        path: getPlaywrightScreenshotPath("error"),
+        path: getPlaywrightScreenshotPath("add_del_error"),
         fullPage: true,
       });
       throw e;

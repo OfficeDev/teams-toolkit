@@ -38,7 +38,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { pathToFileURL } from "url";
-import { VSCodeExtensionCommand } from "../common/constants";
+import { VSCodeExtensionCommand, AppStudioScopes } from "../common/constants";
 import {
   ErrorContextMW,
   TOOLS,
@@ -160,6 +160,7 @@ import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types"
 import { UninstallInputs } from "../question";
 import { PackageService } from "../component/m365/packageService";
 import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceConstant";
+import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -429,7 +430,7 @@ export class FxCore {
 
     // todo: get bot id from manifest id
     if (botOption) {
-      const res = await this.uninstallBotFrameworRegistration("");
+      const res = await this.uninstallBotFrameworRegistration(undefined, manifestId);
       if (res.isErr()) {
         return err(res.error);
       }
@@ -555,15 +556,44 @@ export class FxCore {
    * uninstall sideloaded apps in Teams Developer Portal
    */
   async uninstallAppRegistration(manifestId: string): Promise<Result<undefined, FxError>> {
-    await Promise.resolve();
+    const appStudioTokenRes = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const token = appStudioTokenRes.value;
+    await teamsDevPortalClient.deleteApp(token, manifestId);
     return ok(undefined);
   }
 
   /**
    * uninstall bots created in dev.botframework.com
    */
-  async uninstallBotFrameworRegistration(botId: string): Promise<Result<undefined, FxError>> {
-    await Promise.resolve();
+  async uninstallBotFrameworRegistration(
+    botId?: string,
+    manifestId?: string
+  ): Promise<Result<undefined, FxError>> {
+    if (!botId && !manifestId) {
+      return err(new MissingRequiredInputError("bot id or manifest id", "FxCore"));
+    }
+    const appStudioTokenRes = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const token = appStudioTokenRes.value;
+    if (!botId) {
+      const botIdRes = await teamsDevPortalClient.getBotId(token, manifestId!);
+      if (!botIdRes) {
+        // todo: localization
+        const msg = "botId not found";
+        return err(new UserError("FxCore", "Uninstall", msg, msg));
+      }
+      botId = botIdRes;
+    }
+    await teamsDevPortalClient.deleteBot(token, botId);
     return ok(undefined);
   }
 

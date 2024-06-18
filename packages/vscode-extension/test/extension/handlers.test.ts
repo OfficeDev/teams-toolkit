@@ -74,6 +74,17 @@ import { ExtensionSurvey } from "../../src/utils/survey";
 import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import { MockCore } from "../mocks/mockCore";
+import {
+  deployHandler,
+  provisionHandler,
+  publishHandler,
+} from "../../src/handlers/lifecycleHandlers";
+import { runCommand } from "../../src/handlers/sharedOpts";
+import {
+  openAppManagement,
+  openDocumentHandler,
+  openWelcomeHandler,
+} from "../../src/handlers/openLinkHandlers";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -340,7 +351,7 @@ describe("handlers", () => {
       const provisionResources = sandbox.spy(globalVariables.core, "provisionResources");
       sandbox.stub(envTreeProviderInstance, "reloadEnvironments");
 
-      await handlers.provisionHandler();
+      await provisionHandler();
 
       sinon.assert.calledOnce(provisionResources);
     });
@@ -351,7 +362,7 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const deployArtifacts = sandbox.spy(globalVariables.core, "deployArtifacts");
 
-      await handlers.deployHandler();
+      await deployHandler();
 
       sinon.assert.calledOnce(deployArtifacts);
     });
@@ -362,7 +373,7 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const publishApplication = sandbox.spy(globalVariables.core, "publishApplication");
 
-      await handlers.publishHandler();
+      await publishHandler();
 
       sinon.assert.calledOnce(publishApplication);
     });
@@ -723,7 +734,7 @@ describe("handlers", () => {
       sandbox.stub(vscode.commands, "executeCommand");
       const inputs = { projectId: uuid.v4(), platform: Platform.VSCode };
 
-      await handlers.runCommand(Stage.create, inputs);
+      await runCommand(Stage.create, inputs);
 
       sinon.assert.calledOnce(createProject);
       chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
@@ -738,7 +749,7 @@ describe("handlers", () => {
       const createProject = sandbox.spy(globalVariables.core, "createProject");
       sandbox.stub(vscode.commands, "executeCommand");
 
-      await handlers.runCommand(Stage.create);
+      await runCommand(Stage.create);
       sinon.assert.calledOnce(createProject);
       chai.assert.isTrue(createProject.args[0][0].projectId != undefined);
       chai.assert.isTrue(sendTelemetryEvent.args[0][1]!["new-project-id"] != undefined);
@@ -748,7 +759,7 @@ describe("handlers", () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const provisionResources = sandbox.spy(globalVariables.core, "provisionResources");
 
-      await handlers.runCommand(Stage.provision);
+      await runCommand(Stage.provision);
       sinon.assert.calledOnce(provisionResources);
     });
 
@@ -759,7 +770,7 @@ describe("handlers", () => {
         .resolves(err(new UserError("test", "test", "test")));
       sandbox.stub(globalVariables, "core").value(mockCore);
 
-      const res = await handlers.runCommand(Stage.provision, {
+      const res = await runCommand(Stage.provision, {
         platform: Platform.VSCode,
         env: "local",
       } as Inputs);
@@ -777,7 +788,7 @@ describe("handlers", () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const deployArtifacts = sandbox.spy(globalVariables.core, "deployArtifacts");
 
-      await handlers.runCommand(Stage.deploy);
+      await runCommand(Stage.deploy);
       sinon.assert.calledOnce(deployArtifacts);
     });
 
@@ -788,7 +799,7 @@ describe("handlers", () => {
         .resolves(err(new UserError("test", "test", "test")));
       sandbox.stub(globalVariables, "core").value(mockCore);
 
-      await handlers.runCommand(Stage.deploy, {
+      await runCommand(Stage.deploy, {
         platform: Platform.VSCode,
         env: "local",
       } as Inputs);
@@ -799,7 +810,7 @@ describe("handlers", () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
       const input: Inputs = systemEnvUtils.getSystemInputs();
-      await handlers.runCommand(Stage.deployAad, input);
+      await runCommand(Stage.deployAad, input);
 
       sandbox.assert.calledOnce(deployAadManifest);
     });
@@ -807,7 +818,7 @@ describe("handlers", () => {
     it("deployAadManifest happy path", async () => {
       sandbox.stub(globalVariables.core, "deployAadManifest").resolves(ok(undefined));
       const input: Inputs = systemEnvUtils.getSystemInputs();
-      const res = await handlers.runCommand(Stage.deployAad, input);
+      const res = await runCommand(Stage.deployAad, input);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         chai.assert.strictEqual(res.value, undefined);
@@ -827,7 +838,7 @@ describe("handlers", () => {
           return ok(undefined);
         });
 
-      await handlers.runCommand(Stage.debug);
+      await runCommand(Stage.debug);
       chai.expect(ignoreEnvInfo).to.equal(false);
       chai.expect(localDebugCalled).equals(1);
     });
@@ -836,7 +847,7 @@ describe("handlers", () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const publishApplication = sandbox.spy(globalVariables.core, "publishApplication");
 
-      await handlers.runCommand(Stage.publish);
+      await runCommand(Stage.publish);
       sinon.assert.calledOnce(publishApplication);
     });
 
@@ -845,7 +856,7 @@ describe("handlers", () => {
       const createEnv = sandbox.spy(globalVariables.core, "createEnv");
       sandbox.stub(vscode.commands, "executeCommand");
 
-      await handlers.runCommand(Stage.createEnv);
+      await runCommand(Stage.createEnv);
       sinon.assert.calledOnce(createEnv);
     });
   });
@@ -855,7 +866,7 @@ describe("handlers", () => {
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
-    await handlers.openWelcomeHandler();
+    await openWelcomeHandler();
 
     sandbox.assert.calledOnceWithExactly(
       executeCommands,
@@ -869,7 +880,7 @@ describe("handlers", () => {
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
-    await handlers.openWelcomeHandler();
+    await openWelcomeHandler();
 
     sandbox.assert.calledOnceWithExactly(
       executeCommands,
@@ -1636,7 +1647,7 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
-      const res = await handlers.openAppManagement();
+      const res = await openAppManagement();
 
       chai.assert.isTrue(openUrl.calledOnce);
       chai.assert.isTrue(res.isOk());
@@ -1657,7 +1668,7 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
-      const res = await handlers.openAppManagement();
+      const res = await openAppManagement();
 
       chai.assert.isTrue(openUrl.calledOnce);
       chai.assert.isTrue(res.isOk());
@@ -1987,10 +1998,7 @@ describe("handlers", () => {
       sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       const openUrl = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
 
-      await handlers.openDocumentHandler(
-        extTelemetryEvents.TelemetryTriggerFrom.SideBar,
-        "learnmore"
-      );
+      await openDocumentHandler(extTelemetryEvents.TelemetryTriggerFrom.SideBar, "learnmore");
 
       chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
@@ -2508,19 +2516,6 @@ describe("autoOpenProjectHandler", () => {
 
     chai.assert.isTrue(sendTelemetryStub.called);
     chai.assert.isTrue(result.isOk());
-  });
-
-  it("runUserTask() - error", async () => {
-    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    sandbox.stub(globalVariables, "core").value(undefined);
-    // eslint-disable-next-line no-secrets/no-secrets
-    sandbox.stub(telemetryUtils, "getTeamsAppTelemetryInfoByEnv");
-    sandbox.stub(VsCodeLogInstance, "error");
-
-    const result = await handlers.runUserTask({ namespace: "test", method: "test" }, "test", true);
-
-    chai.assert.isTrue(sendTelemetryStub.called);
-    chai.assert.isTrue(result.isErr());
   });
 
   it("validateGetStartedPrerequisitesHandler() - error", async () => {

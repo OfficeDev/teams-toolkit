@@ -317,4 +317,3 @@ async function main() {
   console.log(`Sql endpoint: ${sqlHelper.sqlEndpoint}`);
   console.log(`Sql database name: ${sqlHelper.sqlDatabaseName}`);
 }
-void main();

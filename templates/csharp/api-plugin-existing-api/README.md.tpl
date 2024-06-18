@@ -6,7 +6,7 @@
 >
 > To run this app template in your local dev machine, you will need:
 >
-> - [Visual Studio 2022](https://aka.ms/vs) 17.9 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
+> - [Visual Studio 2022](https://aka.ms/vs) 17.11 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
 
 1. Right-click your project and select `Teams Toolkit > Provision in the Cloud..`. You can find everything it will do in the `teamsapp.yml`.
 2. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 

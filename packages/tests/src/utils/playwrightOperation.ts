@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BrowserContext, Page, Frame } from "playwright";
+import { BrowserContext, Page, Frame, ElementHandle } from "playwright";
 import { assert, expect } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
@@ -1451,7 +1451,7 @@ export async function validateNpm(
     }
     console.log("search npm ", searchPack);
     const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(searchPack);
+    await input?.fill(searchPack);
     try {
       const targetItem = await frame?.waitForSelector(
         `span:has-text("${searchPack}")`
@@ -2085,58 +2085,44 @@ export async function validateContact(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    try {
+
+    if (!rerun) {
       const startBtn = await frame?.waitForSelector('button:has-text("Start")');
-      if (!rerun) {
-        await RetryHandler.retry(async () => {
-          console.log("Before popup");
-          const [popup] = await Promise.all([
-            page
-              .waitForEvent("popup")
-              .then((popup) =>
-                popup
-                  .waitForEvent("close", {
-                    timeout: Timeout.playwrightConsentPopupPage,
-                  })
-                  .catch(() => popup)
-              )
-              .catch(() => {}),
-            startBtn?.click(),
-          ]);
-          console.log("after popup");
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          startBtn?.click(),
+        ]);
+        console.log("after popup");
 
-          if (popup && !popup?.isClosed()) {
-            await popup
-              .click('button:has-text("Reload")', {
-                timeout: Timeout.playwrightConsentPageReload,
-              })
-              .catch(() => {});
-            await popup.click("input.button[type='submit'][value='Accept']");
-          }
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
 
-          await frame?.waitForSelector(
-            `div:has-text("${options?.displayName}")`
-          );
-        });
-      } else {
-        await startBtn?.click();
-      }
-      await page.waitForTimeout(10000);
-
-      // verify add person
-      await addPerson(frame, options?.displayName || "");
-      // verify delete person
-      await delPerson(frame, options?.displayName || "");
-    } catch (e: any) {
-      console.log(`[Command not executed successfully] ${e.message}`);
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("add_del_error"),
-        fullPage: true,
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
-      throw e;
     }
+    await page.waitForTimeout(10000);
 
-    await RetryHandler.retry(async () => {}, 2);
+    // verify add person
+    await addPerson(frame, options?.displayName || "");
+    // verify delete person
+    await delPerson(frame, options?.displayName || "");
 
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
@@ -2412,6 +2398,41 @@ export async function delPerson(
   );
 }
 
+export async function messageExtensionClean(page: Page, appName: string) {
+  let extBox: ElementHandle<SVGElement | HTMLElement>;
+  console.log("start to clean message extension");
+  const appManagePage = await page.waitForSelector(
+    "button span:has-text('Apps')"
+  );
+  console.log("click Apps");
+  await appManagePage.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const appManageBtn = await page.waitForSelector(
+    "button:has-text('Manage your apps')"
+  );
+  console.log("click Manage your apps");
+  await appManageBtn.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const targetApp = await page.waitForSelector(
+    `div.treeitem span:has-text(${appName})`
+  );
+  console.log("click target app");
+  await targetApp.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const deleteBtn = await page.waitForSelector(
+    "button[data-tid=`uninstall-app`]"
+  );
+  console.log("click delete button");
+  await deleteBtn.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const dialog = await page.waitForSelector("div[role='dialog']");
+  const confirmBtn = await dialog.waitForSelector("button:has-text('Remove')");
+  console.log("click confirm button");
+  await confirmBtn.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  console.log("verify app removed successfully");
+}
+
 export async function messageExtensionActivate(page: Page, appName: string) {
   console.log("start to activate message extension");
   const extButton = await page.waitForSelector(
@@ -2435,6 +2456,11 @@ export async function messageExtensionActivate(page: Page, appName: string) {
     if (text.includes(appName)) {
       console.log("click app:", appName);
       await item.click();
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("ext_actived"),
+        fullPage: true,
+      });
       break;
     }
   }

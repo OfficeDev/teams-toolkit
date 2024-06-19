@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, Result, Stage } from "@microsoft/teamsfx-api";
+import { isUserCancelError } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import { getTriggerFromProperty } from "../utils/telemetryUtils";
-import { isUserCancelError } from "@microsoft/teamsfx-core";
 import envTreeProviderInstance from "../treeview/environmentTreeViewProvider";
+import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { runCommand } from "./sharedOpts";
 
 export async function provisionHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {

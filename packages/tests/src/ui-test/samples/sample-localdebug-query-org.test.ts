@@ -19,7 +19,7 @@ class QueryOrgTestCase extends CaseFactory {
   ): Promise<void> {
     return await validateQueryOrg(page, {
       displayName: Env.displayName,
-      appName: options?.context.appName || "",
+      appName: options?.context.appName.substring(0, 10) || "",
     });
   }
   override async onCliValidate(
@@ -30,7 +30,7 @@ class QueryOrgTestCase extends CaseFactory {
   ): Promise<void> {
     return await validateQueryOrg(page, {
       displayName: Env.displayName,
-      appName: options?.context.appName || "",
+      appName: options?.context.appName.substring(0, 10) || "",
     });
   }
   public override async onReopenPage(

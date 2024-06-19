@@ -19,7 +19,7 @@ class QueryOrgTestCase extends CaseFactory {
   ): Promise<void> {
     return await validateQueryOrg(page, {
       displayName: Env.displayName,
-      appName: option?.options?.context.appName || "",
+      appName: option?.options?.context.appName.substring(0, 10) || "",
     });
   }
 }

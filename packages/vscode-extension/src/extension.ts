@@ -75,6 +75,7 @@ import {
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
+import { activate as activateHandlers } from "./handlers/activate";
 import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
 import { checkSideloadingCallback } from "./handlers/checkSideloading";
@@ -146,7 +147,7 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   // Call activate function of toolkit core.
-  handlers.activate();
+  activateHandlers();
 
   // Init VSC context key
   await initializeContextKey(context, isTeamsFxProject);

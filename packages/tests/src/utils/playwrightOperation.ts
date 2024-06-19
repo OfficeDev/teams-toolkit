@@ -2301,10 +2301,7 @@ export async function validateDashboardTab(page: Page) {
 
 export async function validateNotificationTimeBot(page: Page) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await RetryHandler.retry(async () => {
       await frame?.waitForSelector(

@@ -28,7 +28,7 @@ export async function runCommand(
   telemetryProperties?: { [key: string]: string }
 ): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
-  let result: Result<any, FxError> = ok(null);
+  let result: Result<any, FxError>;
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();

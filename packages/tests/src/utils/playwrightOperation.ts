@@ -11,6 +11,7 @@ import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
 import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
+import { Env } from "./env";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -2065,7 +2066,6 @@ export async function switchToTab(page: Page, tabName = "Personal Tab") {
 
 export async function validateContact(
   page: Page,
-  password: string,
   options?: { displayName?: string },
   rerun = false
 ) {
@@ -2115,7 +2115,7 @@ export async function validateContact(
               console.log(`fill in password`);
               await popup.fill(
                 "input.input[type='password'][name='passwd']",
-                password
+                Env.password
               );
               // sign in
               await Promise.all([

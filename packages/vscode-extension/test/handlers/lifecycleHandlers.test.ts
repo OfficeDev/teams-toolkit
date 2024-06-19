@@ -1,4 +1,4 @@
-import { err, Platform } from "@microsoft/teamsfx-api";
+import { err, ok, Platform } from "@microsoft/teamsfx-api";
 import { UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import * as sinon from "sinon";
@@ -36,7 +36,7 @@ describe("Lifecycle handlers", () => {
       });
     });
     it("CreateNewEnvironment", async () => {
-      await processResult(TelemetryEvent.CreateNewEnvironment, ok(new UserCancelError()), {
+      await processResult(TelemetryEvent.CreateNewEnvironment, ok(null), {
         platform: Platform.VSCode,
         sourceEnvName: "dev",
         targetEnvName: "dev1",

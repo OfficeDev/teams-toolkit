@@ -934,6 +934,42 @@ const V3Version = MetadataV3.projectVersion;
       const res = await coordinator.create(v3ctx, inputs);
       assert.isTrue(res.isOk());
     });
+
+    it("create API Plugin with api-key auth (feature flag enabled)", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("create API Plugin with OAuth (feature flag enabled)", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
   });
 });
 

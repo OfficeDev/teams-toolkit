@@ -511,6 +511,32 @@ export class FxCore {
       return err(appStudioTokenRes.error);
     }
     const token = appStudioTokenRes.value;
+    let confirmed = false;
+    // todo: refine
+    await TOOLS.ui
+      .showMessage(
+        "info",
+        getLocalizedString("core.uninstall.confirm.tdp", manifestId),
+        false,
+        "Yes"
+      )
+      .then((result) => {
+        if (result.isErr()) {
+          return ok(undefined);
+        }
+        if (result.value === "yes" || result.value === "y") {
+          confirmed = true;
+        }
+        return ok(undefined);
+      });
+    if (!confirmed) {
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.confirm.cancel.tdp"),
+        false
+      );
+      return ok(undefined);
+    }
     await teamsDevPortalClient.deleteApp(token, manifestId);
     return ok(undefined);
   }

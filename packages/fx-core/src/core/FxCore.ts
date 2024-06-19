@@ -488,6 +488,10 @@ export class FxCore {
     if (titleId === undefined) {
       titleId = await packageService.retrieveTitleId(sideloadingTokenRes.value, manifestId ?? "");
     }
+    // todo: add confirmation
+    void TOOLS.ui.showMessage("info", "confirmation", true, "Please confirm").then((result) => {
+      console.log(result);
+    });
     await packageService.unacquire(sideloadingTokenRes.value, titleId);
     return ok(undefined);
   }

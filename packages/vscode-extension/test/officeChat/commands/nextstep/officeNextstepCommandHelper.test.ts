@@ -32,6 +32,7 @@ describe("office steps: officeNextStepCommandHandler", () => {
       return undefined;
     });
     chatTelemetryDataMock.chatMessages = [];
+    chatTelemetryDataMock.responseTokensPerRequest = [];
     sandbox.stub(OfficeChatTelemetryData, "createByParticipant").returns(chatTelemetryDataMock);
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
   });

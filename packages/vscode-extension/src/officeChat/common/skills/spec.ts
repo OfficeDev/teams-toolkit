@@ -26,7 +26,7 @@ export class Spec {
       codeClassAndMembers: string[];
       timeToFirstToken: number;
       chatMessages: LanguageModelChatMessage[];
-      responseTokensPerSecond: string;
+      responseTokensPerRequest: number[];
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
@@ -55,7 +55,7 @@ export class Spec {
         codeClassAndMembers: [],
         timeToFirstToken: 0,
         chatMessages: [],
-        responseTokensPerSecond: "",
+        responseTokensPerRequest: [],
         properties: {},
         measurements: {},
       },

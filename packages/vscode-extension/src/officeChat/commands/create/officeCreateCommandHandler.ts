@@ -79,8 +79,8 @@ export default async function officeCreateCommandHandler(
 
       if (matchedResult.type === "sample") {
         const sampleInfos = await showOfficeSampleFileTree(matchedResult, response);
-        const folder = sampleInfos[0];
-        const hostType = sampleInfos[1].toLowerCase();
+        const folder = sampleInfos?.[0];
+        const hostType = sampleInfos?.[1].toLowerCase();
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         officeChatTelemetryData.setHostType(hostType);
         const matchResultInfo = "sample";
@@ -90,7 +90,7 @@ export default async function officeCreateCommandHandler(
           title: sampleTitle,
         });
       } else {
-        const tmpHostType = (matchedResult.data as any)["addin-host"].toLowerCase();
+        const tmpHostType = (matchedResult.data as any)?.["addin-host"].toLowerCase();
         const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data as any, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         officeChatTelemetryData.setHostType(tmpHostType);

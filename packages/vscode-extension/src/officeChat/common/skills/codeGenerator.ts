@@ -36,7 +36,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 // import { SampleData } from "../samples/sampleData";
 // import { DeclarationFinder } from "../declarationFinder";
-import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -215,7 +215,9 @@ export class CodeGenerator implements ISkill {
       token
     );
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       ...messages,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
@@ -330,7 +332,9 @@ export class CodeGenerator implements ISkill {
       token
     );
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       ...messages,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
@@ -495,7 +499,9 @@ export class CodeGenerator implements ISkill {
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       ...messages,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)

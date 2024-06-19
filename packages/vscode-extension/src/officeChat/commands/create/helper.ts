@@ -45,7 +45,9 @@ export async function matchOfficeProject(
   const t0 = performance.now();
   const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   const t1 = performance.now();
-  telemetryData.extendResponseTokensPerSecondByCalculation(response, t0, t1);
+  telemetryData.responseTokensPerRequest.push(
+    OfficeChatTelemetryData.calculateResponseTokensPerRequest(response, t0, t1)
+  );
   telemetryData.chatMessages.push(
     ...messages,
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)

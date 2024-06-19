@@ -12,7 +12,6 @@ import { inputRai, outputRai } from "./dynamicPrompt/formats";
 import { getCopilotResponseAsString } from "../chat/utils";
 import { officeSampleProvider } from "./commands/create/officeSamples";
 import { Spec } from "./common/skills/spec";
-import { ExtendGeneratedTokensPerSecondToSpec } from "./handlers";
 import { OfficeChatTelemetryData } from "./telemetry";
 
 export async function purifyUserMessage(
@@ -41,7 +40,9 @@ export async function purifyUserMessage(
     token
   );
   const t1 = performance.now();
-  telemetryData.extendResponseTokensPerSecondByCalculation(purifiedResult, t0, t1);
+  telemetryData.responseTokensPerRequest.push(
+    OfficeChatTelemetryData.calculateResponseTokensPerRequest(purifiedResult, t0, t1)
+  );
   telemetryData.chatMessages.push(
     ...purifyUserMessage,
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, purifiedResult)
@@ -65,7 +66,9 @@ export async function isInputHarmful(
   const t0 = performance.now();
   let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   const t1 = performance.now();
-  telemetryData.extendResponseTokensPerSecondByCalculation(response, t0, t1);
+  telemetryData.responseTokensPerRequest.push(
+    OfficeChatTelemetryData.calculateResponseTokensPerRequest(response, t0, t1)
+  );
   telemetryData.chatMessages.push(
     ...messages,
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
@@ -105,7 +108,9 @@ async function isContentHarmful(
     const t0 = performance.now();
     const isHarmfulResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(isHarmfulResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(isHarmfulResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       ...messages,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, isHarmfulResponse)

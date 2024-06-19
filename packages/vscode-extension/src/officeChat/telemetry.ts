@@ -24,7 +24,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
   relatedSampleName: string;
   codeClassAndMembers: string;
   timeToFirstToken: number;
-  responseTokensPerSecond: string;
+  responseTokensPerRequest: number[];
   blockReason?: string;
   // participant name
   participantId: string;
@@ -48,7 +48,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     this.hostType = "";
     this.relatedSampleName = "";
     this.codeClassAndMembers = "";
-    this.responseTokensPerSecond = "";
+    this.responseTokensPerRequest = [];
     this.timeToFirstToken = 0;
 
     const telemetryData: ITelemetryData = { properties: {}, measurements: {} };
@@ -74,6 +74,17 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     return OfficeChatTelemetryData.requestData[requestId];
   }
 
+  static calculateResponseTokensPerRequest(
+    response: string,
+    t0: DOMHighResTimeStamp,
+    t1: DOMHighResTimeStamp
+  ) {
+    const responseTokens = countMessagesTokens([
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response),
+    ]);
+    return responseTokens / ((t1 - t0) / 1000);
+  }
+
   setHostType(hostType: string) {
     this.hostType = hostType;
   }
@@ -92,21 +103,6 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
 
   setBlockReason(blockReason: string) {
     this.blockReason = blockReason;
-  }
-
-  extendResponseTokensPerSecondByCalculation(
-    response: string,
-    t0: DOMHighResTimeStamp,
-    t1: DOMHighResTimeStamp
-  ) {
-    const responseTokens = countMessagesTokens([
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response),
-    ]);
-    this.responseTokensPerSecond += (responseTokens / ((t1 - t0) / 1000)).toString() + " ";
-  }
-
-  extendResponseTokensPerSecondByString(responseTokensPerSecond: string) {
-    this.responseTokensPerSecond += responseTokensPerSecond;
   }
 
   chatMessagesTokenCount(): number {
@@ -131,7 +127,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
       // this.telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
       //   this.codeClassAndMembers;
       this.telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] =
-        this.responseTokensPerSecond;
+        this.responseTokensPerRequest.toString();
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
         this.timeToFirstToken;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] =

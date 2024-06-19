@@ -11,7 +11,7 @@ import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
-import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 export class Explainer implements ISkill {
   name: string | undefined;
@@ -64,7 +64,9 @@ Let's think it step by step.
       token
     );
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       ...messages,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)

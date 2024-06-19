@@ -41,7 +41,7 @@ describe("printer", () => {
             new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
             new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
           ],
-          responseTokensPerSecond: "",
+          responseTokensPerRequest: [],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -111,7 +111,7 @@ describe("printer", () => {
           new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
           new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
         ],
-        responseTokensPerSecond: "",
+        responseTokensPerRequest: [],
         properties: {
           property1: "value1",
           property2: "value2",

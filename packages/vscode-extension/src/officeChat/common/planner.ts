@@ -148,9 +148,9 @@ export class Planner {
     for (const chatMessage of spec.appendix.telemetryData.chatMessages) {
       telemetryData.chatMessages.push(chatMessage);
     }
-    telemetryData.extendResponseTokensPerSecondByString(
-      spec.appendix.telemetryData.responseTokensPerSecond
-    );
+    for (const responseTokensPerRequest of spec.appendix.telemetryData.responseTokensPerRequest) {
+      telemetryData.responseTokensPerRequest.push(responseTokensPerRequest);
+    }
     const debugInfo = `
       ## Time cost:\n
       In total ${Math.ceil(duration)} seconds.\n

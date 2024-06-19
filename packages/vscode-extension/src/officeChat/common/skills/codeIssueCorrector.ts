@@ -30,7 +30,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
 // import { writeLogToFile } from "../utils";
-import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -356,7 +356,9 @@ export class CodeIssueCorrector implements ISkill {
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       ...messages,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)

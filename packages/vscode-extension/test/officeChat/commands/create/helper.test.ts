@@ -45,6 +45,7 @@ describe("File: office chat create helper", () => {
         };
       });
       officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseTokensPerRequest = [];
       sandbox
         .stub(OfficeChatTelemetryData, "createByParticipant")
         .returns(officeChatTelemetryDataMock);

@@ -16,6 +16,13 @@ describe("File: officeChat/utils.ts", () => {
   const sandbox = sinon.createSandbox();
 
   describe("Method: purifyUserMessage", () => {
+    let officeChatTelemetryDataMock: any;
+    beforeEach(() => {
+      officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
+      officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseTokensPerRequest = [];
+    });
+
     afterEach(() => {
       sandbox.restore();
     });
@@ -25,7 +32,6 @@ describe("File: officeChat/utils.ts", () => {
       const getCopilotResponseAsStringStub = sandbox
         .stub(chatUtils, "getCopilotResponseAsString")
         .resolves("purified message");
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.purifyUserMessage("test", token, officeChatTelemetryDataMock);
       chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
       chai.expect(result).equal("purified message");
@@ -36,7 +42,6 @@ describe("File: officeChat/utils.ts", () => {
       const getCopilotResponseAsStringStub = sandbox
         .stub(chatUtils, "getCopilotResponseAsString")
         .resolves("");
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.purifyUserMessage("test", token, officeChatTelemetryDataMock);
       chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
       chai.expect(result).equal("test");
@@ -44,11 +49,15 @@ describe("File: officeChat/utils.ts", () => {
   });
 
   describe("Method: isInputHarmful", () => {
+    let officeChatTelemetryDataMock: any;
     beforeEach(() => {
       sandbox.stub(dynamicPrompt, "buildDynamicPrompt").returns({
         messages: [],
         version: "0.0.1",
       });
+      officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
+      officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseTokensPerRequest = [];
     });
     afterEach(() => {
       sandbox.restore();
@@ -57,7 +66,6 @@ describe("File: officeChat/utils.ts", () => {
     it("check the input is harmful", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": true}```');
       const token = new CancellationToken();
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.isInputHarmful(
         { prompt: "test" } as unknown as vscode.ChatRequest,
         token,
@@ -69,7 +77,6 @@ describe("File: officeChat/utils.ts", () => {
     it("check the input is harmless", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": false}');
       const token = new CancellationToken();
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.isInputHarmful(
         { prompt: "test" } as unknown as vscode.ChatRequest,
         token,
@@ -82,6 +89,8 @@ describe("File: officeChat/utils.ts", () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves(undefined);
       const token = new CancellationToken();
       const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
+      officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseTokensPerRequest = [];
       try {
         await utils.isInputHarmful(
           { prompt: "test" } as unknown as vscode.ChatRequest,
@@ -98,6 +107,8 @@ describe("File: officeChat/utils.ts", () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": "test"}');
       const token = new CancellationToken();
       const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
+      officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseTokensPerRequest = [];
       try {
         await utils.isInputHarmful(
           { prompt: "test" } as unknown as vscode.ChatRequest,

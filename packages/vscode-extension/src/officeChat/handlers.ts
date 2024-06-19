@@ -183,21 +183,3 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
     telemetryData.measurements
   );
 }
-
-export function ExtendGeneratedTokensPerSecondToSpec(
-  response: string,
-  t0: DOMHighResTimeStamp,
-  t1: DOMHighResTimeStamp,
-  spec: Spec
-): void {
-  const responseTokens = countMessagesTokens([
-    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response),
-  ]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  spec.appendix.telemetryData.responseTokensPerSecond +=
-    (responseTokens / ((t1 - t0) / 1000)).toString() + " ";
-}
-
-export function AddHostTypeToTelemetryData(telemetryData: ITelemetryData, hostType: string): void {
-  telemetryData.properties[TelemetryProperty.HostType] = hostType;
-}

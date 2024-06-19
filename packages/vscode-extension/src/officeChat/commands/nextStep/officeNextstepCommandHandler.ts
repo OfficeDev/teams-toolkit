@@ -43,11 +43,9 @@ export default async function officeNextStepCommandHandler(
   );
 
   if (request.prompt) {
-    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
-      Date.now() - officeChatTelemetryData.startTime;
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
-    officeChatTelemetryData.properties[TelemetryProperty.CopilotChatBlockReason] =
-      "Unsupported Input";
+    officeChatTelemetryData.setBlockReason("Unsupported Input");
     officeChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -69,8 +67,7 @@ export default async function officeNextStepCommandHandler(
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);
   if (steps.length > 1) {
-    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
-      Date.now() - officeChatTelemetryData.startTime;
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown("Here are the next steps you can do:\n");
   }
   for (let index = 0; index < Math.min(3, steps.length); index++) {
@@ -81,7 +78,9 @@ export default async function officeNextStepCommandHandler(
     const t0 = performance.now();
     const stepDescription = await describeOfficeStep(s, token, officeChatTelemetryData);
     const t1 = performance.now();
-    officeChatTelemetryData.extendResponseTokensPerSecondByCalculation(stepDescription, t0, t1);
+    officeChatTelemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(stepDescription, t0, t1)
+    );
     officeChatTelemetryData.chatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, stepDescription)
     );
@@ -89,8 +88,7 @@ export default async function officeNextStepCommandHandler(
     if (steps.length > 1) {
       response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);
     } else {
-      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
-        Date.now() - officeChatTelemetryData.startTime;
+      officeChatTelemetryData.setTimeToFirstToken();
       response.markdown(`${title}: ${stepDescription}\n`);
     }
     s.commands.forEach((c) => {

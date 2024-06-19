@@ -15,8 +15,8 @@ import {
 import { DeclarationFinder } from "../declarationFinder";
 import { getTokenLimitation } from "../../consts";
 import { Spec } from "../skills/spec";
-import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
 import { times } from "lodash";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;
@@ -108,7 +108,9 @@ export class SampleProvider {
     const timeStart = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
     const timeEnd = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, timeStart, timeEnd, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, timeStart, timeEnd)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       sampleMessage,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
@@ -303,7 +305,9 @@ export class SampleProvider {
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
     const t1 = performance.now();
-    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.responseTokensPerRequest.push(
+      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
+    );
     spec.appendix.telemetryData.chatMessages.push(
       sampleMessage,
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)

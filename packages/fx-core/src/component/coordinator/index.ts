@@ -24,7 +24,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
-import { FeatureFlags, featureFlagManager, isNewGeneratorEnabled } from "../../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../../common/featureFlags";
 import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/stringUtils";
@@ -174,7 +174,7 @@ class Coordinator {
         });
       }
 
-      if (isNewGeneratorEnabled()) {
+      if (featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator)) {
         // refactored generator
         const generator = Generators.find((g) => g.activate(context, inputs));
         if (!generator) {

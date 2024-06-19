@@ -3754,36 +3754,6 @@ describe("scaffold question", () => {
         assert.isDefined(officeAddinOption);
       }
     });
-    it("enable isOfficeJSONAddinEnabled()", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.OfficeAddin]: "true",
-      });
-      const question = projectTypeQuestion();
-      const inputs: Inputs = { platform: Platform.CLI };
-      assert.isDefined(question.dynamicOptions);
-      if (question.dynamicOptions) {
-        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
-        const officeAddinOption = options.find(
-          (o) => o.id === ProjectTypeOptions.officeAddin(inputs.platform).id
-        );
-        assert.isDefined(officeAddinOption);
-      }
-    });
-    it("disable isOfficeJSONAddinEnabled()", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.OfficeAddin]: "false",
-      });
-      const question = projectTypeQuestion();
-      const inputs: Inputs = { platform: Platform.CLI };
-      assert.isDefined(question.dynamicOptions);
-      if (question.dynamicOptions) {
-        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
-        const officeAddinOption = options.find(
-          (o) => o.id === ProjectTypeOptions.outlookAddin(inputs.platform).id
-        );
-        assert.isDefined(officeAddinOption);
-      }
-    });
     it("show customize GPT if CLI and enable declarative GPT() ", async () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CustomizeGpt]: "true",

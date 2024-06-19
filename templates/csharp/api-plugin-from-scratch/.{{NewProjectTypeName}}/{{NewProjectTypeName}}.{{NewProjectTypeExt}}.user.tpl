@@ -4,6 +4,6 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Microsoft Teams (browser)</ActiveDebugProfile>
+    <ActiveDebugProfile>Copilot (browser)</ActiveDebugProfile>
   </PropertyGroup>
 </Project>

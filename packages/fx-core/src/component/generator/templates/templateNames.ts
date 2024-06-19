@@ -161,6 +161,7 @@ export function getTemplateName(inputs: Inputs): TemplateNames {
 
 // When multiple template name matches, only the top one will be picked.
 export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = new Map([
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.empty().id }, TemplateNames.Empty],
   [{ [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id }, TemplateNames.Tab],
   [{ [QuestionNames.Capabilities]: CapabilityOptions.tab().id }, TemplateNames.SsoTab],
   [

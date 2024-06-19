@@ -186,7 +186,7 @@ export class ManifestUpdater {
                     const [card, jsonPath] =
                       AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
 
-                    card.body = card.body.slice(0, 5);
+                    card.body = Utils.limitACBodyProperties(card.body, 5);
                     const responseSemantic = wrapResponseSemantics(card, jsonPath);
                     funcObj.capabilities = {
                       response_semantics: responseSemantic,

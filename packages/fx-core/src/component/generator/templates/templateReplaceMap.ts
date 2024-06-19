@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Inputs } from "@microsoft/teamsfx-api";
-import {
-  enableMETestToolByDefault,
-  enableTestToolByDefault,
-  isNewProjectTypeEnabled,
-} from "../../../common/featureFlags";
+import { featureFlagManager, FeatureFlags } from "../../../common/featureFlags";
 import { convertToAlphanumericOnly } from "../../../common/stringUtils";
 import { QuestionNames } from "../../../question/constants";
 
@@ -29,15 +25,21 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
     PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
     SafeProjectName: safeProjectName,
     SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-    enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
-    enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
+    enableTestToolByDefault: featureFlagManager.getBooleanValue(FeatureFlags.TestTool)
+      ? "true"
+      : "",
+    enableMETestToolByDefault: featureFlagManager.getBooleanValue(FeatureFlags.METestTool)
+      ? "true"
+      : "",
     useOpenAI: llmService === "llm-service-openai" ? "true" : "",
     useAzureOpenAI: llmService === "llm-service-azure-openai" ? "true" : "",
     openAIKey: openAIKey ?? "",
     azureOpenAIKey: azureOpenAIKey ?? "",
     azureOpenAIEndpoint: azureOpenAIEndpoint ?? "",
     azureOpenAIDeploymentName: azureOpenAIDeploymentName ?? "",
-    isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
+    isNewProjectTypeEnabled: featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType)
+      ? "true"
+      : "",
     NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
     NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
   };

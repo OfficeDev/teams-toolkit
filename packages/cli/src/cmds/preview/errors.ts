@@ -94,6 +94,14 @@ export function OpeningBrowserFailed(browser: Browser): UserError {
   );
 }
 
+export function OpeningTeamsDesktopClientFailed(): UserError {
+  return new UserError(
+    constants.cliSource,
+    "OpeningTeamsDesktopClientFailed",
+    `Failed to open Teams desktop client. Check if Teams exists on your system.`
+  );
+}
+
 export function NoUrlForSPFxRemotePreview(): UserError {
   return new UserError(
     constants.cliSource,

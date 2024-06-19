@@ -544,7 +544,7 @@ describe("Generator error", async () => {
 
   [false, true].forEach((newGeneratorFlag) => {
     it("template fallback error", async () => {
-      sandbox.stub(featurefalgs, "isNewGeneratorEnabled").returns(newGeneratorFlag);
+      sandbox.stub(process, "env").value({ TEAMSFX_NEW_GENERATOR: `${newGeneratorFlag}` });
       sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
       sandbox.stub(folderUtils, "getTemplatesFolder").resolves("foobar");
       const result = newGeneratorFlag
@@ -558,7 +558,7 @@ describe("Generator error", async () => {
     });
 
     it("template not found error", async () => {
-      sandbox.stub(featurefalgs, "isNewGeneratorEnabled").returns(newGeneratorFlag);
+      sandbox.stub(process, "env").value({ TEAMSFX_NEW_GENERATOR: `${newGeneratorFlag}` });
       sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
       sandbox.stub(generatorUtils, "unzip").resolves();
       const result = newGeneratorFlag
@@ -766,7 +766,7 @@ describe("render template", () => {
 });
 
 [false, true].forEach((newGeneratorFlag) => {
-  describe(`Generator happy path with isNewGeneratorEnabled=${newGeneratorFlag}`, async () => {
+  describe(`Generator happy path with new generator enabled=${newGeneratorFlag}`, async () => {
     const tools = new MockTools();
     setTools(tools);
     const context = createContext();
@@ -794,7 +794,7 @@ describe("render template", () => {
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
         [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       } as Inputs;
-      sandbox.stub(featurefalgs, "isNewGeneratorEnabled").returns(newGeneratorFlag);
+      sandbox.stub(process, "env").value({ TEAMSFX_NEW_GENERATOR: "true" });
     });
 
     afterEach(async () => {

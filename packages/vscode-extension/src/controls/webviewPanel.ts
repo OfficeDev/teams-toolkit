@@ -6,8 +6,9 @@ import * as vscode from "vscode";
 
 import {
   Correlator,
+  FeatureFlags,
   SampleConfig,
-  isChatParticipantEnabled,
+  featureFlagManager,
   sampleProvider,
 } from "@microsoft/teamsfx-core";
 
@@ -331,7 +332,7 @@ export class WebviewPanel {
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
     );
 
-    const allowChat = isChatParticipantEnabled();
+    const allowChat = featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();

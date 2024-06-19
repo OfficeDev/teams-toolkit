@@ -16,6 +16,7 @@ import {
   MeasurementSystemSelfReflectionAttemptCount,
   MeasurementSystemSelfReflectionAttemptSucceeded,
   MeasurementSelfReflectionExecutionTimeInTotalSec,
+  MeasurementErrorsAfterCorrection,
 } from "../telemetryConsts";
 import {
   customFunctionSystemPrompt,
@@ -29,6 +30,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
 import { Tokenizer } from "../../../chat/tokenizer";
+// import { writeLogToFile } from "../utils";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -58,7 +60,8 @@ export class CodeIssueCorrector implements ISkill {
     const host = spec.appendix.host;
     let codeSnippet = spec.appendix.codeSnippet;
     const codeTaskBreakdown = spec.appendix.codeTaskBreakdown;
-
+    const t = performance.now();
+    let t0 = performance.now();
     let baseLineResuult: DetectionResult = await CodeIssueDetector.getInstance().detectIssuesAsync(
       response,
       host,
@@ -66,8 +69,10 @@ export class CodeIssueCorrector implements ISkill {
       codeSnippet,
       spec.appendix.telemetryData
     );
+    let t1 = performance.now();
+    let duration = Math.ceil((t1 - t0) / 1000);
     console.debug(
-      `Baseline: [C] ${baseLineResuult.compileErrors.length}, [R] ${baseLineResuult.runtimeErrors.length}.`
+      `Baseline: [C] ${baseLineResuult.compileErrors.length}, [R] ${baseLineResuult.runtimeErrors.length}. Detect spend ${duration} seconds.`
     );
 
     const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-3.5-turbo";
@@ -76,20 +81,22 @@ export class CodeIssueCorrector implements ISkill {
 
     if (spec.appendix.complexity < 25) {
       maxRetryCount = 2;
-      issueTolerance = 2;
+      issueTolerance = 1;
     } else if (spec.appendix.complexity < 50) {
       maxRetryCount = 2;
-      issueTolerance = 2;
+      issueTolerance = 1;
     } else if (spec.appendix.complexity < 75) {
-      maxRetryCount = 3;
-      issueTolerance = 3;
+      maxRetryCount = 2;
+      issueTolerance = 1;
     } else {
-      maxRetryCount = 3;
-      issueTolerance = 3;
+      maxRetryCount = 2;
+      issueTolerance = 1;
     }
 
     if (baseLineResuult.compileErrors.length === 0 && baseLineResuult.runtimeErrors.length === 0) {
       console.debug("No issue found in baseline, skip the self reflection.");
+      spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection] =
+        baseLineResuult.compileErrors.length;
       return { result: ExecutionResultEnum.Success, spec: spec };
     }
     if (baseLineResuult.compileErrors.length > issueTolerance) {
@@ -97,43 +104,45 @@ export class CodeIssueCorrector implements ISkill {
       console.debug(
         `${baseLineResuult.compileErrors.length} compile errors in baseline code that beyond our tolerance ${issueTolerance}, skip the self reflection.`
       );
+      spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection] =
+        baseLineResuult.compileErrors.length;
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
-    let setDeclartionPrompt = getDeclarationsPrompt();
+    // const setDeclartionPrompt = getDeclarationsPrompt();
 
-    if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
-      const groupedMethodsOrProperties = new Map<string, SampleData[]>();
-      for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
-        if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
-          groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
-        }
-        groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
-      }
+    //     if (!!spec.appendix.apiDeclarationsReference && !!spec.appendix.apiDeclarationsReference.size) {
+    //       const groupedMethodsOrProperties = new Map<string, SampleData[]>();
+    //       for (const methodOrProperty of spec.appendix.apiDeclarationsReference) {
+    //         if (!groupedMethodsOrProperties.has(methodOrProperty[1].definition)) {
+    //           groupedMethodsOrProperties.set(methodOrProperty[1].definition, [methodOrProperty[1]]);
+    //         }
+    //         groupedMethodsOrProperties.get(methodOrProperty[1].definition)?.push(methodOrProperty[1]);
+    //       }
 
-      let tempClassDeclaration = "";
-      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
-        tempClassDeclaration += `
-class ${className} extends OfficeExtension.ClientObject {
-  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
-}
-\n\n
-        `;
-      });
+    //       let tempClassDeclaration = "";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+    // }
+    // \n\n
+    //         `;
+    //       });
 
-      setDeclartionPrompt += `
-      
-      \`\`\`typescript
-      ${tempClassDeclaration};
-      \`\`\`
+    //       setDeclartionPrompt += `
 
-      Let's think step by step.
-      `;
-    }
-    const declarationMessage: LanguageModelChatMessage | null =
-      spec.appendix.apiDeclarationsReference.size > 0
-        ? new LanguageModelChatMessage(LanguageModelChatMessageRole.System, setDeclartionPrompt)
-        : null;
+    //       \`\`\`typescript
+    //       ${tempClassDeclaration};
+    //       \`\`\`
+
+    //       Let's think step by step.
+    //       `;
+    //     }
+    //     const declarationMessage: LanguageModelChatMessage | null =
+    //       spec.appendix.apiDeclarationsReference.size > 0
+    //         ? new LanguageModelChatMessage(LanguageModelChatMessageRole.System, setDeclartionPrompt)
+    //         : null;
 
     const sampleMessage: LanguageModelChatMessage | null =
       spec.appendix.codeSample.length > 0
@@ -147,20 +156,19 @@ class ${className} extends OfficeExtension.ClientObject {
     const historicalErrors: string[] = [];
     let additionalInfo = "";
     for (let index = 0; index < maxRetryCount; index++) {
-      const t0 = performance.now();
-      if (baseLineResuult.compileErrors.length > maxRetryCount - index) {
-        // Let's fail fast, as if the error is too many, it's hard to fix in a few rounds
-        console.debug(
-          `${baseLineResuult.compileErrors.length} compile errors need to fix in next ${
-            maxRetryCount - index
-          } rounds, fail fast.`
-        );
-        break;
-      }
-      console.debug(`Self reflection iteration ${index + 1}.`);
+      // if (baseLineResuult.compileErrors.length > maxRetryCount - index) {
+      //   // Let's fail fast, as if the error is too many, it's hard to fix in a few rounds
+      //   console.debug(
+      //     `${baseLineResuult.compileErrors.length} compile errors need to fix in next ${
+      //       maxRetryCount - index
+      //     } rounds, fail fast.`
+      //   );
+      //   break;
+      // }
       response.progress(
         localize("teamstoolkit.chatParticipants.officeAddIn.issueDetector.fixingErrors")
       );
+      t0 = performance.now();
       fixedCode = await this.fixIssueAsync(
         token,
         host,
@@ -172,14 +180,18 @@ class ${className} extends OfficeExtension.ClientObject {
         historicalErrors,
         additionalInfo,
         model,
-        declarationMessage,
+        null, //declarationMessage,
         sampleMessage,
         spec
       );
+      t1 = performance.now();
+      duration = Math.ceil((t1 - t0) / 1000);
+      console.debug(`Self reflection iteration ${index + 1}, takes ${duration} seconds.`);
       if (!fixedCode) {
         // something wrong, just to the next round
         continue;
       }
+      t0 = performance.now();
       const issuesAfterFix: DetectionResult =
         await CodeIssueDetector.getInstance().detectIssuesAsync(
           response,
@@ -193,6 +205,22 @@ class ${className} extends OfficeExtension.ClientObject {
           (item) => item.replace(/at Char \d+-\d+:/g, "").split("\nFix suggestion")[0]
         )
       );
+      t1 = performance.now();
+      duration = Math.ceil((t1 - t0) / 1000);
+      console.debug(
+        `After fix: [C] ${issuesAfterFix.compileErrors.length}, [R] ${issuesAfterFix.runtimeErrors.length}. Detect spend ${duration} seconds.`
+      );
+      // const now = new Date();
+      // const nowStr = `${now.getHours()}h:${now.getMinutes()}m:${now.getSeconds()}s`;
+      // await writeLogToFile(`\n[${nowStr}]\n`);
+      // await writeLogToFile(
+      //   "-------- Compile Errors ----------------------------------------------------------------------------------------\n" +
+      //     issuesAfterFix.compileErrors.join("\n")
+      // );
+      // await writeLogToFile(
+      //   "-------- Runtime Errors ----------------------------------------------------------------------------------------\n" +
+      //     issuesAfterFix.runtimeErrors.join("\n")
+      // );
       const terminateResult = this.terminateFixIteration(
         spec.appendix.complexity,
         codeSnippet,
@@ -204,13 +232,10 @@ class ${className} extends OfficeExtension.ClientObject {
         additionalInfo = terminateResult.suggestion;
         continue;
       }
-      console.debug(
-        ` After fix: [C] ${issuesAfterFix.compileErrors.length}, [R] ${issuesAfterFix.runtimeErrors.length}.`
-      );
 
       //#region telemetry
-      const t1 = performance.now();
-      const duration = (t1 - t0) / 1000;
+      t1 = performance.now();
+      duration = Math.ceil((t1 - t) / 1000);
       if (
         !spec.appendix.telemetryData.measurements[MeasurementSelfReflectionExecutionTimeInTotalSec]
       ) {
@@ -221,7 +246,7 @@ class ${className} extends OfficeExtension.ClientObject {
           MeasurementSelfReflectionExecutionTimeInTotalSec
         ] += duration;
       }
-      console.debug(`Self reflection completed within ${duration} seconds.`);
+      // console.debug(`Self reflection completed within ${duration} seconds.`);
 
       if (!spec.appendix.telemetryData.measurements[MeasurementSystemSelfReflectionAttemptCount]) {
         spec.appendix.telemetryData.measurements[MeasurementSystemSelfReflectionAttemptCount] = 0;
@@ -244,6 +269,8 @@ class ${className} extends OfficeExtension.ClientObject {
         spec.appendix.codeSnippet = fixedCode;
         spec.appendix.telemetryData.properties[MeasurementSystemSelfReflectionAttemptSucceeded] =
           "true";
+        spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection] =
+          issuesAfterFix.compileErrors.length;
         return { result: ExecutionResultEnum.Success, spec: spec };
       }
 
@@ -255,6 +282,8 @@ class ${className} extends OfficeExtension.ClientObject {
     spec.appendix.codeSnippet = fixedCode || codeSnippet;
     spec.appendix.telemetryData.properties[MeasurementSystemSelfReflectionAttemptSucceeded] =
       "false";
+    spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection] =
+      baseLineResuult.compileErrors.length;
     return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
   }
 
@@ -310,9 +339,9 @@ class ${className} extends OfficeExtension.ClientObject {
       messages.push(sampleMessage);
     }
 
-    if (!!declarationMessage) {
-      messages.push(declarationMessage);
-    }
+    // if (!!declarationMessage) {
+    //   messages.push(declarationMessage);
+    // }
 
     messages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
@@ -323,7 +352,7 @@ class ${className} extends OfficeExtension.ClientObject {
       messages.pop();
       msgCount = countMessagesTokens(messages);
     }
-    console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
+    // console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
     const t1 = performance.now();

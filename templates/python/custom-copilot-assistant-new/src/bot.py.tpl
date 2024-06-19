@@ -78,7 +78,6 @@ async def delete_task(context: ActionTurnContext[Dict[str, Any]], state: AppTurn
         state.conversation.tasks = {}
     parameters = state.conversation.planner_history[-1].content.action.parameters
     if parameters["title"] not in state.conversation.tasks:
-        await context.sendActivity(f"There is no task {parameters.title}")
         return "task not found, think about your next action"
     del state.conversation.tasks[parameters["title"]]
     return f"task deleted, think about your next action"

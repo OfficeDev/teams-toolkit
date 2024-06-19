@@ -224,36 +224,6 @@ export async function initPage(
     await page?.waitForSelector("button>span:has-text('Add')", {
       state: "detached",
     });
-    /* Todo: need update:
-    try {
-      try {
-        await page?.waitForSelector(".team-information span:has-text('About')");
-      } catch (error) {
-        try {
-          await page?.waitForSelector(
-            ".ts-messages-header span:has-text('About')"
-          );
-        } catch (error) {
-          try {
-            await page?.waitForSelector(
-              ".team-information span:has-text('Chat')"
-            );
-          } catch (error) {
-            await page?.waitForSelector(
-              ".ts-messages-header span:has-text('Chat')"
-            );
-          }
-        }
-      }
-      console.log("[success] app loaded");
-    } catch (error) {
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("error"),
-        fullPage: true,
-      });
-      assert.fail("[Error] add app failed");
-    }
-      */
     console.log("[success] app loaded");
     await page.waitForTimeout(Timeout.shortTimeLoading);
   });
@@ -325,16 +295,10 @@ export async function reopenPage(
       path: getPlaywrightScreenshotPath("reopen_page"),
       fullPage: true,
     });
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
     await page.waitForTimeout(Timeout.shortTimeLoading);
     if (addApp) {
       console.log("click add button");
-      const addBtn = await frame?.waitForSelector(
-        "button>span:has-text('Add')"
-      );
+      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
 
       // dashboard template will have a popup
       if (options?.dashboardFlag) {
@@ -378,37 +342,9 @@ export async function reopenPage(
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       // verify add page is closed
-      await frame?.waitForSelector("button>span:has-text('Add')", {
+      await page?.waitForSelector("button>span:has-text('Add')", {
         state: "detached",
       });
-    }
-    try {
-      try {
-        await page?.waitForSelector(".team-information span:has-text('About')");
-      } catch (error) {
-        try {
-          await page?.waitForSelector(
-            ".ts-messages-header span:has-text('About')"
-          );
-        } catch (error) {
-          try {
-            await page?.waitForSelector(
-              ".team-information span:has-text('Chat')"
-            );
-          } catch (error) {
-            await page?.waitForSelector(
-              ".ts-messages-header span:has-text('Chat')"
-            );
-          }
-        }
-      }
-      console.log("[success] app loaded");
-    } catch (error) {
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("add_error"),
-        fullPage: true,
-      });
-      assert.fail("[Error] add app failed");
     }
     await page.waitForTimeout(Timeout.shortTimeLoading);
   });
@@ -485,10 +421,6 @@ export async function initTeamsPage(
       ]);
       await page.waitForTimeout(Timeout.longTimeWait);
       console.log("click add button");
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      const frame = await frameElementHandle?.contentFrame();
 
       try {
         console.log("dismiss message");
@@ -498,24 +430,18 @@ export async function initTeamsPage(
       }
 
       // default
-      const addBtn = await frame?.waitForSelector(
-        "button>span:has-text('Add')"
-      );
+      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
       await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
       if (options?.type === "meeting") {
         // verify add page is closed
-        const frameElementHandle = await page.waitForSelector(
-          "iframe.embedded-page-content"
-        );
-        const frame = await frameElementHandle?.contentFrame();
         try {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a team')`
           );
         } catch (error) {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
           );
         }
@@ -526,36 +452,31 @@ export async function initTeamsPage(
 
       try {
         // verify add page is closed
-        await frame?.waitForSelector(`h1:has-text('to a team')`);
+        await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
-          const frameElementHandle = await page.waitForSelector(
-            "iframe.embedded-page-content"
-          );
-          const frame = await frameElementHandle?.contentFrame();
-
           try {
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
-            const searchBtn = await frame?.waitForSelector(
+            const searchBtn = await page?.waitForSelector(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
 
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
           }
 
-          const setUpBtn = await frame?.waitForSelector(
+          const setUpBtn = await page?.waitForSelector(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
           console.log("click 'set up a tab' button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
-          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+          await page?.waitForSelector('button span:has-text("Set up a tab")', {
             state: "detached",
           });
         } catch (error) {
@@ -649,10 +570,6 @@ export async function reopenTeamsPage(
         ),
         page.waitForNavigation(),
       ]);
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      const frame = await frameElementHandle?.contentFrame();
 
       try {
         console.log("dismiss message");
@@ -664,7 +581,7 @@ export async function reopenTeamsPage(
         await page.waitForTimeout(Timeout.longTimeWait);
         console.log("click add button");
         // default
-        const addBtn = await frame?.waitForSelector(
+        const addBtn = await page?.waitForSelector(
           "button>span:has-text('Add')"
         );
         await addBtn?.click();
@@ -673,16 +590,12 @@ export async function reopenTeamsPage(
 
       if (options?.type === "meeting") {
         // verify add page is closed
-        const frameElementHandle = await page.waitForSelector(
-          "iframe.embedded-page-content"
-        );
-        const frame = await frameElementHandle?.contentFrame();
         try {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a team')`
           );
         } catch (error) {
-          await frame?.waitForSelector(
+          await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
           );
         }
@@ -693,36 +606,31 @@ export async function reopenTeamsPage(
 
       try {
         // verify add page is closed
-        await frame?.waitForSelector(`h1:has-text('to a team')`);
+        await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
-          const frameElementHandle = await page.waitForSelector(
-            "iframe.embedded-page-content"
-          );
-          const frame = await frameElementHandle?.contentFrame();
-
           try {
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
-            const searchBtn = await frame?.waitForSelector(
+            const searchBtn = await page?.waitForSelector(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
 
-            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
           }
 
-          const setUpBtn = await frame?.waitForSelector(
+          const setUpBtn = await page?.waitForSelector(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
           console.log("click 'set up a tab' button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
-          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+          await page?.waitForSelector('button span:has-text("Set up a tab")', {
             state: "detached",
           });
         } catch (error) {
@@ -994,6 +902,10 @@ export async function validateReactTab(
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
+    const callFunctionBtn = await frame?.waitForSelector(
+      "button:has-text('Authorize and call Azure Functions')"
+    );
+    console.log("click callFunctionBtn");
     if (includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -1008,7 +920,7 @@ export async function validateReactTab(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          frame?.click('button:has-text("Call Azure Function")', {
+          callFunctionBtn?.click({
             timeout: Timeout.playwrightAddAppButton,
             force: true,
             noWaitAfter: true,
@@ -1282,10 +1194,7 @@ export async function validateEchoBot(
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1310,11 +1219,12 @@ export async function validateEchoBot(
 
     await RetryHandler.retry(async () => {
       console.log("sending message ", options?.botCommand);
-      await frame?.fill(
-        'div.ck-content[role="textbox"]',
-        options?.botCommand || "helloWorld"
+      const textbox = await frame?.waitForSelector(
+        'div.ck-content[role="textbox"]'
       );
-      await frame?.click('button[name="send"]');
+      await textbox?.fill(options?.botCommand || "helloWorld");
+      const sendButton = await frame?.waitForSelector('button[name="send"]');
+      await sendButton?.click();
       const expectedContent = options?.botCommand
         ? `Echo: ${options?.botCommand}`
         : `Echo: helloWorld`;
@@ -1350,10 +1260,7 @@ export async function validateWelcomeAndReplyBot(
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1385,11 +1292,12 @@ export async function validateWelcomeAndReplyBot(
     if (options.hasCommandReplyValidation) {
       await RetryHandler.retry(async () => {
         console.log("sending message ", options?.botCommand || "helloWorld");
-        await frame?.fill(
-          'div.ck-content[role="textbox"]',
-          options?.botCommand || "helloWorld"
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
         );
-        await frame?.click('button[name="send"]');
+        await textbox?.fill(options?.botCommand || "helloWorld");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
         await frame?.waitForSelector(
           `p:has-text("${options?.expectedReplyMessage}")`
         );
@@ -1419,10 +1327,7 @@ export async function validateBot(
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1439,8 +1344,14 @@ export async function validateBot(
       if (options?.botCommand === "show") {
         try {
           console.log("sending message ", options?.botCommand);
-          await executeBotSuggestionCommand(page, frame, options?.botCommand);
-          await frame?.click('button[name="send"]');
+          const textbox = await frame?.waitForSelector(
+            'div.ck-content[role="textbox"]'
+          );
+          await textbox?.fill(options?.botCommand || "helloWorld");
+          const sendButton = await frame?.waitForSelector(
+            'button[name="send"]'
+          );
+          await sendButton?.click();
         } catch (e: any) {
           console.log(
             `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
@@ -1491,12 +1402,14 @@ export async function validateBot(
       } else {
         await RetryHandler.retry(async () => {
           console.log("sending message ", options?.botCommand);
-          await executeBotSuggestionCommand(
-            page,
-            frame,
-            options?.botCommand || "welcome"
+          const textbox = await frame?.waitForSelector(
+            'div.ck-content[role="textbox"]'
           );
-          await frame?.click('button[name="send"]');
+          await textbox?.fill(options?.botCommand || "helloWorld");
+          const sendButton = await frame?.waitForSelector(
+            'button[name="send"]'
+          );
+          await sendButton?.click();
           await frame?.waitForSelector(
             `p:has-text("${options?.expected || ValidationContent.Bot}")`
           );
@@ -1850,15 +1763,9 @@ export async function validateShareNow(page: Page) {
 
 export async function validateWorkFlowBot(page: Page) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
-    await frame
-      ?.click('button:has-text("DoStuff")', {
-        timeout: Timeout.playwrightDefaultTimeout,
-      })
-      .catch(() => {});
+    const frame = await page.waitForSelector("div#app");
+    const button = await frame?.waitForSelector('button:has-text("DoStuff")');
+    await button?.click();
     await frame?.waitForSelector(`p:has-text("[ACK] Hello World Bot")`);
   } catch (error) {
     await page.screenshot({
@@ -1874,10 +1781,7 @@ export async function validateNotificationBot(
   notificationEndpoint = "http://127.0.0.1:3978/api/notification"
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await page
       .click('button:has-text("Dismiss")', {
@@ -1904,8 +1808,12 @@ export async function validateNotificationBot(
         );
       } catch (e) {
         console.log("sending any message ", "helloWorld");
-        await frame?.fill('div.ck-content[role="textbox"]', "helloWorld");
-        await frame?.click('button[name="send"]');
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
+        );
+        await textbox?.fill("helloWorld");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
         throw e;
       }
     }, 2);
@@ -1923,10 +1831,7 @@ export async function validateStockUpdate(page: Page) {
   try {
     console.log("start to verify stock update");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("click stock update");
       await frame?.waitForSelector('p:has-text("Microsoft Corporation")');
@@ -2034,10 +1939,7 @@ export async function validateProactiveMessaging(
 ): Promise<void> {
   console.log(`validating proactive messaging`);
   await page.waitForTimeout(Timeout.shortTimeLoading);
-  const frameElementHandle = await page.waitForSelector(
-    "iframe.embedded-page-content"
-  );
-  const frame = await frameElementHandle?.contentFrame();
+  const frame = await page.waitForSelector("div#app");
   try {
     console.log("dismiss message");
     await frame?.waitForSelector("div.ui-box");
@@ -2051,10 +1953,14 @@ export async function validateProactiveMessaging(
   }
   try {
     console.log("sending message ", "welcome");
-    await executeBotSuggestionCommand(page, frame, "welcome");
-    await frame?.click('button[name="send"]');
+    const textbox = await frame?.waitForSelector(
+      'div.ck-content[role="textbox"]'
+    );
+    await textbox?.fill("welcome");
+    const sendButton = await frame?.waitForSelector('button[name="send"]');
+    await sendButton?.click();
     // verify command
-    const expectedContent = "You sent 'welcome '.";
+    const expectedContent = "You sent 'welcome'.";
     await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
     console.log(`verify bot successfully with content ${expectedContent}!!!`);
     // send post request to bot
@@ -2131,10 +2037,7 @@ export async function validateSpfx(
   options?: { displayName?: string }
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector(`text=${options?.displayName}`);
     console.log(`Found: "${options?.displayName}"`);
   } catch (error) {
@@ -2509,24 +2412,40 @@ export async function delPerson(
   );
 }
 
-export async function validateCreatedCard(page: Page) {
-  try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
-    console.log("start to created card");
-    try {
-      await frame
-        ?.waitForSelector('div.ui-box button:has-text("Submit")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no created card window");
+export async function messageExtensionActivate(page: Page, appName: string) {
+  console.log("start to activate message extension");
+  const extButton = await page.waitForSelector(
+    "button[title='Actions and apps']"
+  );
+  console.log("click Actions and apps");
+  await extButton?.click();
+  const extBox = await page.waitForSelector("div.ui-popup__content__content");
+  // select secend second ul
+  const extList = await extBox?.waitForSelector(
+    "div div div div:nth-child(2) ul"
+  );
+  console.log("finding app:", appName);
+  // roop items
+  const items = await extList?.$$("li");
+  console.log("apps number: ", items.length);
+  for (const item of items) {
+    const text = await item.innerText();
+    console.log("app name:", text);
+    if (text.includes(appName)) {
+      console.log("click app:", appName);
+      await item.click();
+      break;
     }
-    const submitBtn = await frame?.waitForSelector(
-      'div.ui-box button:has-text("Submit")'
+  }
+}
+
+export async function validateCreatedCard(page: Page, appName: string) {
+  try {
+    const frame = await page.waitForSelector("div#app");
+    console.log("start to created card");
+    await messageExtensionActivate(page, appName);
+    const submitBtn = await page?.waitForSelector(
+      'div.ui-box button[title="Submit"]'
     );
     await submitBtn?.click();
     try {
@@ -2711,11 +2630,7 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       console.log("check result...");
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      const frame = await frameElementHandle?.contentFrame();
-      const spfxFrame = frame?.childFrames()[0];
+      const spfxFrame = await page.waitForSelector("div#app");
       // title
       console.log("check title");
       const title = await spfxFrame?.waitForSelector(

@@ -1,25 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import * as uuid from "uuid";
-import VsCodeLogInstance from "../commonlib/log";
-import { workspaceUri } from "../globalVariables";
-import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { allRunningDebugSessions } from "./teamsfxTaskHandler";
-
-export async function getNpmInstallLogInfo(): Promise<any> {
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  return await localEnvManager.getNpmInstallLogInfo();
-}
-
-export async function getTestToolLogInfo(): Promise<string | undefined> {
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  if (!workspaceUri?.fsPath) {
-    return undefined;
-  }
-  return await localEnvManager.getTestToolLogInfo(workspaceUri?.fsPath);
-}
+import { DebugNoSessionId } from "../common/debugConstants";
+import { allRunningDebugSessions } from "./globalVariables";
+import VsCodeLogInstance from "../../commonlib/log";
 
 export class LocalDebugSession {
   static createSession() {
@@ -42,7 +27,6 @@ export class LocalDebugSession {
   }
 }
 
-export const DebugNoSessionId = "no-session-id";
 // Helper functions for local debug correlation-id, only used for telemetry
 // Use a 2-element tuple to handle concurrent F5
 const localDebugCorrelationIds: [LocalDebugSession, LocalDebugSession] = [
@@ -77,17 +61,4 @@ export async function checkAndSkipDebugging(): Promise<boolean> {
     return Promise.resolve(true);
   }
   return Promise.resolve(false);
-}
-
-export class Step {
-  private currentStep: number;
-  public readonly totalSteps: number;
-  constructor(totalSteps: number) {
-    this.currentStep = 1;
-    this.totalSteps = totalSteps;
-  }
-
-  getPrefix(): string {
-    return `(${this.currentStep++}/${this.totalSteps})`;
-  }
 }

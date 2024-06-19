@@ -3,21 +3,19 @@
 
 import * as vscode from "vscode";
 
-import { FxError, ProductName, Result, Stage, ok } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { TaskCommand } from "@microsoft/teamsfx-core";
-import { isValidProjectV3 } from "@microsoft/teamsfx-core";
-
+import { FxError, Result, Stage, ok } from "@microsoft/teamsfx-api";
+import { Correlator, TaskCommand, isValidProjectV3 } from "@microsoft/teamsfx-core";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
 import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
-import * as globalVariables from "../globalVariables";
+import { workspaceUri } from "../globalVariables";
 import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
 import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
 import { MigrateTaskTerminal } from "./taskTerminal/migrateTaskTerminal";
 import { LaunchDesktopClientTerminal } from "./taskTerminal/launchDesktopClientTerminal";
+import { DebugNoSessionId, TeamsFxTaskType } from "./common/debugConstants";
+import { getLocalDebugSessionId } from "./common/localDebugSession";
 
 const deprecatedTasks = [
   "frontend start",
@@ -84,8 +82,6 @@ const customTasks = Object.freeze({
 });
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
-  public static readonly type: string = ProductName;
-
   // eslint-disable-next-line @typescript-eslint/require-await
   public async provideTasks(
     token?: vscode.CancellationToken | undefined
@@ -98,10 +94,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
     return Correlator.runWithId(
-      commonUtils.getLocalDebugSessionId(),
+      getLocalDebugSessionId(),
       async (): Promise<vscode.Task | undefined> => {
         let resolvedTask: vscode.Task | undefined = undefined;
-        if (commonUtils.getLocalDebugSessionId() === commonUtils.DebugNoSessionId) {
+        if (getLocalDebugSessionId() === DebugNoSessionId) {
           resolvedTask = this._resolveTask(task, token);
         } else {
           // Only send telemetry within a local debug session.
@@ -123,7 +119,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): vscode.Task | undefined {
-    if (task.definition.type !== TeamsfxTaskProvider.type || !task.definition.command) {
+    if (task.definition.type !== TeamsFxTaskType || !task.definition.command) {
       return undefined;
     }
 
@@ -132,7 +128,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       needsMigration = true;
     } else if (
       task.definition.command === TaskCommand.checkPrerequisites &&
-      !isValidProjectV3(globalVariables.workspaceUri!.fsPath)
+      !isValidProjectV3(workspaceUri!.fsPath)
     ) {
       needsMigration = true;
     }
@@ -142,7 +138,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         task.definition,
         vscode.TaskScope.Workspace,
         TaskCommand.migrate,
-        TeamsfxTaskProvider.type,
+        TeamsFxTaskType,
         new vscode.CustomExecution(customTasks[TaskCommand.migrate].createTerminal)
       );
       newTask.presentationOptions.reveal = customTasks[TaskCommand.migrate].presentationReveal;
@@ -163,7 +159,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       task.definition,
       vscode.TaskScope.Workspace,
       task.name,
-      TeamsfxTaskProvider.type,
+      TeamsFxTaskType,
       new vscode.CustomExecution(customTask.createTerminal)
     );
 

@@ -24,12 +24,12 @@ import {
   UnhandledError,
   UserCancelError,
   environmentManager,
+  featureFlagManager,
   manifestUtils,
   pathUtils,
   pluginManifestUtils,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
-import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
@@ -47,12 +47,11 @@ import M365TokenInstance, { M365Login } from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink, GlobalKey } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
-import * as debugCommonUtils from "../../src/debug/commonUtils";
-import * as debugConstants from "../../src/debug/constants";
-import * as migrationUtils from "../../src/utils/migrationUtils";
+import * as debugConstants from "../../src/debug/common/debugConstants";
+import * as getStartedChecker from "../../src/debug/depsChecker/getStartedChecker";
 import * as launch from "../../src/debug/launch";
-import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import * as runIconHandlers from "../../src/debug/runIconHandler";
+import * as errorCommon from "../../src/error/common";
 import { ExtensionErrors } from "../../src/error/error";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import * as globalVariables from "../../src/globalVariables";
@@ -67,14 +66,14 @@ import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
 import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
-import * as errorCommon from "../../src/error/common";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
-import { ExtensionSurvey } from "../../src/utils/survey";
-import { MockCore } from "../mocks/mockCore";
-import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
 import { updateAutoOpenGlobalKey } from "../../src/utils/globalStateUtils";
+import * as localizeUtils from "../../src/utils/localizeUtils";
+import * as migrationUtils from "../../src/utils/migrationUtils";
+import { ExtensionSurvey } from "../../src/utils/survey";
+import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
+import * as telemetryUtils from "../../src/utils/telemetryUtils";
+import { MockCore } from "../mocks/mockCore";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -852,7 +851,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler", async () => {
-    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(false);
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -866,7 +865,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler with chat", async () => {
-    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(true);
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -880,7 +879,6 @@ describe("handlers", () => {
   });
 
   it("walkthrough: build intelligent apps", async () => {
-    sandbox.stub(featureFlags, "isApiCopilotPluginEnabled").returns(true);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
 
     await handlers.openBuildIntelligentAppsWalkthroughHandler();
@@ -1689,21 +1687,6 @@ describe("handlers", () => {
   });
 
   describe("callBackFunctions", () => {
-    it("checkCopilotCallback()", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      let showMessageCalledCount = 0;
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        showMessage: async () => {
-          showMessageCalledCount += 1;
-          return Promise.resolve(ok("Enroll"));
-        },
-      });
-
-      handlers.checkCopilotCallback();
-
-      chai.expect(showMessageCalledCount).to.be.equal(1);
-    });
-
     it("signinAzureCallback", async () => {
       sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
       const getIdentityCredentialStub = sandbox.stub(
@@ -2543,7 +2526,7 @@ describe("autoOpenProjectHandler", () => {
   it("validateGetStartedPrerequisitesHandler() - error", async () => {
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox
-      .stub(localPrerequisites, "checkPrerequisitesForGetStarted")
+      .stub(getStartedChecker, "checkPrerequisitesForGetStarted")
       .resolves(err(new SystemError("test", "test", "test")));
 
     const result = await handlers.validateGetStartedPrerequisitesHandler();

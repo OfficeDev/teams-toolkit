@@ -18,6 +18,9 @@ import {
   MeasurementCodeGenExecutionTimeInTotalSec,
   PropertySystemCodeGenResult,
   MeasurementSystemCodegenTaskBreakdownAttemptFailedCount,
+  MeasurementCodeGenTaskBreakdownTimeInTotalSec,
+  MeasurementCodeGenPreScanTimeInTotalSec,
+  MeasurementCodeGenGetSampleTimeInTotalSec,
 } from "../telemetryConsts";
 import {
   excelSystemPrompt,
@@ -28,12 +31,12 @@ import {
   getGenerateCodeUserPrompt,
   getGenerateCodeSamplePrompt,
   getCodeSamplePrompt,
-  getGenerateCodeDeclarationPrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
-import { SampleData } from "../samples/sampleData";
 import { Tokenizer } from "../../../chat/tokenizer";
+// import { SampleData } from "../samples/sampleData";
+// import { DeclarationFinder } from "../declarationFinder";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -54,14 +57,16 @@ export class CodeGenerator implements ISkill {
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
-    const t0 = performance.now();
-
     response.progress("Identify code-generation scenarios...");
     if (
       (!spec.appendix.host || spec.appendix.host.length === 0) &&
       spec.appendix.complexity === 0
     ) {
+      const t0 = performance.now();
       const scanResult = await this.userAskPreScanningAsync(spec, token);
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec] = duration;
       if (!scanResult) {
         return { result: ExecutionResultEnum.Failure, spec: spec };
       }
@@ -77,12 +82,17 @@ export class CodeGenerator implements ISkill {
     }
 
     if (!spec.appendix.codeSample || spec.appendix.codeSample.length === 0) {
+      const t0 = performance.now();
       const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesBM25(
         token,
         spec.appendix.host,
         spec.userInput,
         1
       );
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec] =
+        duration;
       if (samples.size > 0) {
         console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
         spec.appendix.telemetryData.relatedSampleName = Array.from(samples.values()).map(
@@ -96,10 +106,9 @@ export class CodeGenerator implements ISkill {
       }
     }
 
-    if (
-      spec.appendix.codeTaskBreakdown.length === 0 &&
-      spec.appendix.codeExplanation.length === 0
-    ) {
+    // Always generate the breakdown
+    {
+      const t0 = performance.now();
       const breakdownResult = await this.userAskBreakdownAsync(
         token,
         spec.appendix.complexity,
@@ -109,6 +118,10 @@ export class CodeGenerator implements ISkill {
         spec.appendix.codeSample,
         spec
       );
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec] =
+        duration;
 
       console.debug(`functional spec: ${breakdownResult?.spec || ""}`);
       console.debug(breakdownResult?.funcs.map((task) => `- ${task}`).join("\n"));
@@ -147,6 +160,7 @@ export class CodeGenerator implements ISkill {
       );
     }
     response.progress(progressMessageStr);
+    const t0 = performance.now();
     let codeSnippet: string | null = "";
     codeSnippet = await this.generateCode(
       token,
@@ -195,7 +209,7 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
     const t0 = performance.now();
-    const copilotResponse = await getCopilotResponseAsString(
+    let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
@@ -216,6 +230,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
+      copilotResponse = copilotResponse.replace(/\\n/g, "").replace(/\n/g, "");
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
@@ -248,16 +263,55 @@ export class CodeGenerator implements ISkill {
     spec: string;
     funcs: string[];
   }> {
-    let userPrompt = getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+    let userPrompt: string = getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
     if (isCustomFunctions) {
       userPrompt = `This is a task about Excel custom functions, pay attention if this is a regular custom functions or streaming custom functions:\n\n ${userPrompt}`;
     }
-    userPrompt += "\nThink about that step by step.";
+    userPrompt += "\nDo not generate code snippets.\n\nThink about that step by step.";
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
+
+    //     let declarations = new Map<string, SampleData>();
+    //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
+    //       declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+    //         token,
+    //         host,
+    //         userInput,
+    //         "" //sampleCode
+    //       );
+
+    //       spec.appendix.apiDeclarationsReference = declarations;
+    //     } else {
+    //       declarations = spec.appendix.apiDeclarationsReference;
+    //     }
+
+    //     if (declarations.size > 0) {
+    //       const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+    //       declarations.forEach((declaration) => {
+    //         if (!groupedMethodsOrProperties.has(declaration.definition)) {
+    //           groupedMethodsOrProperties.set(declaration.definition, []);
+    //         }
+    //         groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+    //       });
+
+    //       let tempClassDeclaration = "\n```typescript\n";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+    // }
+    // \n
+    //       `;
+    //       });
+    //       tempClassDeclaration += "```\n";
+
+    //       console.debug(`API declarations: \n${tempClassDeclaration}`);
+    //       const classPrompt = `Here are some API declaration that you may want to use as reference, you should only pick those relevant to the user's ask. List the name of used method, property with its class as part of the spec and function descriptions :\n\n${tempClassDeclaration}`;
+    //       messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.System, classPrompt));
+    //     }
 
     if (sampleCode.length > 0) {
       messages.push(
@@ -269,7 +323,7 @@ export class CodeGenerator implements ISkill {
     }
 
     const t0 = performance.now();
-    const copilotResponse = await getCopilotResponseAsString(
+    let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
@@ -288,6 +342,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
+      copilotResponse = copilotResponse.replace(/\\n/g, "  ").replace(/\n/g, "  ");
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
@@ -296,7 +351,7 @@ export class CodeGenerator implements ISkill {
         copilotRet = JSON.parse(codeSnippetRet[1].trim());
       }
     } catch (error) {
-      console.error("[User task breakdown] Failed to parse the response from Copilot:", error);
+      console.error("[User task breakdown] Failed to parse the response " + copilotResponse, error);
       return null;
     }
     // We're not able to control the LLM output very precisely, so we need to do some post-processing here
@@ -321,69 +376,57 @@ export class CodeGenerator implements ISkill {
     sampleCode: string
   ) {
     const userPrompt = getGenerateCodeUserPrompt(codeSpec, host, suggestedFunction);
-    let referenceUserPrompt = "";
-    switch (host) {
-      case "Excel":
-        if (!isCustomFunctions) {
-          referenceUserPrompt = excelSystemPrompt;
-        } else {
-          referenceUserPrompt = customFunctionSystemPrompt;
-        }
-        break;
-      default:
-        referenceUserPrompt = "";
-        break;
-    }
 
-    if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
-      const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
-        token,
-        host,
-        codeSpec,
-        "", //sampleCode
-        spec
-      );
+    //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
+    //       const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+    //         token,
+    //         host,
+    //         codeSpec,
+    //         "" //sampleCode
+    //         spec
+    //       );
 
-      spec.appendix.apiDeclarationsReference = declarations;
-    }
+    //       spec.appendix.apiDeclarationsReference = declarations;
+    //     }
 
-    let declarationPrompt = getGenerateCodeDeclarationPrompt();
-    if (spec.appendix.apiDeclarationsReference.size > 0) {
-      const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
-      spec.appendix.apiDeclarationsReference.forEach((declaration) => {
-        if (!groupedMethodsOrProperties.has(declaration.definition)) {
-          groupedMethodsOrProperties.set(declaration.definition, []);
-        }
-        groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
-      });
+    //     let declarationPrompt = getGenerateCodeDeclarationPrompt();
+    //     if (spec.appendix.apiDeclarationsReference.size > 0) {
+    //       const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+    //       spec.appendix.apiDeclarationsReference.forEach((declaration) => {
+    //         if (!groupedMethodsOrProperties.has(declaration.definition)) {
+    //           groupedMethodsOrProperties.set(declaration.definition, []);
+    //         }
+    //         groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+    //       });
 
-      let tempClassDeclaration = "\n```typescript\n";
-      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
-        tempClassDeclaration += `
-class ${className} extends OfficeExtension.ClientObject {
-  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
-}
-\n
-      `;
-      });
-      groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
-        for (let i = 0; i < methodsOrPropertiesCandidates.length; i++) {
-          let methodOrProperty = methodsOrPropertiesCandidates[i].codeSample;
-          if (methodOrProperty.startsWith("readonly ")) {
-            methodOrProperty = methodOrProperty.replace("readonly ", "");
-          }
-          const lastColonIndex = methodOrProperty.lastIndexOf(":");
-          if (lastColonIndex !== -1) {
-            methodOrProperty = methodOrProperty.substring(0, lastColonIndex);
-          }
-          const classCode = `${className}.${methodOrProperty}`;
-          spec.appendix.telemetryData.codeClassAndMembers.push(classCode);
-        }
-      });
-      tempClassDeclaration += "```\n";
-      declarationPrompt += tempClassDeclaration;
-      console.debug(`API declarations: \n${declarationPrompt}`);
-    }
+    //       let tempClassDeclaration = "\n```typescript\n";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+    // }
+    // \n
+    //       `;
+    //       });
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         for (let i = 0; i < methodsOrPropertiesCandidates.length; i++) {
+    //           let methodOrProperty = methodsOrPropertiesCandidates[i].codeSample;
+    //           if (methodOrProperty.startsWith("readonly ")) {
+    //             methodOrProperty = methodOrProperty.replace("readonly ", "");
+    //           }
+    //           const lastColonIndex = methodOrProperty.lastIndexOf(":");
+    //           if (lastColonIndex !== -1) {
+    //             methodOrProperty = methodOrProperty.substring(0, lastColonIndex);
+    //           }
+    //           const classCode = `${className}.${methodOrProperty}`;
+    //           spec.appendix.telemetryData.codeClassAndMembers.push(classCode);
+    //         }
+    //       });
+    //       tempClassDeclaration += "```\n";
+
+    //       declarationPrompt += tempClassDeclaration;
+    //       // console.debug(`API declarations: \n${declarationPrompt}`);
+    //     }
     const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";
     let msgCount = 0;
 
@@ -392,6 +435,39 @@ class ${className} extends OfficeExtension.ClientObject {
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
+
+    let referenceUserPrompt = "";
+    switch (host) {
+      case "Excel":
+        if (!isCustomFunctions) {
+          referenceUserPrompt = excelSystemPrompt;
+        } else {
+          referenceUserPrompt = customFunctionSystemPrompt;
+        }
+        messages.push(
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+        );
+        break;
+      default:
+        referenceUserPrompt = "";
+        break;
+    }
+    // // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
+    // if (isCustomFunctions) {
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    //   );
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
+    //   );
+    // } else {
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
+    //   );
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    //   );
+    // }
     if (sampleCode.length > 0) {
       let samplePrompt = getGenerateCodeSamplePrompt();
       samplePrompt += `
@@ -404,18 +480,6 @@ class ${className} extends OfficeExtension.ClientObject {
       `;
       messages.push(
         new LanguageModelChatMessage(LanguageModelChatMessageRole.System, samplePrompt)
-      );
-    }
-    // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
-    if (isCustomFunctions) {
-      messages.push(
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt),
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
-      );
-    } else {
-      messages.push(
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt),
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
       );
     }
     // Because of the token window limitation, we have to cut off the messages if it exceeds the limitation

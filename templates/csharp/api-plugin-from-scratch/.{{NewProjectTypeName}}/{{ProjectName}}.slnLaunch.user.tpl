@@ -1,12 +1,12 @@
 [
   {
-    "Name": "Microsoft Teams (browser)",
+    "Name": "Copilot (browser)",
     "Projects": [
       {
         "Path": "{{NewProjectTypeName}}\\{{NewProjectTypeName}}.{{NewProjectTypeExt}}",
         "Name": "{{NewProjectTypeName}}\\{{NewProjectTypeName}}.{{NewProjectTypeExt}}",
         "Action": "StartWithoutDebugging",
-        "DebugTarget": "Microsoft Teams (browser)"
+        "DebugTarget": "Copilot (browser)"
       },
       {
 {{#PlaceProjectFileInSolutionDir}}

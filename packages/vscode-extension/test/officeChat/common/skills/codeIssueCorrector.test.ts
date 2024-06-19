@@ -150,7 +150,7 @@ describe("CodeIssueCorrector", () => {
     sandbox
       .stub(utils, "countMessagesTokens")
       .onFirstCall()
-      .returns(4000)
+      .returns(10000)
       .onSecondCall()
       .returns(100);
     const result = await corrector.fixIssueAsync(
@@ -205,7 +205,7 @@ describe("CodeIssueCorrector", () => {
     sandbox
       .stub(utils, "countMessagesTokens")
       .onFirstCall()
-      .returns(4000)
+      .returns(10000)
       .onSecondCall()
       .returns(100);
     // sandbox.stub(utils, "countMessageTokens").returns(100);
@@ -263,7 +263,7 @@ describe("CodeIssueCorrector", () => {
     sandbox
       .stub(utils, "countMessagesTokens")
       .onFirstCall()
-      .returns(4000)
+      .returns(10000)
       .onSecondCall()
       .returns(100);
     // sandbox.stub(utils, "countMessageTokens").returns(100);
@@ -321,7 +321,7 @@ describe("CodeIssueCorrector", () => {
     sandbox
       .stub(utils, "countMessagesTokens")
       .onFirstCall()
-      .returns(4000)
+      .returns(10000)
       .onSecondCall()
       .returns(100);
     // sandbox.stub(utils, "countMessageTokens").returns(100);
@@ -587,7 +587,7 @@ describe("CodeIssueCorrector", () => {
     const corrector = new CodeIssueCorrector();
     const detector = CodeIssueDetector.getInstance();
     const detectionResult = new DetectionResult();
-    detectionResult.compileErrors = ["error1", "error2"];
+    detectionResult.compileErrors = ["error1"];
     detectionResult.runtimeErrors = ["error1"];
     const detectionResultAfterFix = new DetectionResult();
     detectionResultAfterFix.compileErrors = ["error1"];
@@ -613,8 +613,8 @@ describe("CodeIssueCorrector", () => {
 
     detectIssuesStub.returns(Promise.resolve(detectionResultFinal));
     detectIssuesStub.onCall(0).returns(Promise.resolve(detectionResult));
-    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
-    // detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
+    // detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
+    detectIssuesStub.onCall(1).returns(Promise.resolve(detetionResultIncreaseError));
     // detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
     detectIssuesStub.onCall(2).returns(Promise.resolve(detectionResultFinal));
 
@@ -669,7 +669,7 @@ describe("CodeIssueCorrector", () => {
     const corrector = new CodeIssueCorrector();
     const detector = CodeIssueDetector.getInstance();
     const detectionResult = new DetectionResult();
-    detectionResult.compileErrors = ["error1", "error2"];
+    detectionResult.compileErrors = ["error1"];
     detectionResult.runtimeErrors = ["error1"];
     const detectionResultAfterFix = new DetectionResult();
     detectionResultAfterFix.compileErrors = ["error1", "error2", "error3"];
@@ -695,9 +695,93 @@ describe("CodeIssueCorrector", () => {
     const detectIssuesStub = sandbox.stub(detectorInstance, "detectIssuesAsync");
     detectIssuesStub.returns(Promise.resolve(detectionResultFinal));
     detectIssuesStub.onCall(0).returns(Promise.resolve(detectionResult));
-    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
+    // detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
     // detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
     // detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
+    detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultFinal));
+
+    const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
+
+    chai.expect(result.result).to.equal(ExecutionResultEnum.Success);
+    chai.expect(result.spec).to.equal(spec);
+  });
+
+  it("invoke partial failed: the first time fix return null and the second time it returns with error", async () => {
+    const corrector = new CodeIssueCorrector();
+    const detector = CodeIssueDetector.getInstance();
+    const detectionResult = new DetectionResult();
+    detectionResult.compileErrors = ["error1"];
+    detectionResult.runtimeErrors = ["error1"];
+
+    sandbox.stub(console, "debug");
+
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+
+    spec.appendix.complexity = 80;
+
+    const fixIssueStub = sandbox
+      .stub(corrector, "fixIssueAsync")
+      .returns(Promise.resolve("some more code"));
+    fixIssueStub.onCall(0).returns(Promise.resolve(null));
+    fixIssueStub.onCall(1).returns(Promise.resolve("some more code"));
+    const detectorInstance = CodeIssueDetector.getInstance();
+    const detectIssuesStub = sandbox.stub(detectorInstance, "detectIssuesAsync");
+    detectIssuesStub.returns(Promise.resolve(detectionResult));
+
+    const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
+
+    chai.expect(result.result).to.equal(ExecutionResultEnum.FailedAndGoNext);
+    // chai.expect(result.spec).to.equal(spec);
+  });
+
+  it("invoke partial failed: the code fix always returns error", async () => {
+    const detectionResult = new DetectionResult();
+    detectionResult.compileErrors = ["error1"];
+    detectionResult.runtimeErrors = ["error1"];
+
+    sandbox.stub(console, "debug");
+
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+
+    spec.appendix.complexity = 80;
+
+    const corrector = new CodeIssueCorrector();
+    sandbox.stub(corrector, "fixIssueAsync").returns(Promise.resolve("some more code"));
+    const detectorInstance = CodeIssueDetector.getInstance();
+    sandbox.stub(detectorInstance, "detectIssuesAsync").returns(Promise.resolve(detectionResult));
+
+    const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
+
+    chai.expect(result.result).to.equal(ExecutionResultEnum.FailedAndGoNext);
+  });
+
+  it("invoke success after error increased", async () => {
+    const corrector = new CodeIssueCorrector();
+    const detectionResult = new DetectionResult();
+    detectionResult.compileErrors = ["error1"];
+    detectionResult.runtimeErrors = ["error1"];
+    const detetionResultIncreaseError = new DetectionResult();
+    detetionResultIncreaseError.compileErrors = ["error1", "error2"];
+    detetionResultIncreaseError.runtimeErrors = [];
+    const detectionResultFinal = new DetectionResult();
+    detectionResultFinal.compileErrors = [];
+    detectionResultFinal.runtimeErrors = [];
+
+    sandbox.stub(console, "debug");
+
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    spec.appendix.complexity = 80;
+
+    const fixIssueStub = sandbox
+      .stub(corrector, "fixIssueAsync")
+      .returns(Promise.resolve("some more code; await main(); "));
+    fixIssueStub.onCall(0).returns(Promise.resolve("some more code; await main();"));
+    const detectorInstance = CodeIssueDetector.getInstance();
+    const detectIssuesStub = sandbox.stub(detectorInstance, "detectIssuesAsync");
+
+    detectIssuesStub.returns(Promise.resolve(detectionResultFinal));
+    detectIssuesStub.onCall(0).returns(Promise.resolve(detectionResult));
+    detectIssuesStub.onCall(1).returns(Promise.resolve(detetionResultIncreaseError));
     detectIssuesStub.onCall(2).returns(Promise.resolve(detectionResultFinal));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);

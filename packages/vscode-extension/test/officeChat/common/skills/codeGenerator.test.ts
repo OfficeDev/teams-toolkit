@@ -858,6 +858,9 @@ describe("codeGenerator", () => {
     spec.appendix.codeSample = "sample code";
     spec.appendix.codeTaskBreakdown = ["task1", "task2"];
     spec.appendix.codeExplanation = "some explanation";
+    sandbox
+      .stub(codeGenerator, "userAskBreakdownAsync")
+      .resolves({ spec: "fakeSpec", funcs: ["fakeData1"] });
     sandbox.stub(codeGenerator, "generateCode").resolves("Some code");
 
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);

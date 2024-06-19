@@ -6,6 +6,7 @@ import { provisionHandler } from "../../src/handlers/lifecycleHandlers";
 import * as shared from "../../src/handlers/sharedOpts";
 import { processResult } from "../../src/handlers/sharedOpts";
 import * as telemetryUtils from "../../src/utils/telemetryUtils";
+import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 
 describe("Lifecycle handlers", () => {
   const sandbox = sinon.createSandbox();
@@ -32,6 +33,13 @@ describe("Lifecycle handlers", () => {
       await processResult("", err(new UserCancelError()), {
         platform: Platform.VSCode,
         env: "dev",
+      });
+    });
+    it("CreateNewEnvironment", async () => {
+      await processResult(TelemetryEvent.CreateNewEnvironment, ok(new UserCancelError()), {
+        platform: Platform.VSCode,
+        sourceEnvName: "dev",
+        targetEnvName: "dev1",
       });
     });
   });

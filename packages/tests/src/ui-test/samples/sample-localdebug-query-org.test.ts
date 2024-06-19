@@ -13,11 +13,25 @@ import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 
 class QueryOrgTestCase extends CaseFactory {
-  override async onValidate(page: Page): Promise<void> {
-    return await validateQueryOrg(page, { displayName: Env.displayName });
+  override async onValidate(
+    page: Page,
+    options?: { context: SampledebugContext }
+  ): Promise<void> {
+    return await validateQueryOrg(page, {
+      displayName: Env.displayName,
+      appName: options?.context.appName || "",
+    });
   }
-  override async onCliValidate(page: Page): Promise<void> {
-    return await validateQueryOrg(page, { displayName: Env.displayName });
+  override async onCliValidate(
+    page: Page,
+    options?: {
+      context: SampledebugContext;
+    }
+  ): Promise<void> {
+    return await validateQueryOrg(page, {
+      displayName: Env.displayName,
+      appName: options?.context.appName || "",
+    });
   }
   public override async onReopenPage(
     sampledebugContext: SampledebugContext,

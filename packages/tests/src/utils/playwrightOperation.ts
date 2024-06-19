@@ -1623,7 +1623,7 @@ export async function validateDeeplinking(page: Page, displayName: string) {
 
 export async function validateQueryOrg(
   page: Page,
-  options?: { displayName?: string }
+  options?: { displayName?: string; appName: string }
 ) {
   try {
     console.log("start to verify query org");
@@ -1640,6 +1640,7 @@ export async function validateQueryOrg(
     } catch (error) {
       console.log("no message to dismiss");
     }
+    messageExtensionActivate(page, options.appName);
     const inputBar = await frame?.waitForSelector(
       "div.ui-popup__content input.ui-box"
     );

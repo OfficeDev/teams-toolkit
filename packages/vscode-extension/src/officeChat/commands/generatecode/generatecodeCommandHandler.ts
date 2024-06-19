@@ -9,13 +9,13 @@ import {
   LanguageModelChatMessageRole,
 } from "vscode";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { localize } from "../../../utils/localizeUtils";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { Planner } from "../../common/planner";
-import { ChatTelemetryData } from "../../../chat/telemetry";
 import { isInputHarmful } from "../../utils";
 import { ICopilotChatOfficeResult } from "../../types";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 export default async function generatecodeCommandHandler(
   request: ChatRequest,
@@ -23,7 +23,7 @@ export default async function generatecodeCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.GenerateCode
   );
@@ -33,12 +33,11 @@ export default async function generatecodeCommandHandler(
   );
 
   if (request.prompt.trim() === "") {
-    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
-      Date.now() - officeChatTelemetryData.startTime;
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(
       localize("teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer")
     );
-    officeChatTelemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "Empty Input";
+    officeChatTelemetryData.setBlockReason("Empty Input");
     officeChatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -68,8 +67,6 @@ export default async function generatecodeCommandHandler(
     }
   }
 
-  officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] = 0;
-  officeChatTelemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] = "";
   const isHarmful = await isInputHarmful(request, token, officeChatTelemetryData);
   if (!isHarmful) {
     const chatResult = await Planner.getInstance().processRequest(
@@ -81,9 +78,6 @@ export default async function generatecodeCommandHandler(
       officeChatTelemetryData
     );
     officeChatTelemetryData.markComplete();
-    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokensPerSecond] =
-      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] /
-      (officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] / 1000);
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,
@@ -92,11 +86,8 @@ export default async function generatecodeCommandHandler(
     return chatResult;
   } else {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
-    officeChatTelemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "RAI";
+    officeChatTelemetryData.setBlockReason("RAI");
     officeChatTelemetryData.markComplete();
-    officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokensPerSecond] =
-      officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] /
-      (officeChatTelemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] / 1000);
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,

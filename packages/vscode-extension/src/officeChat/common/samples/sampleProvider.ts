@@ -14,8 +14,9 @@ import {
 } from "../../officePrompts";
 import { DeclarationFinder } from "../declarationFinder";
 import { getTokenLimitation } from "../../consts";
-import { Tokenizer } from "../../../chat/tokenizer";
 import { Spec } from "../skills/spec";
+import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
+import { times } from "lodash";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;
@@ -107,11 +108,10 @@ export class SampleProvider {
     const timeStart = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
     const timeEnd = performance.now();
-    const requestTokens = countMessagesTokens([sampleMessage]);
-    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
-    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(
-      responseTokens / ((timeEnd - timeStart) / 1000)
+    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, timeStart, timeEnd, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      sampleMessage,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     const returnObject: { picked: string[] } = JSON.parse(
       copilotResponse.replace("```json", "").replace("```", "").replace(/\\n/g, "")
@@ -303,10 +303,11 @@ export class SampleProvider {
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
     const t1 = performance.now();
-    const requestTokens = countMessagesTokens([sampleMessage]);
-    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
-    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / (t1 - t0) / 1000);
+    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      sampleMessage,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     let returnObject: { picked: string[] } = { picked: [] };
     try {
       returnObject = JSON.parse(

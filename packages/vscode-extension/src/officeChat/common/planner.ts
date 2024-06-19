@@ -12,7 +12,6 @@ import { ISkill } from "./skills/iSkill";
 import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
 import { ICopilotChatOfficeResult } from "../types";
-import { ChatTelemetryData } from "../../chat/telemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { ExecutionResultEnum } from "./skills/executionResultEnum";
@@ -33,6 +32,7 @@ import {
 } from "./telemetryConsts";
 import { purifyUserMessage } from "../utils";
 import { localize } from "../../utils/localizeUtils";
+import { OfficeChatTelemetryData } from "../telemetry";
 
 export class Planner {
   private static instance: Planner;
@@ -54,7 +54,7 @@ export class Planner {
     response: ChatResponseStream,
     token: CancellationToken,
     command: OfficeChatCommand,
-    telemetryData: ChatTelemetryData
+    telemetryData: OfficeChatTelemetryData
   ): Promise<ICopilotChatOfficeResult> {
     const candidates: ISkill[] = SkillsManager.getInstance().getCapableSkills(command);
     const t0 = performance.now();
@@ -98,7 +98,7 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
           if (spec.appendix.telemetryData.isHarmful) {
-            telemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "RAI";
+            telemetryData.setBlockReason("RAI");
           }
           throw new Error("Failed to process the request.");
         }
@@ -109,7 +109,7 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemRequesRejected] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
-          telemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = "Off Topic";
+          telemetryData.setBlockReason("Off Topic");
           throw new Error(
             `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
           );
@@ -140,19 +140,17 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
-    telemetryData.properties[TelemetryProperty.HostType] = spec.appendix.host.toLowerCase();
-    telemetryData.properties[TelemetryProperty.CopilotChatRelatedSampleName] =
-      spec.appendix.telemetryData.relatedSampleName.toString();
-    telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
-      spec.appendix.telemetryData.codeClassAndMembers.toString();
-    telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
-      spec.appendix.telemetryData.timeToFirstToken - telemetryData.startTime;
-    telemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
-      spec.appendix.telemetryData.totalTokens;
-    for (const responseTokensPerSecond of spec.appendix.telemetryData.responseTokensPerSecond) {
-      telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
-        responseTokensPerSecond.toString() + ",";
+    telemetryData.setHostType(spec.appendix.host.toLowerCase());
+    telemetryData.setRelatedSampleName(spec.appendix.telemetryData.relatedSampleName.toString());
+    // telemetryData.setCodeClassAndMembers(
+    //   spec.appendix.telemetryData.codeClassAndMembers.toString()
+    // );
+    for (const chatMessage of spec.appendix.telemetryData.chatMessages) {
+      telemetryData.chatMessages.push(chatMessage);
     }
+    telemetryData.extendResponseTokensPerSecondByString(
+      spec.appendix.telemetryData.responseTokensPerSecond
+    );
     const debugInfo = `
       ## Time cost:\n
       In total ${Math.ceil(duration)} seconds.\n

@@ -128,8 +128,8 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
       this.telemetryData.properties[TelemetryProperty.HostType] = this.hostType;
       this.telemetryData.properties[TelemetryProperty.CopilotChatRelatedSampleName] =
         this.relatedSampleName;
-      this.telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
-        this.codeClassAndMembers;
+      // this.telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
+      //   this.codeClassAndMembers;
       this.telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] =
         this.responseTokensPerSecond;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =

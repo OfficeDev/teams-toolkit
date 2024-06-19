@@ -6,7 +6,6 @@ import * as tmp from "tmp";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as crypto from "crypto";
-import * as telemetry from "../../../../src/chat/telemetry";
 import * as util from "../../../../src/chat/utils";
 import * as officeChatUtils from "../../../../src/officeChat/utils";
 import * as officeChathelper from "../../../../src/officeChat/commands/create/helper";
@@ -17,6 +16,7 @@ import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { officeSampleProvider } from "../../../../src/officeChat/commands/create/officeSamples";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
+import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 
 chai.use(chaiPromised);
 
@@ -26,7 +26,7 @@ describe("File: office chat create helper", () => {
   describe("Method: matchOfficeProject", () => {
     let officeChatTelemetryDataMock: any;
     beforeEach(() => {
-      officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
       });
@@ -46,7 +46,7 @@ describe("File: office chat create helper", () => {
       });
       officeChatTelemetryDataMock.chatMessages = [];
       sandbox
-        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .stub(OfficeChatTelemetryData, "createByParticipant")
         .returns(officeChatTelemetryDataMock);
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     });

@@ -2,7 +2,6 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import officeNextStepCommandHandler from "../../../../src/officeChat/commands/nextStep/officeNextstepCommandHandler";
 import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
-import * as telemetry from "../../../../src/chat/telemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import * as vscode from "vscode";
 import * as globalVariables from "../../../../src/globalVariables";
@@ -14,6 +13,7 @@ import * as util from "../../../../src/chat/utils";
 import * as officeSteps from "../../../../src/officeChat/commands/nextStep/officeSteps";
 import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../../src/chat/consts";
 import { OfficeWholeStatus } from "../../../../src/officeChat/commands/nextStep/types";
+import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 
 afterEach(() => {
   // Restore the default sandbox here
@@ -24,7 +24,7 @@ describe("office steps: officeNextStepCommandHandler", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
-    const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+    const chatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
     sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
       return undefined;
     });
@@ -32,7 +32,7 @@ describe("office steps: officeNextStepCommandHandler", () => {
       return undefined;
     });
     chatTelemetryDataMock.chatMessages = [];
-    sandbox.stub(telemetry.ChatTelemetryData, "createByParticipant").returns(chatTelemetryDataMock);
+    sandbox.stub(OfficeChatTelemetryData, "createByParticipant").returns(chatTelemetryDataMock);
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
   });
 

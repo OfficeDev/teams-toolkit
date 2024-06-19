@@ -2,7 +2,6 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as chaipromised from "chai-as-promised";
 import * as vscode from "vscode";
-import * as telemetry from "../../../../src/chat/telemetry";
 import * as officeCreateCommandHandler from "../../../../src/officeChat/commands/create/officeCreateCommandHandler";
 import * as officeChatUtil from "../../../../src/officeChat/utils";
 import * as helper from "../../../../src/officeChat/commands/create/helper";
@@ -11,6 +10,7 @@ import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
 import { Planner } from "../../../../src/officeChat/common/planner";
+import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 
 chai.use(chaipromised);
 
@@ -19,7 +19,7 @@ describe("File: officeCreateCommandHandler", () => {
   let sendTelemetryEventStub: any;
   let officeChatTelemetryDataMock: any;
   beforeEach(() => {
-    officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+    officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
     sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
       return undefined;
     });
@@ -28,7 +28,7 @@ describe("File: officeCreateCommandHandler", () => {
     });
     officeChatTelemetryDataMock.chatMessages = [];
     sandbox
-      .stub(telemetry.ChatTelemetryData, "createByParticipant")
+      .stub(OfficeChatTelemetryData, "createByParticipant")
       .returns(officeChatTelemetryDataMock);
     sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
   });

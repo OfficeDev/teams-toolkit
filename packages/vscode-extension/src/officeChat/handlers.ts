@@ -19,7 +19,6 @@ import {
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
 import { Correlator } from "@microsoft/teamsfx-core";
 import followupProvider from "../chat/followupProvider";
-import { ChatTelemetryData } from "../chat/telemetry";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -30,10 +29,12 @@ import officeCreateCommandHandler from "./commands/create/officeCreateCommandHan
 import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
 import officeNextStepCommandHandler from "./commands/nextStep/officeNextstepCommandHandler";
 import { defaultOfficeSystemPrompt } from "./officePrompts";
-import { verbatimCopilotInteraction } from "../chat/utils";
+import { countMessagesTokens, verbatimCopilotInteraction } from "../chat/utils";
 import { localize } from "../utils/localizeUtils";
 import { ICopilotChatOfficeResult } from "./types";
 import { ITelemetryData } from "../chat/types";
+import { Spec } from "./common/skills/spec";
+import { OfficeChatTelemetryData } from "./telemetry";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
@@ -59,7 +60,7 @@ async function officeDefaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     ""
   );
@@ -95,7 +96,7 @@ export async function chatCreateOfficeProjectCommandHandler(
   requestId: string,
   matchResultInfo: string
 ) {
-  const officeChatTelemetryData = ChatTelemetryData.get(requestId);
+  const officeChatTelemetryData = OfficeChatTelemetryData.get(requestId);
   if (officeChatTelemetryData) {
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChatClickButton,
@@ -167,7 +168,7 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
       [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
       [TelemetryProperty.CorrelationId]: Correlator.getId(),
       [TelemetryProperty.HostType]:
-        ChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+        OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
           TelemetryProperty.HostType
         ] ?? "",
     },
@@ -181,4 +182,22 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
     telemetryData.properties,
     telemetryData.measurements
   );
+}
+
+export function ExtendGeneratedTokensPerSecondToSpec(
+  response: string,
+  t0: DOMHighResTimeStamp,
+  t1: DOMHighResTimeStamp,
+  spec: Spec
+): void {
+  const responseTokens = countMessagesTokens([
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response),
+  ]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  spec.appendix.telemetryData.responseTokensPerSecond +=
+    (responseTokens / ((t1 - t0) / 1000)).toString() + " ";
+}
+
+export function AddHostTypeToTelemetryData(telemetryData: ITelemetryData, hostType: string): void {
+  telemetryData.properties[TelemetryProperty.HostType] = hostType;
 }

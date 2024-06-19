@@ -29,8 +29,8 @@ import {
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 import { SampleData } from "../samples/sampleData";
-import { Tokenizer } from "../../../chat/tokenizer";
 // import { writeLogToFile } from "../utils";
+import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -356,10 +356,11 @@ export class CodeIssueCorrector implements ISkill {
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
     const t1 = performance.now();
-    const requestTokens = countMessagesTokens(messages);
-    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
-    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / (t1 - t0) / 1000);
+    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      ...messages,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     // extract the code snippet
     const regex = /```[\s]*typescript([\s\S]*?)```/gm;
     const matches = regex.exec(copilotResponse);

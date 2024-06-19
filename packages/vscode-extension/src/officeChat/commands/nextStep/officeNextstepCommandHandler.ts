@@ -16,7 +16,6 @@ import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemet
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import followupProvider from "../../../chat/followupProvider";
-import { ChatTelemetryData } from "../../../chat/telemetry";
 import { officeSteps } from "./officeSteps";
 import { OfficeWholeStatus } from "./types";
 import { getWholeStatus } from "./status";
@@ -26,6 +25,7 @@ import { NextStep } from "../../../chat/commands/nextstep/types";
 import { describeOfficeStepSystemPrompt } from "../../officePrompts";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { IChatTelemetryData } from "../../../chat/types";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 export default async function officeNextStepCommandHandler(
   request: ChatRequest,
@@ -33,7 +33,7 @@ export default async function officeNextStepCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.NextStep
   );
@@ -78,7 +78,13 @@ export default async function officeNextStepCommandHandler(
     if (s.description instanceof Function) {
       s.description = s.description(status);
     }
+    const t0 = performance.now();
     const stepDescription = await describeOfficeStep(s, token, officeChatTelemetryData);
+    const t1 = performance.now();
+    officeChatTelemetryData.extendResponseTokensPerSecondByCalculation(stepDescription, t0, t1);
+    officeChatTelemetryData.chatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, stepDescription)
+    );
     const title = s.docLink ? `[${s.title}](${s.docLink})` : s.title;
     if (steps.length > 1) {
       response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);

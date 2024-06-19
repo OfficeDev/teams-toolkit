@@ -34,9 +34,9 @@ import {
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
-import { Tokenizer } from "../../../chat/tokenizer";
 // import { SampleData } from "../samples/sampleData";
 // import { DeclarationFinder } from "../declarationFinder";
+import { ExtendGeneratedTokensPerSecondToSpec } from "../../handlers";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -215,10 +215,11 @@ export class CodeGenerator implements ISkill {
       token
     );
     const t1 = performance.now();
-    const requestTokens = countMessagesTokens(messages);
-    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
-    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
+    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      ...messages,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     let copilotRet: {
       host: string;
       shouldContinue: boolean;
@@ -329,10 +330,11 @@ export class CodeGenerator implements ISkill {
       token
     );
     const t1 = performance.now();
-    const requestTokens = countMessagesTokens(messages);
-    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
-    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
+    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      ...messages,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     let copilotRet: {
       spec: string;
       funcs: string[];
@@ -493,10 +495,11 @@ export class CodeGenerator implements ISkill {
     const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
     const t1 = performance.now();
-    const requestTokens = countMessagesTokens(messages);
-    const responseTokens = Tokenizer.getInstance().tokenLength(copilotResponse);
-    spec.appendix.telemetryData.totalTokens += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
+    ExtendGeneratedTokensPerSecondToSpec(copilotResponse, t0, t1, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      ...messages,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);
     if (!codeSnippetRet) {

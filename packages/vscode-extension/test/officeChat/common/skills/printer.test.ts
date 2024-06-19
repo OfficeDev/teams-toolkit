@@ -37,8 +37,11 @@ describe("printer", () => {
           relatedSampleName: ["sample1", "sample2"],
           codeClassAndMembers: ["class1", "class2"],
           timeToFirstToken: 0,
-          totalTokens: 0,
-          responseTokensPerSecond: [1, 2],
+          chatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
+          ],
+          responseTokensPerSecond: "",
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -104,8 +107,11 @@ describe("printer", () => {
         relatedSampleName: ["sample1", "sample2"],
         codeClassAndMembers: ["class1", "class2"],
         timeToFirstToken: 0,
-        totalTokens: 0,
-        responseTokensPerSecond: [1, 2],
+        chatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
+        ],
+        responseTokensPerSecond: "",
         properties: {
           property1: "value1",
           property2: "value2",

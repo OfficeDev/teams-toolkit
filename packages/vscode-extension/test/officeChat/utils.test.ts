@@ -7,8 +7,8 @@ import * as chatUtils from "../../src/chat/utils";
 import * as dynamicPrompt from "../../src/officeChat/dynamicPrompt";
 import { CancellationToken } from "../mocks/vsc";
 import { officeSampleProvider } from "../../src/officeChat/commands/create/officeSamples";
-import * as telemetry from "../../src/chat/telemetry";
 import { Spec } from "../../src/officeChat/common/skills/spec";
+import { OfficeChatTelemetryData } from "../../src/officeChat/telemetry";
 
 chai.use(chaipromised);
 
@@ -25,7 +25,7 @@ describe("File: officeChat/utils.ts", () => {
       const getCopilotResponseAsStringStub = sandbox
         .stub(chatUtils, "getCopilotResponseAsString")
         .resolves("purified message");
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.purifyUserMessage("test", token, officeChatTelemetryDataMock);
       chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
       chai.expect(result).equal("purified message");
@@ -36,7 +36,7 @@ describe("File: officeChat/utils.ts", () => {
       const getCopilotResponseAsStringStub = sandbox
         .stub(chatUtils, "getCopilotResponseAsString")
         .resolves("");
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.purifyUserMessage("test", token, officeChatTelemetryDataMock);
       chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
       chai.expect(result).equal("test");
@@ -57,7 +57,7 @@ describe("File: officeChat/utils.ts", () => {
     it("check the input is harmful", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": true}```');
       const token = new CancellationToken();
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.isInputHarmful(
         { prompt: "test" } as unknown as vscode.ChatRequest,
         token,
@@ -69,7 +69,7 @@ describe("File: officeChat/utils.ts", () => {
     it("check the input is harmless", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": false}');
       const token = new CancellationToken();
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       const result = await utils.isInputHarmful(
         { prompt: "test" } as unknown as vscode.ChatRequest,
         token,
@@ -81,7 +81,7 @@ describe("File: officeChat/utils.ts", () => {
     it("get empty response", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves(undefined);
       const token = new CancellationToken();
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       try {
         await utils.isInputHarmful(
           { prompt: "test" } as unknown as vscode.ChatRequest,
@@ -97,7 +97,7 @@ describe("File: officeChat/utils.ts", () => {
     it("isHarmful is not boolean", async () => {
       sandbox.stub(chatUtils, "getCopilotResponseAsString").resolves('{"isHarmful": "test"}');
       const token = new CancellationToken();
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       try {
         await utils.isInputHarmful(
           { prompt: "test" } as unknown as vscode.ChatRequest,
@@ -181,7 +181,10 @@ describe("File: officeChat/utils.ts", () => {
 
     it("get office sample download url info", async () => {
       const result = await utils.getOfficeSampleDownloadUrlInfo("Excel-Add-in-ShapeAPI-Dashboard");
-      chai.expect(result).deep.equal(fakedOfficeSampleConfig.samples[0].downloadUrlInfo);
+      chai.expect(result).deep.equal({
+        downloadUrlInfo: fakedOfficeSampleConfig.samples[0].downloadUrlInfo,
+        host: "Excel",
+      });
     });
 
     it("sample not found", async () => {

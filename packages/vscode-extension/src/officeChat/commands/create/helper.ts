@@ -18,7 +18,7 @@ import {
 } from "vscode";
 import { IChatTelemetryData } from "../../../chat/types";
 import { ProjectMetadata } from "../../../chat/commands/create/types";
-import { countMessagesTokens, getCopilotResponseAsString } from "../../../chat/utils";
+import { getCopilotResponseAsString } from "../../../chat/utils";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
 import { CommandKey } from "../../../constants";
@@ -27,12 +27,12 @@ import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
 import { getOfficeSampleDownloadUrlInfo } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
-import { Tokenizer } from "../../../chat/tokenizer";
+import { OfficeChatTelemetryData } from "../../telemetry";
 
 export async function matchOfficeProject(
   request: ChatRequest,
   token: CancellationToken,
-  telemetryMetadata: IChatTelemetryData
+  telemetryData: OfficeChatTelemetryData
 ): Promise<ProjectMetadata | undefined> {
   const allOfficeProjectMetadata = [
     ...getOfficeTemplateMetadata(),
@@ -42,16 +42,14 @@ export async function matchOfficeProject(
     getOfficeProjectMatchSystemPrompt(allOfficeProjectMetadata),
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
   ];
-  telemetryMetadata.chatMessages.push(...messages);
   const t0 = performance.now();
   const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   const t1 = performance.now();
-  const requestTokens = countMessagesTokens(messages);
-  const responseTokens = Tokenizer.getInstance().tokenLength(response);
-  telemetryMetadata.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
-    requestTokens + responseTokens;
-  telemetryMetadata.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
-    (responseTokens / ((t1 - t0) / 1000)).toString() + ",";
+  telemetryData.extendResponseTokensPerSecondByCalculation(response, t0, t1);
+  telemetryData.chatMessages.push(
+    ...messages,
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
+  );
   let matchedProjectId: string;
   if (response) {
     try {

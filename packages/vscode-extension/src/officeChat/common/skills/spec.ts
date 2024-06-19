@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { LanguageModelChatMessage } from "vscode";
 import { SampleData } from "../samples/sampleData";
 import { deepClone } from "../utils";
 
@@ -24,8 +25,8 @@ export class Spec {
       relatedSampleName: string[];
       codeClassAndMembers: string[];
       timeToFirstToken: number;
-      totalTokens: number;
-      responseTokensPerSecond: number[];
+      chatMessages: LanguageModelChatMessage[];
+      responseTokensPerSecond: string;
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
@@ -53,8 +54,8 @@ export class Spec {
         relatedSampleName: [],
         codeClassAndMembers: [],
         timeToFirstToken: 0,
-        totalTokens: 0,
-        responseTokensPerSecond: [],
+        chatMessages: [],
+        responseTokensPerSecond: "",
         properties: {},
         measurements: {},
       },

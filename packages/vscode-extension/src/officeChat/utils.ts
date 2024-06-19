@@ -9,18 +9,16 @@ import {
 } from "vscode";
 import { buildDynamicPrompt } from "./dynamicPrompt";
 import { inputRai, outputRai } from "./dynamicPrompt/formats";
-import { countMessagesTokens, getCopilotResponseAsString } from "../chat/utils";
+import { getCopilotResponseAsString } from "../chat/utils";
 import { officeSampleProvider } from "./commands/create/officeSamples";
 import { Spec } from "./common/skills/spec";
-import { Tokenizer } from "../chat/tokenizer";
-import { IChatTelemetryData } from "../chat/types";
-import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { ChatTelemetryData } from "../chat/telemetry";
+import { ExtendGeneratedTokensPerSecondToSpec } from "./handlers";
+import { OfficeChatTelemetryData } from "./telemetry";
 
 export async function purifyUserMessage(
   message: string,
   token: CancellationToken,
-  telemetryData: ChatTelemetryData
+  telemetryData: OfficeChatTelemetryData
 ): Promise<string> {
   const userMessagePrompt = `
   Please act as a professional Office JavaScript add-in developer and expert office application user, to rephrase the following meesage in an accurate and professional manner. Message: ${message}
@@ -43,12 +41,11 @@ export async function purifyUserMessage(
     token
   );
   const t1 = performance.now();
-  const requestTokens = countMessagesTokens(purifyUserMessage);
-  const responseTokens = Tokenizer.getInstance().tokenLength(purifiedResult);
-  telemetryData.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
-    requestTokens + responseTokens;
-  telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
-    (responseTokens / ((t1 - t0) / 1000)).toString() + ",";
+  telemetryData.extendResponseTokensPerSecondByCalculation(purifiedResult, t0, t1);
+  telemetryData.chatMessages.push(
+    ...purifyUserMessage,
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, purifiedResult)
+  );
   if (
     !purifiedResult ||
     purifiedResult.length === 0 ||
@@ -62,18 +59,17 @@ export async function purifyUserMessage(
 export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken,
-  telemetryMetadata: IChatTelemetryData
+  telemetryData: OfficeChatTelemetryData
 ): Promise<boolean> {
   const messages = buildDynamicPrompt(inputRai, request.prompt).messages;
   const t0 = performance.now();
   let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   const t1 = performance.now();
-  const requestTokens = countMessagesTokens(messages);
-  const responseTokens = Tokenizer.getInstance().tokenLength(response);
-  telemetryMetadata.measurements[TelemetryProperty.CopilotChatTotalTokens] +=
-    requestTokens + responseTokens;
-  telemetryMetadata.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] +=
-    (responseTokens / ((t1 - t0) / 1000)).toString() + ",";
+  telemetryData.extendResponseTokensPerSecondByCalculation(response, t0, t1);
+  telemetryData.chatMessages.push(
+    ...messages,
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
+  );
   if (!response) {
     throw new Error("Got empty response");
   }
@@ -109,10 +105,11 @@ async function isContentHarmful(
     const t0 = performance.now();
     const isHarmfulResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
     const t1 = performance.now();
-    const requestTokens = countMessagesTokens(messages);
-    const responseTokens = Tokenizer.getInstance().tokenLength(isHarmfulResponse);
-    spec.appendix.telemetryData.timeToFirstToken += requestTokens + responseTokens;
-    spec.appendix.telemetryData.responseTokensPerSecond.push(responseTokens / ((t1 - t0) / 1000));
+    ExtendGeneratedTokensPerSecondToSpec(isHarmfulResponse, t0, t1, spec);
+    spec.appendix.telemetryData.chatMessages.push(
+      ...messages,
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, isHarmfulResponse)
+    );
     if (
       !isHarmfulResponse ||
       isHarmfulResponse === "" ||

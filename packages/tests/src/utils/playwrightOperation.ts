@@ -1640,7 +1640,7 @@ export async function validateQueryOrg(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    messageExtensionActivate(page, options.appName);
+    await messageExtensionActivate(page, options.appName);
     const inputBar = await page?.waitForSelector("div.ui-box input.ui-box");
     await inputBar?.fill(options?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);

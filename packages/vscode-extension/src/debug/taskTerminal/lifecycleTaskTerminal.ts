@@ -11,10 +11,10 @@ import { Correlator, TaskDefaultValue } from "@microsoft/teamsfx-core";
 import { workspaceUri } from "../../globalVariables";
 import { runCommand } from "../../handlers";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { getLocalDebugSession } from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { getSystemInputs } from "../../utils/environmentUtils";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 
 interface LifecycleArgs {
   template?: string;

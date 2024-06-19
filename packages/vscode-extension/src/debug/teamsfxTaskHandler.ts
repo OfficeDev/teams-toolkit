@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
 import {
@@ -25,24 +25,25 @@ import {
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
+import { getNpmInstallLogInfo, getTestToolLogInfo } from "../utils/localEnvManagerUtils";
 import {
   DebugNoSessionId,
-  endLocalDebugSession,
-  getLocalDebugSession,
-  getLocalDebugSessionId,
-  getNpmInstallLogInfo,
-  getTestToolLogInfo,
-} from "./commonUtils";
-import {
   errorDetail,
   issueChooseLink,
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
-} from "./constants";
+} from "./common/debugConstants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
-import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
+import { TeamsfxDebugConfiguration } from "./common/teamsfxDebugConfiguration";
+import { allRunningTeamsfxTasks } from "./common/globalVariables";
+import {
+  getLocalDebugSession,
+  endLocalDebugSession,
+  getLocalDebugSessionId,
+} from "./common/localDebugSession";
+import { allRunningDebugSessions } from "./officeTaskHandler";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -55,9 +56,6 @@ class NpmInstallTaskInfo {
     return (performance.now() - this.startTime) / 1000;
   }
 }
-
-export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
-export const allRunningDebugSessions: Set<string> = new Set<string>();
 
 const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
 

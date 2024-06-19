@@ -1,23 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as vscode from "vscode";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedIn } from "../commonlib/common/constant";
-import * as localizeUtils from "../utils/localizeUtils";
+import { localize } from "../utils/localizeUtils";
 import VsCodeLogInstance from "../commonlib/log";
-import * as handlerBase from "../handlers";
-
-import * as vscode from "vscode";
+import { signInM365 } from "../handlers";
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import * as core from "@microsoft/teamsfx-core";
-import { PackageService } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  MosServiceScope,
+  PackageService,
+  SummaryConstant,
+} from "@microsoft/teamsfx-core";
+import { wrapError } from "../error/common";
 
 export async function checkCopilotAccessHandler(): Promise<Result<null, FxError>> {
   // check m365 login status, if not logged in, pop up a message
-  const status = await M365TokenInstance.getStatus({ scopes: core.AppStudioScopes });
+  const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
   if (!(status.isOk() && status.value.status === signedIn)) {
-    const message = localizeUtils.localize("teamstoolkit.m365.needSignIn.message");
-    const signin = localizeUtils.localize("teamstoolkit.common.signin");
+    const message = localize("teamstoolkit.m365.needSignIn.message");
+    const signin = localize("teamstoolkit.common.signin");
     const userSelected = await vscode.window.showInformationMessage(
       message,
       { modal: false },
@@ -27,15 +31,15 @@ export async function checkCopilotAccessHandler(): Promise<Result<null, FxError>
     // user may cancel the follow.
     if (userSelected) {
       try {
-        await handlerBase.signInM365();
+        await signInM365();
       } catch (e) {
-        return Promise.resolve(handlerBase.wrapError(e as Error));
+        return Promise.resolve(wrapError(e as Error));
       }
     }
   }
 
   // if logged in, check copilot access with a different scopes
-  const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? core.MosServiceScope;
+  const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
   const copilotTokenRes = await M365TokenInstance.getAccessToken({
     scopes: [copilotCheckServiceScope],
   });
@@ -47,14 +51,14 @@ export async function checkCopilotAccessHandler(): Promise<Result<null, FxError>
     if (hasCopilotAccess) {
       VsCodeLogInstance.semLog({
         content: "Your Microsoft 365 account has Copilot access enabled",
-        status: core.SummaryConstant.Succeeded,
+        status: SummaryConstant.Succeeded,
       });
     } else {
       VsCodeLogInstance.semLog([
         {
           content:
             "Microsoft 365 account administrator hasn't enabled Copilot access for this account",
-          status: core.SummaryConstant.Failed,
+          status: SummaryConstant.Failed,
         },
         {
           content:

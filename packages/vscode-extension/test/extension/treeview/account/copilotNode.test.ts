@@ -4,12 +4,12 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
-import * as handlers from "../../../../src/handlers";
 import { infoIcon, passIcon, warningIcon } from "../../../../src/treeview/account/common";
 import { CopilotNode } from "../../../../src/treeview/account/copilotNode";
 import { DynamicNode } from "../../../../src/treeview/dynamicNode";
+import * as checkCopilotCallback from "../../../../src/handlers/checkCopilotCallback";
 
-describe("sideloadingNode", () => {
+describe("copilotNode", () => {
   const sandbox = sinon.createSandbox();
   const eventEmitter = new vscode.EventEmitter<DynamicNode | undefined | void>();
 
@@ -29,7 +29,7 @@ describe("sideloadingNode", () => {
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
     sandbox.stub(PackageService.prototype, "getCopilotStatus").returns(Promise.resolve(false));
-    sandbox.stub(handlers, "checkCopilotCallback");
+    sandbox.stub(checkCopilotCallback, "checkCopilotCallback");
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
 

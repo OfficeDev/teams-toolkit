@@ -50,3 +50,7 @@ export const MeasurementCompilieErrorTopLevelExpressionForbidenCount =
   "TopLevelExpressionForbidenCount";
 export const MeasurementCompilieErrorExpressionExpectedCount = "ExpressionExpectedCount";
 export const MeasurementCompilieErrorOthersCount = "CompilieErrorOthersCount";
+export const MeasurementCodeGenPreScanTimeInTotalSec = "CodeGenPreScanTimeInTotalSec";
+export const MeasurementCodeGenTaskBreakdownTimeInTotalSec = "CodeGenTaskBreakdownTimeInTotalSec";
+export const MeasurementCodeGenGetSampleTimeInTotalSec = "CodeGenGetSampleTimeInTotalSec";
+export const MeasurementErrorsAfterCorrection = "ErrorsAfterCorrection";

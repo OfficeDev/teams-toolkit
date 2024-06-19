@@ -77,16 +77,16 @@ const enum telemetryEvents {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+  allowBearerTokenAuth: true,
   allowMultipleParameters: true,
-  allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth),
+  allowOauth2: true,
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
   allowResponseSemantics: true,
   allowConversationStarters: true,
-  allowConfirmation: true,
+  allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
@@ -803,9 +803,9 @@ async function updateAdaptiveCardForCustomApi(
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
-      const name = item.item.operationId;
+      const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
       const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
-      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name!}.json`);
+      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }
   }
@@ -874,7 +874,8 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
     const result = await path.{{method}}(parameter.path, parameter.body, {
       params: parameter.query,
     });
-    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    const cardName = "{{operationId}}".replace(/[^a-zA-Z0-9]/g, "_");
+    const card = generateAdaptiveCard("../adaptiveCards/" + cardName + ".json", result);
     await context.sendActivity({ attachments: [card] });
   } else {
     await context.sendActivity("no result");
@@ -891,7 +892,8 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
     const result = await path.{{method}}(parameter.path, parameter.body, {
       params: parameter.query,
     });
-    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    const cardName = "{{operationId}}".replace(/[^a-zA-Z0-9]/g, "_");
+    const card = generateAdaptiveCard("../adaptiveCards/" + cardName + ".json", result);
     await context.sendActivity({ attachments: [card] });
   } else {
     await context.sendActivity("no result");

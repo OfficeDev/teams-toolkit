@@ -6,8 +6,9 @@ import * as vscode from "vscode";
 
 import {
   Correlator,
+  FeatureFlags,
   SampleConfig,
-  isChatParticipantEnabled,
+  featureFlagManager,
   sampleProvider,
 } from "@microsoft/teamsfx-core";
 
@@ -15,7 +16,7 @@ import * as extensionPackage from "../../package.json";
 import { GlobalKey } from "../constants";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSampleApp } from "../handlers";
+import { downloadSampleApp } from "../handlers/downloadSample";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,
@@ -23,7 +24,7 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
@@ -331,7 +332,7 @@ export class WebviewPanel {
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
     );
 
-    const allowChat = isChatParticipantEnabled();
+    const allowChat = featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();

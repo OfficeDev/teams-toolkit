@@ -96,12 +96,13 @@ class CLIEngine {
 
     const executeRes = await this.execute(context, root, remainingArgs);
     if (executeRes.isErr()) {
-      this.processResult(context, executeRes.error);
+      await this.processResult(context, executeRes.error);
     } else {
-      this.processResult(context);
+      await this.processResult(context);
     }
     if (context.command.name !== "preview" || context.globalOptionValues.help) {
       // TODO: consider to remove the hardcode
+      await CliTelemetry.flush();
       process.exit();
     }
   }
@@ -246,7 +247,6 @@ class CLIEngine {
       Progress.end(false);
       return err(assembleError(e));
     } finally {
-      await CliTelemetry.flush();
       Progress.end(true);
     }
 
@@ -595,7 +595,7 @@ class CLIEngine {
     }
     return ok(undefined);
   }
-  processResult(context?: CLIContext, fxError?: FxError): void {
+  async processResult(context?: CLIContext, fxError?: FxError): Promise<void> {
     if (context && context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
@@ -617,6 +617,7 @@ class CLIEngine {
     }
     if (fxError) {
       this.printError(fxError);
+      await CliTelemetry.flush();
       process.exit(1);
     }
   }

@@ -1219,6 +1219,7 @@ describe("addPluginQuestionNode", async () => {
       id: "1",
       version: "1",
       manifestVersion: "",
+      isApiMeAAD: false,
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1275,6 +1276,7 @@ describe("addPluginQuestionNode", async () => {
       id: "1",
       version: "1",
       manifestVersion: "",
+      isApiMeAAD: false,
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1333,6 +1335,7 @@ describe("addPluginQuestionNode", async () => {
         id: "1",
         version: "1",
         manifestVersion: "",
+        isApiMeAAD: false,
       });
       const inputs: Inputs = {
         platform: Platform.VSCode,

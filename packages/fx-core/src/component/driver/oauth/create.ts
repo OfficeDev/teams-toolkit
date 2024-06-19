@@ -4,6 +4,7 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
@@ -13,7 +14,6 @@ import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironm
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   OauthRegistration,
   OauthRegistrationAppType,
@@ -62,7 +62,10 @@ export class CreateOauthDriver implements StepDriver {
 
       if (state && state.configurationId) {
         try {
-          await AppStudioClient.getOauthRegistrationById(appStudioToken, state.configurationId);
+          await teamsDevPortalClient.getOauthRegistrationById(
+            appStudioToken,
+            state.configurationId
+          );
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.skipCreateOauth,
@@ -98,7 +101,7 @@ export class CreateOauthDriver implements StepDriver {
           authInfo
         );
 
-        const oauthRegistrationRes = await AppStudioClient.createOauthRegistration(
+        const oauthRegistrationRes = await teamsDevPortalClient.createOauthRegistration(
           appStudioToken,
           oauthRegistration
         );

@@ -79,33 +79,37 @@ export class RetryHandler {
   }
 }
 
-class TeamsDevPortalClient {
-  globalEndpoint: string;
+export class TeamsDevPortalClient {
   regionEndpoint?: string;
-  constructor() {
+
+  getGlobalEndpoint(): string {
     if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-      this.globalEndpoint = "https://dev-int.teams.microsoft.com";
+      return "https://dev-int.teams.microsoft.com";
     } else {
-      this.globalEndpoint = "https://dev.teams.microsoft.com";
+      return "https://dev.teams.microsoft.com";
     }
   }
 
-  setRegionEndpoint(regionEndpoint: string) {
+  setRegionEndpoint(regionEndpoint: string): void {
     this.regionEndpoint = regionEndpoint;
   }
 
-  async setRegionEndpointByToken(regionToken: string) {
+  async setRegionEndpointByToken(authSvcToken: string): Promise<void> {
+    if (this.getGlobalEndpoint() === "https://dev-int.teams.microsoft.com") {
+      // Do not set region for INT env
+      return;
+    }
     const requester = WrappedAxiosClient.create({
       baseURL: "https://authsvc.teams.microsoft.com",
     });
-    requester.defaults.headers.common["Authorization"] = `Bearer ${regionToken}`;
+    requester.defaults.headers.common["Authorization"] = `Bearer ${authSvcToken}`;
     requester.defaults.headers.common["Client-Source"] = "teamstoolkit";
     const response = await RetryHandler.Retry(() => requester.post("/v1.0/users/region"));
     this.regionEndpoint = response?.data?.regionGtms?.teamsDevPortal as string;
   }
 
-  getEndpoint() {
-    return this.regionEndpoint || this.globalEndpoint;
+  getEndpoint(): string {
+    return this.regionEndpoint || this.getGlobalEndpoint();
   }
 
   /**

@@ -161,17 +161,19 @@ export interface ImageElement {
   $when: string;
 }
 
+export type AdaptiveCardBody = Array<TextBlockElement | ImageElement | ArrayElement>;
+
 export interface ArrayElement {
   type: string;
   $data: string;
-  items: Array<TextBlockElement | ImageElement | ArrayElement>;
+  items: AdaptiveCardBody;
 }
 
 export interface AdaptiveCard {
   type: string;
   $schema: string;
   version: string;
-  body: Array<TextBlockElement | ImageElement | ArrayElement>;
+  body: AdaptiveCardBody;
 }
 
 export interface PreviewCardTemplate {

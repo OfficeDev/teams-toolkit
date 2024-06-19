@@ -2111,6 +2111,10 @@ export async function validateContact(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("popup_page"),
+            fullPage: true,
+          });
           await popup.click("input.button[type='submit'][value='Accept']");
         }
 
@@ -2118,10 +2122,6 @@ export async function validateContact(
       });
     }
     await page.waitForTimeout(10000);
-    await page.screenshot({
-      path: getPlaywrightScreenshotPath("page_actived"),
-      fullPage: true,
-    });
     // verify add person
     await addPerson(frame, options?.displayName || "");
     // verify delete person

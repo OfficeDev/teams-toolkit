@@ -149,7 +149,7 @@ export function activate(): Result<Void, FxError> {
   return result;
 }
 
-async function refreshEnvTreeOnEnvFileChanged(workspacePath: string, files: readonly Uri[]) {
+export async function refreshEnvTreeOnEnvFileChanged(workspacePath: string, files: readonly Uri[]) {
   let needRefresh = false;
   for (const file of files) {
     // check if file is env config
@@ -165,7 +165,10 @@ async function refreshEnvTreeOnEnvFileChanged(workspacePath: string, files: read
   }
 }
 
-async function refreshEnvTreeOnProjectSettingFileChanged(workspacePath: string, filePath: string) {
+export async function refreshEnvTreeOnProjectSettingFileChanged(
+  workspacePath: string,
+  filePath: string
+) {
   const projectSettingsPath = path.resolve(
     workspacePath,
     `.${ConfigFolderName}`,

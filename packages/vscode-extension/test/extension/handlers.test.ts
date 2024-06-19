@@ -697,6 +697,7 @@ describe("handlers", () => {
     });
 
     it("deployAadManifest happy path", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(globalVariables.core, "deployAadManifest").resolves(ok(undefined));
       const input: Inputs = systemEnvUtils.getSystemInputs();
       const res = await handlers.runCommand(Stage.deployAad, input);

@@ -12,60 +12,6 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
-export function isCLIDotNetEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
-}
-
-export function isCopilotPluginEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin);
-}
-
-export function isApiCopilotPluginEnabled(): boolean {
-  return (
-    featureFlagManager.getBooleanValue(FeatureFlags.ApiCopilotPlugin) && isCopilotPluginEnabled()
-  );
-}
-
-export function enableTestToolByDefault(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TestTool);
-}
-
-export function enableMETestToolByDefault(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.METestTool);
-}
-
-export function isNewGeneratorEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator);
-}
-
-export function isOfficeJSONAddinEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin);
-}
-
-export function isTdpTemplateCliTestEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest);
-}
-
-export function isAsyncAppValidationEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation);
-}
-
-export function isNewProjectTypeEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType);
-}
-
-export function isChatParticipantEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
-}
-
-export function isCopilotAuthEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
-}
-
-export function isSMEOAuthEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false
@@ -129,13 +75,9 @@ export interface FeatureFlag {
 export class FeatureFlags {
   static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
   static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
-  static readonly ApiCopilotPlugin = {
-    name: FeatureFlagName.ApiCopilotPlugin,
-    defaultValue: "false",
-  };
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
-  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "false" };
+  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,
@@ -150,7 +92,6 @@ export class FeatureFlags {
     name: FeatureFlagName.ChatParticipant,
     defaultValue: "false",
   };
-  static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
 }

@@ -9,7 +9,7 @@ import vsCodeLogProvider from "../commonlib/log";
 import jscodeshift = require("jscodeshift");
 import transform from "./migrationTool/replaceSDK";
 import transformTs from "./migrationTool/ts/replaceTsSDK";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as constants from "./constants";

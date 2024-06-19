@@ -258,21 +258,13 @@ export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): st
   \`\`\`
 
   The output must be a JSON object wrapped into a markdown json block, and it will contain the following keys:
-  - spec. value is a string.
-  - funcs. value is a array of string.
+  - "spec". value is a string.
+  - "funcs". value is a array of string.
 
   # Your tasks:
-  Read the input, understand the intention and request of the ask, and think about how Office JavaScript API could help to address them. Then deduce your think result to two parts:
-  1. Write a clear and detailed functional specification that explains how you will address the given ask, especially for parts that interact with Office applications.
-  - The specification should focus on actions, not APIs, and be concise and easy to understand.
-  - The specification should only contains content of request explicitly asked by user.
-  - The specification should use the term been widely used in the software developing world.
-  - The specification should use the term been widely used in the context of Microsoft Office application depends on the ask.
-  - The specification should use the term been widely used in the context of Office JavaScript Add-in development.
-  Add the specification to the "spec" field of the output JSON object. 
-  2. Based on the spec, think about how to write the code, and wrap the code into a single function, suggest a name for that TypeScript function. And provide a one-line description for that function, that includes the function's core functionality and actions in details. Do not break the description into sub-items. Add the function description to the "funcs" field of the output JSON object.
+  Summarize the main needs of the user's ask. Write a step by step coding instructions based on the summary using Office JavaScript API, focus on parts that interact with Office applications. Keep instructions short and attach to the main needs. Don't generate extra or additional steps. Don't generate steps those optional. Use apostrophe rather than double quotes. Add the instruction to the "spec" field of the output JSON object. Suggest a function name with description to the "funcs" field of the output JSON object.
 
-  # Example of specification:
+  # Example of instruction:
 
   \`\`\`text
   To retrieve the content of the initial footnote in a Word document using Office JavaScript APIs, you can follow these steps:
@@ -290,15 +282,15 @@ export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): st
   Beyond the JSON object. You should not add anything else to the output.
   The example of output you must to follow: 
   { 
-    spec: "The functional spec",
-    funcs: ["function1 description"] 
+    "spec": "The functional spec",
+    "funcs": ["function1 description"] 
   }
   `;
 }
 
 export function getCodeSamplePrompt(codeSample: string): string {
   return `
-  Some code snippets provided below, that they may address different user scenarios. Read those code and get list of scenarios those code try to address. Find if any scenarios match the user's ask, and use the relevant code snippet or code logic as a reference in your task.
+  Some code snippets provided below. Read those code and get list of scenarios those code try to address, those may or may not related to current user's ask. Use the relevant part as a reference in your task if any.
 
   \`\`\`typescript
   ${codeSample}
@@ -340,12 +332,6 @@ export function getGenerateCodeUserPrompt(
   You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on TypeScript, JavaScript, popular algorithm, Office Add-ins API, and deep understanding on the feature of Office applications (Word, Excel, PowerPoint). You should help the user to automate a certain process or accomplish a certain task, by generate TypeScript code using Office JavaScript APIs.
   
   # Context:
-  The input is:
-
-  \`\`\`text
-  ${codeSpec}
-  \`\`\`
-
   The output must be a markdown code typescript code block and it will contain the generated code, which is looks like:
 
   \`\`\`typescript
@@ -353,7 +339,11 @@ export function getGenerateCodeUserPrompt(
   \`\`\`
   
   # Your tasks:
-  Analyze this input, focus on the mentioned asks, and generate code to fulfill the descriptions of following listed functions:
+  Generate code based on the following specification:
+  \`\`\`text
+  ${codeSpec}
+  \`\`\`
+  The code should include the following functions:
   ${functionSpec.map((spec) => `- ${spec}`).join("\n")} 
   The generated code **MUST** include implementations of mentioned functions listed in the input. Do not generate code to invoke the "main" function or "entry" function.
   You should follow the code guidance on generating the code.
@@ -408,23 +398,12 @@ Given a Office JavaScript add-in code snippet. It have some errors and warnings 
 \`\`\`typescript
 ${codeSnippet};
 \`\`\`
-${
-  !!additionalInfo
-    ? "The prior fix is inapprioriate, some details as '" +
-      additionalInfo +
-      "', you should learn from your past errors and avoid same problem in this try."
-    : ""
-}
-
-${
-  historicalErrors.length > 0
-    ? "The historical errors you made in previous tries that you should avoid:\n- " +
-      historicalErrors.join("\n\n- ")
-    : ""
-}
 
 # Your tasks:
-Fix all errors on the given code snippet then return the updated code snippet back. If sample code is provided, read and understand it. Which it should contains approaches and code snippets on same scenarios. Use if as reference if applicable.
+Please fix errors and give the right code in a markdown code block back. This is an example of return:
+\`\`\`typescript
+// The fixed code snippet
+\`\`\`
 
 Let's think step by step.
     `;
@@ -436,20 +415,26 @@ export function getFixIssueDefaultSystemPrompt(
   errorMessages: string[],
   warningMessage: string[]
 ): string {
+  let errorStr = "";
+  if (errorMessages.length > 0) {
+    errorStr =
+      "It contains the following compile errors along with fix suggestions after each error:";
+    errorStr += errorMessages.map((error) => `\n- ${error}`).join("");
+  }
+  let warningStr = "";
+  if (warningMessage.length > 0) {
+    warningStr = "It contains the following warnings along with suggestions after each:";
+    warningStr += warningMessage.map((error) => `\n- ${error}`).join("");
+  }
   return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  For the given code snippet:
+  ${errorStr}
+  ${warningStr}
   
-  # Context:
-  The user given code snippet generated based on steps below, you should make some code changes on the code snippet, then return the code snippet with changes back.
-  - ${substeps.join("\n- ")}
-  
-  # Your task:
-  1. Fix listed errors and warining below all together. Don't introduce new errors.
-  - ${errorMessages.join("\n- ")}
-  - ${warningMessage.join("\n- ")}
-  2. update the user given code snippet with prior fixes.
-  3. Return the updated user given code snippet.
-  **You must always strickly follow the coding rule, and format of output**.
+  Please fix errors and check warnings, and give the right code in a markdown code block back. This is an example of return:
+  \`\`\`typescript
+  // The code snippet
+  \`\`\`
   
   ${getCodeGenerateGuidance(host)}
   
@@ -457,12 +442,6 @@ export function getFixIssueDefaultSystemPrompt(
   - The output should only contains code snippet. Beyond that, nothing else should be included in the output. 
   - The code output should be in one single markdown code block. 
   - Don't explain the code changes, just return the fixed code snippet.
-  
-  Example of output:
-  That code snippet should surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
-  \`\`\`typescript
-  // The code snippet
-  \`\`\`
   
   Let's think step by step.
       `;

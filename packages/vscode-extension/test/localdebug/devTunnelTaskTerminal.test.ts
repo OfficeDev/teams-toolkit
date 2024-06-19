@@ -19,8 +19,7 @@ import {
   ManagementApiVersions,
 } from "@microsoft/dev-tunnels-management";
 import { FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
-import { envUtil } from "@microsoft/teamsfx-core";
-import { pathUtils } from "@microsoft/teamsfx-core";
+import { envUtil, pathUtils } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../src/commonlib/log";
 import { localTelemetryReporter } from "../../src/debug/localTelemetryReporter";
@@ -34,9 +33,8 @@ import {
 import { DevTunnelStateManager } from "../../src/debug/taskTerminal/utils/devTunnelStateManager";
 import { DevTunnelManager } from "../../src/debug/taskTerminal/utils/devTunnelManager";
 
-import { ExtensionErrors, ExtensionSource } from "../../src/error";
+import { ExtensionErrors, ExtensionSource } from "../../src/error/error";
 import * as globalVariables from "../../src/globalVariables";
-import { tools } from "../../src/handlers";
 
 chai.use(chaiAsPromised);
 
@@ -72,6 +70,10 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
 
 describe("devTunnelTaskTerminal", () => {
   const baseDir = path.resolve(__dirname, "data", "devTunnelTaskTerminal");
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe("do", () => {
     const sandbox = sinon.createSandbox();
@@ -114,7 +116,7 @@ describe("devTunnelTaskTerminal", () => {
       const mockTunnelArray: Tunnel[] = initTunnel;
       sandbox.stub(process, "env").value({ TEAMSFX_DEV_TUNNEL_TEST: "true" });
       sandbox
-        .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+        .stub(globalVariables.tools.tokenProvider.m365TokenProvider, "getAccessToken")
         .resolves(ok("test-token"));
       sandbox.stub(TunnelManagementHttpClient.prototype, "getTunnel").callsFake(async (t) => {
         return (
@@ -593,7 +595,7 @@ describe("devTunnelTaskTerminal", () => {
           },
         },
       ]);
-      sandbox.assert.calledWith(writeEnvStub, sinon.match.any, "local", {
+      sandbox.assert.calledWith(writeEnvStub, sandbox.match.any, "local", {
         BOT_ENDPOINT: "https://id-port.cluster.devtunnels.ms",
         BOT_DOMAIN: "id-port.cluster.devtunnels.ms",
       });
@@ -625,7 +627,7 @@ describe("devTunnelTaskTerminal", () => {
           writeToEnvironmentFile: {},
         },
       ]);
-      sandbox.assert.calledWith(writeEnvStub, sinon.match.any, "local", {
+      sandbox.assert.calledWith(writeEnvStub, sandbox.match.any, "local", {
         BOT_DOMAIN: "id-3978.cluster.devtunnels.ms",
         TAB_ENDPOINT: "https://id-53000.cluster.devtunnels.ms",
       });

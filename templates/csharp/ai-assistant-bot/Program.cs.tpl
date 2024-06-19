@@ -32,7 +32,7 @@ builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
 if (string.IsNullOrWhiteSpace(config.OpenAI.ApiKey) || string.IsNullOrWhiteSpace(config.OpenAI.AssistantId))
 {
-    throw new Exception("Missing configuration OpenAI.ApiKey or OpenAI.AssistantId. See GettingStarted.md to prepare your own OpenAI Assistant.");
+    throw new Exception("Missing configuration OpenAI.ApiKey or OpenAI.AssistantId. See README.md to prepare your own OpenAI Assistant.");
 }
 
 builder.Services.AddSingleton(_ => new AssistantsPlannerOptions(config.OpenAI.ApiKey, config.OpenAI.AssistantId));

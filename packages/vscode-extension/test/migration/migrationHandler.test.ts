@@ -14,7 +14,7 @@ import {
   teamsManifestVersion,
 } from "../../src/migration/constants";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { ExtensionErrors } from "../../src/error";
+import { ExtensionErrors } from "../../src/error/error";
 const PackageJson = require("@npmcli/package-json");
 
 describe("TeamsAppMigrationHandler", () => {

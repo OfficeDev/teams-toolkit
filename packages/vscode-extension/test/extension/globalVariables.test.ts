@@ -8,14 +8,20 @@ import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/proj
 
 describe("Global Variables", () => {
   describe("isSPFxProject", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it("return false for non-spfx project", async () => {
-      sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return false;
       });
-      sinon.stub(fs, "pathExistsSync").returns(true);
-      sinon.stub(projectSettingHelper, "isValidProject").returns(true);
-      sinon.stub(globalVariables, "workspaceUri").returns({ fsPath: "/test" });
-      sinon.stub(fs, "readdirSync").returns(["package.json"] as any);
+      sandbox.stub(fs, "pathExistsSync").returns(true);
+      sandbox.stub(projectSettingHelper, "isValidProject").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").returns({ fsPath: "/test" });
+      sandbox.stub(fs, "readdirSync").returns(["package.json"] as any);
 
       globalVariables.initializeGlobalVariables({
         globalState: {
@@ -25,20 +31,18 @@ describe("Global Variables", () => {
       } as unknown as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(false);
-
-      sinon.restore();
     });
 
     it("return true for spfx project", () => {
-      sinon.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
+      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return false;
       });
-      sinon.stub(fs, "pathExistsSync").resolves(true);
-      sinon.stub(projectSettingHelper, "isValidProject").returns(true);
-      sinon.stub(projectSettingHelper, "isValidOfficeAddInProject").returns(false);
-      sinon.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
-      sinon.stub(fs, "readdirSync").returns([".yo-rc.json"] as any);
-      sinon
+      sandbox.stub(fs, "pathExistsSync").resolves(true);
+      sandbox.stub(projectSettingHelper, "isValidProject").returns(true);
+      sandbox.stub(projectSettingHelper, "isValidOfficeAddInProject").returns(false);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+      sandbox.stub(fs, "readdirSync").returns([".yo-rc.json"] as any);
+      sandbox
         .stub(fs, "readJsonSync")
         .returns({ "@microsoft/generator-sharepoint": { version: " 1.16.0" } });
 
@@ -52,13 +56,11 @@ describe("Global Variables", () => {
       } as unknown as ExtensionContext);
 
       chai.expect(globalVariables.isSPFxProject).equals(true);
-
-      sinon.restore();
     });
 
     it("set log folder", () => {
-      sinon.stub(fs, "pathExists").resolves(false);
-      sinon.stub(fs, "mkdirSync").callsFake(() => {});
+      sandbox.stub(fs, "pathExists").resolves(false);
+      sandbox.stub(fs, "mkdirSync").callsFake(() => {});
       globalVariables.initializeGlobalVariables({
         globalState: {
           get: () => undefined,
@@ -68,21 +70,18 @@ describe("Global Variables", () => {
         },
       } as unknown as ExtensionContext);
       chai.expect(globalVariables.defaultExtensionLogPath).equals("fakePath");
-      sinon.restore();
     });
 
     it("set commandIsRunning", async () => {
       globalVariables.setCommandIsRunning(true);
 
       chai.expect(globalVariables.commandIsRunning).equals(true);
-      sinon.restore();
     });
 
     it("unsetIsTeamsFxProject()", async () => {
       globalVariables.unsetIsTeamsFxProject();
 
       chai.expect(globalVariables.isTeamsFxProject).equals(false);
-      sinon.restore();
     });
   });
 });

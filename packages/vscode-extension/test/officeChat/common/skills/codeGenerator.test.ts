@@ -237,7 +237,8 @@ describe("codeGenerator", () => {
       true, //isCustomFunction
       spec.appendix.host,
       spec.userInput,
-      "Some code sample"
+      "Some code sample",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -258,7 +259,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -285,7 +287,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -316,7 +319,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -347,7 +351,8 @@ describe("codeGenerator", () => {
       false,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     const mainFunc =
@@ -839,6 +844,9 @@ describe("codeGenerator", () => {
     spec.appendix.codeSample = "sample code";
     spec.appendix.codeTaskBreakdown = ["task1", "task2"];
     spec.appendix.codeExplanation = "some explanation";
+    sandbox
+      .stub(codeGenerator, "userAskBreakdownAsync")
+      .resolves({ spec: "fakeSpec", funcs: ["fakeData1"] });
     sandbox.stub(codeGenerator, "generateCode").resolves("Some code");
 
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);

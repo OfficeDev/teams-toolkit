@@ -9,11 +9,7 @@ const config = require("./config");
 const commandApp = new ConversationBot({
   // The bot id and password to create CloudAdapter.
   // See https://aka.ms/about-bot-adapter to learn more about adapters.
-  adapterConfig: {
-    MicrosoftAppId: config.botId,
-    MicrosoftAppPassword: config.botPassword,
-    MicrosoftAppType: "MultiTenant",
-  },
+  adapterConfig: config,
   command: {
     enabled: true,
     commands: [new HelloWorldCommandHandler()],

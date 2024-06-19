@@ -13,6 +13,7 @@ import {
 } from "../../../question/constants";
 
 export enum TemplateNames {
+  Empty = "empty",
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   SsoTabObo = "sso-tab-with-obo-flow",
@@ -59,6 +60,7 @@ export enum TemplateNames {
 
 // TODO: remove this mapping after all generators are migrated to new generator pattern
 export const Feature2TemplateName = {
+  [`${CapabilityOptions.empty().id}:undefined`]: TemplateNames.Empty,
   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
   [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
@@ -159,6 +161,7 @@ export function getTemplateName(inputs: Inputs): TemplateNames {
 
 // When multiple template name matches, only the top one will be picked.
 export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = new Map([
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.empty().id }, TemplateNames.Empty],
   [{ [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id }, TemplateNames.Tab],
   [{ [QuestionNames.Capabilities]: CapabilityOptions.tab().id }, TemplateNames.SsoTab],
   [
@@ -279,10 +282,6 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     TemplateNames.AIAssistantBot,
   ],
   [
-    { [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id },
-    TemplateNames.ApiPluginFromScratch,
-  ],
-  [
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
@@ -351,5 +350,27 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
       [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.assistantsApi().id,
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
+  ],
+  // Copilot Plugin
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+    },
+    TemplateNames.ApiPluginFromScratch,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
+    },
+    TemplateNames.ApiPluginFromScratchBearer,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
+    },
+    TemplateNames.ApiPluginFromScratchOAuth,
   ],
 ]);

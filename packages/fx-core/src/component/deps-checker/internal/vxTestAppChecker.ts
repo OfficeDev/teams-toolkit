@@ -5,7 +5,7 @@ import * as path from "path";
 import * as os from "os";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { Messages, vxTestAppInstallHelpLink } from "../constant";
+import { Messages } from "../constant";
 import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
@@ -52,10 +52,8 @@ export class VxTestAppChecker implements DepsChecker {
   public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(
-          Messages.failToValidateVxTestAppInstallOptions(),
-          vxTestAppInstallHelpLink
-        )
+        // documentation no longer exists, replaced with empty string.
+        new VxTestAppCheckError(Messages.failToValidateVxTestAppInstallOptions(), "")
       );
     }
 
@@ -78,7 +76,8 @@ export class VxTestAppChecker implements DepsChecker {
     // TODO: need to chmod to add executable permission for non-Windows OS
     if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(Messages.failToValidateVxTestApp(), vxTestAppInstallHelpLink)
+        // documentation no longer exists, replaced with empty string.
+        new VxTestAppCheckError(Messages.failToValidateVxTestApp(), "")
       );
     }
 
@@ -99,10 +98,8 @@ export class VxTestAppChecker implements DepsChecker {
   public async getInstallationInfo(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(
-          Messages.failToValidateVxTestAppInstallOptions(),
-          vxTestAppInstallHelpLink
-        )
+        // documentation no longer exists, replaced with empty string.
+        new VxTestAppCheckError(Messages.failToValidateVxTestAppInstallOptions(), "")
       );
     }
 

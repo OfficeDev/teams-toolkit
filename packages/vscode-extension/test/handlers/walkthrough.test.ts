@@ -1,4 +1,5 @@
-import * as handlers from "../../src/handlers";
+import * as handlers from "../../src/handlers/sharedOpts";
+import * as environmentUtils from "../../src/utils/systemEnvUtils";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { createProjectFromWalkthroughHandler } from "../../src/handlers/walkthrough";
 
@@ -9,8 +10,6 @@ import { Inputs, ok } from "@microsoft/teamsfx-api";
 describe("walkthrough", () => {
   const sandbox = sinon.createSandbox();
 
-  beforeEach(() => {});
-
   afterEach(() => {
     sandbox.restore();
   });
@@ -19,7 +18,7 @@ describe("walkthrough", () => {
     const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     const inputs = {} as Inputs;
-    const systemInputsStub = sandbox.stub(handlers, "getSystemInputs").callsFake(() => {
+    const systemInputsStub = sandbox.stub(environmentUtils, "getSystemInputs").callsFake(() => {
       return inputs;
     });
     //const systemInputsStub = sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);

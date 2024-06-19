@@ -12,17 +12,17 @@ import * as cp from "child_process";
 import * as util from "util";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "../../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../../error";
-import * as globalVariables from "../../globalVariables";
-import { core, getSystemInputs } from "../../handlers";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
+import { core, workspaceUri } from "../../globalVariables";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { getLocalDebugSession } from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import {
   launchingTeamsClientDisplayMessages,
   openTerminalDisplayMessage,
   openTerminalMessage,
-} from "../constants";
+} from "../common/debugConstants";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
@@ -89,7 +89,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   private openUrl(url: string): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>((resolve) => {
       const options: cp.SpawnOptions = {
-        cwd: globalVariables.workspaceUri?.fsPath ?? "",
+        cwd: workspaceUri?.fsPath ?? "",
         shell: false,
         detached: false,
       };

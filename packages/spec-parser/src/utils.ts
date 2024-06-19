@@ -4,7 +4,15 @@
 
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "./constants";
-import { AuthInfo, ErrorResult, ErrorType, ParseOptions } from "./interfaces";
+import {
+  AdaptiveCardBody,
+  ArrayElement,
+  AuthInfo,
+  AuthType,
+  ErrorResult,
+  ErrorType,
+  ParseOptions,
+} from "./interfaces";
 import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
 import { SpecParserError } from "./specParserError";
 
@@ -27,15 +35,15 @@ export class Utils {
     return Object.keys(bodyObject?.content || {}).length > 1;
   }
 
-  static isBearerTokenAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+  static isBearerTokenAuth(authScheme: AuthType): boolean {
     return authScheme.type === "http" && authScheme.scheme === "bearer";
   }
 
-  static isAPIKeyAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+  static isAPIKeyAuth(authScheme: AuthType): boolean {
     return authScheme.type === "apiKey";
   }
 
-  static isOAuthWithAuthCodeFlow(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+  static isOAuthWithAuthCodeFlow(authScheme: AuthType): boolean {
     return !!(
       authScheme.type === "oauth2" &&
       authScheme.flows &&
@@ -450,5 +458,34 @@ export class Utils {
     const serverUrl = operationServer || methodServer || rootServer;
 
     return serverUrl;
+  }
+
+  static limitACBodyProperties(body: AdaptiveCardBody, maxCount: number): AdaptiveCardBody {
+    const result: AdaptiveCardBody = [];
+    let currentCount = 0;
+
+    for (const element of body) {
+      if (element.type === ConstantString.ContainerType) {
+        const items = this.limitACBodyProperties(
+          (element as ArrayElement).items,
+          maxCount - currentCount
+        );
+
+        result.push({
+          type: ConstantString.ContainerType,
+          $data: (element as ArrayElement).$data,
+          items: items,
+        });
+
+        currentCount += items.length;
+      } else {
+        if (currentCount < maxCount) {
+          result.push(element);
+          currentCount++;
+        }
+      }
+    }
+
+    return result;
   }
 }

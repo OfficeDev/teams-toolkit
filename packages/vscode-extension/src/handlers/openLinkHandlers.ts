@@ -1,52 +1,52 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { AppStudioScopes, featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
+import { signedIn } from "../commonlib/common/constant";
+import M365TokenInstance from "../commonlib/m365Login";
+import { DeveloperPortalHomeLink, PublishAppLearnMoreLink } from "../constants";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { getTriggerFromProperty } from "../utils/telemetryUtils";
-import { FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { TreeViewCommand } from "../treeview/treeViewCommand";
-import { AppStudioScopes, featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
-import { VS_CODE_UI } from "../qm/vsc_ui";
-import { DeveloperPortalHomeLink, PublishAppLearnMoreLink } from "../constants";
-import { signedIn } from "../commonlib/common/constant";
-import M365TokenInstance from "../commonlib/m365Login";
+import { getTriggerFromProperty } from "../utils/telemetryUtils";
 
-export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
+export async function openEnvLinkHandler(args: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "environment",
   });
-  return vscode.env.openExternal(vscode.Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-environment");
 }
 
-export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> {
+export async function openDevelopmentLinkHandler(args: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "development",
   });
-  return vscode.env.openExternal(vscode.Uri.parse("https://aka.ms/teamsfx-treeview-development"));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-development");
 }
 
-export async function openLifecycleLinkHandler(args: any[]): Promise<boolean> {
+export async function openLifecycleLinkHandler(args: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "lifecycle",
   });
-  return vscode.env.openExternal(vscode.Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-deployment");
 }
 
-export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean> {
+export async function openHelpFeedbackLinkHandler(args: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "help&feedback",
   });
-  return vscode.env.openExternal(vscode.Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-helpnfeedback");
 }
 
 export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
@@ -104,12 +104,12 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
 
 export async function openM365AccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
-  return vscode.env.openExternal(vscode.Uri.parse("https://admin.microsoft.com/Adminportal/"));
+  return VS_CODE_UI.openUrl("https://admin.microsoft.com/Adminportal/");
 }
 
 export async function openAzureAccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenAzurePortal);
-  return vscode.env.openExternal(vscode.Uri.parse("https://portal.azure.com/"));
+  return VS_CODE_UI.openUrl("https://portal.azure.com/");
 }
 
 export function getWalkThroughId(): string {
@@ -130,17 +130,17 @@ export async function openAppManagement(...args: unknown[]): Promise<Result<bool
   }
 }
 
-export async function openBotManagement(args?: any[]) {
+export async function openBotManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsBot, getTriggerFromProperty(args));
-  return vscode.env.openExternal(vscode.Uri.parse("https://dev.teams.microsoft.com/bots"));
+  return VS_CODE_UI.openUrl("https://dev.teams.microsoft.com/bots");
 }
 
-export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
+export async function openAccountLinkHandler(args: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "account",
   });
-  return vscode.env.openExternal(vscode.Uri.parse("https://aka.ms/teamsfx-treeview-account"));
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-account");
 }
 
 export async function openReportIssues(...args: unknown[]): Promise<Result<boolean, FxError>> {

@@ -17,10 +17,14 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {
     page: Page,
     options?: { includeFunction: boolean }
   ): Promise<void> {
-    return await validateTab(page, {
-      displayName: Env.displayName,
-      includeFunction: options?.includeFunction,
-    });
+    return await validateTab(
+      page,
+      {
+        displayName: Env.displayName,
+        includeFunction: options?.includeFunction,
+      },
+      true
+    );
   }
   override async onCliValidate(
     page: Page,

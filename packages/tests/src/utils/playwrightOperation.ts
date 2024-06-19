@@ -342,6 +342,7 @@ export async function reopenPage(
         await addBtn?.click();
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
+      console.log("[success] app loaded");
       // verify add page is closed
       await page?.waitForSelector("button>span:has-text('Add')", {
         state: "detached",
@@ -825,54 +826,57 @@ export async function validateOneProducitvity(
 
 export async function validateTab(
   page: Page,
-  options?: { displayName?: string; includeFunction?: boolean }
+  options?: { displayName?: string; includeFunction?: boolean },
+  rerun = false
 ) {
+  console.log("start to verify tab");
   try {
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
+    if (!rerun) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Authorize")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
 
-    await RetryHandler.retry(async () => {
-      console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup)
-          )
-          .catch(() => {}),
-        frame?.click('button:has-text("Authorize")', {
-          timeout: Timeout.playwrightAddAppButton,
-          force: true,
-          noWaitAfter: true,
-          clickCount: 2,
-          delay: 10000,
-        }),
-      ]);
-      console.log("after popup");
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
 
-      if (popup && !popup?.isClosed()) {
-        await popup
-          .click('button:has-text("Reload")', {
-            timeout: Timeout.playwrightConsentPageReload,
-          })
-          .catch(() => {});
-        await popup.click("input.button[type='submit'][value='Accept']");
-      }
-
-      await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
-    });
+        await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
+      });
+    }
 
     if (options?.includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("verify function info");
         const authorizeButton = await frame?.waitForSelector(
-          'button:has-text("Call Azure Function")'
+          'button:has-text("Authorize and call Azure Function")'
         );
         await authorizeButton?.click();
         const backendElement = await frame?.waitForSelector(

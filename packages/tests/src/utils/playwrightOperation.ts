@@ -226,7 +226,7 @@ export async function initPage(
       state: "detached",
     });
     console.log("[success] app loaded");
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;
@@ -347,7 +347,7 @@ export async function reopenPage(
         state: "detached",
       });
     }
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;

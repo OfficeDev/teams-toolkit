@@ -1,4 +1,4 @@
-import * as handlers from "../../src/handlers";
+import * as handlers from "../../src/handlers/sharedOpts";
 import * as environmentUtils from "../../src/utils/systemEnvUtils";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { createProjectFromWalkthroughHandler } from "../../src/handlers/walkthrough";

@@ -1623,7 +1623,7 @@ export async function validateDeeplinking(page: Page, displayName: string) {
 
 export async function validateQueryOrg(
   page: Page,
-  options?: { displayName?: string; appName: string }
+  options: { displayName?: string; appName: string }
 ) {
   try {
     console.log("start to verify query org");

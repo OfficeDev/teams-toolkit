@@ -24,7 +24,7 @@ export class Spec {
       isHarmful: boolean;
       relatedSampleName: string[];
       codeClassAndMembers: string[];
-      timeToFirstToken: number;
+      timeToFirstToken: DOMHighResTimeStamp;
       chatMessages: LanguageModelChatMessage[];
       responseTokensPerRequest: number[];
       properties: { [key: string]: string };

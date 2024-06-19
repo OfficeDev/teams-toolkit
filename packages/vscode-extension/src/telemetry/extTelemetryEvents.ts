@@ -394,7 +394,7 @@ export enum TelemetryProperty {
   CopilotChatCodeClassAndMembers = "copilot-chat-code-class-and-members",
   CopilotChatTimeToFirstToken = "copilot-chat-time-to-first-token",
   CopilotChatTotalTokensPerSecond = "copilot-chat-total-tokens-per-second",
-  CopilotChatResponseTokensPerSecond = "copilot-chat-response-tokens-per-second",
+  CopilotChatResponseTokensPerRequest = "copilot-chat-response-tokens-per-request",
   CopilotChatTotalTokens = "copilot-chat-total-tokens",
 }
 

@@ -66,7 +66,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
 
   static createByParticipant(participantId: string, command: string) {
     const requestId = getUuid();
-    const startTime = Date.now();
+    const startTime = performance.now();
     return new OfficeChatTelemetryData(command, requestId, startTime, participantId);
   }
 
@@ -97,8 +97,12 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     this.codeClassAndMembers = codeClassAndMembers;
   }
 
-  setTimeToFirstToken() {
-    this.timeToFirstToken = Date.now() - this.startTime;
+  setTimeToFirstToken(t0?: DOMHighResTimeStamp) {
+    if (t0) {
+      this.timeToFirstToken = t0 - this.startTime;
+    } else {
+      this.timeToFirstToken = performance.now() - this.startTime;
+    }
   }
 
   setBlockReason(blockReason: string) {
@@ -126,7 +130,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
         this.relatedSampleName;
       // this.telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
       //   this.codeClassAndMembers;
-      this.telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerSecond] =
+      this.telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerRequest] =
         this.responseTokensPerRequest.toString();
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
         this.timeToFirstToken;

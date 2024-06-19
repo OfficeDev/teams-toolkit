@@ -46,7 +46,7 @@ ${spec.appendix.codeSnippet}
 ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.ending")}\n
 `;
     const isHarmful = await isOutputHarmful(template, token, spec);
-    spec.appendix.telemetryData.timeToFirstToken = Date.now();
+    spec.appendix.telemetryData.timeToFirstToken = performance.now();
     if (isHarmful) {
       response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.printer.raiBlock"));
       spec.appendix.telemetryData.isHarmful = true;

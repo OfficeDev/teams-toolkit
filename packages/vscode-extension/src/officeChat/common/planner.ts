@@ -141,6 +141,7 @@ export class Planner {
       spec.appendix.telemetryData.measurements
     );
     telemetryData.setHostType(spec.appendix.host.toLowerCase());
+    telemetryData.setTimeToFirstToken(spec.appendix.telemetryData.timeToFirstToken);
     telemetryData.setRelatedSampleName(spec.appendix.telemetryData.relatedSampleName.toString());
     // telemetryData.setCodeClassAndMembers(
     //   spec.appendix.telemetryData.codeClassAndMembers.toString()

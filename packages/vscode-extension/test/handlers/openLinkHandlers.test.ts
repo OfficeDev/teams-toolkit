@@ -106,9 +106,41 @@ describe("Open link handlers", () => {
     });
   });
   describe("openDocumentLinkHandler", () => {
-    it("happy", async () => {
+    it("signinAzure", async () => {
       sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
-      const res = await openDocumentLinkHandler([]);
+      const res = await openDocumentLinkHandler([{ contextValue: "signinAzure" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("fx-extension.create", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([{ contextValue: "fx-extension.create" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("fx-extension.provision", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([{ contextValue: "fx-extension.provision" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("fx-extension.build", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([{ contextValue: "fx-extension.build" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("fx-extension.deploy", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([{ contextValue: "fx-extension.deploy" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("fx-extension.publish", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([{ contextValue: "fx-extension.publish" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("fx-extension.publishInDeveloperPortal", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([
+        { contextValue: "fx-extension.publishInDeveloperPortal" },
+      ]);
       assert.isTrue(res.isOk());
     });
   });

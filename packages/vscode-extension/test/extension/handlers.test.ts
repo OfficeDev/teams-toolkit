@@ -380,6 +380,7 @@ describe("handlers", () => {
 
     it("buildPackageHandler()", async () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox.stub(globalVariables.core, "createAppPackage").resolves(err(new UserCancelError()));
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 

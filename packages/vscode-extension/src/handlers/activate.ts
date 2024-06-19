@@ -18,7 +18,7 @@ import {
   AppStudioScopes,
   FxCore,
 } from "@microsoft/teamsfx-core";
-import { workspace, window, Uri } from "vscode";
+import { workspace, window, Uri, FileRenameEvent } from "vscode";
 import azureAccountManager from "../commonlib/azureLogin";
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
@@ -122,13 +122,7 @@ export function activate(): Result<Void, FxError> {
       });
 
       workspace.onDidRenameFiles(async (event) => {
-        const files = [];
-        for (const f of event.files) {
-          files.push(f.newUri);
-          files.push(f.oldUri);
-        }
-
-        await refreshEnvTreeOnEnvFileChanged(workspacePath, files);
+        await refreshEnvTreeOnFilesNameChanged(workspacePath, event);
       });
 
       workspace.onDidSaveTextDocument(async (event) => {
@@ -147,6 +141,19 @@ export function activate(): Result<Void, FxError> {
     return err(FxError);
   }
   return result;
+}
+
+export async function refreshEnvTreeOnFilesNameChanged(
+  workspacePath: string,
+  event: FileRenameEvent
+) {
+  const files = [];
+  for (const f of event.files) {
+    files.push(f.newUri);
+    files.push(f.oldUri);
+  }
+
+  await refreshEnvTreeOnEnvFileChanged(workspacePath, files);
 }
 
 export async function refreshEnvTreeOnEnvFileChanged(workspacePath: string, files: readonly Uri[]) {

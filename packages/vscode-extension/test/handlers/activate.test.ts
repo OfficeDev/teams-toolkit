@@ -7,6 +7,7 @@ import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/pro
 import {
   activate,
   refreshEnvTreeOnEnvFileChanged,
+  refreshEnvTreeOnFilesNameChanged,
   refreshEnvTreeOnProjectSettingFileChanged,
 } from "../../src/handlers/activate";
 import { ok } from "@microsoft/teamsfx-api";
@@ -157,6 +158,49 @@ describe("Activate", function () {
         vscode.Uri.parse("File2"),
       ]);
       chai.assert.isTrue(isEnvFileStub.calledTwice);
+      chai.assert.isTrue(reloadEnvStub.notCalled);
+    });
+  });
+
+  describe("refreshEnvTreeOnFilesNameChanged", function () {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Refresh Env", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const isEnvFileStub = sandbox
+        .stub(globalVariables.core, "isEnvFile")
+        .callsFake((projectPath, inputFile) => {
+          if (inputFile === "File1New" || inputFile === "File2New") {
+            return Promise.resolve(ok(true));
+          }
+          return Promise.resolve(ok(false));
+        });
+      const reloadEnvStub = sandbox.stub(envTreeProviderInstance, "reloadEnvironments");
+      await refreshEnvTreeOnFilesNameChanged("workspaceUri", {
+        files: [
+          { newUri: vscode.Uri.parse("File1New"), oldUri: vscode.Uri.parse("File1Old") },
+          { newUri: vscode.Uri.parse("File2New"), oldUri: vscode.Uri.parse("File2Old") },
+        ],
+      });
+      chai.assert.isTrue(isEnvFileStub.calledOnce);
+      chai.assert.isTrue(reloadEnvStub.calledOnce);
+    });
+
+    it("No need to refresh Env", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const isEnvFileStub = sandbox.stub(globalVariables.core, "isEnvFile").resolves(ok(false));
+      const reloadEnvStub = sandbox.stub(envTreeProviderInstance, "reloadEnvironments");
+      await refreshEnvTreeOnFilesNameChanged("workspaceUri", {
+        files: [
+          { newUri: vscode.Uri.parse("File1New"), oldUri: vscode.Uri.parse("File1Old") },
+          { newUri: vscode.Uri.parse("File2New"), oldUri: vscode.Uri.parse("File2Old") },
+        ],
+      });
+      chai.assert.isTrue(isEnvFileStub.callCount === 4);
       chai.assert.isTrue(reloadEnvStub.notCalled);
     });
   });

@@ -143,5 +143,15 @@ describe("Open link handlers", () => {
       ]);
       assert.isTrue(res.isOk());
     });
+    it("empty", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([]);
+      assert.isTrue(res.isOk());
+    });
+    it("none", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openDocumentLinkHandler([{ contextValue: "" }]);
+      assert.isTrue(res.isOk());
+    });
   });
 });

@@ -2065,9 +2065,11 @@ export async function switchToTab(page: Page, tabName = "Personal Tab") {
 
 export async function validateContact(
   page: Page,
+  password: string,
   options?: { displayName?: string },
   rerun = false
 ) {
+  let startBtn: ElementHandle<SVGElement | HTMLElement> | undefined;
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -2086,8 +2088,8 @@ export async function validateContact(
       console.log("no message to dismiss");
     }
 
-    if (!rerun) {
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
+    startBtn = await frame?.waitForSelector('button:has-text("Start")');
+    if (startBtn) {
       await RetryHandler.retry(async () => {
         console.log("Before popup");
         const [popup] = await Promise.all([
@@ -2106,18 +2108,45 @@ export async function validateContact(
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
+          // if input password page is exist
+          if (rerun) {
+            try {
+              // input password
+              console.log(`fill in password`);
+              await popup.fill(
+                "input.input[type='password'][name='passwd']",
+                password
+              );
+              // sign in
+              await Promise.all([
+                popup.click("input.button[type='submit'][value='Sign in']"),
+                popup.waitForNavigation(),
+              ]);
+              await popup.click("input.button[type='submit'][value='Accept']");
+              try {
+                await popup?.close();
+              } catch (error) {
+                console.log("popup is closed");
+              }
+            } catch (error) {
+              await popup.screenshot({
+                path: getPlaywrightScreenshotPath("login_error"),
+                fullPage: true,
+              });
+              throw error;
+            }
+          }
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("login_after"),
+            fullPage: true,
+          });
           await popup
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
-          await popup.screenshot({
-            path: getPlaywrightScreenshotPath("popup_page"),
-            fullPage: true,
-          });
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-
         await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
     }

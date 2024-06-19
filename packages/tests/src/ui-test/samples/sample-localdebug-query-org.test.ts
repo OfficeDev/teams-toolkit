@@ -7,9 +7,10 @@
 
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import { validateQueryOrg } from "../../utils/playwrightOperation";
+import { validateQueryOrg, reopenPage } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
+import { SampledebugContext } from "./sampledebugContext";
 
 class QueryOrgTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
@@ -17,6 +18,12 @@ class QueryOrgTestCase extends CaseFactory {
   }
   override async onCliValidate(page: Page): Promise<void> {
     return await validateQueryOrg(page, { displayName: Env.displayName });
+  }
+  public override async onReopenPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ): Promise<Page> {
+    return await reopenPage(sampledebugContext.context!, teamsAppId);
   }
 }
 
@@ -27,7 +34,6 @@ new QueryOrgTestCase(
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
   {
-    skipValidation: true,
     debug: "cli",
   }
 ).test();

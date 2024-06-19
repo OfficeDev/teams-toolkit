@@ -1624,10 +1624,7 @@ export async function validateQueryOrg(
   try {
     console.log("start to verify query org");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");

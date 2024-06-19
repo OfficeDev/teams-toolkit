@@ -76,7 +76,7 @@ describe("Deploy V3 m365-message-extension template", () => {
       const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
       chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
-      // validate bot aad
+      // validate bot id
       chai.assert.isDefined(context.BOT_ID);
       chai.assert.isNotEmpty(context.BOT_ID);
 

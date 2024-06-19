@@ -75,6 +75,7 @@ import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import { MockCore } from "../mocks/mockCore";
 import {
+  createNewProjectHandler,
   deployHandler,
   provisionHandler,
   publishHandler,
@@ -306,7 +307,7 @@ describe("handlers", () => {
       const createProject = sandbox.spy(globalVariables.core, "createProject");
       const executeCommandFunc = sandbox.stub(vscode.commands, "executeCommand");
 
-      await handlers.createNewProjectHandler();
+      await createNewProjectHandler();
 
       chai.assert.isTrue(
         sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
@@ -331,7 +332,7 @@ describe("handlers", () => {
       sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
 
-      await handlers.createNewProjectHandler();
+      await createNewProjectHandler();
 
       chai.assert.isTrue(
         sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)

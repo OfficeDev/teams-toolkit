@@ -35,9 +35,9 @@ export class Printer implements ISkill {
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const template = `
-${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
-${spec.userInput}
-
+${spec.appendix.codeExplanation
+  .substring(spec.appendix.codeExplanation.indexOf("1."))
+  .replace(/\b\d+\./g, (match) => `\n${match}`)}\n
 ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.codeIntro")}\n
 \`\`\`typescript
 ${spec.appendix.codeSnippet}

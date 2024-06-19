@@ -762,7 +762,34 @@ describe("handlers", () => {
       await runCommand(Stage.provision);
       sinon.assert.calledOnce(provisionResources);
     });
+    it("deployTeamsManifest", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const deployTeamsManifest = sandbox.spy(globalVariables.core, "deployTeamsManifest");
 
+      await runCommand(Stage.deployTeams);
+      sinon.assert.calledOnce(deployTeamsManifest);
+    });
+    it("addWebpart", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const addWebpart = sandbox.spy(globalVariables.core, "addWebpart");
+
+      await runCommand(Stage.addWebpart);
+      sinon.assert.calledOnce(addWebpart);
+    });
+    it("createAppPackage", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const createAppPackage = sandbox.spy(globalVariables.core, "createAppPackage");
+
+      await runCommand(Stage.createAppPackage);
+      sinon.assert.calledOnce(createAppPackage);
+    });
+    it("error", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      try {
+        await runCommand("none" as any);
+        sinon.assert.fail("should not reach here");
+      } catch (e) {}
+    });
     it("provisionResources - local", async () => {
       const mockCore = new MockCore();
       const mockCoreStub = sandbox

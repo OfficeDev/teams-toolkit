@@ -366,6 +366,7 @@ Usage: @office Ask questions about Office Add-ins development.`);
           [TelemetryProperty.CopilotChatCommand]: "",
           [TelemetryProperty.CorrelationId]: "testCorrelationId",
           [TelemetryProperty.HostType]: "",
+          [TelemetryProperty.CopilotChatRelatedSampleName]: "",
         },
         {
           [TelemetryProperty.CopilotChatFeedbackHelpful]: 1,
@@ -396,6 +397,7 @@ Usage: @office Ask questions about Office Add-ins development.`);
           [TelemetryProperty.CopilotChatCommand]: "testCommand",
           [TelemetryProperty.CorrelationId]: "testCorrelationId",
           [TelemetryProperty.HostType]: "",
+          [TelemetryProperty.CopilotChatRelatedSampleName]: "",
         },
         {
           [TelemetryProperty.CopilotChatFeedbackHelpful]: 0,

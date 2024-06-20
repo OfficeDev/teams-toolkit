@@ -20,6 +20,7 @@ import {
   ValidationStatus,
   WarningResult,
   WarningType,
+  ValidateResult,
 } from "@microsoft/m365-spec-parser";
 import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
 import {
@@ -27,7 +28,6 @@ import {
   AppPackageFolderName,
   Context,
   FxError,
-  IMessagingExtensionCommand,
   Inputs,
   ManifestTemplateFileName,
   ManifestUtil,
@@ -39,24 +39,24 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
-import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { sendRequestWithRetry } from "../../../common/requestUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { FeatureFlags, featureFlagManager } from "../../../../common/featureFlags";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { MissingRequiredInputError } from "../../../../error";
 import {
   CustomCopilotRagOptions,
   ProgrammingLanguage,
   QuestionNames,
   copilotPluginApiSpecOptionId,
-} from "../../../question/constants";
-import { SummaryConstant } from "../../configManager/constant";
-import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
+} from "../../../../question/constants";
+import { SummaryConstant } from "../../../configManager/constant";
+import { manifestUtils } from "../../../driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../../../driver/teamsApp/utils/PluginManifestUtils";
+import * as util from "util";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -983,4 +983,33 @@ const EnvNameMapping: { [authType: string]: string } = {
 
 export function getEnvName(authName: string, authType?: string): string {
   return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
+}
+
+export async function validateSpec(
+  specParser: SpecParser,
+  filters: string[]
+): Promise<ValidateResult> {
+  const validationRes = await specParser.validate();
+  const warnings = validationRes.warnings;
+  const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+  if (operationIdWarning && operationIdWarning.data) {
+    const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+      filters.includes(api)
+    );
+    if (apisMissingOperationId.length > 0) {
+      operationIdWarning.content = util.format(
+        getLocalizedString("core.common.MissingOperationId"),
+        apisMissingOperationId.join(", ")
+      );
+      delete operationIdWarning.data;
+    } else {
+      warnings.splice(warnings.indexOf(operationIdWarning), 1);
+    }
+  }
+
+  const specVersionWarning = warnings.find((w) => w.type === WarningType.ConvertSwaggerToOpenAPI);
+  if (specVersionWarning) {
+    specVersionWarning.content = ""; // We don't care content of this warning
+  }
+  return validationRes;
 }

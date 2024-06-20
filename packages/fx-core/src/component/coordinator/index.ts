@@ -57,7 +57,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { Constants } from "../driver/teamsApp/constants";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
+import { CopilotPluginGenerator } from "../generator/oldCopilotGenerator";
 import { Generator } from "../generator/generator";
 import { Generators } from "../generator/generatorProvider";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";

@@ -20,19 +20,25 @@ import {
   Inputs,
   ManifestTemplateFileName,
   Platform,
+  ResponseTemplatesFolderName,
   Result,
   UserError,
-  Warning,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import { merge } from "lodash";
 import path from "path";
+import * as util from "util";
+import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { isValidHttpUrl } from "../../../common/stringUtils";
 import { assembleError } from "../../../error";
-import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../question/constants";
+import {
+  MeArchitectureOptions,
+  ProgrammingLanguage,
+  QuestionNames,
+} from "../../../question/constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
@@ -40,11 +46,9 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import {
   convertSpecParserErrorToFxError,
-  copilotPluginParserOptions,
   defaultApiSpecFolderName,
   defaultApiSpecJsonFileName,
   defaultApiSpecYamlFileName,
-  defaultPluginManifestFileName,
   generateScaffoldingSummary,
   getEnvName,
   invalidApiSpecErrorName,
@@ -53,12 +57,11 @@ import {
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
-  validateSpec,
 } from "../../driver/teamsApp/utils/SpecUtils";
 
+const templateName = "copilot-plugin-existing-api";
+const templateType = ProjectType.SME;
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
-const templateName = "api-plugin-existing-api";
-const templateType = ProjectType.Copilot;
 
 const enum telemetryProperties {
   templateName = "template-name",
@@ -71,12 +74,15 @@ function normalizePath(path: string): string {
   return "./" + path.replace(/\\/g, "/");
 }
 
-export class CopilotPluginGenerator extends DefaultTemplateGenerator {
+export class SMEGenerator extends DefaultTemplateGenerator {
+  componentName = "copilot-generator";
+
   // activation condition
   public activate(context: Context, inputs: Inputs): boolean {
-    const capability = inputs.capabilities as string;
-    return capability === CapabilityOptions.copilotPluginApiSpec().id;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    return meArchitecture === MeArchitectureOptions.apiSpec().id;
   }
+
   public async getTemplateInfos(
     context: Context,
     inputs: Inputs,
@@ -169,13 +175,40 @@ export class CopilotPluginGenerator extends DefaultTemplateGenerator {
     actionContext?: ActionContext
   ): Promise<Result<GeneratorResult, FxError>> {
     try {
-      const componentName = "copilot-generator";
       const getTemplateInfosState = inputs.getTemplateInfosState;
       // validate API spec
-      const specParser = new SpecParser(getTemplateInfosState.url, copilotPluginParserOptions);
-      const filters = inputs[QuestionNames.ApiOperation] as string[];
-      const validationRes = await validateSpec(specParser, filters);
+      const specParser = new SpecParser(getTemplateInfosState.url, {
+        allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+        allowMultipleParameters: true,
+        projectType: templateType,
+        allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
+      });
+      const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
+      const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+      const filters = inputs[QuestionNames.ApiOperation] as string[];
+      if (operationIdWarning && operationIdWarning.data) {
+        const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+          filters.includes(api)
+        );
+        if (apisMissingOperationId.length > 0) {
+          operationIdWarning.content = util.format(
+            getLocalizedString("core.common.MissingOperationId"),
+            apisMissingOperationId.join(", ")
+          );
+          delete operationIdWarning.data;
+        } else {
+          warnings.splice(warnings.indexOf(operationIdWarning), 1);
+        }
+      }
+
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
+      }
+
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, false, true);
         const errorMessage =
@@ -187,7 +220,7 @@ export class CopilotPluginGenerator extends DefaultTemplateGenerator {
                 "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
               );
         return err(
-          new UserError(componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
+          new UserError(this.componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
         );
       }
       const manifestPath = path.join(
@@ -207,16 +240,16 @@ export class CopilotPluginGenerator extends DefaultTemplateGenerator {
       // generate files
       await fs.ensureDir(apiSpecFolderPath);
 
-      const pluginManifestPath = path.join(
+      const responseTemplateFolder = path.join(
         destinationPath,
         AppPackageFolderName,
-        defaultPluginManifestFileName
+        ResponseTemplatesFolderName
       );
-      const generateResult = await specParser.generateForCopilot(
+      const generateResult = await specParser.generate(
         manifestPath,
         filters,
         openapiSpecPath,
-        pluginManifestPath
+        responseTemplateFolder
       );
 
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {

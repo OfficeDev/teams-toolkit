@@ -118,15 +118,12 @@ export default async function officeCreateCommandHandler(
       );
       return chatResult;
     }
+    officeChatTelemetryData.markComplete();
   } else {
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
-  }
-  if (isHarmful) {
     officeChatTelemetryData.setBlockReason("RAI");
     officeChatTelemetryData.markComplete("unsupportedPrompt");
-  } else {
-    officeChatTelemetryData.markComplete();
   }
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChat,

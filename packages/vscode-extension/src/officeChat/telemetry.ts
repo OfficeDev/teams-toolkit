@@ -135,7 +135,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
         this.timeToFirstToken;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] =
-        Date.now() - this.startTime;
+        performance.now() - this.startTime;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTokenCount] =
         this.chatMessagesTokenCount();
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTotalTokensPerSecond] =

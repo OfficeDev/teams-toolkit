@@ -29,11 +29,10 @@ import officeCreateCommandHandler from "./commands/create/officeCreateCommandHan
 import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
 import officeNextStepCommandHandler from "./commands/nextStep/officeNextstepCommandHandler";
 import { defaultOfficeSystemPrompt } from "./officePrompts";
-import { countMessagesTokens, verbatimCopilotInteraction } from "../chat/utils";
+import { verbatimCopilotInteraction } from "../chat/utils";
 import { localize } from "../utils/localizeUtils";
 import { ICopilotChatOfficeResult } from "./types";
 import { ITelemetryData } from "../chat/types";
-import { Spec } from "./common/skills/spec";
 import { OfficeChatTelemetryData } from "./telemetry";
 
 export function officeChatRequestHandler(
@@ -170,6 +169,10 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
       [TelemetryProperty.HostType]:
         OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
           TelemetryProperty.HostType
+        ] ?? "",
+      [TelemetryProperty.CopilotChatRelatedSampleName]:
+        OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+          TelemetryProperty.CopilotChatRelatedSampleName
         ] ?? "",
     },
     measurements: {

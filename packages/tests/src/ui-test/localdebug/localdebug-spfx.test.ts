@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
@@ -47,7 +50,7 @@ describe("SPFx local debug", function () {
         Env.username,
         Env.password
       );
-      await validateTeamsWorkbench(page, Env.displayName);
+      await validateTeamsWorkbench(page, localDebugTestContext.appName);
     }
   );
 });

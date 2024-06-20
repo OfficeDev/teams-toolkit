@@ -1,4 +1,5 @@
 import * as sinon from "sinon";
+import * as chai from "chai";
 import * as vscode from "vscode";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";

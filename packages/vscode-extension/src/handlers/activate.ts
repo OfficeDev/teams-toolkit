@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
+import * as fs from "fs-extra";
+import * as vscode from "vscode";
 import {
   Result,
   Void,
@@ -34,13 +36,13 @@ import {
   tools,
   setCommandIsRunning,
 } from "../globalVariables";
-import { addFileSystemWatcher } from "../handlers";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import envTreeProviderInstance from "../treeview/environmentTreeViewProvider";
 import { localize } from "../utils/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getExpService } from "../exp/index";
+import { addFileSystemWatcher } from "../utils/fileSystemWatcher";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);

@@ -1,37 +1,46 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import { Uri } from "vscode";
-import { err, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../../src/globalVariables";
-import * as telemetryUtils from "../../../src/utils/telemetryUtils";
+import {
+  getPackageVersion,
+  getProjectId,
+  getTriggerFromProperty,
+  isTriggerFromWalkThrough,
+  getTeamsAppTelemetryInfoByEnv,
+  getSettingsVersion,
+} from "../../../src/utils/telemetryUtils";
+import * as systemEnvUtils from "../../../src/utils/systemEnvUtils";
 import { MockCore } from "../../mocks/mockCore";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
 import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { VersionCheckRes } from "../../../../fx-core/build";
 
 describe("TelemetryUtils", () => {
   describe("getPackageVersion", () => {
     it("alpha version", () => {
       const version = "1.1.1-alpha.4";
 
-      chai.expect(telemetryUtils.getPackageVersion(version)).equals("alpha");
+      chai.expect(getPackageVersion(version)).equals("alpha");
     });
 
     it("beta version", () => {
       const version = "1.1.1-beta.2";
 
-      chai.expect(telemetryUtils.getPackageVersion(version)).equals("beta");
+      chai.expect(getPackageVersion(version)).equals("beta");
     });
 
     it("rc version", () => {
       const version = "1.0.0-rc.3";
 
-      chai.expect(telemetryUtils.getPackageVersion(version)).equals("rc");
+      chai.expect(getPackageVersion(version)).equals("rc");
     });
 
     it("formal version", () => {
       const version = "4.6.0";
 
-      chai.expect(telemetryUtils.getPackageVersion(version)).equals("formal");
+      chai.expect(getPackageVersion(version)).equals("formal");
     });
   });
 
@@ -50,31 +59,31 @@ describe("TelemetryUtils", () => {
     it("happy path", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").resolves(ok("mock-project-id"));
-      const result = await telemetryUtils.getProjectId();
+      const result = await getProjectId();
       chai.expect(result).equals("mock-project-id");
     });
     it("workspaceUri is undefined", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(undefined);
-      const result = await telemetryUtils.getProjectId();
+      const result = await getProjectId();
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").resolves(err(new UserError({})));
-      const result = await telemetryUtils.getProjectId();
+      const result = await getProjectId();
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getProjectId").rejects(new UserError({}));
-      const result = await telemetryUtils.getProjectId();
+      const result = await getProjectId();
       chai.expect(result).equals(undefined);
     });
   });
 
   describe("getTriggerFromProperty", () => {
     it("Should return cmp with no args", () => {
-      const props = telemetryUtils.getTriggerFromProperty();
+      const props = getTriggerFromProperty();
 
       chai.expect(props).to.deep.equal({
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
@@ -82,7 +91,7 @@ describe("TelemetryUtils", () => {
     });
 
     it("Should return cmp with empty args", () => {
-      const props = telemetryUtils.getTriggerFromProperty([]);
+      const props = getTriggerFromProperty([]);
 
       chai.expect(props).to.deep.equal({
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette,
@@ -107,7 +116,7 @@ describe("TelemetryUtils", () => {
       TelemetryTriggerFrom.WalkThrough,
     ]) {
       it(`Should return ${triggerFrom.toString()}`, () => {
-        const props = telemetryUtils.getTriggerFromProperty([triggerFrom]);
+        const props = getTriggerFromProperty([triggerFrom]);
 
         chai.expect(props).to.deep.equal({
           [TelemetryProperty.TriggerFrom]: triggerFrom,
@@ -118,42 +127,37 @@ describe("TelemetryUtils", () => {
 
   describe("isTriggerFromWalkThrough", () => {
     it("Should return false with no args", () => {
-      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough();
+      const isFromWalkthrough = isTriggerFromWalkThrough();
 
       chai.assert.equal(isFromWalkthrough, false);
     });
 
     it("Should return false with empty args", () => {
-      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([]);
+      const isFromWalkthrough = isTriggerFromWalkThrough([]);
 
       chai.assert.equal(isFromWalkthrough, false);
     });
 
     it("Should return true with walkthrough args", () => {
-      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([
-        TelemetryTriggerFrom.WalkThrough,
-      ]);
+      const isFromWalkthrough = isTriggerFromWalkThrough([TelemetryTriggerFrom.WalkThrough]);
 
       chai.assert.equal(isFromWalkthrough, true);
     });
 
     it("Should return true with notification args", () => {
-      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([
-        TelemetryTriggerFrom.Notification,
-      ]);
+      const isFromWalkthrough = isTriggerFromWalkThrough([TelemetryTriggerFrom.Notification]);
 
       chai.assert.equal(isFromWalkthrough, true);
     });
 
     it("Should return false with other args", () => {
-      const isFromWalkthrough = telemetryUtils.isTriggerFromWalkThrough([
-        TelemetryTriggerFrom.Other,
-      ]);
+      const isFromWalkthrough = isTriggerFromWalkThrough([TelemetryTriggerFrom.Other]);
 
       chai.assert.equal(isFromWalkthrough, false);
     });
   });
 
+  // eslint-disable-next-line no-secrets/no-secrets
   describe("getTeamsAppTelemetryInfoByEnv", async () => {
     const sandbox = sinon.createSandbox();
     const core = new MockCore();
@@ -176,7 +180,7 @@ describe("TelemetryUtils", () => {
       sandbox.stub(core, "getProjectInfo").resolves(ok(info));
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(coreUtils, "isValidProject").returns(true);
-      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      const result = await getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).deep.equals({
         appId: "mock-app-id",
         tenantId: "mock-tenant-id",
@@ -185,20 +189,38 @@ describe("TelemetryUtils", () => {
     it("isValidProject is false", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(coreUtils, "isValidProject").returns(false);
-      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      const result = await getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
       sandbox.stub(coreUtils, "isValidProject").returns(true);
       sandbox.stub(core, "getProjectInfo").resolves(err(new UserError({})));
-      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      const result = await getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
       sandbox.stub(coreUtils, "isValidProject").returns(true);
       sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
-      const result = await telemetryUtils.getTeamsAppTelemetryInfoByEnv("dev");
+      const result = await getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
+    });
+  });
+
+  describe("getSettingsVersion", async () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
+      sandbox
+        .stub(globalVariables.core, "projectVersionCheck")
+        .resolves(ok({ currentVersion: "3.0.0" } as VersionCheckRes));
+      const res = await getSettingsVersion();
+      chai.assert.equal(res, "3.0.0");
     });
   });
 });

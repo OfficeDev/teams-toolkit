@@ -4,6 +4,7 @@
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { workspaceUri, core } from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { getSystemInputs } from "./systemEnvUtils";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -95,7 +96,6 @@ export interface TeamsAppTelemetryInfo {
   tenantId: string;
 }
 
-// Only used for telemetry when multi-env is enabled
 export async function getTeamsAppTelemetryInfoByEnv(
   env: string
 ): Promise<TeamsAppTelemetryInfo | undefined> {
@@ -113,4 +113,19 @@ export async function getTeamsAppTelemetryInfoByEnv(
     }
   } catch (e) {}
   return undefined;
+}
+
+export async function getSettingsVersion(): Promise<string | undefined> {
+  if (core) {
+    const versionCheckResult = await projectVersionCheck();
+
+    if (versionCheckResult.isOk()) {
+      return versionCheckResult.value.currentVersion;
+    }
+  }
+  return undefined;
+}
+
+export async function projectVersionCheck() {
+  return await core.projectVersionCheck(getSystemInputs());
 }

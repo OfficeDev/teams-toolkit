@@ -1644,7 +1644,7 @@ export async function validateQueryOrg(
     const inputBar = await page?.waitForSelector("div.ui-box input.ui-box");
     await inputBar?.fill(options?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const loginBtn = await frame?.waitForSelector(
+    const loginBtn = await page?.waitForSelector(
       'div.ui-box a:has-text("sign in")'
     );
     // todo add more verify

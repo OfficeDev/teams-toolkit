@@ -150,18 +150,6 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     TelemetryEvent.UpdatePreviewManifestStart,
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
   );
-  let env: string | undefined;
-  if (args && args.length > 0) {
-    const filePath = args[0].fsPath as string;
-    if (!filePath.endsWith("manifest.template.json")) {
-      const envReg = /manifest\.(\w+)\.json$/;
-      const result = envReg.exec(filePath);
-      if (result && result.length >= 2) {
-        env = result[1];
-      }
-    }
-  }
-
   const inputs = getSystemInputs();
   const result = await runCommand(Stage.deployTeams, inputs);
 

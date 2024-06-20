@@ -8,12 +8,13 @@ import * as globalVariables from "../../src/globalVariables";
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  updatePreviewManifest,
   validateManifestHandler,
 } from "../../src/handlers/manifestHandlers";
 import * as shared from "../../src/handlers/sharedOpts";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-
+import { MockCore } from "../mocks/mockCore";
 describe("Manifest handlers", () => {
   const sandbox = sinon.createSandbox();
 
@@ -40,16 +41,9 @@ describe("Manifest handlers", () => {
     });
   });
   describe("publishInDeveloperPortalHandler", async () => {
-    const sandbox = sinon.createSandbox();
-
     beforeEach(() => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
     });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
     it("publish in developer portal - success", async () => {
       sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
       sandbox
@@ -97,6 +91,18 @@ describe("Manifest handlers", () => {
       sandbox.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
       const res = await publishInDeveloperPortalHandler();
       assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("updatePreviewManifest", () => {
+    it("updatePreviewManifest", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const openTextDocumentStub = sandbox
+        .stub(vscode.workspace, "openTextDocument")
+        .returns(Promise.resolve("" as any));
+      sandbox.stub(shared, "runCommand").resolves(ok(undefined));
+      await updatePreviewManifest([]);
+      assert.isTrue(openTextDocumentStub.calledOnce);
     });
   });
 });

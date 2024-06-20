@@ -39,14 +39,14 @@ import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/util
 import {
   CopilotGenerator,
   CopilotPluginGenerator,
-} from "../../../src/component/generator/copilotPlugin/generator";
-import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
+} from "../../../src/component/generator/oldCopilotGenerator";
+import * as CopilotPluginHelper from "../../../src/component/driver/teamsApp/utils/SpecUtils";
 import {
   formatValidationErrors,
   generateScaffoldingSummary,
   isYamlSpecFile,
   listPluginExistingOperations,
-} from "../../../src/component/generator/copilotPlugin/helper";
+} from "../../../src/component/driver/teamsApp/utils/SpecUtils";
 import { Generator } from "../../../src/component/generator/generator";
 import {
   CapabilityOptions,

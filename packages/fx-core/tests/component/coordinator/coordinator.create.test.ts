@@ -10,7 +10,7 @@ import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import { CopilotPluginGenerator as oldCopilotGenerator } from "../../../src/component/generator/oldCopilotGenerator";
 import { Generator } from "../../../src/component/generator/generator";
 import {
   OfficeAddinGenerator,
@@ -19,6 +19,7 @@ import {
 import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
+import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
@@ -711,7 +712,7 @@ const V3Version = MetadataV3.projectVersion;
       v3ctx.userInteraction = new MockedUserInteraction();
 
       sandbox
-        .stub(CopilotPluginGenerator, "generateMeFromApiSpec")
+        .stub(oldCopilotGenerator, "generateMeFromApiSpec")
         .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
       const inputs: Inputs = {
@@ -822,7 +823,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.LLMService]: "llm-service-openAI",
         [QuestionNames.OpenAIKey]: "mockedopenaikey",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(oldCopilotGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -851,7 +852,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(oldCopilotGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -879,7 +880,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(oldCopilotGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -907,7 +908,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.OpenAIKey]: "mockedopenaikey",
       };
       sandbox
-        .stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi")
+        .stub(oldCopilotGenerator, "generateForCustomCopilotRagCustomApi")
         .resolves(err(new SystemError("test", "test", "test")));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
@@ -1254,7 +1255,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
+      .stub(oldCopilotGenerator, "generatePluginFromApiSpec")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -1274,7 +1275,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
+      .stub(oldCopilotGenerator, "generatePluginFromApiSpec")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
 
     const inputs: Inputs = {
@@ -1312,6 +1313,21 @@ describe(`coordinator create with new generator enabled = true`, () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("should scaffold by CopilotPluginGeneratorNew successfully", async () => {
+    const v3ctx = createContext();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    sandbox.stub(CopilotPluginGenerator.prototype, "run").resolves(ok({}));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };

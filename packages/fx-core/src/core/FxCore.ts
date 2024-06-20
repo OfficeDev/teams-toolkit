@@ -488,11 +488,22 @@ export class FxCore {
     if (titleId === undefined) {
       titleId = await packageService.retrieveTitleId(sideloadingTokenRes.value, manifestId ?? "");
     }
-    // todo: add confirmation
-    void TOOLS.ui.showMessage("info", "confirmation", true, "Please confirm").then((result) => {
-      console.log(result);
+    const confirmRes = await TOOLS.ui.confirm?.({
+      name: "uninstallM365App",
+      title: getLocalizedString("core.uninstall.confirm.m365App", manifestId),
+      default: false,
     });
-    await packageService.unacquire(sideloadingTokenRes.value, titleId);
+    if (confirmRes?.isOk() && confirmRes.value.result === true) {
+      await packageService.unacquire(sideloadingTokenRes.value, titleId);
+      // todo: add uninstall summary
+    } else {
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.confirm.cancel.m365App"),
+        false
+      );
+      return ok(undefined);
+    }
     return ok(undefined);
   }
 
@@ -510,26 +521,16 @@ export class FxCore {
     if (appStudioTokenRes.isErr()) {
       return err(appStudioTokenRes.error);
     }
-    const token = appStudioTokenRes.value;
-    let confirmed = false;
-    // todo: refine
-    await TOOLS.ui
-      .showMessage(
-        "info",
-        getLocalizedString("core.uninstall.confirm.tdp", manifestId),
-        false,
-        "Yes"
-      )
-      .then((result) => {
-        if (result.isErr()) {
-          return ok(undefined);
-        }
-        if (result.value === "yes" || result.value === "y") {
-          confirmed = true;
-        }
-        return ok(undefined);
-      });
-    if (!confirmed) {
+    const confirmRes = await TOOLS.ui.confirm?.({
+      name: "uninstallAppRegistration",
+      title: getLocalizedString("core.uninstall.confirm.tdp", manifestId),
+      default: false,
+    });
+    if (confirmRes?.isOk() && confirmRes.value.result === true) {
+      const token = appStudioTokenRes.value;
+      await teamsDevPortalClient.deleteApp(token, manifestId);
+      return ok(undefined);
+    } else {
       await TOOLS.ui.showMessage(
         "info",
         getLocalizedString("core.uninstall.confirm.cancel.tdp"),
@@ -537,8 +538,6 @@ export class FxCore {
       );
       return ok(undefined);
     }
-    await teamsDevPortalClient.deleteApp(token, manifestId);
-    return ok(undefined);
   }
 
   /**
@@ -570,7 +569,20 @@ export class FxCore {
       }
       botId = botIdRes;
     }
-    await teamsDevPortalClient.deleteBot(token, botId);
+    const confirmRes = await TOOLS.ui.confirm?.({
+      name: "uninstallAppRegistration",
+      title: getLocalizedString("core.uninstall.confirm.bot", botId),
+      default: false,
+    });
+    if (confirmRes?.isOk() && confirmRes.value.result === true) {
+      await teamsDevPortalClient.deleteBot(token, botId);
+    } else {
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.confirm.cancel.bot"),
+        false
+      );
+    }
     return ok(undefined);
   }
 

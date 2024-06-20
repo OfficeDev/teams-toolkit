@@ -26,7 +26,7 @@ describe("printer", () => {
       spec.appendix = {
         host: "some host",
         codeSnippet: "some code",
-        codeExplanation: "some explanation 1. point 1.",
+        codeExplanation: "some explanation",
         codeTaskBreakdown: ["task1", "task2"],
         codeSample: "",
         apiDeclarationsReference: new Map<string, SampleData>(),

@@ -83,6 +83,7 @@ import {
   openDocumentHandler,
   openWelcomeHandler,
 } from "../../src/handlers/openLinkHandlers";
+import * as corePackage from "@microsoft/teamsfx-core";
 
 describe("handlers", () => {
   const sandbox = sinon.createSandbox();
@@ -213,15 +214,14 @@ describe("handlers", () => {
     });
     it("createNewProjectHandler() from copilot chat", async () => {
       const clock = sandbox.useFakeTimers();
-
+      sandbox.stub(corePackage, "isValidOfficeAddInProject").returns(true);
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const sendTelemetryEventFunc = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
       const createProject = sandbox.spy(globalVariables.core, "createProject");
       const executeCommandFunc = sandbox.stub(vscode.commands, "executeCommand");
-
-      await createNewProjectHandler(["", {}]);
+      await createNewProjectHandler(["", { agent: "office" }]);
 
       chai.assert.isTrue(
         sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
@@ -230,7 +230,6 @@ describe("handlers", () => {
         sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
       );
       sinon.assert.calledOnce(createProject);
-      chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       clock.restore();
     });
     it("createNewProjectHandler - invoke Copilot", async () => {

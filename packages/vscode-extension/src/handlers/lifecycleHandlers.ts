@@ -35,12 +35,13 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     return result;
   }
   const projectPathUri = Uri.file(res.projectPath);
+  const isOfficeAddin = isValidOfficeAddInProject(projectPathUri.fsPath);
   // If it is triggered in @office /create for code gen, then do no open the temp folder.
-  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.agent === "office") {
+  if (isOfficeAddin && inputs?.agent === "office") {
     return result;
   }
   // show local debug button by default
-  if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
+  if (isOfficeAddin) {
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
   } else {
     await openFolder(projectPathUri, true, res.warnings, args);

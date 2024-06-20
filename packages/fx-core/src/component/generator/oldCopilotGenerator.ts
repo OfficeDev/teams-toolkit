@@ -33,15 +33,24 @@ import {
 import * as fs from "fs-extra";
 import { merge } from "lodash";
 import path from "path";
+import * as util from "util";
 import { FeatureFlags, featureFlagManager } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { isValidHttpUrl } from "../../common/stringUtils";
 import { assembleError } from "../../error";
-import { ProgrammingLanguage, QuestionNames } from "../../question/constants";
+import {
+  CapabilityOptions,
+  CustomCopilotRagOptions,
+  MeArchitectureOptions,
+  ProgrammingLanguage,
+  QuestionNames,
+} from "../../question/constants";
 import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { Generator } from "./generator";
 import { TelemetryEvents } from "./spfx/utils/telemetryEvents";
+import { DefaultTemplateGenerator } from "./templates/templateGenerator";
+import { TemplateInfo } from "./templates/templateInfo";
 import {
   convertSpecParserErrorToFxError,
   copilotPluginParserOptions,
@@ -58,7 +67,6 @@ import {
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
   updateForCustomApi,
-  validateSpec,
 } from "../driver/teamsApp/utils/SpecUtils";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
@@ -242,6 +250,7 @@ export class CopilotPluginGenerator {
         [telemetryProperties.authType]: authData?.authType ?? "None",
       });
 
+      const newGenerator = new CopilotGenerator();
       const getTemplateInfosState: any = {};
       inputs.getTemplateInfosState = getTemplateInfosState;
       getTemplateInfosState.isYaml = isYaml;
@@ -249,7 +258,7 @@ export class CopilotPluginGenerator {
       getTemplateInfosState.templateName = templateName;
       getTemplateInfosState.url = url;
       getTemplateInfosState.type = type;
-      const res = await this.post(context, inputs, destinationPath);
+      const res = await newGenerator.post(context, inputs, destinationPath);
       return res;
     } catch (e) {
       let error: FxError;
@@ -261,15 +270,155 @@ export class CopilotPluginGenerator {
       return err(error);
     }
   }
+}
 
-  private static async post(
+export class CopilotGenerator extends DefaultTemplateGenerator {
+  componentName = "copilot-generator";
+  // isYaml = false;
+  // templateName = "";
+  // url = "";
+  // isPlugin = false;
+  // type = -1;
+
+  // activation condition
+  public activate(context: Context, inputs: Inputs): boolean {
+    const capability = inputs.capabilities as string;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    return (
+      capability === CapabilityOptions.copilotPluginApiSpec().id ||
+      meArchitecture === MeArchitectureOptions.apiSpec().id ||
+      (capability === CapabilityOptions.customCopilotRag().id &&
+        inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
+    );
+  }
+
+  getTemplateName(inputs: Inputs): string {
+    const capability = inputs.capabilities as string;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    let templateName = "";
+    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      templateName = apiPluginFromApiSpecTemplateName;
+    } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+      templateName = fromApiSpecTemplateName;
+    } else if (
+      capability === CapabilityOptions.customCopilotRag().id &&
+      inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+    ) {
+      templateName = forCustomCopilotRagCustomApi;
+    }
+    return templateName;
+  }
+
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const capability = inputs.capabilities as string;
+    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    const getTemplateInfosState: any = {};
+    getTemplateInfosState.templateName = this.getTemplateName(inputs);
+    getTemplateInfosState.isPlugin = false;
+    let authData = undefined;
+    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      getTemplateInfosState.isPlugin = true;
+      authData = inputs.apiAuthData;
+    } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+      authData = inputs.apiAuthData;
+    }
+    merge(actionContext?.telemetryProps, {
+      [telemetryProperties.templateName]: getTemplateInfosState.templateName,
+    });
+    const appName = inputs[QuestionNames.AppName];
+    let language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+    if (getTemplateInfosState.templateName !== forCustomCopilotRagCustomApi) {
+      language =
+        language === ProgrammingLanguage.CSharp
+          ? ProgrammingLanguage.CSharp
+          : ProgrammingLanguage.None;
+    }
+    const safeProjectNameFromVS =
+      language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+    getTemplateInfosState.type =
+      getTemplateInfosState.templateName === forCustomCopilotRagCustomApi
+        ? ProjectType.TeamsAi
+        : getTemplateInfosState.isPlugin
+        ? ProjectType.Copilot
+        : ProjectType.SME;
+    const url = inputs[QuestionNames.ApiSpecLocation];
+    getTemplateInfosState.url = url.trim();
+
+    getTemplateInfosState.isYaml = false;
+    try {
+      getTemplateInfosState.isYaml = await isYamlSpecFile(url);
+    } catch (e) {}
+
+    const openapiSpecFileName = getTemplateInfosState.isYaml
+      ? defaultApiSpecYamlFileName
+      : defaultApiSpecJsonFileName;
+    const llmService: string | undefined = inputs[QuestionNames.LLMService];
+    const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
+    const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
+    const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
+    const azureOpenAIDeploymentName: string | undefined =
+      inputs[QuestionNames.AzureOpenAIDeploymentName];
+    const llmServiceData = {
+      llmService,
+      openAIKey,
+      azureOpenAIKey,
+      azureOpenAIEndpoint,
+      azureOpenAIDeploymentName,
+    };
+    if (authData?.authName) {
+      const envName = getEnvName(authData.authName, authData.authType);
+      context.templateVariables = Generator.getDefaultVariables(
+        appName,
+        safeProjectNameFromVS,
+        inputs.targetFramework,
+        inputs.placeProjectFileInSolutionDir === "true",
+        {
+          authName: authData.authName,
+          openapiSpecPath: normalizePath(
+            path.join(AppPackageFolderName, defaultApiSpecFolderName, openapiSpecFileName)
+          ),
+          registrationIdEnvName: envName,
+          authType: authData.authType,
+        },
+        llmServiceData
+      );
+    } else {
+      context.templateVariables = Generator.getDefaultVariables(
+        appName,
+        safeProjectNameFromVS,
+        inputs.targetFramework,
+        inputs.placeProjectFileInSolutionDir === "true",
+        undefined,
+        llmServiceData
+      );
+    }
+    context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
+      [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+      [telemetryProperties.generateType]: getTemplateInfosState.type.toString(),
+      [telemetryProperties.authType]: authData?.authName ?? "None",
+    });
+    inputs.getTemplateInfosState = getTemplateInfosState;
+    return ok([
+      {
+        templateName: getTemplateInfosState.templateName,
+        language: language,
+        replaceMap: context.templateVariables,
+      },
+    ]);
+  }
+
+  public async post(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<GeneratorResult, FxError>> {
     try {
-      const componentName = "copilot-generator";
       const getTemplateInfosState = inputs.getTemplateInfosState;
       // validate API spec
       const specParser = new SpecParser(
@@ -283,9 +432,32 @@ export class CopilotPluginGenerator {
               allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
             }
       );
-      const filters = inputs[QuestionNames.ApiOperation] as string[];
-      const validationRes = await validateSpec(specParser, filters);
+      const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
+      const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+      const filters = inputs[QuestionNames.ApiOperation] as string[];
+      if (operationIdWarning && operationIdWarning.data) {
+        const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+          filters.includes(api)
+        );
+        if (apisMissingOperationId.length > 0) {
+          operationIdWarning.content = util.format(
+            getLocalizedString("core.common.MissingOperationId"),
+            apisMissingOperationId.join(", ")
+          );
+          delete operationIdWarning.data;
+        } else {
+          warnings.splice(warnings.indexOf(operationIdWarning), 1);
+        }
+      }
+
+      const specVersionWarning = warnings.find(
+        (w) => w.type === WarningType.ConvertSwaggerToOpenAPI
+      );
+      if (specVersionWarning) {
+        specVersionWarning.content = ""; // We don't care content of this warning
+      }
+
       if (validationRes.status === ValidationStatus.Error) {
         logValidationResults(validationRes.errors, warnings, context, false, true);
         const errorMessage =
@@ -297,7 +469,7 @@ export class CopilotPluginGenerator {
                 "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
               );
         return err(
-          new UserError(componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
+          new UserError(this.componentName, invalidApiSpecErrorName, errorMessage, errorMessage)
         );
       }
       const manifestPath = path.join(
@@ -379,7 +551,7 @@ export class CopilotPluginGenerator {
           await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
         } catch (error: any) {
           throw new SystemError(
-            componentName,
+            this.componentName,
             failedToUpdateCustomApiTemplateErrorName,
             error.message,
             error.message

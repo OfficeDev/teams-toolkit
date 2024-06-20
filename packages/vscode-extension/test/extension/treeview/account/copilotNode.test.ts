@@ -28,7 +28,8 @@ describe("copilotNode", () => {
     sandbox
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
-    sandbox.stub(PackageService.prototype, "getCopilotStatus").returns(Promise.resolve(false));
+    sandbox.stub(PackageService, "GetSharedInstance").returns(new PackageService("endpoint"));
+    sandbox.stub(PackageService.prototype, "getCopilotStatus").resolves(false);
     sandbox.stub(checkCopilotCallback, "checkCopilotCallback");
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
@@ -40,7 +41,8 @@ describe("copilotNode", () => {
     sandbox
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
-    sandbox.stub(PackageService.prototype, "getCopilotStatus").returns(Promise.resolve(true));
+    sandbox.stub(PackageService, "GetSharedInstance").returns(new PackageService("endpoint"));
+    sandbox.stub(PackageService.prototype, "getCopilotStatus").resolves(true);
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
 
@@ -51,6 +53,7 @@ describe("copilotNode", () => {
     sandbox
       .stub(M365TokenInstance, "getAccessToken")
       .returns(Promise.resolve(new Ok("test-token")));
+    sandbox.stub(PackageService, "GetSharedInstance").returns(new PackageService("endpoint"));
     sandbox
       .stub(PackageService.prototype, "getCopilotStatus")
       .returns(Promise.reject(new Error("test-error")));

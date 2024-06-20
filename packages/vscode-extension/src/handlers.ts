@@ -11,13 +11,10 @@
 import {
   AppPackageFolderName,
   BuildFolderName,
-  ConfigFolderName,
-  CoreCallbackEvent,
   CreateProjectResult,
   Func,
   FxError,
   Inputs,
-  M365TokenProvider,
   ManifestTemplateFileName,
   ManifestUtil,
   OptionItem,
@@ -42,7 +39,6 @@ import {
   Correlator,
   DepsManager,
   DepsType,
-  FxCore,
   Hub,
   InvalidProjectError,
   JSONSyntaxError,
@@ -53,7 +49,6 @@ import {
   environmentManager,
   generateScaffoldingSummary,
   getHashedEnv,
-  getProjectMetadata,
   globalStateGet,
   globalStateUpdate,
   isUserCancelError,
@@ -69,9 +64,7 @@ import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
-import commandController from "./commandController";
 import azureAccountManager from "./commonlib/azureLogin";
-import { signedIn, signedOut } from "./commonlib/common/constant";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import { AzurePortalUrl, CommandKey, GlobalKey } from "./constants";
@@ -84,7 +77,6 @@ import { openHubWebClient } from "./debug/launch";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
-import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import {
   context,
@@ -93,9 +85,6 @@ import {
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
-  setCommandIsRunning,
-  setCore,
-  setTools,
   tools,
   workspaceUri,
 } from "./globalVariables";
@@ -136,112 +125,6 @@ import { getTriggerFromProperty, isTriggerFromWalkThrough } from "./utils/teleme
 import { openFolder, openOfficeDevFolder } from "./utils/workspaceUtils";
 import { openWelcomeHandler } from "./handlers/openLinkHandlers";
 
-export function activate(): Result<Void, FxError> {
-  const result: Result<Void, FxError> = ok(Void);
-  const validProject = isValidProject(workspaceUri?.fsPath);
-  if (validProject) {
-    const fixedProjectSettings = getProjectMetadata(workspaceUri?.fsPath);
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.ProjectId,
-      fixedProjectSettings?.projectId as string
-    );
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    void azureAccountManager.setStatusChangeMap(
-      "successfully-sign-in-azure",
-      (status, token, accountInfo) => {
-        if (status === signedIn) {
-          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
-        } else if (status === signedOut) {
-          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
-        }
-        return Promise.resolve();
-      },
-      false
-    );
-  }
-  try {
-    const m365Login: M365TokenProvider = M365TokenInstance;
-    const m365NotificationCallback = (
-      status: string,
-      token: string | undefined,
-      accountInfo: Record<string, unknown> | undefined
-    ) => {
-      if (status === signedIn) {
-        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
-      } else if (status === signedOut) {
-        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
-      }
-      return Promise.resolve();
-    };
-
-    void M365TokenInstance.setStatusChangeMap(
-      "successfully-sign-in-m365",
-      { scopes: AppStudioScopes },
-      m365NotificationCallback,
-      false
-    );
-    setTools({
-      logProvider: VsCodeLogInstance,
-      tokenProvider: {
-        azureAccountProvider: azureAccountManager,
-        m365TokenProvider: m365Login,
-      },
-      telemetryReporter: ExtTelemetry.reporter,
-      ui: VS_CODE_UI,
-      expServiceProvider: exp.getExpService(),
-    });
-    setCore(new FxCore(tools));
-    core.on(CoreCallbackEvent.lock, async (command: string) => {
-      setCommandIsRunning(true);
-      await commandController.lockedByOperation(command);
-    });
-    core.on(CoreCallbackEvent.unlock, async (command: string) => {
-      setCommandIsRunning(false);
-      await commandController.unlockedByOperation(command);
-    });
-    const workspacePath = workspaceUri?.fsPath;
-    if (workspacePath) {
-      addFileSystemWatcher(workspacePath);
-    }
-
-    if (workspacePath) {
-      // refresh env tree when env config files added or deleted.
-      workspace.onDidCreateFiles(async (event) => {
-        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
-      });
-
-      workspace.onDidDeleteFiles(async (event) => {
-        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
-      });
-
-      workspace.onDidRenameFiles(async (event) => {
-        const files = [];
-        for (const f of event.files) {
-          files.push(f.newUri);
-          files.push(f.oldUri);
-        }
-
-        await refreshEnvTreeOnFileChanged(workspacePath, files);
-      });
-
-      workspace.onDidSaveTextDocument(async (event) => {
-        await refreshEnvTreeOnFileContentChanged(workspacePath, event.uri.fsPath);
-      });
-    }
-  } catch (e) {
-    const FxError: FxError = {
-      name: (e as Error).name,
-      source: ExtensionSource,
-      message: (e as Error).message,
-      stack: (e as Error).stack,
-      timestamp: new Date(),
-    };
-    void showError(FxError);
-    return err(FxError);
-  }
-  return result;
-}
-
 // only used for telemetry
 export async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
@@ -262,22 +145,6 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     }
   }
   return undefined;
-}
-
-async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
-  let needRefresh = false;
-  for (const file of files) {
-    // check if file is env config
-    const res = await core.isEnvFile(workspacePath, file.fsPath);
-    if (res.isOk() && res.value) {
-      needRefresh = true;
-      break;
-    }
-  }
-
-  if (needRefresh) {
-    await envTreeProviderInstance.reloadEnvironments();
-  }
 }
 
 export function addFileSystemWatcher(workspacePath: string) {
@@ -322,20 +189,6 @@ export async function sendSDKVersionTelemetry(filePath: string) {
     [TelemetryProperty.TeamsJSVersion]:
       packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
   });
-}
-
-async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePath: string) {
-  const projectSettingsPath = path.resolve(
-    workspacePath,
-    `.${ConfigFolderName}`,
-    "configs",
-    "projectSettings.json"
-  );
-
-  // check if file is project config
-  if (path.normalize(filePath) === path.normalize(projectSettingsPath)) {
-    await envTreeProviderInstance.reloadEnvironments();
-  }
 }
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {

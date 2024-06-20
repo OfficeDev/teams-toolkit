@@ -86,7 +86,7 @@ describe("Lifecycle handlers", () => {
         })
       );
       sandbox.stub(copilotHandler, "invokeTeamsAgent").resolves();
-      const res = await createNewProjectHandler(["", { agent: "office" }]);
+      const res = await createNewProjectHandler("", { agent: "office" });
       assert.isTrue(res.isOk());
     });
     it("office add-in", async () => {
@@ -113,7 +113,7 @@ describe("Lifecycle handlers", () => {
           projectId: "mockId",
         })
       );
-      const res = await createNewProjectHandler([{ teamsAppFromTdp: true }, {}]);
+      const res = await createNewProjectHandler({ teamsAppFromTdp: true }, {});
       assert.isTrue(res.isOk());
       assert.isTrue(openFolder.calledOnce);
     });

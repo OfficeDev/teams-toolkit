@@ -17,7 +17,7 @@ import { CancellationToken } from "../../../mocks/vsc";
 import { officeSampleProvider } from "../../../../src/officeChat/commands/create/officeSamples";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
 import { core } from "../../../../src/globalVariables";
-import { CreateProjectResult, ok } from "@microsoft/teamsfx-api";
+import { CreateProjectResult, FxError, err, ok } from "@microsoft/teamsfx-api";
 
 chai.use(chaiPromised);
 
@@ -231,14 +231,26 @@ describe("File: office chat create helper", () => {
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(fs, "writeFile").resolves();
       tempFolder = "testFolder";
-      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
     });
     afterEach(() => {
       sandbox.restore();
     });
 
+    it("fail to generate the project", async () => {
+      sandbox
+        .stub(core, "createProjectByCustomizedGenerator")
+        .resolves(err(undefined as any as FxError));
+      try {
+        await officeChathelper.buildTemplateFileTree({}, tempFolder, "test", "test");
+        chai.assert.fail("should not reach here");
+      } catch (error) {
+        chai.assert.strictEqual((error as Error).message, "Failed to generate the project.");
+      }
+    });
+
     it("traverse the folder", async () => {
       sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       const data = {
         capabilities: "test",
         "project-type": "test",
@@ -279,6 +291,7 @@ describe("File: office chat create helper", () => {
 
     it("fail to merge taskpane code snippet", async () => {
       sandbox.stub(fs, "readFile").rejects(new Error("test"));
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       const data = {
         capabilities: "test",
         "project-type": "test",
@@ -302,6 +315,7 @@ describe("File: office chat create helper", () => {
 
     it("fail to merge taskpane code snippet", async () => {
       sandbox.stub(fs, "readFile").rejects(new Error("test"));
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       const data = {
         capabilities: "excel-custom-functions-test",
         "project-type": "test",

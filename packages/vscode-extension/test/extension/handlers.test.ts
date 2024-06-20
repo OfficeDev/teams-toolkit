@@ -84,85 +84,6 @@ describe("handlers", () => {
     sandbox.restore();
   });
 
-  it("getSettingsVersion", async () => {
-    sandbox.stub(globalVariables, "core").value(new MockCore());
-    sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
-    sandbox
-      .stub(MockCore.prototype, "projectVersionCheck")
-      .resolves(ok({ currentVersion: "3.0.0" }));
-    const res = await handlers.getSettingsVersion();
-    chai.assert.equal(res, "3.0.0");
-  });
-
-  it("addFileSystemWatcher detect SPFx project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
-    const updateTreeViewsOnSPFxChanged = sandbox.stub(
-      TreeViewManagerInstance,
-      "updateTreeViewsOnSPFxChanged"
-    );
-
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-      onDidDelete: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").callsFake((...args: unknown[]) => {
-      (args as any)[0]();
-    });
-    const changeListener = sandbox.stub(watcher, "onDidChange").callsFake((...args: unknown[]) => {
-      (args as any)[0]();
-    });
-    const deleteListener = sandbox.stub(watcher, "onDidDelete").callsFake((...args: unknown[]) => {
-      (args as any)[0]();
-    });
-    const sendTelemetryEventFunc = sandbox
-      .stub(ExtTelemetry, "sendTelemetryEvent")
-      .callsFake(() => {});
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.equal(createWatcher.callCount, 2);
-    chai.assert.equal(createListener.callCount, 2);
-    chai.assert.isTrue(changeListener.calledTwice);
-  });
-
-  it("addFileSystemWatcher in invalid project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
-
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.isTrue(createWatcher.notCalled);
-    chai.assert.isTrue(createListener.notCalled);
-    chai.assert.isTrue(changeListener.notCalled);
-  });
-
-  it("sendSDKVersionTelemetry", async () => {
-    const filePath = "test/package-lock.json";
-
-    const readJsonFunc = sandbox.stub(fs, "readJson").resolves();
-    const sendTelemetryEventFunc = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-
-    handlers.sendSDKVersionTelemetry(filePath);
-
-    chai.assert.isTrue(readJsonFunc.calledOnce);
-  });
-
   it("updateAutoOpenGlobalKey", async () => {
     sandbox.stub(telemetryUtils, "isTriggerFromWalkThrough").returns(true);
     sandbox.stub(globalVariables, "checkIsSPFx").returns(true);
@@ -1837,18 +1758,6 @@ describe("handlers", () => {
       chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
     });
-  });
-
-  it("refreshSPFxTreeOnFileChanged", () => {
-    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
-    const updateTreeViewsOnSPFxChanged = sandbox
-      .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
-      .resolves();
-
-    handlers.refreshSPFxTreeOnFileChanged();
-
-    chai.expect(initGlobalVariables.calledOnce).to.be.true;
-    chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
   });
 
   describe("getPathDelimiterHandler", () => {

@@ -77,9 +77,7 @@ import { showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import {
-  context,
   core,
-  initializeGlobalVariables,
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
@@ -121,72 +119,6 @@ import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSystemInputs } from "./utils/systemEnvUtils";
 import { getTriggerFromProperty, isTriggerFromWalkThrough } from "./utils/telemetryUtils";
-
-// only used for telemetry
-export async function getSettingsVersion(): Promise<string | undefined> {
-  if (core) {
-    const input = getSystemInputs();
-    input.ignoreEnvInfo = true;
-
-    // TODO: from the experience of 'is-from-sample':
-    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
-    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
-    // const projectConfig = await core.getProjectConfig(input);
-    // ignore errors for telemetry
-    // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.version;
-    // }
-    const versionCheckResult = await projectVersionCheck();
-    if (versionCheckResult.isOk()) {
-      return versionCheckResult.value.currentVersion;
-    }
-  }
-  return undefined;
-}
-
-export function addFileSystemWatcher(workspacePath: string) {
-  if (isValidProject(workspaceUri?.fsPath)) {
-    const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
-
-    packageLockFileWatcher.onDidCreate(async (event) => {
-      await sendSDKVersionTelemetry(event.fsPath);
-    });
-
-    packageLockFileWatcher.onDidChange(async (event) => {
-      await sendSDKVersionTelemetry(event.fsPath);
-    });
-
-    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate((event) => {
-      refreshSPFxTreeOnFileChanged();
-    });
-    yorcFileWatcher.onDidChange((event) => {
-      refreshSPFxTreeOnFileChanged();
-    });
-    yorcFileWatcher.onDidDelete((event) => {
-      refreshSPFxTreeOnFileChanged();
-    });
-  }
-}
-
-export function refreshSPFxTreeOnFileChanged() {
-  initializeGlobalVariables(context);
-
-  TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
-}
-
-export async function sendSDKVersionTelemetry(filePath: string) {
-  const packageLockFile = (await fs.readJson(filePath).catch(() => {})) as {
-    dependencies: { [key: string]: { version: string } };
-  };
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateSDKPackages, {
-    [TelemetryProperty.BotbuilderVersion]: packageLockFile?.dependencies["botbuilder"]?.version,
-    [TelemetryProperty.TeamsFxVersion]:
-      packageLockFile?.dependencies["@microsoft/teamsfx"]?.version,
-    [TelemetryProperty.TeamsJSVersion]:
-      packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
-  });
-}
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
@@ -2306,8 +2238,4 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
-}
-
-export async function projectVersionCheck() {
-  return await core.projectVersionCheck(getSystemInputs());
 }

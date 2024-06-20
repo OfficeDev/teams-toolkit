@@ -122,12 +122,13 @@ import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewP
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler, setUriEventHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import { delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
 import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
-import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
+import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
+import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -1161,7 +1162,7 @@ async function runBackgroundAsyncTasks(
       true
     );
 
-  ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
+  ExtTelemetry.settingsVersion = await getSettingsVersion();
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
   const releaseNote = new ReleaseNote(context);
@@ -1218,7 +1219,7 @@ function runCommand(commandName: string, ...args: unknown[]) {
 }
 
 async function checkProjectUpgradable(): Promise<boolean> {
-  const versionCheckResult = await handlers.projectVersionCheck();
+  const versionCheckResult = await projectVersionCheck();
   if (versionCheckResult.isErr()) {
     unsetIsTeamsFxProject();
     return false;

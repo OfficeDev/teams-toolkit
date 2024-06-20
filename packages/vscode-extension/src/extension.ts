@@ -81,7 +81,12 @@ import { checkSideloadingCallback } from "./handlers/checkSideloading";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
-import { deployHandler, provisionHandler, publishHandler } from "./handlers/lifecycleHandlers";
+import {
+  createNewProjectHandler,
+  deployHandler,
+  provisionHandler,
+  publishHandler,
+} from "./handlers/lifecycleHandlers";
 import * as officeDevHandlers from "./handlers/officeDevHandlers";
 import {
   openAccountLinkHandler,
@@ -294,7 +299,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     CommandKeys.Create,
-    handlers.createNewProjectHandler,
+    createNewProjectHandler,
     "createProject"
   );
   context.subscriptions.push(

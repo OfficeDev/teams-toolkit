@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import * as fs from "fs-extra";
-import * as vscode from "vscode";
 import {
   Result,
   Void,

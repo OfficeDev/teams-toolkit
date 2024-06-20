@@ -222,5 +222,11 @@ describe("TelemetryUtils", () => {
       const res = await getSettingsVersion();
       chai.assert.equal(res, "3.0.0");
     });
+
+    it("core is undefined", async () => {
+      sandbox.stub(globalVariables, "core").value(undefined);
+      const res = await getSettingsVersion();
+      chai.assert.equal(res, undefined);
+    });
   });
 });

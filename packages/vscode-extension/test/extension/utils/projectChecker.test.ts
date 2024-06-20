@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 import * as global from "../../../src/globalVariables";
 import {
   checkProjectTypeAndSendTelemetry,
+  isM365Project,
   isTestToolEnabledProject,
 } from "../../../src/utils/projectChecker";
 import { MockCore } from "../../mocks/mockCore";
@@ -64,6 +65,27 @@ describe("projectChecker", () => {
     it("test tool yaml not exist", async () => {
       sandbox.stub(fs, "pathExistsSync").returns(false);
       const res = isTestToolEnabledProject("testPath");
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isM365Project", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(async () => {
+      sandbox.restore();
+    });
+
+    it("projectSettings.json exist", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({ isM365: true });
+      const res = await isM365Project("testPath");
+      chai.assert.isTrue(res);
+    });
+
+    it("projectSettings.json not exist", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await isM365Project("testPath");
       chai.assert.isFalse(res);
     });
   });

@@ -1,6 +1,6 @@
-/**
- * @author Anne Fu <v-annefu@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
   initPage,
@@ -47,7 +47,7 @@ describe("SPFx local debug", function () {
         Env.username,
         Env.password
       );
-      await validateTeamsWorkbench(page, Env.displayName);
+      await validateTeamsWorkbench(page, localDebugTestContext.appName);
     }
   );
 });

@@ -2026,6 +2026,7 @@ export async function validateTeamsWorkbench(page: Page, displayName: string) {
     const frame = await frameElementHandle?.contentFrame();
     await frame?.click('button:has-text("Load debug scripts")');
     console.log("Debug scripts loaded");
+    await validateSpfx(page, { displayName: displayName });
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -2040,7 +2041,11 @@ export async function validateSpfx(
   options?: { displayName?: string }
 ) {
   try {
-    const frame = await page.waitForSelector("div#app");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(`text=Web part property value`);
     await frame?.waitForSelector(`text=${options?.displayName}`);
     console.log(`Found: "${options?.displayName}"`);
   } catch (error) {

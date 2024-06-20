@@ -46,8 +46,5 @@ new QueryOrgTestCase(
   15554404,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
-  {
-    debug: "cli",
-  }
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot]
 ).test();

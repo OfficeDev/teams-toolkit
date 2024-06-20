@@ -11,7 +11,6 @@
 import {
   AppPackageFolderName,
   BuildFolderName,
-  CreateProjectResult,
   Func,
   FxError,
   Inputs,
@@ -52,7 +51,6 @@ import {
   globalStateGet,
   globalStateUpdate,
   isUserCancelError,
-  isValidOfficeAddInProject,
   isValidProject,
   manifestUtils,
   pathUtils,
@@ -86,7 +84,8 @@ import {
   tools,
   workspaceUri,
 } from "./globalVariables";
-import { invokeTeamsAgent } from "./handlers/copilotChatHandlers";
+import { createNewProjectHandler } from "./handlers/lifecycleHandlers";
+import { openWelcomeHandler } from "./handlers/openLinkHandlers";
 import { processResult, runCommand } from "./handlers/sharedOpts";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { VS_CODE_UI } from "./qm/vsc_ui";
@@ -120,44 +119,6 @@ import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSystemInputs } from "./utils/systemEnvUtils";
 import { getTriggerFromProperty, isTriggerFromWalkThrough } from "./utils/telemetryUtils";
-import { openFolder, openOfficeDevFolder } from "./utils/workspaceUtils";
-import { openWelcomeHandler } from "./handlers/openLinkHandlers";
-
-export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  let inputs: Inputs | undefined;
-  if (args?.length === 1) {
-    if (!!args[0].teamsAppFromTdp) {
-      inputs = getSystemInputs();
-      inputs.teamsAppFromTdp = args[0].teamsAppFromTdp;
-    }
-  } else if (args?.length === 2) {
-    // from copilot chat
-    inputs = { ...getSystemInputs(), ...args[1] };
-  }
-  const result = await runCommand(Stage.create, inputs);
-  if (result.isErr()) {
-    return err(result.error);
-  }
-
-  const res = result.value as CreateProjectResult;
-  if (res.shouldInvokeTeamsAgent) {
-    await invokeTeamsAgent([TelemetryTriggerFrom.CreateAppQuestionFlow]);
-    return result;
-  }
-  const projectPathUri = Uri.file(res.projectPath);
-  // If it is triggered in @office /create for code gen, then do no open the temp folder.
-  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.agent === "office") {
-    return result;
-  }
-  // show local debug button by default
-  if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
-    await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
-  } else {
-    await openFolder(projectPathUri, true, res.warnings, args);
-  }
-  return result;
-}
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));

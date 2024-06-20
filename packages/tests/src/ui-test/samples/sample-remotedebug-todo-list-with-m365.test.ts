@@ -46,26 +46,6 @@ class TodoListM365TestCase extends CaseFactory {
   ): Promise<void> {
     return await validateTodoList(page, { displayName: options?.displayName });
   }
-  override async onCliValidate(
-    page: Page,
-    options?: { displayName: string }
-  ): Promise<void> {
-    return await validateTodoList(page, { displayName: options?.displayName });
-  }
-  public override async onReopenPage(
-    sampledebugContext: SampledebugContext,
-    teamsAppId: string
-  ): Promise<Page> {
-    return await reopenPage(
-      sampledebugContext.context!,
-      teamsAppId,
-      Env.username,
-      Env.password,
-      undefined,
-      true,
-      true
-    );
-  }
 }
 
 new TodoListM365TestCase(

@@ -211,7 +211,28 @@ describe("handlers", () => {
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       clock.restore();
     });
+    it("createNewProjectHandler() from copilot chat", async () => {
+      const clock = sandbox.useFakeTimers();
 
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const sendTelemetryEventFunc = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
+      const createProject = sandbox.spy(globalVariables.core, "createProject");
+      const executeCommandFunc = sandbox.stub(vscode.commands, "executeCommand");
+
+      await createNewProjectHandler(["", {}]);
+
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
+      );
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
+      );
+      sinon.assert.calledOnce(createProject);
+      chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
+      clock.restore();
+    });
     it("createNewProjectHandler - invoke Copilot", async () => {
       const mockCore = new MockCore();
       sandbox

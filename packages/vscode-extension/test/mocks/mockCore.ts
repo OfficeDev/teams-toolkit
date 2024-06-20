@@ -145,4 +145,8 @@ export class MockCore {
       lauguages: ["ts"],
     });
   }
+
+  async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
+  }
 }

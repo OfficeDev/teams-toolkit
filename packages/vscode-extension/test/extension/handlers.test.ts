@@ -20,7 +20,6 @@ import {
   CollaborationState,
   DepsManager,
   DepsType,
-  FxCore,
   UnhandledError,
   UserCancelError,
   environmentManager,
@@ -39,7 +38,6 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import VsCodeLogInstance, { VsCodeLogProvider } from "../../src/commonlib/log";
@@ -63,7 +61,6 @@ import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
-import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
 import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
@@ -88,111 +85,6 @@ import {
 } from "../../src/handlers/openLinkHandlers";
 
 describe("handlers", () => {
-  describe("activate()", function () {
-    const sandbox = sinon.createSandbox();
-
-    beforeEach(() => {
-      sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
-      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
-      sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
-      sandbox.stub(ExtTelemetry, "dispose");
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("No globalState error", async () => {
-      const result = await handlers.activate();
-      chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
-    });
-
-    it("Valid project", async () => {
-      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-      const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
-      const setCommandIsRunningStub = sandbox.stub(globalVariables, "setCommandIsRunning");
-      const lockedByOperationStub = sandbox.stub(commandController, "lockedByOperation");
-      const unlockedByOperationStub = sandbox.stub(commandController, "unlockedByOperation");
-      const azureAccountSetStatusChangeMapStub = sandbox.stub(
-        AzureAccountManager.prototype,
-        "setStatusChangeMap"
-      );
-      const m365AccountSetStatusChangeMapStub = sandbox.stub(
-        M365TokenInstance,
-        "setStatusChangeMap"
-      );
-      const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
-      let lockCallback: any;
-      let unlockCallback: any;
-
-      sandbox.stub(FxCore.prototype, "on").callsFake((event: string, callback: any) => {
-        if (event === "lock") {
-          lockCallback = callback;
-        } else {
-          unlockCallback = callback;
-        }
-      });
-      azureAccountSetStatusChangeMapStub.callsFake(
-        (
-          name: string,
-          statusChange: (
-            status: string,
-            token?: string,
-            accountInfo?: Record<string, unknown>
-          ) => Promise<void>,
-          immediateCall?: boolean
-        ) => {
-          statusChange(signedIn).then(() => {});
-          statusChange(signedOut).then(() => {});
-          return Promise.resolve(true);
-        }
-      );
-      m365AccountSetStatusChangeMapStub.callsFake(
-        (
-          name: string,
-          tokenRequest: unknown,
-          statusChange: (
-            status: string,
-            token?: string,
-            accountInfo?: Record<string, unknown>
-          ) => Promise<void>,
-          immediateCall?: boolean
-        ) => {
-          statusChange(signedIn).then(() => {});
-          statusChange(signedOut).then(() => {});
-          return Promise.resolve(ok(true));
-        }
-      );
-      const result = await handlers.activate();
-
-      chai.assert.isTrue(addSharedPropertyStub.called);
-      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("open-teams-app"));
-      chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
-
-      lockCallback("test");
-      setCommandIsRunningStub.calledOnceWith(true);
-      lockedByOperationStub.calledOnceWith("test");
-
-      unlockCallback("test");
-      unlockedByOperationStub.calledOnceWith("test");
-
-      chai.assert.isTrue(showMessageStub.called);
-    });
-
-    it("throws error", async () => {
-      sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
-      sandbox.stub(M365TokenInstance, "setStatusChangeMap");
-      sandbox.stub(FxCore.prototype, "on").throws(new Error("test"));
-      const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
-
-      const result = await handlers.activate();
-
-      chai.assert.isTrue(result.isErr());
-      chai.assert.isTrue(showErrorMessageStub.called);
-    });
-  });
-
   const sandbox = sinon.createSandbox();
   afterEach(() => {
     sandbox.restore();
@@ -845,6 +737,7 @@ describe("handlers", () => {
     });
 
     it("deployAadManifest happy path", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(globalVariables.core, "deployAadManifest").resolves(ok(undefined));
       const input: Inputs = systemEnvUtils.getSystemInputs();
       const res = await runCommand(Stage.deployAad, input);

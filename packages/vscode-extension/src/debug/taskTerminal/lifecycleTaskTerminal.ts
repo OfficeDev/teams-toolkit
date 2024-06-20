@@ -9,12 +9,12 @@ import * as vscode from "vscode";
 import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
 import { Correlator, TaskDefaultValue } from "@microsoft/teamsfx-core";
 import { workspaceUri } from "../../globalVariables";
-import { runCommand } from "../../handlers";
+import { runCommand } from "../../handlers/sharedOpts";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { getLocalDebugSession } from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { getSystemInputs } from "../../utils/environmentUtils";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 
 interface LifecycleArgs {
   template?: string;

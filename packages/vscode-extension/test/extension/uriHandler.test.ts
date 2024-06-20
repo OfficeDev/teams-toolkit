@@ -1,13 +1,8 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-
 import { UriHandler, setUriEventHandler } from "../../src/uriHandler";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
-
-afterEach(() => {
-  sinon.restore();
-});
 
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();

@@ -1158,6 +1158,19 @@
                   }
                 },
                 "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.url.title%"
+                  }
+                },
+                "additionalProperties": false
               }
             ]
           }

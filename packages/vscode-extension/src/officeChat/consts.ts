@@ -12,5 +12,5 @@ export const enum OfficeChatCommand {
 }
 
 export function getTokenLimitation(model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4"): number {
-  return 3000;
+  return 4000;
 }

@@ -1,22 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { runCommand } from "../handlers";
-import * as commonUtils from "../utils/commonUtils";
-
+import { runCommand } from "../handlers/sharedOpts";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-
 import { CreateProjectResult, FxError, Result, Stage } from "@microsoft/teamsfx-api";
-import { getSystemInputs } from "../utils/environmentUtils";
+import { getSystemInputs } from "../utils/systemEnvUtils";
+import { getTriggerFromProperty } from "../utils/telemetryUtils";
 
 export async function createProjectFromWalkthroughHandler(
   args?: any[]
 ): Promise<Result<CreateProjectResult, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CreateProjectStart,
-    commonUtils.getTriggerFromProperty(args)
-  );
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
 
   // parse questions model answers to inputs
   const inputs = getSystemInputs();

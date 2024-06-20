@@ -17,6 +17,7 @@ export interface CreateProjectInputs extends Inputs {
   "project-type"?: "bot-type" | "tab-type" | "me-type" | "office-addin-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
+    | "empty"
     | "bot"
     | "notification"
     | "command-bot"

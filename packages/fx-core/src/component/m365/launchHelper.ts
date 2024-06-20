@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  LogProvider,
+  M365TokenProvider,
+  ManifestProperties,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 
 import { hooks } from "@feathersjs/hooks";
 import { AppStudioScopes } from "../../common/constants";
@@ -12,6 +20,7 @@ import { HubTypes } from "../../question/constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { MosServiceEndpoint, MosServiceScope } from "./serviceConstant";
+import { officeBaseUrl, outlookBaseUrl, outlookCopilotAppId } from "./constants";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -25,25 +34,29 @@ export class LaunchHelper {
   public async getLaunchUrl(
     hub: HubTypes,
     teamsAppId: string,
-    capabilities: string[],
+    properties: ManifestProperties,
     withLoginHint = true
   ): Promise<Result<string, FxError>> {
+    const capabilities = properties.capabilities;
     const loginHint = withLoginHint
       ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
       : undefined;
     let url: URL;
     const copilotCapabilities = ["plugin", "copilotGpt"];
+    const hasCopilotExtensionOnly =
+      capabilities.length > 0 &&
+      capabilities.filter((capability: string) => !copilotCapabilities.includes(capability))
+        .length === 0;
     switch (hub) {
       case HubTypes.teams: {
         let installAppPackage = true;
         if (
           capabilities.length > 0 &&
-          (capabilities.filter((capability) => !copilotCapabilities.includes(capability)).length ==
-            0 ||
+          (hasCopilotExtensionOnly ||
             (!capabilities.includes("staticTab") &&
               !capabilities.includes("Bot") &&
               !capabilities.includes("configurableTab") &&
-              capabilities.includes("apiMeAAD")))
+              properties.isApiMeAAD))
         ) {
           installAppPackage = false;
         }
@@ -62,9 +75,11 @@ export class LaunchHelper {
         if (result.isErr()) {
           return err(result.error);
         }
-        const baseUrl = capabilities.includes("staticTab")
-          ? `https://outlook.office.com/host/${result.value}`
-          : "https://outlook.office.com/mail";
+        const baseUrl = hasCopilotExtensionOnly
+          ? `${outlookBaseUrl}/host/${outlookCopilotAppId}`
+          : capabilities.includes("staticTab")
+          ? `${outlookBaseUrl}/host/${result.value}`
+          : `${outlookBaseUrl}/mail`;
         url = new URL(baseUrl);
         break;
       }
@@ -74,7 +89,9 @@ export class LaunchHelper {
           if (result.isErr()) {
             return err(result.error);
           }
-          const baseUrl = `https://www.office.com/m365apps/${result.value}?auth=2`;
+          const baseUrl = hasCopilotExtensionOnly
+            ? `${officeBaseUrl}/chat?auth=2`
+            : `${officeBaseUrl}/m365apps/${result.value}?auth=2`;
           url = new URL(baseUrl);
         }
         break;

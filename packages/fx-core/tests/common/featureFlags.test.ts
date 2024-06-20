@@ -16,17 +16,17 @@ describe("FeatureFlagManager", () => {
     mockedEnvRestore();
   });
   it("getBooleanValue, getStringValue is true", async () => {
-    mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "true" });
-    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true" });
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
     chai.assert.isTrue(booleanRes);
-    const stringRes = featureFlagManager.getStringValue(FeatureFlags.CopilotAuth);
+    const stringRes = featureFlagManager.getStringValue(FeatureFlags.CLIDotNet);
     chai.assert.equal(stringRes, "true");
   });
   it("getBooleanValue, getStringValue is false", async () => {
-    mockedEnvRestore = mockedEnv({ API_COPILOT_PLUGIN_AUTH: "false" });
-    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
     chai.assert.isFalse(booleanRes);
-    const stringRes = featureFlagManager.getStringValue(FeatureFlags.CopilotAuth);
+    const stringRes = featureFlagManager.getStringValue(FeatureFlags.CLIDotNet);
     chai.assert.equal(stringRes, "false");
   });
   it("list", async () => {

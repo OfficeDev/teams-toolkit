@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import { ExtensionContext } from "vscode";
 import * as migrationUtils from "../../../src/utils/migrationUtils";
-import * as environmentUtils from "../../../src/utils/environmentUtils";
+import * as environmentUtils from "../../../src/utils/systemEnvUtils";
 import * as globalVariables from "../../../src/globalVariables";
 import { Inputs, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { MockCore } from "../../mocks/mockCore";

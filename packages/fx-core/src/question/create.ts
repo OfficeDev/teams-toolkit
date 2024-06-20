@@ -23,15 +23,7 @@ import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isApiCopilotPluginEnabled,
-  isCLIDotNetEnabled,
-  isChatParticipantEnabled,
-  isCopilotPluginEnabled,
-  isOfficeJSONAddinEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -98,11 +90,12 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         staticOptions.push(ProjectTypeOptions.customizeGpt());
       }
 
-      if (isApiCopilotPluginEnabled()) {
+      if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
       }
-      staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
+
       staticOptions.push(
+        ProjectTypeOptions.customCopilot(inputs.platform),
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
         ProjectTypeOptions.me(inputs.platform)
@@ -114,7 +107,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        if (isOfficeJSONAddinEnabled()) {
+        if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
           staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
         } else {
           staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
@@ -123,7 +116,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
 
       if (
         inputs.platform === Platform.VSCode &&
-        isChatParticipantEnabled() &&
+        featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant) &&
         !inputs.teamsAppFromTdp
       ) {
         staticOptions.push(ProjectTypeOptions.startWithGithubCopilot());
@@ -1049,7 +1042,6 @@ export function apiAuthQuestion(): SingleSelectQuestion {
       if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
       } else if (
-        featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
         inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id
       ) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
@@ -1348,9 +1340,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            (featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth) &&
-              isCopilotPluginEnabled() &&
-              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
           );
         },
         data: apiAuthQuestion(),
@@ -1470,7 +1460,8 @@ export function createProjectQuestionNode(): IQTreeNode {
     children: [
       {
         condition: (inputs: Inputs) =>
-          isCLIDotNetEnabled() && CLIPlatforms.includes(inputs.platform),
+          featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet) &&
+          CLIPlatforms.includes(inputs.platform),
         data: runtimeQuestion(),
       },
       {
@@ -1536,7 +1527,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
     QuestionNames.ReplaceBotIds,
     QuestionNames.Samples,
   ];
-  if (!isCLIDotNetEnabled()) {
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     deleteNames.push(QuestionNames.Runtime);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);

@@ -2,15 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isApiCopilotPluginEnabled,
-  isCLIDotNetEnabled,
-  isChatParticipantEnabled,
-  isCopilotPluginEnabled,
-  isTdpTemplateCliTestEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 
@@ -140,7 +132,7 @@ export class RuntimeOptions {
 
 export function getRuntime(inputs: Inputs): string {
   let runtime = RuntimeOptions.NodeJS().id;
-  if (isCLIDotNetEnabled()) {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
   } else {
     if (inputs?.platform === Platform.VS) {
@@ -172,7 +164,7 @@ export class ScratchOptions {
 
 export class ProjectTypeOptions {
   static getCreateGroupName(): string | undefined {
-    return isChatParticipantEnabled()
+    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
       ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
       : undefined;
   }
@@ -204,7 +196,7 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: isCopilotPluginEnabled()
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
         ? getLocalizedString(
             "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
           )
@@ -286,6 +278,14 @@ export class ProjectTypeOptions {
 }
 
 export class CapabilityOptions {
+  // empty
+  static empty(): OptionItem {
+    return {
+      id: "empty",
+      label: "Empty",
+    };
+  }
+
   // bot
   static basicBot(): OptionItem {
     return {
@@ -435,7 +435,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: isCopilotPluginEnabled()
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
         ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
         : getLocalizedString("core.M365SearchAppOptionItem.detail"),
     };
@@ -494,13 +494,14 @@ export class CapabilityOptions {
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
+      CapabilityOptions.empty(),
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isTdpTemplateCliTestEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       capabilities.push(CapabilityOptions.me());
     }
 
@@ -619,6 +620,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
+      CapabilityOptions.empty(),
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
@@ -640,14 +642,14 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isApiCopilotPluginEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
     if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
       capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
     }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
-    if (isTdpTemplateCliTestEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
       capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
     }
@@ -896,7 +898,9 @@ export class MeArchitectureOptions {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
-      isCopilotPluginEnabled() ? MeArchitectureOptions.botPlugin() : MeArchitectureOptions.botMe(),
+      featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
+        ? MeArchitectureOptions.botPlugin()
+        : MeArchitectureOptions.botMe(),
     ];
   }
 

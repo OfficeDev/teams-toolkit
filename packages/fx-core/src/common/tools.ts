@@ -7,13 +7,11 @@ import {
 } from "@microsoft/dev-tunnels-management";
 import { FxError, M365TokenProvider, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
-import { AuthSvcClient } from "../component/driver/teamsApp/clients/authSvcClient";
-import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import { GraphReadUserScopes, SPFxScopes, getAppStudioEndpoint } from "./constants";
+import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
+import { GraphReadUserScopes, SPFxScopes } from "./constants";
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
-  return AppStudioClient.getSideloadingStatus(token);
+  return teamsDevPortalClient.getSideloadingStatus(token);
 }
 
 export async function getSPFxTenant(graphToken: string): Promise<string> {
@@ -42,23 +40,6 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
-}
-
-/**
- * Get and set regin for App Studio client
- * @param m365TokenProvider
- */
-export async function setRegion(authSvcToken: string) {
-  const region = await AuthSvcClient.getRegion(authSvcToken);
-  if (region) {
-    // Do not set region for INT env
-    const appStudioEndpoint = getAppStudioEndpoint();
-    if (appStudioEndpoint.includes("dev-int")) {
-      return;
-    }
-    AppStudioClient.setRegion(region);
-    BotAppStudioClient.setRegion(region);
-  }
 }
 
 // this function will be deleted after VS has added get dev tunnel and list dev tunnels API

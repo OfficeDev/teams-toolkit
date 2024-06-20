@@ -94,7 +94,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
 }
 var apiEndpoint = 'https://${functionApp.properties.defaultHostName}'
 var oauthAuthority = uri(aadAppOauthAuthorityHost, aadAppTenantId)
-var aadApplicationIdUri = 'api://${functionApp.properties.defaultHostName}/${aadAppClientId}'
+var aadApplicationIdUri = 'api://${aadAppClientId}'
 
 // Configure Azure Functions to use Azure AD for authentication.
 resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {

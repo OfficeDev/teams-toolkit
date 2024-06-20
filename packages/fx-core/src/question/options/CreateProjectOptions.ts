@@ -27,6 +27,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Specifies the Microsoft Teams App capability.",
     required: true,
     choices: [
+      "empty",
       "bot",
       "notification",
       "command-bot",

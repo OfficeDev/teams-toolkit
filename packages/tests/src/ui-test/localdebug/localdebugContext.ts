@@ -86,6 +86,24 @@ export class LocalDebugTestContext extends TestContext {
     return result;
   }
 
+  public async getM365AppId(): Promise<string> {
+    const userDataFile = path.join(
+      TestFilePath.configurationFolder,
+      `.env.local`
+    );
+    const configFilePath = path.resolve(
+      this.testRootFolder,
+      this.appName,
+      userDataFile
+    );
+    const context = dotenvUtil.deserialize(
+      await fs.readFile(configFilePath, { encoding: "utf8" })
+    );
+    const result = context.obj.M365_APP_ID as string;
+    console.log(`M365 APP ID: ${result}`);
+    return result;
+  }
+
   public async createProject(): Promise<void> {
     if (this.needMigrate) {
       await execCommand(this.testRootFolder, `set TEAMSFX_V3=false`);

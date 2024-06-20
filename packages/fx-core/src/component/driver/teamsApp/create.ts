@@ -16,6 +16,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
 import { v4 } from "uuid";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError } from "../../../error/common";
@@ -26,7 +27,6 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { loadStateFromEnv } from "../util/utils";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { AppStudioClient } from "./clients/appStudioClient";
 import {
   COLOR_TEMPLATE,
   Constants,
@@ -98,11 +98,7 @@ export class CreateTeamsAppDriver implements StepDriver {
     const teamsAppId = state.teamsAppId;
     if (teamsAppId) {
       try {
-        createdAppDefinition = await AppStudioClient.getApp(
-          teamsAppId,
-          appStudioToken,
-          context.logProvider
-        );
+        createdAppDefinition = await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
         create = false;
       } catch (error) {}
     }
@@ -132,10 +128,9 @@ export class CreateTeamsAppDriver implements StepDriver {
       const archivedFile = zip.toBuffer();
 
       try {
-        createdAppDefinition = await AppStudioClient.importApp(
-          archivedFile,
+        createdAppDefinition = await teamsDevPortalClient.importApp(
           appStudioTokenRes.value,
-          context.logProvider
+          archivedFile
         );
         const message = getLocalizedString(
           "plugins.appstudio.teamsAppCreatedNotice",

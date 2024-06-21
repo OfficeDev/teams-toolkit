@@ -27,7 +27,6 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
-  OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
@@ -108,11 +107,7 @@ export class OfficeAddinGenerator {
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
     let host: string = inputHost;
-    if (
-      projectType === ProjectTypeOptions.outlookAddin().id ||
-      (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-        inputHost === OfficeAddinHostOptions.outlook().id)
-    ) {
+    if (projectType === ProjectTypeOptions.outlookAddin().id) {
       host = "outlook";
     } else if (projectType === ProjectTypeOptions.officeAddin().id) {
       if (capability === "json-taskpane") {
@@ -133,10 +128,7 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const framework = getOfficeAddinFramework(inputs);
-        const templateConfig = getOfficeAddinTemplateConfig(
-          projectType,
-          inputs[QuestionNames.OfficeAddinHost]
-        );
+        const templateConfig = getOfficeAddinTemplateConfig();
         const projectLink = templateConfig[capability].framework[framework][language];
 
         // Copy project template files from project repository

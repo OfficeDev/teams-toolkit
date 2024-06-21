@@ -44,7 +44,6 @@ import {
   CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
-  OfficeAddinHostOptions,
   ProjectTypeOptions,
   QuestionNames,
   ScratchOptions,
@@ -61,7 +60,6 @@ import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
 import { Generators } from "../generator/generatorProvider";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { Feature2TemplateName } from "../generator/templates/templateNames";
 import { convertToLangKey } from "../generator/utils";
@@ -191,18 +189,8 @@ class Coordinator {
           const res = await SPFxGenerator.generate(context, inputs, projectPath);
           if (res.isErr()) return err(res.error);
         } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
-          const addinHost = inputs[QuestionNames.OfficeAddinHost];
-          if (
-            projectType === ProjectTypeOptions.officeXMLAddin().id &&
-            addinHost &&
-            addinHost !== OfficeAddinHostOptions.outlook().id
-          ) {
-            const res = await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
-            if (res.isErr()) return err(res.error);
-          } else {
-            const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-            if (res.isErr()) return err(res.error);
-          }
+          const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+          if (res.isErr()) return err(res.error);
         } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
           const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
             context,

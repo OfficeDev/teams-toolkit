@@ -236,14 +236,7 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    void popupOfficeAddInDependenciesMessage();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
-  }
-  if (
-    globalVariables.isOfficeAddInProject &&
-    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "")
-  ) {
-    void popupOfficeAddInDependenciesMessage();
   }
 }
 

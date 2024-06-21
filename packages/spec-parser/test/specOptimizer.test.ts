@@ -36,6 +36,11 @@ describe("specOptimizer.test", () => {
           description: "pet operations",
         },
       ],
+      security: [
+        {
+          api_key2: [],
+        },
+      ],
       paths: {
         "/user/{userId}": {
           get: {
@@ -70,6 +75,33 @@ describe("specOptimizer.test", () => {
             },
           },
         },
+        "/user/{name}": {
+          get: {
+            operationId: "getUserByName",
+            parameters: [
+              {
+                name: "name",
+                in: "path",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "test",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/User",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       components: {
         securitySchemes: {
@@ -81,6 +113,11 @@ describe("specOptimizer.test", () => {
           api_key2: {
             type: "apiKey",
             name: "api_key2",
+            in: "header",
+          },
+          api_key3: {
+            type: "apiKey",
+            name: "api_key3",
             in: "header",
           },
         },
@@ -125,6 +162,11 @@ describe("specOptimizer.test", () => {
           description: "user operations",
         },
       ],
+      security: [
+        {
+          api_key2: [],
+        },
+      ],
       paths: {
         "/user/{userId}": {
           get: {
@@ -159,12 +201,44 @@ describe("specOptimizer.test", () => {
             },
           },
         },
+        "/user/{name}": {
+          get: {
+            operationId: "getUserByName",
+            parameters: [
+              {
+                name: "name",
+                in: "path",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "test",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/User",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
       components: {
         securitySchemes: {
           api_key: {
             type: "apiKey",
             name: "api_key",
+            in: "header",
+          },
+          api_key2: {
+            type: "apiKey",
+            name: "api_key2",
             in: "header",
           },
         },
@@ -312,7 +386,6 @@ describe("specOptimizer.test", () => {
           description: "user operations",
         },
       ],
-
       paths: {
         "/user/{userId}": {
           get: {
@@ -388,16 +461,9 @@ describe("specOptimizer.test", () => {
           url: "https://server1",
         },
       ],
-      tags: [
-        {
-          name: "user",
-          description: "user operations",
-        },
-      ],
       paths: {
         "/user/{userId}": {
           get: {
-            tags: ["user"],
             operationId: "getUserById",
             parameters: [
               {
@@ -459,16 +525,9 @@ describe("specOptimizer.test", () => {
           url: "https://server1",
         },
       ],
-      tags: [
-        {
-          name: "user",
-          description: "user operations",
-        },
-      ],
       paths: {
         "/user/{userId}": {
           get: {
-            tags: ["user"],
             operationId: "getUserById",
             parameters: [
               {
@@ -596,6 +655,119 @@ describe("specOptimizer.test", () => {
         "/user/{userId}": {
           get: {
             operationId: "getUserById",
+            parameters: [
+              {
+                name: "userId",
+                in: "path",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "test",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const result = SpecOptimizer.optimize(spec as any);
+    expect(result).to.deep.equal(expectedSpec);
+  });
+
+  it("should works fine if matches unexpected component reference", () => {
+    const spec = {
+      openapi: "3.0.2",
+      info: {
+        title: "User Service",
+        version: "1.0.0",
+      },
+      servers: [
+        {
+          url: "https://server1",
+        },
+      ],
+      paths: {
+        "/user/{userId}": {
+          get: {
+            operationId: "getUserById",
+            description: "#/components/schemas/Unexpected/Reference/Pattern",
+            parameters: [
+              {
+                name: "userId",
+                in: "path",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "test",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        securitySchemes: {
+          api_key: {
+            type: "apiKey",
+            name: "api_key",
+            in: "header",
+          },
+        },
+        schemas: {
+          User: {
+            type: "object",
+            properties: {
+              order: {
+                $ref: "#/components/schemas/Order",
+              },
+            },
+          },
+          Order: {
+            type: "string",
+          },
+        },
+      },
+    };
+
+    const expectedSpec = {
+      openapi: "3.0.2",
+      info: {
+        title: "User Service",
+        version: "1.0.0",
+      },
+      servers: [
+        {
+          url: "https://server1",
+        },
+      ],
+      paths: {
+        "/user/{userId}": {
+          get: {
+            operationId: "getUserById",
+            description: "#/components/schemas/Unexpected/Reference/Pattern",
             parameters: [
               {
                 name: "userId",

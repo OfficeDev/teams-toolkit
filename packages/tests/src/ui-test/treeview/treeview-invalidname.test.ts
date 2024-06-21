@@ -17,14 +17,12 @@ import {
   inputFolderPath,
 } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import { getNodeVersion } from "../../utils/getNodeVersion";
 import * as os from "os";
 
 describe("New project Tests", function () {
   this.timeout(Timeout.testCase);
   let treeViewTestContext: TreeViewTestContext;
   let testRootFolder: string;
-  let nodeVersion: string | null;
   const warnMsg =
     "App name needs to begin with letters, include minimum two letters or digits, and exclude certain special characters.";
 
@@ -33,7 +31,6 @@ describe("New project Tests", function () {
     this.timeout(Timeout.prepareTestCase);
     treeViewTestContext = new TreeViewTestContext("treeview");
     testRootFolder = treeViewTestContext.testRootFolder;
-    nodeVersion = await getNodeVersion();
     await treeViewTestContext.before();
   });
 

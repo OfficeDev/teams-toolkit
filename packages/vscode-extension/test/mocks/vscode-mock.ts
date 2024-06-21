@@ -131,8 +131,50 @@ mockedVSCode.LanguageModelChatMessageRole = vscodeMocks.chat.LanguageModelChatMe
 (mockedVSCode as any).workspace = {
   workspaceFolders: undefined,
   openTextDocument: () => {},
-  createFileSystemWatcher: (globPattern: vscode.GlobPattern) => {},
+  createFileSystemWatcher: (globPattern: vscode.GlobPattern) => {
+    return {
+      ignoreCreateEvents: false,
+      ignoreChangeEvents: false,
+      ignoreDeleteEvents: false,
+      onDidCreate: () => {
+        return new Disposable(() => {
+          return;
+        });
+      },
+      onDidChange: () => {
+        return new Disposable(() => {
+          return;
+        });
+      },
+      onDidDelete: () => {
+        return new Disposable(() => {
+          return;
+        });
+      },
+      dispose: () => {},
+    };
+  },
   getConfiguration: () => {},
+  onDidCreateFiles: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
+  onDidDeleteFiles: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
+  onDidRenameFiles: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
+  onDidSaveTextDocument: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
 };
 
 // Setup extensions APIs

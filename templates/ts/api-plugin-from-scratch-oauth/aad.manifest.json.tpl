@@ -35,6 +35,6 @@
         }
     ],    
     "identifierUris": [
-        "api://${{OPENAPI_SERVER_DOMAIN}}/${{AAD_APP_CLIENT_ID}}"
+        "api://${{AAD_APP_CLIENT_ID}}"
     ]
 }

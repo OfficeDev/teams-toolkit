@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { runCommand } from "../handlers";
+import { runCommand } from "../handlers/sharedOpts";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { CreateProjectResult, FxError, Result, Stage } from "@microsoft/teamsfx-api";

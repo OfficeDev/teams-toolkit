@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Darren Miller <darrmill@microsoft.com>
+ */
 import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";

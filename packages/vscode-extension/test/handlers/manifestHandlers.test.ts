@@ -55,8 +55,11 @@ describe("Manifest handlers", () => {
         .resolves(ok({ type: "success", result: "test.zip" }));
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
+      sandbox.stub(fs, "existsSync").returns(true);
       const res = await publishInDeveloperPortalHandler();
       assert.isTrue(res.isOk());
+      const res2 = await publishInDeveloperPortalHandler();
+      assert.isTrue(res2.isOk());
     });
 
     it("publish in developer portal - cancelled", async () => {
@@ -95,7 +98,7 @@ describe("Manifest handlers", () => {
   });
 
   describe("updatePreviewManifest", () => {
-    it("updatePreviewManifest", async () => {
+    it("happy", async () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
       const openTextDocumentStub = sandbox
         .stub(vscode.workspace, "openTextDocument")
@@ -103,6 +106,14 @@ describe("Manifest handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(ok(undefined));
       await updatePreviewManifest([]);
       assert.isTrue(openTextDocumentStub.calledOnce);
+    });
+    it("getSelectedEnv error", async () => {
+      const core = new MockCore();
+      sandbox.stub(globalVariables, "core").value(core);
+      sandbox.stub(core, "getSelectedEnv").resolves(err(new UserCancelError("VSC")));
+      sandbox.stub(shared, "runCommand").resolves(ok(undefined));
+      const res = await updatePreviewManifest([]);
+      assert.isTrue(res.isErr());
     });
   });
 });

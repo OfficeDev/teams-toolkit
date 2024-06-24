@@ -137,16 +137,26 @@ jobs:
           fi
 
   check-sensitive-content:
-    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'schedule' && (github.ref == 'refs/heads/dev'|| github.ref == 'refs/heads/main'))}}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "depth=$(($(jq length <<< '${{ toJson(github.event.commits) }}') + 2))" >> $GITHUB_ENV
+            echo "branch=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "depth=$((${{ github.event.pull_request.commits }}+2))" >> $GITHUB_ENV
+            echo "branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          fi
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
+          ref: ${{env.branch}}
+          fetch-depth: ${{env.depth}}
+      - uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
 
   attension-on-version:
     if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}

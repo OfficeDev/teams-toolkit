@@ -137,26 +137,38 @@ jobs:
           fi
 
   check-sensitive-content:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - shell: bash
+        if: ${{ github.event_name == 'pull_request'}}
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
-            echo "depth=$(($(jq length <<< '${{ toJson(github.event.commits) }}') + 2))" >> $GITHUB_ENV
+            echo "depth=$(($(jq length <<< '${{ toJson(github.event.commits) }}') + 1))" >> $GITHUB_ENV
             echo "branch=${{ github.ref_name }}" >> $GITHUB_ENV
           fi
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "depth=$((${{ github.event.pull_request.commits }}+2))" >> $GITHUB_ENV
+            echo "depth=$((${{ github.event.pull_request.commits }} + 1))" >> $GITHUB_ENV
             echo "branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
           fi
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        if: ${{ github.event_name == 'pull_request'}}
         with:
           ref: ${{env.branch}}
           repository: ${{github.event.pull_request.head.repo.full_name}}
           fetch-depth: ${{env.depth}}
       - uses: trufflesecurity/trufflehog@main
+        if: ${{ github.event_name == 'pull_request'}}
         with:
+          extra_args: --only-verified
+
+      - if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v4
+      - if: ${{ github.event_name == 'schedule' }}
+        uses: trufflesecurity/trufflehog@main
+        with:
+          base: ""
+          head: ${{ github.ref_name }}
           extra_args: --only-verified
 
   attension-on-version:

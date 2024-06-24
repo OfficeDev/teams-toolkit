@@ -15,7 +15,6 @@ import {
 import { DeclarationFinder } from "../declarationFinder";
 import { getTokenLimitation } from "../../consts";
 import { Spec } from "../skills/spec";
-import { times } from "lodash";
 import { OfficeChatTelemetryData } from "../../telemetry";
 
 // TODO: adjust the score threshold

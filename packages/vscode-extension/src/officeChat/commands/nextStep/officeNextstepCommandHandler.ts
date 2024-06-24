@@ -12,7 +12,7 @@ import {
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import followupProvider from "../../../chat/followupProvider";

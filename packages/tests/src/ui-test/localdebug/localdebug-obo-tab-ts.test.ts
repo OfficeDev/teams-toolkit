@@ -88,13 +88,9 @@ describe("Local Debug M365 Tests", function () {
       );
       await localDebugTestContext.validateLocalStateForTab();
       await validateReactTab(page, Env.displayName, true);
-      const url = page.url();
-      const pattern =
-        /https:\/\/teams\.microsoft\.com\/_#\/apps\/(.*)\/sections\/index.*/;
-      const result = url.match(pattern);
-      const internalId = result![1];
+      const m365AppId = await localDebugTestContext.getM365AppId();
       await page.goto(
-        `https://outlook.office.com/host/${internalId}/index?login_hint=${Env.username}`
+        `https://outlook.office.com/host/${m365AppId}/index?login_hint=${Env.username}`
       );
       await validateReactOutlookTab(page, Env.displayName, true);
     }

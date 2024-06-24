@@ -282,10 +282,6 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     TemplateNames.AIAssistantBot,
   ],
   [
-    { [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id },
-    TemplateNames.ApiPluginFromScratch,
-  ],
-  [
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
@@ -354,5 +350,27 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
       [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.assistantsApi().id,
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
+  ],
+  // Copilot Plugin
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+    },
+    TemplateNames.ApiPluginFromScratch,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
+    },
+    TemplateNames.ApiPluginFromScratchBearer,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
+    },
+    TemplateNames.ApiPluginFromScratchOAuth,
   ],
 ]);

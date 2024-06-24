@@ -82,6 +82,10 @@ export class Planner {
 
     // dispatcher
     const purified = await purifyUserMessage(request.prompt, token, telemetryData);
+    response.markdown(`
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
+${purified}
+`);
     const spec = new Spec(purified);
     spec.appendix.telemetryData.requestId = telemetryData.requestId;
     try {

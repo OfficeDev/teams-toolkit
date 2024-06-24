@@ -106,8 +106,7 @@ export class CodeGenerator implements ISkill {
       }
     }
 
-    // Always generate the breakdown
-    {
+    if (!spec.appendix.codeTaskBreakdown || !spec.appendix.codeExplanation) {
       const t0 = performance.now();
       const breakdownResult = await this.userAskBreakdownAsync(
         token,
@@ -142,6 +141,11 @@ export class CodeGenerator implements ISkill {
       }
       spec.appendix.codeTaskBreakdown = breakdownResult.funcs;
       spec.appendix.codeExplanation = breakdownResult.spec;
+      response.markdown(`
+${spec.appendix.codeExplanation
+  .substring(spec.appendix.codeExplanation.indexOf("1."))
+  .replace(/\b\d+\./g, (match) => `\n${match}`)}
+`);
     }
     if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
       spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;

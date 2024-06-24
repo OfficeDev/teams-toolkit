@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BrowserContext, Page, Frame } from "playwright";
+import { BrowserContext, Page, Frame, ElementHandle } from "playwright";
 import { assert, expect } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
@@ -11,6 +11,7 @@ import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
 import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
+import { Env } from "./env";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -225,7 +226,7 @@ export async function initPage(
       state: "detached",
     });
     console.log("[success] app loaded");
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;
@@ -234,8 +235,8 @@ export async function initPage(
 export async function reopenPage(
   context: BrowserContext,
   teamsAppId: string,
-  username: string,
-  password: string,
+  username?: string,
+  password?: string,
   options?: {
     teamsAppName?: string;
     dashboardFlag?: boolean;
@@ -255,7 +256,7 @@ export async function reopenPage(
     page.waitForNavigation(),
   ]);
 
-  if (inputPassword) {
+  if (inputPassword && password) {
     // input password
     console.log(`fill in password`);
     await page.fill("input.input[type='password'][name='passwd']", password);
@@ -301,7 +302,7 @@ export async function reopenPage(
       const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
 
       // dashboard template will have a popup
-      if (options?.dashboardFlag) {
+      if (options?.dashboardFlag && password) {
         console.log("Before popup");
         const [popup] = await Promise.all([
           page
@@ -341,12 +342,13 @@ export async function reopenPage(
         await addBtn?.click();
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
+      console.log("[success] app loaded");
       // verify add page is closed
       await page?.waitForSelector("button>span:has-text('Add')", {
         state: "detached",
       });
     }
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;
@@ -824,54 +826,57 @@ export async function validateOneProducitvity(
 
 export async function validateTab(
   page: Page,
-  options?: { displayName?: string; includeFunction?: boolean }
+  options?: { displayName?: string; includeFunction?: boolean },
+  rerun = false
 ) {
+  console.log("start to verify tab");
   try {
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
+    if (!rerun) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Authorize")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
 
-    await RetryHandler.retry(async () => {
-      console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup)
-          )
-          .catch(() => {}),
-        frame?.click('button:has-text("Authorize")', {
-          timeout: Timeout.playwrightAddAppButton,
-          force: true,
-          noWaitAfter: true,
-          clickCount: 2,
-          delay: 10000,
-        }),
-      ]);
-      console.log("after popup");
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
 
-      if (popup && !popup?.isClosed()) {
-        await popup
-          .click('button:has-text("Reload")', {
-            timeout: Timeout.playwrightConsentPageReload,
-          })
-          .catch(() => {});
-        await popup.click("input.button[type='submit'][value='Accept']");
-      }
-
-      await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
-    });
+        await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
+      });
+    }
 
     if (options?.includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("verify function info");
         const authorizeButton = await frame?.waitForSelector(
-          'button:has-text("Call Azure Function")'
+          'button:has-text("Authorize and call Azure Function")'
         );
         await authorizeButton?.click();
         const backendElement = await frame?.waitForSelector(
@@ -1428,15 +1433,16 @@ export async function validateBot(
   }
 }
 
-export async function validateNpm(page: Page, options?: { npmName?: string }) {
+export async function validateNpm(
+  page: Page,
+  options: { npmName?: string; appName: string }
+) {
   try {
     const searchPack = options?.npmName || "axios";
     console.log("start to verify npm search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
+    await messageExtensionActivate(page, options.appName);
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1449,19 +1455,20 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
       console.log("no message to dismiss");
     }
     console.log("search npm ", searchPack);
-    const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(searchPack);
+    const input = await page?.waitForSelector("div.ui-box input.ui-box");
+    await input?.fill(searchPack);
     try {
-      const targetItem = await frame?.waitForSelector(
+      const targetItem = await page?.waitForSelector(
         `span:has-text("${searchPack}")`
       );
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
-      await frame?.click('button[name="send"]');
+      await page?.waitForSelector(`card span:has-text("${searchPack}")`);
+      const sendBtn = await frame?.waitForSelector('button[name="send"]');
+      await sendBtn?.click();
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
-      await frame?.waitForSelector(
+      await page?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
       await page.screenshot({
@@ -1616,15 +1623,12 @@ export async function validateDeeplinking(page: Page, displayName: string) {
 
 export async function validateQueryOrg(
   page: Page,
-  options?: { displayName?: string }
+  options: { displayName?: string; appName: string }
 ) {
   try {
     console.log("start to verify query org");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1636,13 +1640,12 @@ export async function validateQueryOrg(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    const inputBar = await frame?.waitForSelector(
-      "div.ui-popup__content input.ui-box"
-    );
+    await messageExtensionActivate(page, options.appName);
+    const inputBar = await page?.waitForSelector("div.ui-box input.ui-box");
     await inputBar?.fill(options?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const loginBtn = await frame?.waitForSelector(
-      'div.ui-popup__content a:has-text("sign in")'
+    const loginBtn = await page?.waitForSelector(
+      'div.ui-box a:has-text("sign in")'
     );
     // todo add more verify
     // await RetryHandler.retry(async () => {
@@ -1686,7 +1689,7 @@ export async function validateShareNow(page: Page) {
     console.log("start to verify share now");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
+      `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
     try {
@@ -2023,6 +2026,7 @@ export async function validateTeamsWorkbench(page: Page, displayName: string) {
     const frame = await frameElementHandle?.contentFrame();
     await frame?.click('button:has-text("Load debug scripts")');
     console.log("Debug scripts loaded");
+    await validateSpfx(page, { displayName: displayName });
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -2037,7 +2041,11 @@ export async function validateSpfx(
   options?: { displayName?: string }
 ) {
   try {
-    const frame = await page.waitForSelector("div#app");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(`text=Web part property value`);
     await frame?.waitForSelector(`text=${options?.displayName}`);
     console.log(`Found: "${options?.displayName}"`);
   } catch (error) {
@@ -2066,11 +2074,12 @@ export async function validateContact(
   options?: { displayName?: string },
   rerun = false
 ) {
+  let startBtn: ElementHandle<SVGElement | HTMLElement> | undefined;
   try {
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
+      "iframe[name='embedded-page-container']"
     );
     const frame = await frameElementHandle?.contentFrame();
     try {
@@ -2083,58 +2092,74 @@ export async function validateContact(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    try {
-      if (!rerun) {
-        const startBtn = await frame?.waitForSelector(
-          'button:has-text("Start")'
-        );
-        await RetryHandler.retry(async () => {
-          console.log("Before popup");
-          const [popup] = await Promise.all([
-            page
-              .waitForEvent("popup")
-              .then((popup) =>
-                popup
-                  .waitForEvent("close", {
-                    timeout: Timeout.playwrightConsentPopupPage,
-                  })
-                  .catch(() => popup)
-              )
-              .catch(() => {}),
-            startBtn?.click(),
-          ]);
-          console.log("after popup");
 
-          if (popup && !popup?.isClosed()) {
-            await popup
-              .click('button:has-text("Reload")', {
-                timeout: Timeout.playwrightConsentPageReload,
-              })
-              .catch(() => {});
-            await popup.click("input.button[type='submit'][value='Accept']");
+    startBtn = await frame?.waitForSelector('button:has-text("Start")');
+    if (startBtn) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          startBtn?.click(),
+        ]);
+        console.log("after popup");
+
+        if (popup && !popup?.isClosed()) {
+          // if input password page is exist
+          if (rerun) {
+            try {
+              // input password
+              console.log(`fill in password`);
+              await popup.fill(
+                "input.input[type='password'][name='passwd']",
+                Env.password
+              );
+              // sign in
+              await Promise.all([
+                popup.click("input.button[type='submit'][value='Sign in']"),
+                popup.waitForNavigation(),
+              ]);
+              await popup.click("input.button[type='submit'][value='Accept']");
+              try {
+                await popup?.close();
+              } catch (error) {
+                console.log("popup is closed");
+              }
+            } catch (error) {
+              await popup.screenshot({
+                path: getPlaywrightScreenshotPath("login_error"),
+                fullPage: true,
+              });
+              throw error;
+            }
           }
-
-          await frame?.waitForSelector(
-            `div:has-text("${options?.displayName}")`
-          );
-        });
-      }
-      await page.waitForTimeout(10000);
-
-      // verify add person
-      await addPerson(frame, options?.displayName || "");
-      // verify delete person
-      await delPerson(frame, options?.displayName || "");
-    } catch (e: any) {
-      console.log(`[Command not executed successfully] ${e.message}`);
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("error"),
-        fullPage: true,
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("login_after"),
+            fullPage: true,
+          });
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
+        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
-      throw e;
     }
-
-    await RetryHandler.retry(async () => {}, 2);
+    await page.waitForTimeout(10000);
+    // verify add person
+    await addPerson(frame, options?.displayName || "");
+    // verify delete person
+    await delPerson(frame, options?.displayName || "");
 
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
@@ -2154,9 +2179,10 @@ export async function validateGraphConnector(
     console.log("start to verify contact");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
+      "iframe[name='embedded-page-container']"
     );
     const frame = await frameElementHandle?.contentFrame();
+    const startBtn = await frame?.waitForSelector('button:has-text("Start")');
     try {
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -2171,7 +2197,7 @@ export async function validateGraphConnector(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          frame?.click('button:has-text("Start")', {
+          startBtn?.click({
             timeout: Timeout.playwrightAddAppButton,
             force: true,
             noWaitAfter: true,
@@ -2301,10 +2327,7 @@ export async function validateDashboardTab(page: Page) {
 
 export async function validateNotificationTimeBot(page: Page) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await RetryHandler.retry(async () => {
       await frame?.waitForSelector(
@@ -2327,10 +2350,7 @@ export async function validateAdaptiveCard(
   options?: { context?: SampledebugContext; env?: "local" | "dev" }
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await page
       .click('button:has-text("Dismiss")', {
@@ -2412,6 +2432,41 @@ export async function delPerson(
   );
 }
 
+export async function messageExtensionClean(page: Page, appName: string) {
+  let extBox: ElementHandle<SVGElement | HTMLElement>;
+  console.log("start to clean message extension");
+  const appManagePage = await page.waitForSelector(
+    "button span:has-text('Apps')"
+  );
+  console.log("click Apps");
+  await appManagePage.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const appManageBtn = await page.waitForSelector(
+    "button:has-text('Manage your apps')"
+  );
+  console.log("click Manage your apps");
+  await appManageBtn.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const targetApp = await page.waitForSelector(
+    `div.treeitem span:has-text(${appName})`
+  );
+  console.log("click target app");
+  await targetApp.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const deleteBtn = await page.waitForSelector(
+    "button[data-tid=`uninstall-app`]"
+  );
+  console.log("click delete button");
+  await deleteBtn.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  const dialog = await page.waitForSelector("div[role='dialog']");
+  const confirmBtn = await dialog.waitForSelector("button:has-text('Remove')");
+  console.log("click confirm button");
+  await confirmBtn.click();
+  await page.waitForTimeout(Timeout.shortTimeWait);
+  console.log("verify app removed successfully");
+}
+
 export async function messageExtensionActivate(page: Page, appName: string) {
   console.log("start to activate message extension");
   const extButton = await page.waitForSelector(
@@ -2419,6 +2474,7 @@ export async function messageExtensionActivate(page: Page, appName: string) {
   );
   console.log("click Actions and apps");
   await extButton?.click();
+  await page.waitForTimeout(Timeout.shortTimeLoading);
   const extBox = await page.waitForSelector("div.ui-popup__content__content");
   // select secend second ul
   const extList = await extBox?.waitForSelector(
@@ -2434,6 +2490,11 @@ export async function messageExtensionActivate(page: Page, appName: string) {
     if (text.includes(appName)) {
       console.log("click app:", appName);
       await item.click();
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("ext_actived"),
+        fullPage: true,
+      });
       break;
     }
   }
@@ -2586,10 +2647,7 @@ export async function validateLargeNotificationBot(
   notificationEndpoint = "http://127.0.0.1:3978/api/notification"
 ) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     await frame?.waitForSelector("div.ui-box");
     await page
       .click('button:has-text("Dismiss")', {

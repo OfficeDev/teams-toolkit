@@ -2,11 +2,9 @@
 // Licensed under the MIT license.
 
 import * as tmp from "tmp";
-import * as crypto from "crypto";
 import * as officeTemplateMeatdata from "./officeTemplateMetadata.json";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as vscode from "vscode";
 import {
   ChatRequest,
   CancellationToken,
@@ -20,13 +18,13 @@ import { ProjectMetadata } from "../../../chat/commands/create/types";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
-import { CommandKey } from "../../../constants";
-import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
-import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
 import { getOfficeSampleDownloadUrlInfo } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
+import { CreateProjectInputs } from "@microsoft/teamsfx-api";
+import { core } from "../../../globalVariables";
 
 export async function matchOfficeProject(
   request: ChatRequest,
@@ -139,43 +137,41 @@ export async function showOfficeTemplateFileTree(
   codeSnippet?: string
 ): Promise<string> {
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
-  const tempAppName = `office-addin-${crypto.randomBytes(8).toString("hex")}`;
-  const nodes = await buildTemplateFileTree(data, tempFolder, tempAppName, codeSnippet);
-  response.filetree(nodes, Uri.file(path.join(tempFolder, tempAppName)));
-  return path.join(tempFolder, tempAppName);
+  const nodes = await buildTemplateFileTree(data, tempFolder, data.capabilities, codeSnippet);
+  response.filetree(nodes, Uri.file(path.join(tempFolder, data.capabilities)));
+  return path.join(tempFolder, data.capabilities);
 }
 
 export async function buildTemplateFileTree(
   data: any,
   tempFolder: string,
-  tempAppName: string,
+  appName: string,
   codeSnippet?: string
 ): Promise<ChatResponseFileTree[]> {
-  const createInputs = {
+  const createInputs: CreateProjectInputs = {
     ...data,
     folder: tempFolder,
-    "app-name": tempAppName,
+    "app-name": appName,
   };
-  await vscode.commands.executeCommand(
-    CHAT_EXECUTE_COMMAND_ID,
-    CommandKey.Create,
-    TelemetryTriggerFrom.CopilotChat,
-    createInputs
-  );
-  const rootFolder = path.join(tempFolder, tempAppName);
+  const generator = new OfficeXMLAddinGenerator();
+  const result = await core.createProjectByCustomizedGenerator(createInputs, generator);
+  if (result.isErr()) {
+    throw new Error("Failed to generate the project.");
+  }
+  const projectPath = result.value.projectPath;
   const isCustomFunction = data.capabilities.includes("excel-custom-functions");
   if (!!isCustomFunction && !!codeSnippet) {
-    await mergeCFCode(rootFolder, codeSnippet);
+    await mergeCFCode(projectPath, codeSnippet);
   } else if (!!codeSnippet) {
-    await mergeTaskpaneCode(rootFolder, codeSnippet);
+    await mergeTaskpaneCode(projectPath, codeSnippet);
   }
   const root: ChatResponseFileTree = {
-    name: rootFolder,
+    name: projectPath,
     children: [],
   };
-  await fs.ensureDir(rootFolder);
-  traverseFiles(rootFolder, (fullPath) => {
-    const relativePath = path.relative(rootFolder, fullPath);
+  await fs.ensureDir(projectPath);
+  traverseFiles(projectPath, (fullPath) => {
+    const relativePath = path.relative(projectPath, fullPath);
     fileTreeAdd(root, relativePath);
   });
   return root.children ?? [];

@@ -9,6 +9,8 @@ import * as helper from "../../../../src/chat/commands/create/helper";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
+import { CreateProjectResult, ok } from "@microsoft/teamsfx-api";
+import { core } from "../../../../src/globalVariables";
 
 describe("projectCreator", () => {
   let invokeParametersInit: () => any;
@@ -142,6 +144,8 @@ describe("projectCreator", () => {
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
     sandbox.stub(helper, "fileTreeAdd");
+    const res: CreateProjectResult = { projectPath: path.join("testFolder", "test") };
+    sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(res));
 
     const lstatSyncStub = sandbox.stub(fs, "lstatSync");
 
@@ -188,6 +192,8 @@ describe("projectCreator", () => {
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
     sandbox.stub(helper, "fileTreeAdd");
+    const res: CreateProjectResult = { projectPath: path.join("testFolder", "test") };
+    sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(res));
 
     const lstatSyncStub = sandbox.stub(fs, "lstatSync");
 
@@ -236,6 +242,8 @@ describe("projectCreator", () => {
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
     sandbox.stub(helper, "fileTreeAdd");
+    const res: CreateProjectResult = { projectPath: path.join("testFolder", "test") };
+    sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(res));
 
     const lstatSyncStub = sandbox.stub(fs, "lstatSync");
 
@@ -283,6 +291,8 @@ describe("projectCreator", () => {
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
     sandbox.stub(helper, "fileTreeAdd");
+    const res: CreateProjectResult = { projectPath: path.join("testFolder", "test") };
+    sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(res));
 
     const lstatSyncStub = sandbox.stub(fs, "lstatSync");
 

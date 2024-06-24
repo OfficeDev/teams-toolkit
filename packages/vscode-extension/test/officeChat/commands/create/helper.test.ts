@@ -138,7 +138,7 @@ describe("File: office chat create helper", () => {
         response as unknown as vscode.ChatResponseStream
       );
       chai.assert.isTrue(response.filetree.calledOnce);
-      chai.assert.strictEqual(result, [path.join("tempDir", "testDir"), "testHost"]);
+      chai.assert.deepEqual(result, { path: path.join("tempDir", "testDir"), host: "testHost" });
     });
   });
 

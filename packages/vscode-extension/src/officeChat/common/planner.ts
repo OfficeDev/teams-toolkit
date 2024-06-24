@@ -32,7 +32,7 @@ import {
 } from "./telemetryConsts";
 import { purifyUserMessage } from "../utils";
 import { localize } from "../../utils/localizeUtils";
-import { OfficeChatTelemetryData } from "../telemetry";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../telemetry";
 
 export class Planner {
   private static instance: Planner;
@@ -98,7 +98,7 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
           if (spec.appendix.telemetryData.isHarmful) {
-            telemetryData.setBlockReason("RAI");
+            telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
           }
           throw new Error("Failed to process the request.");
         }
@@ -109,7 +109,7 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemRequesRejected] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
-          telemetryData.setBlockReason("Off Topic");
+          telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.OffTopic);
           throw new Error(
             `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
           );

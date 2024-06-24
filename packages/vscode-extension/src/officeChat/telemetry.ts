@@ -12,6 +12,11 @@ import {
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 
+export enum OfficeChatTelemetryBlockReasonEnum {
+  RAI = "RAI",
+  OffTopic = "Off Topic",
+  LanguageModelError = "LanguageModel Error",
+}
 export class OfficeChatTelemetryData extends ChatTelemetryData {
   public static requestData: { [key: string]: OfficeChatTelemetryData } = {};
 
@@ -49,7 +54,7 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     this.relatedSampleName = "";
     this.codeClassAndMembers = "";
     this.responseTokensPerRequest = [];
-    this.timeToFirstToken = 0;
+    this.timeToFirstToken = -1;
 
     const telemetryData: ITelemetryData = { properties: {}, measurements: {} };
     telemetryData.properties[TelemetryProperty.CopilotChatCommand] = command;

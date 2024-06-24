@@ -21,7 +21,7 @@ import { matchOfficeProject, showOfficeSampleFileTree, showOfficeTemplateFileTre
 import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
 import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
-import { OfficeChatTelemetryData } from "../../telemetry";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -79,8 +79,8 @@ export default async function officeCreateCommandHandler(
 
       if (matchedResult.type === "sample") {
         const sampleInfos = await showOfficeSampleFileTree(matchedResult, response);
-        const folder = sampleInfos?.[0];
-        const hostType = sampleInfos?.[1].toLowerCase();
+        const folder = (sampleInfos as any)?.["path"];
+        const hostType = (sampleInfos as any)?.["host"].toLowerCase();
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         officeChatTelemetryData.setHostType(hostType);
         const matchResultInfo = "sample";
@@ -122,7 +122,7 @@ export default async function officeCreateCommandHandler(
   } else {
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
-    officeChatTelemetryData.setBlockReason("RAI");
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
     officeChatTelemetryData.markComplete("unsupportedPrompt");
   }
   ExtTelemetry.sendTelemetryEvent(

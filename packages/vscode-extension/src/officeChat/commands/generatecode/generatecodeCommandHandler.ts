@@ -15,7 +15,7 @@ import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { Planner } from "../../common/planner";
 import { isInputHarmful } from "../../utils";
 import { ICopilotChatOfficeResult } from "../../types";
-import { OfficeChatTelemetryData } from "../../telemetry";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
 
 export default async function generatecodeCommandHandler(
   request: ChatRequest,
@@ -86,7 +86,7 @@ export default async function generatecodeCommandHandler(
     return chatResult;
   } else {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
-    officeChatTelemetryData.setBlockReason("RAI");
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
     officeChatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,

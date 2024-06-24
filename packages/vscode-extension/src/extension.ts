@@ -443,11 +443,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(installAppInTeamsCmd);
 
-  const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
-    Correlator.run(handlers.openSurveyHandler, [TelemetryTriggerFrom.TreeView])
-  );
-  context.subscriptions.push(openSurveyCmd);
-
   const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
     Correlator.run(handlers.openTutorialHandler, [
       TelemetryTriggerFrom.QuickPick,

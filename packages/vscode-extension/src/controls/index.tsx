@@ -7,7 +7,6 @@ import { initializeIcons } from "@fluentui/react/lib/Icons";
 
 import { PanelType } from "./PanelType";
 import SampleGallery from "./sampleGallery/SampleGallery";
-import Survey from "./Survey";
 import AccountHelp from "./webviewDocs/accountHelp";
 import FunctionBasedNotificationBot from "./webviewDocs/functionBasedNotificationBot";
 import RestifyServerNotificationBot from "./webviewDocs/restifyServerNotificationBot";
@@ -27,23 +26,20 @@ function App(props: any) {
   initializeIcons();
 
   let initialIndex = 0;
-  if (panelType === PanelType.Survey) {
+  if (panelType === PanelType.RespondToCardActions) {
     initialIndex = 1;
-  } else if (panelType === PanelType.RespondToCardActions) {
-    initialIndex = 2;
   } else if (panelType === PanelType.AccountHelp) {
-    initialIndex = 3;
+    initialIndex = 2;
   } else if (panelType === PanelType.FunctionBasedNotificationBotReadme) {
-    initialIndex = 4;
+    initialIndex = 3;
   } else if (panelType === PanelType.RestifyServerNotificationBotReadme) {
-    initialIndex = 5;
+    initialIndex = 4;
   }
 
   return (
     <MemoryRouter
       initialEntries={[
         "/sample-gallery",
-        "/survey",
         "/respond-to-card-actions",
         "/account-help",
         "/function-based-notification-bot",
@@ -55,7 +51,6 @@ function App(props: any) {
         path="/sample-gallery"
         render={() => <SampleGallery shouldShowChat={shouldShowChat} />}
       />
-      <Route path="/survey" component={Survey} />
       <Route path="/respond-to-card-actions" component={WorkflowBot} />
       <Route path="/account-help" component={AccountHelp} />
       <Route path="/function-based-notification-bot" component={FunctionBasedNotificationBot} />

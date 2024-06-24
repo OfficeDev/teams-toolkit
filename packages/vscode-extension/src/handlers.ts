@@ -490,16 +490,6 @@ export async function checkUpgrade(args?: any[]) {
   }
 }
 
-export async function openSurveyHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-    ...getTriggerFromProperty(args),
-    // eslint-disable-next-line no-secrets/no-secrets
-    message: getDefaultString("teamstoolkit.commandsTreeViewProvider.openSurveyTitle"),
-  });
-  const survey = ExtensionSurvey.getInstance();
-  await survey.openSurveyLink();
-}
-
 export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenWalkThrough = (await globalStateGet(GlobalKey.OpenWalkThrough, false)) as boolean;
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;

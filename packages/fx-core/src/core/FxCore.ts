@@ -105,7 +105,7 @@ import {
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
-} from "../component/generator/copilotPlugin/helper";
+} from "../component/generator/apiSpec/helper";
 import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";

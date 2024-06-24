@@ -13,9 +13,6 @@ import {
   BuildFolderName,
   Func,
   FxError,
-  Inputs,
-  ManifestTemplateFileName,
-  ManifestUtil,
   OptionItem,
   Result,
   SelectFileConfig,
@@ -27,7 +24,6 @@ import {
   SystemError,
   UserError,
   Void,
-  Warning,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -35,37 +31,29 @@ import {
   AppStudioScopes,
   AuthSvcScopes,
   CapabilityOptions,
-  Correlator,
   DepsManager,
   DepsType,
   Hub,
   InvalidProjectError,
-  JSONSyntaxError,
   MetadataV3,
   QuestionNames,
   askSubscription,
   assembleError,
   environmentManager,
-  generateScaffoldingSummary,
   getHashedEnv,
-  globalStateGet,
-  globalStateUpdate,
   isUserCancelError,
   isValidProject,
-  manifestUtils,
   pathUtils,
-  pluginManifestUtils,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import { Uri, commands, env, window, workspace } from "vscode";
 import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
-import { AzurePortalUrl, CommandKey, GlobalKey } from "./constants";
+import { AzurePortalUrl } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
 import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
@@ -76,23 +64,14 @@ import { selectAndDebug } from "./debug/runIconHandler";
 import { showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import {
-  core,
-  isOfficeAddInProject,
-  isSPFxProject,
-  isTeamsFxProject,
-  tools,
-  workspaceUri,
-} from "./globalVariables";
+import { core, isSPFxProject, isTeamsFxProject, tools, workspaceUri } from "./globalVariables";
 import { createNewProjectHandler } from "./handlers/lifecycleHandlers";
-import { openWelcomeHandler } from "./handlers/openLinkHandlers";
 import { processResult, runCommand } from "./handlers/sharedOpts";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { VS_CODE_UI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   AccountType,
-  InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -104,19 +83,13 @@ import { AzureAccountNode } from "./treeview/account/azureNode";
 import { AccountItemStatus } from "./treeview/account/common";
 import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
-import { getAppName } from "./utils/appDefinitionUtils";
-import {
-  checkCoreNotEmpty,
-  getLocalDebugMessageTemplate,
-  openFolderInExplorer,
-} from "./utils/commonUtils";
+import { openFolderInExplorer } from "./utils/commonUtils";
 import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/envTreeUtils";
 import { getDefaultString, localize } from "./utils/localizeUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
-import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSystemInputs } from "./utils/systemEnvUtils";
-import { getTriggerFromProperty, isTriggerFromWalkThrough } from "./utils/telemetryUtils";
+import { getTriggerFromProperty } from "./utils/telemetryUtils";
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
@@ -173,16 +146,6 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
   return ok(null);
 }
 
-export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ValidateManifestStart,
-    getTriggerFromProperty(args)
-  );
-
-  const inputs = getSystemInputs();
-  return await runCommand(Stage.validateApplication, inputs);
-}
-
 /**
  * Ask user to select environment, local is included
  */
@@ -208,118 +171,6 @@ export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   }
 }
 
-export async function buildPackageHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.createAppPackage);
-}
-
-let lastAppPackageFile: string | undefined;
-
-export async function publishInDeveloperPortalHandler(
-  ...args: unknown[]
-): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.PublishInDeveloperPortalStart,
-    getTriggerFromProperty(args)
-  );
-  const workspacePath = workspaceUri?.fsPath;
-  const zipDefaultFolder: string | undefined = path.join(
-    workspacePath!,
-    BuildFolderName,
-    AppPackageFolderName
-  );
-
-  let files: string[] = [];
-  if (await fs.pathExists(zipDefaultFolder)) {
-    files = await fs.readdir(zipDefaultFolder);
-    files = files
-      .filter((file) => path.extname(file).toLowerCase() === ".zip")
-      .map((file) => {
-        return path.join(zipDefaultFolder, file);
-      });
-  }
-  while (true) {
-    const selectFileConfig: SelectFileConfig = {
-      name: "appPackagePath",
-      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
-      placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
-      filters: {
-        "Zip files": ["zip"],
-      },
-    };
-    if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
-      selectFileConfig.default = lastAppPackageFile;
-    } else {
-      selectFileConfig.possibleFiles = files.map((file) => {
-        const appPackageFilename = path.basename(file);
-        const appPackageFilepath = path.dirname(file);
-        return {
-          id: file,
-          label: `$(file) ${appPackageFilename}`,
-          description: appPackageFilepath,
-        };
-      });
-    }
-    const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
-    if (selectFileResult.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PublishInDeveloperPortal,
-        selectFileResult.error,
-        getTriggerFromProperty(args)
-      );
-      return ok(null);
-    }
-    if (
-      (lastAppPackageFile && selectFileResult.value.result === lastAppPackageFile) ||
-      (!lastAppPackageFile && files.indexOf(selectFileResult.value.result!) !== -1)
-    ) {
-      // user selected file in options
-      lastAppPackageFile = selectFileResult.value.result;
-      break;
-    }
-    // final confirmation
-    lastAppPackageFile = selectFileResult.value.result!;
-    const appPackageFilename = path.basename(lastAppPackageFile);
-    const appPackageFilepath = path.dirname(lastAppPackageFile);
-    const confirmOption: SingleSelectConfig = {
-      options: [
-        {
-          id: "yes",
-          label: `$(file) ${appPackageFilename}`,
-          description: appPackageFilepath,
-        },
-      ],
-      name: "confirm",
-      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
-      placeholder: localize("teamstoolkit.publishInDevPortal.confirmFile.placeholder"),
-      step: 2,
-    };
-    const confirm = await VS_CODE_UI.selectOption(confirmOption);
-    if (confirm.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PublishInDeveloperPortal,
-        confirm.error,
-        getTriggerFromProperty(args)
-      );
-      return ok(null);
-    }
-    if (confirm.value.type === "success") {
-      break;
-    }
-  }
-  const inputs = getSystemInputs();
-  inputs["appPackagePath"] = lastAppPackageFile;
-  const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
-  if (res.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.PublishInDeveloperPortal,
-      res.error,
-      getTriggerFromProperty(args)
-    );
-  }
-  return res;
-}
-
 export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   const scheme = "file://";
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {
@@ -330,7 +181,7 @@ export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, F
     if (path.startsWith(scheme)) {
       path = path.substring(scheme.length);
     }
-    const uri = Uri.file(path);
+    const uri = vscode.Uri.file(path);
     openFolderInExplorer(uri.fsPath);
   }
   return Promise.resolve(ok(null));
@@ -490,273 +341,6 @@ export async function checkUpgrade(args?: any[]) {
   }
 }
 
-export async function autoOpenProjectHandler(): Promise<void> {
-  const isOpenWalkThrough = (await globalStateGet(GlobalKey.OpenWalkThrough, false)) as boolean;
-  const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
-  const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
-  const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
-  const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
-  if (isOpenWalkThrough) {
-    await showLocalDebugMessage();
-    await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
-    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
-
-    if (workspaceUri?.fsPath) {
-      await ShowScaffoldingWarningSummary(workspaceUri.fsPath, createWarnings);
-      await globalStateUpdate(GlobalKey.CreateWarnings, "");
-    }
-  }
-  if (isOpenReadMe === workspaceUri?.fsPath) {
-    await showLocalDebugMessage();
-    await openReadMeHandler(TelemetryTriggerFrom.Auto);
-    await updateProjectStatus(workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
-    await globalStateUpdate(GlobalKey.OpenReadMe, "");
-
-    await ShowScaffoldingWarningSummary(workspaceUri.fsPath, createWarnings);
-    await globalStateUpdate(GlobalKey.CreateWarnings, "");
-  }
-  if (isOpenSampleReadMe) {
-    await showLocalDebugMessage();
-    await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
-    await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
-  }
-  if (autoInstallDependency) {
-    await autoInstallDependencyHandler();
-    await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
-  }
-}
-
-export async function openReadMeHandler(...args: unknown[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
-  if (!isTeamsFxProject && !isOfficeAddInProject) {
-    const createProject = {
-      title: localize("teamstoolkit.handlers.createProjectTitle"),
-      run: async (): Promise<void> => {
-        await Correlator.run(
-          async () => await createNewProjectHandler(TelemetryTriggerFrom.Notification)
-        );
-      },
-    };
-
-    const openFolder = {
-      title: localize("teamstoolkit.handlers.openFolderTitle"),
-      run: async (): Promise<void> => {
-        await commands.executeCommand("vscode.openFolder");
-      },
-    };
-
-    void vscode.window
-      .showInformationMessage(
-        localize("teamstoolkit.handlers.createProjectNotification"),
-        createProject,
-        openFolder
-      )
-      .then((selection) => {
-        selection?.run();
-      });
-  } else if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    // show README.md or src/README.md(SPFx) in workspace root folder
-    const rootReadmePath = `${workspacePath}/README.md`;
-    const uri = (await fs.pathExists(rootReadmePath))
-      ? Uri.file(rootReadmePath)
-      : Uri.file(`${workspacePath}/src/README.md`);
-
-    if (TreatmentVariableValue.inProductDoc) {
-      const content = await fs.readFile(uri.fsPath, "utf8");
-      if (content.includes("## Get Started with the Notification bot")) {
-        // A notification bot project.
-        if (content.includes("restify")) {
-          // Restify server notification bot.
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
-            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto,
-            [TelemetryProperty.Interaction]: InProductGuideInteraction.Open,
-            [TelemetryProperty.Identifier]: PanelType.RestifyServerNotificationBotReadme,
-          });
-          WebviewPanel.createOrShow(PanelType.RestifyServerNotificationBotReadme);
-        } else {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
-            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto,
-            [TelemetryProperty.Interaction]: InProductGuideInteraction.Open,
-            [TelemetryProperty.Identifier]: PanelType.FunctionBasedNotificationBotReadme,
-          });
-          WebviewPanel.createOrShow(PanelType.FunctionBasedNotificationBotReadme);
-        }
-      }
-    }
-
-    // Always open README.md in current panel instead of side-by-side.
-    await workspace.openTextDocument(uri);
-    const PreviewMarkdownCommand = "markdown.showPreview";
-    await vscode.commands.executeCommand(PreviewMarkdownCommand, uri);
-  }
-  return ok<unknown, FxError>(null);
-}
-
-export async function openSampleReadmeHandler(args?: any) {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const uri = Uri.file(`${workspacePath}/README.md`);
-    await workspace.openTextDocument(uri);
-    if (isTriggerFromWalkThrough(args as unknown[])) {
-      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-      await commands.executeCommand(PreviewMarkdownCommand, uri);
-    } else {
-      const PreviewMarkdownCommand = "markdown.showPreview";
-      await commands.executeCommand(PreviewMarkdownCommand, uri);
-    }
-  }
-}
-
-export async function autoInstallDependencyHandler() {
-  await VS_CODE_UI.runCommand({
-    cmd: "npm i",
-    workingDirectory: "${workspaceFolder}/src",
-    shellName: localize("teamstoolkit.handlers.autoInstallDependency"),
-    iconPath: "cloud-download",
-  });
-}
-
-export async function showLocalDebugMessage() {
-  const shouldShowLocalDebugMessage = (await globalStateGet(
-    GlobalKey.ShowLocalDebugMessage,
-    false
-  )) as boolean;
-
-  if (!shouldShowLocalDebugMessage) {
-    return;
-  } else {
-    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, false);
-  }
-
-  const hasLocalEnv = await fs.pathExists(path.join(workspaceUri!.fsPath, "teamsapp.local.yml"));
-
-  const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
-  const isWindows = process.platform === "win32";
-  const folderLink = encodeURI(workspaceUri!.toString());
-  const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-
-  if (hasLocalEnv) {
-    const localDebug = {
-      title: localize("teamstoolkit.handlers.localDebugTitle"),
-      run: async (): Promise<void> => {
-        await selectAndDebug();
-      },
-    };
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
-
-    const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
-
-    let message = util.format(messageTemplate, appName, workspaceUri?.fsPath);
-    if (isWindows) {
-      message = util.format(messageTemplate, appName, openFolderCommand);
-    }
-    void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
-      if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-        selection.run();
-      }
-    });
-  } else {
-    const provision = {
-      title: localize("teamstoolkit.handlers.provisionTitle"),
-      run: async (): Promise<void> => {
-        await vscode.commands.executeCommand(CommandKey.Provision, [
-          TelemetryTriggerFrom.Notification,
-        ]);
-      },
-    };
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowProvisionNotification);
-    const message = isWindows
-      ? util.format(
-          localize("teamstoolkit.handlers.provisionDescription"),
-          appName,
-          openFolderCommand
-        )
-      : util.format(
-          localize("teamstoolkit.handlers.provisionDescription.fallback"),
-          appName,
-          workspaceUri?.fsPath
-        );
-    void vscode.window.showInformationMessage(message, provision).then((selection) => {
-      if (selection?.title === localize("teamstoolkit.handlers.provisionTitle")) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickProvision);
-        selection.run();
-      }
-    });
-  }
-}
-
-export async function ShowScaffoldingWarningSummary(
-  workspacePath: string,
-  warning: string
-): Promise<void> {
-  try {
-    let createWarnings: Warning[] = [];
-
-    if (warning) {
-      try {
-        createWarnings = JSON.parse(warning) as Warning[];
-      } catch (e) {
-        const error = new JSONSyntaxError(warning, e, "vscode");
-        ExtTelemetry.sendTelemetryErrorEvent(
-          TelemetryEvent.ShowScaffoldingWarningSummaryError,
-          error
-        );
-      }
-    }
-    const manifestRes = await manifestUtils._readAppManifest(
-      path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
-    );
-    let message;
-    if (manifestRes.isOk()) {
-      const teamsManifest = manifestRes.value;
-      const commonProperties = ManifestUtil.parseCommonProperties(teamsManifest);
-      if (commonProperties.capabilities.includes("plugin")) {
-        const apiSpecFilePathRes = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
-          teamsManifest,
-          path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
-        );
-        if (apiSpecFilePathRes.isErr()) {
-          ExtTelemetry.sendTelemetryErrorEvent(
-            TelemetryEvent.ShowScaffoldingWarningSummaryError,
-            apiSpecFilePathRes.error
-          );
-        } else {
-          message = generateScaffoldingSummary(
-            createWarnings,
-            teamsManifest,
-            path.relative(workspacePath, apiSpecFilePathRes.value[0])
-          );
-        }
-      }
-      if (commonProperties.isApiME) {
-        message = generateScaffoldingSummary(
-          createWarnings,
-          manifestRes.value,
-          teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
-        );
-      }
-
-      if (message) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
-        VsCodeLogInstance.outputChannel.show();
-        void VsCodeLogInstance.info(message);
-      }
-    } else {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.ShowScaffoldingWarningSummaryError,
-        manifestRes.error
-      );
-    }
-  } catch (e) {
-    const error = assembleError(e);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ShowScaffoldingWarningSummaryError, error);
-  }
-}
-
 export async function openSamplesHandler(...args: unknown[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.SampleGallery, args);
@@ -766,7 +350,7 @@ export async function openSamplesHandler(...args: unknown[]): Promise<Result<nul
 export async function openExternalHandler(args?: any[]) {
   if (args && args.length > 0) {
     const url = (args[0] as { url: string }).url;
-    return env.openExternal(Uri.parse(url));
+    return vscode.env.openExternal(vscode.Uri.parse(url));
   }
 }
 
@@ -881,113 +465,6 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
   }
 }
 
-export async function grantPermission(env?: string): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
-
-  let inputs: Inputs | undefined;
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    inputs = getSystemInputs();
-    inputs.env = env;
-    result = await core.grantPermission(inputs);
-    if (result.isErr()) {
-      throw result.error;
-    }
-    const grantSucceededMsg = util.format(
-      localize("teamstoolkit.handlers.grantPermissionSucceededV3"),
-      inputs.email
-    );
-
-    window.showInformationMessage(grantSucceededMsg);
-    VsCodeLogInstance.info(grantSucceededMsg);
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  await processResult(TelemetryEvent.GrantPermission, result, inputs);
-  return result;
-}
-
-export async function listCollaborator(env?: string): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
-
-  let inputs: Inputs | undefined;
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    inputs = getSystemInputs();
-    inputs.env = env;
-
-    result = await core.listCollaborator(inputs);
-    if (result.isErr()) {
-      throw result.error;
-    }
-
-    // TODO: For short-term workaround. Remove after webview is ready.
-    VsCodeLogInstance.outputChannel.show();
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  await processResult(TelemetryEvent.ListCollaborator, result, inputs);
-  return result;
-}
-
-export async function manageCollaboratorHandler(env?: string): Promise<Result<any, FxError>> {
-  let result: any = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaboratorStart);
-
-  try {
-    const collaboratorCommandSelection: SingleSelectConfig = {
-      name: "collaborationCommand",
-      title: localize("teamstoolkit.manageCollaborator.command"),
-      options: [
-        {
-          id: "grantPermission",
-          label: localize("teamstoolkit.manageCollaborator.grantPermission.label"),
-          detail: localize("teamstoolkit.manageCollaborator.grantPermission.description"),
-        },
-        {
-          id: "listCollaborator",
-          label: localize("teamstoolkit.manageCollaborator.listCollaborator.label"),
-          detail: localize("teamstoolkit.manageCollaborator.listCollaborator.description"),
-        },
-      ],
-      returnObject: false,
-    };
-    const collaboratorCommand = await VS_CODE_UI.selectOption(collaboratorCommandSelection);
-    if (collaboratorCommand.isErr()) {
-      throw collaboratorCommand.error;
-    }
-
-    const command = collaboratorCommand.value.result;
-    switch (command) {
-      case "grantPermission":
-        result = await grantPermission(env);
-        break;
-
-      case "listCollaborator":
-      default:
-        result = await listCollaborator(env);
-        break;
-    }
-  } catch (e) {
-    result = wrapError(e);
-  }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaborator);
-  return result;
-}
-
 export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
   if (!isValidProject(workspaceUri?.fsPath)) {
     return;
@@ -1053,7 +530,7 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
     }
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    void window.showErrorMessage(result.error.message);
+    void vscode.window.showErrorMessage(result.error.message);
   }
 }
 
@@ -1143,8 +620,8 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
   const manifestFile = `${workspacePath as string}/${BuildFolderName}/aad.${envName}.json`;
 
   if (fs.existsSync(manifestFile)) {
-    void workspace.openTextDocument(manifestFile).then((document) => {
-      void window.showTextDocument(document);
+    void vscode.workspace.openTextDocument(manifestFile).then((document) => {
+      void vscode.window.showTextDocument(document);
     });
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAadManifestFile, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -1237,51 +714,12 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     return err(noEnvError);
   }
 
-  void workspace.openTextDocument(sourcePath as string).then((document) => {
-    void window.showTextDocument(document);
+  void vscode.workspace.openTextDocument(sourcePath as string).then((document) => {
+    void vscode.window.showTextDocument(document);
   });
   ExtTelemetry.sendTelemetryEvent(telemetryName, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
-}
-
-export async function updatePreviewManifest(args: any[]): Promise<any> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.UpdatePreviewManifestStart,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-  let env: string | undefined;
-  if (args && args.length > 0) {
-    const filePath = args[0].fsPath as string;
-    if (!filePath.endsWith("manifest.template.json")) {
-      const envReg = /manifest\.(\w+)\.json$/;
-      const result = envReg.exec(filePath);
-      if (result && result.length >= 2) {
-        env = result[1];
-      }
-    }
-  }
-
-  const inputs = getSystemInputs();
-  const result = await runCommand(Stage.deployTeams, inputs);
-
-  if (!args || args.length === 0) {
-    const workspacePath = workspaceUri?.fsPath;
-    const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = true;
-    const env = await core.getSelectedEnv(inputs);
-    if (env.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
-      return err(env.error);
-    }
-    const manifestPath = `${
-      workspacePath as string
-    }/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value as string}.json`;
-    void workspace.openTextDocument(manifestPath).then((document) => {
-      void window.showTextDocument(document);
-    });
-  }
-  return result;
 }
 
 export async function copilotPluginAddAPIHandler(args: any[]) {
@@ -1311,8 +749,8 @@ export function editAadManifestTemplate(args: any[]) {
   if (args && args.length > 1) {
     const workspacePath = workspaceUri?.fsPath;
     const manifestPath = `${workspacePath as string}/${MetadataV3.aadManifestFileName}`;
-    void workspace.openTextDocument(manifestPath).then((document) => {
-      void window.showTextDocument(document);
+    void vscode.workspace.openTextDocument(manifestPath).then((document) => {
+      void vscode.window.showTextDocument(document);
     });
   }
 }
@@ -1958,7 +1396,7 @@ export async function scaffoldFromDeveloperPortalHandler(
     );
     if (tokenRes.isErr()) {
       if ((tokenRes.error as any).displayMessage) {
-        void window.showErrorMessage((tokenRes.error as any).displayMessage);
+        void vscode.window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
         void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")

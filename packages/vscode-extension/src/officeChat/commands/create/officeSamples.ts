@@ -7,7 +7,7 @@ import axios from "axios";
 const OfficeSampleCofigOwner = "OfficeDev";
 const OfficeSampleRepo = "Office-Samples";
 const OfficeSampleConfigFile = ".config/samples-config-v1.json";
-const OfficeSampleConfigBranch = "dev";
+const OfficeSampleConfigBranch = "main";
 
 interface OfficeSampleCollection {
   samples: SampleConfig[];

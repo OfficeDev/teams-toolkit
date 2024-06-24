@@ -56,7 +56,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { Constants } from "../driver/teamsApp/constants";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
+import { OpenAPISpecGenerator } from "../generator/apiSpec/generator";
 import { Generator } from "../generator/generator";
 import { Generators } from "../generator/generatorProvider";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
@@ -192,7 +192,7 @@ class Coordinator {
           const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
           if (res.isErr()) return err(res.error);
         } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
-          const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
+          const res = await OpenAPISpecGenerator.generateCopilotPlugin(
             context,
             inputs,
             projectPath
@@ -203,11 +203,7 @@ class Coordinator {
             warnings = res.value.warnings;
           }
         } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
-          const res = await CopilotPluginGenerator.generateMeFromApiSpec(
-            context,
-            inputs,
-            projectPath
-          );
+          const res = await OpenAPISpecGenerator.generateMe(context, inputs, projectPath);
           if (res.isErr()) {
             return err(res.error);
           } else {
@@ -296,7 +292,7 @@ class Coordinator {
             );
             if (res.isErr()) return err(res.error);
             if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
-              const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
+              const res = await OpenAPISpecGenerator.generateCustomCopilot(
                 context,
                 inputs,
                 projectPath

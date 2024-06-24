@@ -20,13 +20,6 @@ import { OfficeDevTerminal, TriggerCmdType } from "../debug/taskTerminal/officeD
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
 import {
-  ShowScaffoldingWarningSummary,
-  autoInstallDependencyHandler,
-  openReadMeHandler,
-  openSampleReadmeHandler,
-  showLocalDebugMessage,
-} from "../handlers";
-import {
   TelemetryTriggerFrom,
   TelemetryEvent,
   TelemetryProperty,
@@ -34,6 +27,12 @@ import {
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  ShowScaffoldingWarningSummary,
+  autoInstallDependencyHandler,
+  showLocalDebugMessage,
+} from "../utils/autoOpenHelper";
+import { openReadMeHandler, openSampleReadmeHandler } from "./readmeHandlers";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]

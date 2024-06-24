@@ -82,6 +82,10 @@ export class Planner {
 
     // dispatcher
     const purified = await purifyUserMessage(request.prompt, token);
+    response.markdown(`
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
+${purified}
+`);
     const spec = new Spec(purified);
     try {
       for (let index = 0; index < candidates.length; index++) {

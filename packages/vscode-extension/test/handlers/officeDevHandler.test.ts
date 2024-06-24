@@ -7,7 +7,6 @@ import * as vscode from "vscode";
 import { Terminal } from "vscode";
 import { OfficeDevTerminal, TriggerCmdType } from "../../src/debug/taskTerminal/officeDevTerminal";
 import * as globalVariables from "../../src/globalVariables";
-import * as handlers from "../../src/handlers";
 import * as officeDevHandlers from "../../src/handlers/officeDevHandlers";
 import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/handlers/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
@@ -16,6 +15,8 @@ import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { openOfficeDevFolder } from "../../src/utils/workspaceUtils";
+import * as autoOpenHelper from "../../src/utils/autoOpenHelper";
+import * as readmeHandlers from "../../src/handlers/readmeHandlers";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -122,7 +123,10 @@ describe("officeDevHandler", () => {
   });
 
   it("popupOfficeAddInDependenciesMessage", async () => {
-    const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
+    const autoInstallDependencyHandlerStub = sandbox.stub(
+      autoOpenHelper,
+      "autoInstallDependencyHandler"
+    );
     sandbox.stub(localizeUtils, "localize").returns("installPopUp");
     sandbox
       .stub(vscode.window, "showInformationMessage")
@@ -175,10 +179,10 @@ describe("autoOpenOfficeDevProjectHandler", () => {
       }
     });
 
-    const openReadMeHandlerStub = sandbox.stub(handlers, "openReadMeHandler");
+    const openReadMeHandlerStub = sandbox.stub(readmeHandlers, "openReadMeHandler");
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
     const ShowScaffoldingWarningSummaryStub = sandbox.stub(
-      handlers,
+      autoOpenHelper,
       "ShowScaffoldingWarningSummary"
     );
 
@@ -244,7 +248,10 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     sandbox.stub(globalVariables, "isOfficeAddInProject").value(true);
 
     sandbox.stub(localizeUtils, "localize").returns("ask install window pop up");
-    const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
+    const autoInstallDependencyHandlerStub = sandbox.stub(
+      autoOpenHelper,
+      "autoInstallDependencyHandler"
+    );
 
     const showInformationMessageStub = sandbox
       .stub(vscode.window, "showInformationMessage")

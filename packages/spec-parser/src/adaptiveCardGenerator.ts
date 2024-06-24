@@ -155,7 +155,7 @@ export class AdaptiveCardGenerator {
             {
               type: "Image",
               url: `\${${name}}`,
-              $when: `\${${name} != null}`,
+              $when: `\${${name} != null && ${name} != ''}`,
             },
           ];
         } else {
@@ -163,7 +163,7 @@ export class AdaptiveCardGenerator {
             {
               type: "Image",
               url: "${$data}",
-              $when: "${$data != null}",
+              $when: "${$data != null && $data != ''}",
             },
           ];
         }

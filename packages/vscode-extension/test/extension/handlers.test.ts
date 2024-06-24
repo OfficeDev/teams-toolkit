@@ -5,7 +5,6 @@ import {
   ConfigFolderName,
   FxError,
   Inputs,
-  OptionItem,
   Platform,
   Result,
   Stage,
@@ -46,7 +45,6 @@ import * as getStartedChecker from "../../src/debug/depsChecker/getStartedChecke
 import * as launch from "../../src/debug/launch";
 import * as errorCommon from "../../src/error/common";
 import { ExtensionErrors } from "../../src/error/error";
-import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
 import {
@@ -152,50 +150,6 @@ describe("handlers", () => {
       const result = await handlers.treeViewPreviewHandler("dev");
 
       chai.assert.isTrue(result.isOk());
-    });
-
-    it("selectTutorialsHandler()", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
-      sandbox.stub(globalVariables, "isSPFxProject").value(false);
-      let tutorialOptions: OptionItem[] = [];
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          tutorialOptions = options.options;
-          return Promise.resolve(ok({ type: "success", result: { id: "test", data: "data" } }));
-        },
-        openUrl: () => Promise.resolve(ok(true)),
-      });
-
-      const result = await handlers.selectTutorialsHandler();
-
-      chai.assert.equal(tutorialOptions.length, 17);
-      chai.assert.isTrue(result.isOk());
-      chai.assert.equal(tutorialOptions[1].data, "https://aka.ms/teamsfx-notification-new");
-    });
-
-    it("selectTutorialsHandler() for SPFx projects - v3", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
-      sandbox.stub(globalVariables, "isSPFxProject").value(true);
-      let tutorialOptions: OptionItem[] = [];
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: (options: any) => {
-          tutorialOptions = options.options;
-          return Promise.resolve(ok({ type: "success", result: { id: "test", data: "data" } }));
-        },
-        openUrl: () => Promise.resolve(ok(true)),
-      });
-
-      const result = await handlers.selectTutorialsHandler();
-
-      chai.assert.equal(tutorialOptions.length, 1);
-      chai.assert.isTrue(result.isOk());
-      chai.assert.equal(tutorialOptions[0].data, "https://aka.ms/teamsfx-add-cicd-new");
     });
   });
 

@@ -90,7 +90,7 @@ describe("adaptiveCardGenerator", () => {
           {
             type: "Image",
             url: "${photo_url}",
-            $when: "${photo_url != null}",
+            $when: "${photo_url != null && photo_url != ''}",
           },
           {
             type: "TextBlock",
@@ -183,7 +183,7 @@ describe("adaptiveCardGenerator", () => {
               {
                 type: "Image",
                 url: `\${image}`,
-                $when: `\${image != null}`,
+                $when: `\${image != null && image != ''}`,
               },
             ],
           },
@@ -520,7 +520,7 @@ describe("adaptiveCardGenerator", () => {
             {
               type: "Image",
               url: "${$data}",
-              $when: "${$data != null}",
+              $when: "${$data != null && $data != ''}",
             },
           ],
         },
@@ -797,7 +797,7 @@ describe("adaptiveCardGenerator", () => {
                 {
                   type: "Image",
                   url: `\${iconUrl}`,
-                  $when: `\${iconUrl != null}`,
+                  $when: `\${iconUrl != null && iconUrl != ''}`,
                 },
               ],
             },

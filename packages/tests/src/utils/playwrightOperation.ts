@@ -457,7 +457,10 @@ export async function initTeamsPage(
         await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
           try {
-            const items = await page?.waitForSelector("li.ui-dropdown__item");
+            // select 2nd li item
+            const items = await page?.waitForSelector(
+              "li.ui-dropdown__item::nth-child(2)"
+            );
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
@@ -466,8 +469,10 @@ export async function initTeamsPage(
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
-
-            const items = await page?.waitForSelector("li.ui-dropdown__item");
+            // select 2nd li item
+            const items = await page?.waitForSelector(
+              "li.ui-dropdown__item::nth-child(2)"
+            );
             await items?.click();
             console.log("[catch] selected a team.");
           }

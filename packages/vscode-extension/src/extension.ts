@@ -133,6 +133,15 @@ import { showError } from "./error/common";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { signOutM365, signOutAzure } from "./utils/accountUtils";
 import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
+import { openReadMeHandler } from "./handlers/readmeHandlers";
+import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
+import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
+import {
+  buildPackageHandler,
+  publishInDeveloperPortalHandler,
+  updatePreviewManifest,
+  validateManifestHandler,
+} from "./handlers/manifestHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -335,7 +344,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(context, CommandKeys.OpenDocument, openDocumentHandler);
 
   // README
-  registerInCommandController(context, CommandKeys.OpenReadMe, handlers.openReadMeHandler);
+  registerInCommandController(context, CommandKeys.OpenReadMe, openReadMeHandler);
 
   // View samples
   registerInCommandController(context, CommandKeys.OpenSamples, handlers.openSamplesHandler);
@@ -542,12 +551,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   registerInCommandController(context, CommandKeys.Provision, provisionHandler, "provision");
 
   // Zip Teams metadata package
-  registerInCommandController(
-    context,
-    "fx-extension.build",
-    handlers.buildPackageHandler,
-    "buildPackage"
-  );
+  registerInCommandController(context, "fx-extension.build", buildPackageHandler, "buildPackage");
 
   // Deploy to the cloud
   registerInCommandController(context, CommandKeys.Deploy, deployHandler, "deploy");
@@ -559,7 +563,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     "fx-extension.publishInDeveloperPortal",
-    handlers.publishInDeveloperPortalHandler,
+    publishInDeveloperPortalHandler,
     "publishInDeveloperPortal"
   );
 
@@ -591,13 +595,13 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",
-    (...args) => Correlator.run(handlers.updatePreviewManifest, args)
+    (...args) => Correlator.run(updatePreviewManifest, args)
   );
   context.subscriptions.push(updateManifestCmd);
 
   const validateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.validateManifest",
-    (...args) => Correlator.run(handlers.validateManifestHandler, args)
+    (...args) => Correlator.run(validateManifestHandler, args)
   );
   context.subscriptions.push(validateManifestCmd);
 
@@ -669,7 +673,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     "fx-extension.manageCollaborator",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.manageCollaboratorHandler, envName);
+      await Correlator.run(manageCollaboratorHandler, envName);
     }
   );
   context.subscriptions.push(manageCollaborator);
@@ -1213,7 +1217,7 @@ async function runBackgroundAsyncTasks(
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
   if (isTeamsFxProject) {
-    await handlers.autoOpenProjectHandler();
+    await autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   }
 }

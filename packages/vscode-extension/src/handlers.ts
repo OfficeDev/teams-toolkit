@@ -61,7 +61,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
+import { Uri, commands, env, window, workspace } from "vscode";
 import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
@@ -77,9 +77,7 @@ import { showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import {
-  context,
   core,
-  initializeGlobalVariables,
   isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
@@ -106,8 +104,6 @@ import { AzureAccountNode } from "./treeview/account/azureNode";
 import { AccountItemStatus } from "./treeview/account/common";
 import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
-import { TreeViewCommand } from "./treeview/treeViewCommand";
-import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { getAppName } from "./utils/appDefinitionUtils";
 import {
   checkCoreNotEmpty,
@@ -121,72 +117,6 @@ import { updateProjectStatus } from "./utils/projectStatusUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSystemInputs } from "./utils/systemEnvUtils";
 import { getTriggerFromProperty, isTriggerFromWalkThrough } from "./utils/telemetryUtils";
-
-// only used for telemetry
-export async function getSettingsVersion(): Promise<string | undefined> {
-  if (core) {
-    const input = getSystemInputs();
-    input.ignoreEnvInfo = true;
-
-    // TODO: from the experience of 'is-from-sample':
-    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
-    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
-    // const projectConfig = await core.getProjectConfig(input);
-    // ignore errors for telemetry
-    // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.version;
-    // }
-    const versionCheckResult = await projectVersionCheck();
-    if (versionCheckResult.isOk()) {
-      return versionCheckResult.value.currentVersion;
-    }
-  }
-  return undefined;
-}
-
-export function addFileSystemWatcher(workspacePath: string) {
-  if (isValidProject(workspaceUri?.fsPath)) {
-    const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
-
-    packageLockFileWatcher.onDidCreate(async (event) => {
-      await sendSDKVersionTelemetry(event.fsPath);
-    });
-
-    packageLockFileWatcher.onDidChange(async (event) => {
-      await sendSDKVersionTelemetry(event.fsPath);
-    });
-
-    const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate((event) => {
-      refreshSPFxTreeOnFileChanged();
-    });
-    yorcFileWatcher.onDidChange((event) => {
-      refreshSPFxTreeOnFileChanged();
-    });
-    yorcFileWatcher.onDidDelete((event) => {
-      refreshSPFxTreeOnFileChanged();
-    });
-  }
-}
-
-export function refreshSPFxTreeOnFileChanged() {
-  initializeGlobalVariables(context);
-
-  TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
-}
-
-export async function sendSDKVersionTelemetry(filePath: string) {
-  const packageLockFile = (await fs.readJson(filePath).catch(() => {})) as {
-    dependencies: { [key: string]: { version: string } };
-  };
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateSDKPackages, {
-    [TelemetryProperty.BotbuilderVersion]: packageLockFile?.dependencies["botbuilder"]?.version,
-    [TelemetryProperty.TeamsFxVersion]:
-      packageLockFile?.dependencies["@microsoft/teamsfx"]?.version,
-    [TelemetryProperty.TeamsJSVersion]:
-      packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
-  });
-}
 
 export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.RunIconDebugStart, getTriggerFromProperty(args));
@@ -519,46 +449,6 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     void showError(error as FxError);
     return "1";
   }
-}
-
-export async function createAccountHandler(args: any[]): Promise<void> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccountStart, getTriggerFromProperty(args));
-  const m365Option: OptionItem = {
-    id: "createAccountM365",
-    label: `$(add) ${localize("teamstoolkit.commands.createAccount.m365")}`,
-    description: localize("teamstoolkit.commands.createAccount.requireSubscription"),
-  };
-  const azureOption: OptionItem = {
-    id: "createAccountAzure",
-    label: `$(add) ${localize("teamstoolkit.commands.createAccount.azure")}`,
-    description: localize("teamstoolkit.commands.createAccount.free"),
-  };
-  const option: SingleSelectConfig = {
-    name: "CreateAccounts",
-    title: localize("teamstoolkit.commands.createAccount.title"),
-    options: [m365Option, azureOption],
-  };
-  const result = await VS_CODE_UI.selectOption(option);
-  if (result.isOk()) {
-    if (result.value.result === m365Option.id) {
-      await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
-        [TelemetryProperty.AccountType]: AccountType.M365,
-        ...getTriggerFromProperty(args),
-      });
-    } else if (result.value.result === azureOption.id) {
-      await VS_CODE_UI.openUrl("https://azure.microsoft.com/en-us/free/");
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateAccount, {
-        [TelemetryProperty.AccountType]: AccountType.Azure,
-        ...getTriggerFromProperty(args),
-      });
-    }
-  } else {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateAccount, result.error, {
-      ...getTriggerFromProperty(args),
-    });
-  }
-  return;
 }
 
 export async function openBuildIntelligentAppsWalkthroughHandler(
@@ -1142,125 +1032,6 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
   }
 }
 
-export function registerAccountMenuCommands(context: ExtensionContext) {
-  // Register SignOut tree view command
-  context.subscriptions.push(
-    commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
-      try {
-        switch (node.contextValue) {
-          case "signedinM365": {
-            await Correlator.run(async () => {
-              await signOutM365(true);
-            });
-            break;
-          }
-          case "signedinAzure": {
-            await Correlator.run(async () => {
-              await signOutAzure(true);
-            });
-            break;
-          }
-        }
-      } catch (e) {
-        void showError(e as FxError);
-      }
-    })
-  );
-}
-
-export function cmdHdlDisposeTreeView() {
-  TreeViewManagerInstance.dispose();
-}
-
-export async function cmpAccountsHandler(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageAccount, getTriggerFromProperty(args));
-  const signInAzureOption: VscQuickPickItem = {
-    id: "signInAzure",
-    label: localize("teamstoolkit.handlers.signInAzure"),
-    function: () => signInAzure(),
-  };
-
-  const signOutAzureOption: VscQuickPickItem = {
-    id: "signOutAzure",
-    label: localize("teamstoolkit.handlers.signOutOfAzure"),
-    function: async () =>
-      await Correlator.run(async () => {
-        await signOutAzure(false);
-      }),
-  };
-
-  const signInM365Option: VscQuickPickItem = {
-    id: "signinM365",
-    label: localize("teamstoolkit.handlers.signIn365"),
-    function: () => signInM365(),
-  };
-
-  const signOutM365Option: VscQuickPickItem = {
-    id: "signOutM365",
-    label: localize("teamstoolkit.handlers.signOutOfM365"),
-    function: async () =>
-      await Correlator.run(async () => {
-        await signOutM365(false);
-      }),
-  };
-
-  const createAccountsOption: VscQuickPickItem = {
-    id: "createAccounts",
-    label: `$(add) ${localize("teamstoolkit.commands.createAccount.title")}`,
-    function: async () => {
-      await Correlator.run(() => createAccountHandler([]));
-    },
-  };
-
-  //TODO: hide subscription list until core or api expose the get subscription list API
-  // let selectSubscriptionOption: VscQuickPickItem = {
-  //   id: "selectSubscription",
-  //   label: "Specify an Azure Subscription",
-  //   function: () => selectSubscription(),
-  //   detail: "4 subscriptions discovered"
-  // };
-
-  const quickPick = window.createQuickPick();
-
-  const quickItemOptionArray: VscQuickPickItem[] = [];
-
-  const m365AccountRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  const m365Account = m365AccountRes.isOk() ? m365AccountRes.value : undefined;
-  if (m365Account && m365Account.status === "SignedIn") {
-    const accountInfo = m365Account.accountInfo;
-    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-    if (email !== undefined) {
-      signOutM365Option.label = signOutM365Option.label.concat(email);
-    }
-    quickItemOptionArray.push(signOutM365Option);
-  } else {
-    quickItemOptionArray.push(signInM365Option);
-  }
-
-  const azureAccount = await azureAccountManager.getStatus();
-  if (azureAccount.status === "SignedIn") {
-    const accountInfo = azureAccount.accountInfo;
-    const email = (accountInfo as any).email || (accountInfo as any).upn;
-    if (email !== undefined) {
-      signOutAzureOption.label = signOutAzureOption.label.concat(email);
-    }
-    quickItemOptionArray.push(signOutAzureOption);
-  } else {
-    quickItemOptionArray.push(signInAzureOption);
-  }
-
-  quickItemOptionArray.push(createAccountsOption);
-  quickPick.items = quickItemOptionArray;
-  quickPick.onDidChangeSelection((selection) => {
-    if (selection[0]) {
-      (selection[0] as VscQuickPickItem).function().catch(console.error);
-      quickPick.hide();
-    }
-  });
-  quickPick.onDidHide(() => quickPick.dispose());
-  quickPick.show();
-}
-
 export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other,
@@ -1554,50 +1325,6 @@ export function editAadManifestTemplate(args: any[]) {
       void window.showTextDocument(document);
     });
   }
-}
-
-export async function signOutAzure(isFromTreeView: boolean) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTriggerFrom.TreeView
-      : TelemetryTriggerFrom.CommandPalette,
-    [TelemetryProperty.AccountType]: AccountType.Azure,
-  });
-  await vscode.window.showInformationMessage(
-    localize("teamstoolkit.commands.azureAccount.signOutHelp")
-  );
-}
-
-export async function signOutM365(isFromTreeView: boolean) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView
-      ? TelemetryTriggerFrom.TreeView
-      : TelemetryTriggerFrom.CommandPalette,
-    [TelemetryProperty.AccountType]: AccountType.M365,
-  });
-  let result = false;
-  result = await M365TokenInstance.signout();
-  if (result) {
-    accountTreeViewProviderInstance.m365AccountNode.setSignedOut();
-    await envTreeProviderInstance.refreshRemoteEnvWarning();
-  }
-}
-
-export async function signInAzure() {
-  await vscode.commands.executeCommand("fx-extension.signinAzure");
-}
-
-export async function signInM365() {
-  await vscode.commands.executeCommand("fx-extension.signinM365");
-}
-
-export interface VscQuickPickItem extends QuickPickItem {
-  /**
-   * Current id of the option item.
-   */
-  id: string;
-
-  function: () => Promise<void>;
 }
 
 export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>> {
@@ -2306,8 +2033,4 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
-}
-
-export async function projectVersionCheck() {
-  return await core.projectVersionCheck(getSystemInputs());
 }

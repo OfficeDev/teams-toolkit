@@ -98,3 +98,5 @@ export * from "./error/index";
 export * from "./question/constants";
 export * from "./question/inputs";
 export * from "./question/options";
+export * from "./component/middleware/actionExecutionMW";
+export { TemplateInfo } from "./component/generator/templates/templateInfo";

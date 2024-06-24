@@ -1740,6 +1740,7 @@
     "jsonc-parser": "^3.0.0",
     "log4js": "^6.4.0",
     "node-rsa": "^1.1.1",
+    "office-addin-manifest": "^1.13.1",
     "query-string": "6.14.1",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",

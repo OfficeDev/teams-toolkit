@@ -30,22 +30,6 @@ export function openFolderInExplorer(folderPath: string): void {
   exec(command);
 }
 
-export async function isM365Project(workspacePath: string): Promise<boolean> {
-  const projectSettingsPath = path.resolve(
-    workspacePath,
-    `.${ConfigFolderName}`,
-    "configs",
-    "projectSettings.json"
-  );
-
-  if (await fs.pathExists(projectSettingsPath)) {
-    const projectSettings = await fs.readJson(projectSettingsPath);
-    return projectSettings.isM365;
-  } else {
-    return false;
-  }
-}
-
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

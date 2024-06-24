@@ -2,6 +2,7 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fileSystemWatcher from "../../src/utils/fileSystemWatcher";
 import * as globalVariables from "../../src/globalVariables";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
@@ -20,7 +21,6 @@ import accountTreeViewProviderInstance from "../../src/treeview/account/accountT
 import envTreeProviderInstance from "../../src//treeview/environmentTreeViewProvider";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import M365TokenInstance from "../../src/commonlib/m365Login";
-import * as handlers from "../../src/handlers";
 import { MockCore } from "../mocks/mockCore";
 
 describe("Activate", function () {
@@ -49,7 +49,7 @@ describe("Activate", function () {
       const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
       const setCommandIsRunningStub = sandbox.stub(globalVariables, "setCommandIsRunning");
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse("test"));
-      const addFileSystemWatcherStub = sandbox.stub(handlers, "addFileSystemWatcher");
+      const addFileSystemWatcherStub = sandbox.stub(fileSystemWatcher, "addFileSystemWatcher");
       const lockedByOperationStub = sandbox.stub(commandController, "lockedByOperation");
       const unlockedByOperationStub = sandbox.stub(commandController, "unlockedByOperation");
       const azureAccountSetStatusChangeMapStub = sandbox.stub(

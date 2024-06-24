@@ -67,8 +67,6 @@ import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
-import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
-import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
 import { updateAutoOpenGlobalKey } from "../../src/utils/globalStateUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
@@ -82,85 +80,6 @@ describe("handlers", () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {
     sandbox.restore();
-  });
-
-  it("getSettingsVersion", async () => {
-    sandbox.stub(globalVariables, "core").value(new MockCore());
-    sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
-    sandbox
-      .stub(MockCore.prototype, "projectVersionCheck")
-      .resolves(ok({ currentVersion: "3.0.0" }));
-    const res = await handlers.getSettingsVersion();
-    chai.assert.equal(res, "3.0.0");
-  });
-
-  it("addFileSystemWatcher detect SPFx project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
-    const updateTreeViewsOnSPFxChanged = sandbox.stub(
-      TreeViewManagerInstance,
-      "updateTreeViewsOnSPFxChanged"
-    );
-
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-      onDidDelete: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").callsFake((...args: unknown[]) => {
-      (args as any)[0]();
-    });
-    const changeListener = sandbox.stub(watcher, "onDidChange").callsFake((...args: unknown[]) => {
-      (args as any)[0]();
-    });
-    const deleteListener = sandbox.stub(watcher, "onDidDelete").callsFake((...args: unknown[]) => {
-      (args as any)[0]();
-    });
-    const sendTelemetryEventFunc = sandbox
-      .stub(ExtTelemetry, "sendTelemetryEvent")
-      .callsFake(() => {});
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.equal(createWatcher.callCount, 2);
-    chai.assert.equal(createListener.callCount, 2);
-    chai.assert.isTrue(changeListener.calledTwice);
-  });
-
-  it("addFileSystemWatcher in invalid project", async () => {
-    const workspacePath = "test";
-    const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
-
-    const watcher = {
-      onDidCreate: () => ({ dispose: () => undefined }),
-      onDidChange: () => ({ dispose: () => undefined }),
-    } as any;
-    const createWatcher = sandbox
-      .stub(vscode.workspace, "createFileSystemWatcher")
-      .returns(watcher);
-    const createListener = sandbox.stub(watcher, "onDidCreate").resolves();
-    const changeListener = sandbox.stub(watcher, "onDidChange").resolves();
-
-    handlers.addFileSystemWatcher(workspacePath);
-
-    chai.assert.isTrue(createWatcher.notCalled);
-    chai.assert.isTrue(createListener.notCalled);
-    chai.assert.isTrue(changeListener.notCalled);
-  });
-
-  it("sendSDKVersionTelemetry", async () => {
-    const filePath = "test/package-lock.json";
-
-    const readJsonFunc = sandbox.stub(fs, "readJson").resolves();
-    const sendTelemetryEventFunc = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-
-    handlers.sendSDKVersionTelemetry(filePath);
-
-    chai.assert.isTrue(readJsonFunc.calledOnce);
   });
 
   it("updateAutoOpenGlobalKey", async () => {
@@ -848,28 +767,6 @@ describe("handlers", () => {
       createOrShow,
       PanelType.RestifyServerNotificationBotReadme
     );
-  });
-
-  it("signOutM365", async () => {
-    const signOut = sandbox.stub(M365TokenInstance, "signout").resolves(true);
-    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(envTreeProviderInstance, "reloadEnvironments");
-
-    await handlers.signOutM365(false);
-
-    sandbox.assert.calledOnce(signOut);
-  });
-
-  it("signOutAzure", async () => {
-    Object.setPrototypeOf(AzureAccountManager, sandbox.stub());
-    const showMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .resolves(undefined);
-    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-
-    await handlers.signOutAzure(false);
-
-    sandbox.assert.calledOnce(showMessageStub);
   });
 
   describe("decryptSecret", function () {
@@ -1839,18 +1736,6 @@ describe("handlers", () => {
     });
   });
 
-  it("refreshSPFxTreeOnFileChanged", () => {
-    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
-    const updateTreeViewsOnSPFxChanged = sandbox
-      .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
-      .resolves();
-
-    handlers.refreshSPFxTreeOnFileChanged();
-
-    chai.expect(initGlobalVariables.calledOnce).to.be.true;
-    chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
-  });
-
   describe("getPathDelimiterHandler", () => {
     it("happy path", async () => {
       const actualPath = await handlers.getPathDelimiterHandler();
@@ -1862,54 +1747,6 @@ describe("handlers", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => {
       sandbox.restore();
-    });
-
-    it("cmpAccountsHandler", async () => {
-      const showMessageStub = sandbox
-        .stub(vscode.window, "showInformationMessage")
-        .resolves(undefined);
-      const M365SignOutStub = sandbox.stub(M365TokenInstance, "signout");
-      sandbox
-        .stub(M365TokenInstance, "getStatus")
-        .resolves(ok({ status: "SignedIn", accountInfo: { upn: "test.email.com" } }));
-      sandbox
-        .stub(AzureAccountManager.prototype, "getStatus")
-        .resolves({ status: "SignedIn", accountInfo: { upn: "test.email.com" } });
-      let changeSelectionCallback: (e: readonly vscode.QuickPickItem[]) => any = () => {};
-      const stubQuickPick = {
-        items: [],
-        onDidChangeSelection: (
-          _changeSelectionCallback: (e: readonly vscode.QuickPickItem[]) => any
-        ) => {
-          changeSelectionCallback = _changeSelectionCallback;
-          return {
-            dispose: () => {},
-          };
-        },
-        onDidHide: () => {
-          return {
-            dispose: () => {},
-          };
-        },
-        show: () => {},
-        hide: () => {},
-        onDidAccept: () => {},
-      };
-      const hideStub = sandbox.stub(stubQuickPick, "hide");
-      sandbox.stub(vscode.window, "createQuickPick").returns(stubQuickPick as any);
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(ok({ result: "unknown" } as any));
-
-      await handlers.cmpAccountsHandler([]);
-      changeSelectionCallback([stubQuickPick.items[1]]);
-
-      for (const i of stubQuickPick.items) {
-        await (i as any).function();
-      }
-
-      chai.assert.isTrue(showMessageStub.calledTwice);
-      chai.assert.isTrue(M365SignOutStub.calledOnce);
-      chai.assert.isTrue(hideStub.calledOnce);
     });
 
     it("updatePreviewManifest", async () => {
@@ -2364,68 +2201,6 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(result.isErr());
   });
 
-  it("registerAccountMenuCommands() - signedinM365", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox
-      .stub(vscode.commands, "registerCommand")
-      .callsFake((command: string, callback: (...args: any[]) => any) => {
-        callback({ contextValue: "signedinM365" }).then(() => {});
-        return {
-          dispose: () => {},
-        };
-      });
-    sandbox.stub(vscode.extensions, "getExtension");
-    const signoutStub = sandbox.stub(M365TokenInstance, "signout");
-
-    await handlers.registerAccountMenuCommands({
-      subscriptions: [],
-    } as unknown as vscode.ExtensionContext);
-
-    chai.assert.isTrue(signoutStub.called);
-  });
-
-  it("registerAccountMenuCommands() - signedinAzure", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox
-      .stub(vscode.commands, "registerCommand")
-      .callsFake((command: string, callback: (...args: any[]) => any) => {
-        callback({ contextValue: "signedinAzure" }).then(() => {});
-        return {
-          dispose: () => {},
-        };
-      });
-    sandbox.stub(vscode.extensions, "getExtension");
-    const showMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .resolves(undefined);
-
-    await handlers.registerAccountMenuCommands({
-      subscriptions: [],
-    } as unknown as vscode.ExtensionContext);
-
-    chai.assert.isTrue(showMessageStub.called);
-  });
-
-  it("registerAccountMenuCommands() - error", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox
-      .stub(vscode.commands, "registerCommand")
-      .callsFake((command: string, callback: (...args: any[]) => any) => {
-        callback({ contextValue: "signedinM365" }).then(() => {});
-        return {
-          dispose: () => {},
-        };
-      });
-    sandbox.stub(vscode.extensions, "getExtension");
-    const signoutStub = sandbox.stub(M365Login.prototype, "signout").throws(new UserCancelError());
-
-    await handlers.registerAccountMenuCommands({
-      subscriptions: [],
-    } as unknown as vscode.ExtensionContext);
-
-    chai.assert.isTrue(signoutStub.called);
-  });
-
   it("openSampleReadmeHandler() - trigger from walkthrough", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
@@ -2673,22 +2448,6 @@ describe("autoOpenProjectHandler", () => {
 
       chai.assert.isFalse(installed);
     });
-  });
-
-  it("signInAzure()", async () => {
-    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
-
-    await handlers.signInAzure();
-
-    chai.assert.isTrue(executeCommandStub.calledOnce);
-  });
-
-  it("signInM365()", async () => {
-    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
-
-    await handlers.signInM365();
-
-    chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
   it("openLifecycleTreeview() - TeamsFx Project", async () => {

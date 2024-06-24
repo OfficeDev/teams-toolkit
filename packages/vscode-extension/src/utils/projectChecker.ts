@@ -5,6 +5,7 @@ import * as path from "path";
 import { MetadataV3, telemetryUtils } from "@microsoft/teamsfx-core";
 import { core, workspaceUri } from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 export async function checkProjectTypeAndSendTelemetry(): Promise<void> {
   if (!workspaceUri?.fsPath) return;
@@ -25,4 +26,20 @@ export function isTestToolEnabledProject(workspacePath: string): boolean {
     return true;
   }
   return false;
+}
+
+export async function isM365Project(workspacePath: string): Promise<boolean> {
+  const projectSettingsPath = path.resolve(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    "configs",
+    "projectSettings.json"
+  );
+
+  if (await fs.pathExists(projectSettingsPath)) {
+    const projectSettings = await fs.readJson(projectSettingsPath);
+    return projectSettings.isM365;
+  } else {
+    return false;
+  }
 }

@@ -3,7 +3,7 @@
 
 import * as util from "util";
 import { window } from "vscode";
-import { Result, FxError, ok, Void, SingleSelectConfig, Inputs } from "@microsoft/teamsfx-api";
+import { Result, FxError, SingleSelectConfig, Inputs } from "@microsoft/teamsfx-api";
 import { wrapError } from "../error/common";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -16,7 +16,7 @@ import { core } from "../globalVariables";
 import VsCodeLogInstance from "../commonlib/log";
 
 export async function manageCollaboratorHandler(env?: string): Promise<Result<any, FxError>> {
-  let result: any = ok(Void);
+  let result: Result<any, FxError>;
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaboratorStart);
 
   try {
@@ -62,7 +62,7 @@ export async function manageCollaboratorHandler(env?: string): Promise<Result<an
 }
 
 export async function grantPermission(env?: string): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(Void);
+  let result: Result<any, FxError>;
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
 
   let inputs: Inputs | undefined;
@@ -94,7 +94,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
 }
 
 export async function listCollaborator(env?: string): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(Void);
+  let result: Result<any, FxError>;
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
   let inputs: Inputs | undefined;

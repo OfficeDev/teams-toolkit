@@ -97,6 +97,11 @@ describe("Open link handlers", () => {
   describe("openExternalHandler", () => {
     it("happy", async () => {
       sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openExternalHandler([{ url: "abc" }]);
+      assert.isTrue(res.isOk());
+    });
+    it("happy", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
       const res = await openExternalHandler([]);
       assert.isTrue(res.isOk());
     });

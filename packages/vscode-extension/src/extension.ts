@@ -142,6 +142,7 @@ import {
   updatePreviewManifest,
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
+import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -358,11 +359,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   );
 
   // Tutorials
-  registerInCommandController(
-    context,
-    "fx-extension.selectTutorials",
-    handlers.selectTutorialsHandler
-  );
+  registerInCommandController(context, "fx-extension.selectTutorials", selectTutorialsHandler);
 
   // Sign in to M365
   registerInCommandController(context, CommandKeys.SigninM365, handlers.signinM365Callback);
@@ -458,10 +455,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openSurveyCmd);
 
   const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
-    Correlator.run(handlers.openTutorialHandler, [
-      TelemetryTriggerFrom.QuickPick,
-      ...(args as unknown[]),
-    ])
+    Correlator.run(openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...(args as unknown[])])
   );
   context.subscriptions.push(openTutorial);
 

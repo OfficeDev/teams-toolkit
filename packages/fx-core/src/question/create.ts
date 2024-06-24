@@ -39,7 +39,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "../component/driver/teamsApp/utils/utils";
-import { listOperations } from "../component/generator/copilotPlugin/helper";
+import { listOperations } from "../component/generator/apiSpec/helper";
 import {
   IOfficeAddinHostConfig,
   OfficeAddinProjectConfig,

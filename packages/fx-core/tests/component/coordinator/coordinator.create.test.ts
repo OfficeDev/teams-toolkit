@@ -10,7 +10,7 @@ import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import { OpenAPISpecGenerator } from "../../../src/component/generator/apiSpec/generator";
 import { Generator } from "../../../src/component/generator/generator";
 import {
   OfficeAddinGenerator,
@@ -678,7 +678,7 @@ const V3Version = MetadataV3.projectVersion;
       v3ctx.userInteraction = new MockedUserInteraction();
 
       sandbox
-        .stub(CopilotPluginGenerator, "generateMeFromApiSpec")
+        .stub(OpenAPISpecGenerator, "generateMe")
         .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
       const inputs: Inputs = {
@@ -789,7 +789,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.LLMService]: "llm-service-openAI",
         [QuestionNames.OpenAIKey]: "mockedopenaikey",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(OpenAPISpecGenerator, "generateCustomCopilot").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -818,7 +818,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(OpenAPISpecGenerator, "generateCustomCopilot").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -846,7 +846,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(OpenAPISpecGenerator, "generateCustomCopilot").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -874,7 +874,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.OpenAIKey]: "mockedopenaikey",
       };
       sandbox
-        .stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi")
+        .stub(OpenAPISpecGenerator, "generateCustomCopilot")
         .resolves(err(new SystemError("test", "test", "test")));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
@@ -1140,7 +1140,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
+      .stub(OpenAPISpecGenerator, "generateCopilotPlugin")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -1160,7 +1160,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
+      .stub(OpenAPISpecGenerator, "generateCopilotPlugin")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
 
     const inputs: Inputs = {

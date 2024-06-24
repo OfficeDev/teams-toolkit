@@ -459,7 +459,7 @@ export async function initTeamsPage(
           try {
             // select 2nd li item
             const items = await page?.waitForSelector(
-              "li.ui-dropdown__item::nth-child(2)"
+              "li.ui-dropdown__item:nth-child(2)"
             );
             await items?.click();
             console.log("selected a team.");
@@ -471,7 +471,7 @@ export async function initTeamsPage(
             await page.waitForTimeout(Timeout.shortTimeLoading);
             // select 2nd li item
             const items = await page?.waitForSelector(
-              "li.ui-dropdown__item::nth-child(2)"
+              "li.ui-dropdown__item:nth-child(2)"
             );
             await items?.click();
             console.log("[catch] selected a team.");

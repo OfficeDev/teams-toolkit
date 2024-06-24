@@ -133,6 +133,12 @@ import { showError } from "./error/common";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { signOutM365, signOutAzure } from "./utils/accountUtils";
 import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
+import {
+  buildPackageHandler,
+  publishInDeveloperPortalHandler,
+  updatePreviewManifest,
+  validateManifestHandler,
+} from "./handlers/manifestHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -547,12 +553,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   registerInCommandController(context, CommandKeys.Provision, provisionHandler, "provision");
 
   // Zip Teams metadata package
-  registerInCommandController(
-    context,
-    "fx-extension.build",
-    handlers.buildPackageHandler,
-    "buildPackage"
-  );
+  registerInCommandController(context, "fx-extension.build", buildPackageHandler, "buildPackage");
 
   // Deploy to the cloud
   registerInCommandController(context, CommandKeys.Deploy, deployHandler, "deploy");
@@ -564,7 +565,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     "fx-extension.publishInDeveloperPortal",
-    handlers.publishInDeveloperPortalHandler,
+    publishInDeveloperPortalHandler,
     "publishInDeveloperPortal"
   );
 
@@ -596,13 +597,13 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",
-    (...args) => Correlator.run(handlers.updatePreviewManifest, args)
+    (...args) => Correlator.run(updatePreviewManifest, args)
   );
   context.subscriptions.push(updateManifestCmd);
 
   const validateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.validateManifest",
-    (...args) => Correlator.run(handlers.validateManifestHandler, args)
+    (...args) => Correlator.run(validateManifestHandler, args)
   );
   context.subscriptions.push(validateManifestCmd);
 

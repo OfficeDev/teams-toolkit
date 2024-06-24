@@ -16,9 +16,11 @@ import { autoOpenProjectHandler } from "../../src/handlers/autoOpenProjectHandle
 
 describe("autoOpenProjectHandler", () => {
   const sandbox = sinon.createSandbox();
+
   afterEach(() => {
     sandbox.restore();
   });
+
   it("opens walk through", async () => {
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "fx-extension.openWalkThrough") {

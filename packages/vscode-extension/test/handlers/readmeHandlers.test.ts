@@ -11,116 +11,128 @@ import { WebviewPanel } from "../../src/controls/webviewPanel";
 import { openReadMeHandler, openSampleReadmeHandler } from "../../src/handlers/readmeHandlers";
 
 describe("readmeHandlers", () => {
-  const sandbox = sinon.createSandbox();
+  describe("openReadMeHandler", () => {
+    const sandbox = sinon.createSandbox();
 
-  afterEach(() => {
-    sandbox.restore();
-  });
+    afterEach(() => {
+      sandbox.restore();
+    });
 
-  it("openReadMeHandler", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
-    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
-    sandbox
-      .stub(vscode.workspace, "workspaceFolders")
-      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
-    sandbox.stub(fs, "pathExists").resolves(true);
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any as vscode.TextDocument);
+    it("Happy Path", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+      sandbox
+        .stub(vscode.workspace, "workspaceFolders")
+        .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      const openTextDocumentStub = sandbox
+        .stub(vscode.workspace, "openTextDocument")
+        .resolves({} as any as vscode.TextDocument);
 
-    await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+      await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
 
-    chai.assert.isTrue(openTextDocumentStub.calledOnce);
-    chai.assert.isTrue(executeCommands.calledOnce);
-  });
+      chai.assert.isTrue(openTextDocumentStub.calledOnce);
+      chai.assert.isTrue(executeCommands.calledOnce);
+    });
 
-  it("openReadMeHandler - create project", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
-    sandbox.stub(globalVariables, "core").value(undefined);
-    const showMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .callsFake(
-        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
-          return Promise.resolve({
-            title: "Yes",
-            run: (options as any).run,
-          } as vscode.MessageItem);
-        }
+    it("Create Project", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
+      sandbox.stub(globalVariables, "core").value(undefined);
+      const showMessageStub = sandbox
+        .stub(vscode.window, "showInformationMessage")
+        .callsFake(
+          (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+            return Promise.resolve({
+              title: "Yes",
+              run: (options as any).run,
+            } as vscode.MessageItem);
+          }
+        );
+      await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+      chai.assert.isTrue(showMessageStub.calledOnce);
+    });
+
+    it("Open Folder", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
+      sandbox.stub(globalVariables, "core").value(undefined);
+      const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+      const showMessageStub = sandbox
+        .stub(vscode.window, "showInformationMessage")
+        .callsFake(
+          (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+            return Promise.resolve({
+              title: "Yes",
+              run: (items[0] as any).run,
+            } as vscode.MessageItem);
+          }
+        );
+      await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+      chai.assert.isTrue(executeCommandStub.calledOnce);
+    });
+
+    it("Function Notification Bot Template", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
+        .stub(vscode.workspace, "workspaceFolders")
+        .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+      sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox
+        .stub(fs, "readFile")
+        .resolves(Buffer.from("## Get Started with the Notification bot"));
+      const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+
+      await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+      sandbox.assert.calledOnceWithExactly(
+        createOrShow,
+        PanelType.FunctionBasedNotificationBotReadme
       );
-    await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+    });
 
-    chai.assert.isTrue(showMessageStub.calledOnce);
-  });
+    it("Restify Notification Bot Template", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
+        .stub(vscode.workspace, "workspaceFolders")
+        .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+      sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox
+        .stub(fs, "readFile")
+        .resolves(Buffer.from("## Get Started with the Notification bot restify"));
+      const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
 
-  it("openReadMeHandler - open folder", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
-    sandbox.stub(globalVariables, "core").value(undefined);
-    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
-    const showMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .callsFake(
-        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
-          return Promise.resolve({
-            title: "Yes",
-            run: (items[0] as any).run,
-          } as vscode.MessageItem);
-        }
+      await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+      sandbox.assert.calledOnceWithExactly(
+        createOrShow,
+        PanelType.RestifyServerNotificationBotReadme
       );
-    await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
-
-    chai.assert.isTrue(executeCommandStub.calledOnce);
+    });
   });
 
-  it("openReadMeHandler - function notification bot template", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
-    sandbox
-      .stub(vscode.workspace, "workspaceFolders")
-      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
-    sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readFile").resolves(Buffer.from("## Get Started with the Notification bot"));
-    const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+  describe("openSampleReadmeHandler", () => {
+    const sandbox = sinon.createSandbox();
 
-    await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+    afterEach(() => {
+      sandbox.restore();
+    });
 
-    sandbox.assert.calledOnceWithExactly(
-      createOrShow,
-      PanelType.FunctionBasedNotificationBotReadme
-    );
-  });
+    it("Trigger from Walkthrough", async () => {
+      sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+      sandbox.stub(vscode.workspace, "openTextDocument");
+      const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
 
-  it("openReadMeHandler - restify notification bot template", async () => {
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
-    sandbox
-      .stub(vscode.workspace, "workspaceFolders")
-      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
-    sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox
-      .stub(fs, "readFile")
-      .resolves(Buffer.from("## Get Started with the Notification bot restify"));
-    const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+      await openSampleReadmeHandler(["WalkThrough"]);
 
-    await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
-
-    sandbox.assert.calledOnceWithExactly(
-      createOrShow,
-      PanelType.RestifyServerNotificationBotReadme
-    );
-  });
-
-  it("openSampleReadmeHandler() - trigger from walkthrough", async () => {
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
-    sandbox.stub(vscode.workspace, "openTextDocument");
-    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
-
-    await openSampleReadmeHandler(["WalkThrough"]);
-
-    chai.assert.isTrue(executeCommandStub.calledOnce);
+      chai.assert.isTrue(executeCommandStub.calledOnce);
+    });
   });
 });

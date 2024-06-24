@@ -6,13 +6,26 @@ import * as vsc_ui from "../../src/qm/vsc_ui";
 import { MockCore } from "../mocks/mockCore";
 import { ok, err, UserError } from "@microsoft/teamsfx-api";
 import { CollaborationState } from "@microsoft/teamsfx-core";
-import { VsCodeLogProvider } from "../../src/commonlib/log";
+import VsCodeLogInstance from "../../src/commonlib/log";
 import { manageCollaboratorHandler } from "../../src/handlers/collaboratorHandlers";
 
-describe("permission v3", function () {
+describe("manageCollaboratorHandler", () => {
   const sandbox = sinon.createSandbox();
 
-  this.afterEach(() => {
+  beforeEach(() => {
+    sandbox.stub(VsCodeLogInstance, "outputChannel").value({
+      name: "name",
+      append: (value: string) => {},
+      appendLine: (value: string) => {},
+      replace: (value: string) => {},
+      clear: () => {},
+      show: (...params: any[]) => {},
+      hide: () => {},
+      dispose: () => {},
+    });
+  });
+
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -65,17 +78,6 @@ describe("permission v3", function () {
         })
       )
     );
-    const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
-    sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
-      name: "name",
-      append: (value: string) => {},
-      appendLine: (value: string) => {},
-      replace: (value: string) => {},
-      clear: () => {},
-      show: (...params: any[]) => {},
-      hide: () => {},
-      dispose: () => {},
-    });
 
     const result = await manageCollaboratorHandler("env");
     chai.expect(result.isOk()).equals(true);
@@ -87,17 +89,6 @@ describe("permission v3", function () {
       selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
     });
     sandbox.stub(MockCore.prototype, "listCollaborator").throws(new Error("Error"));
-    const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
-    sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
-      name: "name",
-      append: (value: string) => {},
-      appendLine: (value: string) => {},
-      replace: (value: string) => {},
-      clear: () => {},
-      show: (...params: any[]) => {},
-      hide: () => {},
-      dispose: () => {},
-    });
 
     const result = await manageCollaboratorHandler("env");
     chai.expect(result.isErr()).equals(true);
@@ -112,17 +103,6 @@ describe("permission v3", function () {
     sandbox
       .stub(MockCore.prototype, "listCollaborator")
       .throws(new Error("Cannot get user login information"));
-    const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
-    sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
-      name: "name",
-      append: (value: string) => {},
-      appendLine: (value: string) => {},
-      replace: (value: string) => {},
-      clear: () => {},
-      show: (...params: any[]) => {},
-      hide: () => {},
-      dispose: () => {},
-    });
 
     const result = await manageCollaboratorHandler("env");
     chai.expect(result.isErr()).equals(true);

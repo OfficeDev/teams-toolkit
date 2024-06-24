@@ -238,7 +238,7 @@ export class AadAppClient {
       }
       for (const appInstallation of appInstallationResponse.value) {
         if (appInstallation.teamsApp?.id && appInstallation.teamsApp?.externalId === manifestId) {
-          return ok(appInstallation.teamsApp.id);
+          return ok(appInstallation.id);
         }
       }
       return err(assembleError(new Error("No installation found"), "getInstallationID"));

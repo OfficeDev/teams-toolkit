@@ -318,11 +318,11 @@ export class FxCore {
   async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
     switch (inputs["uninstall-mode"]) {
       case "uninstall-mode-manifest-id":
-        return this.uninstallByManifestId(inputs);
+        return await this.uninstallByManifestId(inputs);
       case "uninstall-mode-env":
-        return this.uninstallByEnv(inputs);
+        return await this.uninstallByEnv(inputs);
       case "uninstall-mode-title-id":
-        return this.uninstallByTitleId(inputs);
+        return await this.uninstallByTitleId(inputs);
       default:
         return err(new UnhandledError(new Error("Uninstall mode not supported"), "FxCore"));
     }
@@ -501,7 +501,7 @@ export class FxCore {
           false
         );
         if (manifestId) {
-          return this.uninstallTeamsApp(manifestId);
+          return await this.uninstallTeamsApp(manifestId);
         }
         throw assembleError(err);
       }

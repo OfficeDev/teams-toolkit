@@ -146,16 +146,6 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
   return ok(null);
 }
 
-export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.ValidateManifestStart,
-    getTriggerFromProperty(args)
-  );
-
-  const inputs = getSystemInputs();
-  return await runCommand(Stage.validateApplication, inputs);
-}
-
 /**
  * Ask user to select environment, local is included
  */
@@ -179,118 +169,6 @@ export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   } else {
     return ok(selectedEnv.value.result as string);
   }
-}
-
-export async function buildPackageHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.createAppPackage);
-}
-
-let lastAppPackageFile: string | undefined;
-
-export async function publishInDeveloperPortalHandler(
-  ...args: unknown[]
-): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.PublishInDeveloperPortalStart,
-    getTriggerFromProperty(args)
-  );
-  const workspacePath = workspaceUri?.fsPath;
-  const zipDefaultFolder: string | undefined = path.join(
-    workspacePath!,
-    BuildFolderName,
-    AppPackageFolderName
-  );
-
-  let files: string[] = [];
-  if (await fs.pathExists(zipDefaultFolder)) {
-    files = await fs.readdir(zipDefaultFolder);
-    files = files
-      .filter((file) => path.extname(file).toLowerCase() === ".zip")
-      .map((file) => {
-        return path.join(zipDefaultFolder, file);
-      });
-  }
-  while (true) {
-    const selectFileConfig: SelectFileConfig = {
-      name: "appPackagePath",
-      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
-      placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
-      filters: {
-        "Zip files": ["zip"],
-      },
-    };
-    if (lastAppPackageFile && fs.existsSync(lastAppPackageFile)) {
-      selectFileConfig.default = lastAppPackageFile;
-    } else {
-      selectFileConfig.possibleFiles = files.map((file) => {
-        const appPackageFilename = path.basename(file);
-        const appPackageFilepath = path.dirname(file);
-        return {
-          id: file,
-          label: `$(file) ${appPackageFilename}`,
-          description: appPackageFilepath,
-        };
-      });
-    }
-    const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
-    if (selectFileResult.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PublishInDeveloperPortal,
-        selectFileResult.error,
-        getTriggerFromProperty(args)
-      );
-      return ok(null);
-    }
-    if (
-      (lastAppPackageFile && selectFileResult.value.result === lastAppPackageFile) ||
-      (!lastAppPackageFile && files.indexOf(selectFileResult.value.result!) !== -1)
-    ) {
-      // user selected file in options
-      lastAppPackageFile = selectFileResult.value.result;
-      break;
-    }
-    // final confirmation
-    lastAppPackageFile = selectFileResult.value.result!;
-    const appPackageFilename = path.basename(lastAppPackageFile);
-    const appPackageFilepath = path.dirname(lastAppPackageFile);
-    const confirmOption: SingleSelectConfig = {
-      options: [
-        {
-          id: "yes",
-          label: `$(file) ${appPackageFilename}`,
-          description: appPackageFilepath,
-        },
-      ],
-      name: "confirm",
-      title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
-      placeholder: localize("teamstoolkit.publishInDevPortal.confirmFile.placeholder"),
-      step: 2,
-    };
-    const confirm = await VS_CODE_UI.selectOption(confirmOption);
-    if (confirm.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.PublishInDeveloperPortal,
-        confirm.error,
-        getTriggerFromProperty(args)
-      );
-      return ok(null);
-    }
-    if (confirm.value.type === "success") {
-      break;
-    }
-  }
-  const inputs = getSystemInputs();
-  inputs["appPackagePath"] = lastAppPackageFile;
-  const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
-  if (res.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.PublishInDeveloperPortal,
-      res.error,
-      getTriggerFromProperty(args)
-    );
-  }
-  return res;
 }
 
 export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
@@ -852,45 +730,6 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
   ExtTelemetry.sendTelemetryEvent(telemetryName, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
-}
-
-export async function updatePreviewManifest(args: any[]): Promise<any> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.UpdatePreviewManifestStart,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-  let env: string | undefined;
-  if (args && args.length > 0) {
-    const filePath = args[0].fsPath as string;
-    if (!filePath.endsWith("manifest.template.json")) {
-      const envReg = /manifest\.(\w+)\.json$/;
-      const result = envReg.exec(filePath);
-      if (result && result.length >= 2) {
-        env = result[1];
-      }
-    }
-  }
-
-  const inputs = getSystemInputs();
-  const result = await runCommand(Stage.deployTeams, inputs);
-
-  if (!args || args.length === 0) {
-    const workspacePath = workspaceUri?.fsPath;
-    const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = true;
-    const env = await core.getSelectedEnv(inputs);
-    if (env.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
-      return err(env.error);
-    }
-    const manifestPath = `${
-      workspacePath as string
-    }/${AppPackageFolderName}/${BuildFolderName}/manifest.${env.value as string}.json`;
-    void vscode.workspace.openTextDocument(manifestPath).then((document) => {
-      void vscode.window.showTextDocument(document);
-    });
-  }
-  return result;
 }
 
 export async function copilotPluginAddAPIHandler(args: any[]) {

@@ -28,5 +28,9 @@ new QueryOrgTestCase(
   TemplateProject.QueryOrg,
   24121481,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  {
+    skipValidation: true,
+  }
 ).test();

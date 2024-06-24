@@ -469,10 +469,7 @@ export async function initTeamsPage(
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
-            // select 2nd li item
-            const items = await page?.waitForSelector(
-              "li.ui-dropdown__item:nth-child(2)"
-            );
+            const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
           }

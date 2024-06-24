@@ -97,6 +97,7 @@ import {
   openDocumentHandler,
   openDocumentLinkHandler,
   openEnvLinkHandler,
+  openExternalHandler,
   openHelpFeedbackLinkHandler,
   openLifecycleLinkHandler,
   openM365AccountHandler,
@@ -143,6 +144,7 @@ import {
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
 import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
+import { createNewEnvironment, refreshEnvironment } from "./handlers/envHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -579,12 +581,12 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
  * TeamsFx related commands, they will show in command palette after extension is initialized
  */
 function registerTeamsFxCommands(context: vscode.ExtensionContext) {
-  const createNewEnvironment = vscode.commands.registerCommand(
+  const handler = vscode.commands.registerCommand(
     // TODO: fix trigger from
     "fx-extension.addEnvironment",
-    (...args) => Correlator.run(handlers.createNewEnvironment, args)
+    (...args) => Correlator.run(createNewEnvironment, args)
   );
-  context.subscriptions.push(createNewEnvironment);
+  context.subscriptions.push(handler);
 
   const updateAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.updateAadAppManifest",
@@ -651,8 +653,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 function registerMenuCommands(context: vscode.ExtensionContext) {
   const createNewEnvironmentWithIcon = vscode.commands.registerCommand(
     "fx-extension.addEnvironmentWithIcon",
-    (...args) =>
-      Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createNewEnvironmentWithIcon);
 
@@ -765,7 +766,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   const openManifestSchemaCmd = vscode.commands.registerCommand(
     "fx-extension.openSchema",
     async (...args) => {
-      await Correlator.run(handlers.openExternalHandler, args);
+      await Correlator.run(openExternalHandler, args);
     }
   );
   context.subscriptions.push(openManifestSchemaCmd);
@@ -793,12 +794,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     handlers.treeViewPreviewHandler
   );
 
-  const refreshEnvironment = vscode.commands.registerCommand(
+  const refreshEnvironmentH = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
-    (...args) =>
-      Correlator.run(handlers.refreshEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(refreshEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
-  context.subscriptions.push(refreshEnvironment);
+  context.subscriptions.push(refreshEnvironmentH);
 
   const refreshSideloading = vscode.commands.registerCommand(
     "fx-extension.refreshSideloading",

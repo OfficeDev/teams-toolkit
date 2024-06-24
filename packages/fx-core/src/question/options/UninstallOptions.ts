@@ -46,7 +46,7 @@ export const UninstallOptions: CLICommandOption[] = [
     ],
   },
   {
-    name: "titile-id",
+    name: "title-id",
     type: "string",
     description: "Title ID",
   },

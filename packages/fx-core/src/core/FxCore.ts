@@ -490,12 +490,16 @@ export class FxCore {
     }
     const confirmRes = await TOOLS.ui.confirm?.({
       name: "uninstallM365App",
-      title: getLocalizedString("core.uninstall.confirm.m365App", manifestId),
+      title: getLocalizedString("core.uninstall.confirm.m365App", titleId),
       default: false,
     });
     if (confirmRes?.isOk() && confirmRes.value.result === true) {
       await packageService.unacquire(sideloadingTokenRes.value, titleId);
-      // todo: add uninstall summary
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.success.m365App", titleId),
+        false
+      );
     } else {
       await TOOLS.ui.showMessage(
         "info",
@@ -529,6 +533,11 @@ export class FxCore {
     if (confirmRes?.isOk() && confirmRes.value.result === true) {
       const token = appStudioTokenRes.value;
       await teamsDevPortalClient.deleteApp(token, manifestId);
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.success.tdp", manifestId),
+        false
+      );
       return ok(undefined);
     } else {
       await TOOLS.ui.showMessage(
@@ -576,6 +585,11 @@ export class FxCore {
     });
     if (confirmRes?.isOk() && confirmRes.value.result === true) {
       await teamsDevPortalClient.deleteBot(token, botId);
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.success.bot", botId),
+        false
+      );
     } else {
       await TOOLS.ui.showMessage(
         "info",

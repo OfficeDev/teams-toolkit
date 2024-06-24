@@ -28,5 +28,5 @@ export interface UninstallInputs extends Inputs {
     | "uninstall-option-app-registration"
     | "uninstall-option-bot-framework-registration"[];
   /** @description Title ID */
-  "titile-id"?: string;
+  "title-id"?: string;
 }

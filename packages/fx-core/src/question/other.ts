@@ -928,7 +928,7 @@ export function uninstallQuestionNode(): IQTreeNode {
           {
             data: {
               type: "text",
-              name: "titile-id",
+              name: "title-id",
               title: "Title ID",
             },
             condition: (input: UninstallInputs) => {

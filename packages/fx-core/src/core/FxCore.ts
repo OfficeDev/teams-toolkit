@@ -143,7 +143,12 @@ import { createProjectCliHelpNode } from "../question/create";
 import { ValidateTeamsAppInputs } from "../question/inputs/ValidateTeamsAppInputs";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
 import { CallbackRegistry, CoreCallbackFunc } from "./callback";
-import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
+import {
+  CollaborationUtil,
+  checkPermission,
+  grantPermission,
+  listCollaborator,
+} from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -413,9 +418,8 @@ export class FxCore {
       ctx.envVars = {};
     }
 
-    // todo: if a app does not have entends to M365 action, do we still need to uninstall the sideloaded apps?
-    if (teamsAppId && m365TitleId && m356AppOption) {
-      const res = await this.uninstallM365App(m365TitleId);
+    if ((teamsAppId || m365TitleId) && m356AppOption) {
+      const res = await this.uninstallM365App(m365TitleId, teamsAppId);
       if (res.isErr()) {
         return err(res.error);
       } else if (ctx && ctx.envVars) {
@@ -486,7 +490,20 @@ export class FxCore {
     }
     const packageService = new PackageService(sideloadingServiceEndpoint, TOOLS.logProvider);
     if (titleId === undefined) {
-      titleId = await packageService.retrieveTitleId(sideloadingTokenRes.value, manifestId ?? "");
+      // If we failed to get the titleId, we will call graph API and only uninstall the sideloaded Teams app.
+      try {
+        titleId = await packageService.retrieveTitleId(sideloadingTokenRes.value, manifestId ?? "");
+      } catch (err: any) {
+        await TOOLS.ui.showMessage(
+          "info",
+          getLocalizedString("core.uninstall.failed.titleId"),
+          false
+        );
+        if (manifestId) {
+          return this.uninstallTeamsApp(manifestId);
+        }
+        throw assembleError(err);
+      }
     }
     const confirmRes = await TOOLS.ui.confirm?.({
       name: "uninstallM365App",
@@ -579,7 +596,7 @@ export class FxCore {
       botId = botIdRes;
     }
     const confirmRes = await TOOLS.ui.confirm?.({
-      name: "uninstallAppRegistration",
+      name: "uninstallBotFrameworRegistration",
       title: getLocalizedString("core.uninstall.confirm.bot", botId),
       default: false,
     });
@@ -600,6 +617,48 @@ export class FxCore {
     return ok(undefined);
   }
 
+  /**
+   * uninstall sideloaded Teams app
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "uninstallTeamsApp", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async uninstallTeamsApp(manifestId: string): Promise<Result<undefined, FxError>> {
+    const userRes = await CollaborationUtil.getUserInfo(TOOLS.tokenProvider.m365TokenProvider);
+    if (!userRes || !userRes.aadId) {
+      const msg = "Failed to get user info";
+      return err(new UserError("FxCore", "uninstallTeamsApp", msg, msg));
+    }
+    const userId = userRes.aadId;
+    const aadClient = new AadAppClient(TOOLS.tokenProvider.m365TokenProvider);
+    const res = await aadClient.getInstallationID(userId, manifestId);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    const installationId = res.value;
+
+    const confirmRes = await TOOLS.ui.confirm?.({
+      name: "uninstallTeamsApp",
+      title: getLocalizedString("core.uninstall.confirm.teams", manifestId),
+      default: false,
+    });
+    if (confirmRes?.isOk() && confirmRes.value.result === true) {
+      await aadClient.uninstallTeamsApp(userId, installationId);
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.success.teams", manifestId),
+        false
+      );
+    } else {
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.confirm.cancel.teams"),
+        false
+      );
+    }
+    return ok(undefined);
+  }
   /**
    * lifecycle commands: deploy
    */

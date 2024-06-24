@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
 import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from "axios";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import { GraphScopes } from "../../../../common/constants";
@@ -15,12 +15,14 @@ import {
 } from "../error/aadManifestError";
 import { ClientSecretNotAllowedError } from "../error/clientSecretNotAllowedError";
 import { CredentialInvalidLifetimeError } from "../error/credentialInvalidLifetimeError";
-import { AADApplication } from "../interface/AADApplication";
+import { AADApplication, AppInstallationResponse } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { aadErrorCode } from "./constants";
+import { FxCore } from "../../../../core/FxCore";
+import { assembleError } from "../../../../error";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 
@@ -221,7 +223,33 @@ export class AadAppClient {
       },
     });
   }
-
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
+  public async getInstallationID(
+    userId: string,
+    manifestId: string
+  ): Promise<Result<string, FxError>> {
+    try {
+      const response = await this.axios.get(
+        `users/${userId}/teamwork/installedApps?$expand=teamsAppDefinition,teamsApp`
+      );
+      const appInstallationResponse = <AppInstallationResponse>response.data;
+      if (!appInstallationResponse?.value || appInstallationResponse.value?.length === 0) {
+        return err(assembleError(new Error("No installation found"), "getInstallationID"));
+      }
+      for (const appInstallation of appInstallationResponse.value) {
+        if (appInstallation.teamsApp?.id && appInstallation.teamsApp?.externalId === manifestId) {
+          return ok(appInstallation.teamsApp.id);
+        }
+      }
+      return err(assembleError(new Error("No installation found"), "getInstallationID"));
+    } catch (error: any) {
+      return err(assembleError(error, "getInstallationID"));
+    }
+  }
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
+  public async uninstallTeamsApp(userId: string, installationId: string): Promise<void> {
+    await Promise.resolve();
+  }
   // only use it to retry 404 errors for create client secret / update Microsoft Entra app requests right after Microsoft Entra app creation
   private is404Error(error: AxiosError<any>): boolean {
     return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 404);

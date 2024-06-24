@@ -88,7 +88,11 @@ export function getAppStudioEndpoint(): string {
 }
 
 export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
-export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
+export const GraphScopes = [
+  "Application.ReadWrite.All",
+  "TeamsAppInstallation.ReadForUser",
+  "TeamsAppInstallation.ReadWriteSelfForUser",
+];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
 export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];

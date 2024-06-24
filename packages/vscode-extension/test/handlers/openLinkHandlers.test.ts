@@ -14,6 +14,7 @@ import {
   openAccountLinkHandler,
   openReportIssues,
   openDocumentHandler,
+  openExternalHandler,
 } from "../../src/handlers/openLinkHandlers";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
@@ -90,6 +91,13 @@ describe("Open link handlers", () => {
     it("happy", async () => {
       sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
       const res = await openReportIssues([]);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("openExternalHandler", () => {
+    it("happy", async () => {
+      sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+      const res = await openExternalHandler([]);
       assert.isTrue(res.isOk());
     });
   });

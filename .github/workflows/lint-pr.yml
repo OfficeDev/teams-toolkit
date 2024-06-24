@@ -165,17 +165,16 @@ jobs:
           python .github/detect/sensitive-detect.py diff
 
   schedule-check-sensitive-content:
-    if: ${{ github.event_name == 'schedule' && (github.ref == 'refs/heads/dev'|| github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ga') }}
+    if: ${{ (github.event_name == 'schedule' && (github.ref == 'refs/heads/dev'|| github.ref == 'refs/heads/main')) || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
-      - name: checkout branch
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.CD_PAT }}
-          ref: ${{ github.ref }}
-      - name: check content
-        run: |
-          python .github/detect/sensitive-detect.py repo
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE}}
 
   attension-on-version:
     if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}

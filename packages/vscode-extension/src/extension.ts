@@ -133,6 +133,9 @@ import { showError } from "./error/common";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { signOutM365, signOutAzure } from "./utils/accountUtils";
 import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
+import { openReadMeHandler } from "./handlers/readmeHandlers";
+import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
+import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
@@ -341,7 +344,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(context, CommandKeys.OpenDocument, openDocumentHandler);
 
   // README
-  registerInCommandController(context, CommandKeys.OpenReadMe, handlers.openReadMeHandler);
+  registerInCommandController(context, CommandKeys.OpenReadMe, openReadMeHandler);
 
   // View samples
   registerInCommandController(context, CommandKeys.OpenSamples, handlers.openSamplesHandler);
@@ -675,7 +678,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     "fx-extension.manageCollaborator",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.manageCollaboratorHandler, envName);
+      await Correlator.run(manageCollaboratorHandler, envName);
     }
   );
   context.subscriptions.push(manageCollaborator);
@@ -1219,7 +1222,7 @@ async function runBackgroundAsyncTasks(
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
   if (isTeamsFxProject) {
-    await handlers.autoOpenProjectHandler();
+    await autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   }
 }

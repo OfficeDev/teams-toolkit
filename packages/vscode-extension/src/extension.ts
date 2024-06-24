@@ -129,6 +129,10 @@ import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/project
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { showError } from "./error/common";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
+import { signOutM365, signOutAzure } from "./utils/accountUtils";
+import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -214,7 +218,7 @@ export async function activate(context: vscode.ExtensionContext) {
 export async function deactivate() {
   await ExtTelemetry.cacheTelemetryEventAsync(TelemetryEvent.Deactivate);
   await ExtTelemetry.dispose();
-  handlers.cmdHdlDisposeTreeView();
+  TreeViewManagerInstance.dispose();
   await disableRunIcon();
 }
 
@@ -224,7 +228,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   registerTreeViewCommandsInHelper(context);
   registerTeamsFxCommands(context);
   registerMenuCommands(context);
-  handlers.registerAccountMenuCommands(context);
+  registerAccountMenuCommands(context);
 
   TreeViewManagerInstance.registerTreeViews(context);
   accountTreeViewProviderInstance.subscribeToStatusChanges({
@@ -292,7 +296,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // user can manage account in non-teamsfx project
   const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", (...args) =>
-    Correlator.run(handlers.cmpAccountsHandler, args)
+    Correlator.run(cmpAccountsHandler, args)
   );
   context.subscriptions.push(cmpAccountsCmd);
 
@@ -662,8 +666,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const createAccountCmd = vscode.commands.registerCommand(
     "fx-extension.createAccount",
-    (...args) =>
-      Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createAccountCmd);
 
@@ -898,6 +901,32 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(officeDevHandlers.openReportIssues, args)
   );
   context.subscriptions.push(reportIssueCmd);
+}
+
+function registerAccountMenuCommands(context: vscode.ExtensionContext) {
+  // Register SignOut tree view command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
+      try {
+        switch (node.contextValue) {
+          case "signedinM365": {
+            await Correlator.run(async () => {
+              await signOutM365(true);
+            });
+            break;
+          }
+          case "signedinAzure": {
+            await Correlator.run(async () => {
+              await signOutAzure(true);
+            });
+            break;
+          }
+        }
+      } catch (e) {
+        void showError(e as FxError);
+      }
+    })
+  );
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {

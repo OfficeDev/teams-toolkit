@@ -802,7 +802,7 @@ describe("codeGenerator", () => {
     });
 
     sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
-      spec: "some host",
+      spec: "some host 1. point 1. 2. point 2.",
       funcs: ["some data"],
     });
     sandbox.stub(codeGenerator, "generateCode").resolves("code sample");

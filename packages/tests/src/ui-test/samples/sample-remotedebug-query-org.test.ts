@@ -15,11 +15,11 @@ import { SampledebugContext } from "./sampledebugContext";
 class QueryOrgTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    option?: { displayName: string; options?: { context: SampledebugContext } }
+    options?: { context: SampledebugContext }
   ): Promise<void> {
     return await validateQueryOrg(page, {
       displayName: Env.displayName,
-      appName: option?.options?.context.appName.substring(0, 10) || "",
+      appName: options?.context.appName.substring(0, 10) || "",
     });
   }
 }
@@ -28,9 +28,5 @@ new QueryOrgTestCase(
   TemplateProject.QueryOrg,
   24121481,
   "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  {
-    skipValidation: true,
-  }
+  "dev"
 ).test();

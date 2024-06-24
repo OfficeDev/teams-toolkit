@@ -423,6 +423,7 @@ export class FxCore {
       if (res.isErr()) {
         return err(res.error);
       } else if (ctx && ctx.envVars) {
+        ctx.envVars[teamsAppIdKeyName] = "";
         ctx.envVars[m365TitleIdKeyName] = "";
       }
     }

@@ -2690,7 +2690,10 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       console.log("check result...");
-      const spfxFrame = await page.waitForSelector("div#app");
+      const frameElementHandle = await page.waitForSelector(
+        `iframe[name="embedded-page-container"]`
+      );
+      const spfxFrame = await frameElementHandle?.contentFrame();
       // title
       console.log("check title");
       const title = await spfxFrame?.waitForSelector(

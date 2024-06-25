@@ -163,3 +163,11 @@ export async function openDocumentHandler(...args: unknown[]): Promise<Result<bo
   }
   return VS_CODE_UI.openUrl(url);
 }
+
+export async function openExternalHandler(args?: any[]) {
+  if (args && args.length > 0) {
+    const url = (args[0] as { url: string }).url;
+    return VS_CODE_UI.openUrl(url);
+  }
+  return ok(false);
+}

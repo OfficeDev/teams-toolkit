@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, LogProvider, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from "axios";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import { GraphScopes } from "../../../../common/constants";
@@ -15,7 +15,7 @@ import {
 } from "../error/aadManifestError";
 import { ClientSecretNotAllowedError } from "../error/clientSecretNotAllowedError";
 import { CredentialInvalidLifetimeError } from "../error/credentialInvalidLifetimeError";
-import { AADApplication, AppInstallationResponse } from "../interface/AADApplication";
+import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";

@@ -38,7 +38,6 @@ import * as vscode from "vscode";
 import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
-import { AzurePortalUrl } from "./constants";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
 import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
@@ -660,7 +659,7 @@ export async function signinM365Callback(...args: unknown[]): Promise<Result<nul
     node.setSignedIn((token as any).upn ? (token as any).upn : "");
   }
 
-  await envTreeProviderInstance.refreshRemoteEnvWarning();
+  await envTreeProviderInstance.reloadEnvironments();
   return ok(null);
 }
 

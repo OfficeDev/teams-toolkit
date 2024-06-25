@@ -6,8 +6,10 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as localizeUtils from "@microsoft/teamsfx-core/build/common/localizeUtils";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import {
+  askTargetEnvironment,
   createNewEnvironment,
   openConfigStateFile,
   refreshEnvironment,
@@ -70,7 +72,7 @@ describe("Env handlers", () => {
       sandbox.restore();
     });
 
-    it("openConfigStateFile() - InvalidArgs", async () => {
+    it("InvalidArgs", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -99,7 +101,7 @@ describe("Env handlers", () => {
       }
     });
 
-    it("openConfigStateFile() - noOpenWorkspace", async () => {
+    it("noOpenWorkspace", async () => {
       const env = "local";
 
       sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: undefined });
@@ -117,7 +119,7 @@ describe("Env handlers", () => {
       }
     });
 
-    it("openConfigStateFile() - invalidProject", async () => {
+    it("invalidProject", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -138,7 +140,7 @@ describe("Env handlers", () => {
       }
     });
 
-    it("openConfigStateFile() - invalid target environment", async () => {
+    it("invalid target environment", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -169,8 +171,8 @@ describe("Env handlers", () => {
       }
     });
 
-    it("openConfigStateFile() - valid args", async () => {
-      const env = "local";
+    it("valid args", async () => {
+      const env = "remote";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
@@ -192,7 +194,7 @@ describe("Env handlers", () => {
       sandbox.stub(fs, "pathExists").resolves(false);
       sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
 
-      const res = await openConfigStateFile([{ env: undefined, type: "env" }]);
+      const res = await openConfigStateFile([{ env: undefined, type: "env", from: "aad" }]);
       await fs.remove(tmpDir);
 
       if (res) {
@@ -201,7 +203,7 @@ describe("Env handlers", () => {
       }
     });
 
-    it("openConfigStateFile() - invalid env folder", async () => {
+    it("invalid env folder", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -232,7 +234,7 @@ describe("Env handlers", () => {
       }
     });
 
-    it("openConfigStateFile() - success", async () => {
+    it("success", async () => {
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -261,6 +263,35 @@ describe("Env handlers", () => {
       if (res) {
         chai.assert.isTrue(res.isOk());
       }
+    });
+  });
+
+  describe("askTargetEnvironment", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("invalid project", async () => {
+      sandbox.stub(globalVariables, "workspaceUri");
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
+      sandbox.stub(localizeUtils, "getDefaultString").returns("InvalidProjectError");
+      sandbox.stub(localizeUtils, "getLocalizedString").returns("InvalidProjectError");
+      const res = await askTargetEnvironment();
+      chai.assert.isTrue(res.isErr());
+      chai.assert.equal(res.isErr() ? res.error.message : "Not Error", "InvalidProjectError");
+    });
+
+    it("listAllEnvConfigs returns error", async () => {
+      sandbox.stub(globalVariables, "workspaceUri");
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+      sandbox
+        .stub(environmentManager, "listAllEnvConfigs")
+        .resolves(err("envProfilesResultErr") as any);
+      const res = await askTargetEnvironment();
+      chai.assert.isTrue(res.isErr());
+      chai.assert.equal(res.isErr() ? res.error : "Not Error", "envProfilesResultErr");
     });
   });
 });

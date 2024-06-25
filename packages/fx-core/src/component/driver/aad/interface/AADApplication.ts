@@ -150,36 +150,6 @@ interface KeyCredential {
   usage: string;
 }
 
-export interface AppInstallationResponse {
-  value?: AppInstallation[];
-}
-
-interface AppInstallation {
-  id: string;
-  teamsAppDefinition?: TeamsAppDefinition;
-  teamsApp?: TeamsApp;
-}
-
-interface TeamsAppDefinition {
-  id?: string;
-  teansAppId?: string;
-  displayName?: string;
-  version?: string;
-  publishingState?: string;
-  shortDescription?: string;
-  description?: string;
-  lastModifiedDateTime?: string;
-  createdBy?: string;
-  authorization?: unknown;
-}
-
-interface TeamsApp {
-  id?: string;
-  externalId?: string;
-  displayName?: string;
-  distributionMethod?: string;
-}
-
 // Microsoft Graph API does not support updating PasswordCredential using manifest
 // interface PasswordCredential {
 //   displayName: string;

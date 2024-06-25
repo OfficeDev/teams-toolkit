@@ -500,9 +500,6 @@ export class FxCore {
           getLocalizedString("core.uninstall.failed.titleId"),
           false
         );
-        if (manifestId) {
-          return await this.uninstallTeamsApp(manifestId);
-        }
         throw assembleError(err);
       }
     }
@@ -618,48 +615,6 @@ export class FxCore {
     return ok(undefined);
   }
 
-  /**
-   * uninstall sideloaded Teams app
-   */
-  @hooks([
-    ErrorContextMW({ component: "FxCore", stage: "uninstallTeamsApp", reset: true }),
-    ErrorHandlerMW,
-  ])
-  async uninstallTeamsApp(manifestId: string): Promise<Result<undefined, FxError>> {
-    const userRes = await CollaborationUtil.getUserInfo(TOOLS.tokenProvider.m365TokenProvider);
-    if (!userRes || !userRes.aadId) {
-      const msg = "Failed to get user info";
-      return err(new UserError("FxCore", "uninstallTeamsApp", msg, msg));
-    }
-    const userId = userRes.aadId;
-    const aadClient = new AadAppClient(TOOLS.tokenProvider.m365TokenProvider);
-    const res = await aadClient.getInstallationID(userId, manifestId);
-    if (res.isErr()) {
-      return err(res.error);
-    }
-    const installationId = res.value;
-
-    const confirmRes = await TOOLS.ui.confirm?.({
-      name: "uninstallTeamsApp",
-      title: getLocalizedString("core.uninstall.confirm.teams", manifestId),
-      default: false,
-    });
-    if (confirmRes?.isOk() && confirmRes.value.result === true) {
-      await aadClient.uninstallTeamsApp(userId, installationId);
-      await TOOLS.ui.showMessage(
-        "info",
-        getLocalizedString("core.uninstall.success.teams", manifestId),
-        false
-      );
-    } else {
-      await TOOLS.ui.showMessage(
-        "info",
-        getLocalizedString("core.uninstall.confirm.cancel.teams"),
-        false
-      );
-    }
-    return ok(undefined);
-  }
   /**
    * lifecycle commands: deploy
    */

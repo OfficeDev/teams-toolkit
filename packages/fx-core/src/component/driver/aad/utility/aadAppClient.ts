@@ -223,33 +223,7 @@ export class AadAppClient {
       },
     });
   }
-  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async getInstallationID(
-    userId: string,
-    manifestId: string
-  ): Promise<Result<string, FxError>> {
-    try {
-      const response = await this.axios.get(
-        `users/${userId}/teamwork/installedApps?$expand=teamsAppDefinition,teamsApp`
-      );
-      const appInstallationResponse = <AppInstallationResponse>response.data;
-      if (!appInstallationResponse?.value || appInstallationResponse.value?.length === 0) {
-        return err(assembleError(new Error("No installation found"), "getInstallationID"));
-      }
-      for (const appInstallation of appInstallationResponse.value) {
-        if (appInstallation.teamsApp?.id && appInstallation.teamsApp?.externalId === manifestId) {
-          return ok(appInstallation.id);
-        }
-      }
-      return err(assembleError(new Error("No installation found"), "getInstallationID"));
-    } catch (error: any) {
-      return err(assembleError(error, "getInstallationID"));
-    }
-  }
-  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async uninstallTeamsApp(userId: string, installationId: string): Promise<void> {
-    await this.axios.delete(`users/${userId}/teamwork/installedApps/${installationId}`);
-  }
+
   // only use it to retry 404 errors for create client secret / update Microsoft Entra app requests right after Microsoft Entra app creation
   private is404Error(error: AxiosError<any>): boolean {
     return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 404);

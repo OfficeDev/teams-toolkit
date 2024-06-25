@@ -755,40 +755,6 @@ describe("handlers", () => {
     });
   });
 
-  describe("callBackFunctions", () => {
-    it("signinAzureCallback", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      const getIdentityCredentialStub = sandbox.stub(
-        AzureAccountManager.prototype,
-        "getIdentityCredentialAsync"
-      );
-
-      await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(getIdentityCredentialStub.calledOnce);
-    });
-
-    it("signinAzureCallback with error", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sandbox.stub(AzureAccountManager.prototype, "getIdentityCredentialAsync").throws(new Error());
-
-      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(res.isErr());
-    });
-
-    it("signinAzureCallback with cancel error", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sandbox
-        .stub(AzureAccountManager.prototype, "getIdentityCredentialAsync")
-        .throws(new UserCancelError(""));
-
-      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(res.isOk());
-    });
-  });
-
   describe("validateAzureDependenciesHandler", () => {
     const sandbox = sinon.createSandbox();
 

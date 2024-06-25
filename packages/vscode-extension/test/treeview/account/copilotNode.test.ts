@@ -7,7 +7,7 @@ import M365TokenInstance from "../../../src/commonlib/m365Login";
 import { infoIcon, passIcon, warningIcon } from "../../../src/treeview/account/common";
 import { CopilotNode } from "../../../src/treeview/account/copilotNode";
 import { DynamicNode } from "../../../src/treeview/dynamicNode";
-import * as checkCopilotCallback from "../../../src/handlers/checkCopilotCallback";
+import * as checkAccessCallback from "../../../src/handlers/checkAccessCallback";
 
 describe("copilotNode", () => {
   const sandbox = sinon.createSandbox();
@@ -30,7 +30,7 @@ describe("copilotNode", () => {
       .returns(Promise.resolve(new Ok("test-token")));
     sandbox.stub(PackageService, "GetSharedInstance").returns(new PackageService("endpoint"));
     sandbox.stub(PackageService.prototype, "getCopilotStatus").resolves(false);
-    sandbox.stub(checkCopilotCallback, "checkCopilotCallback");
+    sandbox.stub(checkAccessCallback, "checkCopilotCallback");
     const copilotNode = new CopilotNode(eventEmitter, "token");
     const treeItem = await copilotNode.getTreeItem();
 

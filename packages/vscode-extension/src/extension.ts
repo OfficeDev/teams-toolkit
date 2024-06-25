@@ -75,9 +75,6 @@ import {
 } from "./globalVariables";
 import * as handlers from "./handlers";
 import { activate as activateHandlers } from "./handlers/activate";
-import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
-import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
-import { checkSideloadingCallback } from "./handlers/checkSideloading";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
@@ -161,6 +158,13 @@ import {
   refreshEnvironment,
 } from "./handlers/envHandlers";
 import { decryptSecret } from "./handlers/decryptSecret";
+import { signinM365Callback, signinAzureCallback } from "./handlers/signinAccountHandlers";
+import { checkCopilotCallback, checkSideloadingCallback } from "./handlers/checkAccessCallback";
+import {
+  refreshCopilotCallback,
+  refreshSideloadingCallback,
+} from "./handlers/refreshAccessHandlers";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -380,7 +384,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(context, "fx-extension.selectTutorials", selectTutorialsHandler);
 
   // Sign in to M365
-  registerInCommandController(context, CommandKeys.SigninM365, handlers.signinM365Callback);
+  registerInCommandController(context, CommandKeys.SigninM365, signinM365Callback);
 
   // Prerequisites check
   registerInCommandController(
@@ -497,7 +501,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
-  registerInCommandController(context, CommandKeys.SigninAzure, handlers.signinAzureCallback);
+  registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
 }
 
 /**
@@ -813,12 +817,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const refreshSideloading = vscode.commands.registerCommand(
     "fx-extension.refreshSideloading",
-    (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
+    (...args) => Correlator.run(refreshSideloadingCallback, args)
   );
   context.subscriptions.push(refreshSideloading);
 
   const refreshCopilot = vscode.commands.registerCommand("fx-extension.refreshCopilot", (...args) =>
-    Correlator.run(handlers.refreshCopilotCallback, args)
+    Correlator.run(refreshCopilotCallback, args)
   );
   context.subscriptions.push(refreshCopilot);
 }

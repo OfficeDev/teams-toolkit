@@ -5,8 +5,17 @@ import * as sinon from "sinon";
 import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
-import * as commonUtils from "../../src/utils/commonUtils";
+import {
+  openFolderInExplorer,
+  isWindows,
+  isLinux,
+  isMacOS,
+  hasAdaptiveCardInWorkspace,
+  acpInstalled,
+  getLocalDebugMessageTemplate,
+} from "../../src/utils/commonUtils";
 import * as mockfs from "mock-fs";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("CommonUtils", () => {
   afterEach(() => {
@@ -24,7 +33,7 @@ describe("CommonUtils", () => {
     it("happy path", () => {
       const folderPath = "fakePath";
       sandbox.stub(cp, "exec");
-      commonUtils.openFolderInExplorer(folderPath);
+      openFolderInExplorer(folderPath);
     });
   });
 
@@ -37,15 +46,15 @@ describe("CommonUtils", () => {
 
     it("should return exactly result according to os.type", async () => {
       sandbox.stub(os, "type").returns("Windows_NT");
-      chai.expect(commonUtils.isWindows()).equals(true);
+      chai.expect(isWindows()).equals(true);
       sandbox.restore();
 
       sandbox.stub(os, "type").returns("Linux");
-      chai.expect(commonUtils.isLinux()).equals(true);
+      chai.expect(isLinux()).equals(true);
       sandbox.restore();
 
       sandbox.stub(os, "type").returns("Darwin");
-      chai.expect(commonUtils.isMacOS()).equals(true);
+      chai.expect(isMacOS()).equals(true);
       sandbox.restore();
     });
   });
@@ -61,7 +70,7 @@ describe("CommonUtils", () => {
     it("no workspace", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(undefined);
 
-      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+      const result = await hasAdaptiveCardInWorkspace();
 
       chai.assert.isFalse(result);
     });
@@ -83,7 +92,7 @@ describe("CommonUtils", () => {
         }),
       });
 
-      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+      const result = await hasAdaptiveCardInWorkspace();
 
       chai.assert.isTrue(result);
     });
@@ -94,7 +103,7 @@ describe("CommonUtils", () => {
         "/test/card.json": JSON.stringify({ hello: "world" }),
       });
 
-      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+      const result = await hasAdaptiveCardInWorkspace();
 
       chai.assert.isFalse(result);
     });
@@ -116,9 +125,36 @@ describe("CommonUtils", () => {
         }),
       });
 
-      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+      const result = await hasAdaptiveCardInWorkspace();
 
       chai.assert.isFalse(result);
+    });
+  });
+
+  describe("acpInstalled()", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      mockfs.restore();
+      sandbox.restore();
+    });
+
+    it("already installed", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.extensions, "getExtension").returns({} as any);
+
+      const installed = acpInstalled();
+
+      chai.assert.isTrue(installed);
+    });
+
+    it("not installed", async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+
+      const installed = acpInstalled();
+
+      chai.assert.isFalse(installed);
     });
   });
 
@@ -133,7 +169,7 @@ describe("CommonUtils", () => {
       sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const result = await commonUtils.getLocalDebugMessageTemplate(true);
+      const result = await getLocalDebugMessageTemplate(true);
       chai.assert.isTrue(result.includes("Test Tool"));
     });
 
@@ -141,7 +177,7 @@ describe("CommonUtils", () => {
       sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
       sandbox.stub(fs, "pathExists").resolves(false);
 
-      const result = await commonUtils.getLocalDebugMessageTemplate(true);
+      const result = await getLocalDebugMessageTemplate(true);
       chai.assert.isFalse(result.includes("Test Tool"));
     });
 
@@ -149,7 +185,7 @@ describe("CommonUtils", () => {
       sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
       sandbox.stub(fs, "pathExists").resolves(true);
 
-      const result = await commonUtils.getLocalDebugMessageTemplate(false);
+      const result = await getLocalDebugMessageTemplate(false);
       chai.assert.isTrue(result.includes("Test Tool"));
     });
 
@@ -157,7 +193,7 @@ describe("CommonUtils", () => {
       sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
       sandbox.stub(fs, "pathExists").resolves(false);
 
-      const result = await commonUtils.getLocalDebugMessageTemplate(false);
+      const result = await getLocalDebugMessageTemplate(false);
       chai.assert.isFalse(result.includes("Test Tool"));
     });
 
@@ -165,7 +201,7 @@ describe("CommonUtils", () => {
       sandbox.stub(vscode.workspace, "workspaceFolders").value([]);
       sandbox.stub(fs, "pathExists").resolves(false);
 
-      const result = await commonUtils.getLocalDebugMessageTemplate(false);
+      const result = await getLocalDebugMessageTemplate(false);
       chai.assert.isFalse(result.includes("Test Tool"));
     });
   });

@@ -129,7 +129,7 @@ import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewP
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler, setUriEventHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
+import { acpInstalled, delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
 import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/projectChecker";
@@ -1293,7 +1293,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 }
 
 async function recommendACPExtension(): Promise<void> {
-  if (!handlers.acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
+  if (!acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
     await handlers.installAdaptiveCardExt(TelemetryTriggerFrom.Auto);
   }
 }

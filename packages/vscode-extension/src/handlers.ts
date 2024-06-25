@@ -66,7 +66,7 @@ import { AzureAccountNode } from "./treeview/account/azureNode";
 import { AccountItemStatus } from "./treeview/account/common";
 import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
-import { openFolderInExplorer } from "./utils/commonUtils";
+import { acpInstalled, openFolderInExplorer } from "./utils/commonUtils";
 import { getDefaultString, localize } from "./utils/localizeUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
 import { ExtensionSurvey } from "./utils/survey";
@@ -328,8 +328,6 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
   }
 }
 
-const acExtId = "TeamsDevApp.vscode-adaptive-cards";
-
 export async function installAdaptiveCardExt(
   ...args: unknown[]
 ): Promise<Result<unknown, FxError>> {
@@ -352,7 +350,10 @@ export async function installAdaptiveCardExt(
         TelemetryEvent.AdaptiveCardPreviewerInstallConfirm,
         getTriggerFromProperty(args)
       );
-      await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+      await vscode.commands.executeCommand(
+        "workbench.extensions.installExtension",
+        "TeamsDevApp.vscode-adaptive-cards"
+      );
     } else {
       ExtTelemetry.sendTelemetryEvent(
         TelemetryEvent.AdaptiveCardPreviewerInstallCancel,
@@ -361,11 +362,6 @@ export async function installAdaptiveCardExt(
     }
   }
   return Promise.resolve(ok(null));
-}
-
-export function acpInstalled(): boolean {
-  const extension = vscode.extensions.getExtension(acExtId);
-  return !!extension;
 }
 
 export async function copilotPluginAddAPIHandler(args: any[]) {

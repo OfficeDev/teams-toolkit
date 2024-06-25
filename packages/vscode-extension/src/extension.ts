@@ -581,12 +581,12 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
  * TeamsFx related commands, they will show in command palette after extension is initialized
  */
 function registerTeamsFxCommands(context: vscode.ExtensionContext) {
-  const handler = vscode.commands.registerCommand(
+  const createNewEnvCmd = vscode.commands.registerCommand(
     // TODO: fix trigger from
     "fx-extension.addEnvironment",
     (...args) => Correlator.run(createNewEnvironment, args)
   );
-  context.subscriptions.push(handler);
+  context.subscriptions.push(createNewEnvCmd);
 
   const updateAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.updateAadAppManifest",

@@ -5,9 +5,11 @@ import * as globalVariables from "../../src/globalVariables";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import * as vscode from "vscode";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as localizeUtils from "@microsoft/teamsfx-core/build/common/localizeUtils";
 import * as handlers from "../../src/handlers";
 import * as errorCommon from "../../src/error/common";
-import { ok } from "@microsoft/teamsfx-api";
+import * as sharedOpts from "../../src/handlers/sharedOpts";
+import { err, ok } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { MockCore } from "../mocks/mockCore";
@@ -18,29 +20,47 @@ import {
 } from "../../src/handlers/aadManifestHandlers";
 
 describe("aadManifestHandlers", () => {
-  describe("updateAadAppManifest", () => {
+  describe("openPreviewAadFileHandler", () => {
     const sandbox = sinon.createSandbox();
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it("deployAadAppmanifest", async () => {
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
-      await updateAadAppManifestHandler([{ fsPath: "path/aad.dev.template" }]);
-      sandbox.assert.calledOnce(deployAadManifest);
-      deployAadManifest.restore();
+    it("project is not valid", async () => {
+      const core = new MockCore();
+      sandbox.stub(globalVariables, "core").value(core);
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
+      sandbox.stub(localizeUtils, "getDefaultString").returns("InvalidProjectError");
+      sandbox.stub(localizeUtils, "getLocalizedString").returns("InvalidProjectError");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
+      const res = await openPreviewAadFileHandler([]);
+      chai.assert.isTrue(res.isErr());
+      chai.assert.equal(res.isErr() ? res.error.message : "Not Err", "InvalidProjectError");
     });
-  });
 
-  describe("openPreviewAadFile", () => {
-    const sandbox = sinon.createSandbox();
+    it("select Env returns error", async () => {
+      const core = new MockCore();
+      sandbox.stub(globalVariables, "core").value(core);
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+      sandbox.stub(handlers, "askTargetEnvironment").resolves(err("selectEnvErr") as any);
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
+      const res = await openPreviewAadFileHandler([]);
+      chai.assert.isTrue(res.isErr());
+      chai.assert.equal(res.isErr() ? res.error : "Not Err", "selectEnvErr");
+    });
 
-    afterEach(() => {
-      sandbox.restore();
+    it("runCommand returns error", async () => {
+      const core = new MockCore();
+      sandbox.stub(globalVariables, "core").value(core);
+      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+      sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+      sandbox.stub(sharedOpts, "runCommand").resolves(err("runCommandErr") as any);
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
+      const res = await openPreviewAadFileHandler([]);
+      chai.assert.isTrue(res.isErr());
+      chai.assert.equal(res.isErr() ? res.error : "Not Err", "runCommandErr");
     });
 
     it("manifest file not exists", async () => {
@@ -86,6 +106,24 @@ describe("aadManifestHandlers", () => {
 
       const res = await openPreviewAadFileHandler([]);
       chai.assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("updateAadAppManifestHandler", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("deployAadAppmanifest", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
+      await updateAadAppManifestHandler([{ fsPath: "path/aad.dev.template" }]);
+      sandbox.assert.calledOnce(deployAadManifest);
+      deployAadManifest.restore();
     });
   });
 

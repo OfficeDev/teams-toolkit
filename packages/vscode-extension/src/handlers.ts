@@ -9,19 +9,12 @@
 "use strict";
 
 import {
-  AppPackageFolderName,
-  BuildFolderName,
-  Func,
   FxError,
-  OptionItem,
   Result,
   SelectFileConfig,
   SelectFolderConfig,
-  SingleSelectConfig,
   Stage,
-  StaticOptions,
   SubscriptionInfo,
-  SystemError,
   UserError,
   Void,
   err,
@@ -34,19 +27,14 @@ import {
   DepsManager,
   DepsType,
   Hub,
-  InvalidProjectError,
-  MetadataV3,
   QuestionNames,
   askSubscription,
   assembleError,
-  environmentManager,
   getHashedEnv,
   isUserCancelError,
   isValidProject,
-  pathUtils,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
@@ -63,8 +51,7 @@ import { openHubWebClient } from "./debug/launch";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
-import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import { core, isSPFxProject, isTeamsFxProject, tools, workspaceUri } from "./globalVariables";
+import { core, isTeamsFxProject, tools, workspaceUri } from "./globalVariables";
 import { createNewProjectHandler } from "./handlers/lifecycleHandlers";
 import { processResult, runCommand } from "./handlers/sharedOpts";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -144,31 +131,6 @@ export async function treeViewPreviewHandler(...args: any[]): Promise<Result<nul
     ...properties,
   });
   return ok(null);
-}
-
-/**
- * Ask user to select environment, local is included
- */
-export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
-  const projectPath = workspaceUri?.fsPath;
-  if (!isValidProject(projectPath)) {
-    return err(new InvalidProjectError());
-  }
-  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectPath!);
-  if (envProfilesResult.isErr()) {
-    return err(envProfilesResult.error);
-  }
-  const config: SingleSelectConfig = {
-    name: "targetEnvName",
-    title: "Select an environment",
-    options: envProfilesResult.value,
-  };
-  const selectedEnv = await VS_CODE_UI.selectOption(config);
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
-  } else {
-    return ok(selectedEnv.value.result as string);
-  }
 }
 
 export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
@@ -553,89 +515,6 @@ export async function installAdaptiveCardExt(
 export function acpInstalled(): boolean {
   const extension = vscode.extensions.getExtension(acExtId);
   return !!extension;
-}
-
-export async function openConfigStateFile(args: any[]): Promise<any> {
-  let telemetryStartName = TelemetryEvent.OpenManifestConfigStateStart;
-  let telemetryName = TelemetryEvent.OpenManifestConfigState;
-
-  if (args && args.length > 0 && args[0].from === "aad") {
-    telemetryStartName = TelemetryEvent.OpenAadConfigStateStart;
-    telemetryName = TelemetryEvent.OpenAadConfigState;
-  }
-
-  ExtTelemetry.sendTelemetryEvent(telemetryStartName);
-  const workspacePath = workspaceUri?.fsPath;
-  if (!workspacePath) {
-    const noOpenWorkspaceError = new UserError(
-      ExtensionSource,
-      ExtensionErrors.NoWorkspaceError,
-      localize("teamstoolkit.handlers.noOpenWorkspace")
-    );
-    void showError(noOpenWorkspaceError);
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noOpenWorkspaceError);
-    return err(noOpenWorkspaceError);
-  }
-
-  if (!isValidProject(workspacePath)) {
-    const invalidProjectError = new UserError(
-      ExtensionSource,
-      ExtensionErrors.InvalidProject,
-      localize("teamstoolkit.handlers.invalidProject")
-    );
-    void showError(invalidProjectError);
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidProjectError);
-    return err(invalidProjectError);
-  }
-
-  let sourcePath: string | undefined = undefined;
-  let env: string | undefined = undefined;
-  if (args && args.length > 0) {
-    env = args[0].env;
-    if (!env) {
-      const envRes: Result<string | undefined, FxError> = await askTargetEnvironment();
-      if (envRes.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(telemetryName, envRes.error);
-        return err(envRes.error);
-      }
-      env = envRes.value;
-    }
-
-    // Load env folder from yml
-    const envFolder = await pathUtils.getEnvFolderPath(workspacePath);
-    if (envFolder.isOk() && envFolder.value) {
-      sourcePath = path.resolve(`${envFolder.value}/.env.${env as string}`);
-    } else if (envFolder.isErr()) {
-      return err(envFolder.error);
-    }
-  } else {
-    const invalidArgsError = new SystemError(
-      ExtensionSource,
-      ExtensionErrors.InvalidArgs,
-      util.format(localize("teamstoolkit.handlers.invalidArgs"), args ? JSON.stringify(args) : args)
-    );
-    void showError(invalidArgsError);
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidArgsError);
-    return err(invalidArgsError);
-  }
-
-  if (sourcePath && !(await fs.pathExists(sourcePath))) {
-    const noEnvError = new UserError(
-      ExtensionSource,
-      ExtensionErrors.EnvFileNotFoundError,
-      util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
-    );
-    void showError(noEnvError);
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
-    return err(noEnvError);
-  }
-
-  void vscode.workspace.openTextDocument(sourcePath as string).then((document) => {
-    void vscode.window.showTextDocument(document);
-  });
-  ExtTelemetry.sendTelemetryEvent(telemetryName, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-  });
 }
 
 export async function copilotPluginAddAPIHandler(args: any[]) {

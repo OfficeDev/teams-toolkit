@@ -150,7 +150,11 @@ import {
   openPreviewAadFileHandler,
   updateAadAppManifestHandler,
 } from "./handlers/aadManifestHandlers";
-import { createNewEnvironment, refreshEnvironment } from "./handlers/envHandlers";
+import {
+  createNewEnvironment,
+  openConfigStateFile,
+  refreshEnvironment,
+} from "./handlers/envHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -621,7 +625,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const openConfigStateCmd = vscode.commands.registerCommand(
     "fx-extension.openConfigState",
-    (...args) => Correlator.run(handlers.openConfigStateFile, args)
+    (...args) => Correlator.run(openConfigStateFile, args)
   );
   context.subscriptions.push(openConfigStateCmd);
 

@@ -6,9 +6,9 @@ import * as vsc_ui from "../../src/qm/vsc_ui";
 import * as vscode from "vscode";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as localizeUtils from "@microsoft/teamsfx-core/build/common/localizeUtils";
-import * as handlers from "../../src/handlers";
 import * as errorCommon from "../../src/error/common";
 import * as sharedOpts from "../../src/handlers/sharedOpts";
+import * as envHandlers from "../../src/handlers/envHandlers";
 import { err, ok } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
@@ -43,7 +43,7 @@ describe("aadManifestHandlers", () => {
       const core = new MockCore();
       sandbox.stub(globalVariables, "core").value(core);
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sandbox.stub(handlers, "askTargetEnvironment").resolves(err("selectEnvErr") as any);
+      sandbox.stub(envHandlers, "askTargetEnvironment").resolves(err("selectEnvErr") as any);
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
       const res = await openPreviewAadFileHandler([]);
       chai.assert.isTrue(res.isErr());
@@ -54,7 +54,7 @@ describe("aadManifestHandlers", () => {
       const core = new MockCore();
       sandbox.stub(globalVariables, "core").value(core);
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-      sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+      sandbox.stub(envHandlers, "askTargetEnvironment").resolves(ok("dev"));
       sandbox.stub(sharedOpts, "runCommand").resolves(err("runCommandErr") as any);
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
@@ -76,7 +76,7 @@ describe("aadManifestHandlers", () => {
           result: "dev",
         })
       );
-      sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+      sandbox.stub(envHandlers, "askTargetEnvironment").resolves(ok("dev"));
       sandbox.stub(errorCommon, "showError").callsFake(async () => {});
       sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
@@ -97,7 +97,7 @@ describe("aadManifestHandlers", () => {
           result: "dev",
         })
       );
-      sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
+      sandbox.stub(envHandlers, "askTargetEnvironment").resolves(ok("dev"));
       sandbox.stub(errorCommon, "showError").callsFake(async () => {});
       sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();

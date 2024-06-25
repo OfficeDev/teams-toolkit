@@ -27,7 +27,7 @@ import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { runCommand } from "./sharedOpts";
-import { askTargetEnvironment } from "../handlers";
+import { askTargetEnvironment } from "./envHandlers";
 
 export async function openPreviewAadFileHandler(args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(

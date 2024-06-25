@@ -10,7 +10,6 @@ import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import {
   globalStateGet,
   globalStateUpdate,
-  isManifestOnlyOfficeAddinProject,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -226,16 +225,7 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    if (!isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? ""))
-      void popupOfficeAddInDependenciesMessage();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
-  }
-  if (
-    globalVariables.isOfficeAddInProject &&
-    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "") &&
-    !isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? "")
-  ) {
-    void popupOfficeAddInDependenciesMessage();
   }
 }
 

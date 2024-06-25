@@ -19,6 +19,8 @@ import {
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import { CustomCopilotGenerator } from "../../../src/component/generator/customCopilot/generator";
+import { SMEGenerator } from "../../../src/component/generator/sme/generator";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
@@ -1185,6 +1187,7 @@ describe(`coordinator create with new generator enabled = true`, () => {
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
     mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "true" });
+    sandbox.stub(DefaultTemplateGenerator.prototype, <any>"scaffolding").resolves(ok(undefined));
   });
   afterEach(() => {
     sandbox.restore();
@@ -1209,15 +1212,56 @@ describe(`coordinator create with new generator enabled = true`, () => {
   it("should scaffold by CopilotPluginGeneratorNew successfully", async () => {
     const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
-    sandbox.stub(CopilotPluginGenerator.prototype, "run").resolves(ok({}));
+    sandbox.stub(CopilotPluginGenerator.prototype, <any>"post").resolves(ok({}));
+    const spy = sandbox.spy(CopilotPluginGenerator.prototype, "getTemplateInfos");
+
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiSpecLocation]: "testUrl",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
+    sinon.assert.calledOnce(spy);
+    assert.isTrue(res.isOk());
+  });
+
+  it("should scaffold by CustomCopilotGeneratorNew successfully", async () => {
+    const v3ctx = createContext();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    sandbox.stub(CustomCopilotGenerator.prototype, <any>"post").resolves(ok({}));
+    const spy = sandbox.spy(CustomCopilotGenerator.prototype, "getTemplateInfos");
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+      [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+      [QuestionNames.ApiSpecLocation]: "testUrl",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    sinon.assert.calledOnce(spy);
+    assert.isTrue(res.isOk());
+  });
+
+  it("should scaffold by SMEGeneratorNew successfully", async () => {
+    const v3ctx = createContext();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    sandbox.stub(SMEGenerator.prototype, <any>"post").resolves(ok({}));
+    const spy = sandbox.spy(SMEGenerator.prototype, "getTemplateInfos");
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.apiSpec().id,
+      [QuestionNames.ApiSpecLocation]: "testUrl",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    sinon.assert.calledOnce(spy);
     assert.isTrue(res.isOk());
   });
 });

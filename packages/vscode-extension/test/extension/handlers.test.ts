@@ -2,7 +2,6 @@
  * @author HuihuiWu-Microsoft <73154171+HuihuiWu-Microsoft@users.noreply.github.com>
  */
 import {
-  ConfigFolderName,
   FxError,
   Inputs,
   Platform,
@@ -19,15 +18,12 @@ import {
   DepsType,
   UnhandledError,
   UserCancelError,
-  environmentManager,
   featureFlagManager,
-  pathUtils,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
-import * as fs from "fs-extra";
 import * as mockfs from "mock-fs";
 import * as path from "path";
 import * as sinon from "sinon";
@@ -171,199 +167,6 @@ describe("handlers", () => {
 
     afterEach(() => {
       sandbox.restore();
-    });
-
-    it("openConfigStateFile() - InvalidArgs", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.InvalidArgs);
-      }
-    });
-
-    it("openConfigStateFile() - noOpenWorkspace", async () => {
-      const env = "local";
-
-      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: undefined });
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([]);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.NoWorkspaceError);
-      }
-    });
-
-    it("openConfigStateFile() - invalidProject", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.InvalidProject);
-      }
-    });
-
-    it("openConfigStateFile() - invalid target environment", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(err({ error: "invalid target env" })),
-      });
-      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
-      sandbox.stub(fs, "pathExists").resolves(false);
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
-
-      const res = await handlers.openConfigStateFile([{ env: undefined, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-      }
-    });
-
-    it("openConfigStateFile() - valid args", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
-      sandbox.stub(fs, "pathExists").resolves(false);
-      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
-
-      const res = await handlers.openConfigStateFile([{ env: undefined, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.EnvFileNotFoundError);
-      }
-    });
-
-    it("openConfigStateFile() - invalid env folder", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(err({ error: "unknown" } as any));
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(vscode.workspace, "openTextDocument").resolves("" as any);
-
-      const res = await handlers.openConfigStateFile([{ env: env, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-      }
-    });
-
-    it("openConfigStateFile() - success", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(vscode.workspace, "openTextDocument").returns(Promise.resolve("" as any));
-
-      const res = await handlers.openConfigStateFile([{ env: env, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isOk());
-      }
     });
 
     it("create sample with projectid", async () => {
@@ -742,16 +545,6 @@ describe("handlers", () => {
       );
       chai.assert.isTrue(showErrorMessageStub.calledOnce);
     });
-  });
-
-  it("deployAadAppmanifest", async () => {
-    sandbox.stub(globalVariables, "core").value(new MockCore());
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
-    sandbox.assert.calledOnce(deployAadManifest);
-    deployAadManifest.restore();
   });
 
   describe("getDotnetPathHandler", async () => {
@@ -1354,115 +1147,6 @@ describe("handlers", () => {
       const actualPath = await handlers.getPathDelimiterHandler();
       chai.assert.equal(actualPath, path.delimiter);
     });
-  });
-});
-
-describe("openPreviewAadFile", () => {
-  const sandbox = sinon.createSandbox();
-  afterEach(() => {
-    sandbox.restore();
-  });
-  it("manifest file not exists", async () => {
-    const core = new MockCore();
-    sandbox.stub(globalVariables, "core").value(core);
-    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(fs, "existsSync").returns(false);
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-    sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(
-      ok({
-        type: "success",
-        result: "dev",
-      })
-    );
-    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
-    sandbox.stub(errorCommon, "showError").callsFake(async () => {});
-    sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
-    const res = await handlers.openPreviewAadFile([]);
-    chai.assert.isTrue(res.isErr());
-  });
-
-  it("happy path", async () => {
-    const core = new MockCore();
-    sandbox.stub(globalVariables, "core").value(core);
-    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(fs, "existsSync").returns(true);
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-    sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(
-      ok({
-        type: "success",
-        result: "dev",
-      })
-    );
-    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
-    sandbox.stub(errorCommon, "showError").callsFake(async () => {});
-    sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
-    sandbox.stub(vscode.workspace, "openTextDocument").resolves();
-    sandbox.stub(vscode.window, "showTextDocument").resolves();
-
-    const res = await handlers.openPreviewAadFile([]);
-    chai.assert.isTrue(res.isOk());
-  });
-});
-
-describe("editAadManifestTemplate", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("happy path", async () => {
-    const workspacePath = "/test/workspace/path";
-    const workspaceUri = vscode.Uri.file(workspacePath);
-    sandbox.stub(globalVariables, "workspaceUri").value(workspaceUri);
-
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await handlers.editAadManifestTemplate([null, "testTrigger"]);
-
-    sandbox.assert.calledOnceWithExactly(
-      openTextDocumentStub as any,
-      `${workspaceUri.fsPath}/aad.manifest.json`
-    );
-  });
-
-  it("happy path: no parameter", async () => {
-    const workspacePath = "/test/workspace/path";
-    const workspaceUri = vscode.Uri.file(workspacePath);
-    sandbox.stub(globalVariables, "workspaceUri").value(workspaceUri);
-
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await handlers.editAadManifestTemplate([]);
-
-    chai.assert.isTrue(showTextDocumentStub.callCount === 0);
-  });
-
-  it("happy path: workspaceUri is undefined", async () => {
-    const workspaceUri = undefined;
-    sandbox.stub(globalVariables, "workspaceUri").value(undefined);
-
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await handlers.editAadManifestTemplate([null, "testTrigger"]);
-
-    sandbox.assert.calledOnceWithExactly(
-      openTextDocumentStub as any,
-      `${workspaceUri}/aad.manifest.json`
-    );
   });
 });
 

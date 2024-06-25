@@ -5,6 +5,7 @@ import { assert } from "chai";
 import * as sinon from "sinon";
 import * as copilotHandler from "../../src/handlers/copilotChatHandlers";
 import {
+  addWebpartHandler,
   createNewProjectHandler,
   deployHandler,
   provisionHandler,
@@ -29,6 +30,7 @@ describe("Lifecycle handlers", () => {
   afterEach(() => {
     sandbox.restore();
   });
+
   describe("provision handlers", () => {
     it("error", async () => {
       sandbox.stub(shared, "runCommand").resolves(err(new UserCancelError()));
@@ -76,6 +78,7 @@ describe("Lifecycle handlers", () => {
       const res = await createNewProjectHandler();
       assert.isTrue(res.isOk());
     });
+
     it("triggered in office agent", async () => {
       sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(true);
       sandbox.stub(shared, "runCommand").resolves(
@@ -89,6 +92,7 @@ describe("Lifecycle handlers", () => {
       const res = await createNewProjectHandler("", { agent: "office" });
       assert.isTrue(res.isOk());
     });
+
     it("office add-in", async () => {
       sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(true);
       const openOfficeDevFolder = sandbox.stub(workspaceUtils, "openOfficeDevFolder").resolves();
@@ -103,6 +107,7 @@ describe("Lifecycle handlers", () => {
       assert.isTrue(res.isOk());
       assert.isTrue(openOfficeDevFolder.calledOnce);
     });
+
     it("none office add-in", async () => {
       sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
       const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
@@ -118,6 +123,7 @@ describe("Lifecycle handlers", () => {
       assert.isTrue(openFolder.calledOnce);
     });
   });
+
   describe("provisionHandler", function () {
     it("happy", async () => {
       sandbox.stub(shared, "runCommand").resolves(ok(undefined));
@@ -126,6 +132,7 @@ describe("Lifecycle handlers", () => {
       assert.isTrue(res.isOk());
     });
   });
+
   describe("deployHandler", function () {
     it("happy", async () => {
       sandbox.stub(shared, "runCommand").resolves(ok(undefined));
@@ -133,10 +140,19 @@ describe("Lifecycle handlers", () => {
       assert.isTrue(res.isOk());
     });
   });
+
   describe("publishHandler", function () {
     it("happy()", async () => {
       sandbox.stub(shared, "runCommand").resolves(ok(undefined));
       const res = await publishHandler();
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("addWebpartHandler", function () {
+    it("happy()", async () => {
+      sandbox.stub(shared, "runCommand").resolves(ok(undefined));
+      const res = await addWebpartHandler();
       assert.isTrue(res.isOk());
     });
   });

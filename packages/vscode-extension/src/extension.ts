@@ -82,6 +82,7 @@ import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
 import {
+  addWebpartHandler,
   createNewProjectHandler,
   deployHandler,
   provisionHandler,
@@ -102,6 +103,8 @@ import {
   openLifecycleLinkHandler,
   openM365AccountHandler,
   openReportIssues,
+  openResourceGroupInPortal,
+  openSubscriptionInPortal,
   openWelcomeHandler,
 } from "./handlers/openLinkHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
@@ -144,7 +147,16 @@ import {
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
 import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
-import { createNewEnvironment, refreshEnvironment } from "./handlers/envHandlers";
+import {
+  editAadManifestTemplateHandler,
+  openPreviewAadFileHandler,
+  updateAadAppManifestHandler,
+} from "./handlers/aadManifestHandlers";
+import {
+  createNewEnvironment,
+  openConfigStateFile,
+  refreshEnvironment,
+} from "./handlers/envHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -539,12 +551,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     handlers.installAdaptiveCardExt
   );
 
-  registerInCommandController(
-    context,
-    "fx-extension.addWebpart",
-    handlers.addWebpart,
-    "addWebpart"
-  );
+  registerInCommandController(context, "fx-extension.addWebpart", addWebpartHandler, "addWebpart");
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
@@ -590,7 +597,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const updateAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.updateAadAppManifest",
-    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
+    (...args) => Correlator.run(updateAadAppManifestHandler, args)
   );
   context.subscriptions.push(updateAadAppManifest);
 
@@ -620,13 +627,13 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const openConfigStateCmd = vscode.commands.registerCommand(
     "fx-extension.openConfigState",
-    (...args) => Correlator.run(handlers.openConfigStateFile, args)
+    (...args) => Correlator.run(openConfigStateFile, args)
   );
   context.subscriptions.push(openConfigStateCmd);
 
   const editAadManifestTemplateCmd = vscode.commands.registerCommand(
     "fx-extension.editAadManifestTemplate",
-    (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
+    (...args) => Correlator.run(editAadManifestTemplateHandler, args)
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
@@ -750,18 +757,18 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",
-    (...args) => Correlator.run(handlers.openPreviewAadFile, args)
+    (...args) => Correlator.run(openPreviewAadFileHandler, args)
   );
   context.subscriptions.push(aadManifestTemplateCodeLensCmd);
 
-  const openResourceGroupInPortal = vscode.commands.registerCommand(
+  const openResourceGroupInPortalCmd = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.openResourceGroupInPortal, envName);
+      await Correlator.run(openResourceGroupInPortal, envName);
     }
   );
-  context.subscriptions.push(openResourceGroupInPortal);
+  context.subscriptions.push(openResourceGroupInPortalCmd);
 
   const openManifestSchemaCmd = vscode.commands.registerCommand(
     "fx-extension.openSchema",
@@ -779,14 +786,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addAPICmd);
 
-  const openSubscriptionInPortal = vscode.commands.registerCommand(
+  const openSubscriptionInPortalCmd = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.openSubscriptionInPortal, envName);
+      await Correlator.run(openSubscriptionInPortal, envName);
     }
   );
-  context.subscriptions.push(openSubscriptionInPortal);
+  context.subscriptions.push(openSubscriptionInPortalCmd);
 
   registerInCommandController(
     context,

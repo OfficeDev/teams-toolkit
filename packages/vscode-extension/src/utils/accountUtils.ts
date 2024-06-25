@@ -45,6 +45,6 @@ export async function signOutM365(isFromTreeView: boolean) {
   result = await M365TokenInstance.signout();
   if (result) {
     accountTreeViewProviderInstance.m365AccountNode.setSignedOut();
-    await envTreeProviderInstance.refreshRemoteEnvWarning();
+    await envTreeProviderInstance.reloadEnvironments();
   }
 }

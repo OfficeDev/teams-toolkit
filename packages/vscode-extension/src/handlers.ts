@@ -253,20 +253,6 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   }
 }
 
-export async function openBuildIntelligentAppsWalkthroughHandler(
-  ...args: unknown[]
-): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.WalkThroughBuildIntelligentApps,
-    getTriggerFromProperty(args)
-  );
-  const data = await vscode.commands.executeCommand(
-    "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
-  );
-  return Promise.resolve(ok(data));
-}
-
 export async function checkUpgrade(args?: any[]) {
   const triggerFrom = getTriggerFromProperty(args);
   const input = getSystemInputs();
@@ -339,41 +325,6 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
       break;
     }
     curDirectory = path.join(curDirectory, "..");
-  }
-}
-
-export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other,
-  });
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return;
-  }
-  const inputs = getSystemInputs();
-  const result = await core.decrypt(cipher, inputs);
-  if (result.isOk()) {
-    const editedSecret = await VS_CODE_UI.inputText({
-      name: "Secret Editor",
-      title: localize("teamstoolkit.handlers.editSecretTitle"),
-      default: result.value,
-    });
-    if (editedSecret.isOk() && editedSecret.value.result) {
-      const newCiphertext = await core.encrypt(editedSecret.value.result, inputs);
-      if (newCiphertext.isOk()) {
-        await editor.edit((editBuilder) => {
-          editBuilder.replace(selection, newCiphertext.value);
-        });
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
-      } else {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, newCiphertext.error);
-      }
-    }
-  } else {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    void vscode.window.showErrorMessage(result.error.message);
   }
 }
 

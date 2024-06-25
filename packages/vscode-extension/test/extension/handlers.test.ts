@@ -361,17 +361,6 @@ describe("handlers", () => {
     );
   });
 
-  it("walkthrough: build intelligent apps", async () => {
-    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
-
-    await handlers.openBuildIntelligentAppsWalkthroughHandler();
-    sandbox.assert.calledOnceWithExactly(
-      executeCommands,
-      "workbench.action.openWalkthrough",
-      "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
-    );
-  });
-
   it("openSurveyHandler", async () => {
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const openLink = sandbox.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
@@ -389,74 +378,6 @@ describe("handlers", () => {
     await handlers.openSamplesHandler();
 
     sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, []);
-  });
-
-  describe("decryptSecret", function () {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("successfully update secret", async () => {
-      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sandbox.spy(globalVariables.core, "decrypt");
-      const encrypt = sandbox.spy(globalVariables.core, "encrypt");
-      sandbox.stub(vscode.commands, "executeCommand");
-      const editBuilder = sandbox.spy();
-      sandbox.stub(vscode.window, "activeTextEditor").value({
-        edit: function (callback: (eb: any) => void) {
-          callback({
-            replace: editBuilder,
-          });
-        },
-      });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        inputText: () => Promise.resolve(ok({ type: "success", result: "inputValue" })),
-      });
-      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
-
-      await handlers.decryptSecret("test", range);
-
-      sinon.assert.calledOnce(decrypt);
-      sinon.assert.calledOnce(encrypt);
-      sinon.assert.calledOnce(editBuilder);
-      sinon.assert.calledTwice(sendTelemetryEvent);
-      sinon.assert.notCalled(sendTelemetryErrorEvent);
-    });
-
-    it("failed to update due to corrupted secret", async () => {
-      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sandbox.stub(globalVariables.core, "decrypt");
-      decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
-      const encrypt = sandbox.spy(globalVariables.core, "encrypt");
-      sandbox.stub(vscode.commands, "executeCommand");
-      const editBuilder = sandbox.spy();
-      sandbox.stub(vscode.window, "activeTextEditor").value({
-        edit: function (callback: (eb: any) => void) {
-          callback({
-            replace: editBuilder,
-          });
-        },
-      });
-      const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
-      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
-
-      await handlers.decryptSecret("test", range);
-
-      sinon.assert.calledOnce(decrypt);
-      sinon.assert.notCalled(encrypt);
-      sinon.assert.notCalled(editBuilder);
-      sinon.assert.calledOnce(showMessage);
-      sinon.assert.calledOnce(sendTelemetryEvent);
-      sinon.assert.calledOnce(sendTelemetryErrorEvent);
-    });
   });
 
   describe("checkUpgrade", function () {

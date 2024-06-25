@@ -108,7 +108,10 @@ import {
   openWelcomeHandler,
 } from "./handlers/openLinkHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
-import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import {
+  createProjectFromWalkthroughHandler,
+  openBuildIntelligentAppsWalkthroughHandler,
+} from "./handlers/walkthrough";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
@@ -157,6 +160,7 @@ import {
   openConfigStateFile,
   refreshEnvironment,
 } from "./handlers/envHandlers";
+import { decryptSecret } from "./handlers/decryptSecret";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -369,7 +373,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     CommandKeys.BuildIntelligentAppsWalkthrough,
-    handlers.openBuildIntelligentAppsWalkthroughHandler
+    openBuildIntelligentAppsWalkthroughHandler
   );
 
   // Tutorials
@@ -621,7 +625,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const decryptCmd = vscode.commands.registerCommand(
     "fx-extension.decryptSecret",
-    (cipher: string, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
+    (cipher: string, selection) => Correlator.run(decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
 

@@ -14,9 +14,7 @@ import {
   SelectFileConfig,
   SelectFolderConfig,
   Stage,
-  SubscriptionInfo,
   UserError,
-  Void,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -30,7 +28,6 @@ import {
   QuestionNames,
   askSubscription,
   assembleError,
-  getHashedEnv,
   isUserCancelError,
   isValidProject,
   teamsDevPortalClient,
@@ -71,7 +68,6 @@ import { AccountItemStatus } from "./treeview/account/common";
 import { M365AccountNode } from "./treeview/account/m365Node";
 import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
 import { openFolderInExplorer } from "./utils/commonUtils";
-import { getResourceGroupNameFromEnv, getSubscriptionInfoFromEnv } from "./utils/envTreeUtils";
 import { getDefaultString, localize } from "./utils/localizeUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
 import { ExtensionSurvey } from "./utils/survey";
@@ -311,101 +307,6 @@ export async function openSamplesHandler(...args: unknown[]): Promise<Result<nul
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.SampleGallery, args);
   return Promise.resolve(ok(null));
-}
-
-function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
-  const subscriptionId = subscriptionInfo.subscriptionId;
-  const tenantId = subscriptionInfo.tenantId;
-
-  return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}`;
-}
-
-enum ResourceInfo {
-  Subscription = "Subscription",
-  ResourceGroup = "Resource Group",
-}
-
-export async function openSubscriptionInPortal(env: string): Promise<Result<Void, FxError>> {
-  const telemetryProperties: { [p: string]: string } = {};
-  telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
-
-  const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-  if (subscriptionInfo) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSubscriptionInPortal, telemetryProperties);
-
-    const url = getSubscriptionUrl(subscriptionInfo);
-    await vscode.env.openExternal(vscode.Uri.parse(url));
-
-    return ok(Void);
-  } else {
-    const resourceInfoNotFoundError = new UserError(
-      ExtensionSource,
-      ExtensionErrors.EnvResourceInfoNotFoundError,
-      util.format(
-        localize("teamstoolkit.handlers.resourceInfoNotFound"),
-        ResourceInfo.Subscription,
-        env
-      )
-    );
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.OpenSubscriptionInPortal,
-      resourceInfoNotFoundError,
-      telemetryProperties
-    );
-
-    return err(resourceInfoNotFoundError);
-  }
-}
-
-export async function openResourceGroupInPortal(env: string): Promise<Result<Void, FxError>> {
-  const telemetryProperties: { [p: string]: string } = {};
-  telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
-
-  const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-  const resourceGroupName = await getResourceGroupNameFromEnv(env);
-
-  if (subscriptionInfo && resourceGroupName) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenResourceGroupInPortal, telemetryProperties);
-
-    const url = `${getSubscriptionUrl(subscriptionInfo)}/resourceGroups/${resourceGroupName}`;
-    await vscode.env.openExternal(vscode.Uri.parse(url));
-
-    return ok(Void);
-  } else {
-    let errorMessage = "";
-    if (subscriptionInfo) {
-      errorMessage = util.format(
-        localize("teamstoolkit.handlers.resourceInfoNotFound"),
-        ResourceInfo.ResourceGroup,
-        env
-      );
-    } else if (resourceGroupName) {
-      errorMessage = util.format(
-        localize("teamstoolkit.handlers.resourceInfoNotFound"),
-        ResourceInfo.Subscription,
-        env
-      );
-    } else {
-      errorMessage = util.format(
-        localize("teamstoolkit.handlers.resourceInfoNotFound"),
-        `${ResourceInfo.Subscription} and ${ResourceInfo.ResourceGroup}`,
-        env
-      );
-    }
-
-    const resourceInfoNotFoundError = new UserError(
-      ExtensionSource,
-      ExtensionErrors.EnvResourceInfoNotFoundError,
-      errorMessage
-    );
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.OpenSubscriptionInPortal,
-      resourceInfoNotFoundError,
-      telemetryProperties
-    );
-
-    return err(resourceInfoNotFoundError);
-  }
 }
 
 export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {

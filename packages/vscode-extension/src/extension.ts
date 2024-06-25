@@ -103,6 +103,8 @@ import {
   openLifecycleLinkHandler,
   openM365AccountHandler,
   openReportIssues,
+  openResourceGroupInPortal,
+  openSubscriptionInPortal,
   openWelcomeHandler,
 } from "./handlers/openLinkHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
@@ -759,14 +761,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(aadManifestTemplateCodeLensCmd);
 
-  const openResourceGroupInPortal = vscode.commands.registerCommand(
+  const openResourceGroupInPortalCmd = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.openResourceGroupInPortal, envName);
+      await Correlator.run(openResourceGroupInPortal, envName);
     }
   );
-  context.subscriptions.push(openResourceGroupInPortal);
+  context.subscriptions.push(openResourceGroupInPortalCmd);
 
   const openManifestSchemaCmd = vscode.commands.registerCommand(
     "fx-extension.openSchema",
@@ -784,14 +786,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addAPICmd);
 
-  const openSubscriptionInPortal = vscode.commands.registerCommand(
+  const openSubscriptionInPortalCmd = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.openSubscriptionInPortal, envName);
+      await Correlator.run(openSubscriptionInPortal, envName);
     }
   );
-  context.subscriptions.push(openSubscriptionInPortal);
+  context.subscriptions.push(openSubscriptionInPortalCmd);
 
   registerInCommandController(
     context,

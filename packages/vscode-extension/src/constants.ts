@@ -21,6 +21,11 @@ export enum PrereleaseState {
   Version = "teamsToolkit:prerelease:version",
 }
 
+export enum ResourceInfo {
+  Subscription = "Subscription",
+  ResourceGroup = "Resource Group",
+}
+
 export enum GlobalKey {
   OpenWalkThrough = "fx-extension.openWalkThrough",
   OpenReadMe = "fx-extension.openReadMe",

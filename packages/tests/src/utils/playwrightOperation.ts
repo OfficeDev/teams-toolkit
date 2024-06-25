@@ -457,7 +457,10 @@ export async function initTeamsPage(
         await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
           try {
-            const items = await page?.waitForSelector("li.ui-dropdown__item");
+            // select 2nd li item
+            const items = await page?.waitForSelector(
+              "li.ui-dropdown__item:nth-child(2)"
+            );
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
@@ -466,7 +469,6 @@ export async function initTeamsPage(
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
-
             const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
@@ -2688,7 +2690,10 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       console.log("check result...");
-      const spfxFrame = await page.waitForSelector("div#app");
+      const frameElementHandle = await page.waitForSelector(
+        `iframe[name="embedded-page-container"]`
+      );
+      const spfxFrame = await frameElementHandle?.contentFrame();
       // title
       console.log("check title");
       const title = await spfxFrame?.waitForSelector(

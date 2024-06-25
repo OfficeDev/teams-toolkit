@@ -70,3 +70,8 @@ export async function publishHandler(...args: unknown[]): Promise<Result<null, F
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
   return await runCommand(Stage.publish);
 }
+
+export async function addWebpartHandler(...args: unknown[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
+  return await runCommand(Stage.addWebpart);
+}

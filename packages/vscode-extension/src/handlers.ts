@@ -187,12 +187,6 @@ export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, F
   return Promise.resolve(ok(null));
 }
 
-export async function addWebpart(...args: unknown[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
-
-  return await runCommand(Stage.addWebpart);
-}
-
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
   try {
     await triggerV3Migration();
@@ -584,71 +578,6 @@ export function acpInstalled(): boolean {
   return !!extension;
 }
 
-export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.PreviewAadManifestFile,
-    getTriggerFromProperty(args)
-  );
-  const workspacePath = workspaceUri?.fsPath;
-  const validProject = isValidProject(workspacePath);
-  if (!validProject) {
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.PreviewAadManifestFile,
-      new InvalidProjectError()
-    );
-    return err(new InvalidProjectError());
-  }
-
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, selectedEnv.error);
-    return err(selectedEnv.error);
-  }
-  const envName = selectedEnv.value;
-
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "buildAadManifest",
-    params: {
-      type: "",
-    },
-  };
-
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.BuildAadManifestStart,
-    getTriggerFromProperty(args)
-  );
-  const inputs = getSystemInputs();
-  inputs.env = envName;
-  const res = await runCommand(Stage.buildAad, inputs);
-
-  if (res.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);
-    return err(res.error);
-  }
-
-  const manifestFile = `${workspacePath as string}/${BuildFolderName}/aad.${envName}.json`;
-
-  if (fs.existsSync(manifestFile)) {
-    void vscode.workspace.openTextDocument(manifestFile).then((document) => {
-      void vscode.window.showTextDocument(document);
-    });
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAadManifestFile, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    });
-    return ok(manifestFile);
-  } else {
-    const error = new SystemError(
-      ExtensionSource,
-      "FileNotFound",
-      util.format(localize("teamstoolkit.handlers.fileNotFound"), manifestFile)
-    );
-    void showError(error);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, error);
-    return err(error);
-  }
-}
-
 export async function openConfigStateFile(args: any[]): Promise<any> {
   let telemetryStartName = TelemetryEvent.OpenManifestConfigStateStart;
   let telemetryName = TelemetryEvent.OpenManifestConfigState;
@@ -749,20 +678,6 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;
-}
-
-export function editAadManifestTemplate(args: any[]) {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.EditAadManifestTemplate,
-    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
-  );
-  if (args && args.length > 1) {
-    const workspacePath = workspaceUri?.fsPath;
-    const manifestPath = `${workspacePath as string}/${MetadataV3.aadManifestFileName}`;
-    void vscode.workspace.openTextDocument(manifestPath).then((document) => {
-      void vscode.window.showTextDocument(document);
-    });
-  }
 }
 
 export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>> {
@@ -956,12 +871,6 @@ export async function openLifecycleTreeview(args?: any[]) {
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
-}
-
-export async function updateAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
-  const inputs = getSystemInputs();
-  return await runCommand(Stage.deployAad, inputs);
 }
 
 export async function azureAccountSignOutHelpHandler(

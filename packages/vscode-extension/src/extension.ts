@@ -82,6 +82,7 @@ import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
 import {
+  addWebpartHandler,
   createNewProjectHandler,
   deployHandler,
   provisionHandler,
@@ -143,6 +144,11 @@ import {
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
 import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
+import {
+  editAadManifestTemplateHandler,
+  openPreviewAadFileHandler,
+  updateAadAppManifestHandler,
+} from "./handlers/aadManifestHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -537,12 +543,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     handlers.installAdaptiveCardExt
   );
 
-  registerInCommandController(
-    context,
-    "fx-extension.addWebpart",
-    handlers.addWebpart,
-    "addWebpart"
-  );
+  registerInCommandController(context, "fx-extension.addWebpart", addWebpartHandler, "addWebpart");
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
@@ -588,7 +589,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const updateAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.updateAadAppManifest",
-    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
+    (...args) => Correlator.run(updateAadAppManifestHandler, args)
   );
   context.subscriptions.push(updateAadAppManifest);
 
@@ -624,7 +625,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const editAadManifestTemplateCmd = vscode.commands.registerCommand(
     "fx-extension.editAadManifestTemplate",
-    (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
+    (...args) => Correlator.run(editAadManifestTemplateHandler, args)
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
@@ -749,7 +750,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",
-    (...args) => Correlator.run(handlers.openPreviewAadFile, args)
+    (...args) => Correlator.run(openPreviewAadFileHandler, args)
   );
   context.subscriptions.push(aadManifestTemplateCodeLensCmd);
 

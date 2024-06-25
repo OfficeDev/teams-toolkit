@@ -351,29 +351,6 @@ export async function openSamplesHandler(...args: unknown[]): Promise<Result<nul
   return Promise.resolve(ok(null));
 }
 
-export async function openExternalHandler(args?: any[]) {
-  if (args && args.length > 0) {
-    const url = (args[0] as { url: string }).url;
-    return vscode.env.openExternal(vscode.Uri.parse(url));
-  }
-}
-
-export async function createNewEnvironment(args?: any[]): Promise<Result<undefined, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CreateNewEnvironmentStart,
-    getTriggerFromProperty(args)
-  );
-  const result = await runCommand(Stage.createEnv);
-  if (!result.isErr()) {
-    await envTreeProviderInstance.reloadEnvironments();
-  }
-  return result;
-}
-
-export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  return await envTreeProviderInstance.reloadEnvironments();
-}
-
 function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
   const subscriptionId = subscriptionInfo.subscriptionId;
   const tenantId = subscriptionInfo.tenantId;

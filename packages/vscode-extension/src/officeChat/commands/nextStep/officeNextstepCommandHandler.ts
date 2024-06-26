@@ -75,13 +75,8 @@ export default async function officeNextStepCommandHandler(
     if (s.description instanceof Function) {
       s.description = s.description(status);
     }
-    const t0 = performance.now();
     const stepDescription = await describeOfficeStep(s, token, officeChatTelemetryData);
-    const t1 = performance.now();
-    officeChatTelemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(stepDescription, t0, t1)
-    );
-    officeChatTelemetryData.chatMessages.push(
+    officeChatTelemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, stepDescription)
     );
     const title = s.docLink ? `[${s.title}](${s.docLink})` : s.title;

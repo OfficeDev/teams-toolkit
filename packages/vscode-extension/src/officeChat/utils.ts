@@ -33,18 +33,13 @@ export async function purifyUserMessage(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userMessagePrompt),
     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, systemPrompt),
   ];
-  const t0 = performance.now();
   const purifiedResult = await getCopilotResponseAsString(
     "copilot-gpt-4",
     purifyUserMessage,
     token
   );
-  const t1 = performance.now();
-  telemetryData.responseTokensPerRequest.push(
-    OfficeChatTelemetryData.calculateResponseTokensPerRequest(purifiedResult, t0, t1)
-  );
-  telemetryData.chatMessages.push(
-    ...purifyUserMessage,
+  telemetryData.chatMessages.push(...purifyUserMessage);
+  telemetryData.responseChatMessages.push(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, purifiedResult)
   );
   if (
@@ -63,14 +58,9 @@ export async function isInputHarmful(
   telemetryData: OfficeChatTelemetryData
 ): Promise<boolean> {
   const messages = buildDynamicPrompt(inputRai, request.prompt).messages;
-  const t0 = performance.now();
   let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
-  const t1 = performance.now();
-  telemetryData.responseTokensPerRequest.push(
-    OfficeChatTelemetryData.calculateResponseTokensPerRequest(response, t0, t1)
-  );
-  telemetryData.chatMessages.push(
-    ...messages,
+  telemetryData.chatMessages.push(...messages);
+  telemetryData.responseChatMessages.push(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
   );
   if (!response) {
@@ -105,14 +95,9 @@ async function isContentHarmful(
   spec: Spec
 ): Promise<boolean> {
   async function getIsHarmfulResponseAsync() {
-    const t0 = performance.now();
     const isHarmfulResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
-    const t1 = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(isHarmfulResponse, t0, t1)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      ...messages,
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, isHarmfulResponse)
     );
     if (

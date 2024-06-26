@@ -25,6 +25,7 @@ import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../
 import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
 import { CreateProjectInputs } from "@microsoft/teamsfx-api";
 import { core } from "../../../globalVariables";
+import { ProjectMiniData } from "../../types";
 
 export async function matchOfficeProject(
   request: ChatRequest,
@@ -39,8 +40,8 @@ export async function matchOfficeProject(
     getOfficeProjectMatchSystemPrompt(allOfficeProjectMetadata),
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
   ];
-  const t0 = performance.now();
   let response = "";
+  telemetryData.chatMessages.push(...messages);
   try {
     response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   } catch (error) {
@@ -50,12 +51,7 @@ export async function matchOfficeProject(
       telemetryData.markComplete("unsupportedPrompt");
     }
   }
-  const t1 = performance.now();
-  telemetryData.responseTokensPerRequest.push(
-    OfficeChatTelemetryData.calculateResponseTokensPerRequest(response, t0, t1)
-  );
-  telemetryData.chatMessages.push(
-    ...messages,
+  telemetryData.responseChatMessages.push(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
   );
   let matchedProjectId: string;
@@ -112,7 +108,7 @@ export function getOfficeTemplateMetadata(): ProjectMetadata[] {
 export async function showOfficeSampleFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
-): Promise<object> {
+): Promise<ProjectMiniData> {
   response.markdown(
     "\nWe've found a sample project that matches your description. Take a look at it below."
   );
@@ -128,7 +124,11 @@ export async function showOfficeSampleFileTree(
     20
   );
   response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
-  return { path: path.join(tempFolder, downloadUrlInfo.dir), host: host };
+  const result: ProjectMiniData = {
+    path: path.join(tempFolder, downloadUrlInfo.dir),
+    host: host,
+  };
+  return result;
 }
 
 export async function showOfficeTemplateFileTree(

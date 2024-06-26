@@ -391,11 +391,11 @@ export enum TelemetryProperty {
   CopilotMatchResultType = "copilot-match-result-type",
   CopilotChatBlockReason = "copilot-chat-block-reason",
   CopilotChatRelatedSampleName = "copilot-chat-related-sample-name",
-  CopilotChatCodeClassAndMembers = "copilot-chat-code-class-and-members",
   CopilotChatTimeToFirstToken = "copilot-chat-time-to-first-token",
-  CopilotChatTotalTokensPerSecond = "copilot-chat-total-tokens-per-second",
-  CopilotChatResponseTokensPerRequest = "copilot-chat-response-tokens-per-request",
-  CopilotChatTotalTokens = "copilot-chat-total-tokens",
+  CopilotRequestChatCountPerSecond = "copilot-chat-total-tokens-per-second",
+  CopilotResponseChatCountPerSecond = "copilot-chat-total-tokens-per-second",
+  CopilotRequestChatCount = "copilot-request-chat-total-tokens",
+  CopilotResponseChatCount = "copilot-response-chat-total-tokens",
 }
 
 export enum TelemetryMeasurements {

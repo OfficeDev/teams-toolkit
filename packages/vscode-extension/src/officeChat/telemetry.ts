@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { LanguageModelChatMessage, LanguageModelChatMessageRole } from "vscode";
-import { ChatTelemetryData } from "../chat/telemetry";
-import { ITelemetryData } from "../chat/types";
+import { IChatTelemetryData, ITelemetryData } from "../chat/types";
 import { Correlator, getUuid } from "@microsoft/teamsfx-core";
 import { countMessagesTokens } from "../chat/utils";
 import {
@@ -17,19 +16,18 @@ export enum OfficeChatTelemetryBlockReasonEnum {
   OffTopic = "Off Topic",
   LanguageModelError = "LanguageModel Error",
 }
-export class OfficeChatTelemetryData extends ChatTelemetryData {
+export class OfficeChatTelemetryData implements IChatTelemetryData {
   public static requestData: { [key: string]: OfficeChatTelemetryData } = {};
 
   telemetryData: ITelemetryData;
   chatMessages: LanguageModelChatMessage[] = [];
+  responseChatMessages: LanguageModelChatMessage[] = [];
   command: string;
   requestId: string;
   startTime: number;
   hostType: string;
   relatedSampleName: string;
-  codeClassAndMembers: string;
   timeToFirstToken: number;
-  responseTokensPerRequest: number[];
   blockReason?: string;
   // participant name
   participantId: string;
@@ -45,15 +43,12 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
   }
 
   constructor(command: string, requestId: string, startTime: number, participantId: string) {
-    super(command, requestId, startTime, participantId);
     this.command = command;
     this.requestId = requestId;
     this.startTime = startTime;
     this.participantId = participantId;
     this.hostType = "";
     this.relatedSampleName = "";
-    this.codeClassAndMembers = "";
-    this.responseTokensPerRequest = [];
     this.timeToFirstToken = -1;
 
     const telemetryData: ITelemetryData = { properties: {}, measurements: {} };
@@ -79,17 +74,6 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     return OfficeChatTelemetryData.requestData[requestId];
   }
 
-  static calculateResponseTokensPerRequest(
-    response: string,
-    t0: DOMHighResTimeStamp,
-    t1: DOMHighResTimeStamp
-  ) {
-    const responseTokens = countMessagesTokens([
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response),
-    ]);
-    return responseTokens / ((t1 - t0) / 1000);
-  }
-
   setHostType(hostType: string) {
     this.hostType = hostType;
   }
@@ -98,15 +82,11 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     this.relatedSampleName = relatedSampleName;
   }
 
-  setCodeClassAndMembers(codeClassAndMembers: string) {
-    this.codeClassAndMembers = codeClassAndMembers;
-  }
-
   setTimeToFirstToken(t0?: DOMHighResTimeStamp) {
     if (t0) {
-      this.timeToFirstToken = t0 - this.startTime;
+      this.timeToFirstToken = (t0 - this.startTime) / 1000;
     } else {
-      this.timeToFirstToken = performance.now() - this.startTime;
+      this.timeToFirstToken = (performance.now() - this.startTime) / 1000;
     }
   }
 
@@ -118,6 +98,10 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     return countMessagesTokens(this.chatMessages);
   }
 
+  responseChatMessagesTokenCount(): number {
+    return countMessagesTokens(this.responseChatMessages);
+  }
+
   extendBy(properties?: { [key: string]: string }, measurements?: { [key: string]: number }) {
     this.telemetryData.properties = { ...this.telemetryData.properties, ...properties };
     this.telemetryData.measurements = { ...this.telemetryData.measurements, ...measurements };
@@ -127,25 +111,26 @@ export class OfficeChatTelemetryData extends ChatTelemetryData {
     if (!this.hasComplete) {
       this.telemetryData.properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       this.telemetryData.properties[TelemetryProperty.CopilotChatCompleteType] = completeType;
-      if (this.blockReason) {
+      if (this.blockReason && this.blockReason !== "") {
         this.telemetryData.properties[TelemetryProperty.CopilotChatBlockReason] = this.blockReason;
       }
       this.telemetryData.properties[TelemetryProperty.HostType] = this.hostType;
       this.telemetryData.properties[TelemetryProperty.CopilotChatRelatedSampleName] =
         this.relatedSampleName;
-      // this.telemetryData.properties[TelemetryProperty.CopilotChatCodeClassAndMembers] =
-      //   this.codeClassAndMembers;
-      this.telemetryData.properties[TelemetryProperty.CopilotChatResponseTokensPerRequest] =
-        this.responseTokensPerRequest.toString();
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToFirstToken] =
         this.timeToFirstToken;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] =
-        performance.now() - this.startTime;
-      this.telemetryData.measurements[TelemetryProperty.CopilotChatTokenCount] =
+        (performance.now() - this.startTime) / 1000;
+      this.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCount] =
         this.chatMessagesTokenCount();
-      this.telemetryData.measurements[TelemetryProperty.CopilotChatTotalTokensPerSecond] =
-        this.telemetryData.measurements[TelemetryProperty.CopilotChatTokenCount] /
-        (this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] / 1000);
+      this.telemetryData.measurements[TelemetryProperty.CopilotResponseChatCount] =
+        this.responseChatMessagesTokenCount();
+      this.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCountPerSecond] =
+        this.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCount] /
+        this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete];
+      this.telemetryData.measurements[TelemetryProperty.CopilotResponseChatCountPerSecond] =
+        this.telemetryData.measurements[TelemetryProperty.CopilotResponseChatCount] /
+        this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete];
       this.hasComplete = true;
     }
   }

@@ -212,18 +212,13 @@ ${spec.appendix.codeExplanation
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
       new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
-    const t0 = performance.now();
     let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
-    const t1 = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      ...messages,
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
@@ -329,18 +324,13 @@ ${spec.appendix.codeExplanation
       );
     }
 
-    const t0 = performance.now();
     let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
-    const t1 = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      ...messages,
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
@@ -500,14 +490,9 @@ ${spec.appendix.codeExplanation
     }
     console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
 
-    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-    const t1 = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      ...messages,
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     // extract the code snippet and the api list out

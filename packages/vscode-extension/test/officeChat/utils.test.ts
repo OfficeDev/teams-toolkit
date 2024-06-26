@@ -20,7 +20,7 @@ describe("File: officeChat/utils.ts", () => {
     beforeEach(() => {
       officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       officeChatTelemetryDataMock.chatMessages = [];
-      officeChatTelemetryDataMock.responseTokensPerRequest = [];
+      officeChatTelemetryDataMock.responseChatMessages = [];
     });
 
     afterEach(() => {
@@ -57,7 +57,7 @@ describe("File: officeChat/utils.ts", () => {
       });
       officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       officeChatTelemetryDataMock.chatMessages = [];
-      officeChatTelemetryDataMock.responseTokensPerRequest = [];
+      officeChatTelemetryDataMock.responseChatMessages = [];
     });
     afterEach(() => {
       sandbox.restore();
@@ -90,7 +90,7 @@ describe("File: officeChat/utils.ts", () => {
       const token = new CancellationToken();
       const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       officeChatTelemetryDataMock.chatMessages = [];
-      officeChatTelemetryDataMock.responseTokensPerRequest = [];
+      officeChatTelemetryDataMock.responseChatMessages = [];
       try {
         await utils.isInputHarmful(
           { prompt: "test" } as unknown as vscode.ChatRequest,
@@ -108,7 +108,7 @@ describe("File: officeChat/utils.ts", () => {
       const token = new CancellationToken();
       const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       officeChatTelemetryDataMock.chatMessages = [];
-      officeChatTelemetryDataMock.responseTokensPerRequest = [];
+      officeChatTelemetryDataMock.responseChatMessages = [];
       try {
         await utils.isInputHarmful(
           { prompt: "test" } as unknown as vscode.ChatRequest,

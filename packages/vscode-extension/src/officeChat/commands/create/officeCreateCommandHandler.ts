@@ -13,7 +13,7 @@ import {
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { verbatimCopilotInteraction } from "../../../chat/utils";
 import { isInputHarmful } from "../../utils";
-import { ICopilotChatOfficeResult } from "../../types";
+import { ICopilotChatOfficeResult, ProjectMiniData } from "../../types";
 import { describeOfficeProjectSystemPrompt } from "../../officePrompts";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
@@ -22,6 +22,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
 import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import { ProjectMetadata } from "../../../chat/commands/create/types";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -78,15 +79,17 @@ export default async function officeCreateCommandHandler(
       );
 
       if (matchedResult.type === "sample") {
-        const sampleInfos = await showOfficeSampleFileTree(matchedResult, response);
-        const folder = (sampleInfos as any)?.["path"];
-        const hostType = (sampleInfos as any)?.["host"].toLowerCase();
+        const sampleInfos: ProjectMiniData = await showOfficeSampleFileTree(
+          matchedResult,
+          response
+        );
+        const folder = sampleInfos.path;
+        const hostType = sampleInfos.host.toLowerCase();
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         officeChatTelemetryData.setHostType(hostType);
-        const matchResultInfo = "sample";
         response.button({
           command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-          arguments: [folder, officeChatTelemetryData.requestId, matchResultInfo],
+          arguments: [folder, officeChatTelemetryData.requestId, matchedResult.type],
           title: sampleTitle,
         });
       } else {
@@ -94,10 +97,9 @@ export default async function officeCreateCommandHandler(
         const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data as any, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         officeChatTelemetryData.setHostType(tmpHostType);
-        const tmpmatchResultInfo = "template";
         response.button({
           command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-          arguments: [tmpFolder, officeChatTelemetryData.requestId, tmpmatchResultInfo],
+          arguments: [tmpFolder, officeChatTelemetryData.requestId, matchedResult.type],
           title: templateTitle,
         });
       }

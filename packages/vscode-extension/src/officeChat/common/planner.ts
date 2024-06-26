@@ -86,8 +86,7 @@ export class Planner {
 ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
 ${purified}
 `);
-    const spec = new Spec(purified);
-    spec.appendix.telemetryData.requestId = telemetryData.requestId;
+    const spec = new Spec(purified, telemetryData.requestId);
     try {
       for (let index = 0; index < candidates.length; index++) {
         const candidate = candidates[index];
@@ -147,14 +146,11 @@ ${purified}
     telemetryData.setHostType(spec.appendix.host?.toLowerCase());
     telemetryData.setTimeToFirstToken(spec.appendix.telemetryData.timeToFirstToken);
     telemetryData.setRelatedSampleName(spec.appendix.telemetryData.relatedSampleName.toString());
-    // telemetryData.setCodeClassAndMembers(
-    //   spec.appendix.telemetryData.codeClassAndMembers.toString()
-    // );
     for (const chatMessage of spec.appendix.telemetryData.chatMessages) {
       telemetryData.chatMessages.push(chatMessage);
     }
-    for (const responseTokensPerRequest of spec.appendix.telemetryData.responseTokensPerRequest) {
-      telemetryData.responseTokensPerRequest.push(responseTokensPerRequest);
+    for (const responseChatMessage of spec.appendix.telemetryData.responseChatMessages) {
+      telemetryData.responseChatMessages.push(responseChatMessage);
     }
     const debugInfo = `
       ## Time cost:\n

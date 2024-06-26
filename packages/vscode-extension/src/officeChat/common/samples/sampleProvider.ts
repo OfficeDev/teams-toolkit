@@ -104,14 +104,9 @@ export class SampleProvider {
     }
 
     countOfLLMInvoke += 1;
-    const timeStart = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
-    const timeEnd = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, timeStart, timeEnd)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      sampleMessage,
+    spec.appendix.telemetryData.chatMessages.push(sampleMessage);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     const returnObject: { picked: string[] } = JSON.parse(
@@ -301,14 +296,9 @@ export class SampleProvider {
       LanguageModelChatMessageRole.User,
       getMoreRelevantMethodsOrPropertiesPrompt
     );
-    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
-    const t1 = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      sampleMessage,
+    spec.appendix.telemetryData.chatMessages.push(sampleMessage);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let returnObject: { picked: string[] } = { picked: [] };

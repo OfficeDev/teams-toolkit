@@ -23,10 +23,9 @@ export class Spec {
       requestId: string;
       isHarmful: boolean;
       relatedSampleName: string[];
-      codeClassAndMembers: string[];
       timeToFirstToken: DOMHighResTimeStamp;
       chatMessages: LanguageModelChatMessage[];
-      responseTokensPerRequest: number[];
+      responseChatMessages: LanguageModelChatMessage[];
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
@@ -34,7 +33,7 @@ export class Spec {
     shouldContinue: boolean;
   };
 
-  constructor(userInput: string) {
+  constructor(userInput: string, requestId?: string) {
     this.userInput = userInput;
     this.taskSummary = "";
     this.sections = [];
@@ -49,13 +48,12 @@ export class Spec {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: false,
       telemetryData: {
-        requestId: "",
+        requestId: requestId ? requestId : "",
         isHarmful: false,
         relatedSampleName: [],
-        codeClassAndMembers: [],
         timeToFirstToken: 0,
         chatMessages: [],
-        responseTokensPerRequest: [],
+        responseChatMessages: [],
         properties: {},
         measurements: {},
       },

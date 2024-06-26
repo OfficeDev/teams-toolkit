@@ -353,14 +353,9 @@ export class CodeIssueCorrector implements ISkill {
       msgCount = countMessagesTokens(messages);
     }
     // console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
-    const t0 = performance.now();
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-    const t1 = performance.now();
-    spec.appendix.telemetryData.responseTokensPerRequest.push(
-      OfficeChatTelemetryData.calculateResponseTokensPerRequest(copilotResponse, t0, t1)
-    );
-    spec.appendix.telemetryData.chatMessages.push(
-      ...messages,
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
       new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     // extract the code snippet

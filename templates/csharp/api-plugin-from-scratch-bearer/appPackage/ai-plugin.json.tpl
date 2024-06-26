@@ -68,7 +68,7 @@
     {
       "type": "OpenApi",
       "auth": {
-        "type": "ApiKeyPluginVault"
+        "type": "ApiKeyPluginVault",
         "reference_id": "${{APIKEY_REGISTRATION_ID}}"
       },
       "spec": {

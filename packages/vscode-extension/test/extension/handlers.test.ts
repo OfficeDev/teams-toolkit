@@ -2,7 +2,6 @@
  * @author HuihuiWu-Microsoft <73154171+HuihuiWu-Microsoft@users.noreply.github.com>
  */
 import {
-  ConfigFolderName,
   FxError,
   Inputs,
   Platform,
@@ -19,15 +18,12 @@ import {
   DepsType,
   UnhandledError,
   UserCancelError,
-  environmentManager,
   featureFlagManager,
-  pathUtils,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
-import * as fs from "fs-extra";
 import * as mockfs from "mock-fs";
 import * as path from "path";
 import * as sinon from "sinon";
@@ -62,7 +58,6 @@ import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import { updateAutoOpenGlobalKey } from "../../src/utils/globalStateUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as migrationUtils from "../../src/utils/migrationUtils";
-import { ExtensionSurvey } from "../../src/utils/survey";
 import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import { MockCore } from "../mocks/mockCore";
@@ -153,14 +148,6 @@ describe("handlers", () => {
     });
   });
 
-  it("azureAccountSignOutHelpHandler()", async () => {
-    try {
-      handlers.azureAccountSignOutHelpHandler();
-    } catch (e) {
-      chai.assert.isTrue(e instanceof Error);
-    }
-  });
-
   describe("runCommand()", function () {
     const sandbox = sinon.createSandbox();
 
@@ -171,199 +158,6 @@ describe("handlers", () => {
 
     afterEach(() => {
       sandbox.restore();
-    });
-
-    it("openConfigStateFile() - InvalidArgs", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.InvalidArgs);
-      }
-    });
-
-    it("openConfigStateFile() - noOpenWorkspace", async () => {
-      const env = "local";
-
-      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: undefined });
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([]);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.NoWorkspaceError);
-      }
-    });
-
-    it("openConfigStateFile() - invalidProject", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-
-      const res = await handlers.openConfigStateFile([]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.InvalidProject);
-      }
-    });
-
-    it("openConfigStateFile() - invalid target environment", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(err({ error: "invalid target env" })),
-      });
-      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
-      sandbox.stub(fs, "pathExists").resolves(false);
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
-
-      const res = await handlers.openConfigStateFile([{ env: undefined, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-      }
-    });
-
-    it("openConfigStateFile() - valid args", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
-      sandbox.stub(fs, "pathExists").resolves(false);
-      sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok([]));
-
-      const res = await handlers.openConfigStateFile([{ env: undefined, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-        chai.assert.equal(res.error.name, ExtensionErrors.EnvFileNotFoundError);
-      }
-    });
-
-    it("openConfigStateFile() - invalid env folder", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(err({ error: "unknown" } as any));
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(vscode.workspace, "openTextDocument").resolves("" as any);
-
-      const res = await handlers.openConfigStateFile([{ env: env, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isErr());
-      }
-    });
-
-    it("openConfigStateFile() - success", async () => {
-      const env = "local";
-      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
-
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
-      const projectSettings: any = {
-        appName: "myapp",
-        version: "1.0.0",
-        projectId: "123",
-      };
-      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
-      await fs.mkdir(configFolder, { recursive: true });
-      const settingsFile = path.resolve(configFolder, "projectSettings.json");
-      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
-
-      sandbox.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
-      });
-      sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok(env));
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(vscode.workspace, "openTextDocument").returns(Promise.resolve("" as any));
-
-      const res = await handlers.openConfigStateFile([{ env: env, type: "env" }]);
-      await fs.remove(tmpDir);
-
-      if (res) {
-        chai.assert.isTrue(res.isOk());
-      }
     });
 
     it("create sample with projectid", async () => {
@@ -558,27 +352,6 @@ describe("handlers", () => {
     );
   });
 
-  it("walkthrough: build intelligent apps", async () => {
-    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
-
-    await handlers.openBuildIntelligentAppsWalkthroughHandler();
-    sandbox.assert.calledOnceWithExactly(
-      executeCommands,
-      "workbench.action.openWalkthrough",
-      "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
-    );
-  });
-
-  it("openSurveyHandler", async () => {
-    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    const openLink = sandbox.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
-    sandbox.stub(localizeUtils, "getDefaultString").returns("test");
-
-    await handlers.openSurveyHandler([extTelemetryEvents.TelemetryTriggerFrom.TreeView]);
-    chai.assert.isTrue(sendTelemetryEvent.calledOnce);
-    chai.assert.isTrue(openLink.calledOnce);
-  });
-
   it("openSamplesHandler", async () => {
     const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -586,74 +359,6 @@ describe("handlers", () => {
     await handlers.openSamplesHandler();
 
     sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, []);
-  });
-
-  describe("decryptSecret", function () {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("successfully update secret", async () => {
-      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sandbox.spy(globalVariables.core, "decrypt");
-      const encrypt = sandbox.spy(globalVariables.core, "encrypt");
-      sandbox.stub(vscode.commands, "executeCommand");
-      const editBuilder = sandbox.spy();
-      sandbox.stub(vscode.window, "activeTextEditor").value({
-        edit: function (callback: (eb: any) => void) {
-          callback({
-            replace: editBuilder,
-          });
-        },
-      });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        inputText: () => Promise.resolve(ok({ type: "success", result: "inputValue" })),
-      });
-      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
-
-      await handlers.decryptSecret("test", range);
-
-      sinon.assert.calledOnce(decrypt);
-      sinon.assert.calledOnce(encrypt);
-      sinon.assert.calledOnce(editBuilder);
-      sinon.assert.calledTwice(sendTelemetryEvent);
-      sinon.assert.notCalled(sendTelemetryErrorEvent);
-    });
-
-    it("failed to update due to corrupted secret", async () => {
-      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sandbox.stub(globalVariables.core, "decrypt");
-      decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
-      const encrypt = sandbox.spy(globalVariables.core, "encrypt");
-      sandbox.stub(vscode.commands, "executeCommand");
-      const editBuilder = sandbox.spy();
-      sandbox.stub(vscode.window, "activeTextEditor").value({
-        edit: function (callback: (eb: any) => void) {
-          callback({
-            replace: editBuilder,
-          });
-        },
-      });
-      const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
-      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
-
-      await handlers.decryptSecret("test", range);
-
-      sinon.assert.calledOnce(decrypt);
-      sinon.assert.notCalled(encrypt);
-      sinon.assert.notCalled(editBuilder);
-      sinon.assert.calledOnce(showMessage);
-      sinon.assert.calledOnce(sendTelemetryEvent);
-      sinon.assert.calledOnce(sendTelemetryErrorEvent);
-    });
   });
 
   describe("checkUpgrade", function () {
@@ -744,16 +449,6 @@ describe("handlers", () => {
     });
   });
 
-  it("deployAadAppmanifest", async () => {
-    sandbox.stub(globalVariables, "core").value(new MockCore());
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
-    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
-    sandbox.assert.calledOnce(deployAadManifest);
-    deployAadManifest.restore();
-  });
-
   describe("getDotnetPathHandler", async () => {
     const sandbox = sinon.createSandbox();
 
@@ -805,167 +500,6 @@ describe("handlers", () => {
       sandbox.stub(DepsManager.prototype, "getStatus").rejects(new Error("failed to get status"));
       const dotnetPath = await handlers.getDotnetPathHandler();
       chai.assert.equal(dotnetPath, `${path.delimiter}`);
-    });
-  });
-
-  describe("scaffoldFromDeveloperPortalHandler", async () => {
-    const sandbox = sinon.createSandbox();
-
-    beforeEach(() => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
-      sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("missing args", async () => {
-      const progressHandler = new ProgressHandler("title", 1);
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler();
-
-      chai.assert.equal(res.isOk(), true);
-      chai.assert.equal(createProgressBar.notCalled, true);
-    });
-
-    it("incorrect number of args", async () => {
-      const progressHandler = new ProgressHandler("title", 1);
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler();
-
-      chai.assert.equal(res.isOk(), true);
-      chai.assert.equal(createProgressBar.notCalled, true);
-    });
-
-    it("general error when signing in M365", async () => {
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const progressHandler = new ProgressHandler("title", 1);
-      const startProgress = sandbox.stub(progressHandler, "start").resolves();
-      const endProgress = sandbox.stub(progressHandler, "end").resolves();
-      sandbox.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").throws("error1");
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-      const showErrorMessage = sandbox.stub(vscode.window, "showErrorMessage");
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
-      chai.assert.isTrue(res.isErr());
-      chai.assert.isTrue(createProgressBar.calledOnce);
-      chai.assert.isTrue(startProgress.calledOnce);
-      chai.assert.isTrue(endProgress.calledOnceWithExactly(false));
-      chai.assert.isTrue(showErrorMessage.calledOnce);
-      if (res.isErr()) {
-        chai.assert.isTrue(res.error instanceof UnhandledError);
-      }
-    });
-
-    it("error when signing M365", async () => {
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const progressHandler = new ProgressHandler("title", 1);
-      const startProgress = sandbox.stub(progressHandler, "start").resolves();
-      const endProgress = sandbox.stub(progressHandler, "end").resolves();
-      sandbox
-        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
-        .resolves(err(new UserError("source", "name", "message", "displayMessage")));
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-      const showErrorMessage = sandbox.stub(vscode.window, "showErrorMessage");
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
-
-      chai.assert.equal(res.isErr(), true);
-      chai.assert.equal(createProgressBar.calledOnce, true);
-      chai.assert.equal(startProgress.calledOnce, true);
-      chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
-      chai.assert.equal(showErrorMessage.calledOnce, true);
-    });
-
-    it("error when signing in M365 but missing display message", async () => {
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const progressHandler = new ProgressHandler("title", 1);
-      const startProgress = sandbox.stub(progressHandler, "start").resolves();
-      const endProgress = sandbox.stub(progressHandler, "end").resolves();
-      sandbox
-        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
-        .resolves(err(new UserError("source", "name", "", "")));
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-      const showErrorMessage = sandbox.stub(vscode.window, "showErrorMessage");
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
-
-      chai.assert.equal(res.isErr(), true);
-      chai.assert.equal(createProgressBar.calledOnce, true);
-      chai.assert.equal(startProgress.calledOnce, true);
-      chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
-      chai.assert.equal(showErrorMessage.calledOnce, true);
-    });
-
-    it("failed to get teams app", async () => {
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const progressHandler = new ProgressHandler("title", 1);
-      const startProgress = sandbox.stub(progressHandler, "start").resolves();
-      const endProgress = sandbox.stub(progressHandler, "end").resolves();
-      sandbox.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
-      sandbox
-        .stub(M365TokenInstance, "getAccessToken")
-        .resolves(err(new SystemError("source", "name", "", "")));
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      sandbox.stub(vscode.commands, "executeCommand");
-      sandbox.stub(globalState, "globalStateUpdate");
-      const getApp = sandbox.stub(teamsDevPortalClient, "getApp").throws("error");
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
-
-      chai.assert.isTrue(res.isErr());
-      chai.assert.isTrue(getApp.calledOnce);
-      chai.assert.isTrue(createProgressBar.calledOnce);
-      chai.assert.isTrue(startProgress.calledOnce);
-      chai.assert.isTrue(endProgress.calledOnceWithExactly(true));
-    });
-
-    it("happy path", async () => {
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      const progressHandler = new ProgressHandler("title", 1);
-      const startProgress = sandbox.stub(progressHandler, "start").resolves();
-      const endProgress = sandbox.stub(progressHandler, "end").resolves();
-      sandbox.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
-      sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("authSvcToken"));
-      sandbox.stub(teamsDevPortalClient, "setRegionEndpointByToken").resolves();
-      const createProgressBar = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "createProgressBar")
-        .returns(progressHandler);
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const createProject = sandbox.spy(globalVariables.core, "createProject");
-      sandbox.stub(vscode.commands, "executeCommand");
-      sandbox.stub(globalState, "globalStateUpdate");
-      const appDefinition: AppDefinition = {
-        teamsAppId: "mock-id",
-      };
-      sandbox.stub(teamsDevPortalClient, "getApp").resolves(appDefinition);
-
-      const res = await handlers.scaffoldFromDeveloperPortalHandler("appId", "testuser");
-
-      chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.teamsAppId, "mock-id");
-      chai.assert.isTrue(res.isOk());
-      chai.assert.isTrue(createProgressBar.calledOnce);
-      chai.assert.isTrue(startProgress.calledOnce);
-      chai.assert.isTrue(endProgress.calledOnceWithExactly(true));
     });
   });
 
@@ -1038,40 +572,6 @@ describe("handlers", () => {
       sandbox.stub(errorCommon, "showError").resolves();
       const result = await handlers.installAppInTeams();
       chai.assert.equal(result, "1");
-    });
-  });
-
-  describe("callBackFunctions", () => {
-    it("signinAzureCallback", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      const getIdentityCredentialStub = sandbox.stub(
-        AzureAccountManager.prototype,
-        "getIdentityCredentialAsync"
-      );
-
-      await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(getIdentityCredentialStub.calledOnce);
-    });
-
-    it("signinAzureCallback with error", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sandbox.stub(AzureAccountManager.prototype, "getIdentityCredentialAsync").throws(new Error());
-
-      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(res.isErr());
-    });
-
-    it("signinAzureCallback with cancel error", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sandbox
-        .stub(AzureAccountManager.prototype, "getIdentityCredentialAsync")
-        .throws(new UserCancelError(""));
-
-      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(res.isOk());
     });
   });
 
@@ -1357,115 +857,6 @@ describe("handlers", () => {
   });
 });
 
-describe("openPreviewAadFile", () => {
-  const sandbox = sinon.createSandbox();
-  afterEach(() => {
-    sandbox.restore();
-  });
-  it("manifest file not exists", async () => {
-    const core = new MockCore();
-    sandbox.stub(globalVariables, "core").value(core);
-    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(fs, "existsSync").returns(false);
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-    sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(
-      ok({
-        type: "success",
-        result: "dev",
-      })
-    );
-    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
-    sandbox.stub(errorCommon, "showError").callsFake(async () => {});
-    sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
-    const res = await handlers.openPreviewAadFile([]);
-    chai.assert.isTrue(res.isErr());
-  });
-
-  it("happy path", async () => {
-    const core = new MockCore();
-    sandbox.stub(globalVariables, "core").value(core);
-    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(fs, "existsSync").returns(true);
-    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-    sandbox.stub(vsc_ui.VS_CODE_UI, "selectOption").resolves(
-      ok({
-        type: "success",
-        result: "dev",
-      })
-    );
-    sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
-    sandbox.stub(errorCommon, "showError").callsFake(async () => {});
-    sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
-    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
-    sandbox.stub(vscode.workspace, "openTextDocument").resolves();
-    sandbox.stub(vscode.window, "showTextDocument").resolves();
-
-    const res = await handlers.openPreviewAadFile([]);
-    chai.assert.isTrue(res.isOk());
-  });
-});
-
-describe("editAadManifestTemplate", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("happy path", async () => {
-    const workspacePath = "/test/workspace/path";
-    const workspaceUri = vscode.Uri.file(workspacePath);
-    sandbox.stub(globalVariables, "workspaceUri").value(workspaceUri);
-
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await handlers.editAadManifestTemplate([null, "testTrigger"]);
-
-    sandbox.assert.calledOnceWithExactly(
-      openTextDocumentStub as any,
-      `${workspaceUri.fsPath}/aad.manifest.json`
-    );
-  });
-
-  it("happy path: no parameter", async () => {
-    const workspacePath = "/test/workspace/path";
-    const workspaceUri = vscode.Uri.file(workspacePath);
-    sandbox.stub(globalVariables, "workspaceUri").value(workspaceUri);
-
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await handlers.editAadManifestTemplate([]);
-
-    chai.assert.isTrue(showTextDocumentStub.callCount === 0);
-  });
-
-  it("happy path: workspaceUri is undefined", async () => {
-    const workspaceUri = undefined;
-    sandbox.stub(globalVariables, "workspaceUri").value(undefined);
-
-    const openTextDocumentStub = sandbox
-      .stub(vscode.workspace, "openTextDocument")
-      .resolves({} as any);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await handlers.editAadManifestTemplate([null, "testTrigger"]);
-
-    sandbox.assert.calledOnceWithExactly(
-      openTextDocumentStub as any,
-      `${workspaceUri}/aad.manifest.json`
-    );
-  });
-});
-
 describe("autoOpenProjectHandler", () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {
@@ -1506,31 +897,6 @@ describe("autoOpenProjectHandler", () => {
     await handlers.installAdaptiveCardExt();
 
     chai.assert.isTrue(executeCommandStub.calledOnce);
-  });
-
-  describe("acpInstalled()", () => {
-    afterEach(() => {
-      mockfs.restore();
-      sandbox.restore();
-    });
-
-    it("already installed", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(vscode.extensions, "getExtension").returns({} as any);
-
-      const installed = handlers.acpInstalled();
-
-      chai.assert.isTrue(installed);
-    });
-
-    it("not installed", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
-
-      const installed = handlers.acpInstalled();
-
-      chai.assert.isFalse(installed);
-    });
   });
 
   it("openLifecycleTreeview() - TeamsFx Project", async () => {

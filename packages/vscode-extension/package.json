@@ -171,11 +171,6 @@
         "view": "teamsfx-project-and-check-upgradeV3",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content%",
         "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-feedback",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-feedback.content%",
-        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -221,12 +216,6 @@
           "name": "Help",
           "when": "false",
           "visibility": "collapsed"
-        },
-        {
-          "id": "teamsfx-feedback",
-          "name": "Feedback",
-          "when": "false",
-          "visibility": "visible"
         },
         {
           "id": "teamsfx-empty-project",
@@ -593,10 +582,6 @@
           "when": "fx-extension.canUpgradeV3"
         },
         {
-          "command": "fx-extension.openSurvey",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.openOfficeDevLifecycleLink",
           "when": "false"
         },
@@ -913,10 +898,6 @@
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",
         "icon": "$(sign-out)"
-      },
-      {
-        "command": "fx-extension.openSurvey",
-        "title": "%teamstoolkit.commandsTreeViewProvider.openSurveyTitle%"
       },
       {
         "command": "fx-extension.addWebpart",

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem, window } from "vscode";
-import { OptionItem, SingleSelectConfig } from "@microsoft/teamsfx-api";
+import { FxError, OptionItem, Result, SingleSelectConfig, ok } from "@microsoft/teamsfx-api";
 import { Correlator, AppStudioScopes } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { AccountType, TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -139,4 +139,10 @@ export async function cmpAccountsHandler(args: any[]) {
   });
   quickPick.onDidHide(() => quickPick.dispose());
   quickPick.show();
+}
+
+export async function azureAccountSignOutHelpHandler(
+  args?: any[]
+): Promise<Result<boolean, FxError>> {
+  return Promise.resolve(ok(false));
 }

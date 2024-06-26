@@ -17,7 +17,6 @@ describe("Migration handlers", () => {
 
   beforeEach(() => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
   });
 
   afterEach(() => {
@@ -32,7 +31,6 @@ describe("Migration handlers", () => {
     });
 
     it("happy path", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const progressHandler = new ProgressHandler("title", 1);
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -50,7 +48,6 @@ describe("Migration handlers", () => {
     });
 
     it("happy path: failed files", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const progressHandler = new ProgressHandler("title", 1);
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -72,7 +69,6 @@ describe("Migration handlers", () => {
     });
 
     it("error", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const progressHandler = new ProgressHandler("title", 1);
@@ -94,7 +90,6 @@ describe("Migration handlers", () => {
     });
 
     it("user cancel", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -109,7 +104,6 @@ describe("Migration handlers", () => {
     });
 
     it("user cancel: skip folder selection", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -123,7 +117,6 @@ describe("Migration handlers", () => {
     });
 
     it("no change in package.json", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const progressHandler = new ProgressHandler("title", 1);
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -149,7 +142,6 @@ describe("Migration handlers", () => {
     });
 
     it("happy path", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const progressHandler = new ProgressHandler("title", 1);
       sandbox.stub(vsc_ui, "VS_CODE_UI").value({
@@ -166,7 +158,6 @@ describe("Migration handlers", () => {
     });
 
     it("user cancel: skip file selection", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const progressHandler = new ProgressHandler("title", 1);
@@ -185,7 +176,6 @@ describe("Migration handlers", () => {
     });
 
     it("error", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").returns();
       sandbox.stub(localizeUtils, "localize").callsFake((key: string) => key);
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const progressHandler = new ProgressHandler("title", 1);

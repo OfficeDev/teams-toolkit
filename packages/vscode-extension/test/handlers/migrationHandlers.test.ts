@@ -66,7 +66,7 @@ describe("Migration handlers", () => {
       const result = await migrateTeamsTabAppHandler();
 
       assert.deepEqual(result, ok(null));
-      chai.expect(warningStub.calledOnce).to.be.true;
+      assert.isTrue(warningStub.calledOnce);
     });
 
     it("error", async () => {

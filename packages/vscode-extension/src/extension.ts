@@ -75,9 +75,6 @@ import {
 } from "./globalVariables";
 import * as handlers from "./handlers";
 import { activate as activateHandlers } from "./handlers/activate";
-import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
-import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
-import { checkSideloadingCallback } from "./handlers/checkSideloading";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
@@ -109,7 +106,10 @@ import {
   openWelcomeHandler,
 } from "./handlers/openLinkHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
-import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import {
+  createProjectFromWalkthroughHandler,
+  openBuildIntelligentAppsWalkthroughHandler,
+} from "./handlers/walkthrough";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
@@ -127,7 +127,7 @@ import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewP
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler, setUriEventHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
+import { acpInstalled, delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
 import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/projectChecker";
@@ -137,7 +137,11 @@ import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils"
 import { showError } from "./error/common";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { signOutM365, signOutAzure } from "./utils/accountUtils";
-import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
+import {
+  azureAccountSignOutHelpHandler,
+  cmpAccountsHandler,
+  createAccountHandler,
+} from "./handlers/accountHandlers";
 import { openReadMeHandler } from "./handlers/readmeHandlers";
 import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
 import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
@@ -158,6 +162,14 @@ import {
   openConfigStateFile,
   refreshEnvironment,
 } from "./handlers/envHandlers";
+import { decryptSecret } from "./handlers/decryptSecret";
+import { signinM365Callback, signinAzureCallback } from "./handlers/signinAccountHandlers";
+import { checkCopilotCallback, checkSideloadingCallback } from "./handlers/checkAccessCallback";
+import {
+  refreshCopilotCallback,
+  refreshSideloadingCallback,
+} from "./handlers/refreshAccessHandlers";
+import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -370,14 +382,14 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     CommandKeys.BuildIntelligentAppsWalkthrough,
-    handlers.openBuildIntelligentAppsWalkthroughHandler
+    openBuildIntelligentAppsWalkthroughHandler
   );
 
   // Tutorials
   registerInCommandController(context, "fx-extension.selectTutorials", selectTutorialsHandler);
 
   // Sign in to M365
-  registerInCommandController(context, CommandKeys.SigninM365, handlers.signinM365Callback);
+  registerInCommandController(context, CommandKeys.SigninM365, signinM365Callback);
 
   // Prerequisites check
   registerInCommandController(
@@ -489,7 +501,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
-  registerInCommandController(context, CommandKeys.SigninAzure, handlers.signinAzureCallback);
+  registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
 }
 
 /**
@@ -617,7 +629,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const decryptCmd = vscode.commands.registerCommand(
     "fx-extension.decryptSecret",
-    (cipher: string, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
+    (cipher: string, selection) => Correlator.run(decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
 
@@ -747,7 +759,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const azureAccountSignOutHelpCmd = vscode.commands.registerCommand(
     "fx-extension.azureAccountSignOutHelp",
-    (...args) => Correlator.run(handlers.azureAccountSignOutHelpHandler, args)
+    (...args) => Correlator.run(azureAccountSignOutHelpHandler, args)
   );
   context.subscriptions.push(azureAccountSignOutHelpCmd);
 
@@ -805,12 +817,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const refreshSideloading = vscode.commands.registerCommand(
     "fx-extension.refreshSideloading",
-    (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
+    (...args) => Correlator.run(refreshSideloadingCallback, args)
   );
   context.subscriptions.push(refreshSideloading);
 
   const refreshCopilot = vscode.commands.registerCommand("fx-extension.refreshCopilot", (...args) =>
-    Correlator.run(handlers.refreshCopilotCallback, args)
+    Correlator.run(refreshCopilotCallback, args)
   );
   context.subscriptions.push(refreshCopilot);
 }
@@ -1285,7 +1297,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 }
 
 async function recommendACPExtension(): Promise<void> {
-  if (!handlers.acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
+  if (!acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
     await handlers.installAdaptiveCardExt(TelemetryTriggerFrom.Auto);
   }
 }

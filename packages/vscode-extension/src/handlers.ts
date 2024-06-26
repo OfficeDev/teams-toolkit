@@ -26,16 +26,13 @@ import {
   DepsType,
   Hub,
   QuestionNames,
-  askSubscription,
   assembleError,
-  isUserCancelError,
   isValidProject,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import { PanelType } from "./controls/PanelType";
@@ -54,22 +51,15 @@ import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { VS_CODE_UI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
-  AccountType,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
-import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
-import { AzureAccountNode } from "./treeview/account/azureNode";
-import { AccountItemStatus } from "./treeview/account/common";
-import { M365AccountNode } from "./treeview/account/m365Node";
-import envTreeProviderInstance from "./treeview/environmentTreeViewProvider";
-import { openFolderInExplorer } from "./utils/commonUtils";
-import { getDefaultString, localize } from "./utils/localizeUtils";
+import { acpInstalled, openFolderInExplorer } from "./utils/commonUtils";
+import { localize } from "./utils/localizeUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
-import { ExtensionSurvey } from "./utils/survey";
 import { getSystemInputs } from "./utils/systemEnvUtils";
 import { getTriggerFromProperty } from "./utils/telemetryUtils";
 
@@ -253,20 +243,6 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   }
 }
 
-export async function openBuildIntelligentAppsWalkthroughHandler(
-  ...args: unknown[]
-): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.WalkThroughBuildIntelligentApps,
-    getTriggerFromProperty(args)
-  );
-  const data = await vscode.commands.executeCommand(
-    "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
-  );
-  return Promise.resolve(ok(data));
-}
-
 export async function checkUpgrade(args?: any[]) {
   const triggerFrom = getTriggerFromProperty(args);
   const input = getSystemInputs();
@@ -332,43 +308,6 @@ export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEve
   }
 }
 
-export async function decryptSecret(cipher: string, selection: vscode.Range): Promise<void> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecretStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other,
-  });
-  const editor = vscode.window.activeTextEditor;
-  if (!editor) {
-    return;
-  }
-  const inputs = getSystemInputs();
-  const result = await core.decrypt(cipher, inputs);
-  if (result.isOk()) {
-    const editedSecret = await VS_CODE_UI.inputText({
-      name: "Secret Editor",
-      title: localize("teamstoolkit.handlers.editSecretTitle"),
-      default: result.value,
-    });
-    if (editedSecret.isOk() && editedSecret.value.result) {
-      const newCiphertext = await core.encrypt(editedSecret.value.result, inputs);
-      if (newCiphertext.isOk()) {
-        await editor.edit((editBuilder) => {
-          editBuilder.replace(selection, newCiphertext.value);
-        });
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.EditSecret, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
-      } else {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, newCiphertext.error);
-      }
-    }
-  } else {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
-    void vscode.window.showErrorMessage(result.error.message);
-  }
-}
-
-const acExtId = "TeamsDevApp.vscode-adaptive-cards";
-
 export async function installAdaptiveCardExt(
   ...args: unknown[]
 ): Promise<Result<unknown, FxError>> {
@@ -391,7 +330,10 @@ export async function installAdaptiveCardExt(
         TelemetryEvent.AdaptiveCardPreviewerInstallConfirm,
         getTriggerFromProperty(args)
       );
-      await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+      await vscode.commands.executeCommand(
+        "workbench.extensions.installExtension",
+        "TeamsDevApp.vscode-adaptive-cards"
+      );
     } else {
       ExtTelemetry.sendTelemetryEvent(
         TelemetryEvent.AdaptiveCardPreviewerInstallCancel,
@@ -400,11 +342,6 @@ export async function installAdaptiveCardExt(
     }
   }
   return Promise.resolve(ok(null));
-}
-
-export function acpInstalled(): boolean {
-  const extension = vscode.extensions.getExtension(acExtId);
-  return !!extension;
 }
 
 export async function copilotPluginAddAPIHandler(args: any[]) {
@@ -617,99 +554,4 @@ export async function openLifecycleTreeview(args?: any[]) {
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
-}
-
-export async function azureAccountSignOutHelpHandler(
-  args?: any[]
-): Promise<Result<boolean, FxError>> {
-  return Promise.resolve(ok(false));
-}
-
-export async function signinM365Callback(...args: unknown[]): Promise<Result<null, FxError>> {
-  let node: M365AccountNode | undefined;
-  if (args && args.length > 1) {
-    node = args[1] as M365AccountNode;
-    if (node && node.status === AccountItemStatus.SignedIn) {
-      return ok(null);
-    }
-  }
-
-  const triggerFrom = getTriggerFromProperty(args);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-    [TelemetryProperty.AccountType]: AccountType.M365,
-    ...triggerFrom,
-  });
-
-  const tokenRes = await tools.tokenProvider.m365TokenProvider.getJsonObject({
-    scopes: AppStudioScopes,
-    showDialog: true,
-  });
-  const token = tokenRes.isOk() ? tokenRes.value : undefined;
-  if (token !== undefined && node) {
-    node.setSignedIn((token as any).upn ? (token as any).upn : "");
-  }
-
-  await envTreeProviderInstance.reloadEnvironments();
-  return ok(null);
-}
-
-export async function refreshSideloadingCallback(args?: any[]): Promise<Result<null, FxError>> {
-  const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  if (status.isOk() && status.value.token !== undefined) {
-    accountTreeViewProviderInstance.m365AccountNode.updateChecks(status.value.token, true, false);
-  }
-
-  return ok(null);
-}
-
-export async function refreshCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
-  const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  if (status.isOk() && status.value.token !== undefined) {
-    accountTreeViewProviderInstance.m365AccountNode.updateChecks(status.value.token, false, true);
-  }
-
-  return ok(null);
-}
-
-export async function signinAzureCallback(...args: unknown[]): Promise<Result<null, FxError>> {
-  let node: AzureAccountNode | undefined;
-  if (args && args.length > 1) {
-    node = args[1] as AzureAccountNode;
-    if (node && node.status === AccountItemStatus.SignedIn) {
-      return ok(null);
-    }
-  }
-
-  if (azureAccountManager.getAccountInfo() === undefined) {
-    // make sure user has not logged in
-    const triggerFrom = getTriggerFromProperty(args);
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      ...triggerFrom,
-    });
-  }
-  try {
-    await azureAccountManager.getIdentityCredentialAsync(true);
-  } catch (error) {
-    if (!isUserCancelError(error)) {
-      return err(error);
-    }
-  }
-  return ok(null);
-}
-
-export async function selectSubscriptionCallback(args?: any[]): Promise<Result<null, FxError>> {
-  tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
-    [TelemetryProperty.TriggerFrom]: args
-      ? TelemetryTriggerFrom.TreeView
-      : TelemetryTriggerFrom.Other,
-  });
-  const askSubRes = await askSubscription(
-    tools.tokenProvider.azureAccountProvider,
-    VS_CODE_UI,
-    undefined
-  );
-  if (askSubRes.isErr()) return err(askSubRes.error);
-  await azureAccountManager.setSubscription(askSubRes.value.subscriptionId);
-  return ok(null);
 }

@@ -33,14 +33,13 @@ import {
 import * as os from "os";
 import * as util from "util";
 import * as vscode from "vscode";
-
 import { signedOut } from "../../commonlib/common/constant";
 import VsCodeLogInstance from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { tools, workspaceUri } from "../../globalVariables";
-import { checkCopilotCallback } from "../../handlers/checkCopilotCallback";
+import { checkCopilotCallback } from "../../handlers/checkAccessCallback";
 import { ProgressHandler } from "../../progressHandler";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";

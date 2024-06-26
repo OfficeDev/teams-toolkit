@@ -427,21 +427,21 @@ export class FxCore {
         ctx.envVars[m365TitleIdKeyName] = "";
       }
     }
-    if (teamsAppId && tdpOption) {
-      const res = await this.uninstallAppRegistration(teamsAppId);
-      if (res.isErr()) {
-        return err(res.error);
-      } else if (ctx && ctx.envVars) {
-        ctx.envVars[teamsAppIdKeyName] = "";
-      }
-    }
-
     if (botId && botOption) {
       const res = await this.uninstallBotFrameworRegistration(botId);
       if (res.isErr()) {
         return err(res.error);
       } else if (ctx && ctx.envVars) {
         ctx.envVars[botIdKeyName] = "";
+      }
+    }
+    // App registraion should be last to remove, because we might need to query some metadata from TDP.
+    if (teamsAppId && tdpOption) {
+      const res = await this.uninstallAppRegistration(teamsAppId);
+      if (res.isErr()) {
+        return err(res.error);
+      } else if (ctx && ctx.envVars) {
+        ctx.envVars[teamsAppIdKeyName] = "";
       }
     }
     return ok(undefined);

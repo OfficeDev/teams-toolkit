@@ -573,7 +573,7 @@
   "core.uninstall.success.tdp": "App registration of manifest ID: %s has been successfully uninstalled.",
   "core.uninstall.success.m365App": "M365 App of Title ID: %s has been successfully uninstalled.",
   "core.uninstall.success.bot": "Bot framework registration of bot ID: %s has been successfully uninstalled.",
-  "core.uninstall.failed.titleId": "Failed to find the Title ID. This app is probably not extended to M365.",
+  "core.uninstall.failed.titleId": "Failed to find the Title ID. This app is probably not installed.",
   "ui.select.LoadingOptionsPlaceholder": "Loading options ...",
   "ui.select.LoadingDefaultPlaceholder": "Loading default value ...",
   "error.aad.manifest.NameIsMissing": "name is missing\n",

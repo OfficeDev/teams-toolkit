@@ -13,7 +13,7 @@
 
 1. Open PowerShell, change the current working directory to this project root and run command `./GenerateApiKey.ps1`
     ```
-    > ./GenerateApiKey.ps1
+    > ./TeamsApp/GenerateApiKey.ps1
     ```
 
 2. The above command will output something like "Generated a new API Key: xxx...".
@@ -31,8 +31,10 @@
 4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
 5. Press F5, or select the `Debug > Start Debugging` menu in Visual Studio to start your app
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-6. When Teams launches in the browser, you can open the Copilot app and send a prompt to trigger your plugin.
-7. Send a message to Copilot to find an NuGet package information. For example: Find the NuGet package info on Microsoft.CSharp.
+6. When Teams launches in the browser, click the Apps icon from Teams client left rail to open Teams app store and search for Copilot.
+7. Open the `Copilot` app, select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
+8. Send a message to Copilot to query the repair record. For example: List all repairs.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## Get more info
 

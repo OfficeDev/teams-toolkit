@@ -14,7 +14,7 @@
 
 1. Open PowerShell, change the current working directory to this project root and run command `./GenerateApiKey.ps1`
     ```
-    > ./GenerateApiKey.ps1
+    > ./TeamsApp/GenerateApiKey.ps1
     ```
 
 2. The above command will output something like "Generated a new API Key: xxx...".

@@ -60,6 +60,7 @@ import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
+import { showError } from "./error/common";
 import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { FeatureFlags } from "./featureFlags";
@@ -74,13 +75,30 @@ import {
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
+import {
+  editAadManifestTemplateHandler,
+  openPreviewAadFileHandler,
+  updateAadAppManifestHandler,
+} from "./handlers/aadManifestHandlers";
+import {
+  azureAccountSignOutHelpHandler,
+  cmpAccountsHandler,
+  createAccountHandler,
+} from "./handlers/accountHandlers";
 import { activate as activateHandlers } from "./handlers/activate";
+import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
+import { checkCopilotCallback, checkSideloadingCallback } from "./handlers/checkAccessCallback";
 import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
-import { checkCopilotCallback } from "./handlers/checkCopilotCallback";
-import { checkSideloadingCallback } from "./handlers/checkSideloading";
+import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
+import { decryptSecret } from "./handlers/decryptSecret";
 import { downloadSampleApp } from "./handlers/downloadSample";
+import {
+  createNewEnvironment,
+  openConfigStateFile,
+  refreshEnvironment,
+} from "./handlers/envHandlers";
 import {
   addWebpartHandler,
   createNewProjectHandler,
@@ -89,6 +107,16 @@ import {
   publishHandler,
   scaffoldFromDeveloperPortalHandler,
 } from "./handlers/lifecycleHandlers";
+import {
+  buildPackageHandler,
+  publishInDeveloperPortalHandler,
+  updatePreviewManifest,
+  validateManifestHandler,
+} from "./handlers/manifestHandlers";
+import {
+  migrateTeamsManifestHandler,
+  migrateTeamsTabAppHandler,
+} from "./handlers/migrationHandler";
 import * as officeDevHandlers from "./handlers/officeDevHandlers";
 import {
   openAccountLinkHandler,
@@ -108,8 +136,18 @@ import {
   openSubscriptionInPortal,
   openWelcomeHandler,
 } from "./handlers/openLinkHandlers";
+import { openReadMeHandler } from "./handlers/readmeHandlers";
+import {
+  refreshCopilotCallback,
+  refreshSideloadingCallback,
+} from "./handlers/refreshAccessHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
-import { createProjectFromWalkthroughHandler } from "./handlers/walkthrough";
+import { signinAzureCallback, signinM365Callback } from "./handlers/signinAccountHandlers";
+import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
+import {
+  createProjectFromWalkthroughHandler,
+  openBuildIntelligentAppsWalkthroughHandler,
+} from "./handlers/walkthrough";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import {
   CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
@@ -125,43 +163,17 @@ import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler, setUriEventHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
+import { signOutAzure, signOutM365 } from "./utils/accountUtils";
+import { acpInstalled, delay, hasAdaptiveCardInWorkspace } from "./utils/commonUtils";
 import { updateAutoOpenGlobalKey } from "./utils/globalStateUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
-import { showError } from "./error/common";
-import { TreeViewCommand } from "./treeview/treeViewCommand";
-import { signOutM365, signOutAzure } from "./utils/accountUtils";
-import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
-import { openReadMeHandler } from "./handlers/readmeHandlers";
-import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
-import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
-import {
-  buildPackageHandler,
-  publishInDeveloperPortalHandler,
-  updatePreviewManifest,
-  validateManifestHandler,
-} from "./handlers/manifestHandlers";
-import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
-import {
-  editAadManifestTemplateHandler,
-  openPreviewAadFileHandler,
-  updateAadAppManifestHandler,
-} from "./handlers/aadManifestHandlers";
-import {
-  createNewEnvironment,
-  openConfigStateFile,
-  refreshEnvironment,
-} from "./handlers/envHandlers";
-import {
-  migrateTeamsManifestHandler,
-  migrateTeamsTabAppHandler,
-} from "./handlers/migrationHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -374,14 +386,14 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     CommandKeys.BuildIntelligentAppsWalkthrough,
-    handlers.openBuildIntelligentAppsWalkthroughHandler
+    openBuildIntelligentAppsWalkthroughHandler
   );
 
   // Tutorials
   registerInCommandController(context, "fx-extension.selectTutorials", selectTutorialsHandler);
 
   // Sign in to M365
-  registerInCommandController(context, CommandKeys.SigninM365, handlers.signinM365Callback);
+  registerInCommandController(context, CommandKeys.SigninM365, signinM365Callback);
 
   // Prerequisites check
   registerInCommandController(
@@ -493,7 +505,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
-  registerInCommandController(context, CommandKeys.SigninAzure, handlers.signinAzureCallback);
+  registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
 }
 
 /**
@@ -621,7 +633,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const decryptCmd = vscode.commands.registerCommand(
     "fx-extension.decryptSecret",
-    (cipher: string, selection) => Correlator.run(handlers.decryptSecret, cipher, selection)
+    (cipher: string, selection) => Correlator.run(decryptSecret, cipher, selection)
   );
   context.subscriptions.push(decryptCmd);
 
@@ -751,7 +763,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const azureAccountSignOutHelpCmd = vscode.commands.registerCommand(
     "fx-extension.azureAccountSignOutHelp",
-    (...args) => Correlator.run(handlers.azureAccountSignOutHelpHandler, args)
+    (...args) => Correlator.run(azureAccountSignOutHelpHandler, args)
   );
   context.subscriptions.push(azureAccountSignOutHelpCmd);
 
@@ -809,12 +821,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const refreshSideloading = vscode.commands.registerCommand(
     "fx-extension.refreshSideloading",
-    (...args) => Correlator.run(handlers.refreshSideloadingCallback, args)
+    (...args) => Correlator.run(refreshSideloadingCallback, args)
   );
   context.subscriptions.push(refreshSideloading);
 
   const refreshCopilot = vscode.commands.registerCommand("fx-extension.refreshCopilot", (...args) =>
-    Correlator.run(handlers.refreshCopilotCallback, args)
+    Correlator.run(refreshCopilotCallback, args)
   );
   context.subscriptions.push(refreshCopilot);
 }
@@ -1289,7 +1301,7 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 }
 
 async function recommendACPExtension(): Promise<void> {
-  if (!handlers.acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
+  if (!acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
     await handlers.installAdaptiveCardExt(TelemetryTriggerFrom.Auto);
   }
 }

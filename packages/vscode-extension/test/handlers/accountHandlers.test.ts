@@ -5,7 +5,11 @@ import M365TokenInstance from "../../src/commonlib/m365Login";
 import { err, ok } from "@microsoft/teamsfx-api";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import * as vsc_ui from "../../src/qm/vsc_ui";
-import { cmpAccountsHandler, createAccountHandler } from "../../src/handlers/accountHandlers";
+import {
+  azureAccountSignOutHelpHandler,
+  cmpAccountsHandler,
+  createAccountHandler,
+} from "../../src/handlers/accountHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 
@@ -158,6 +162,16 @@ describe("AccountHandlers", () => {
       chai.expect(executeCommandStub.args[1][0]).to.be.equal("fx-extension.signinM365");
       chai.expect(executeCommandStub.args[2][0]).to.be.equal("fx-extension.signinAzure");
       chai.assert.isTrue(hideStub.calledOnce);
+    });
+  });
+
+  describe("azureAccountSignOutHelpHandler", () => {
+    it("happy path", async () => {
+      try {
+        azureAccountSignOutHelpHandler();
+      } catch (e) {
+        chai.assert.isTrue(e instanceof Error);
+      }
     });
   });
 });

@@ -5,10 +5,10 @@ import { exec } from "child_process";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
+import * as vscode from "vscode";
 import { format } from "util";
-import { ConfigFolderName, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
+import { Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { glob } from "glob";
-import { workspace } from "vscode";
 import { core, workspaceUri } from "../globalVariables";
 import { localize } from "./localizeUtils";
 import { ExtensionSource, ExtensionErrors } from "../error/error";
@@ -34,6 +34,11 @@ export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function acpInstalled(): boolean {
+  const extension = vscode.extensions.getExtension("TeamsDevApp.vscode-adaptive-cards");
+  return !!extension;
+}
+
 export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
   // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
   const fileSizeLimit = 1024 * 1024;
@@ -54,7 +59,6 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
         }
 
         // avoid security issue
-        // https://github.com/OfficeDev/TeamsFx/security/code-scanning/2664
         const buffer = new Uint8Array(fileSizeLimit);
         const { bytesRead } = await fs.read(fd, buffer, 0, buffer.byteLength, 0);
         content = new TextDecoder().decode(buffer.slice(0, bytesRead));
@@ -97,8 +101,8 @@ export async function getLocalDebugMessageTemplate(isWindows: boolean): Promise<
 
 // check if test tool is enabled in scaffolded project
 async function isTestToolEnabled(): Promise<boolean> {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
+  if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = vscode.workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
 
     const testToolYamlPath = path.join(workspacePath, "teamsapp.testtool.yml");

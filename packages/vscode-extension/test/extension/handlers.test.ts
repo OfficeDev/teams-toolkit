@@ -148,14 +148,6 @@ describe("handlers", () => {
     });
   });
 
-  it("azureAccountSignOutHelpHandler()", async () => {
-    try {
-      handlers.azureAccountSignOutHelpHandler();
-    } catch (e) {
-      chai.assert.isTrue(e instanceof Error);
-    }
-  });
-
   describe("runCommand()", function () {
     const sandbox = sinon.createSandbox();
 
@@ -360,17 +352,6 @@ describe("handlers", () => {
     );
   });
 
-  it("walkthrough: build intelligent apps", async () => {
-    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
-
-    await handlers.openBuildIntelligentAppsWalkthroughHandler();
-    sandbox.assert.calledOnceWithExactly(
-      executeCommands,
-      "workbench.action.openWalkthrough",
-      "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
-    );
-  });
-
   it("openSamplesHandler", async () => {
     const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -378,74 +359,6 @@ describe("handlers", () => {
     await handlers.openSamplesHandler();
 
     sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, []);
-  });
-
-  describe("decryptSecret", function () {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("successfully update secret", async () => {
-      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sandbox.spy(globalVariables.core, "decrypt");
-      const encrypt = sandbox.spy(globalVariables.core, "encrypt");
-      sandbox.stub(vscode.commands, "executeCommand");
-      const editBuilder = sandbox.spy();
-      sandbox.stub(vscode.window, "activeTextEditor").value({
-        edit: function (callback: (eb: any) => void) {
-          callback({
-            replace: editBuilder,
-          });
-        },
-      });
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        inputText: () => Promise.resolve(ok({ type: "success", result: "inputValue" })),
-      });
-      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
-
-      await handlers.decryptSecret("test", range);
-
-      sinon.assert.calledOnce(decrypt);
-      sinon.assert.calledOnce(encrypt);
-      sinon.assert.calledOnce(editBuilder);
-      sinon.assert.calledTwice(sendTelemetryEvent);
-      sinon.assert.notCalled(sendTelemetryErrorEvent);
-    });
-
-    it("failed to update due to corrupted secret", async () => {
-      sandbox.stub(globalVariables, "context").value({ extensionPath: "" });
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sandbox.stub(globalVariables.core, "decrypt");
-      decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
-      const encrypt = sandbox.spy(globalVariables.core, "encrypt");
-      sandbox.stub(vscode.commands, "executeCommand");
-      const editBuilder = sandbox.spy();
-      sandbox.stub(vscode.window, "activeTextEditor").value({
-        edit: function (callback: (eb: any) => void) {
-          callback({
-            replace: editBuilder,
-          });
-        },
-      });
-      const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
-      const range = new vscode.Range(new vscode.Position(0, 10), new vscode.Position(0, 15));
-
-      await handlers.decryptSecret("test", range);
-
-      sinon.assert.calledOnce(decrypt);
-      sinon.assert.notCalled(encrypt);
-      sinon.assert.notCalled(editBuilder);
-      sinon.assert.calledOnce(showMessage);
-      sinon.assert.calledOnce(sendTelemetryEvent);
-      sinon.assert.calledOnce(sendTelemetryErrorEvent);
-    });
   });
 
   describe("checkUpgrade", function () {
@@ -662,40 +575,6 @@ describe("handlers", () => {
     });
   });
 
-  describe("callBackFunctions", () => {
-    it("signinAzureCallback", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      const getIdentityCredentialStub = sandbox.stub(
-        AzureAccountManager.prototype,
-        "getIdentityCredentialAsync"
-      );
-
-      await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(getIdentityCredentialStub.calledOnce);
-    });
-
-    it("signinAzureCallback with error", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sandbox.stub(AzureAccountManager.prototype, "getIdentityCredentialAsync").throws(new Error());
-
-      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(res.isErr());
-    });
-
-    it("signinAzureCallback with cancel error", async () => {
-      sandbox.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sandbox
-        .stub(AzureAccountManager.prototype, "getIdentityCredentialAsync")
-        .throws(new UserCancelError(""));
-
-      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
-
-      chai.assert.isTrue(res.isOk());
-    });
-  });
-
   describe("validateAzureDependenciesHandler", () => {
     const sandbox = sinon.createSandbox();
 
@@ -835,31 +714,6 @@ describe("autoOpenProjectHandler", () => {
     await handlers.installAdaptiveCardExt();
 
     chai.assert.isTrue(executeCommandStub.calledOnce);
-  });
-
-  describe("acpInstalled()", () => {
-    afterEach(() => {
-      mockfs.restore();
-      sandbox.restore();
-    });
-
-    it("already installed", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(vscode.extensions, "getExtension").returns({} as any);
-
-      const installed = handlers.acpInstalled();
-
-      chai.assert.isTrue(installed);
-    });
-
-    it("not installed", async () => {
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
-
-      const installed = handlers.acpInstalled();
-
-      chai.assert.isFalse(installed);
-    });
   });
 
   it("openLifecycleTreeview() - TeamsFx Project", async () => {

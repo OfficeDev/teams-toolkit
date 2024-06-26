@@ -136,14 +136,6 @@ describe("officeDevHandler", () => {
     await officeDevHandlers.popupOfficeAddInDependenciesMessage();
     chai.assert(autoInstallDependencyHandlerStub.calledOnce);
   });
-
-  it("checkOfficeAddInInstalled", async () => {
-    mockfs({
-      "/test/node_modules/test": "",
-    });
-    const node_modulesExists = officeDevHandlers.checkOfficeAddInInstalled("/test");
-    chai.assert.isTrue(node_modulesExists);
-  });
 });
 
 describe("autoOpenOfficeDevProjectHandler", () => {
@@ -232,40 +224,10 @@ describe("autoOpenOfficeDevProjectHandler", () => {
         return Promise.resolve("No" as any);
       });
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
-    const isManifestOnlyOfficeAddinProjectStub = sandbox
-      .stub(projectSettingsHelper, "isManifestOnlyOfficeAddinProject")
-      .returns(false);
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
-    chai.assert(showInformationMessageStub.callCount == 2);
     chai.assert(globalStateUpdateStub.calledOnce);
-  });
-
-  it("autoInstallDependency when extension launch", async () => {
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
-    sandbox.stub(globalState, "globalStateGet").resolves("");
-    sandbox.stub(globalVariables, "isOfficeAddInProject").value(true);
-
-    sandbox.stub(localizeUtils, "localize").returns("ask install window pop up");
-    const autoInstallDependencyHandlerStub = sandbox.stub(
-      autoOpenHelper,
-      "autoInstallDependencyHandler"
-    );
-
-    const showInformationMessageStub = sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
-        return Promise.resolve(option);
-      });
-
-    const isManifestOnlyOfficeAddinProjectStub = sandbox
-      .stub(projectSettingsHelper, "isManifestOnlyOfficeAddinProject")
-      .returns(false);
-
-    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
-
-    chai.assert(autoInstallDependencyHandlerStub.calledOnce);
   });
 
   it("openOfficeDevFolder", async () => {

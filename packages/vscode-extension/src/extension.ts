@@ -158,6 +158,10 @@ import {
   openConfigStateFile,
   refreshEnvironment,
 } from "./handlers/envHandlers";
+import {
+  migrateTeamsManifestHandler,
+  migrateTeamsTabAppHandler,
+} from "./handlers/migrationHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -392,14 +396,14 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   // Upgrade command to update Teams manifest
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsManifest",
-    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+    () => Correlator.run(migrateTeamsManifestHandler)
   );
   context.subscriptions.push(migrateTeamsManifestCmd);
 
   // Upgrade command to update Teams Client SDK
   const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsTabApp",
-    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+    () => Correlator.run(migrateTeamsTabAppHandler)
   );
   context.subscriptions.push(migrateTeamsTabAppCmd);
 

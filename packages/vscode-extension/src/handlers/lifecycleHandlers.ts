@@ -17,18 +17,19 @@ import {
   isValidOfficeAddInProject,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
+import * as vscode from "vscode";
 import { Uri } from "vscode";
+import M365TokenInstance from "../commonlib/m365Login";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import envTreeProviderInstance from "../treeview/environmentTreeViewProvider";
+import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { openFolder, openOfficeDevFolder } from "../utils/workspaceUtils";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
 import { runCommand } from "./sharedOpts";
-import { VS_CODE_UI } from "../qm/vsc_ui";
-import { localize } from "../utils/localizeUtils";
-import M365TokenInstance from "../commonlib/m365Login";
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));

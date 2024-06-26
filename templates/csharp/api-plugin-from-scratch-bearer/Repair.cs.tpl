@@ -6,7 +6,7 @@ using System.Net;
 
 namespace {{SafeProjectName}}
 {
-    public class Repairs
+    public class Repair
     {
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;

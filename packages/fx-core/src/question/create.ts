@@ -39,7 +39,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "../component/driver/teamsApp/utils/utils";
-import { listOperations } from "../component/generator/copilotPlugin/helper";
+import { listOperations } from "../component/generator/apiSpec/helper";
 import {
   IOfficeAddinHostConfig,
   OfficeAddinProjectConfig,
@@ -57,7 +57,6 @@ import {
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
-  OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
@@ -72,7 +71,6 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),
     ProjectTypeOptions.me(Platform.CLI),
-    ProjectTypeOptions.officeXMLAddin(Platform.CLI),
     ProjectTypeOptions.officeAddin(Platform.CLI),
     ProjectTypeOptions.outlookAddin(Platform.CLI),
   ];
@@ -109,15 +107,10 @@ export function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        if (inputs.agent === "office") {
-          //only for @office agent, officeXMLAddin are supported
-          staticOptions.push(ProjectTypeOptions.officeXMLAddin(inputs.platform));
+        if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
+          staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
         } else {
-          if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
-            staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
-          } else {
-            staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
-          }
+          staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
         }
       }
 
@@ -185,28 +178,9 @@ export function capabilityQuestion(): SingleSelectQuestion {
             "core.createProjectQuestion.projectType.messageExtension.title"
           );
         case ProjectTypeOptions.outlookAddin().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
         case ProjectTypeOptions.officeAddin().id:
-        case ProjectTypeOptions.officeXMLAddin().id: {
-          switch (inputs[QuestionNames.OfficeAddinHost]) {
-            case OfficeAddinHostOptions.outlook().id:
-              return getLocalizedString(
-                "core.createProjectQuestion.projectType.outlookAddin.title"
-              );
-            case OfficeAddinHostOptions.word().id:
-              return getLocalizedString(
-                "core.createProjectQuestion.officeXMLAddin.word.create.title"
-              );
-            case OfficeAddinHostOptions.excel().id:
-              return getLocalizedString(
-                "core.createProjectQuestion.officeXMLAddin.excel.create.title"
-              );
-            case OfficeAddinHostOptions.powerpoint().id:
-              return getLocalizedString(
-                "core.createProjectQuestion.officeXMLAddin.powerpoint.create.title"
-              );
-          }
           return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
-        }
         case ProjectTypeOptions.copilotPlugin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
         case ProjectTypeOptions.customCopilot().id:
@@ -500,15 +474,6 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
   };
 }
 
-export function officeAddinHostingQuestion(): SingleSelectQuestion {
-  return {
-    name: QuestionNames.OfficeAddinHost,
-    title: getLocalizedString("core.createProjectQuestion.officeXMLAddin.create.title"),
-    type: "singleSelect",
-    staticOptions: OfficeAddinHostOptions.all(),
-  };
-}
-
 export function officeAddinFrameworkQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
@@ -531,12 +496,7 @@ export function officeAddinFrameworkQuestion(): SingleSelectQuestion {
 export function getAddinFrameworkOptions(inputs: Inputs): OptionItem[] {
   const projectType = inputs[QuestionNames.ProjectType];
   const capabilities = inputs[QuestionNames.Capabilities];
-  const host = inputs[QuestionNames.OfficeAddinHost];
-  if (
-    projectType === ProjectTypeOptions.outlookAddin().id ||
-    (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-      host === OfficeAddinHostOptions.outlook().id)
-  ) {
+  if (projectType === ProjectTypeOptions.outlookAddin().id) {
     return [{ id: "default", label: "Default" }];
   } else if (
     (projectType === ProjectTypeOptions.officeAddin().id &&
@@ -564,29 +524,17 @@ export function getOfficeAddinFramework(inputs: Inputs): string {
     inputs[QuestionNames.OfficeAddinFramework]
   ) {
     return inputs[QuestionNames.OfficeAddinFramework];
-  } else if (
-    (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-      inputs[QuestionNames.OfficeAddinHost] === OfficeAddinHostOptions.outlook().id) ||
-    projectType === ProjectTypeOptions.outlookAddin().id
-  ) {
+  } else if (projectType === ProjectTypeOptions.outlookAddin().id) {
     return "default_old";
   } else {
     return "default";
   }
 }
-export function getOfficeAddinTemplateConfig(
-  projectType: string,
-  addinHost?: string
-): IOfficeAddinHostConfig {
-  if (
-    projectType === ProjectTypeOptions.officeXMLAddin().id &&
-    addinHost &&
-    addinHost !== OfficeAddinHostOptions.outlook().id
-  ) {
-    return OfficeAddinProjectConfig[addinHost];
-  }
+
+export function getOfficeAddinTemplateConfig(): IOfficeAddinHostConfig {
   return OfficeAddinProjectConfig["json"];
 }
+
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
@@ -594,7 +542,6 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     return [{ id: ProgrammingLanguage.CSharp, label: "C#" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
-  const host = inputs[QuestionNames.OfficeAddinHost] as string;
 
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
@@ -602,19 +549,14 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     if (capabilities.endsWith("-manifest")) {
       return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
     }
-    if (
-      projectType === ProjectTypeOptions.outlookAddin().id ||
-      (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-        host === OfficeAddinHostOptions.outlook().id)
-    ) {
+    if (projectType === ProjectTypeOptions.outlookAddin().id) {
       return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
     }
-    const officeXMLAddinLangConfig = getOfficeAddinTemplateConfig(projectType, host)[capabilities]
-      .framework["default"];
+    const officeAddinLangConfig = getOfficeAddinTemplateConfig()[capabilities].framework["default"];
     const officeXMLAddinLangOptions = [];
-    if (!!officeXMLAddinLangConfig.typescript)
+    if (!!officeAddinLangConfig.typescript)
       officeXMLAddinLangOptions.push({ id: ProgrammingLanguage.TS, label: "TypeScript" });
-    if (!!officeXMLAddinLangConfig.javascript)
+    if (!!officeAddinLangConfig.javascript)
       officeXMLAddinLangOptions.push({ id: ProgrammingLanguage.JS, label: "JavaScript" });
     return officeXMLAddinLangOptions;
   }
@@ -1527,11 +1469,6 @@ export function createProjectQuestionNode(): IQTreeNode {
           inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI,
         data: projectTypeQuestion(),
         cliOptionDisabled: "self",
-      },
-      {
-        condition: (inputs: Inputs) =>
-          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeXMLAddin().id,
-        data: officeAddinHostingQuestion(),
       },
       capabilitySubTree(),
       {

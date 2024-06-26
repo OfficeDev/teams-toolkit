@@ -91,11 +91,11 @@ function normalizePath(path: string): string {
   return "./" + path.replace(/\\/g, "/");
 }
 
-export interface CopilotPluginGeneratorResult {
+export interface OpenAPISpecGeneratorResult {
   warnings?: Warning[];
 }
 
-export class CopilotPluginGenerator {
+export class OpenAPISpecGenerator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -104,12 +104,12 @@ export class CopilotPluginGenerator {
       errorSource: fromApiSpecComponentName,
     }),
   ])
-  public static async generateMeFromApiSpec(
+  public static async generateMe(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
     const templateName = fromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
@@ -134,12 +134,12 @@ export class CopilotPluginGenerator {
       errorSource: pluginFromApiSpecComponentName,
     }),
   ])
-  public static async generatePluginFromApiSpec(
+  public static async generateCopilotPlugin(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
     const templateName = apiPluginFromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
@@ -164,11 +164,11 @@ export class CopilotPluginGenerator {
       errorSource: fromOpenAIPlugincomponentName,
     }),
   ])
-  public static async generateForCustomCopilotRagCustomApi(
+  public static async generateCustomCopilot(
     context: Context,
     inputs: Inputs,
     destinationPath: string
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
     return await this.generate(
       context,
       inputs,
@@ -187,7 +187,7 @@ export class CopilotPluginGenerator {
     componentName: string,
     isPlugin: boolean,
     authData?: AuthInfo
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
       const language = inputs[QuestionNames.ProgrammingLanguage];
@@ -250,7 +250,7 @@ export class CopilotPluginGenerator {
         [telemetryProperties.authType]: authData?.authType ?? "None",
       });
 
-      const newGenerator = new CopilotGenerator();
+      const newGenerator = new SpecGenerator();
       const getTemplateInfosState: any = {};
       inputs.getTemplateInfosState = getTemplateInfosState;
       getTemplateInfosState.isYaml = isYaml;
@@ -272,8 +272,8 @@ export class CopilotPluginGenerator {
   }
 }
 
-export class CopilotGenerator extends DefaultTemplateGenerator {
-  componentName = "copilot-generator";
+export class SpecGenerator extends DefaultTemplateGenerator {
+  componentName = "spec-generator";
   // isYaml = false;
   // templateName = "";
   // url = "";

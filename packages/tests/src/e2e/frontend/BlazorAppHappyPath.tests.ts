@@ -57,7 +57,12 @@ describe("Blazor App", function () {
         Capability.TabNonSso,
         env
       );
-      const programCsPath = path.join(testFolder, appName, "App.razor");
+      const programCsPath = path.join(
+        testFolder,
+        appName,
+        "Components",
+        "App.razor"
+      );
       chai.assert.isTrue(await fs.pathExists(programCsPath));
     }
   );

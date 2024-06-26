@@ -40,7 +40,6 @@ import { HelperMethods } from "../../../src/component/generator/officeAddin/help
 import { UserCancelError } from "../../../src/error";
 import {
   CapabilityOptions,
-  OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
@@ -182,26 +181,6 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       "app-name": "outlook-addin-test",
     };
     inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
-    inputs[QuestionNames.Capabilities] = "json-taskpane";
-    inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
-
-    sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
-    sinon.stub(HelperMethods, "fetchAndUnzip").resolves(ok(undefined));
-    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
-    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
-    chai.expect(result.isOk()).to.eq(true);
-  });
-
-  it("should scaffold taskpane successfully on happy path if project-type is officeXMLAddin and host is outlook", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "outlook-addin-test",
-    };
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeXMLAddin().id;
-    inputs[QuestionNames.OfficeAddinHost] = OfficeAddinHostOptions.outlook().id;
     inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";

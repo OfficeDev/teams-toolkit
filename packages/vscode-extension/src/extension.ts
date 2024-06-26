@@ -82,6 +82,7 @@ import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
 import {
+  addWebpartHandler,
   createNewProjectHandler,
   deployHandler,
   provisionHandler,
@@ -97,10 +98,13 @@ import {
   openDocumentHandler,
   openDocumentLinkHandler,
   openEnvLinkHandler,
+  openExternalHandler,
   openHelpFeedbackLinkHandler,
   openLifecycleLinkHandler,
   openM365AccountHandler,
   openReportIssues,
+  openResourceGroupInPortal,
+  openSubscriptionInPortal,
   openWelcomeHandler,
 } from "./handlers/openLinkHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
@@ -129,6 +133,30 @@ import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/project
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { showError } from "./error/common";
+import { TreeViewCommand } from "./treeview/treeViewCommand";
+import { signOutM365, signOutAzure } from "./utils/accountUtils";
+import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
+import { openReadMeHandler } from "./handlers/readmeHandlers";
+import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
+import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
+import {
+  buildPackageHandler,
+  publishInDeveloperPortalHandler,
+  updatePreviewManifest,
+  validateManifestHandler,
+} from "./handlers/manifestHandlers";
+import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
+import {
+  editAadManifestTemplateHandler,
+  openPreviewAadFileHandler,
+  updateAadAppManifestHandler,
+} from "./handlers/aadManifestHandlers";
+import {
+  createNewEnvironment,
+  openConfigStateFile,
+  refreshEnvironment,
+} from "./handlers/envHandlers";
 
 export async function activate(context: vscode.ExtensionContext) {
   process.env[FeatureFlags.ChatParticipant] = (
@@ -214,7 +242,7 @@ export async function activate(context: vscode.ExtensionContext) {
 export async function deactivate() {
   await ExtTelemetry.cacheTelemetryEventAsync(TelemetryEvent.Deactivate);
   await ExtTelemetry.dispose();
-  handlers.cmdHdlDisposeTreeView();
+  TreeViewManagerInstance.dispose();
   await disableRunIcon();
 }
 
@@ -224,7 +252,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   registerTreeViewCommandsInHelper(context);
   registerTeamsFxCommands(context);
   registerMenuCommands(context);
-  handlers.registerAccountMenuCommands(context);
+  registerAccountMenuCommands(context);
 
   TreeViewManagerInstance.registerTreeViews(context);
   accountTreeViewProviderInstance.subscribeToStatusChanges({
@@ -292,7 +320,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // user can manage account in non-teamsfx project
   const cmpAccountsCmd = vscode.commands.registerCommand("fx-extension.cmpAccounts", (...args) =>
-    Correlator.run(handlers.cmpAccountsHandler, args)
+    Correlator.run(cmpAccountsHandler, args)
   );
   context.subscriptions.push(cmpAccountsCmd);
 
@@ -331,7 +359,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   registerInCommandController(context, CommandKeys.OpenDocument, openDocumentHandler);
 
   // README
-  registerInCommandController(context, CommandKeys.OpenReadMe, handlers.openReadMeHandler);
+  registerInCommandController(context, CommandKeys.OpenReadMe, openReadMeHandler);
 
   // View samples
   registerInCommandController(context, CommandKeys.OpenSamples, handlers.openSamplesHandler);
@@ -345,11 +373,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   );
 
   // Tutorials
-  registerInCommandController(
-    context,
-    "fx-extension.selectTutorials",
-    handlers.selectTutorialsHandler
-  );
+  registerInCommandController(context, "fx-extension.selectTutorials", selectTutorialsHandler);
 
   // Sign in to M365
   registerInCommandController(context, CommandKeys.SigninM365, handlers.signinM365Callback);
@@ -445,10 +469,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openSurveyCmd);
 
   const openTutorial = vscode.commands.registerCommand("fx-extension.openTutorial", (...args) =>
-    Correlator.run(handlers.openTutorialHandler, [
-      TelemetryTriggerFrom.QuickPick,
-      ...(args as unknown[]),
-    ])
+    Correlator.run(openTutorialHandler, [TelemetryTriggerFrom.QuickPick, ...(args as unknown[])])
   );
   context.subscriptions.push(openTutorial);
 
@@ -530,12 +551,7 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     handlers.installAdaptiveCardExt
   );
 
-  registerInCommandController(
-    context,
-    "fx-extension.addWebpart",
-    handlers.addWebpart,
-    "addWebpart"
-  );
+  registerInCommandController(context, "fx-extension.addWebpart", addWebpartHandler, "addWebpart");
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
@@ -543,12 +559,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   registerInCommandController(context, CommandKeys.Provision, provisionHandler, "provision");
 
   // Zip Teams metadata package
-  registerInCommandController(
-    context,
-    "fx-extension.build",
-    handlers.buildPackageHandler,
-    "buildPackage"
-  );
+  registerInCommandController(context, "fx-extension.build", buildPackageHandler, "buildPackage");
 
   // Deploy to the cloud
   registerInCommandController(context, CommandKeys.Deploy, deployHandler, "deploy");
@@ -560,7 +571,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     "fx-extension.publishInDeveloperPortal",
-    handlers.publishInDeveloperPortalHandler,
+    publishInDeveloperPortalHandler,
     "publishInDeveloperPortal"
   );
 
@@ -577,28 +588,28 @@ function registerTreeViewCommandsInHelper(context: vscode.ExtensionContext) {
  * TeamsFx related commands, they will show in command palette after extension is initialized
  */
 function registerTeamsFxCommands(context: vscode.ExtensionContext) {
-  const createNewEnvironment = vscode.commands.registerCommand(
+  const createNewEnvCmd = vscode.commands.registerCommand(
     // TODO: fix trigger from
     "fx-extension.addEnvironment",
-    (...args) => Correlator.run(handlers.createNewEnvironment, args)
+    (...args) => Correlator.run(createNewEnvironment, args)
   );
-  context.subscriptions.push(createNewEnvironment);
+  context.subscriptions.push(createNewEnvCmd);
 
   const updateAadAppManifest = vscode.commands.registerCommand(
     "fx-extension.updateAadAppManifest",
-    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
+    (...args) => Correlator.run(updateAadAppManifestHandler, args)
   );
   context.subscriptions.push(updateAadAppManifest);
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",
-    (...args) => Correlator.run(handlers.updatePreviewManifest, args)
+    (...args) => Correlator.run(updatePreviewManifest, args)
   );
   context.subscriptions.push(updateManifestCmd);
 
   const validateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.validateManifest",
-    (...args) => Correlator.run(handlers.validateManifestHandler, args)
+    (...args) => Correlator.run(validateManifestHandler, args)
   );
   context.subscriptions.push(validateManifestCmd);
 
@@ -616,13 +627,13 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 
   const openConfigStateCmd = vscode.commands.registerCommand(
     "fx-extension.openConfigState",
-    (...args) => Correlator.run(handlers.openConfigStateFile, args)
+    (...args) => Correlator.run(openConfigStateFile, args)
   );
   context.subscriptions.push(openConfigStateCmd);
 
   const editAadManifestTemplateCmd = vscode.commands.registerCommand(
     "fx-extension.editAadManifestTemplate",
-    (...args) => Correlator.run(handlers.editAadManifestTemplate, args)
+    (...args) => Correlator.run(editAadManifestTemplateHandler, args)
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
@@ -649,8 +660,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
 function registerMenuCommands(context: vscode.ExtensionContext) {
   const createNewEnvironmentWithIcon = vscode.commands.registerCommand(
     "fx-extension.addEnvironmentWithIcon",
-    (...args) =>
-      Correlator.run(handlers.createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(createNewEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createNewEnvironmentWithIcon);
 
@@ -662,8 +672,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const createAccountCmd = vscode.commands.registerCommand(
     "fx-extension.createAccount",
-    (...args) =>
-      Correlator.run(handlers.createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(createAccountHandler, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
   context.subscriptions.push(createAccountCmd);
 
@@ -671,7 +680,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     "fx-extension.manageCollaborator",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.manageCollaboratorHandler, envName);
+      await Correlator.run(manageCollaboratorHandler, envName);
     }
   );
   context.subscriptions.push(manageCollaborator);
@@ -748,23 +757,23 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",
-    (...args) => Correlator.run(handlers.openPreviewAadFile, args)
+    (...args) => Correlator.run(openPreviewAadFileHandler, args)
   );
   context.subscriptions.push(aadManifestTemplateCodeLensCmd);
 
-  const openResourceGroupInPortal = vscode.commands.registerCommand(
+  const openResourceGroupInPortalCmd = vscode.commands.registerCommand(
     "fx-extension.openResourceGroupInPortal",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.openResourceGroupInPortal, envName);
+      await Correlator.run(openResourceGroupInPortal, envName);
     }
   );
-  context.subscriptions.push(openResourceGroupInPortal);
+  context.subscriptions.push(openResourceGroupInPortalCmd);
 
   const openManifestSchemaCmd = vscode.commands.registerCommand(
     "fx-extension.openSchema",
     async (...args) => {
-      await Correlator.run(handlers.openExternalHandler, args);
+      await Correlator.run(openExternalHandler, args);
     }
   );
   context.subscriptions.push(openManifestSchemaCmd);
@@ -777,14 +786,14 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(addAPICmd);
 
-  const openSubscriptionInPortal = vscode.commands.registerCommand(
+  const openSubscriptionInPortalCmd = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
     async (node: Record<string, string>) => {
       const envName = node.identifier;
-      await Correlator.run(handlers.openSubscriptionInPortal, envName);
+      await Correlator.run(openSubscriptionInPortal, envName);
     }
   );
-  context.subscriptions.push(openSubscriptionInPortal);
+  context.subscriptions.push(openSubscriptionInPortalCmd);
 
   registerInCommandController(
     context,
@@ -792,12 +801,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     handlers.treeViewPreviewHandler
   );
 
-  const refreshEnvironment = vscode.commands.registerCommand(
+  const refreshEnvironmentH = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
-    (...args) =>
-      Correlator.run(handlers.refreshEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
+    (...args) => Correlator.run(refreshEnvironment, [TelemetryTriggerFrom.ViewTitleNavigation])
   );
-  context.subscriptions.push(refreshEnvironment);
+  context.subscriptions.push(refreshEnvironmentH);
 
   const refreshSideloading = vscode.commands.registerCommand(
     "fx-extension.refreshSideloading",
@@ -898,6 +906,32 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(officeDevHandlers.openReportIssues, args)
   );
   context.subscriptions.push(reportIssueCmd);
+}
+
+function registerAccountMenuCommands(context: vscode.ExtensionContext) {
+  // Register SignOut tree view command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
+      try {
+        switch (node.contextValue) {
+          case "signedinM365": {
+            await Correlator.run(async () => {
+              await signOutM365(true);
+            });
+            break;
+          }
+          case "signedinAzure": {
+            await Correlator.run(async () => {
+              await signOutAzure(true);
+            });
+            break;
+          }
+        }
+      } catch (e) {
+        void showError(e as FxError);
+      }
+    })
+  );
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
@@ -1189,7 +1223,7 @@ async function runBackgroundAsyncTasks(
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
   if (isTeamsFxProject) {
-    await handlers.autoOpenProjectHandler();
+    await autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   }
 }

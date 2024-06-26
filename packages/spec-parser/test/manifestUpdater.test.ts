@@ -232,7 +232,7 @@ describe("updateManifestWithAiPlugin", () => {
                       wrap: true,
                     },
                     {
-                      $when: "${imageUrl != null}",
+                      $when: "${imageUrl != null && imageUrl != ''}",
                       type: "Image",
                       url: "${imageUrl}",
                     },
@@ -531,7 +531,7 @@ describe("updateManifestWithAiPlugin", () => {
                       wrap: true,
                     },
                     {
-                      $when: "${imageUrl != null}",
+                      $when: "${imageUrl != null && imageUrl != ''}",
                       type: "Image",
                       url: "${imageUrl}",
                     },
@@ -738,7 +738,7 @@ describe("updateManifestWithAiPlugin", () => {
                       type: "Container",
                     },
                     {
-                      $when: "${imageUrl != null}",
+                      $when: "${imageUrl != null && imageUrl != ''}",
                       type: "Image",
                       url: "${imageUrl}",
                     },

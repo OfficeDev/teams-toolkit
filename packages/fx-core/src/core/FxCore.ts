@@ -491,7 +491,6 @@ export class FxCore {
     }
     const packageService = new PackageService(sideloadingServiceEndpoint, TOOLS.logProvider);
     if (titleId === undefined) {
-      // If we failed to get the titleId, we will call graph API and only uninstall the sideloaded Teams app.
       try {
         titleId = await packageService.retrieveTitleId(sideloadingTokenRes.value, manifestId ?? "");
       } catch (err: any) {

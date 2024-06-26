@@ -26,7 +26,6 @@ import {
   DepsType,
   Hub,
   QuestionNames,
-  askSubscription,
   assembleError,
   isValidProject,
   teamsDevPortalClient,
@@ -34,7 +33,6 @@ import {
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import azureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import { PanelType } from "./controls/PanelType";
@@ -60,9 +58,8 @@ import {
   TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";
 import { acpInstalled, openFolderInExplorer } from "./utils/commonUtils";
-import { getDefaultString, localize } from "./utils/localizeUtils";
+import { localize } from "./utils/localizeUtils";
 import { triggerV3Migration } from "./utils/migrationUtils";
-import { ExtensionSurvey } from "./utils/survey";
 import { getSystemInputs } from "./utils/systemEnvUtils";
 import { getTriggerFromProperty } from "./utils/telemetryUtils";
 
@@ -557,12 +554,6 @@ export async function openLifecycleTreeview(args?: any[]) {
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.teamsfx");
   }
-}
-
-export async function azureAccountSignOutHelpHandler(
-  args?: any[]
-): Promise<Result<boolean, FxError>> {
-  return Promise.resolve(ok(false));
 }
 
 /**

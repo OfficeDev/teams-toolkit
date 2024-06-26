@@ -148,14 +148,6 @@ describe("handlers", () => {
     });
   });
 
-  it("azureAccountSignOutHelpHandler()", async () => {
-    try {
-      handlers.azureAccountSignOutHelpHandler();
-    } catch (e) {
-      chai.assert.isTrue(e instanceof Error);
-    }
-  });
-
   describe("runCommand()", function () {
     const sandbox = sinon.createSandbox();
 

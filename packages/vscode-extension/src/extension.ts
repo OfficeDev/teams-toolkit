@@ -136,7 +136,11 @@ import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils"
 import { showError } from "./error/common";
 import { TreeViewCommand } from "./treeview/treeViewCommand";
 import { signOutM365, signOutAzure } from "./utils/accountUtils";
-import { cmpAccountsHandler, createAccountHandler } from "./handlers/accountHandlers";
+import {
+  azureAccountSignOutHelpHandler,
+  cmpAccountsHandler,
+  createAccountHandler,
+} from "./handlers/accountHandlers";
 import { openReadMeHandler } from "./handlers/readmeHandlers";
 import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
 import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
@@ -754,7 +758,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
   const azureAccountSignOutHelpCmd = vscode.commands.registerCommand(
     "fx-extension.azureAccountSignOutHelp",
-    (...args) => Correlator.run(handlers.azureAccountSignOutHelpHandler, args)
+    (...args) => Correlator.run(azureAccountSignOutHelpHandler, args)
   );
   context.subscriptions.push(azureAccountSignOutHelpCmd);
 

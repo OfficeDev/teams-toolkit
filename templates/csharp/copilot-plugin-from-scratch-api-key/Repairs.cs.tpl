@@ -6,14 +6,14 @@ using System.Net;
 
 namespace {{SafeProjectName}}
 {
-    public class Repair
+    public class Repairs
     {
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
 
-        public Repair(ILoggerFactory loggerFactory, IConfiguration configuration)
+        public Repairs(ILoggerFactory loggerFactory, IConfiguration configuration)
         {
-            _logger = loggerFactory.CreateLogger<Repair>();
+            _logger = loggerFactory.CreateLogger<Repairs>();
             _configuration = configuration;
         }
 

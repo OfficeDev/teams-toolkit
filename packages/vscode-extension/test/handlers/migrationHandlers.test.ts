@@ -1,6 +1,7 @@
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { ProgressHandler } from "@microsoft/vscode-ui";
 import * as sinon from "sinon";
+import { assert } from "chai";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import * as errorCommon from "../../src/error/common";
 import {
@@ -44,7 +45,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsTabAppHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
     });
 
     it("happy path: failed files", async () => {
@@ -64,7 +65,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsTabAppHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
       chai.expect(warningStub.calledOnce).to.be.true;
     });
 
@@ -85,7 +86,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsTabAppHandler();
 
-      chai.assert.isTrue(result.isErr());
+      assert.isTrue(result.isErr());
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
 
@@ -99,7 +100,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsTabAppHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
 
@@ -112,7 +113,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsTabAppHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
 
@@ -130,7 +131,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsTabAppHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
     });
   });
 
@@ -154,7 +155,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsManifestHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
     });
 
     it("user cancel: skip file selection", async () => {
@@ -171,7 +172,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsManifestHandler();
 
-      chai.assert.deepEqual(result, ok(null));
+      assert.deepEqual(result, ok(null));
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
 
@@ -192,7 +193,7 @@ describe("Migration handlers", () => {
 
       const result = await migrateTeamsManifestHandler();
 
-      chai.assert.isTrue(result.isErr());
+      assert.isTrue(result.isErr());
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
   });

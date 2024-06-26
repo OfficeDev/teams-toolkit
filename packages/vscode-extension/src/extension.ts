@@ -87,6 +87,7 @@ import {
   deployHandler,
   provisionHandler,
   publishHandler,
+  scaffoldFromDeveloperPortalHandler,
 } from "./handlers/lifecycleHandlers";
 import * as officeDevHandlers from "./handlers/officeDevHandlers";
 import {
@@ -422,7 +423,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   registerInCommandController(
     context,
     "fx-extension.openFromTdp",
-    handlers.scaffoldFromDeveloperPortalHandler,
+    scaffoldFromDeveloperPortalHandler,
     "openFromTdp"
   );
 

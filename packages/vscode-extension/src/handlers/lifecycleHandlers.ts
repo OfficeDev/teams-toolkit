@@ -1,11 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CreateProjectResult, err, FxError, Inputs, Result, Stage } from "@microsoft/teamsfx-api";
-import { isUserCancelError, isValidOfficeAddInProject } from "@microsoft/teamsfx-core";
+import {
+  CreateProjectResult,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Result,
+  Stage,
+} from "@microsoft/teamsfx-api";
+import {
+  AppStudioScopes,
+  assembleError,
+  AuthSvcScopes,
+  isUserCancelError,
+  isValidOfficeAddInProject,
+  teamsDevPortalClient,
+} from "@microsoft/teamsfx-core";
+import * as vscode from "vscode";
 import { Uri } from "vscode";
+import M365TokenInstance from "../commonlib/m365Login";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import envTreeProviderInstance from "../treeview/environmentTreeViewProvider";
+import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { openFolder, openOfficeDevFolder } from "../utils/workspaceUtils";
@@ -74,4 +93,103 @@ export async function publishHandler(...args: unknown[]): Promise<Result<null, F
 export async function addWebpartHandler(...args: unknown[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
   return await runCommand(Stage.addWebpart);
+}
+
+/**
+ * scaffold based on app id from Developer Portal
+ */
+export async function scaffoldFromDeveloperPortalHandler(
+  ...args: any[]
+): Promise<Result<null, FxError>> {
+  if (!args || args.length < 1) {
+    // should never happen
+    return ok(null);
+  }
+
+  const appId = args[0];
+  const properties: { [p: string]: string } = {
+    teamsAppId: appId,
+  };
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
+  const loginHint = args.length < 2 ? undefined : args[1];
+  const progressBar = VS_CODE_UI.createProgressBar(
+    localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
+    1
+  );
+
+  await progressBar.start();
+  let token = undefined;
+  try {
+    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+      { scopes: AppStudioScopes },
+      loginHint
+    );
+    if (tokenRes.isErr()) {
+      if ((tokenRes.error as any).displayMessage) {
+        void vscode.window.showErrorMessage((tokenRes.error as any).displayMessage);
+      } else {
+        void vscode.window.showErrorMessage(
+          localize("teamstoolkit.devPortalIntegration.generalError.message")
+        );
+      }
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.HandleUrlFromDeveloperProtal,
+        tokenRes.error,
+        properties
+      );
+      await progressBar.end(false);
+      return err(tokenRes.error);
+    }
+    token = tokenRes.value;
+
+    // set region
+    const AuthSvcTokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+    if (AuthSvcTokenRes.isOk()) {
+      await teamsDevPortalClient.setRegionEndpointByToken(AuthSvcTokenRes.value);
+    }
+
+    await progressBar.end(true);
+  } catch (e) {
+    void vscode.window.showErrorMessage(
+      localize("teamstoolkit.devPortalIntegration.generalError.message")
+    );
+    await progressBar.end(false);
+    const error = assembleError(e);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      error,
+      properties
+    );
+    return err(error);
+  }
+
+  let appDefinition;
+  try {
+    appDefinition = await teamsDevPortalClient.getApp(token, appId);
+  } catch (error: any) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      error,
+      properties
+    );
+    void vscode.window.showErrorMessage(
+      localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
+    );
+    return err(error);
+  }
+
+  const res = await createNewProjectHandler({ teamsAppFromTdp: appDefinition });
+
+  if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      res.error,
+      properties
+    );
+    return err(res.error);
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
+  return ok(null);
 }

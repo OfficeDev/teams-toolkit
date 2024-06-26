@@ -87,7 +87,7 @@ describe("Migration handlers", () => {
       const result = await migrateTeamsTabAppHandler();
 
       assert.isTrue(result.isErr());
-      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+      assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
 
     it("user cancel", async () => {
@@ -101,7 +101,7 @@ describe("Migration handlers", () => {
       const result = await migrateTeamsTabAppHandler();
 
       assert.deepEqual(result, ok(null));
-      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+      assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
 
     it("user cancel: skip folder selection", async () => {
@@ -114,7 +114,7 @@ describe("Migration handlers", () => {
       const result = await migrateTeamsTabAppHandler();
 
       assert.deepEqual(result, ok(null));
-      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+      assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
 
     it("no change in package.json", async () => {
@@ -173,7 +173,7 @@ describe("Migration handlers", () => {
       const result = await migrateTeamsManifestHandler();
 
       assert.deepEqual(result, ok(null));
-      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+      assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
 
     it("error", async () => {
@@ -194,7 +194,7 @@ describe("Migration handlers", () => {
       const result = await migrateTeamsManifestHandler();
 
       assert.isTrue(result.isErr());
-      chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
+      assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
     });
   });
 });

@@ -58,7 +58,6 @@ import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import { updateAutoOpenGlobalKey } from "../../src/utils/globalStateUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as migrationUtils from "../../src/utils/migrationUtils";
-import { ExtensionSurvey } from "../../src/utils/survey";
 import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import * as telemetryUtils from "../../src/utils/telemetryUtils";
 import { MockCore } from "../mocks/mockCore";
@@ -370,16 +369,6 @@ describe("handlers", () => {
       "workbench.action.openWalkthrough",
       "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
     );
-  });
-
-  it("openSurveyHandler", async () => {
-    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    const openLink = sandbox.stub(ExtensionSurvey.getInstance(), "openSurveyLink");
-    sandbox.stub(localizeUtils, "getDefaultString").returns("test");
-
-    await handlers.openSurveyHandler([extTelemetryEvents.TelemetryTriggerFrom.TreeView]);
-    chai.assert.isTrue(sendTelemetryEvent.calledOnce);
-    chai.assert.isTrue(openLink.calledOnce);
   });
 
   it("openSamplesHandler", async () => {

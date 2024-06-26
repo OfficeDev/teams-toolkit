@@ -299,8 +299,6 @@ export class WebviewPanel {
     switch (panelType) {
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
-      case PanelType.Survey:
-        return localize("teamstoolkit.webview.surveyPageTitle");
       case PanelType.RespondToCardActions:
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:

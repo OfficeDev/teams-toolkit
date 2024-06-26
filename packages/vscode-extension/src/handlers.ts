@@ -271,16 +271,6 @@ export async function checkUpgrade(args?: any[]) {
   }
 }
 
-export async function openSurveyHandler(args?: any[]) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-    ...getTriggerFromProperty(args),
-    // eslint-disable-next-line no-secrets/no-secrets
-    message: getDefaultString("teamstoolkit.commandsTreeViewProvider.openSurveyTitle"),
-  });
-  const survey = ExtensionSurvey.getInstance();
-  await survey.openSurveyLink();
-}
-
 export async function openSamplesHandler(...args: unknown[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.SampleGallery, args);

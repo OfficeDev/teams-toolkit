@@ -12,7 +12,7 @@ import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 
-describe("Lifecycle handlers", () => {
+describe("Migration handlers", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

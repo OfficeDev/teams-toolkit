@@ -565,22 +565,6 @@ export async function azureAccountSignOutHelpHandler(
   return Promise.resolve(ok(false));
 }
 
-export async function selectSubscriptionCallback(args?: any[]): Promise<Result<null, FxError>> {
-  tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
-    [TelemetryProperty.TriggerFrom]: args
-      ? TelemetryTriggerFrom.TreeView
-      : TelemetryTriggerFrom.Other,
-  });
-  const askSubRes = await askSubscription(
-    tools.tokenProvider.azureAccountProvider,
-    VS_CODE_UI,
-    undefined
-  );
-  if (askSubRes.isErr()) return err(askSubRes.error);
-  await azureAccountManager.setSubscription(askSubRes.value.subscriptionId);
-  return ok(null);
-}
-
 /**
  * scaffold based on app id from Developer Portal
  */

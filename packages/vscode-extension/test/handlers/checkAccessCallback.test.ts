@@ -47,6 +47,19 @@ describe("checkAccessCallback", () => {
       chai.expect(showMessageStub.callCount).to.be.equal(1);
       chai.expect(openUrlStub.callCount).to.be.equal(0);
     });
+
+    it("checkCopilotCallback() and fail to show message", async () => {
+      const localizeStub = sandbox.stub(localizeUtils, "localize").returns("");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const showMessageStub = sandbox
+        .stub(vsc_ui.VS_CODE_UI, "showMessage")
+        .rejects(new Error("error"));
+
+      await checkCopilotCallback();
+
+      chai.expect(showMessageStub.callCount).to.be.equal(1);
+      chai.expect(localizeStub.callCount).to.be.equal(2);
+    });
   });
 
   describe("CheckSideloading", () => {

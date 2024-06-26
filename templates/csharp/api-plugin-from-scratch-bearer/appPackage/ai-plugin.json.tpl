@@ -68,7 +68,8 @@
     {
       "type": "OpenApi",
       "auth": {
-        "type": "apiKey"
+        "type": "ApiKeyPluginVault"
+        "reference_id": "${{APIKEY_REGISTRATION_ID}}"
       },
       "spec": {
         "url": "apiSpecificationFile/repair.yml",

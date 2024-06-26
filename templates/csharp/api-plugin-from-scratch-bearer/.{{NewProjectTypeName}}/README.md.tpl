@@ -9,6 +9,21 @@
 > - [Visual Studio 2022](https://aka.ms/vs) 17.11 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 
+### Add your own API Key
+
+1. Open PowerShell, change the current working directory to this project root and run command `./GenerateApiKey.ps1`
+    ```
+    > ./GenerateApiKey.ps1
+    ```
+
+2. The above command will output something like "Generated a new API Key: xxx...".
+3. Fill in API Key into `env/.env.*.user`.
+    ```
+    SECRET_API_KEY=<your-api-key>
+    ```
+
+### Start the app in Teams Web Client
+
 1. In the debug dropdown menu, select Dev Tunnels > Create a Tunnel (set authentication type to Public) or select an existing public dev tunnel
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/create-devtunnel-button.png)
 2. Right-click the '{{NewProjectTypeName}}' project and select Teams Toolkit > Prepare Teams App Dependencies

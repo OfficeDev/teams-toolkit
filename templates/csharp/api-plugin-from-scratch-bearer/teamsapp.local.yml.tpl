@@ -20,6 +20,26 @@ provision:
       run:
         echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
 
+  # Generate runtime settings to JSON file
+  - uses: file/createOrUpdateJsonFile
+    with:
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      target: ../local.settings.json
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      target: ../{{appName}}/local.settings.json
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
+{{^isNewProjectTypeEnabled}}
+      target: ./local.settings.json
+{{/isNewProjectTypeEnabled}}
+      content:
+        IsEncrypted: false
+        Values:
+          FUNCTIONS_WORKER_RUNTIME: "dotnet-isolated"
+          API_KEY: ${{SECRET_API_KEY}}
+
   # Register API KEY
   - uses: apiKey/register
     with:

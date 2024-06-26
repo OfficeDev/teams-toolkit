@@ -10,6 +10,21 @@
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 > - [Copilot for Microsoft 365 license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
 
+### Add your own API Key
+
+1. Open PowerShell, change the current working directory to this project root and run command `./GenerateApiKey.ps1`
+    ```
+    > ./GenerateApiKey.ps1
+    ```
+
+2. The above command will output something like "Generated a new API Key: xxx...".
+3. Fill in API Key into `env/.env.*.user`.
+    ```
+    SECRET_API_KEY=<your-api-key>
+    ```
+    
+### Debug app in Teams Web Client
+
 1. In the debug dropdown menu, select `Dev Tunnels > Create a Tunnel` (set authentication type to Public) or select an existing public dev tunnel.
 2. Right-click your project and select `Teams Toolkit > Prepare Teams App Dependencies`.
 3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.

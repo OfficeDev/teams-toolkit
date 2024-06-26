@@ -17,7 +17,7 @@ namespace {{SafeProjectName}}
             _configuration = configuration;
         }
 
-        [Function("repairs")]
+        [Function("repair")]
         public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
             // Log that the HTTP trigger function received a request.
@@ -35,14 +35,6 @@ namespace {{SafeProjectName}}
 
             // Get the repair records.
             var repairRecords = RepairData.GetRepairs();
-
-            // If the assignedTo query parameter is not provided, return all repair records.
-            if (string.IsNullOrEmpty(assignedTo))
-            {
-                var res = req.CreateResponse();
-                await res.WriteAsJsonAsync(new { results = repairRecords });
-                return res;
-            }
 
             // Filter the repair records by the assignedTo query parameter.
             var repairs = repairRecords.Where(r =>

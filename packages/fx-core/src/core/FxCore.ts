@@ -310,11 +310,11 @@ export class FxCore {
   ])
   async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
     switch (inputs["uninstall-mode"]) {
-      case "uninstall-mode-manifest-id":
+      case QuestionNames.UninstallModeManifestId:
         return await this.uninstallByManifestId(inputs);
-      case "uninstall-mode-env":
+      case QuestionNames.UninstallModeEnv:
         return await this.uninstallByEnv(inputs);
-      case "uninstall-mode-title-id":
+      case QuestionNames.UninstallModeTitleId:
         return await this.uninstallByTitleId(inputs);
       default:
         return err(new UnhandledError(new Error("Uninstall mode not supported"), "FxCore"));

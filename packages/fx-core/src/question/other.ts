@@ -895,7 +895,7 @@ export function uninstallQuestionNode(): IQTreeNode {
               title: getLocalizedString("core.uninstallQuestion.manifestId"),
             },
             condition: (input: UninstallInputs) => {
-              return input[QuestionNames.UninstallMode] == "uninstall-mode-manifest-id";
+              return input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeManifestId;
             },
           },
           {
@@ -905,7 +905,7 @@ export function uninstallQuestionNode(): IQTreeNode {
               title: getLocalizedString("core.uninstallQuestion.env"),
             },
             condition: (input: UninstallInputs) => {
-              return input[QuestionNames.UninstallMode] === "uninstall-mode-env";
+              return input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeEnv;
             },
             children: [
               {
@@ -920,8 +920,8 @@ export function uninstallQuestionNode(): IQTreeNode {
             data: uninstallOptionQuestion(),
             condition: (input: UninstallInputs) => {
               return (
-                input[QuestionNames.UninstallMode] === "uninstall-mode-manifest-id" ||
-                input[QuestionNames.UninstallMode] === "uninstall-mode-env"
+                input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeManifestId ||
+                input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeEnv
               );
             },
           },
@@ -932,7 +932,7 @@ export function uninstallQuestionNode(): IQTreeNode {
               title: getLocalizedString("core.uninstallQuestion.titleId"),
             },
             condition: (input: UninstallInputs) => {
-              return input[QuestionNames.UninstallMode] === "uninstall-mode-title-id";
+              return input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeTitleId;
             },
           },
         ],
@@ -948,19 +948,19 @@ function uninstallModeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: [
       {
-        id: "uninstall-mode-manifest-id",
+        id: QuestionNames.UninstallModeManifestId,
         label: getLocalizedString("core.uninstallQuestion.manifestIdMode"),
       },
       {
-        id: "uninstall-mode-env",
+        id: QuestionNames.UninstallModeEnv,
         label: getLocalizedString("core.uninstallQuestion.envMode"),
       },
       {
-        id: "uninstall-mode-title-id",
+        id: QuestionNames.UninstallModeTitleId,
         label: getLocalizedString("core.uninstallQuestion.titleIdMode"),
       },
     ],
-    default: "uninstall-env",
+    default: "env",
   };
 }
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { UninstallInputs } from "@microsoft/teamsfx-core";
+import { UninstallInputs, QuestionNames } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
 import { commands } from "../../resource";
@@ -14,6 +14,11 @@ export const m365UnacquireCommand: CLICommand = {
   aliases: ["unacquire"],
   description: commands.uninstall.description,
   options: [
+    {
+      name: QuestionNames.UninstallMode,
+      description: commands.uninstall.options["uninstall-mode"],
+      type: "string",
+    },
     {
       name: "title-id",
       description: commands.uninstall.options["title-id"],
@@ -28,6 +33,11 @@ export const m365UnacquireCommand: CLICommand = {
       name: "env",
       description: commands.uninstall.options["env"],
       type: "string",
+    },
+    {
+      name: QuestionNames.UninstallOption,
+      description: commands.uninstall.options["uninstall-option"],
+      type: "array",
     },
   ],
   examples: [

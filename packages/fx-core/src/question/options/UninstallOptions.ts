@@ -16,8 +16,8 @@ export const UninstallOptions: CLICommandOption[] = [
     type: "string",
     description: "Choose uninstall mode",
     required: true,
-    default: "uninstall-env",
-    choices: ["uninstall-mode-manifest-id", "uninstall-mode-env", "uninstall-mode-title-id"],
+    default: "env",
+    choices: ["manifest-id", "env", "title-id"],
   },
   {
     name: "manifest-id",
@@ -39,11 +39,7 @@ export const UninstallOptions: CLICommandOption[] = [
     name: "uninstall-option",
     type: "array",
     description: "Choose resources to uninstall",
-    choices: [
-      "uninstall-option-m365-app",
-      "uninstall-option-app-registration",
-      "uninstall-option-bot-framework-registration",
-    ],
+    choices: ["m365-app", "app-registration", "bot-framework-registration"],
   },
   {
     name: "title-id",

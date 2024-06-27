@@ -126,22 +126,6 @@ describe("Generator utils", () => {
     assert.isTrue(url?.includes("0.0.0-rc"));
   });
 
-  it("set useLocalTemplate flag to true", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_TEMPLATE_PRERELEASE: "",
-    });
-    sandbox.replace(templateConfig, "useLocalTemplate", true);
-    const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
-    sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
-    try {
-      await generatorUtils.getTemplateLatestVersion();
-    } catch (e) {
-      assert.exists(e);
-      return;
-    }
-    assert.fail("Should not reach here.");
-  });
-
   it("return correct version", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_TEMPLATE_PRERELEASE: "",
@@ -1055,6 +1039,9 @@ describe("render template", () => {
 
       sandbox.replace(templateConfig, "useLocalTemplate", false);
       sandbox.replace(templateConfig, "localVersion", "9.9.9");
+      sandbox.replace(templateConfig, "version", "~3.0.0");
+      const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
+      sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
       sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
       sandbox
         .stub(generatorUtils, "getTemplateZipUrlByVersion")

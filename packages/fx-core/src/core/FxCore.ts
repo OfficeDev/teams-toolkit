@@ -498,7 +498,7 @@ export class FxCore {
     const confirmRes = await TOOLS.ui.confirm?.({
       name: "uninstallM365App",
       title: getLocalizedString("core.uninstall.confirm.m365App", titleId),
-      default: false,
+      default: true,
     });
     if (confirmRes?.isOk() && confirmRes.value.result === true) {
       await packageService.unacquire(sideloadingTokenRes.value, titleId);
@@ -540,7 +540,7 @@ export class FxCore {
     const confirmRes = await TOOLS.ui.confirm?.({
       name: "uninstallAppRegistration",
       title: getLocalizedString("core.uninstall.confirm.tdp", manifestId),
-      default: false,
+      default: true,
     });
     if (confirmRes?.isOk() && confirmRes.value.result === true) {
       const token = appStudioTokenRes.value;
@@ -593,7 +593,7 @@ export class FxCore {
     const confirmRes = await TOOLS.ui.confirm?.({
       name: "uninstallBotFrameworRegistration",
       title: getLocalizedString("core.uninstall.confirm.bot", botId),
-      default: false,
+      default: true,
     });
     if (confirmRes?.isOk() && confirmRes.value.result === true) {
       await teamsDevPortalClient.deleteBot(token, botId);

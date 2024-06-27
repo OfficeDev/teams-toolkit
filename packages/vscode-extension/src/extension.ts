@@ -80,6 +80,7 @@ import { debugInTestToolHandler } from "./handlers/debugInTestTool";
 import { downloadSampleApp } from "./handlers/downloadSample";
 import {
   addWebpartHandler,
+  copilotPluginAddAPIHandler,
   createNewProjectHandler,
   deployHandler,
   provisionHandler,
@@ -789,7 +790,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   const addAPICmd = vscode.commands.registerCommand(
     "fx-extension.copilotPluginAddAPI",
     async (...args) => {
-      await Correlator.run(handlers.copilotPluginAddAPIHandler, args);
+      await Correlator.run(copilotPluginAddAPIHandler, args);
     }
   );
   context.subscriptions.push(addAPICmd);

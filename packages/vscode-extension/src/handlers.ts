@@ -13,28 +13,22 @@ import {
   Result,
   SelectFileConfig,
   SelectFolderConfig,
-  Stage,
   UserError,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
 import {
-  AppStudioScopes,
-  AuthSvcScopes,
-  CapabilityOptions,
   DepsManager,
   DepsType,
   Hub,
   QuestionNames,
   assembleError,
   isValidProject,
-  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "./commonlib/log";
-import M365TokenInstance from "./commonlib/m365Login";
 import { PanelType } from "./controls/PanelType";
 import { WebviewPanel } from "./controls/webviewPanel";
 import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
@@ -44,9 +38,8 @@ import { openHubWebClient } from "./debug/launch";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { showError, wrapError } from "./error/common";
 import { ExtensionErrors, ExtensionSource } from "./error/error";
-import { core, isTeamsFxProject, tools, workspaceUri } from "./globalVariables";
-import { createNewProjectHandler } from "./handlers/lifecycleHandlers";
-import { processResult, runCommand } from "./handlers/sharedOpts";
+import { core, isTeamsFxProject, workspaceUri } from "./globalVariables";
+import { processResult } from "./handlers/sharedOpts";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { VS_CODE_UI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
@@ -342,25 +335,6 @@ export async function installAdaptiveCardExt(
     }
   }
   return Promise.resolve(ok(null));
-}
-
-export async function copilotPluginAddAPIHandler(args: any[]) {
-  // Telemetries are handled in runCommand()
-  const inputs = getSystemInputs();
-  if (args && args.length > 0) {
-    const filePath = args[0].fsPath as string;
-    const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
-    if (!isFromApiPlugin) {
-      // Codelens for API ME. Trigger from manifest.json
-      inputs[QuestionNames.ManifestPath] = filePath;
-    } else {
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
-      inputs[QuestionNames.DestinationApiSpecFilePath] = filePath;
-      inputs[QuestionNames.ManifestPath] = args[0].manifestPath;
-    }
-  }
-  const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
-  return result;
 }
 
 export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>> {

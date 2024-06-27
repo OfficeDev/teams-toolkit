@@ -13,12 +13,13 @@ import {
   AppStudioScopes,
   assembleError,
   AuthSvcScopes,
+  CapabilityOptions,
   isUserCancelError,
   isValidOfficeAddInProject,
+  QuestionNames,
   teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
-import { Uri } from "vscode";
 import M365TokenInstance from "../commonlib/m365Login";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -53,7 +54,7 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     await invokeTeamsAgent([TelemetryTriggerFrom.CreateAppQuestionFlow]);
     return result;
   }
-  const projectPathUri = Uri.file(res.projectPath);
+  const projectPathUri = vscode.Uri.file(res.projectPath);
   const isOfficeAddin = isValidOfficeAddInProject(projectPathUri.fsPath);
   // If it is triggered in @office /create for code gen, then do no open the temp folder.
   if (isOfficeAddin && inputs?.agent === "office") {
@@ -192,4 +193,23 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
+}
+
+export async function copilotPluginAddAPIHandler(args: any[]) {
+  // Telemetries are handled in runCommand()
+  const inputs = getSystemInputs();
+  if (args && args.length > 0) {
+    const filePath = args[0].fsPath as string;
+    const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
+    if (!isFromApiPlugin) {
+      // Codelens for API ME. Trigger from manifest.json
+      inputs[QuestionNames.ManifestPath] = filePath;
+    } else {
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[QuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[QuestionNames.ManifestPath] = args[0].manifestPath;
+    }
+  }
+  const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
+  return result;
 }

@@ -14,7 +14,7 @@ export interface UninstallInputs extends Inputs {
   /** @description Choose uninstall mode */
   mode?: "manifest-id" | "env" | "title-id";
   /** @description Manifest ID */
-  "mainfest-id"?: string;
+  "manifest-id"?: string;
   /** @description Env */
   env?: string;
   /** @description Project path */

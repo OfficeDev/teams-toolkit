@@ -77,7 +77,7 @@ export enum QuestionNames {
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",
-  ManifestId = "mainfest-id",
+  ManifestId = "manifest-id",
   TitleId = "title-id",
   UserEmail = "email",
 

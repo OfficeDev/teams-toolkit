@@ -20,7 +20,7 @@ export const UninstallOptions: CLICommandOption[] = [
     choices: ["manifest-id", "env", "title-id"],
   },
   {
-    name: "mainfest-id",
+    name: "manifest-id",
     type: "string",
     description: "Manifest ID",
   },

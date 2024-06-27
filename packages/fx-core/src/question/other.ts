@@ -966,7 +966,7 @@ function uninstallModeQuestion(): SingleSelectQuestion {
 
 function uninstallOptionQuestion(): MultiSelectQuestion {
   return {
-    name: QuestionNames.UninstallOption,
+    name: QuestionNames.UninstallOptions,
     title: getLocalizedString("core.uninstallQuestion.chooseOption"),
     type: "multiSelect",
     staticOptions: [

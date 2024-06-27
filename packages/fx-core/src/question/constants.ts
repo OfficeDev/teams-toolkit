@@ -80,11 +80,11 @@ export enum QuestionNames {
 
   UserEmail = "email",
 
-  UninstallMode = "uninstall-mode",
+  UninstallMode = "mode",
   UninstallModeManifestId = "manifest-id",
   UninstallModeEnv = "env",
   UninstallModeTitleId = "title-id",
-  UninstallOption = "uninstall-option",
+  UninstallOptions = "options",
   UninstallOptionM365 = "m365-app",
   UninstallOptionTDP = "app-registration",
   UninstallOptionBot = "bot-framework-registration",

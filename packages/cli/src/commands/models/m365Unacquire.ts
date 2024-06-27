@@ -16,7 +16,7 @@ export const m365UnacquireCommand: CLICommand = {
   options: [
     {
       name: QuestionNames.UninstallMode,
-      description: commands.uninstall.options["uninstall-mode"],
+      description: commands.uninstall.options["mode"],
       type: "string",
     },
     {
@@ -36,7 +36,7 @@ export const m365UnacquireCommand: CLICommand = {
     },
     {
       name: QuestionNames.UninstallOption,
-      description: commands.uninstall.options["uninstall-option"],
+      description: commands.uninstall.options["options"],
       type: "array",
     },
   ],

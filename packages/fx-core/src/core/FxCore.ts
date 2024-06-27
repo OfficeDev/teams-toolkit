@@ -309,7 +309,7 @@ export class FxCore {
     QuestionMW("uninstall"),
   ])
   async uninstall(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
-    switch (inputs["uninstall-mode"]) {
+    switch (inputs[QuestionNames.UninstallMode as string]) {
       case QuestionNames.UninstallModeManifestId:
         return await this.uninstallByManifestId(inputs);
       case QuestionNames.UninstallModeEnv:
@@ -333,7 +333,7 @@ export class FxCore {
     if (!manifestId) {
       return err(new MissingRequiredInputError("manifest-id", "FxCore"));
     }
-    const uninstallOptions = inputs[QuestionNames.UninstallOption as string];
+    const uninstallOptions = inputs[QuestionNames.UninstallOptions as string];
     const m356AppOption = uninstallOptions?.includes(QuestionNames.UninstallOptionM365);
     const tdpOption = uninstallOptions?.includes(QuestionNames.UninstallOptionTDP);
     const botOption = uninstallOptions?.includes(QuestionNames.UninstallOptionBot);
@@ -402,7 +402,7 @@ export class FxCore {
       }
     }
 
-    const uninstallOptions = inputs[QuestionNames.UninstallOption as string];
+    const uninstallOptions = inputs[QuestionNames.UninstallOptions as string];
     const m356AppOption = uninstallOptions?.includes(QuestionNames.UninstallOptionM365);
     const tdpOption = uninstallOptions?.includes(QuestionNames.UninstallOptionTDP);
     const botOption = uninstallOptions?.includes(QuestionNames.UninstallOptionBot);

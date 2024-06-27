@@ -572,6 +572,7 @@
   "core.uninstall.confirm.cancel.bot": "Bot framework registration uninstallation cancelled.",
   "core.uninstall.success.tdp": "App registration of manifest ID: %s has been successfully uninstalled.",
   "core.uninstall.success.m365App": "M365 App of Title ID: %s has been successfully uninstalled.",
+  "core.uninstall.success.delayWarning": "The uninstallation of the M365 app might have some delay.",
   "core.uninstall.success.bot": "Bot framework registration of bot ID: %s has been successfully uninstalled.",
   "core.uninstall.failed.titleId": "Failed to find the Title ID. This app is probably not installed.",
   "ui.select.LoadingOptionsPlaceholder": "Loading options ...",

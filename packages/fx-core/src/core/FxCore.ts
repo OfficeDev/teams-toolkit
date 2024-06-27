@@ -514,6 +514,11 @@ export class FxCore {
         getLocalizedString("core.uninstall.success.m365App", titleId),
         false
       );
+      await TOOLS.ui.showMessage(
+        "info",
+        getLocalizedString("core.uninstall.success.delayWarning"),
+        false
+      );
     } else {
       await TOOLS.ui.showMessage(
         "info",

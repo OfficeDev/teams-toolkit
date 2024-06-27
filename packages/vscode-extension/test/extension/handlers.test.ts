@@ -12,24 +12,14 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import {
-  AppDefinition,
-  DepsManager,
-  DepsType,
-  UnhandledError,
-  UserCancelError,
-  featureFlagManager,
-  teamsDevPortalClient,
-} from "@microsoft/teamsfx-core";
+import { DepsManager, DepsType, featureFlagManager } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
-import * as mockfs from "mock-fs";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import M365TokenInstance from "../../src/commonlib/m365Login";
@@ -40,7 +30,6 @@ import * as debugConstants from "../../src/debug/common/debugConstants";
 import * as getStartedChecker from "../../src/debug/depsChecker/getStartedChecker";
 import * as launch from "../../src/debug/launch";
 import * as errorCommon from "../../src/error/common";
-import { ExtensionErrors } from "../../src/error/error";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
 import {
@@ -86,36 +75,6 @@ describe("handlers", () => {
 
     afterEach(() => {
       sandbox.restore();
-    });
-
-    it("API ME: copilotPluginAddAPIHandler()", async () => {
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const addAPIHanlder = sandbox.spy(globalVariables.core, "copilotPluginAddAPI");
-      const args = [
-        {
-          fsPath: "manifest.json",
-        },
-      ];
-
-      await handlers.copilotPluginAddAPIHandler(args);
-
-      sinon.assert.calledOnce(addAPIHanlder);
-    });
-
-    it("API Plugin: copilotPluginAddAPIHandler()", async () => {
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      const addAPIHanlder = sandbox.spy(globalVariables.core, "copilotPluginAddAPI");
-      const args = [
-        {
-          fsPath: "openapi.yaml",
-          isFromApiPlugin: true,
-          manifestPath: "manifest.json",
-        },
-      ];
-
-      await handlers.copilotPluginAddAPIHandler(args);
-
-      sinon.assert.calledOnce(addAPIHanlder);
     });
 
     it("treeViewPreviewHandler() - previewWithManifest error", async () => {

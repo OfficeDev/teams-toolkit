@@ -14,6 +14,7 @@ import * as globalVariables from "../../src/globalVariables";
 import * as copilotHandler from "../../src/handlers/copilotChatHandlers";
 import {
   addWebpartHandler,
+  copilotPluginAddAPIHandler,
   createNewProjectHandler,
   deployHandler,
   provisionHandler,
@@ -326,6 +327,44 @@ describe("Lifecycle handlers", () => {
       assert.isTrue(createProgressBar.calledOnce);
       assert.isTrue(startProgress.calledOnce);
       assert.isTrue(endProgress.calledOnceWithExactly(true));
+    });
+  });
+
+  describe("copilotPluginAddAPIHandler", async () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("API ME:", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const addAPIHanlder = sandbox.spy(globalVariables.core, "copilotPluginAddAPI");
+      const args = [
+        {
+          fsPath: "manifest.json",
+        },
+      ];
+
+      await copilotPluginAddAPIHandler(args);
+
+      sinon.assert.calledOnce(addAPIHanlder);
+    });
+
+    it("API Plugin", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const addAPIHanlder = sandbox.spy(globalVariables.core, "copilotPluginAddAPI");
+      const args = [
+        {
+          fsPath: "openapi.yaml",
+          isFromApiPlugin: true,
+          manifestPath: "manifest.json",
+        },
+      ];
+
+      await copilotPluginAddAPIHandler(args);
+
+      sinon.assert.calledOnce(addAPIHanlder);
     });
   });
 });

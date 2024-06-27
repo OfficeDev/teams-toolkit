@@ -373,4 +373,12 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.ApiPluginFromScratchOAuth,
   ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptBasic().id },
+    TemplateNames.BasicGpt,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptWithPlugin().id },
+    TemplateNames.GptWithPluginFromScratch,
+  ],
 ]);

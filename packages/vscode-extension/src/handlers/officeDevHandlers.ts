@@ -7,12 +7,7 @@
 "use strict";
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { GlobalKey } from "../constants";
 import { OfficeDevTerminal, TriggerCmdType } from "../debug/taskTerminal/officeDevTerminal";
@@ -227,9 +222,4 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
   if (autoInstallDependency) {
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
-}
-
-export function checkOfficeAddInInstalled(directory: string): boolean {
-  const nodeModulesExists = fs.existsSync(path.join(directory, "node_modules"));
-  return nodeModulesExists;
 }

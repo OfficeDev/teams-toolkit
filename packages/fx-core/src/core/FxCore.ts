@@ -329,7 +329,7 @@ export class FxCore {
     ErrorHandlerMW,
   ])
   async uninstallByManifestId(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
-    const manifestId = inputs["manifest-id"] as string;
+    const manifestId = inputs[QuestionNames.ManifestId as string] as string;
     if (!manifestId) {
       return err(new MissingRequiredInputError("manifest-id", "FxCore"));
     }
@@ -448,7 +448,7 @@ export class FxCore {
     ErrorHandlerMW,
   ])
   async uninstallByTitleId(inputs: UninstallInputs): Promise<Result<undefined, FxError>> {
-    const titleId = inputs["title-id"] as string;
+    const titleId = inputs[QuestionNames.TitleId as string] as string;
     if (!titleId) {
       return err(new MissingRequiredInputError("title-id", "FxCore"));
     }

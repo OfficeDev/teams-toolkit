@@ -12,7 +12,7 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const UninstallOptions: CLICommandOption[] = [
   {
-    name: "uninstall-mode",
+    name: "mode",
     type: "string",
     description: "Choose uninstall mode",
     required: true,
@@ -20,7 +20,7 @@ export const UninstallOptions: CLICommandOption[] = [
     choices: ["manifest-id", "env", "title-id"],
   },
   {
-    name: "manifest-id",
+    name: "mainfest-id",
     type: "string",
     description: "Manifest ID",
   },
@@ -36,7 +36,7 @@ export const UninstallOptions: CLICommandOption[] = [
     default: "./",
   },
   {
-    name: "uninstall-option",
+    name: "options",
     type: "array",
     description: "Choose resources to uninstall",
     choices: ["m365-app", "app-registration", "bot-framework-registration"],

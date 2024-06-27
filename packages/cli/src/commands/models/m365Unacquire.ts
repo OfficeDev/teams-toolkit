@@ -20,17 +20,17 @@ export const m365UnacquireCommand: CLICommand = {
       type: "string",
     },
     {
-      name: "title-id",
+      name: QuestionNames.TitleId,
       description: commands.uninstall.options["title-id"],
       type: "string",
     },
     {
-      name: "manifest-id",
+      name: QuestionNames.ManifestId,
       description: commands.uninstall.options["manifest-id"],
       type: "string",
     },
     {
-      name: "env",
+      name: QuestionNames.Env,
       description: commands.uninstall.options["env"],
       type: "string",
     },

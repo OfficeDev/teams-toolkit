@@ -891,7 +891,7 @@ export function uninstallQuestionNode(): IQTreeNode {
           {
             data: {
               type: "text",
-              name: "manifest-id",
+              name: QuestionNames.ManifestId,
               title: getLocalizedString("core.uninstallQuestion.manifestId"),
             },
             condition: (input: UninstallInputs) => {
@@ -901,7 +901,7 @@ export function uninstallQuestionNode(): IQTreeNode {
           {
             data: {
               type: "text",
-              name: "env",
+              name: QuestionNames.Env,
               title: getLocalizedString("core.uninstallQuestion.env"),
             },
             condition: (input: UninstallInputs) => {
@@ -928,7 +928,7 @@ export function uninstallQuestionNode(): IQTreeNode {
           {
             data: {
               type: "text",
-              name: "title-id",
+              name: QuestionNames.TitleId,
               title: getLocalizedString("core.uninstallQuestion.titleId"),
             },
             condition: (input: UninstallInputs) => {

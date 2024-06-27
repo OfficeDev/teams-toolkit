@@ -12,15 +12,15 @@ import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface UninstallInputs extends Inputs {
   /** @description Choose uninstall mode */
-  "uninstall-mode"?: "manifest-id" | "env" | "title-id";
+  mode?: "manifest-id" | "env" | "title-id";
   /** @description Manifest ID */
-  "manifest-id"?: string;
+  "mainfest-id"?: string;
   /** @description Env */
   env?: string;
   /** @description Project path */
   projectPath?: string;
   /** @description Choose resources to uninstall */
-  "uninstall-option"?: "m365-app" | "app-registration" | "bot-framework-registration"[];
+  options?: "m365-app" | "app-registration" | "bot-framework-registration"[];
   /** @description Title ID */
   "title-id"?: string;
 }

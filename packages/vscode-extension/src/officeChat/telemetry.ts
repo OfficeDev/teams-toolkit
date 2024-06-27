@@ -122,15 +122,15 @@ export class OfficeChatTelemetryData implements IChatTelemetryData {
         this.timeToFirstToken;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] =
         (performance.now() - this.startTime) / 1000;
-      this.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCount] =
+      this.telemetryData.measurements[TelemetryProperty.CopilotChatRequestToken] =
         this.chatMessagesTokenCount();
-      this.telemetryData.measurements[TelemetryProperty.CopilotResponseChatCount] =
+      this.telemetryData.measurements[TelemetryProperty.CopilotChatResponseToken] =
         this.responseChatMessagesTokenCount();
-      this.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCountPerSecond] =
-        this.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCount] /
+      this.telemetryData.measurements[TelemetryProperty.CopilotChatRequestTokenPerSecond] =
+        this.telemetryData.measurements[TelemetryProperty.CopilotChatRequestToken] /
         this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete];
-      this.telemetryData.measurements[TelemetryProperty.CopilotResponseChatCountPerSecond] =
-        this.telemetryData.measurements[TelemetryProperty.CopilotResponseChatCount] /
+      this.telemetryData.measurements[TelemetryProperty.CopilotChatResponseTokenPerSecond] =
+        this.telemetryData.measurements[TelemetryProperty.CopilotChatResponseToken] /
         this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete];
       this.hasComplete = true;
     }

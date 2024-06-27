@@ -45,11 +45,13 @@ export async function matchOfficeProject(
   try {
     response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   } catch (error) {
-    if (error instanceof vscode.LanguageModelError) {
+    if ((error as Error).message.includes("off_topic")) {
+      telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.OffTopic);
+    } else {
       telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.LanguageModelError);
-      telemetryData.chatMessages.push(...messages);
-      telemetryData.markComplete("unsupportedPrompt");
     }
+    telemetryData.chatMessages.push(...messages);
+    telemetryData.markComplete("unsupportedPrompt");
   }
   telemetryData.responseChatMessages.push(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)

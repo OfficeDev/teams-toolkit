@@ -117,12 +117,12 @@ describe("OfficeChatTelemetryData", () => {
 
       const measurements = officeChatTelemetryData.measurements;
 
-      chai.assert.equal(measurements[TelemetryProperty.CopilotRequestChatCount], 200);
-      chai.assert.equal(measurements[TelemetryProperty.CopilotResponseChatCount], 200);
+      chai.assert.equal(measurements[TelemetryProperty.CopilotChatRequestToken], 200);
+      chai.assert.equal(measurements[TelemetryProperty.CopilotChatResponseToken], 200);
       chai.assert.equal(measurements[TelemetryProperty.CopilotChatTimeToComplete], 0.1);
       chai.assert.equal(measurements[TelemetryProperty.CopilotChatTimeToFirstToken], -1);
-      chai.assert.equal(measurements[TelemetryProperty.CopilotResponseChatCountPerSecond], 2000);
-      chai.assert.equal(measurements[TelemetryProperty.CopilotRequestChatCountPerSecond], 2000);
+      chai.assert.equal(measurements[TelemetryProperty.CopilotChatRequestTokenPerSecond], 2000);
+      chai.assert.equal(measurements[TelemetryProperty.CopilotChatResponseTokenPerSecond], 2000);
     });
   });
 
@@ -192,12 +192,12 @@ describe("OfficeChatTelemetryData", () => {
 
     chai.assert.equal(officeChatTelemetryData.hasComplete, true);
     chai.assert.equal(
-      officeChatTelemetryData.telemetryData.measurements[TelemetryProperty.CopilotRequestChatCount],
+      officeChatTelemetryData.telemetryData.measurements[TelemetryProperty.CopilotChatRequestToken],
       100
     );
     chai.assert.equal(
       officeChatTelemetryData.telemetryData.measurements[
-        TelemetryProperty.CopilotResponseChatCount
+        TelemetryProperty.CopilotChatResponseToken
       ],
       100
     );
@@ -233,13 +233,13 @@ describe("OfficeChatTelemetryData", () => {
     );
     chai.assert.equal(
       officeChatTelemetryData.telemetryData.measurements[
-        TelemetryProperty.CopilotRequestChatCountPerSecond
+        TelemetryProperty.CopilotChatRequestTokenPerSecond
       ],
       1000
     );
     chai.assert.equal(
       officeChatTelemetryData.telemetryData.measurements[
-        TelemetryProperty.CopilotResponseChatCountPerSecond
+        TelemetryProperty.CopilotChatResponseTokenPerSecond
       ],
       1000
     );

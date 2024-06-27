@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, Platform, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService, UninstallInputs } from "@microsoft/teamsfx-core";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { UninstallInputs } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
 import { commands } from "../../resource";

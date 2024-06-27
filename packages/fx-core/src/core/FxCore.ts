@@ -63,7 +63,6 @@ import { AadConstants, SingleSignOnOptionItem, ViewAadAppHelpLinkV5 } from "../c
 import { coordinator } from "../component/coordinator";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
-import { AadAppClient } from "../component/driver/aad/utility/aadAppClient";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
@@ -143,12 +142,7 @@ import { createProjectCliHelpNode } from "../question/create";
 import { ValidateTeamsAppInputs } from "../question/inputs/ValidateTeamsAppInputs";
 import { isAadMainifestContainsPlaceholder } from "../question/other";
 import { CallbackRegistry, CoreCallbackFunc } from "./callback";
-import {
-  CollaborationUtil,
-  checkPermission,
-  grantPermission,
-  listCollaborator,
-} from "./collaborator";
+import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
@@ -166,7 +160,6 @@ import { UninstallInputs } from "../question";
 import { PackageService } from "../component/m365/packageService";
 import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceConstant";
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
-import { get } from "http";
 
 export class FxCore {
   constructor(tools: Tools) {

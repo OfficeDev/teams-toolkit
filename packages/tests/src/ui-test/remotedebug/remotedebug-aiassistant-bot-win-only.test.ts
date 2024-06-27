@@ -91,7 +91,7 @@ describe("Remote debug Tests", function () {
         botCommand: "helloWorld",
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
-        expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+        expectedReplyMessage: ValidationContent.AiBotErrorMessage2,
       });
     }
   );

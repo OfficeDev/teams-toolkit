@@ -14,6 +14,7 @@ import {
   SingleFileQuestion,
   SingleSelectQuestion,
   TextInputQuestion,
+  FolderQuestion,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -42,6 +43,8 @@ import {
   apiOperationQuestion,
   apiSpecLocationQuestion,
 } from "./create";
+import { UninstallInputs } from "./inputs";
+import { get } from "lodash";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -871,6 +874,126 @@ export function oauthQuestion(): IQTreeNode {
         },
       },
     ],
+  };
+}
+
+export function uninstallQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: uninstallModeQuestion(),
+        condition: () => {
+          return true;
+        },
+        children: [
+          {
+            data: {
+              type: "text",
+              name: "manifest-id",
+              title: getLocalizedString("core.uninstallQuestion.manifestId"),
+            },
+            condition: (input: UninstallInputs) => {
+              return input[QuestionNames.UninstallMode] == "uninstall-mode-manifest-id";
+            },
+          },
+          {
+            data: {
+              type: "text",
+              name: "env",
+              title: getLocalizedString("core.uninstallQuestion.env"),
+            },
+            condition: (input: UninstallInputs) => {
+              return input[QuestionNames.UninstallMode] === "uninstall-mode-env";
+            },
+            children: [
+              {
+                data: uninstallProjectPathQuestion(),
+                condition: () => {
+                  return true;
+                },
+              },
+            ],
+          },
+          {
+            data: uninstallOptionQuestion(),
+            condition: (input: UninstallInputs) => {
+              return (
+                input[QuestionNames.UninstallMode] === "uninstall-mode-manifest-id" ||
+                input[QuestionNames.UninstallMode] === "uninstall-mode-env"
+              );
+            },
+          },
+          {
+            data: {
+              type: "text",
+              name: "title-id",
+              title: getLocalizedString("core.uninstallQuestion.titleId"),
+            },
+            condition: (input: UninstallInputs) => {
+              return input[QuestionNames.UninstallMode] === "uninstall-mode-title-id";
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function uninstallModeQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.UninstallMode,
+    title: getLocalizedString("core.uninstallQuestion.chooseMode"),
+    type: "singleSelect",
+    staticOptions: [
+      {
+        id: "uninstall-mode-manifest-id",
+        label: getLocalizedString("core.uninstallQuestion.manifestIdMode"),
+      },
+      {
+        id: "uninstall-mode-env",
+        label: getLocalizedString("core.uninstallQuestion.envMode"),
+      },
+      {
+        id: "uninstall-mode-title-id",
+        label: getLocalizedString("core.uninstallQuestion.titleIdMode"),
+      },
+    ],
+    default: "uninstall-env",
+  };
+}
+
+function uninstallOptionQuestion(): MultiSelectQuestion {
+  return {
+    name: QuestionNames.UninstallOption,
+    title: getLocalizedString("core.uninstallQuestion.chooseOption"),
+    type: "multiSelect",
+    staticOptions: [
+      {
+        id: QuestionNames.UninstallOptionM365,
+        label: getLocalizedString("core.uninstallQuestion.m365Option"),
+      },
+      {
+        id: QuestionNames.UninstallOptionTDP,
+        label: getLocalizedString("core.uninstallQuestion.tdpOption"),
+      },
+      {
+        id: QuestionNames.UninstallOptionBot,
+        label: getLocalizedString("core.uninstallQuestion.botOption"),
+      },
+    ],
+  };
+}
+function uninstallProjectPathQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: QuestionNames.ProjectPath,
+    title: getLocalizedString("core.uninstallQuestion.projectPath"),
+    cliDescription: "Project Path for uninstall",
+    placeholder: "./",
+    default: "./",
   };
 }
 

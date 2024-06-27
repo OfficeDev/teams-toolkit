@@ -85,13 +85,22 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     await this.load();
     if (AzureAccountManager.tokenCredential == undefined) {
-      const identityCredential = new identity.ClientSecretCredential(
-        AzureAccountManager.tenantId,
-        AzureAccountManager.clientId,
-        AzureAccountManager.secret
-      );
-      const credentialChain = new identity.ChainedTokenCredential(identityCredential);
-      AzureAccountManager.tokenCredential = credentialChain;
+      if (await fs.pathExists(AzureAccountManager.secret)) {
+        const certCredential = new identity.ClientCertificateCredential(
+          AzureAccountManager.tenantId,
+          AzureAccountManager.clientId,
+          AzureAccountManager.secret
+        );
+        AzureAccountManager.tokenCredential = certCredential;
+      } else {
+        const identityCredential = new identity.ClientSecretCredential(
+          AzureAccountManager.tenantId,
+          AzureAccountManager.clientId,
+          AzureAccountManager.secret
+        );
+        const credentialChain = new identity.ChainedTokenCredential(identityCredential);
+        AzureAccountManager.tokenCredential = credentialChain;
+      }
     }
 
     return new Promise((resolve) => {

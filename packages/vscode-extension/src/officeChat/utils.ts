@@ -13,6 +13,7 @@ import { getCopilotResponseAsString } from "../chat/utils";
 import { officeSampleProvider } from "./commands/create/officeSamples";
 import { Spec } from "./common/skills/spec";
 import { OfficeChatTelemetryData } from "./telemetry";
+import { SampleConfig } from "@microsoft/teamsfx-core";
 
 export async function purifyUserMessage(
   message: string,
@@ -117,11 +118,11 @@ async function isContentHarmful(
   return isHarmful;
 }
 
-export async function getOfficeSampleDownloadUrlInfo(sampleId: string) {
+export async function getOfficeSample(sampleId: string): Promise<SampleConfig> {
   const sampleCollection = await officeSampleProvider.OfficeSampleCollection;
   const sample = sampleCollection.samples.find((sample) => sample.id === sampleId);
   if (!sample) {
     throw new Error("Sample not found");
   }
-  return { downloadUrlInfo: sample.downloadUrlInfo, host: sample.types[0] };
+  return sample;
 }

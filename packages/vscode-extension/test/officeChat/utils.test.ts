@@ -152,7 +152,8 @@ describe("File: officeChat/utils.ts", () => {
     });
   });
 
-  describe("Method: getOfficeSampleDownloadUrlInfo", () => {
+  describe("Method: getOfficeSample", () => {
+    const date = new Date("2024-03-15T00:00:00.000Z");
     const fakedOfficeSampleConfig = {
       filterOptions: {
         capabilities: ["Excel"],
@@ -161,6 +162,13 @@ describe("File: officeChat/utils.ts", () => {
       },
       samples: [
         {
+          configuration: "Ready for debug",
+          downloadUrlInfo: {
+            owner: "OfficeDev",
+            repository: "Office-Samples",
+            ref: "main",
+            dir: "Excel-Add-in-ShapeAPI-Dashboard",
+          },
           id: "Excel-Add-in-ShapeAPI-Dashboard",
           title: "Using shape API to work as a dashboard",
           shortDescription: "Using Shape related APIs to insert and format to work as a dashboard.",
@@ -168,15 +176,14 @@ describe("File: officeChat/utils.ts", () => {
             "The sample add-in demonstrates Excel add-in capablities to help users using shape API to work as a dashboard.",
           tags: ["TS", "Shape", "Excel", "Office Add-in"],
           time: "5min to run",
-          configuration: "Ready for debug",
-          thumbnailPath: "",
+          thumbnailPath: "assets/thumbnail.png",
           suggested: false,
-          downloadUrlInfo: {
-            owner: "OfficeDev",
-            repository: "Office-Samples",
-            ref: "main",
-            dir: "Excel-Add-in-ShapeAPI-Dashboard",
-          },
+          gifUrl:
+            "https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif",
+          gifPath: "assets/sampleDemo.gif",
+          onboardDate: date,
+          shortId: "Shape API dashboard",
+          types: ["Excel"],
         },
       ],
     };
@@ -190,17 +197,15 @@ describe("File: officeChat/utils.ts", () => {
       officeSampleProvider["officeSampleCollection"] = undefined;
     });
 
-    it("get office sample download url info", async () => {
-      const result = await utils.getOfficeSampleDownloadUrlInfo("Excel-Add-in-ShapeAPI-Dashboard");
-      chai.expect(result).deep.equal({
-        downloadUrlInfo: fakedOfficeSampleConfig.samples[0].downloadUrlInfo,
-        host: "Excel",
-      });
+    it("get office sample info", async () => {
+      const result = await utils.getOfficeSample("Excel-Add-in-ShapeAPI-Dashboard");
+      const sample = fakedOfficeSampleConfig.samples[0];
+      chai.expect(result).deep.equal(sample);
     });
 
     it("sample not found", async () => {
       try {
-        await utils.getOfficeSampleDownloadUrlInfo("test");
+        await utils.getOfficeSample("test");
         chai.assert.fail("Should not reach here.");
       } catch (error) {
         chai.expect((error as Error).message).equal("Sample not found");

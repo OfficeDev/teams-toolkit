@@ -36,7 +36,6 @@ import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
 // import { SampleData } from "../samples/sampleData";
 // import { DeclarationFinder } from "../declarationFinder";
-import { OfficeChatTelemetryData } from "../../telemetry";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -383,7 +382,6 @@ ${spec.appendix.codeExplanation
     //         host,
     //         codeSpec,
     //         "" //sampleCode
-    //         spec
     //       );
 
     //       spec.appendix.apiDeclarationsReference = declarations;
@@ -407,20 +405,6 @@ ${spec.appendix.codeExplanation
     // }
     // \n
     //       `;
-    //       });
-    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
-    //         for (let i = 0; i < methodsOrPropertiesCandidates.length; i++) {
-    //           let methodOrProperty = methodsOrPropertiesCandidates[i].codeSample;
-    //           if (methodOrProperty.startsWith("readonly ")) {
-    //             methodOrProperty = methodOrProperty.replace("readonly ", "");
-    //           }
-    //           const lastColonIndex = methodOrProperty.lastIndexOf(":");
-    //           if (lastColonIndex !== -1) {
-    //             methodOrProperty = methodOrProperty.substring(0, lastColonIndex);
-    //           }
-    //           const classCode = `${className}.${methodOrProperty}`;
-    //           spec.appendix.telemetryData.codeClassAndMembers.push(classCode);
-    //         }
     //       });
     //       tempClassDeclaration += "```\n";
 

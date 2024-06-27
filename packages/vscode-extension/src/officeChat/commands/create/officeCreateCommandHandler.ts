@@ -13,7 +13,7 @@ import {
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { verbatimCopilotInteraction } from "../../../chat/utils";
 import { isInputHarmful } from "../../utils";
-import { ICopilotChatOfficeResult, ProjectMiniData } from "../../types";
+import { ICopilotChatOfficeResult, OfficeProjectInfo } from "../../types";
 import { describeOfficeProjectSystemPrompt } from "../../officePrompts";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
@@ -22,7 +22,6 @@ import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
 import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
-import { ProjectMetadata } from "../../../chat/commands/create/types";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -41,7 +40,7 @@ export default async function officeCreateCommandHandler(
 
   if (request.prompt.trim() === "") {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.create.noPromptAnswer"));
-    officeChatTelemetryData.setBlockReason("Empty Input");
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
     officeChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -79,7 +78,7 @@ export default async function officeCreateCommandHandler(
       );
 
       if (matchedResult.type === "sample") {
-        const sampleInfos: ProjectMiniData = await showOfficeSampleFileTree(
+        const sampleInfos: OfficeProjectInfo = await showOfficeSampleFileTree(
           matchedResult,
           response
         );

@@ -25,7 +25,7 @@ import { NextStep } from "../../../chat/commands/nextstep/types";
 import { describeOfficeStepSystemPrompt } from "../../officePrompts";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { IChatTelemetryData } from "../../../chat/types";
-import { OfficeChatTelemetryData } from "../../telemetry";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
 
 export default async function officeNextStepCommandHandler(
   request: ChatRequest,
@@ -45,7 +45,7 @@ export default async function officeNextStepCommandHandler(
   if (request.prompt) {
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
-    officeChatTelemetryData.setBlockReason("Unsupported Input");
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
     officeChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,

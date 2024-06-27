@@ -11,7 +11,6 @@ import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
-import { OfficeChatTelemetryData } from "../../telemetry";
 
 export class Explainer implements ISkill {
   name: string | undefined;

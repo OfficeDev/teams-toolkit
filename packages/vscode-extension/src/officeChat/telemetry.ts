@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LanguageModelChatMessage, LanguageModelChatMessageRole } from "vscode";
+import { LanguageModelChatMessage } from "vscode";
 import { IChatTelemetryData, ITelemetryData } from "../chat/types";
 import { Correlator, getUuid } from "@microsoft/teamsfx-core";
 import { countMessagesTokens } from "../chat/utils";
@@ -14,6 +14,7 @@ import {
 export enum OfficeChatTelemetryBlockReasonEnum {
   RAI = "RAI",
   OffTopic = "Off Topic",
+  UnsupportedInput = "Unsupported Input",
   LanguageModelError = "LanguageModel Error",
 }
 export class OfficeChatTelemetryData implements IChatTelemetryData {

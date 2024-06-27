@@ -11,7 +11,7 @@ import { CancellationToken } from "../../../mocks/vsc";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
 import { Planner } from "../../../../src/officeChat/common/planner";
 import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
-import { ProjectMiniData } from "../../../../src/officeChat/types";
+import { OfficeProjectInfo } from "../../../../src/officeChat/types";
 
 chai.use(chaipromised);
 
@@ -83,13 +83,13 @@ describe("File: officeCreateCommandHandler", () => {
     } as ProjectMetadata;
     sandbox.stub(officeChatUtil, "isInputHarmful").resolves(false);
     sandbox.stub(helper, "matchOfficeProject").resolves(fakedSample);
-    const mockProjectMiniData: ProjectMiniData = {
+    const mockOfficeProjectInfo: OfficeProjectInfo = {
       path: "",
       host: "",
     };
     const showOfficeSampleFileTreeStub = sandbox
       .stub(helper, "showOfficeSampleFileTree")
-      .resolves(mockProjectMiniData);
+      .resolves(mockOfficeProjectInfo);
     sandbox.stub(chatUtil, "verbatimCopilotInteraction");
     const response = {
       markdown: sandbox.stub(),

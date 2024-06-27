@@ -18,6 +18,7 @@ import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
 import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 import { core } from "../../../../src/globalVariables";
 import { CreateProjectResult, FxError, err, ok } from "@microsoft/teamsfx-api";
+import { SampleConfig } from "@microsoft/teamsfx-core";
 
 chai.use(chaiPromised);
 
@@ -97,15 +98,15 @@ describe("File: office chat create helper", () => {
     });
 
     it("call filetree API", async () => {
-      sandbox.stub(officeChatUtils, "getOfficeSampleDownloadUrlInfo").resolves({
+      sandbox.stub(officeChatUtils, "getOfficeSample").resolves({
         downloadUrlInfo: {
           owner: "test",
           repository: "testRepo",
           ref: "testRef",
           dir: "testDir",
         },
-        host: "testHost",
-      });
+        types: ["testHost"],
+      } as SampleConfig);
       sandbox.stub(generatorUtils, "getSampleFileInfo").resolves({
         samplePaths: ["test"],
         fileUrlPrefix: "https://test.com/",

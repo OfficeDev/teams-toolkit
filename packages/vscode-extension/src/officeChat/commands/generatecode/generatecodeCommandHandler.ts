@@ -37,7 +37,7 @@ export default async function generatecodeCommandHandler(
     response.markdown(
       localize("teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer")
     );
-    officeChatTelemetryData.setBlockReason("Empty Input");
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
     officeChatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,

@@ -19,13 +19,13 @@ import { getCopilotResponseAsString } from "../../../chat/utils";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
-import { getOfficeSampleDownloadUrlInfo } from "../../utils";
+import { getOfficeSample } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
 import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
 import { CreateProjectInputs } from "@microsoft/teamsfx-api";
 import { core } from "../../../globalVariables";
-import { ProjectMiniData } from "../../types";
+import { OfficeProjectInfo } from "../../types";
 
 export async function matchOfficeProject(
   request: ChatRequest,
@@ -108,25 +108,25 @@ export function getOfficeTemplateMetadata(): ProjectMetadata[] {
 export async function showOfficeSampleFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
-): Promise<ProjectMiniData> {
+): Promise<OfficeProjectInfo> {
   response.markdown(
     "\nWe've found a sample project that matches your description. Take a look at it below."
   );
-  const { downloadUrlInfo, host } = await getOfficeSampleDownloadUrlInfo(projectMetadata.id);
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
+  const sample = await getOfficeSample(projectMetadata.id);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sample.downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
   const nodes = await buildFileTree(
     fileUrlPrefix,
     samplePaths,
     tempFolder,
-    downloadUrlInfo.dir,
+    sample.downloadUrlInfo.dir,
     2,
     20
   );
-  response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
-  const result: ProjectMiniData = {
-    path: path.join(tempFolder, downloadUrlInfo.dir),
-    host: host,
+  response.filetree(nodes, Uri.file(path.join(tempFolder, sample.downloadUrlInfo.dir)));
+  const result: OfficeProjectInfo = {
+    path: path.join(tempFolder, sample.downloadUrlInfo.dir),
+    host: sample.types[0],
   };
   return result;
 }

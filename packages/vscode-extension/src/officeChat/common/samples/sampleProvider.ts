@@ -15,7 +15,6 @@ import {
 import { DeclarationFinder } from "../declarationFinder";
 import { getTokenLimitation } from "../../consts";
 import { Spec } from "../skills/spec";
-import { OfficeChatTelemetryData } from "../../telemetry";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;

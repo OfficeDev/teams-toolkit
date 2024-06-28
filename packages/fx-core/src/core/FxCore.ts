@@ -379,7 +379,7 @@ export class FxCore {
     if (!inputs.env) {
       return err(new MissingRequiredInputError("env", "FxCore"));
     }
-    const teamsappYamlPath = pathUtils.getYmlFilePath(inputs.projectPath ?? "", inputs.env);
+    const teamsappYamlPath = pathUtils.getYmlFilePath(inputs.projectPath!, inputs.env);
     const yamlProjectModel = await metadataUtil.parse(teamsappYamlPath, inputs.env);
     if (yamlProjectModel.isErr()) {
       return err(yamlProjectModel.error);

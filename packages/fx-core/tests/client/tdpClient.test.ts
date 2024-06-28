@@ -1968,10 +1968,19 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
     });
-    it("invalid response", async () => {
+    it("empty bots", async () => {
       sandbox.stub(teamsDevPortalClient, "getApp").resolves({
         bots: [],
       });
+      try {
+        const res = await teamsDevPortalClient.getBotId("token", "anything");
+        chai.assert.isUndefined(res);
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+    it("no bots", async () => {
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves({});
       try {
         const res = await teamsDevPortalClient.getBotId("token", "anything");
         chai.assert.isUndefined(res);

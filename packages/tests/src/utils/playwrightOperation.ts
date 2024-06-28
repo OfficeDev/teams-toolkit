@@ -2808,8 +2808,8 @@ export async function validateApiMeResult(page: Page) {
 export async function cleanInstalledApp(
   page: Page,
   options?: {
-    deleteAppNum?: number;
-    appName?: string; // app name to delete, if not set, delete all apps
+    deleteAppNum?: number; // if set appName, please not set deleteAppNum or set deleteAppNum = 1
+    appName?: string; // app name to delete, if not set, delete apps sequentially
   }
 ): Promise<void> {
   const roopNum = options?.deleteAppNum || 1;
@@ -2901,8 +2901,8 @@ export async function cleanInstalledApp(
 export async function cleanInstalledChannelApp(
   page: Page,
   options?: {
-    deleteAppNum?: number;
-    appName?: string; // app name to delete, if not set, delete all apps
+    deleteAppNum?: number; // if set appName, please not set deleteAppNum or set deleteAppNum = 1
+    appName?: string; // app name to delete, if not set, delete apps sequentially
   }
 ): Promise<void> {
   const failedApps: string[] = [];

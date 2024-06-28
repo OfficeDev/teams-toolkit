@@ -247,6 +247,7 @@ export class Timeout {
   public static readonly finishAzureTestCase: number = 15 * 60 * 1000;
   public static readonly testAzureCase: number = 45 * 60 * 1000;
   public static readonly migrationTestCase: number = 40 * 60 * 1000;
+  public static readonly cleanTestCase: number = 60 * 60 * 1000;
 
   // SPFx
   public static readonly spfxProvision: number = 10 * 1000;
@@ -474,7 +475,6 @@ export class ValidationContent {
   static readonly AiAssistantBotWelcomeInstruction =
     "I'm an assistant bot. How can I help you today?";
   static readonly AiBotErrorMessage = "The bot encountered an error or bug";
-  static readonly AiBotErrorMessage2 = "An AI request failed";
 }
 
 export class CliVersion {

@@ -232,6 +232,54 @@ export async function initPage(
   return page;
 }
 
+export async function openPage(
+  context: BrowserContext,
+  username: string,
+  password: string
+): Promise<Page> {
+  const page = await context.newPage();
+  page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
+
+  // open teams app page
+  // https://github.com/puppeteer/puppeteer/issues/3338
+  await Promise.all([
+    page.goto(`https://teams.microsoft.com/_`),
+    page.waitForNavigation(),
+  ]);
+
+  // input username
+  await RetryHandler.retry(async () => {
+    await page.fill("input.input[type='email']", username);
+    console.log(`fill in username ${username}`);
+
+    // next
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+    // input password
+    console.log(`fill in password`);
+    await page.fill("input.input[type='password'][name='passwd']", password);
+
+    // sign in
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+
+    // stay signed in confirm page
+    console.log(`stay signed confirm`);
+    await Promise.all([
+      page.click("input.button[type='submit'][value='Yes']"),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.longTimeWait);
+  });
+
+  // add app
+  return page;
+}
+
 export async function reopenPage(
   context: BrowserContext,
   teamsAppId: string,
@@ -2754,5 +2802,197 @@ export async function validateApiMeResult(page: Page) {
       fullPage: true,
     });
     throw error;
+  }
+}
+
+export async function cleanInstalledApp(
+  page: Page,
+  deleteAppNum: number
+): Promise<void> {
+  const failedApps: string[] = [];
+  let successNum = 0;
+  for (let i = 0; i < deleteAppNum; i++) {
+    // open apps page
+    console.log("start to clean installed app");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+
+    const appsBtn = await frame?.waitForSelector('button:has-text("Apps")');
+    console.log("click Apps");
+    await appsBtn?.click();
+    await page.waitForTimeout(Timeout.shortTimeWait);
+
+    const manageAppsBtn = await frame?.waitForSelector(
+      'button:has-text("Manage your apps")'
+    );
+    console.log("click Manage your apps");
+    await manageAppsBtn?.click();
+    await page.waitForTimeout(Timeout.shortTimeWait);
+    const appList = await frame?.waitForSelector(
+      "div[aria-label='Installed apps']"
+    );
+
+    // list all apps in list
+    const appItems = await appList?.$$("div[role='treeitem']");
+    console.log("app number in list: ", appItems.length);
+    for (const item of appItems) {
+      const appName = await item?.innerText();
+      // find test apps not in failedApps list and delete
+      if (
+        appName.includes("Custom app") &&
+        failedApps.includes(appName) === false
+      ) {
+        console.log("app name:", appName);
+        console.log("click target app");
+        await item?.click();
+
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        console.log("find delete button");
+        const deleteBtn = await frame?.waitForSelector(
+          "button[data-tid='uninstall-app']"
+        );
+        console.log("click delete button");
+        await deleteBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        console.log("open dialog");
+        const dialog = await page?.waitForSelector("div[role='dialog']");
+        const confirmBtn = await dialog?.waitForSelector(
+          "button:has-text('Remove')"
+        );
+        console.log("click confirm button");
+        await confirmBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        // check if delete success
+        try {
+          await dialog?.waitForSelector("button:has-text('Remove')", {
+            state: "detached",
+          });
+          console.log("delete app: ", appName, " successfully!!!");
+          successNum++;
+          console.log("deleted apps number: ", successNum);
+        } catch (error) {
+          // if delete not success, add app name to failedApps
+          console.log("delete app: ", appName, " failed!!!");
+          failedApps.push(appName);
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("delete_error"),
+            fullPage: true,
+          });
+          const cancelBtn = await dialog?.waitForSelector(
+            "button:has-text('Cancel')"
+          );
+          console.log("click cancel button");
+          await cancelBtn?.click();
+        }
+        // if delete success, break loop and reload page
+        await page.reload();
+        break;
+      }
+    }
+  }
+}
+
+export async function cleanInstalledChannelApp(
+  page: Page,
+  deleteAppNum: number
+): Promise<void> {
+  const failedApps: string[] = [];
+  let successNum = 0;
+  for (let i = 0; i < deleteAppNum; i++) {
+    // open apps page
+    console.log("start to clean installed app");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+
+    // open teams page and click target teams
+    console.log("click Activity");
+    const teamsBtn = await frame?.waitForSelector(
+      'button:has-text("Activity")'
+    );
+    console.log("click Teams channel");
+    await teamsBtn?.click();
+    await page.waitForTimeout(Timeout.shortTimeWait);
+    const targetTeam = await frame?.waitForSelector(
+      "button:has-text('General')"
+    );
+    console.log("click target team");
+    await targetTeam?.click();
+    await page.waitForTimeout(Timeout.shortTimeWait);
+
+    // open operation page
+    const addTabButton = await frame?.waitForSelector("button#addTabButton");
+    console.log("open operation page");
+    await addTabButton?.click();
+    await page.waitForTimeout(Timeout.shortTimeWait);
+
+    const manageAppsBtn = await page?.waitForSelector(
+      'button:has-text("Manage your apps")'
+    );
+    console.log("click Manage your apps");
+    await manageAppsBtn?.click();
+    await page.waitForTimeout(Timeout.shortTimeWait);
+    const appList = await frame?.waitForSelector(
+      "div[aria-label='Installed apps']"
+    );
+
+    // list all apps in list
+    const appItems = await appList?.$$("a[role='treeitem']");
+    console.log("app number in list: ", appItems.length);
+    for (const item of appItems) {
+      const appName = await item?.innerText();
+      // find test apps not in failedApps list and delete
+      if (
+        appName.includes("Custom app") &&
+        failedApps.includes(appName) === false
+      ) {
+        console.log("app name:", appName);
+        console.log("click target app");
+        const operationBtn = await item.waitForSelector(
+          "button[data-tid='manage-apps-item-content']"
+        );
+        await operationBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        const removeBtn = await page.waitForSelector("a:has-text('Remove')");
+        console.log("click remove button");
+        await removeBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeWait);
+
+        console.log("open dialog");
+        const dialog = await page?.waitForSelector("div[role='dialog']");
+        const confirmBtn = await dialog?.waitForSelector(
+          "button:has-text('Remove')"
+        );
+        console.log("click confirm button");
+        await confirmBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        // check if delete success
+        try {
+          await dialog?.waitForSelector("button:has-text('Remove')", {
+            state: "detached",
+          });
+          console.log("delete app: ", appName, " successfully!!!");
+          successNum++;
+          console.log("deleted apps number: ", successNum);
+        } catch (error) {
+          // if delete not success, add app name to failedApps
+          console.log("delete app: ", appName, " failed!!!");
+          failedApps.push(appName);
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("delete_error"),
+            fullPage: true,
+          });
+          const cancelBtn = await dialog?.waitForSelector(
+            "button:has-text('Cancel')"
+          );
+          console.log("click cancel button");
+          await cancelBtn?.click();
+        }
+        // if delete success, break loop and reload page
+        await page.reload();
+        break;
+      }
+    }
   }
 }

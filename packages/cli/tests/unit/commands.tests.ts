@@ -1,4 +1,4 @@
-import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CLIContext, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import {
   CollaborationStateResult,
   FeatureFlags,
@@ -788,7 +788,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("failed", async () => {
-      sandbox.stub(FxCore.prototype, "uninstall").resolves(err(undefined));
+      sandbox.stub(FxCore.prototype, "uninstall").resolves(err(new SystemError("", "", "")));
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
         optionValues: {},

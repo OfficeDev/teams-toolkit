@@ -50,8 +50,7 @@ export async function matchOfficeProject(
     } else {
       telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.LanguageModelError);
     }
-    telemetryData.chatMessages.push(...messages);
-    telemetryData.markComplete("unsupportedPrompt");
+    telemetryData.markComplete("fail");
   }
   telemetryData.responseChatMessages.push(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)

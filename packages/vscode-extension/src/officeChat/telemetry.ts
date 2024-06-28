@@ -108,7 +108,7 @@ export class OfficeChatTelemetryData implements IChatTelemetryData {
     this.telemetryData.measurements = { ...this.telemetryData.measurements, ...measurements };
   }
 
-  markComplete(completeType: "success" | "unsupportedPrompt" = "success") {
+  markComplete(completeType: "success" | "fail" = "success") {
     if (!this.hasComplete) {
       this.telemetryData.properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       this.telemetryData.properties[TelemetryProperty.CopilotChatCompleteType] = completeType;

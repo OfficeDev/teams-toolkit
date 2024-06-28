@@ -41,7 +41,7 @@ export default async function officeCreateCommandHandler(
   if (request.prompt.trim() === "") {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.create.noPromptAnswer"));
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
-    officeChatTelemetryData.markComplete("unsupportedPrompt");
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,
@@ -93,7 +93,7 @@ export default async function officeCreateCommandHandler(
         });
       } else {
         const tmpHostType = (matchedResult.data as any)?.["addin-host"].toLowerCase();
-        const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data as any, response);
+        const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         officeChatTelemetryData.setHostType(tmpHostType);
         response.button({
@@ -103,14 +103,20 @@ export default async function officeCreateCommandHandler(
         });
       }
     } else {
-      const chatResult = await Planner.getInstance().processRequest(
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
-        request,
-        response,
-        token,
-        OfficeChatCommand.Create,
-        officeChatTelemetryData
-      );
+      let chatResult: ICopilotChatOfficeResult = {};
+      try {
+        chatResult = await Planner.getInstance().processRequest(
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+          request,
+          response,
+          token,
+          OfficeChatCommand.Create,
+          officeChatTelemetryData
+        );
+        officeChatTelemetryData.markComplete();
+      } catch (error) {
+        officeChatTelemetryData.markComplete("fail");
+      }
       officeChatTelemetryData.markComplete();
       ExtTelemetry.sendTelemetryEvent(
         TelemetryEvent.CopilotChat,
@@ -124,7 +130,7 @@ export default async function officeCreateCommandHandler(
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
-    officeChatTelemetryData.markComplete("unsupportedPrompt");
+    officeChatTelemetryData.markComplete("fail");
   }
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChat,

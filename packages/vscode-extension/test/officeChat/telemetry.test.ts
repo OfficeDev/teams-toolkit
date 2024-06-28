@@ -244,7 +244,7 @@ describe("OfficeChatTelemetryData", () => {
       1000
     );
 
-    officeChatTelemetryData.markComplete("unsupportedPrompt");
+    officeChatTelemetryData.markComplete("fail");
     chai.assert.equal(
       officeChatTelemetryData.telemetryData.properties[TelemetryProperty.CopilotChatCompleteType],
       "success"

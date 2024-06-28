@@ -46,7 +46,7 @@ export default async function officeNextStepCommandHandler(
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
-    officeChatTelemetryData.markComplete("unsupportedPrompt");
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,

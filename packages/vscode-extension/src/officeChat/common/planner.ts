@@ -12,7 +12,7 @@ import { ISkill } from "./skills/iSkill";
 import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
 import { ICopilotChatOfficeResult } from "../types";
-import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { ExecutionResultEnum } from "./skills/executionResultEnum";
 import {
@@ -100,7 +100,7 @@ ${purified}
           spec.appendix.telemetryData.properties[PropertySystemRequestFailed] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
-          if (spec.appendix.telemetryData.isHarmful) {
+          if (spec.appendix.telemetryData.isHarmful === false) {
             telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
           }
           throw new Error("Failed to process the request.");
@@ -135,6 +135,7 @@ ${purified}
         "teamstoolkit.chatParticipants.officeAddIn.default.canNotAssist"
       );
       response.markdown(errorDetails);
+      throw new Error("Failed or rejected to process the request.");
     }
     const t1 = performance.now();
     const duration = (t1 - t0) / 1000;
@@ -143,7 +144,7 @@ ${purified}
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
-    telemetryData.setHostType(spec.appendix.host?.toLowerCase());
+    telemetryData.setHostType(spec.appendix.host.toLowerCase());
     telemetryData.setTimeToFirstToken(spec.appendix.telemetryData.timeToFirstToken);
     telemetryData.setRelatedSampleName(spec.appendix.telemetryData.relatedSampleName.toString());
     for (const chatMessage of spec.appendix.telemetryData.chatMessages) {

@@ -38,7 +38,7 @@ export default async function generatecodeCommandHandler(
       localize("teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer")
     );
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
-    officeChatTelemetryData.markComplete("unsupportedPrompt");
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,
@@ -69,15 +69,20 @@ export default async function generatecodeCommandHandler(
 
   const isHarmful = await isInputHarmful(request, token, officeChatTelemetryData);
   if (!isHarmful) {
-    const chatResult = await Planner.getInstance().processRequest(
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
-      request,
-      response,
-      token,
-      OfficeChatCommand.GenerateCode,
-      officeChatTelemetryData
-    );
-    officeChatTelemetryData.markComplete();
+    let chatResult: ICopilotChatOfficeResult = {};
+    try {
+      chatResult = await Planner.getInstance().processRequest(
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+        request,
+        response,
+        token,
+        OfficeChatCommand.GenerateCode,
+        officeChatTelemetryData
+      );
+      officeChatTelemetryData.markComplete();
+    } catch (error) {
+      officeChatTelemetryData.markComplete("fail");
+    }
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,

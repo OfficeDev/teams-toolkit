@@ -10,12 +10,7 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
-import {
-  AppStudioScopes,
-  featureFlagManager,
-  FeatureFlags,
-  getHashedEnv,
-} from "@microsoft/teamsfx-core";
+import { AppStudioScopes, getHashedEnv } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import * as util from "util";
 import { signedIn } from "../commonlib/common/constant";
@@ -38,6 +33,7 @@ import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { ExtensionSource, ExtensionErrors } from "../error/error";
 import { getSubscriptionInfoFromEnv, getResourceGroupNameFromEnv } from "../utils/envTreeUtils";
 import { localize } from "../utils/localizeUtils";
+import { getWalkThroughId } from "../utils/projectStatusUtils";
 
 export async function openEnvLinkHandler(args: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
@@ -69,15 +65,6 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<Result<u
     [TelemetryProperty.DocumentationName]: "help&feedback",
   });
   return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-helpnfeedback");
-}
-
-export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
-  const data = await vscode.commands.executeCommand(
-    "workbench.action.openWalkthrough",
-    getWalkThroughId()
-  );
-  return Promise.resolve(ok(data));
 }
 
 export async function openDocumentLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
@@ -132,12 +119,6 @@ export async function openM365AccountHandler() {
 export async function openAzureAccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenAzurePortal);
   return VS_CODE_UI.openUrl("https://portal.azure.com/");
-}
-
-export function getWalkThroughId(): string {
-  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
-    ? "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
-    : "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted";
 }
 
 export async function openAppManagement(...args: unknown[]): Promise<Result<boolean, FxError>> {

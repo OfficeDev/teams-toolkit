@@ -12,7 +12,7 @@ import {
   ShowScaffoldingWarningSummary,
 } from "../utils/autoOpenHelper";
 import { updateProjectStatus } from "../utils/projectStatusUtils";
-import { openWelcomeHandler } from "./openLinkHandlers";
+import { openWelcomeHandler } from "./controlHandlers";
 import { openReadMeHandler, openSampleReadmeHandler } from "./readmeHandlers";
 
 export async function autoOpenProjectHandler(): Promise<void> {

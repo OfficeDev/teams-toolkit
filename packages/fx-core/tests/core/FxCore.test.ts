@@ -97,6 +97,7 @@ import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
 import { DotenvOutput, UninstallInputs } from "../../build";
 import * as envMW from "../../src/component/middleware/envMW";
+import { title } from "process";
 
 const tools = new MockTools();
 
@@ -731,6 +732,22 @@ describe("Core basic APIs", () => {
     const res = await core.uninstall(inputs as UninstallInputs);
     assert.isTrue(res.isErr());
   });
+  it("uninstall by manifest ID - failed to get bot ID", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves(undefined);
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["bot-framework-registration"],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
   it("uninstall by manifest ID - user cancel", async () => {
     const core = new FxCore(tools);
     sandbox
@@ -991,6 +1008,28 @@ describe("Core basic APIs", () => {
       nonInteractive: true,
     };
     const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by title ID - failed", async () => {
+    const core = new FxCore(tools);
+    sandbox.stub(core, "uninstallM365App").resolves(err(new SystemError("", "", "")));
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeTitleId,
+      nonInteractive: true,
+      [QuestionNames.TitleId]: "mocked-title-id",
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall M365 App - invalid input", async () => {
+    const core = new FxCore(tools);
+    const res = await core.uninstallM365App(undefined, undefined);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall Bot Framework Registration - invalid input", async () => {
+    const core = new FxCore(tools);
+    const res = await core.uninstallBotFrameworRegistration(undefined, undefined);
     assert.isTrue(res.isErr());
   });
 });

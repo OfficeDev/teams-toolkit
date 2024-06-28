@@ -117,7 +117,6 @@ export default async function officeCreateCommandHandler(
       } catch (error) {
         officeChatTelemetryData.markComplete("fail");
       }
-      officeChatTelemetryData.markComplete();
       ExtTelemetry.sendTelemetryEvent(
         TelemetryEvent.CopilotChat,
         officeChatTelemetryData.properties,

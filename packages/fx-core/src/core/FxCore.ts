@@ -344,7 +344,13 @@ export class FxCore {
         return err(res.error);
       }
     }
-
+    if (botOption) {
+      const res = await this.uninstallBotFrameworRegistration(undefined, manifestId);
+      if (res.isErr()) {
+        return err(res.error);
+      }
+    }
+    // App registraion should be last to remove, because we might need to query some metadata from TDP.
     if (tdpOption) {
       const res = await this.uninstallAppRegistration(manifestId);
       if (res.isErr()) {
@@ -352,12 +358,6 @@ export class FxCore {
       }
     }
 
-    if (botOption) {
-      const res = await this.uninstallBotFrameworRegistration(undefined, manifestId);
-      if (res.isErr()) {
-        return err(res.error);
-      }
-    }
     return ok(undefined);
   }
 

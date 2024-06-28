@@ -787,6 +787,18 @@ describe("CLI commands", () => {
       const res = await m365UnacquireCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+    it("failed", async () => {
+      sandbox.stub(FxCore.prototype, "uninstall").resolves(err(undefined));
+      const ctx: CLIContext = {
+        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365UnacquireCommand.handler!(ctx);
+      assert.isTrue(res.isErr());
+    });
   });
 
   describe("v3 commands", async () => {

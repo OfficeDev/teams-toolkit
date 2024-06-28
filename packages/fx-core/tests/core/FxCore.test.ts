@@ -33,7 +33,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore, getUuid } from "../../src";
+import { FxCore, PackageService, getUuid, teamsDevPortalClient } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/component/m365/launchHelper";
 import {
@@ -629,7 +629,7 @@ describe("Core basic APIs", () => {
     const res = await core.uninstall(inputs as UninstallInputs);
     assert.isTrue(res.isErr());
   });
-  it("uninstall by manifest ID with missing manifest ID", async () => {
+  it("uninstall by manifest ID - missing manifest ID", async () => {
     const core = new FxCore(tools);
     const inputs: UninstallInputs = {
       platform: Platform.CLI,
@@ -639,7 +639,42 @@ describe("Core basic APIs", () => {
     const res = await core.uninstall(inputs);
     assert.isTrue(res.isErr());
   });
-  it("uninstall by environment with missing environment", async () => {
+  it("uninstall by manifest ID - success", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").resolves(true);
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: [
+        "m365-app",
+        "app-registration",
+        "bot-framework-registration",
+      ],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+  });
+  it("uninstall by manifest ID - empty options", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+  });
+  it("uninstall by env - missing env", async () => {
     const core = new FxCore(tools);
     const appName = await mockCliUninstallProject();
 

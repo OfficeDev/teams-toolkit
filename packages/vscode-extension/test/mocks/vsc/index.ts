@@ -205,6 +205,12 @@ export enum CompletionTriggerKind {
   TriggerForIncompleteCompletions = 2,
 }
 
+export enum TextDocumentSaveReason {
+  Manual = 1,
+  AfterDelay = 2,
+  FocusOut = 3,
+}
+
 export class MarkdownString {
   public value: string;
 

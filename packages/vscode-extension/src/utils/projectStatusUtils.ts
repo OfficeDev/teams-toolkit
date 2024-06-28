@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
+import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as os from "os";
@@ -102,4 +103,10 @@ export async function getLaunchJSON(folder: string): Promise<string | undefined>
     return await fs.readFile(launchJSONPath, "utf-8");
   }
   return undefined;
+}
+
+export function getWalkThroughId(): string {
+  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+    ? "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
+    : "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted";
 }

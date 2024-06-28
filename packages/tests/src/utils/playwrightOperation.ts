@@ -2944,7 +2944,7 @@ export async function cleanInstalledChannelApp(
       // find test apps not in failedApps list and delete
       if (
         appName.includes("Custom app") &&
-        failedApps.includes(appName) === false
+        !failedApps.some((app) => app === appName)
       ) {
         console.log("app name:", appName);
         console.log("click target app");

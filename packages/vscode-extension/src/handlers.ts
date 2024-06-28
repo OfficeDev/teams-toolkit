@@ -8,15 +8,8 @@
  */
 "use strict";
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import {
-  DepsManager,
-  DepsType,
-  Hub,
-  QuestionNames,
-  assembleError,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { DepsManager, DepsType, assembleError, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import * as vscode from "vscode";
 import { PanelType } from "./controls/PanelType";
@@ -24,7 +17,6 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import { checkPrerequisitesForGetStarted } from "./debug/depsChecker/getStartedChecker";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
-import { openHubWebClient } from "./debug/launch";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { showError } from "./error/common";
 import { core, isTeamsFxProject, workspaceUri } from "./globalVariables";
@@ -33,7 +25,6 @@ import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess,
   TelemetryTriggerFrom,
   TelemetryUpdateAppReason,
 } from "./telemetry/extTelemetryEvents";

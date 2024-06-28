@@ -960,7 +960,7 @@ function uninstallModeQuestion(): SingleSelectQuestion {
         label: getLocalizedString("core.uninstallQuestion.titleIdMode"),
       },
     ],
-    default: "env",
+    default: QuestionNames.UninstallModeManifestId,
   };
 }
 

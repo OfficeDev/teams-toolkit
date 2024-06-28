@@ -16,7 +16,7 @@ export const UninstallOptions: CLICommandOption[] = [
     type: "string",
     description: "Choose uninstall mode",
     required: true,
-    default: "env",
+    default: "manifest-id",
     choices: ["manifest-id", "env", "title-id"],
   },
   {

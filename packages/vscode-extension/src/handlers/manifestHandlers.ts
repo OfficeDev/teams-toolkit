@@ -17,11 +17,18 @@ import { window, workspace } from "vscode";
 import { core, workspaceUri } from "../globalVariables";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { runCommand } from "./sharedOpts";
+import { assembleError, QuestionNames } from "@microsoft/teamsfx-core";
+import { openHubWebClient } from "../debug/launch";
+import { showError } from "../error/common";
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
@@ -170,4 +177,45 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     });
   }
   return result;
+}
+
+export async function treeViewPreviewHandler(...args: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.TreeViewPreviewStart,
+    getTriggerFromProperty(args)
+  );
+  const properties: { [key: string]: string } = {};
+
+  try {
+    const env = args[1]?.identifier as string;
+    const inputs = getSystemInputs();
+    inputs.env = env;
+    properties[TelemetryProperty.Env] = env;
+
+    const result = await core.previewWithManifest(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+
+    const hub = inputs[QuestionNames.M365Host] as Hub;
+    const url = result.value;
+    properties[TelemetryProperty.Hub] = hub;
+
+    await openHubWebClient(hub, url);
+  } catch (error) {
+    const assembledError = assembleError(error);
+    void showError(assembledError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.TreeViewPreview,
+      assembledError,
+      properties
+    );
+    return err(assembledError);
+  }
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    ...properties,
+  });
+  return ok(null);
 }

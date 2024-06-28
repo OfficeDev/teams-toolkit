@@ -111,6 +111,7 @@ import {
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  treeViewPreviewHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
@@ -650,7 +651,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  registerInCommandController(context, CommandKeys.Preview, handlers.treeViewPreviewHandler);
+  registerInCommandController(context, CommandKeys.Preview, treeViewPreviewHandler);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
 
@@ -808,11 +809,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openSubscriptionInPortalCmd);
 
-  registerInCommandController(
-    context,
-    "fx-extension.previewWithIcon",
-    handlers.treeViewPreviewHandler
-  );
+  registerInCommandController(context, "fx-extension.previewWithIcon", treeViewPreviewHandler);
 
   const refreshEnvironmentH = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",

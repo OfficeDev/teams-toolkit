@@ -21,14 +21,12 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
-import VsCodeLogInstance from "../../src/commonlib/log";
 import M365TokenInstance from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugConstants from "../../src/debug/common/debugConstants";
 import * as getStartedChecker from "../../src/debug/depsChecker/getStartedChecker";
-import * as launch from "../../src/debug/launch";
 import * as errorCommon from "../../src/error/common";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
@@ -38,8 +36,6 @@ import {
   openWelcomeHandler,
 } from "../../src/handlers/openLinkHandlers";
 import { runCommand } from "../../src/handlers/sharedOpts";
-import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
-import { ProgressHandler } from "../../src/progressHandler";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
@@ -68,43 +64,6 @@ describe("handlers", () => {
     ]);
 
     chai.assert.isTrue(globalStateUpdateStub.callCount === 4);
-  });
-
-  describe("command handlers", function () {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("treeViewPreviewHandler() - previewWithManifest error", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      sandbox
-        .stub(globalVariables.core, "previewWithManifest")
-        .resolves(err({ foo: "bar" } as any));
-
-      const result = await handlers.treeViewPreviewHandler("dev");
-
-      chai.assert.isTrue(result.isErr());
-    });
-
-    it("treeViewPreviewHandler() - happy path", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(globalVariables, "core").value(new MockCore());
-      sandbox.stub(globalVariables.core, "previewWithManifest").resolves(ok("test-url"));
-      sandbox.stub(launch, "openHubWebClient").resolves();
-
-      const result = await handlers.treeViewPreviewHandler("dev");
-
-      chai.assert.isTrue(result.isOk());
-    });
   });
 
   describe("runCommand()", function () {

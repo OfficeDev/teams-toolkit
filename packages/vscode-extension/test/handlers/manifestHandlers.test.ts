@@ -1,20 +1,25 @@
-import { err, ok } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok } from "@microsoft/teamsfx-api";
 import { UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
+import * as launch from "../../src/debug/launch";
 import * as globalVariables from "../../src/globalVariables";
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  treeViewPreviewHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "../../src/handlers/manifestHandlers";
 import * as shared from "../../src/handlers/sharedOpts";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import * as localizeUtils from "../../src/utils/localizeUtils";
+import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import { MockCore } from "../mocks/mockCore";
+
 describe("Manifest handlers", () => {
   const sandbox = sinon.createSandbox();
 
@@ -114,6 +119,29 @@ describe("Manifest handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(ok(undefined));
       const res = await updatePreviewManifest([]);
       assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("treeViewPreviewHandler", function () {
+    it("previewWithManifest error", async () => {
+      sandbox.stub(localizeUtils, "localize").returns("");
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox
+        .stub(globalVariables.core, "previewWithManifest")
+        .resolves(err({ foo: "bar" } as any));
+      const result = await treeViewPreviewHandler("dev");
+      assert.isTrue(result.isErr());
+    });
+
+    it(" happy path", async () => {
+      sandbox.stub(localizeUtils, "localize").returns("");
+      sandbox.stub(systemEnvUtils, "getSystemInputs").returns({} as Inputs);
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox.stub(globalVariables.core, "previewWithManifest").resolves(ok("test-url"));
+      sandbox.stub(launch, "openHubWebClient").resolves();
+      const result = await treeViewPreviewHandler("dev");
+      assert.isTrue(result.isOk());
     });
   });
 });

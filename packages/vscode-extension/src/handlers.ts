@@ -57,47 +57,6 @@ export async function treeViewLocalDebugHandler(): Promise<Result<null, FxError>
   return ok(null);
 }
 
-export async function treeViewPreviewHandler(...args: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.TreeViewPreviewStart,
-    getTriggerFromProperty(args)
-  );
-  const properties: { [key: string]: string } = {};
-
-  try {
-    const env = args[1]?.identifier as string;
-    const inputs = getSystemInputs();
-    inputs.env = env;
-    properties[TelemetryProperty.Env] = env;
-
-    const result = await core.previewWithManifest(inputs);
-    if (result.isErr()) {
-      throw result.error;
-    }
-
-    const hub = inputs[QuestionNames.M365Host] as Hub;
-    const url = result.value;
-    properties[TelemetryProperty.Hub] = hub;
-
-    await openHubWebClient(hub, url);
-  } catch (error) {
-    const assembledError = assembleError(error);
-    void showError(assembledError);
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.TreeViewPreview,
-      assembledError,
-      properties
-    );
-    return err(assembledError);
-  }
-
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    ...properties,
-  });
-  return ok(null);
-}
-
 export function openFolderHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   const scheme = "file://";
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenFolder, {

@@ -76,6 +76,15 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+  # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create
+    with:
+      botId: ${{BOT_ID}}
+      name: ut-test
+      messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
+      description: ""
+      channels:
+        - name: msteams
 
 # Triggered when 'teamsapp deploy' is executed
 deploy:

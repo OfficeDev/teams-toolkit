@@ -1940,4 +1940,44 @@ describe("TeamsDevPortalClient Test", () => {
       chai.assert.isUndefined(res);
     });
   });
+  describe("getBotId", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves({
+        bots: [
+          {
+            botId: "mocked-bot-id",
+            needsChannelSelector: false,
+            isNotificationOnly: false,
+            supportsFiles: false,
+            supportsCalling: false,
+            supportsVideo: false,
+            scopes: [],
+            teamCommands: [],
+            personalCommands: [],
+            groupChatCommands: [],
+          },
+        ],
+      });
+      try {
+        const res = await teamsDevPortalClient.getBotId("token", "anything");
+        chai.assert.equal(res, "mocked-bot-id");
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+    it("invalid response", async () => {
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves({
+        bots: [],
+      });
+      try {
+        const res = await teamsDevPortalClient.getBotId("token", "anything");
+        chai.assert.isUndefined(res);
+      } catch (e) {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+  });
 });

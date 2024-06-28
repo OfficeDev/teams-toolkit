@@ -93,6 +93,8 @@ import {
 import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
+import { UninstallInputs } from "../../build";
+import * as envMW from "../../src/component/middleware/envMW";
 
 const tools = new MockTools();
 
@@ -610,6 +612,48 @@ describe("Core basic APIs", () => {
       restore();
     }
   });
+  it("uninstall with empty input", async () => {
+    const core = new FxCore(tools);
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+    };
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall with invalid mode", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      platform: Platform.CLI,
+      mode: "invalid",
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by manifest ID with missing manifest ID", async () => {
+    const core = new FxCore(tools);
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by environment with missing environment", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockCliUninstallProject();
+
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      nonInteractive: true,
+    };
+
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+    await deleteTestProject(appName);
+  });
 });
 
 describe("apply yaml template", async () => {
@@ -884,6 +928,13 @@ async function mockV2Project(): Promise<string> {
     path.join(__dirname, "../core/middleware/testAssets/v3Migration/happyPath"),
     path.join(projectPath)
   );
+  return appName;
+}
+
+async function mockCliUninstallProject(): Promise<string> {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  await fs.copy(path.join(__dirname, "../samples/uninstall/"), path.join(projectPath));
   return appName;
 }
 

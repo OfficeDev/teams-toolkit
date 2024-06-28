@@ -35,6 +35,11 @@ export const m365UnacquireCommand: CLICommand = {
       type: "string",
     },
     {
+      name: QuestionNames.ProjectPath,
+      description: commands.uninstall.options["projectPath"],
+      type: "string",
+    },
+    {
       name: QuestionNames.UninstallOptions,
       description: commands.uninstall.options["options"],
       type: "array",

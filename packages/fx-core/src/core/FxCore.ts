@@ -367,7 +367,7 @@ export class FxCore {
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "uninstallByEnv", reset: true }),
     ErrorHandlerMW,
-    EnvLoaderMW(true, false),
+    EnvLoaderMW(true, true),
     ConcurrentLockerMW,
     ContextInjectorMW,
     EnvWriterMW,
@@ -376,6 +376,9 @@ export class FxCore {
     inputs: UninstallInputs,
     ctx?: CoreHookContext
   ): Promise<Result<undefined, FxError>> {
+    if (!inputs.env) {
+      return err(new MissingRequiredInputError("env", "FxCore"));
+    }
     const teamsappYamlPath = pathUtils.getYmlFilePath(inputs.projectPath ?? "", inputs.env);
     const yamlProjectModel = await metadataUtil.parse(teamsappYamlPath, inputs.env);
     if (yamlProjectModel.isErr()) {

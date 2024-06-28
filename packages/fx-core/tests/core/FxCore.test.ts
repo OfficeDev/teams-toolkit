@@ -13,6 +13,7 @@ import {
   DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
+  InputResult,
   Inputs,
   LogProvider,
   Ok,
@@ -734,12 +735,12 @@ describe("Core basic APIs", () => {
     sandbox
       .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
       .resolves(ok("mocked-token"));
-    const mockedError = new SystemError("error", "error", "error");
-    sandbox.stub(teamsDevPortalClient, "deleteApp").throws(mockedError);
+    sandbox.stub(tools.ui, "confirm").resolves(ok({ result: false } as InputResult<boolean>));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").throws("error");
     sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
     sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
     sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
-    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    sandbox.stub(PackageService.prototype, "unacquire").throws("error");
     const inputs = {
       platform: Platform.CLI,
       [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,

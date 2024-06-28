@@ -13,8 +13,6 @@ paths:
       operationId: listRepairs
       summary: List all repairs
       description: Returns a list of repairs with their details and images
-      security:
-        - oAuth2AuthCode: []
       parameters:
         - name: assignedTo
           in: query

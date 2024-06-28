@@ -2728,12 +2728,10 @@ export async function validateTodoListSpfx(page: Page) {
   }
 }
 
-export async function validateApiMeResult(page: Page) {
+export async function validateApiMeResult(page: Page, appName: string) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
+    await messageExtensionActivate(page, appName);
     console.log("start to validate search command");
     const searchcmdInput = await frame?.waitForSelector(
       "div.ui-box input.ui-box"

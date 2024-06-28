@@ -45,7 +45,7 @@ describe("Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await cleanInstalledApp(page, 20);
+      await cleanInstalledApp(page, { deleteAppNum: 20 });
     } catch (error) {
       successFlag = false;
       errorMessage = "[Error]: " + error;

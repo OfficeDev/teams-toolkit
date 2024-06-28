@@ -2807,11 +2807,15 @@ export async function validateApiMeResult(page: Page) {
 
 export async function cleanInstalledApp(
   page: Page,
-  deleteAppNum: number
+  options?: {
+    deleteAppNum?: number;
+    appName?: string; // app name to delete, if not set, delete all apps
+  }
 ): Promise<void> {
+  const roopNum = options?.deleteAppNum || 1;
   const failedApps: string[] = [];
   let successNum = 0;
-  for (let i = 0; i < deleteAppNum; i++) {
+  for (let i = 0; i < roopNum; i++) {
     // open apps page
     console.log("start to clean installed app");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -2827,7 +2831,7 @@ export async function cleanInstalledApp(
     );
     console.log("click Manage your apps");
     await manageAppsBtn?.click();
-    await page.waitForTimeout(Timeout.shortTimeWait);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
     const appList = await frame?.waitForSelector(
       "div[aria-label='Installed apps']"
     );
@@ -2838,8 +2842,9 @@ export async function cleanInstalledApp(
     for (const item of appItems) {
       const appName = await item?.innerText();
       // find test apps not in failedApps list and delete
+      const findingName = options?.appName || "Custom app";
       if (
-        appName.includes("Custom app") &&
+        appName.includes(findingName) &&
         failedApps.includes(appName) === false
       ) {
         console.log("app name:", appName);
@@ -2895,11 +2900,15 @@ export async function cleanInstalledApp(
 
 export async function cleanInstalledChannelApp(
   page: Page,
-  deleteAppNum: number
+  options?: {
+    deleteAppNum?: number;
+    appName?: string; // app name to delete, if not set, delete all apps
+  }
 ): Promise<void> {
   const failedApps: string[] = [];
   let successNum = 0;
-  for (let i = 0; i < deleteAppNum; i++) {
+  const roopNum = options?.deleteAppNum || 1;
+  for (let i = 0; i < roopNum; i++) {
     // open apps page
     console.log("start to clean installed app");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -2942,8 +2951,9 @@ export async function cleanInstalledChannelApp(
     for (const item of appItems) {
       const appName = await item?.innerText();
       // find test apps not in failedApps list and delete
+      const findingName = options?.appName || "Custom app";
       if (
-        appName.includes("Custom app") &&
+        appName.includes(findingName) &&
         !failedApps.some((app) => app === appName)
       ) {
         console.log("app name:", appName);

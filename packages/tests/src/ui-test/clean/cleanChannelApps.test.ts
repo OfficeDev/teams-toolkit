@@ -48,7 +48,7 @@ describe("Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await cleanInstalledChannelApp(page, 20);
+      await cleanInstalledChannelApp(page, { deleteAppNum: 20 });
     } catch (error) {
       successFlag = false;
       errorMessage = "[Error]: " + error;

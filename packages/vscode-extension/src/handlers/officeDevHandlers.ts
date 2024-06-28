@@ -161,26 +161,6 @@ export function installOfficeAddInDependencies(args?: any[]): Promise<Result<nul
   return Promise.resolve(ok(null));
 }
 
-export async function popupOfficeAddInDependenciesMessage() {
-  const buttonOptions = ["Yes", "No"];
-  const notificationMessage = localize("teamstoolkit.handlers.askInstallOfficeAddinDependency");
-
-  const result = await vscode.window.showInformationMessage(notificationMessage, ...buttonOptions);
-
-  if (result === "Yes") {
-    // Handle Yes button click
-    await autoInstallDependencyHandler();
-  } else if (result === "No") {
-    // Handle No button click
-    void vscode.window.showInformationMessage(
-      localize("teamstoolkit.handlers.installOfficeAddinDependencyCancelled")
-    );
-  } else {
-    // Handle case where pop-up was dismissed without clicking a button
-    // No action.
-  }
-}
-
 export function stopOfficeAddInDebug(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.stopAddInDebug, getTriggerFromProperty(args));
   const terminal = OfficeDevTerminal.getInstance(TriggerCmdType.triggerStopDebug);

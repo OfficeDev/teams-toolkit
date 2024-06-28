@@ -121,21 +121,6 @@ describe("officeDevHandler", () => {
       "https://aka.ms/OfficeAddinsPromptLibrary"
     );
   });
-
-  it("popupOfficeAddInDependenciesMessage", async () => {
-    const autoInstallDependencyHandlerStub = sandbox.stub(
-      autoOpenHelper,
-      "autoInstallDependencyHandler"
-    );
-    sandbox.stub(localizeUtils, "localize").returns("installPopUp");
-    sandbox
-      .stub(vscode.window, "showInformationMessage")
-      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
-        return Promise.resolve(option);
-      });
-    await officeDevHandlers.popupOfficeAddInDependenciesMessage();
-    chai.assert(autoInstallDependencyHandlerStub.calledOnce);
-  });
 });
 
 describe("autoOpenOfficeDevProjectHandler", () => {

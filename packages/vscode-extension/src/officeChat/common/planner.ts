@@ -82,6 +82,7 @@ export class Planner {
 
     // dispatcher
     const purified = await purifyUserMessage(request.prompt, token, telemetryData);
+    telemetryData.setTimeToFirstToken();
     response.markdown(`
 ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
 ${purified}
@@ -100,7 +101,7 @@ ${purified}
           spec.appendix.telemetryData.properties[PropertySystemRequestFailed] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
-          if (spec.appendix.telemetryData.isHarmful === false) {
+          if (spec.appendix.telemetryData.isHarmful === true) {
             telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
           }
           throw new Error("Failed to process the request.");
@@ -145,7 +146,6 @@ ${purified}
       spec.appendix.telemetryData.measurements
     );
     telemetryData.setHostType(spec.appendix.host.toLowerCase());
-    telemetryData.setTimeToFirstToken(spec.appendix.telemetryData.timeToFirstToken);
     telemetryData.setRelatedSampleName(spec.appendix.telemetryData.relatedSampleName.toString());
     for (const chatMessage of spec.appendix.telemetryData.chatMessages) {
       telemetryData.chatMessages.push(chatMessage);

@@ -23,7 +23,6 @@ export class Spec {
       requestId: string;
       isHarmful: boolean;
       relatedSampleName: string[];
-      timeToFirstToken: DOMHighResTimeStamp;
       chatMessages: LanguageModelChatMessage[];
       responseChatMessages: LanguageModelChatMessage[];
       properties: { [key: string]: string };
@@ -51,7 +50,6 @@ export class Spec {
         requestId: requestId ? requestId : "",
         isHarmful: false,
         relatedSampleName: [],
-        timeToFirstToken: 0,
         chatMessages: [],
         responseChatMessages: [],
         properties: {},

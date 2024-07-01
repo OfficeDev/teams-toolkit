@@ -35,7 +35,6 @@ describe("projectCreator", () => {
           requestId: "Id",
           isHarmful: false,
           relatedSampleName: ["sample1", "sample2"],
-          timeToFirstToken: 0,
           chatMessages: [
             new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
             new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
@@ -107,7 +106,6 @@ describe("projectCreator", () => {
         requestId: "Id",
         isHarmful: false,
         relatedSampleName: ["sample1", "sample2"],
-        timeToFirstToken: 0,
         chatMessages: [
           new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
           new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),

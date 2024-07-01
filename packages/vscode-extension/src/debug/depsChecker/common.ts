@@ -40,7 +40,7 @@ import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { tools, workspaceUri } from "../../globalVariables";
 import { checkCopilotCallback } from "../../handlers/checkAccessCallback";
-import { ProgressHandler } from "../../progressHandler";
+import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";

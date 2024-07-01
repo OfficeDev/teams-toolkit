@@ -102,6 +102,7 @@ export default async function officeCreateCommandHandler(
           title: templateTitle,
         });
       }
+      officeChatTelemetryData.markComplete();
     } else {
       let chatResult: ICopilotChatOfficeResult = {};
       try {
@@ -124,7 +125,6 @@ export default async function officeCreateCommandHandler(
       );
       return chatResult;
     }
-    officeChatTelemetryData.markComplete();
   } else {
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));

@@ -109,6 +109,7 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
 mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
 mockedVSCode.LanguageModelChatMessage = vscodeMocks.chat.LanguageModelChatMessage;
 mockedVSCode.LanguageModelChatMessageRole = vscodeMocks.chat.LanguageModelChatMessageRole;
+mockedVSCode.TextDocumentSaveReason = vscodeMocks.TextDocumentSaveReason;
 (mockedVSCode as any).version = "test";
 
 // Setup window APIs

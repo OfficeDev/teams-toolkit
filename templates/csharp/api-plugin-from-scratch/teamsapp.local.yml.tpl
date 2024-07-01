@@ -20,12 +20,6 @@ provision:
       run:
         echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
 
-  # Validate using manifest schema
-  - uses: teamsApp/validateManifest
-    with:
-      # Path to manifest template
-      manifestPath: ./appPackage/manifest.json
-
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -33,12 +27,6 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
-
-  # Validate app package using validation rules
-  - uses: teamsApp/validateAppPackage
-    with:
-      # Relative path to this file. This is the path for built zip file.
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.

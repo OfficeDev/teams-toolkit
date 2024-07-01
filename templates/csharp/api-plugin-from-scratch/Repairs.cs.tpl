@@ -28,9 +28,9 @@ namespace {{SafeProjectName}}
             // If the assignedTo query parameter is not provided, return all repair records.
             if (string.IsNullOrEmpty(assignedTo))
             {
-                var response = req.CreateResponse();
-                await response.WriteAsJsonAsync(new { results = repairRecords });
-                return response;
+                var res = req.CreateResponse();
+                await res.WriteAsJsonAsync(new { results = repairRecords });
+                return res;
             }
 
             // Filter the repair records by the assignedTo query parameter.

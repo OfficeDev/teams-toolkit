@@ -92,7 +92,7 @@ export default async function generatecodeCommandHandler(
   } else {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
-    officeChatTelemetryData.markComplete();
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,

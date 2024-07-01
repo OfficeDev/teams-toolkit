@@ -147,16 +147,12 @@ import {
   openSubscriptionInPortal,
 } from "./handlers/openLinkHandlers";
 import {
-  backendExtensionsInstallHandler,
   checkUpgrade,
   getDotnetPathHandler,
   getPathDelimiterHandler,
   installAdaptiveCardExt,
-  installAppInTeams,
-  preDebugCheckHandler,
-  validateAzureDependenciesHandler,
+  triggerV3MigrationHandler,
   validateGetStartedPrerequisitesHandler,
-  validateLocalPrerequisitesHandler,
 } from "./handlers/prerequisiteHandlers";
 import { openReadMeHandler } from "./handlers/readmeHandlers";
 import {
@@ -477,7 +473,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   // Register backend extensions install command
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
-    () => Correlator.runWithId(getLocalDebugSessionId(), backendExtensionsInstallHandler)
+    () => Correlator.runWithId(getLocalDebugSessionId(), triggerV3MigrationHandler)
   );
   context.subscriptions.push(backendExtensionsInstallCmd);
 
@@ -495,7 +491,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
 
   const installAppInTeamsCmd = vscode.commands.registerCommand(
     "fx-extension.install-app-in-teams",
-    () => Correlator.runWithId(getLocalDebugSessionId(), installAppInTeams)
+    () => Correlator.runWithId(getLocalDebugSessionId(), triggerV3MigrationHandler)
   );
   context.subscriptions.push(installAppInTeamsCmd);
 
@@ -505,22 +501,21 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openTutorial);
 
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
-    Correlator.runWithId(getLocalDebugSessionId(), preDebugCheckHandler)
+    Correlator.runWithId(getLocalDebugSessionId(), triggerV3MigrationHandler)
   );
   context.subscriptions.push(preDebugCheckCmd);
 
   // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    () => Correlator.runWithId(startLocalDebugSession(), validateAzureDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), triggerV3MigrationHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 
   // localdebug session starts from prerequisites checker
   const validatePrerequisitesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-local-prerequisites",
-    // Do not run with Correlator because it is handled inside `validateLocalPrerequisitesHandler()`.
-    validateLocalPrerequisitesHandler
+    triggerV3MigrationHandler
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 

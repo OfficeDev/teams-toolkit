@@ -13,14 +13,10 @@ import * as globalVariables from "../../src/globalVariables";
 import {
   checkUpgrade,
   getDotnetPathHandler,
-  installAppInTeams,
-  validateAzureDependenciesHandler,
-  validateLocalPrerequisitesHandler,
-  backendExtensionsInstallHandler,
-  preDebugCheckHandler,
   getPathDelimiterHandler,
   validateGetStartedPrerequisitesHandler,
   installAdaptiveCardExt,
+  triggerV3MigrationHandler,
 } from "../../src/handlers/prerequisiteHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
@@ -29,7 +25,7 @@ import * as migrationUtils from "../../src/utils/migrationUtils";
 import * as systemEnvUtils from "../../src/utils/systemEnvUtils";
 import { MockCore } from "../mocks/mockCore";
 
-describe("handlers", () => {
+describe("prerequisiteHandlers", () => {
   describe("checkUpgrade", function () {
     const sandbox = sinon.createSandbox();
 
@@ -172,7 +168,7 @@ describe("handlers", () => {
     });
   });
 
-  describe("installAppInTeams", () => {
+  describe("triggerV3MigrationHandler", () => {
     const sandbox = sinon.createSandbox();
 
     afterEach(() => {
@@ -181,98 +177,14 @@ describe("handlers", () => {
 
     it("happy path", async () => {
       sandbox.stub(migrationUtils, "triggerV3Migration").resolves();
-      const result = await installAppInTeams();
+      const result = await triggerV3MigrationHandler();
       chai.assert.equal(result, undefined);
     });
 
     it("migration error", async () => {
       sandbox.stub(migrationUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
       sandbox.stub(errorCommon, "showError").resolves();
-      const result = await installAppInTeams();
-      chai.assert.equal(result, "1");
-    });
-  });
-
-  describe("validateAzureDependenciesHandler", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("happy path", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").resolves();
-      const result = await validateAzureDependenciesHandler();
-      chai.assert.equal(result, undefined);
-    });
-
-    it("migration error", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
-      sandbox.stub(errorCommon, "showError").resolves();
-      const result = await validateAzureDependenciesHandler();
-      chai.assert.equal(result, "1");
-    });
-  });
-
-  describe("validateLocalPrerequisitesHandler", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("happy path", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").resolves();
-      const result = await validateLocalPrerequisitesHandler();
-      chai.assert.equal(result, undefined);
-    });
-
-    it("migration error", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
-      sandbox.stub(errorCommon, "showError").resolves();
-      const result = await validateLocalPrerequisitesHandler();
-      chai.assert.equal(result, "1");
-    });
-  });
-
-  describe("backendExtensionsInstallHandler", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("happy path", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").resolves();
-      const result = await backendExtensionsInstallHandler();
-      chai.assert.equal(result, undefined);
-    });
-
-    it("migration error", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
-      sandbox.stub(errorCommon, "showError").resolves();
-      const result = await backendExtensionsInstallHandler();
-      chai.assert.equal(result, "1");
-    });
-  });
-
-  describe("preDebugCheckHandler", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("happy path", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").resolves();
-      const result = await preDebugCheckHandler();
-      chai.assert.equal(result, undefined);
-    });
-
-    it("happy path", async () => {
-      sandbox.stub(migrationUtils, "triggerV3Migration").throws(err({ foo: "bar" } as any));
-      sandbox.stub(errorCommon, "showError").resolves();
-      const result = await preDebugCheckHandler();
+      const result = await triggerV3MigrationHandler();
       chai.assert.equal(result, "1");
     });
   });

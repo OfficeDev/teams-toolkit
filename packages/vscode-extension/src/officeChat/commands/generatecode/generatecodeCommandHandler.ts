@@ -90,6 +90,7 @@ export default async function generatecodeCommandHandler(
     );
     return chatResult;
   } else {
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
     officeChatTelemetryData.markComplete("fail");

@@ -42,16 +42,7 @@ export async function matchOfficeProject(
   ];
   let response = "";
   telemetryData.chatMessages.push(...messages);
-  try {
-    response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
-  } catch (error) {
-    if ((error as Error).message.includes("off_topic")) {
-      telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.OffTopic);
-    } else {
-      telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.LanguageModelError);
-    }
-    telemetryData.markComplete("fail");
-  }
+  response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   telemetryData.responseChatMessages.push(
     new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
   );

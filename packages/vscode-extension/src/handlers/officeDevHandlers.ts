@@ -182,7 +182,6 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
-  const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
   if (isOpenWalkThrough) {
     // current the welcome walkthrough is not supported for wxp add in
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
@@ -198,8 +197,5 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await showLocalDebugMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
-  }
-  if (autoInstallDependency) {
-    await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
 }

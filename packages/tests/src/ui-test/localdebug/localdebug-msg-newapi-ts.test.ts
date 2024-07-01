@@ -57,7 +57,7 @@ describe("Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateApiMeResult(page);
+      await validateApiMeResult(page, localDebugTestContext.appName);
     }
   );
 });

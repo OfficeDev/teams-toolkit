@@ -2728,22 +2728,19 @@ export async function validateTodoListSpfx(page: Page) {
   }
 }
 
-export async function validateApiMeResult(page: Page) {
+export async function validateApiMeResult(page: Page, appName: string) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    await messageExtensionActivate(page, appName);
     console.log("start to validate search command");
-    const searchcmdInput = await frame?.waitForSelector(
+    const searchcmdInput = await page?.waitForSelector(
       "div.ui-box input.ui-box"
     );
-    await searchcmdInput?.type("Karin");
+    await searchcmdInput?.fill("Karin");
     try {
-      await frame?.waitForSelector('ul[datatid="app-picker-list"]');
+      await page?.waitForSelector('ul[datatid="app-picker-list"]');
       console.log("verify search successfully!!!");
     } catch (error) {
-      await frame?.waitForSelector(
+      await page?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
       assert.fail("Unable to reach app. Please try again.");

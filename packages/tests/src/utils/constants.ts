@@ -365,7 +365,8 @@ export type OptionType =
   | "aiassist"
   | "msgnewapi"
   | "msgopenapi"
-  | "msgapikey";
+  | "msgapikey"
+  | "importsinglespfx";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -462,6 +463,7 @@ export class CreateProjectQuestion {
     "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
   static readonly CreateNewSpfxSolution = "Create New SPFx Solution";
+  static readonly ImportExistingSpfxSolution = "Import Existing SPFx Solution";
 }
 
 export class ValidationContent {

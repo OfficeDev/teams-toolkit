@@ -467,3 +467,25 @@ export async function configSpfxGlobalEnv() {
     throw new Error(`Failed to set up global environment: ${error}`);
   }
 }
+
+export async function generateYoSpfxProject(option: {
+  solutionName: string;
+  componentName: string;
+  componentType?: string;
+}) {
+  const resourcePath = path.resolve(__dirname, "../../../.test-resources/");
+  try {
+    console.log(`Start to generate SPFx project:`);
+    const result = await execAsync(
+      `yo @microsoft/sharepoint --solution-name ${option.solutionName} --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
+      {
+        cwd: resourcePath,
+      }
+    );
+    console.log(`[Successfully] completed to generate SPFx project.`);
+    console.log(`${result.stdout}`);
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Failed to generate SPFx project: ${error}`);
+  }
+}

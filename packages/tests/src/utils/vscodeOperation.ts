@@ -813,6 +813,36 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
+    case "importsinglespfx": {
+      await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
+      // await input.selectQuickPick("SPFx");
+      await input.setText("SPFx");
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(
+        CreateProjectQuestion.ImportExistingSpfxSolution
+      );
+      await driver.sleep(Timeout.input);
+
+      // Input folder path
+      const resourcePath = path.resolve(
+        __dirname,
+        "../../.test-resources/existingspfx"
+      );
+      console.log("choose project path: ", resourcePath);
+      await input.selectQuickPick("Browse...");
+      await inputFolderPath(driver, input, resourcePath);
+      await driver.sleep(Timeout.input);
+      if (os.type() === "Windows_NT") {
+        await input.sendKeys("\\");
+      } else if (os.type() === "Linux") {
+        await input.sendKeys("/");
+      }
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      break;
+    }
     case "dashboard": {
       // Choose Dashboard Tab
       // A/B test

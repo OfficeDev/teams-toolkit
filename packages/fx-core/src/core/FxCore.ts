@@ -350,7 +350,7 @@ export class FxCore {
         return err(res.error);
       }
     }
-    // App registraion should be last to remove, because we might need to query some metadata from TDP.
+    // App registraion should be the last to remove, because we might need to query some metadata from TDP.
     if (tdpOption) {
       const res = await this.uninstallAppRegistration(manifestId);
       if (res.isErr()) {
@@ -425,7 +425,7 @@ export class FxCore {
       }
       this.resetEnvVar(botIdKeyName, ctx);
     }
-    // App registraion should be last to remove, because we might need to query some metadata from TDP.
+    // App registraion should be the last to remove, because we might need to query some metadata from TDP.
     if (teamsAppId && tdpOption) {
       const res = await this.uninstallAppRegistration(teamsAppId);
       if (res.isErr()) {

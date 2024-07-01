@@ -16,6 +16,7 @@ export enum OfficeChatTelemetryBlockReasonEnum {
   OffTopic = "Off Topic",
   UnsupportedInput = "Unsupported Input",
   LanguageModelError = "LanguageModel Error",
+  PlannerFailure = "Planner Failure",
 }
 export class OfficeChatTelemetryData implements IChatTelemetryData {
   public static requestData: { [key: string]: OfficeChatTelemetryData } = {};

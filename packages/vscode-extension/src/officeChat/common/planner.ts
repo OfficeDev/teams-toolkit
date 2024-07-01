@@ -103,6 +103,8 @@ ${purified}
             candidate.name || "unknown";
           if (spec.appendix.telemetryData.isHarmful === true) {
             telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
+          } else {
+            telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.PlannerFailure);
           }
           throw new Error("Failed to process the request.");
         }

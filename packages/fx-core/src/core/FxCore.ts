@@ -410,39 +410,44 @@ export class FxCore {
     const tdpOption = uninstallOptions?.includes(QuestionNames.UninstallOptionTDP);
     const botOption = uninstallOptions?.includes(QuestionNames.UninstallOptionBot);
 
-    if (ctx && ctx.envVars == undefined) {
-      ctx.envVars = {};
-    }
-
     if ((teamsAppId || m365TitleId) && m356AppOption) {
       const res = await this.uninstallM365App(m365TitleId, teamsAppId);
       if (res.isErr()) {
         return err(res.error);
-      } else if (ctx && ctx.envVars) {
-        ctx.envVars[teamsAppIdKeyName] = "";
-        ctx.envVars[m365TitleIdKeyName] = "";
       }
+      this.resetEnvVar(teamsAppIdKeyName, ctx);
+      this.resetEnvVar(m365TitleIdKeyName, ctx);
     }
     if (botId && botOption) {
       const res = await this.uninstallBotFrameworRegistration(botId);
       if (res.isErr()) {
         return err(res.error);
-      } else if (ctx && ctx.envVars) {
-        ctx.envVars[botIdKeyName] = "";
       }
+      this.resetEnvVar(botIdKeyName, ctx);
     }
     // App registraion should be last to remove, because we might need to query some metadata from TDP.
     if (teamsAppId && tdpOption) {
       const res = await this.uninstallAppRegistration(teamsAppId);
       if (res.isErr()) {
         return err(res.error);
-      } else if (ctx && ctx.envVars) {
-        ctx.envVars[teamsAppIdKeyName] = "";
       }
+      this.resetEnvVar(teamsAppIdKeyName, ctx);
     }
     return ok(undefined);
   }
-
+  resetEnvVar(key: string, ctx?: CoreHookContext, skipIfNotExist = true, resetValue = ""): void {
+    if (!ctx) {
+      return;
+    }
+    if (!ctx.envVars) {
+      ctx.envVars = {};
+    }
+    if (skipIfNotExist && !ctx.envVars[key]) {
+      return;
+    }
+    ctx.envVars[key] = resetValue;
+    return;
+  }
   /**
    * uninstall provisioned resources by title ID. Titlle mode only uninstalls M365 app.
    */

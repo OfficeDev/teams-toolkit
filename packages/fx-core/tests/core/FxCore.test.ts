@@ -26,7 +26,7 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import fs from "fs-extra";
 import jsyaml from "js-yaml";
 import "mocha";
@@ -98,6 +98,7 @@ import { MockTools, randomAppName } from "./utils";
 import { DotenvOutput, UninstallInputs } from "../../build";
 import * as envMW from "../../src/component/middleware/envMW";
 import { title } from "process";
+import { CoreHookContext } from "../../src/core/types";
 
 const tools = new MockTools();
 
@@ -1031,6 +1032,36 @@ describe("Core basic APIs", () => {
     const core = new FxCore(tools);
     const res = await core.uninstallBotFrameworRegistration(undefined, undefined);
     assert.isTrue(res.isErr());
+  });
+  it("reset env var - happy path", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: { testKey: "oldValue" } };
+    core.resetEnvVar("testKey", ctx);
+    expect(ctx.envVars).to.deep.equal({ testKey: "" });
+  });
+  it("reset env var - undefine ctx", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext | undefined = undefined;
+    core.resetEnvVar("testKey", ctx);
+    assert.isUndefined(ctx);
+  });
+  it("reset env var - initialize envVars if it is undefined", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: undefined };
+    core.resetEnvVar("testKey", ctx);
+    expect(ctx.envVars).to.deep.equal({ testKey: "" });
+  });
+  it("reset env var - skipIfNotExist is true", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: { existingKey: "value" } };
+    core.resetEnvVar("testKey", ctx);
+    expect(ctx.envVars).to.deep.equal({ existingKey: "value" });
+  });
+  it("reset env var - skipIfNotExist is false", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: { existingKey: "value" } };
+    core.resetEnvVar("testKey", ctx, false);
+    expect(ctx.envVars).to.deep.equal({ existingKey: "value", testKey: "" });
   });
 });
 

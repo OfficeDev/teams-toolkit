@@ -39,7 +39,7 @@ import M365TokenInstance from "../../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { tools, workspaceUri } from "../../globalVariables";
-import { checkCopilotCallback } from "../../handlers/checkAccessCallback";
+import { checkCopilotCallback } from "../../handlers/accounts/checkAccessCallback";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";

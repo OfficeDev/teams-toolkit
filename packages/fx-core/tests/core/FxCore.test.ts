@@ -430,11 +430,11 @@ describe("Core basic APIs", () => {
       // Cannot assert the full message because the mocked code can't get correct env file path
       assert.include(
         res.error.message,
-        "The program cannot proceed as the following environment variables are missing: 'AAD_APP_OBJECT_ID', which are required for file: fake path. Make sure the required variables are set either by editing the .env file"
+        "The program cannot proceed because the following environment variables are missing: 'AAD_APP_OBJECT_ID' for file: fake path. Please set them by editing the .env file"
       );
       assert.include(
         res.error.message,
-        "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables"
+        "For new Teams Toolkit projects, running provision or debug will register correct values for these environment variables."
       );
     }
   });

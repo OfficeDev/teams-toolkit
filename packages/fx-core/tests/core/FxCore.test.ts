@@ -1048,7 +1048,7 @@ describe("Core basic APIs", () => {
   it("reset env var - initialize envVars if it is undefined", async () => {
     const core = new FxCore(tools);
     const ctx: CoreHookContext = { arguments: [], envVars: undefined };
-    core.resetEnvVar("testKey", ctx);
+    core.resetEnvVar("testKey", ctx, false);
     expect(ctx.envVars).to.deep.equal({ testKey: "" });
   });
   it("reset env var - skipIfNotExist is true", async () => {

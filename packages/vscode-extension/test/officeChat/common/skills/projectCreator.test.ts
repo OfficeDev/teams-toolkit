@@ -109,8 +109,8 @@ describe("projectCreator", () => {
         relatedSampleName: ["sample1", "sample2"],
         timeToFirstToken: 0,
         chatMessages: [
-          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
-          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
         ],
         responseChatMessages: [
           new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),

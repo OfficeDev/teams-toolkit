@@ -37,10 +37,13 @@ describe("CodeExplainer", () => {
           relatedSampleName: ["sample1", "sample2"],
           timeToFirstToken: 0,
           chatMessages: [
-            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
-            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
           ],
-          responseChatMessages: [],
+          responseChatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+          ],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -106,10 +109,13 @@ describe("CodeExplainer", () => {
         relatedSampleName: ["sample1", "sample2"],
         timeToFirstToken: 0,
         chatMessages: [
-          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message1"),
-          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "message2"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
         ],
-        responseChatMessages: [],
+        responseChatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+        ],
         properties: {
           property1: "value1",
           property2: "value2",

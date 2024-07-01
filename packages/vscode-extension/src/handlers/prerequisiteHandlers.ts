@@ -26,33 +26,10 @@ import { triggerV3Migration } from "../utils/migrationUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 
-export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
-  try {
-    await triggerV3Migration();
-    return undefined;
-  } catch (error: any) {
-    void showError(error as FxError);
-    return "1";
-  }
-}
-
 /**
- * Check & install required local prerequisites before local debug.
+ * Trigger V3 migration for deprecated projects.
  */
-export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  try {
-    await triggerV3Migration();
-    return undefined;
-  } catch (error: any) {
-    void showError(error as FxError);
-    return "1";
-  }
-}
-
-/*
- * Prompt window to let user install the app in Teams
- */
-export async function installAppInTeams(): Promise<string | undefined> {
+export async function triggerV3MigrationHandler(): Promise<string | undefined> {
   try {
     await triggerV3Migration();
     return undefined;
@@ -82,19 +59,6 @@ export async function validateGetStartedPrerequisitesHandler(
 }
 
 /**
- * install functions binding before launch local debug
- */
-export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
-  try {
-    await triggerV3Migration();
-    return undefined;
-  } catch (error: any) {
-    void showError(error as FxError);
-    return "1";
-  }
-}
-
-/**
  * Get path delimiter
  * Usage like ${workspaceFolder}/devTools/func${command:...}${env:PATH}
  */
@@ -120,19 +84,6 @@ export async function getDotnetPathHandler(): Promise<string> {
   }
 
   return `${path.delimiter}`;
-}
-
-/**
- * call localDebug on core
- */
-export async function preDebugCheckHandler(): Promise<string | undefined> {
-  try {
-    await triggerV3Migration();
-    return undefined;
-  } catch (error: any) {
-    void showError(error as FxError);
-    return "1";
-  }
 }
 
 export async function checkUpgrade(args?: any[]) {

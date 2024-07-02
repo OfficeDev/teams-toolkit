@@ -27,17 +27,17 @@ dependencies:
     specifier: ^1.6.8
     version: 1.6.8
   botbuilder:
-    specifier: ^4.22.1
-    version: 4.22.1(supports-color@9.4.0)
+    specifier: ^4.22.3
+    version: 4.22.3(supports-color@9.4.0)
   botbuilder-dialogs:
-    specifier: ^4.22.1
-    version: 4.22.1(supports-color@9.4.0)
+    specifier: ^4.22.3
+    version: 4.22.3(supports-color@9.4.0)
   botframework-connector:
-    specifier: ^4.22.1
-    version: 4.22.1(supports-color@9.4.0)
+    specifier: ^4.22.3
+    version: 4.22.3(supports-color@9.4.0)
   botframework-schema:
-    specifier: ^4.22.1
-    version: 4.22.1
+    specifier: ^4.22.3
+    version: 4.22.3
   jwt-decode:
     specifier: ^3.1.2
     version: 3.1.2
@@ -119,8 +119,8 @@ devDependencies:
     specifier: ^1.20.0
     version: 1.20.0(axios@1.6.8)
   botbuilder-core:
-    specifier: ^4.22.1
-    version: 4.22.1(supports-color@9.4.0)
+    specifier: ^4.22.3
+    version: 4.22.3(supports-color@9.4.0)
   chai:
     specifier: ^4.3.4
     version: 4.3.4
@@ -439,7 +439,7 @@ packages:
       '@azure/logger': 1.0.4
       '@azure/msal-browser': 2.38.3
       '@azure/msal-common': 7.6.0
-      '@azure/msal-node': 1.14.6
+      '@azure/msal-node': 1.18.4
       events: 3.3.0
       jws: 4.0.0
       open: 8.4.2
@@ -512,6 +512,7 @@ packages:
   /@azure/msal-common@9.1.1:
     resolution: {integrity: sha512-we9xR8lvu47fF0h+J8KyXoRy9+G/fPzm3QEa2TrdR3jaVS3LKAyE2qyMuUkNdbVkvzl8Zr9f7l+IUSP22HeqXw==}
     engines: {node: '>=0.8.0'}
+    dev: false
 
   /@azure/msal-node@1.14.6:
     resolution: {integrity: sha512-em/qqFL5tLMxMPl9vormAs13OgZpmQoJbiQ/GlWr+BA77eCLoL+Ehr5xRHowYo+LFe5b+p+PJVkRvT+mLvOkwA==}
@@ -519,6 +520,16 @@ packages:
     deprecated: A newer major version of this library is available. Please upgrade to the latest available version.
     dependencies:
       '@azure/msal-common': 9.1.1
+      jsonwebtoken: 9.0.2
+      uuid: 8.3.2
+    dev: false
+
+  /@azure/msal-node@1.18.4:
+    resolution: {integrity: sha512-Kc/dRvhZ9Q4+1FSfsTFDME/v6+R2Y1fuMty/TfwqE5p9GTPw08BPbKgeWinE8JRHRp+LemjQbUZsn4Q4l6Lszg==}
+    engines: {node: 10 || 12 || 14 || 16 || 18}
+    deprecated: A newer major version of this library is available. Please upgrade to the latest available version.
+    dependencies:
+      '@azure/msal-common': 13.3.1
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
 
@@ -1235,6 +1246,11 @@ packages:
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
     dev: true
 
+  /@types/jsonwebtoken@8.3.5:
+    resolution: {integrity: sha512-VGM1gb+LwsQ5EPevvbvdnKncajBdYqNcrvixBif1BsiDQiSF1q+j4bBTvKC6Bt9n2kqNSx+yNTY2TVJ360E7EQ==}
+    dependencies:
+      '@types/node': 16.11.7
+
   /@types/jsonwebtoken@9.0.2:
     resolution: {integrity: sha512-drE6uz7QBKq1fYqqoFKTDRdFCPHd5TCub75BM+D+cMx7NU9hUz7SESLfC2fSCXVFMO5Yj8sOWHuGqPgjc+fz0Q==}
     dependencies:
@@ -1875,6 +1891,15 @@ packages:
     transitivePeerDependencies:
       - debug
 
+  /axios@1.7.2:
+    resolution: {integrity: sha512-2A8QhOMrbomlDuiLeK9XibIBzuHeRcqqNOHp0Cyp5EoJ1IFDh+XZH3A6BkXtv0K4gFGCI0Y4BM7B1wOEi0Rmgw==}
+    dependencies:
+      follow-redirects: 1.15.6
+      form-data: 4.0.0
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   /balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
     dev: true
@@ -1936,58 +1961,60 @@ packages:
       - supports-color
     dev: true
 
-  /botbuilder-core@4.22.1(supports-color@9.4.0):
-    resolution: {integrity: sha512-ZT1hixW9Badsytm1YFzfXkfPrjaTWru1yIe4kPEtB4X7rorqdU1wvwMylqvi0x34oiUhwmJPcvm82c9VpRsVmw==}
+  /botbuilder-core@4.22.3(supports-color@9.4.0):
+    resolution: {integrity: sha512-159+ugNI/gp7u+ByYWIjVPE6csFEMfJzbYISf1HVFHhw0m/h0zEyXMvjoiwGu/fA7TI+TtpuFLdh75roEodOsw==}
     dependencies:
-      botbuilder-dialogs-adaptive-runtime-core: 4.22.1-preview
-      botbuilder-stdlib: 4.22.1-internal
-      botframework-connector: 4.22.1(supports-color@9.4.0)
-      botframework-schema: 4.22.1
+      botbuilder-dialogs-adaptive-runtime-core: 4.22.3-preview
+      botbuilder-stdlib: 4.22.3-internal
+      botframework-connector: 4.22.3(supports-color@9.4.0)
+      botframework-schema: 4.22.3
       uuid: 8.3.2
       zod: 3.22.4
     transitivePeerDependencies:
+      - debug
       - encoding
       - supports-color
 
-  /botbuilder-dialogs-adaptive-runtime-core@4.22.1-preview:
-    resolution: {integrity: sha512-Zzbbl2kKCHqAHbz/zf3ZG1JLCPVk2UD26gWjIVqqBgACdwMj2MPZ4w5FkBQ0eKHvSZvbNATVVqvP4NdHCd/AZQ==}
+  /botbuilder-dialogs-adaptive-runtime-core@4.22.3-preview:
+    resolution: {integrity: sha512-JbVKKmriLwUOgBI040unl5xVTmGhESFXnvC3O75nDzjFjdRpaIAwA2/L7ik6E3O4bOkwO2jDov2W+LWlbSnjXQ==}
     dependencies:
       dependency-graph: 0.10.0
 
-  /botbuilder-dialogs@4.22.1(supports-color@9.4.0):
-    resolution: {integrity: sha512-iCrB6w9XG2LWAXlt9PoNTIdx62D23nqx8+6TzoYN6WYoKMXZvoDQWtkopsr3EywCbsq/sAc5v3UmrvPyVK+dWA==}
+  /botbuilder-dialogs@4.22.3(supports-color@9.4.0):
+    resolution: {integrity: sha512-mrMVz+aiYoLCwIEpYzTyMXvrMVrxSl4OXWD1nFA7brlwbHwb6McG423I0DKoDTRN7buOLYY4CCWItXMp2mRq8Q==}
     requiresBuild: true
     dependencies:
       '@microsoft/recognizers-text-choice': 1.1.4
       '@microsoft/recognizers-text-date-time': 1.1.4
       '@microsoft/recognizers-text-number': 1.3.1
       '@microsoft/recognizers-text-suite': 1.1.4
-      botbuilder-core: 4.22.1(supports-color@9.4.0)
-      botbuilder-dialogs-adaptive-runtime-core: 4.22.1-preview
-      botframework-connector: 4.22.1(supports-color@9.4.0)
+      botbuilder-core: 4.22.3(supports-color@9.4.0)
+      botbuilder-dialogs-adaptive-runtime-core: 4.22.3-preview
+      botframework-connector: 4.22.3(supports-color@9.4.0)
       globalize: 1.7.0
       lodash: 4.17.21
       uuid: 8.3.2
       zod: 3.22.4
     transitivePeerDependencies:
+      - debug
       - encoding
       - supports-color
     dev: false
 
-  /botbuilder-stdlib@4.22.1-internal:
-    resolution: {integrity: sha512-iPTO//HYfqwwvmbVtWZFkffRVSkxz/fesE60nMPVxGe93XkHSXgNVaZKjKnxjbX192LQFubae0777pCYBD6hsQ==}
+  /botbuilder-stdlib@4.22.3-internal:
+    resolution: {integrity: sha512-DZwHRHpEZQNDQ426RpSmEpNKm9V/5k11lpXmQ41Eq2g0LHdaz1TqgV97US+Mj7Xyp4Fngp23HWcGivU8bQeArA==}
 
-  /botbuilder@4.22.1(supports-color@9.4.0):
-    resolution: {integrity: sha512-dkg1RzN1GVmjZ0+J91U4VZ1Lyoq9Oal3NzZsTfO9fPNvNoxLYUGbbH1PGNcm0qEK4gp5XvNtuRgPi6Mm6q5MiA==}
+  /botbuilder@4.22.3(supports-color@9.4.0):
+    resolution: {integrity: sha512-vmsCBaqC6mvX9Kr6xVvU0Zlblh1d923HTXJqs196QspDMX9sedmxORfgX3u3P1vNXqx5jt4ODm52k5Aau+IP+w==}
     dependencies:
       '@azure/core-http': 3.0.4
-      '@azure/msal-node': 1.14.6
-      axios: 1.6.8
-      botbuilder-core: 4.22.1(supports-color@9.4.0)
-      botbuilder-stdlib: 4.22.1-internal
-      botframework-connector: 4.22.1(supports-color@9.4.0)
-      botframework-schema: 4.22.1
-      botframework-streaming: 4.22.1
+      '@azure/msal-node': 1.18.4
+      axios: 1.7.2
+      botbuilder-core: 4.22.3(supports-color@9.4.0)
+      botbuilder-stdlib: 4.22.3-internal
+      botframework-connector: 4.22.3(supports-color@9.4.0)
+      botframework-schema: 4.22.3
+      botframework-streaming: 4.22.3
       dayjs: 1.11.10
       filenamify: 4.3.0
       fs-extra: 7.0.1
@@ -2002,15 +2029,17 @@ packages:
       - utf-8-validate
     dev: false
 
-  /botframework-connector@4.22.1(supports-color@9.4.0):
-    resolution: {integrity: sha512-uo3KrIyj6D8P9kWk7AKd00XDkCuTk/LqH1Jx0jGQCkfjHCVFfGclgNZcqUdgZkQkWcisk5QOtTSPGAl4a92TpA==}
+  /botframework-connector@4.22.3(supports-color@9.4.0):
+    resolution: {integrity: sha512-xsGFfphSMECvaBJynWmvSXbG8o72WqX8Ba885kz/lxGXu1f6CjTObO0enxQdtH9O7YmCX4T0xOaHiFxnU2U61A==}
     dependencies:
       '@azure/core-http': 3.0.4
       '@azure/identity': 2.1.0(supports-color@9.4.0)
-      '@azure/msal-node': 1.14.6
+      '@azure/msal-node': 1.18.4
+      '@types/jsonwebtoken': 8.3.5
+      axios: 1.7.2
       base64url: 3.0.1
-      botbuilder-stdlib: 4.22.1-internal
-      botframework-schema: 4.22.1
+      botbuilder-stdlib: 4.22.3-internal
+      botframework-schema: 4.22.3
       cross-fetch: 3.1.8
       https-proxy-agent: 7.0.4(supports-color@9.4.0)
       jsonwebtoken: 9.0.2
@@ -2019,23 +2048,24 @@ packages:
       rsa-pem-from-mod-exp: 0.8.6
       zod: 3.22.4
     transitivePeerDependencies:
+      - debug
       - encoding
       - supports-color
 
-  /botframework-schema@4.22.1:
-    resolution: {integrity: sha512-4hE7iMYMgLz+L+MrgkZ7Y1pir3ze5Puhjko0a/VKkLUXkoSTHcZ5P0mIqhl/lxu7TlrREtGanGsX0rWkQ8+FJA==}
+  /botframework-schema@4.22.3:
+    resolution: {integrity: sha512-8d/IgrFPrVIJFOqExASROYYaV4ikQvDIq60sEN2DphVS+Cnlvm65Tl/6vv+3c27A6xrih23nyvjgAafhLmZ1gQ==}
     dependencies:
       adaptivecards: 1.2.3
       uuid: 8.3.2
       zod: 3.22.4
 
-  /botframework-streaming@4.22.1:
-    resolution: {integrity: sha512-M/bxRowgjCwdCHZ/oKtyQdXN2pFx2AQWoSfoPwRv5nXr0I+W9Yl2m/2d1Y4W4xLbnGLxZtaJtLh5en7RBSnGVg==}
+  /botframework-streaming@4.22.3:
+    resolution: {integrity: sha512-N0lI6eezH1wj5fkB+L5W+lDLL3EOOpqfj6OEf7xgzIdoJrDZy4vK/du66ptzWKZveyWK2MDd5Xme+pOm2H6dRA==}
     dependencies:
       '@types/node': 10.17.60
       '@types/ws': 6.0.4
       uuid: 8.3.2
-      ws: 7.5.9
+      ws: 7.5.10
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -6825,8 +6855,8 @@ packages:
       typedarray-to-buffer: 3.1.5
     dev: true
 
-  /ws@7.5.9:
-    resolution: {integrity: sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==}
+  /ws@7.5.10:
+    resolution: {integrity: sha512-+dbF1tHwZpXcbOJdVOkzLDxZP1ailvSxM6ZweXTegylPny803bFhA+vqBYw4s31NSAk4S2Qz+AKXK9a4wkdjcQ==}
     engines: {node: '>=8.3.0'}
     peerDependencies:
       bufferutil: ^4.0.1

@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { SampleProvider } from "../../../../src/officeChat/common/samples/sampleProvider";
 import * as utils from "../../../../src/chat/utils";
 import sinon from "ts-sinon";
+import { Spec } from "../../../../src/officeChat/common/skills/spec";
 
 describe("SampleProvider", () => {
   const sandbox = sinon.createSandbox();
@@ -19,11 +20,13 @@ describe("SampleProvider", () => {
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Word";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -76,11 +79,13 @@ describe("SampleProvider", () => {
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "UnkownHost";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -99,11 +104,13 @@ Save time in Word with new buttons that show up where you need them. To change t
 Reading is easier, too, in the new Reading view. You can collapse parts of the document and focus on the text you want. If you need to stop reading before you reach the end, Word remembers where you left off - even on another device.
     `;
     const host = "UnkownHost";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario.repeat(100), // repeat the scenario to make it longer
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -117,11 +124,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "UnkownHost";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -135,6 +144,7 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
+    const spec = new Spec("some user input");
     sandbox
       .stub(utils, "countMessagesTokens")
       .onFirstCall()
@@ -145,7 +155,8 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -163,11 +174,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -182,11 +195,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -206,11 +221,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -232,11 +249,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -253,11 +272,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Excel";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;
@@ -315,11 +336,13 @@ Reading is easier, too, in the new Reading view. You can collapse parts of the d
     const scenario =
       "To set up streaming custom functions with the Office JS API that fetch real-time data from the web at 10-second intervals, you should follow these steps: 1. Define a function in a JavaScript or Typescript file that fetches the data from the web. 2. Ensure this function is async and is continuously running with a call every 10 seconds. 3. In the custom functions metadata, register this function as a streaming function. 4. Test this function in Excel to confirm it behaves correctly.";
     const host = "Excel";
+    const spec = new Spec("some user input");
     const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
       null as any,
       host,
       scenario,
-      sample
+      sample,
+      spec
     );
 
     expect(topKSamples).to.exist;

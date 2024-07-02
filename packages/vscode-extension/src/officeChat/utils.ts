@@ -11,10 +11,14 @@ import { buildDynamicPrompt } from "./dynamicPrompt";
 import { inputRai, outputRai } from "./dynamicPrompt/formats";
 import { getCopilotResponseAsString } from "../chat/utils";
 import { officeSampleProvider } from "./commands/create/officeSamples";
+import { Spec } from "./common/skills/spec";
+import { OfficeChatTelemetryData } from "./telemetry";
+import { SampleConfig } from "@microsoft/teamsfx-core";
 
 export async function purifyUserMessage(
   message: string,
-  token: CancellationToken
+  token: CancellationToken,
+  telemetryData: OfficeChatTelemetryData
 ): Promise<string> {
   const userMessagePrompt = `
   Please act as a professional Office JavaScript add-in developer and expert office application user, to rephrase the following meesage in an accurate and professional manner. Message: ${message}
@@ -35,6 +39,10 @@ export async function purifyUserMessage(
     purifyUserMessage,
     token
   );
+  telemetryData.chatMessages.push(...purifyUserMessage);
+  telemetryData.responseChatMessages.push(
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, purifiedResult)
+  );
   if (
     !purifiedResult ||
     purifiedResult.length === 0 ||
@@ -47,10 +55,15 @@ export async function purifyUserMessage(
 
 export async function isInputHarmful(
   request: ChatRequest,
-  token: CancellationToken
+  token: CancellationToken,
+  telemetryData: OfficeChatTelemetryData
 ): Promise<boolean> {
   const messages = buildDynamicPrompt(inputRai, request.prompt).messages;
   let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  telemetryData.chatMessages.push(...messages);
+  telemetryData.responseChatMessages.push(
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
+  );
   if (!response) {
     throw new Error("Got empty response");
   }
@@ -68,17 +81,26 @@ export async function isInputHarmful(
   return resultJson.isHarmful;
 }
 
-export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
+export async function isOutputHarmful(
+  output: string,
+  token: CancellationToken,
+  spec: Spec
+): Promise<boolean> {
   const messages = buildDynamicPrompt(outputRai, output).messages;
-  return await isContentHarmful(messages, token);
+  return await isContentHarmful(messages, token, spec);
 }
 
 async function isContentHarmful(
   messages: LanguageModelChatMessage[],
-  token: CancellationToken
+  token: CancellationToken,
+  spec: Spec
 ): Promise<boolean> {
   async function getIsHarmfulResponseAsync() {
     const isHarmfulResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, isHarmfulResponse)
+    );
     if (
       !isHarmfulResponse ||
       isHarmfulResponse === "" ||
@@ -96,11 +118,11 @@ async function isContentHarmful(
   return isHarmful;
 }
 
-export async function getOfficeSampleDownloadUrlInfo(sampleId: string) {
+export async function getOfficeSample(sampleId: string): Promise<SampleConfig> {
   const sampleCollection = await officeSampleProvider.OfficeSampleCollection;
   const sample = sampleCollection.samples.find((sample) => sample.id === sampleId);
   if (!sample) {
     throw new Error("Sample not found");
   }
-  return sample.downloadUrlInfo;
+  return sample;
 }

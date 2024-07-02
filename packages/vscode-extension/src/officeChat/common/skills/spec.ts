@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { LanguageModelChatMessage } from "vscode";
 import { SampleData } from "../samples/sampleData";
 import { deepClone } from "../utils";
 
@@ -19,6 +20,11 @@ export class Spec {
     apiDeclarationsReference: Map<string, SampleData>;
     isCustomFunction: boolean;
     telemetryData: {
+      requestId: string;
+      isHarmful: boolean;
+      relatedSampleName: string[];
+      chatMessages: LanguageModelChatMessage[];
+      responseChatMessages: LanguageModelChatMessage[];
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
@@ -26,7 +32,7 @@ export class Spec {
     shouldContinue: boolean;
   };
 
-  constructor(userInput: string) {
+  constructor(userInput: string, requestId?: string) {
     this.userInput = userInput;
     this.taskSummary = "";
     this.sections = [];
@@ -41,6 +47,11 @@ export class Spec {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: false,
       telemetryData: {
+        requestId: requestId ? requestId : "",
+        isHarmful: false,
+        relatedSampleName: [],
+        chatMessages: [],
+        responseChatMessages: [],
         properties: {},
         measurements: {},
       },

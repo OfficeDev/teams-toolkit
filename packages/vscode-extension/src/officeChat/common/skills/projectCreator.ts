@@ -52,7 +52,7 @@ export class projectCreator implements ISkill {
     const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
     response.button({
       command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-      arguments: [rootFolder],
+      arguments: [rootFolder, spec.appendix.telemetryData.requestId, "No Match Result Type"],
       title: sampleTitle,
     });
     return { result: ExecutionResultEnum.Success, spec: spec };

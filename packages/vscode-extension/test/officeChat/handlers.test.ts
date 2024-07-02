@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as handler from "../../src/officeChat/handlers";
-import * as telemetry from "../../src/chat/telemetry";
 import * as util from "../../src/chat/utils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as officeCreateCommandHandler from "../../src/officeChat/commands/create/officeCreateCommandHandler";
@@ -21,6 +20,7 @@ import {
   TelemetryTriggerFrom,
 } from "../../src/telemetry/extTelemetryEvents";
 import { Correlator } from "@microsoft/teamsfx-core";
+import { OfficeChatTelemetryData } from "../../src/officeChat/telemetry";
 
 chai.use(chaipromised);
 
@@ -105,7 +105,7 @@ describe("File: officeChat/handlers.ts", () => {
         attempt: 0,
         enableCommandDetection: false,
       } as vscode.ChatRequest;
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
       });
@@ -114,7 +114,7 @@ describe("File: officeChat/handlers.ts", () => {
       });
       officeChatTelemetryDataMock.chatMessages = [];
       sandbox
-        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .stub(OfficeChatTelemetryData, "createByParticipant")
         .returns(officeChatTelemetryDataMock);
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const verbatimCopilotInteractionStub = sandbox.stub(util, "verbatimCopilotInteraction");
@@ -136,7 +136,7 @@ describe("File: officeChat/handlers.ts", () => {
         attempt: 0,
         enableCommandDetection: false,
       } as vscode.ChatRequest;
-      const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      const officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
       });
@@ -145,7 +145,7 @@ describe("File: officeChat/handlers.ts", () => {
       });
       officeChatTelemetryDataMock.chatMessages = [];
       sandbox
-        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .stub(OfficeChatTelemetryData, "createByParticipant")
         .returns(officeChatTelemetryDataMock);
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(util, "verbatimCopilotInteraction");
@@ -183,7 +183,11 @@ Usage: @office Ask questions about Office Add-ins development.`);
       const showInformationMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
       sandbox.stub(localizeUtils, "localize").returns("Current Workspace");
-      await handler.chatCreateOfficeProjectCommandHandler("fakeFolder");
+      await handler.chatCreateOfficeProjectCommandHandler(
+        "fakeFolder",
+        "fakeId",
+        "fakeMatchResultInfo"
+      );
 
       chai.expect(showQuickPickStub.called).to.equal(false);
       chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
@@ -204,7 +208,11 @@ Usage: @office Ask questions about Office Add-ins development.`);
       const showQuickPickStub = sandbox
         .stub(vscode.window, "showQuickPick")
         .returns(Promise.resolve(undefined));
-      const result = await handler.chatCreateOfficeProjectCommandHandler("fakeFolder");
+      const result = await handler.chatCreateOfficeProjectCommandHandler(
+        "fakeFolder",
+        "fakeId",
+        "fakeMatchResultInfo"
+      );
 
       chai.expect(result).to.equal(undefined);
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
@@ -223,7 +231,11 @@ Usage: @office Ask questions about Office Add-ins development.`);
       const showInformationMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
       sandbox.stub(localizeUtils, "localize").returns("Current Workspace");
-      await handler.chatCreateOfficeProjectCommandHandler("fakeFolder");
+      await handler.chatCreateOfficeProjectCommandHandler(
+        "fakeFolder",
+        "fakeId",
+        "fakeMatchResultInfo"
+      );
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.called).to.equal(false);
@@ -249,7 +261,11 @@ Usage: @office Ask questions about Office Add-ins development.`);
       const showInformationMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
       sandbox.stub(localizeUtils, "localize").returns("Current Workspace");
-      await handler.chatCreateOfficeProjectCommandHandler("fakeFolder");
+      await handler.chatCreateOfficeProjectCommandHandler(
+        "fakeFolder",
+        "fakeId",
+        "fakeMatchResultInfo"
+      );
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
@@ -274,7 +290,11 @@ Usage: @office Ask questions about Office Add-ins development.`);
       const showInformationMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
       sandbox.stub(localizeUtils, "localize").returns("Current Workspace");
-      await handler.chatCreateOfficeProjectCommandHandler("fakeFolder");
+      await handler.chatCreateOfficeProjectCommandHandler(
+        "fakeFolder",
+        "fakeId",
+        "fakeMatchResultInfo"
+      );
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
@@ -304,7 +324,11 @@ Usage: @office Ask questions about Office Add-ins development.`);
           return "Fail to Create";
         else return "Current Workspace";
       });
-      await handler.chatCreateOfficeProjectCommandHandler("fakeFolder");
+      await handler.chatCreateOfficeProjectCommandHandler(
+        "fakeFolder",
+        "fakeId",
+        "fakeMatchResultInfo"
+      );
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.called).to.equal(false);
@@ -341,6 +365,8 @@ Usage: @office Ask questions about Office Add-ins development.`);
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
           [TelemetryProperty.CopilotChatCommand]: "",
           [TelemetryProperty.CorrelationId]: "testCorrelationId",
+          [TelemetryProperty.HostType]: "",
+          [TelemetryProperty.CopilotChatRelatedSampleName]: "",
         },
         {
           [TelemetryProperty.CopilotChatFeedbackHelpful]: 1,
@@ -370,6 +396,8 @@ Usage: @office Ask questions about Office Add-ins development.`);
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
           [TelemetryProperty.CopilotChatCommand]: "testCommand",
           [TelemetryProperty.CorrelationId]: "testCorrelationId",
+          [TelemetryProperty.HostType]: "",
+          [TelemetryProperty.CopilotChatRelatedSampleName]: "",
         },
         {
           [TelemetryProperty.CopilotChatFeedbackHelpful]: 0,

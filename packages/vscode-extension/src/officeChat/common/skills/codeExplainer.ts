@@ -61,6 +61,10 @@ Let's think it step by step.
       messages,
       token
     );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
 
     if (!copilotResponse) {
       // something wrong with the LLM output

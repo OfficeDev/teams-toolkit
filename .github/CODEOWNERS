@@ -99,21 +99,26 @@
 /packages/fx-core/scripts/delete-unused-strings.js @jayzhang
 /packages/fx-core/scripts/find-unused-strings.js @jayzhang
 /packages/fx-core/scripts/generate-appdef.ps1 @nliu-ms
+/packages/fx-core/src/common/azureUtil.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
-/packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587
+/packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/globalState.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/src/common/globalVars.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft @chagong
 /packages/fx-core/src/common/permissionInterface.ts @SLdragon @KennethBWSong
 /packages/fx-core/src/common/projectSettingsHelper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/projectSettingsHelperV3.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/common/requestUtils.ts @jayzhang @hund030
 /packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
+/packages/fx-core/src/common/stringUtils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/telemetry.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/templates-config.json @hund030 @eriolchan @huimiu
 /packages/fx-core/src/common/tools.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/utils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/versionMetadata.ts @xzf0587 @blackchoey
+/packages/fx-core/src/common/wrappedAxiosClient.ts @nliu-ms @anchenyi
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
@@ -166,9 +171,13 @@
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/tests/common/featureFlags.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/tests/common/globalVars.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/projectTypeChecker.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
+/packages/fx-core/tests/common/stringUtils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/tools.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/utils.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/wrappedAxiosClient.ts @nliu-ms @anchenyi
 /packages/fx-core/tests/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/tests/component/coordinator @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang

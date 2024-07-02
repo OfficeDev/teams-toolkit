@@ -32,12 +32,25 @@ export class MissingEnvironmentVariablesError extends UserError {
   constructor(source: string, variableNames: string, filePath?: string, helpLink?: string) {
     const templateFilePath = filePath || globalVars.ymlFilePath || "";
     const envFilePath = globalVars.envFilePath || "";
+    const secretEnvFilePath = globalVars.envFilePath ? `${globalVars.envFilePath}.user` : "";
     const key = "error.common.MissingEnvironmentVariablesError";
     const errorOptions: UserErrorOptions = {
       source: camelCase(source),
       name: "MissingEnvironmentVariablesError",
-      message: getDefaultString(key, variableNames, templateFilePath, envFilePath),
-      displayMessage: getLocalizedString(key, variableNames, templateFilePath, envFilePath),
+      message: getDefaultString(
+        key,
+        variableNames,
+        templateFilePath,
+        envFilePath,
+        secretEnvFilePath
+      ),
+      displayMessage: getLocalizedString(
+        key,
+        variableNames,
+        templateFilePath,
+        envFilePath,
+        secretEnvFilePath
+      ),
       helpLink: helpLink || "https://aka.ms/teamsfx-v5.0-guide#environments",
       categories: [ErrorCategory.Internal],
     };

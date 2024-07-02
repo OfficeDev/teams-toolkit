@@ -1464,7 +1464,8 @@ export async function validateNpm(
         `span:has-text("${searchPack}")`
       );
       await targetItem?.click();
-      await page?.waitForSelector(`card span:has-text("${searchPack}")`);
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page?.waitForSelector(`card:has-text("${searchPack}")`);
       const sendBtn = await frame?.waitForSelector('button[name="send"]');
       await sendBtn?.click();
       console.log("verify npm search successfully!!!");
@@ -2530,15 +2531,12 @@ export async function validateCreatedCard(page: Page, appName: string) {
   }
 }
 
-export async function validateUnfurlCard(page: Page) {
+export async function validateUnfurlCard(page: Page, appName: string) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     console.log("start to validate unfurl an adaptive card");
     const unfurlurl = "https://www.botframework.com/";
-    await frame?.press("div.ui-box input.ui-box", "Escape");
+    //await frame?.press("div.ui-box input.ui-box", "Escape");
     const msgTxtbox = await frame?.waitForSelector("div[data-tid='ckeditor']");
     await msgTxtbox?.focus();
     await msgTxtbox?.fill(unfurlurl);

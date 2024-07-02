@@ -180,7 +180,8 @@ export class CodeIssueCorrector implements ISkill {
         additionalInfo,
         model,
         null, //declarationMessage,
-        sampleMessage
+        sampleMessage,
+        spec
       );
       t1 = performance.now();
       duration = Math.ceil((t1 - t0) / 1000);
@@ -297,7 +298,8 @@ export class CodeIssueCorrector implements ISkill {
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
     declarationMessage: LanguageModelChatMessage | null,
-    sampleMessage: LanguageModelChatMessage | null
+    sampleMessage: LanguageModelChatMessage | null,
+    spec: Spec
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
@@ -351,7 +353,10 @@ export class CodeIssueCorrector implements ISkill {
     }
     // console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     // extract the code snippet
     const regex = /```[\s]*typescript([\s\S]*?)```/gm;
     const matches = regex.exec(copilotResponse);

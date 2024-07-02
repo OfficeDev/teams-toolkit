@@ -11,3 +11,8 @@ export interface ICopilotChatOfficeResultMetadata {
 export interface ICopilotChatOfficeResult extends ChatResult {
   readonly metadata?: ICopilotChatOfficeResultMetadata;
 }
+
+export type OfficeProjectInfo = {
+  path: string;
+  host: string;
+};

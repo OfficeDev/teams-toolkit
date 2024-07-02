@@ -36,6 +36,17 @@ describe("CodeIssueCorrector", () => {
         apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
+          requestId: "Id",
+          isHarmful: false,
+          relatedSampleName: ["sample1", "sample2"],
+          chatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
+          ],
+          responseChatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+          ],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -96,6 +107,17 @@ describe("CodeIssueCorrector", () => {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
+        requestId: "Id",
+        isHarmful: false,
+        relatedSampleName: ["sample1", "sample2"],
+        chatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
+        ],
+        responseChatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+        ],
         properties: {
           property1: "value1",
           property2: "value2",
@@ -132,6 +154,7 @@ describe("CodeIssueCorrector", () => {
       content: sampleCodeLong,
       name: undefined,
     };
+    const spec = new Spec("some user input");
     sandbox
       .stub(utils, "countMessagesTokens")
       .onFirstCall()
@@ -153,7 +176,8 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeSampleCodeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage,
+      spec
     );
 
     chai.assert.equal(result, "original code snippet");
@@ -180,6 +204,7 @@ describe("CodeIssueCorrector", () => {
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    const spec = new Spec("some user input");
     getCopilotResponseAsStringStub.returns(
       Promise.resolve("```typescript\nfixed code snippet\n```")
     );
@@ -209,7 +234,8 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeSampleCodeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage,
+      spec
     );
 
     chai.assert.equal(result, null);
@@ -236,6 +262,7 @@ describe("CodeIssueCorrector", () => {
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    const spec = new Spec("some user input");
     getCopilotResponseAsStringStub.returns(
       Promise.resolve("```typescript\nfixed code snippet\n```")
     );
@@ -265,7 +292,8 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage, // sampleMessage
-      fakeSampleCodeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage,
+      spec
     );
 
     chai.assert.equal(result, null);
@@ -292,6 +320,7 @@ describe("CodeIssueCorrector", () => {
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    const spec = new Spec("some user input");
     getCopilotResponseAsStringStub.returns(
       Promise.resolve("```typescript\nfixed code snippet\n```")
     );
@@ -321,7 +350,8 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeSampleCodeLanguageModelChatSystemMessage
+      fakeSampleCodeLanguageModelChatSystemMessage,
+      spec
     );
 
     chai.assert.equal(result, null);
@@ -336,6 +366,7 @@ describe("CodeIssueCorrector", () => {
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    const spec = new Spec("some user input");
     getCopilotResponseAsStringStub.returns(
       Promise.resolve("```typescript\nfixed code snippet\n```")
     );
@@ -361,7 +392,8 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeLanguageModelChatSystemMessage
+      fakeLanguageModelChatSystemMessage,
+      spec
     );
 
     chai.assert.equal(result, null);
@@ -376,6 +408,7 @@ describe("CodeIssueCorrector", () => {
     };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    const spec = new Spec("some user input");
     getCopilotResponseAsStringStub.returns(
       Promise.resolve("```typescript\nfixed code snippet\n```")
     );
@@ -400,7 +433,8 @@ describe("CodeIssueCorrector", () => {
       "additional info", // additionalInfo
       "copilot-gpt-3.5-turbo", // model
       fakeLanguageModelChatSystemMessage,
-      fakeLanguageModelChatSystemMessage
+      fakeLanguageModelChatSystemMessage,
+      spec
     );
 
     chai.assert.equal(result, "++++++++");

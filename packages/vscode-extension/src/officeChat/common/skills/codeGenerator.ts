@@ -94,6 +94,13 @@ export class CodeGenerator implements ISkill {
         duration;
       if (samples.size > 0) {
         console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
+        spec.appendix.telemetryData.relatedSampleName = Array.from(samples.values()).map(
+          (sample) => {
+            // remove the '-1' behind the sample name
+            const lastIndex = sample.name.lastIndexOf("-");
+            return lastIndex !== -1 ? sample.name.substring(0, lastIndex) : sample.name;
+          }
+        );
         spec.appendix.codeSample = Array.from(samples.values())[0].codeSample;
       }
     }
@@ -209,6 +216,10 @@ ${spec.appendix.codeExplanation
       messages,
       token
     );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     let copilotRet: {
       host: string;
       shouldContinue: boolean;
@@ -316,6 +327,10 @@ ${spec.appendix.codeExplanation
       "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
+    );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
       spec: string;
@@ -460,7 +475,10 @@ ${spec.appendix.codeExplanation
     console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
 
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);
     if (!codeSnippetRet) {

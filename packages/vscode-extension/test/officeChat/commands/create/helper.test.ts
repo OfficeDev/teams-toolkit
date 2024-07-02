@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import * as tmp from "tmp";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as telemetry from "../../../../src/chat/telemetry";
 import * as util from "../../../../src/chat/utils";
 import * as officeChatUtils from "../../../../src/officeChat/utils";
 import * as officeChathelper from "../../../../src/officeChat/commands/create/helper";
@@ -16,8 +15,10 @@ import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { officeSampleProvider } from "../../../../src/officeChat/commands/create/officeSamples";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
+import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 import { core } from "../../../../src/globalVariables";
 import { CreateProjectResult, FxError, err, ok } from "@microsoft/teamsfx-api";
+import { SampleConfig } from "@microsoft/teamsfx-core";
 
 chai.use(chaiPromised);
 
@@ -27,7 +28,7 @@ describe("File: office chat create helper", () => {
   describe("Method: matchOfficeProject", () => {
     let officeChatTelemetryDataMock: any;
     beforeEach(() => {
-      officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
       });
@@ -46,8 +47,9 @@ describe("File: office chat create helper", () => {
         };
       });
       officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseChatMessages = [];
       sandbox
-        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .stub(OfficeChatTelemetryData, "createByParticipant")
         .returns(officeChatTelemetryDataMock);
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     });
@@ -96,12 +98,15 @@ describe("File: office chat create helper", () => {
     });
 
     it("call filetree API", async () => {
-      sandbox.stub(officeChatUtils, "getOfficeSampleDownloadUrlInfo").resolves({
-        owner: "test",
-        repository: "testRepo",
-        ref: "testRef",
-        dir: "testDir",
-      });
+      sandbox.stub(officeChatUtils, "getOfficeSample").resolves({
+        downloadUrlInfo: {
+          owner: "test",
+          repository: "testRepo",
+          ref: "testRef",
+          dir: "testDir",
+        },
+        types: ["testHost"],
+      } as SampleConfig);
       sandbox.stub(generatorUtils, "getSampleFileInfo").resolves({
         samplePaths: ["test"],
         fileUrlPrefix: "https://test.com/",
@@ -135,7 +140,7 @@ describe("File: office chat create helper", () => {
         response as unknown as vscode.ChatResponseStream
       );
       chai.assert.isTrue(response.filetree.calledOnce);
-      chai.assert.strictEqual(result, path.join("tempDir", "testDir"));
+      chai.assert.deepEqual(result, { path: path.join("tempDir", "testDir"), host: "testHost" });
     });
   });
 

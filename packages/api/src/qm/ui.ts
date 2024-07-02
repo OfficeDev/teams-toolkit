@@ -405,6 +405,11 @@ export interface UserInteraction {
   selectFileOrInput?(
     config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>>;
+
+  /**
+   * Supports in VSC only for now. Show diagnostic message in editor.
+   */
+  showDiagnosticMessage?(): Promise<Result<string, FxError>>;
 }
 
 export interface IProgressHandler {

@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { commands, ExtensionContext, extensions } from "vscode";
+import {
+  commands,
+  Diagnostic,
+  DiagnosticSeverity,
+  ExtensionContext,
+  extensions,
+  Uri,
+  Range,
+  Position,
+} from "vscode";
 
 import {
   err,
@@ -27,6 +36,8 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
+import { diagnosticCollection, workspaceUri } from "../globalVariables";
+import path = require("path");
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {
@@ -135,6 +146,70 @@ export class VsCodeUI extends VSCodeUI {
       }
     }
     return res;
+  }
+
+  async showDiagnosticMessage(): Promise<Result<string, FxError>> {
+    // if(!diagnosticCollection) {
+
+    // }
+    await sleep(1000);
+    diagnosticCollection.clear();
+    const errors = [
+      {
+        id: "958d86ff-864b-474d-bea4-d8068b8c8cad",
+        title: "ShortNameContainsPreprodWording",
+        content: "Short name doesn't contain beta environment keywords",
+        helpUrl:
+          "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name",
+        filePath: "manifest.json",
+        shortCodeNumber: 4000,
+        validationCategory: "Name",
+      },
+    ];
+
+    const diagnosticMap: Map<string, Diagnostic[]> = new Map();
+    errors.forEach((error) => {
+      const canonicalFile = "manifest.json";
+      const regex = new RegExp(error.validationCategory);
+
+      // const text = document.getText();
+
+      // const line = document.lineAt(document.positionAt(matches.index).line);
+      // const indexOf = line.text.indexOf(match);
+      // const position = new Position(line.lineNumber, indexOf);
+      const range = new Range(new Position(6, 2), new Position(6, 6));
+
+      let diagnostics = diagnosticMap.get(canonicalFile);
+      if (!diagnostics) {
+        diagnostics = [];
+      }
+
+      //const message = `[✏️Edit env file](${commandUri.toString()})`;
+      const diag = new Diagnostic(
+        range,
+        "Short name doesn't contain beta environment keywords",
+        DiagnosticSeverity.Warning
+      );
+      diag.code = {
+        value: "NameField",
+        target: Uri.parse(
+          "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name"
+        ),
+      };
+      diag.source = "TTK";
+
+      diagnostics.push(diag);
+      diagnosticMap.set(canonicalFile, diagnostics);
+
+      const fileUri = Uri.file(
+        path.join(workspaceUri?.toString() ?? "", "appPackage", "manifest.json")
+      );
+      diagnosticMap.forEach((diags, file) => {
+        diagnosticCollection.set(fileUri, diags);
+      });
+    });
+
+    return ok("donevsc");
   }
 }
 

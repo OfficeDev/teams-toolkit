@@ -28,6 +28,7 @@ export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
 export let core: FxCore;
 export let tools: Tools;
+export let diagnosticCollection: vscode.DiagnosticCollection;
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {
@@ -54,6 +55,10 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
     isSPFxProject = checkIsSPFx(workspaceUri?.fsPath);
   } else {
     isSPFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", "SPFx"));
+  }
+
+  if (!diagnosticCollection) {
+    diagnosticCollection = vscode.languages.createDiagnosticCollection("teamstoolkit");
   }
 }
 

@@ -64,6 +64,7 @@ import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { FeatureFlags } from "./featureFlags";
 import {
+  diagnosticCollection,
   initializeGlobalVariables,
   isExistingUser,
   isOfficeAddInProject,
@@ -176,7 +177,7 @@ import {
   handleOfficeFeedback,
   officeChatRequestHandler,
 } from "./officeChat/handlers";
-import { initVSCodeUI } from "./qm/vsc_ui";
+import { VsCodeUI, initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
@@ -206,6 +207,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   initVSCodeUI(context);
   initializeGlobalVariables(context);
+
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
@@ -268,6 +270,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
+  vscode.workspace.onDidSaveTextDocument(async (event) => {
+    if (event.fileName.includes("manifest.json")) {
+      const tt = new VsCodeUI(context);
+      await tt.showDiagnosticMessage();
+    }
+  });
+
   // Don't wait this async method to let it run in background.
   void runBackgroundAsyncTasks(context, isTeamsFxProject);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
@@ -309,7 +318,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   );
 
   if (vscode.workspace.isTrusted) {
-    registerCodelensAndHoverProviders(context);
+    registerLanguageFeatures(context);
   }
 
   registerDebugConfigProviders(context);
@@ -1001,7 +1010,7 @@ async function setTDPIntegrationEnabledContext() {
   );
 }
 
-function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
+function registerLanguageFeatures(context: vscode.ExtensionContext) {
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const envDataSelector = {
@@ -1160,6 +1169,8 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
   );
+
+  context.subscriptions.push(diagnosticCollection);
 }
 
 function registerOfficeDevCodeLensProviders(context: vscode.ExtensionContext) {

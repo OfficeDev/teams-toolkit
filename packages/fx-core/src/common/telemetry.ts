@@ -159,7 +159,7 @@ export enum TelemetryEvent {
   ProjectType = "project-type",
   DependencyApi = "dependency-api",
   AppStudioApi = "app-studio-api",
-  MOSApi = "mos-api",
+  MOSApi = "ttk-mos-api",
 }
 
 export enum ProjectTypeProps {

@@ -21,7 +21,7 @@ import { officeSampleProvider } from "./officeSamples";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
 import { getOfficeSample } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
-import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import { OfficeChatTelemetryData } from "../../telemetry";
 import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
 import { CreateProjectInputs } from "@microsoft/teamsfx-api";
 import { core } from "../../../globalVariables";

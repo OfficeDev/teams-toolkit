@@ -4,56 +4,52 @@ import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/te
 import { assert } from "chai";
 import fs from "fs-extra";
 import { glob } from "glob";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import { CreateSampleProjectInputs, validationUtils } from "../../../src";
-import * as FeatureFlags from "../../../src/common/featureFlags";
-import { FeatureFlagName } from "../../../src/common/constants";
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
+import { OpenAPISpecGenerator } from "../../../src/component/generator/apiSpec/generator";
 import { Generator } from "../../../src/component/generator/generator";
 import {
   OfficeAddinGenerator,
   OfficeAddinGeneratorNew,
 } from "../../../src/component/generator/officeAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
-import { createContextV3 } from "../../../src/component/utils";
+import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
-import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
+import { CreateSampleProjectInputs } from "../../../src/question";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
-  OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../../src/question/create";
-import { QuestionNames } from "../../../src/question/questionNames";
+} from "../../../src/question/constants";
+import { validationUtils } from "../../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
-import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const V3Version = MetadataV3.projectVersion;
 
 [false].forEach((newGeneratorFlag) => {
-  describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
-    const mockedEnvRestore: RestoreFn = () => {};
+  describe(`coordinator create with new generator enabled = ${newGeneratorFlag}`, () => {
+    let mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
     const tools = new MockTools();
     let generator: sinon.SinonStub;
     setTools(tools);
     beforeEach(() => {
       sandbox.stub(fs, "ensureDir").resolves();
-      sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(newGeneratorFlag);
+      mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: `${newGeneratorFlag}` });
       generator = newGeneratorFlag
         ? sandbox
             .stub(DefaultTemplateGenerator.prototype, <any>"scaffolding")
@@ -162,7 +158,7 @@ const V3Version = MetadataV3.projectVersion;
         platform: Platform.VSCode,
         ignoreLockByUT: true,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -175,7 +171,7 @@ const V3Version = MetadataV3.projectVersion;
         ignoreLockByUT: true,
         folder: ".",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -189,7 +185,7 @@ const V3Version = MetadataV3.projectVersion;
         folder: ".",
         "app-name": "__#$%___",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -204,7 +200,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -220,38 +216,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
         "app-name": "__#$%___",
       };
-      const context = createContextV3();
-      const res = await coordinator.create(context, inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.isTrue(res.error instanceof InputValidationError);
-      }
-    });
-    it("create project for new office XML Addin MissingRequiredInputError missing App name", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        ignoreLockByUT: true,
-        folder: ".",
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      };
-      const context = createContextV3();
-      const res = await coordinator.create(context, inputs);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.isTrue(res.error instanceof MissingRequiredInputError);
-      }
-    });
-    it("create project for new office XML Addin InputValidationError invalid App name", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        ignoreLockByUT: true,
-        folder: ".",
-        [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-        [QuestionNames.AppName]: "__#$%___",
-      };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -264,9 +229,9 @@ const V3Version = MetadataV3.projectVersion;
         ignoreLockByUT: true,
         folder: ".",
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -279,10 +244,10 @@ const V3Version = MetadataV3.projectVersion;
         ignoreLockByUT: true,
         folder: ".",
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
         "app-name": "__#$%___",
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -296,7 +261,7 @@ const V3Version = MetadataV3.projectVersion;
         folder: ".",
         [QuestionNames.Scratch]: ScratchOptions.no().id,
       };
-      const context = createContextV3();
+      const context = createContext();
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -664,7 +629,7 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API ME (no auth) from new api sucessfully", async () => {
-      const v3ctx = createContextV3();
+      const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
       const inputs: Inputs = {
@@ -673,7 +638,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
         [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
         [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-        [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -685,7 +650,7 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API ME (key auth) from new api sucessfully", async () => {
-      const v3ctx = createContextV3();
+      const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
       const inputs: Inputs = {
@@ -694,7 +659,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
         [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
         [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-        [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -709,11 +674,11 @@ const V3Version = MetadataV3.projectVersion;
     });
 
     it("create API ME from existing api sucessfully", async () => {
-      const v3ctx = createContextV3();
+      const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 
       sandbox
-        .stub(CopilotPluginGenerator, "generateMeFromApiSpec")
+        .stub(OpenAPISpecGenerator, "generateMe")
         .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
       const inputs: Inputs = {
@@ -824,7 +789,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.LLMService]: "llm-service-openAI",
         [QuestionNames.OpenAIKey]: "mockedopenaikey",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(OpenAPISpecGenerator, "generateCustomCopilot").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -853,7 +818,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(OpenAPISpecGenerator, "generateCustomCopilot").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -881,7 +846,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",
       };
-      sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+      sandbox.stub(OpenAPISpecGenerator, "generateCustomCopilot").resolves(ok({}));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
       const fxCore = new FxCore(tools);
@@ -909,7 +874,7 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.OpenAIKey]: "mockedopenaikey",
       };
       sandbox
-        .stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi")
+        .stub(OpenAPISpecGenerator, "generateCustomCopilot")
         .resolves(err(new SystemError("test", "test", "test")));
       sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
@@ -918,18 +883,73 @@ const V3Version = MetadataV3.projectVersion;
 
       assert.isTrue(res.isErr() && res.error.name === "test");
     });
+
+    it("create API Plugin with none auth (feature flag enabled)", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("create API Plugin with api-key auth (feature flag enabled)", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("create API Plugin with OAuth (feature flag enabled)", async () => {
+      const v3ctx = createContext();
+      v3ctx.userInteraction = new MockedUserInteraction();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        folder: ".",
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
+        [QuestionNames.ProgrammingLanguage]: "javascript",
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      };
+      const res = await coordinator.create(v3ctx, inputs);
+      assert.isTrue(res.isOk());
+    });
   });
 });
 
 describe("Office Addin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
@@ -938,7 +958,7 @@ describe("Office Addin", async () => {
   });
 
   it("should scaffold taskpane successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
@@ -959,7 +979,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is invalid", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -973,7 +993,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is undefined", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -987,7 +1007,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
@@ -1009,95 +1029,16 @@ describe("Office Addin", async () => {
   });
 });
 
-describe("Office XML Addin", async () => {
-  const sandbox = sinon.createSandbox();
-  const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
-  tools.ui = new MockedUserInteraction();
-  setTools(tools);
-
-  beforeEach(() => {
-    sandbox.stub(fs, "ensureDir").resolves();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-    mockedEnvRestore();
-  });
-
-  it("should scaffold project successfully", async () => {
-    const context = createContextV3();
-    context.userInteraction = new MockedUserInteraction();
-
-    sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(ok(undefined));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isOk());
-  });
-
-  it("should return error if app name is invalid", async () => {
-    const context = createContextV3();
-    context.userInteraction = new MockedUserInteraction();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: "__invalid__",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
-  });
-
-  it("should return error if app name is undefined", async () => {
-    const context = createContextV3();
-    context.userInteraction = new MockedUserInteraction();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.AppName]: undefined,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
-  });
-
-  it("should return error if OfficeXMLAddinGenerator returns error", async () => {
-    const context = createContextV3();
-    context.userInteraction = new MockedUserInteraction();
-
-    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
-    sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(err(mockedError));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-    };
-    const res = await coordinator.create(context, inputs);
-    assert.isTrue(res.isErr() && res.error.name === "mockedError");
-  });
-});
-
 describe("Office Addin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
@@ -1106,7 +1047,7 @@ describe("Office Addin", async () => {
   });
 
   it("should scaffold taskpane successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
@@ -1127,7 +1068,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is invalid", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1141,7 +1082,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if app name is undefined", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1155,7 +1096,7 @@ describe("Office Addin", async () => {
   });
 
   it("should return error if OfficeAddinGenerator returns error", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
@@ -1178,6 +1119,7 @@ describe("Office Addin", async () => {
 });
 
 describe("Copilot plugin", async () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   tools.ui = new MockedUserInteraction();
@@ -1185,18 +1127,20 @@ describe("Copilot plugin", async () => {
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "false" });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold from API spec successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
+      .stub(OpenAPISpecGenerator, "generateCopilotPlugin")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -1212,11 +1156,11 @@ describe("Copilot plugin", async () => {
   });
 
   it("scaffold from API spec error", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
+      .stub(OpenAPISpecGenerator, "generateCopilotPlugin")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
 
     const inputs: Inputs = {
@@ -1230,64 +1174,26 @@ describe("Copilot plugin", async () => {
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr());
   });
-
-  it("should scaffold from OpenAI plugin successfully", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isOk());
-  });
-
-  it("scaffold from OpenAI plugin error", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    sandbox
-      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
-      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isErr());
-  });
 });
 
-describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
+describe(`coordinator create with new generator enabled = true`, () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(true);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_NEW_GENERATOR: "true" });
   });
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold by OfficeAddinGeneratorNew successfully", async () => {
-    const v3ctx = createContextV3();
+    const v3ctx = createContext();
     v3ctx.userInteraction = new MockedUserInteraction();
-    sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok(undefined));
+    sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok({}));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",

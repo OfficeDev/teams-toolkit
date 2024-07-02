@@ -100,10 +100,6 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
-      );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });
@@ -1177,27 +1173,9 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("json: bot Copilot plugin enabled only", async () => {
+    it("json: Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "false",
-      });
-      const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "..." },
-        optionValues: { format: "json" },
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await listTemplatesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
-    });
-
-    it("json: API Copilot plugin feature flag enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "true",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },

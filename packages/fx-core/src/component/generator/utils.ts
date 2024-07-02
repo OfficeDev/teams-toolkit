@@ -1,89 +1,53 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import AdmZip from "adm-zip";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import * as fs from "fs-extra";
+import { cloneDeep } from "lodash";
 import Mustache, { Context, Writer } from "mustache";
 import path from "path";
-import * as fs from "fs-extra";
+import semver from "semver";
+import { sendRequestWithRetry, sendRequestWithTimeout } from "../../common/requestUtils";
+import { SampleConfig, SampleUrlInfo, sampleProvider } from "../../common/samples";
+import templateConfig from "../../common/templates-config.json";
+import { InputValidationError } from "../../error";
+import { ProgrammingLanguage } from "../../question/constants";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
   oldPlaceholderDelimiters,
   placeholderDelimiters,
-  templateFileExt,
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
+  templateFileExt,
 } from "./constant";
-import { SampleConfig, sampleProvider } from "../../common/samples";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse, CancelToken } from "axios";
-import templateConfig from "../../common/templates-config.json";
-import semver from "semver";
-import { deepCopy } from "../../common/tools";
-import { InvalidInputError } from "../../core/error";
-import { ProgrammingLanguage } from "../../question";
-import { AxiosError } from "axios";
 
-async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
-  const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
-    ? `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}`
-    : "";
-  const templateVersion = templateConfig.version;
+export async function getTemplateUrl(
+  name: string,
+  getLatestVersion: () => Promise<string>
+): Promise<string | undefined> {
+  if (process.env.TEAMSFX_TEMPLATE_PRERELEASE) {
+    return getTemplateZipUrlByVersion(name, `0.0.0-${process.env.TEAMSFX_TEMPLATE_PRERELEASE}`);
+  }
+  if (!templateConfig.useLocalTemplate) {
+    const latestVersion = await getLatestVersion();
+    if (semver.gt(latestVersion, templateConfig.localVersion)) {
+      // Upstream latest version is higher than the local version, return upstream templates url for downloading.
+      return getTemplateZipUrlByVersion(name, latestVersion);
+    }
+  }
+}
+
+async function selectTemplateVersion(
+  getTags: () => Promise<string[]>
+): Promise<string | undefined> {
   const templateTagPrefix = templateConfig.tagPrefix;
-  const versionPattern = preRelease || templateVersion;
+  const versionPattern = templateConfig.version;
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
-}
-
-export async function sendRequestWithRetry<T>(
-  requestFn: () => Promise<AxiosResponse<T>>,
-  tryLimits: number
-): Promise<AxiosResponse<T>> {
-  // !status means network error, see https://github.com/axios/axios/issues/383
-  const canTry = (status: number | undefined) => !status || (status >= 500 && status < 600);
-
-  let status: number | undefined;
-  let error: Error;
-
-  for (let i = 0; i < tryLimits && canTry(status); i++) {
-    try {
-      const res = await requestFn();
-      if (res.status === 200 || res.status === 201) {
-        return res;
-      } else {
-        error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
-      }
-      status = res.status;
-    } catch (e: any) {
-      error = e;
-      status = e?.response?.status;
-    }
-  }
-
-  error ??= new Error(`RequestWithRetry got bad tryLimits: ${tryLimits}`);
-  throw error;
-}
-
-export async function sendRequestWithTimeout<T>(
-  requestFn: (cancelToken: CancelToken) => Promise<AxiosResponse<T>>,
-  timeoutInMs: number,
-  tryLimits = 1
-): Promise<AxiosResponse<T>> {
-  const source = axios.CancelToken.source();
-  const timeout = setTimeout(() => {
-    source.cancel();
-  }, timeoutInMs);
-  try {
-    const res = await sendRequestWithRetry(() => requestFn(source.token), tryLimits);
-    clearTimeout(timeout);
-    return res;
-  } catch (err: unknown) {
-    if (axios.isCancel(err)) {
-      throw new Error("Request timeout");
-    }
-    throw err;
-  }
+  return selectedVersion ?? undefined;
 }
 
 async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number): Promise<string> {
@@ -99,23 +63,22 @@ async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number)
   return res.data;
 }
 
-export async function getTemplateLatestTag(
-  name: string,
+export async function getTemplateLatestVersion(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
   const templateTagListURL = templateConfig.tagListURL;
-  const selectedTag = await selectTemplateTag(async () =>
+  const selectedVersion = await selectTemplateVersion(async () =>
     (await fetchTagList(templateTagListURL, tryLimits, timeoutInMs)).replace(/\r/g, "").split("\n")
   );
-  if (!selectedTag) {
-    throw new Error(`Failed to find valid template for ${name}`);
+  if (!selectedVersion) {
+    throw new Error(`Failed to find valid template`);
   }
-  return selectedTag;
+  return selectedVersion;
 }
 
-export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {
-  return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
+export function getTemplateZipUrlByVersion(name: string, version: string): string {
+  return `${templateConfig.templateDownloadBaseURL}/${templateConfig.tagPrefix}${version}/${name}${templateConfig.templateExt}`;
 }
 
 export async function fetchZipFromUrl(
@@ -188,7 +151,7 @@ function escapeEmptyVariable(
   tags: [string, string] = placeholderDelimiters
 ): string[][] {
   const parsed = Mustache.parse(template, tags) as string[][];
-  const tokens = deepCopy(parsed); // Mustache cache the parsed result. Modify the result in place may cause unexpected issue.
+  const tokens = cloneDeep(parsed); // Mustache cache the parsed result. Modify the result in place may cause unexpected issue.
   updateTokens(tokens, view, tags, 0);
   return tokens;
 }
@@ -234,7 +197,7 @@ export async function getSampleInfoFromName(sampleName: string): Promise<SampleC
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
-    throw InvalidInputError(`sample '${sampleName}' not found`);
+    throw new InputValidationError(`sample '${sampleName}'`, "not found");
   }
   return sample;
 }
@@ -263,13 +226,6 @@ export async function downloadDirectory(
   );
   return samplePaths;
 }
-
-export type SampleUrlInfo = {
-  owner: string;
-  repository: string;
-  ref: string;
-  dir: string;
-};
 
 type SampleFileInfo = {
   tree: {
@@ -365,6 +321,9 @@ export function convertToLangKey(programmingLanguage: string): string {
     }
     case ProgrammingLanguage.PY: {
       return "python";
+    }
+    case ProgrammingLanguage.None: {
+      return "common";
     }
   }
   return programmingLanguage;

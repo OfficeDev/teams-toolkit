@@ -14,3 +14,4 @@ declare const mermaid: {
 };
 declare const panelType: string;
 declare const containerType: string;
+declare const shouldShowChat: string;

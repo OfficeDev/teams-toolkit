@@ -1,8 +1,8 @@
-# Overview of the Basic Declarative Copilot template
+# Overview of the basic declarative copilot template
 
 ## Build a basic declarative copilot
 
-With the declative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot GPT can be used to create a grocery list based on a meal plan that you send to the Copilot GPT.
+With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
 
 ## Get started with the template
 
@@ -21,6 +21,7 @@ With the declative copilot, you can build a custom version of Copilot that can b
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. Once the Copilot app is loaded in the browser, click on the "…" menu and select "Copilot chats". You will see your declarative copilot on the right rail. Clicking on it will change the experience to showcase the logo and name of your declarative copilot.
 6. Ask a question to your declarative copilot and it should respond based on the instructions provided.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 

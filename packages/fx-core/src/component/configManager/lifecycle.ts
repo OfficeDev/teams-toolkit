@@ -23,7 +23,7 @@ import {
   ExecutionResult,
 } from "./interface";
 import { MissingEnvironmentVariablesError } from "../../error";
-import { setErrorContext } from "../../core/globalVars";
+import { setErrorContext } from "../../common/globalVars";
 
 function resolveDriverDef(
   def: DriverDefinition,

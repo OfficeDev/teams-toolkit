@@ -94,12 +94,10 @@ describe("Remote debug Tests", function () {
       await driver.sleep(Timeout.longTimeWait);
 
       // Validate app name is in the page
-      await validateSpfx(page, {
-        displayName: `Web part property value: ${appName}`,
-      });
+      await validateSpfx(page, { displayName: appName });
       await switchToTab(page, "helloworld");
       await validateSpfx(page, {
-        displayName: "Web part property value: helloworld",
+        displayName: "helloworld",
       });
     }
   );

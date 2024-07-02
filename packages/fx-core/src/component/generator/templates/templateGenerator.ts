@@ -2,12 +2,21 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, IGenerator, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  Context,
+  FxError,
+  GeneratorResult,
+  IGenerator,
+  Inputs,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import { ProgrammingLanguage, QuestionNames } from "../../../question";
+import { ProgrammingLanguage, QuestionNames } from "../../../question/constants";
 import { Generator, templateDefaultOnActionError } from "../generator";
 import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
 import { merge } from "lodash";
@@ -40,7 +49,7 @@ export class DefaultTemplateGenerator implements IGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<GeneratorResult, FxError>> {
     const preResult = await this.getTemplateInfos(context, inputs, destinationPath, actionContext);
     if (preResult.isErr()) return err(preResult.error);
 
@@ -51,9 +60,7 @@ export class DefaultTemplateGenerator implements IGenerator {
     }
 
     const postRes = await this.post(context, inputs, destinationPath, actionContext);
-    if (postRes.isErr()) return postRes;
-
-    return ok(undefined);
+    return postRes;
   }
 
   // override this method to 1) do pre-step before template download and 2) provide information of templates to be downloaded
@@ -74,8 +81,8 @@ export class DefaultTemplateGenerator implements IGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    return Promise.resolve(ok(undefined));
+  ): Promise<Result<GeneratorResult, FxError>> {
+    return Promise.resolve(ok({}));
   }
 
   private async scaffolding(

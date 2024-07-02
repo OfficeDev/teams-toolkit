@@ -2,20 +2,18 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { Correlator, fillInTelemetryPropsForFxError } from "@microsoft/teamsfx-core";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import { FxError, Stage } from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  telemetryUtils,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import * as globalVariables from "../globalVariables";
-import { getProjectId } from "../utils/commonUtils";
-import {
-  TelemetryComponentType,
-  TelemetryErrorType,
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "./extTelemetryEvents";
+import { getProjectId } from "../utils/telemetryUtils";
+import { TelemetryComponentType, TelemetryEvent, TelemetryProperty } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";
 // export for UT
@@ -130,7 +128,7 @@ export namespace ExtTelemetry {
 
     properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    fillInTelemetryPropsForFxError(properties, error);
+    telemetryUtils.fillInErrorProperties(properties, error);
 
     if (globalVariables.workspaceUri) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();

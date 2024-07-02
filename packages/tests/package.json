@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-test",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "A UI Test Project of Teams Toolkit Extension",
   "private": true,
   "author": "Microsoft Corporation",
@@ -54,7 +54,7 @@
     "mssql": "^9.1.1",
     "mustache": "^4.2.0",
     "nyc": "^15.1.0",
-    "playwright": "^1.22.2",
+    "playwright": "^1.44.1",
     "prettier": "^2.4.1",
     "rimraf": "^3.0.2",
     "sinon": "^9.2.2",
@@ -62,7 +62,7 @@
     "tslib": "^2.3.1",
     "typescript": "^5.0.4",
     "uuid": "^8.3.2",
-    "vscode-extension-tester": "^8.0.2"
+    "vscode-extension-tester": "^8.2.0"
   },
   "dependencies": {
     "@azure/arm-apimanagement": "^8.0.0",

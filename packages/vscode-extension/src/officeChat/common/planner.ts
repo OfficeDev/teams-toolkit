@@ -5,7 +5,7 @@ import {
   CancellationToken,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
 } from "vscode";
 import { OfficeChatCommand } from "../consts";
 import { ISkill } from "./skills/iSkill";
@@ -17,7 +17,13 @@ import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { ExecutionResultEnum } from "./skills/executionResultEnum";
 import {
+  MeasurementCodeGenExecutionTimeInTotalSec,
+  MeasurementCodeGenGetSampleTimeInTotalSec,
+  MeasurementCodeGenPreScanTimeInTotalSec,
+  MeasurementCodeGenTaskBreakdownTimeInTotalSec,
   MeasurementCommandExcutionTimeSec,
+  MeasurementErrorsAfterCorrection,
+  MeasurementSelfReflectionExecutionTimeInTotalSec,
   PropertySystemFailureFromSkill,
   PropertySystemRequesRejected,
   PropertySystemRequestCancelled,
@@ -43,7 +49,7 @@ export class Planner {
   }
 
   public async processRequest(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
@@ -76,6 +82,10 @@ export class Planner {
 
     // dispatcher
     const purified = await purifyUserMessage(request.prompt, token);
+    response.markdown(`
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
+${purified}
+`);
     const spec = new Spec(purified);
     try {
       for (let index = 0; index < candidates.length; index++) {
@@ -115,7 +125,8 @@ export class Planner {
         console.log(`Skill ${candidate.name || "unknown"} is executed.`);
       }
     } catch (error) {
-      console.error(error);
+      // console.log("Purified user message: ", purified);
+      // console.error(error);
       const errorDetails = localize(
         "teamstoolkit.chatParticipants.officeAddIn.default.canNotAssist"
       );
@@ -128,7 +139,29 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
-    console.log("User ask processing time cost: ", duration, " seconds.");
+    const debugInfo = `
+      ## Time cost:\n
+      In total ${Math.ceil(duration)} seconds.\n
+      - Task pre scan: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec]
+      )} seconds.
+      - Task breakdown: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec]
+      )} seconds.
+      - Download sample: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec]
+      )} seconds.
+      - Code gen: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec]
+      )} seconds.
+      - Self reflection: ${Math.ceil(
+        spec.appendix.telemetryData.measurements[MeasurementSelfReflectionExecutionTimeInTotalSec]
+      )} seconds.\n\n
+      ## Compile error remains:\n
+      ${Math.ceil(spec.appendix.telemetryData.measurements[MeasurementErrorsAfterCorrection])}
+      `;
+    console.debug(debugInfo);
+    // response.markdown(debugInfo);
 
     return chatResult;
   }

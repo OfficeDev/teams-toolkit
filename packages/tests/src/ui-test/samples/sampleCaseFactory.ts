@@ -101,7 +101,13 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.DockerRun]: async () => {
     await waitForTerminal(
       LocalDebugTaskLabel.DockerRun,
-      LocalDebugTaskResult.WebServerSuccess
+      LocalDebugTaskResult.DockerFinish
+    );
+  },
+  [LocalDebugTaskLabel.DockerTask]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.DockerTask,
+      LocalDebugTaskResult.DockerFinish
     );
   },
 };
@@ -330,6 +336,8 @@ export abstract class CaseFactory {
           try {
             // create project
             await sampledebugContext.openResourceFolder();
+            // update manifest app name
+            await sampledebugContext.updateManifestAppName();
             // use 1st middleware to process typical sample
             await onAfterCreate(sampledebugContext, env, azSqlHelper);
 
@@ -439,6 +447,7 @@ export abstract class CaseFactory {
                 },
                 (error) => {
                   const errorMsg = error.toString();
+                  console.log("[error log]", errorMsg);
                   if (
                     // skip warning messages
                     errorMsg.includes(LocalDebugError.WarningError)

@@ -10,7 +10,8 @@ export const defaultSystemPrompt = () => {
     "teamstoolkit.chatParticipants.default.noConceptualAnswer"
   );
 
-  return new vscode.LanguageModelChatSystemMessage(
+  return new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
     `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. Your job is to answer general conceputal question related Teams Toolkit Extension for VS Code. Folow the instruction and think step by step.
   
     <Instruction>
@@ -37,18 +38,26 @@ export const defaultSystemPrompt = () => {
   );
 };
 
-export const describeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
-);
-export const brieflyDescribeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 30 and 40 words.`
-);
-export const describeScenarioSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
-);
-export const describeStepSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
-);
+export const describeProjectSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  );
+export const brieflyDescribeProjectSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 30 and 40 words.`
+  );
+export const describeScenarioSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  );
+export const describeStepSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Teams App developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
+  );
 
 export function getTemplateMatchChatMessages(
   projectMetadata: ProjectMetadata[],
@@ -59,7 +68,8 @@ export function getTemplateMatchChatMessages(
     .map((config) => `'${config.id}' (${config.description})`)
     .join(", ");
   const chatMessages = [
-    new vscode.LanguageModelChatSystemMessage(
+    new vscode.LanguageModelChatMessage(
+      vscode.LanguageModelChatMessageRole.System,
       `You're an assistant designed to find matched Teams template projects based on user's input and templates. The users will describe their requirement and application scenario in user ask. Follow the instructions and think step by step. You'll respond with IDs you've found from the templates as a JSON object. Respond result contains the app IDs you choose with a float number between 0-1.0 representing confidence. Here's an example of your output format:
       {"app": [{"id": "", "score": 1.0}]}
       
@@ -78,20 +88,29 @@ export function getTemplateMatchChatMessages(
   ];
   for (const example of examples) {
     chatMessages.push(
-      new vscode.LanguageModelChatUserMessage(
+      new vscode.LanguageModelChatMessage(
+        vscode.LanguageModelChatMessageRole.User,
         `Find the related templates based on following user ask.
         ---
         USER ASK
         ${example.user}`
       )
     );
-    chatMessages.push(new vscode.LanguageModelChatAssistantMessage(example.app));
+    chatMessages.push(
+      new vscode.LanguageModelChatMessage(
+        vscode.LanguageModelChatMessageRole.Assistant,
+        example.app
+      )
+    );
   }
   chatMessages.push(
-    new vscode.LanguageModelChatUserMessage(`Find the related templates based on following user ask.
+    new vscode.LanguageModelChatMessage(
+      vscode.LanguageModelChatMessageRole.User,
+      `Find the related templates based on following user ask.
   ---
   USER ASK
-  ${userPrompt}`)
+  ${userPrompt}`
+    )
   );
   return chatMessages;
 }
@@ -105,7 +124,8 @@ export function getSampleMatchChatMessages(
     .map((config) => `'${config.id}' (${config.description})`)
     .join(", ");
   const chatMessages = [
-    new vscode.LanguageModelChatSystemMessage(
+    new vscode.LanguageModelChatMessage(
+      vscode.LanguageModelChatMessageRole.System,
       `You're an assistant designed to find matched Teams application projects based on user's input and a list of existing application descriptions. Users will paste in a string of text that describes their requirement and application scenario. Follow the instructions and think step by step. You'll respond with IDs you've found from the existing application list as a JSON object. Respond result contains the app IDs you choose with a float number between 0-1.0 representing confidence. Here's an example of your output format:
       {"app": [{"id": "", "score": 1.0}]}
       
@@ -126,20 +146,29 @@ export function getSampleMatchChatMessages(
   ];
   for (const example of examples) {
     chatMessages.push(
-      new vscode.LanguageModelChatUserMessage(
+      new vscode.LanguageModelChatMessage(
+        vscode.LanguageModelChatMessageRole.User,
         `Find the related project based on following user ask.
         ---
         USER ASK
         ${example.user}`
       )
     );
-    chatMessages.push(new vscode.LanguageModelChatAssistantMessage(example.app));
+    chatMessages.push(
+      new vscode.LanguageModelChatMessage(
+        vscode.LanguageModelChatMessageRole.Assistant,
+        example.app
+      )
+    );
   }
   chatMessages.push(
-    new vscode.LanguageModelChatUserMessage(`Find the related project based on following user ask.
+    new vscode.LanguageModelChatMessage(
+      vscode.LanguageModelChatMessageRole.User,
+      `Find the related project based on following user ask.
   ---
   USER ASK
-  ${userPrompt}`)
+  ${userPrompt}`
+    )
   );
   return chatMessages;
 }

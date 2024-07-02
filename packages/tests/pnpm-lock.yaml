@@ -178,8 +178,8 @@ devDependencies:
     specifier: ^15.1.0
     version: 15.1.0
   playwright:
-    specifier: ^1.22.2
-    version: 1.22.2
+    specifier: ^1.44.1
+    version: 1.44.1
   prettier:
     specifier: ^2.4.1
     version: 2.4.1
@@ -202,8 +202,8 @@ devDependencies:
     specifier: ^8.3.2
     version: 8.3.2
   vscode-extension-tester:
-    specifier: ^8.0.2
-    version: 8.0.2(mocha@10.2.0)(typescript@5.0.4)
+    specifier: ^8.2.0
+    version: 8.2.0(mocha@10.2.0)(typescript@5.0.4)
 
 packages:
 
@@ -669,6 +669,10 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
+  /@bcoe/v8-coverage@0.2.3:
+    resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+    dev: true
+
   /@cspotcode/source-map-consumer@0.8.0:
     resolution: {integrity: sha512-41qniHzTU8yAGbCp04ohlmSrZf8bkf/iJsl3V0dRGsQN/5GFfx+LbCSsCpp2gqrqjTVg/K6O8ycoV35JIwAzAg==}
     engines: {node: '>= 12'}
@@ -857,18 +861,18 @@ packages:
     dev: true
     optional: true
 
-  /@redhat-developer/locators@1.0.2(@redhat-developer/page-objects@1.0.2)(selenium-webdriver@4.19.0):
-    resolution: {integrity: sha512-uRJzwiit7r2yMuoPEM9nOYaADUgHpjvQAxAyxythwi5DNBbj+eX24S++XPSbtlxW2IHUY6X2W5nnk1L9gGxKhQ==}
+  /@redhat-developer/locators@1.1.1(@redhat-developer/page-objects@1.1.1)(selenium-webdriver@4.21.0):
+    resolution: {integrity: sha512-GlRzfRWK8/EYFk5JChWpbJQsr8k0PrEuuQR0tZ3arnLCOnLeC+/DcfeuAAko9bpYDFSTSdCNKOmxyysP1Bjpog==}
     peerDependencies:
       '@redhat-developer/page-objects': '>=1.0.0'
       selenium-webdriver: '>=4.6.1'
     dependencies:
-      '@redhat-developer/page-objects': 1.0.2(selenium-webdriver@4.19.0)(typescript@5.0.4)
-      selenium-webdriver: 4.19.0
+      '@redhat-developer/page-objects': 1.1.1(selenium-webdriver@4.21.0)(typescript@5.0.4)
+      selenium-webdriver: 4.21.0
     dev: true
 
-  /@redhat-developer/page-objects@1.0.2(selenium-webdriver@4.19.0)(typescript@5.0.4):
-    resolution: {integrity: sha512-RB/8grg5yrVESNsw1DqgIzgSmzoDJFcLLxEAuWbfXHJz/MklSUmzxBdJom48ncXoJC1HdvOddGixSAkmn5GAKQ==}
+  /@redhat-developer/page-objects@1.1.1(selenium-webdriver@4.21.0)(typescript@5.0.4):
+    resolution: {integrity: sha512-rFwvoAII8rnlSoxUjC1YRYrR9RmJiG/VS6YrnnjyMehqr9/qLCS1+CAFV+RQMtUgYjQHIDA1Uwu/RuVmJf4epQ==}
     peerDependencies:
       selenium-webdriver: '>=4.6.1'
       typescript: '>=4.6.2'
@@ -877,13 +881,13 @@ packages:
       clone-deep: 4.0.1
       compare-versions: 6.1.0
       fs-extra: 11.2.0
-      selenium-webdriver: 4.19.0
+      selenium-webdriver: 4.21.0
       typescript: 5.0.4
     dev: true
 
-  /@sindresorhus/is@6.2.0:
-    resolution: {integrity: sha512-yM/IGPkVnYGblhDosFBwq0ZGdnVSBkNV4onUtipGMOjZd4kB6GAu3ys91aftSbyMHh6A2GPdt+KDI5NoWP63MQ==}
-    engines: {node: '>=16'}
+  /@sindresorhus/is@5.6.0:
+    resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
+    engines: {node: '>=14.16'}
     dev: true
 
   /@sinonjs/commons@1.8.6:
@@ -967,6 +971,10 @@ packages:
 
   /@types/http-cache-semantics@4.0.4:
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
+    dev: true
+
+  /@types/istanbul-lib-coverage@2.0.6:
+    resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
     dev: true
 
   /@types/json-schema@7.0.15:
@@ -1136,7 +1144,7 @@ packages:
       debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.5.2
+      semver: 7.5.4
       tsutils: 3.21.0(typescript@5.0.4)
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -1151,8 +1159,8 @@ packages:
       eslint-visitor-keys: 2.1.0
     dev: true
 
-  /@vscode/vsce@2.26.0:
-    resolution: {integrity: sha512-v54ltgMzUG8lGY0kAgaOlry57xse1RlWzes9FotfGEx+Fr05KeR8rZicQzEMDmi9QnOgVWHuiEq+xA2HWkAz+Q==}
+  /@vscode/vsce@2.26.1:
+    resolution: {integrity: sha512-QOG6Ht7V93nhwcBxPWcG33UK0qDGEoJdg0xtVeaTN27W6PGdMJUJGTPhB/sNHUIFKwvwzv/zMAHvDgMNXbcwlA==}
     engines: {node: '>= 16'}
     hasBin: true
     dependencies:
@@ -1173,7 +1181,7 @@ packages:
       parse-semver: 1.1.1
       read: 1.0.7
       semver: 7.5.4
-      tmp: 0.2.1
+      tmp: 0.2.3
       typed-rest-client: 1.8.11
       url-join: 4.0.1
       xml2js: 0.5.0
@@ -1544,6 +1552,24 @@ packages:
     requiresBuild: true
     dependencies:
       node-gyp-build: 4.8.0
+    dev: true
+
+  /c8@9.1.0:
+    resolution: {integrity: sha512-mBWcT5iqNir1zIkzSPyI3NCR9EZCVI3WUD+AVO17MVWTSFNyUueXE82qTeampNtTr+ilN/5Ua3j24LgbCKjDVg==}
+    engines: {node: '>=14.14.0'}
+    hasBin: true
+    dependencies:
+      '@bcoe/v8-coverage': 0.2.3
+      '@istanbuljs/schema': 0.1.3
+      find-up: 5.0.0
+      foreground-child: 3.1.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-reports: 3.1.6
+      test-exclude: 6.0.0
+      v8-to-istanbul: 9.2.0
+      yargs: 17.7.2
+      yargs-parser: 21.1.1
     dev: true
 
   /cacheable-lookup@7.0.0:
@@ -2666,6 +2692,15 @@ packages:
       path-exists: 4.0.0
     dev: true
 
+  /find-up@7.0.0:
+    resolution: {integrity: sha512-YyZM99iHrqLKjmt4LJDj58KI+fYyufRLBSYcqycxf//KpBk9FoewoGX0450m9nB44qrZnovzC2oeP5hUibxc/g==}
+    engines: {node: '>=18'}
+    dependencies:
+      locate-path: 7.2.0
+      path-exists: 5.0.0
+      unicorn-magic: 0.1.0
+    dev: true
+
   /flat-cache@3.2.0:
     resolution: {integrity: sha512-CYcENa+FtcUKLmhhqyctpclsq7QF38pKjZHsGNiSQF5r4FtoKDWabFDl3hzaEQMvT1LHEysw5twgLvpYYb4vbw==}
     engines: {node: ^10.12.0 || >=12.0.0}
@@ -2717,9 +2752,9 @@ packages:
       signal-exit: 4.1.0
     dev: true
 
-  /form-data-encoder@4.0.2:
-    resolution: {integrity: sha512-KQVhvhK8ZkWzxKxOr56CPulAhH3dobtuQ4+hNQ+HekH/Wp5gSOafqRAeTphQUJAIk0GBvHZgJ2ZGRWd5kphMuw==}
-    engines: {node: '>= 18'}
+  /form-data-encoder@2.1.4:
+    resolution: {integrity: sha512-yDYSgNMraqvnxiEXO4hi88+YZxaHC6QKzb5N84iRCTDeRO7ZALpir/lVmf/uXUhnwUr2O4HU8s/n6x+yNjQkHw==}
+    engines: {node: '>= 14.17'}
     dev: true
 
   /form-data@4.0.0:
@@ -2767,6 +2802,14 @@ packages:
   /fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
     dev: true
+
+  /fsevents@2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
 
   /fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -2954,20 +2997,20 @@ packages:
       get-intrinsic: 1.2.2
     dev: true
 
-  /got@14.2.1:
-    resolution: {integrity: sha512-KOaPMremmsvx6l9BLC04LYE6ZFW4x7e4HkTe3LwBmtuYYQwpeS4XKqzhubTIkaQ1Nr+eXxeori0zuwupXMovBQ==}
-    engines: {node: '>=20'}
+  /got@13.0.0:
+    resolution: {integrity: sha512-XfBk1CxOOScDcMr9O1yKkNaQyy865NbYs+F7dr4H0LZMVgCj2Le59k6PqbNHoL5ToeaEQUYh6c6yMfVcc6SJxA==}
+    engines: {node: '>=16'}
     dependencies:
-      '@sindresorhus/is': 6.2.0
+      '@sindresorhus/is': 5.6.0
       '@szmarczak/http-timer': 5.0.1
       cacheable-lookup: 7.0.0
       cacheable-request: 10.2.14
       decompress-response: 6.0.0
-      form-data-encoder: 4.0.2
-      get-stream: 8.0.1
+      form-data-encoder: 2.1.4
+      get-stream: 6.0.1
       http2-wrapper: 2.2.1
       lowercase-keys: 3.0.0
-      p-cancelable: 4.0.1
+      p-cancelable: 3.0.0
       responselike: 3.0.0
     dev: true
 
@@ -3741,6 +3784,13 @@ packages:
       p-locate: 5.0.0
     dev: true
 
+  /locate-path@7.2.0:
+    resolution: {integrity: sha512-gvVijfZvn7R+2qyPX8mAuKcFGDf6Nc61GdvGafQsHL0sBIxfKzA+usWn4GFC/bk+QdwPUD4kWFJLhElipq+0VA==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      p-locate: 6.0.0
+    dev: true
+
   /lodash.flattendeep@4.4.0:
     resolution: {integrity: sha512-uHaJFihxmJcEX3kT4I23ABqKKalJ/zDrDg0lsFtc1h+3uw49SIJ5beyhx5ExVRti3AvKoOJngIj7xz3oylPdWQ==}
     dev: true
@@ -4330,9 +4380,9 @@ packages:
       type-check: 0.4.0
     dev: true
 
-  /p-cancelable@4.0.1:
-    resolution: {integrity: sha512-wBowNApzd45EIKdO1LaU+LrMBwAcjfPaYtVzV3lmfM3gf8Z4CHZsiIqlM8TZZ8okYvh5A1cP6gTfCRQtwUpaUg==}
-    engines: {node: '>=14.16'}
+  /p-cancelable@3.0.0:
+    resolution: {integrity: sha512-mlVgR3PGuzlo0MmTdk4cXqXWlwQDLnONTAg6sm62XkMJEiRxN3GL3SffkYvqwonbkJBcrI7Uvv5Zh9yjvn2iUw==}
+    engines: {node: '>=12.20'}
     dev: true
 
   /p-limit@2.3.0:
@@ -4349,6 +4399,13 @@ packages:
       yocto-queue: 0.1.0
     dev: true
 
+  /p-limit@4.0.0:
+    resolution: {integrity: sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      yocto-queue: 1.0.0
+    dev: true
+
   /p-locate@4.1.0:
     resolution: {integrity: sha512-R79ZZ/0wAxKGu3oYMlz8jy/kbhsNrS7SKZ7PxEHBgJ5+F2mtFW2fK2cOtBh1cHYkQsbzFV7I+EoRKe6Yt0oK7A==}
     engines: {node: '>=8'}
@@ -4361,6 +4418,13 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       p-limit: 3.1.0
+    dev: true
+
+  /p-locate@6.0.0:
+    resolution: {integrity: sha512-wPrq66Llhl7/4AGC6I+cqxT07LhXvWL08LNXz1fENOw0Ap4sRZZ/gZpTTJ5jpurzzzfS2W/Ge9BY3LgLjCShcw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      p-limit: 4.0.0
     dev: true
 
   /p-map@3.0.0:
@@ -4437,6 +4501,11 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
+  /path-exists@5.0.0:
+    resolution: {integrity: sha512-RjhtfwJOxzcFmNOi6ltcbcu4Iu+FL3zEj83dk4kAS+fVpTxXLO1b38RvJgT/0QwvV/L3aY9TAnyv0EOqW4GoMQ==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dev: true
+
   /path-is-absolute@1.0.1:
     resolution: {integrity: sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==}
     engines: {node: '>=0.10.0'}
@@ -4499,19 +4568,20 @@ packages:
       find-up: 4.1.0
     dev: true
 
-  /playwright-core@1.22.2:
-    resolution: {integrity: sha512-w/hc/Ld0RM4pmsNeE6aL/fPNWw8BWit2tg+TfqJ3+p59c6s3B6C8mXvXrIPmfQEobkcFDc+4KirNzOQ+uBSP1Q==}
-    engines: {node: '>=14'}
+  /playwright-core@1.44.1:
+    resolution: {integrity: sha512-wh0JWtYTrhv1+OSsLPgFzGzt67Y7BE/ZS3jEqgGBlp2ppp1ZDj8c+9IARNW4dwf1poq5MgHreEM2KV/GuR4cFA==}
+    engines: {node: '>=16'}
     hasBin: true
     dev: true
 
-  /playwright@1.22.2:
-    resolution: {integrity: sha512-hUTpg7LytIl3/O4t0AQJS1V6hWsaSY5uZ7w1oCC8r3a1AQN5d6otIdCkiB3cbzgQkcMaRxisinjMFMVqZkybdQ==}
-    engines: {node: '>=14'}
+  /playwright@1.44.1:
+    resolution: {integrity: sha512-qr/0UJ5CFAtloI3avF95Y0L1xQo6r3LQArLIg/z/PoGJ6xa+EwzrwO5lpNr/09STxdHuUoP2mvuELJS+hLdtgg==}
+    engines: {node: '>=16'}
     hasBin: true
-    requiresBuild: true
     dependencies:
-      playwright-core: 1.22.2
+      playwright-core: 1.44.1
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: true
 
   /please-upgrade-node@3.2.0:
@@ -4823,9 +4893,9 @@ packages:
     resolution: {integrity: sha512-0s+oAmw9zLl1V1cS9BtZN7JAd0cW5e0QH4W3LWEK6a4LaLEA2OTpGYWDY+6XasBLtz6wkm3u1xRw95mRuJ59WA==}
     dev: true
 
-  /selenium-webdriver@4.19.0:
-    resolution: {integrity: sha512-8XHW8m9V2XN2/SC1kr4bWzMtGvjmKUEZ6S0UBoDBqonhmwEIzKOLbzhanBd08HCOg1s1O0XrDWCD71NnA8Zt0g==}
-    engines: {node: '>= 14.20.0'}
+  /selenium-webdriver@4.21.0:
+    resolution: {integrity: sha512-WaEJHZjOWNth1QG5FEpxpREER0qptZBMonFU6GtAqdCNLJVxbtC3E7oS/I/+Q1sf1W032Wg0Ebk+m46lANOXyQ==}
+    engines: {node: '>= 14.21.0'}
     dependencies:
       jszip: 3.10.1
       tmp: 0.2.3
@@ -5275,13 +5345,6 @@ packages:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
     dev: true
 
-  /tmp@0.2.1:
-    resolution: {integrity: sha512-76SUhtfqR2Ijn+xllcI5P1oyannHNHByD80W1q447gU3mp9G9PSpGdWmjUOHRDPiHYacIk66W7ubDTuPF3BEtQ==}
-    engines: {node: '>=8.17.0'}
-    dependencies:
-      rimraf: 3.0.2
-    dev: true
-
   /tmp@0.2.3:
     resolution: {integrity: sha512-nZD7m9iCPC5g0pYmcaxogYKggSfLsdxl8of3Q/oIbqCqLLIO9IAF0GWjX1z9NZRHPiXv8Wex4yDCaZsgEw0Y8w==}
     engines: {node: '>=14.14'}
@@ -5487,6 +5550,11 @@ packages:
     resolution: {integrity: sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==}
     dev: true
 
+  /unicorn-magic@0.1.0:
+    resolution: {integrity: sha512-lRfVq8fE8gz6QMBuDM6a+LO3IAzTi05H6gCVaUpir2E1Rwpo4ZUog45KpNXKC/Mn3Yb9UDuHumeFTo9iV/D9FQ==}
+    engines: {node: '>=18'}
+    dev: true
+
   /universalify@0.1.2:
     resolution: {integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==}
     engines: {node: '>= 4.0.0'}
@@ -5552,32 +5620,43 @@ packages:
     resolution: {integrity: sha512-ocyWc3bAHBB/guyqJQVI5o4BZkPhznPYUG2ea80Gond/BgNWpap8TOmLSeeQG7bnh2KMISxskdADG59j7zruhw==}
     dev: true
 
+  /v8-to-istanbul@9.2.0:
+    resolution: {integrity: sha512-/EH/sDgxU2eGxajKdwLCDmQ4FWq+kpi3uCmBGpw1xJtnAxEjlD8j8PEiGWpCIMIs3ciNAgH0d3TTJiUkYzyZjA==}
+    engines: {node: '>=10.12.0'}
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.22
+      '@types/istanbul-lib-coverage': 2.0.6
+      convert-source-map: 2.0.0
+    dev: true
+
   /validator@13.11.0:
     resolution: {integrity: sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==}
     engines: {node: '>= 0.10'}
     dev: true
 
-  /vscode-extension-tester@8.0.2(mocha@10.2.0)(typescript@5.0.4):
-    resolution: {integrity: sha512-6bNww55/L480AnPJvz0PqhHZ/iOpvV5DtQ7Tz8DW5qMTwg0kkC9BhuM0oq+V7lqEiNt/T7ndhXupWAzo2ZINRA==}
+  /vscode-extension-tester@8.2.0(mocha@10.2.0)(typescript@5.0.4):
+    resolution: {integrity: sha512-EclHBh3MC1dtaH0ty9//+zXiv/m7x03RBPycBNOr0X3MyLW3lZP4/3e4o2xN4It6+yjNAkzFoTUPB7APYr4MyA==}
     hasBin: true
     peerDependencies:
       mocha: '>=5.2.0'
       typescript: '>=4.6.2'
     dependencies:
-      '@redhat-developer/locators': 1.0.2(@redhat-developer/page-objects@1.0.2)(selenium-webdriver@4.19.0)
-      '@redhat-developer/page-objects': 1.0.2(selenium-webdriver@4.19.0)(typescript@5.0.4)
+      '@redhat-developer/locators': 1.1.1(@redhat-developer/page-objects@1.1.1)(selenium-webdriver@4.21.0)
+      '@redhat-developer/page-objects': 1.1.1(selenium-webdriver@4.21.0)(typescript@5.0.4)
       '@types/selenium-webdriver': 4.1.22
-      '@vscode/vsce': 2.26.0
+      '@vscode/vsce': 2.26.1
+      c8: 9.1.0
       commander: 12.0.0
       compare-versions: 6.1.0
+      find-up: 7.0.0
       fs-extra: 11.2.0
       glob: 10.3.12
-      got: 14.2.1
+      got: 13.0.0
       hpagent: 1.2.0
       js-yaml: 4.1.0
       mocha: 10.2.0
       sanitize-filename: 1.6.3
-      selenium-webdriver: 4.19.0
+      selenium-webdriver: 4.21.0
       targz: 1.0.1
       typescript: 5.0.4
     transitivePeerDependencies:
@@ -5845,4 +5924,9 @@ packages:
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+    dev: true
+
+  /yocto-queue@1.0.0:
+    resolution: {integrity: sha512-9bnSc/HEW2uRy67wc+T8UwauLuPJVn28jb+GtJY16iiKWyvmYJRXVT4UamsAEGQfPohgr2q4Tq0sQbQlxTfi1g==}
+    engines: {node: '>=12.20'}
     dev: true

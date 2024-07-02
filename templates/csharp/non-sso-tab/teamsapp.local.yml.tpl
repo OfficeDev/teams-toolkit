@@ -8,7 +8,7 @@ provision:
   - uses: script
     with:
       run:
-        echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
 
   # Creates a Teams app

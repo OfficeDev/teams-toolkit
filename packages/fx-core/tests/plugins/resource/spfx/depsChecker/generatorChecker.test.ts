@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Colors, LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api";
+import { LogLevel, LogProvider, UserError } from "@microsoft/teamsfx-api";
 import chai from "chai";
 import fs from "fs-extra";
 import "mocha";
 import { restore, stub } from "sinon";
-import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
+import { createContext, setTools } from "../../../../../src/common/globalVars";
+import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
 import { GeneratorChecker } from "../../../../../src/component/generator/spfx/depsChecker/generatorChecker";
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
-import { createContextV3 } from "../../../../../src/component/utils";
-import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
 
 class StubLogger implements LogProvider {
@@ -241,7 +240,7 @@ describe("generator checker", () => {
         console.log("installing");
       });
 
-      const context = createContextV3();
+      const context = createContext();
 
       const result = await checker.ensureDependency(context, "1.18.2");
       chai.expect(result.isOk()).to.be.true;
@@ -254,7 +253,7 @@ describe("generator checker", () => {
         throw new UserError("source", "name", "msg", "msg");
       });
 
-      const context = createContextV3();
+      const context = createContext();
 
       const result = await checker.ensureDependency(context, "1.18.2");
       chai.expect(result.isErr()).to.be.true;

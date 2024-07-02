@@ -4,12 +4,19 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  FeatureFlags,
+  SampleConfig,
+  featureFlagManager,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
+import { GlobalKey } from "../constants";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSampleApp } from "../handlers";
+import { downloadSampleApp } from "../handlers/downloadSample";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,
@@ -17,7 +24,7 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
@@ -56,14 +63,18 @@ export class WebviewPanel {
     if (!args?.length) {
       return;
     }
-    if (panelType == PanelType.SampleGallery && args.length > 1) {
+    if (panelType == PanelType.SampleGallery && args.length > 1 && typeof args[1] == "string") {
       try {
-        const sampleId = args[1] as string;
+        const sampleId = args[1];
         const panel = WebviewPanel.currentPanels.find((panel) => panel.panelType === panelType);
         if (panel) {
-          void panel.panel.webview.postMessage({
-            message: Commands.OpenDesignatedSample,
-            sampleId: sampleId,
+          void globalVariables.context.globalState.update(
+            GlobalKey.SampleGalleryInitialSample,
+            sampleId
+          );
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectSample, {
+            ...getTriggerFromProperty(args),
+            [TelemetryProperty.SampleAppName]: sampleId,
           });
         }
       } catch (e) {}
@@ -222,12 +233,21 @@ export class WebviewPanel {
         versionComparisonResult,
       };
     });
+    const initialSample = globalVariables.context.globalState.get<string>(
+      GlobalKey.SampleGalleryInitialSample,
+      ""
+    );
     if (this.panel && this.panel.webview) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
         samples: sampleData,
+        initialSample: initialSample,
         filterOptions: sampleCollection.filterOptions,
       });
+      if (initialSample != "") {
+        // reset initial sample after shown
+        await globalVariables.context.globalState.update(GlobalKey.SampleGalleryInitialSample, "");
+      }
     }
   }
 
@@ -279,8 +299,6 @@ export class WebviewPanel {
     switch (panelType) {
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
-      case PanelType.Survey:
-        return localize("teamstoolkit.webview.surveyPageTitle");
       case PanelType.RespondToCardActions:
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:
@@ -312,6 +330,8 @@ export class WebviewPanel {
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
     );
 
+    const allowChat = featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
+
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
     return `<!DOCTYPE html>
@@ -328,6 +348,7 @@ export class WebviewPanel {
             <script>
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
+              const shouldShowChat = '${allowChat ? "true" : "false"}';
             </script>
             <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
             <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>

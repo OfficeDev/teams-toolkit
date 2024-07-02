@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { getLocalizedString } from "./localizeUtils";
 
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
@@ -10,8 +11,6 @@ export class ConstantString {
 
 export class HelpLinks {
   static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
-  static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
-  static readonly SwitchAccountOrSub = "https://aka.ms/teamsfx-switch-account-or-subscription-help";
   static readonly SwitchTenant = "https://aka.ms/teamsfx-switch-tenant";
 }
 
@@ -36,12 +35,12 @@ export class OutlookClientId {
   static readonly Desktop = "d3590ed6-52b3-4102-aeff-aad2292ab01c";
   static readonly Web1 = "00000002-0000-0ff1-ce00-000000000000";
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
+  static readonly Mobile = "27922004-5251-4030-b22d-91ecd9a37ea4";
 }
 export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
@@ -51,6 +50,46 @@ export class FeatureFlagName {
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
   static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
-  static readonly CopilotAuth = "API_COPILOT_PLUGIN_AUTH";
+  static readonly SMEOAuth = "SME_OAUTH";
   static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
 }
+
+export function getAllowedAppMaps(): Record<string, string> {
+  return {
+    [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
+    [TeamsClientId.Web]: getLocalizedString("core.common.TeamsWebClientName"),
+    [OfficeClientId.Desktop]: getLocalizedString("core.common.OfficeDesktopClientName"),
+    [OfficeClientId.Web1]: getLocalizedString("core.common.OfficeWebClientName1"),
+    [OfficeClientId.Web2]: getLocalizedString("core.common.OfficeWebClientName2"),
+    [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
+    [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
+    [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+  };
+}
+
+const AzurePortalUrl = "https://portal.azure.com";
+export function getResourceGroupInPortal(
+  subscriptionId?: string,
+  tenantId?: string,
+  resourceGroupName?: string
+): string | undefined {
+  if (subscriptionId && tenantId && resourceGroupName) {
+    return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
+  } else {
+    return undefined;
+  }
+}
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
+  }
+}
+
+export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
+export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
+export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
+export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
+export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];

@@ -25,7 +25,7 @@ import { ensureBicepForDriver } from "./util/bicepChecker";
 import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { convertOutputs, getFileExtension, hasBicepTemplate } from "./util/util";
 import { validateArgs } from "./validator";
-import { ErrorContextMW } from "../../../core/globalVars";
+import { ErrorContextMW } from "../../../common/globalVars";
 import { hooks } from "@feathersjs/hooks";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";

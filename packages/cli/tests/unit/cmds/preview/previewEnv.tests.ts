@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, IProgressHandler, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, FxCore, HubTypes, VersionCheckRes, VersionState } from "@microsoft/teamsfx-core";
-import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
+import * as packageJson from "@microsoft/teamsfx-core/build/component/local/packageJsonHelper";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import fs from "fs-extra";
 import { RestoreFn } from "mocked-env";
@@ -23,6 +23,7 @@ import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
 import { expect } from "../../utils";
 import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { unique } from "underscore";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();
@@ -282,6 +283,15 @@ describe("PreviewEnv Steps", () => {
       browserArgs: string[]
     ): Promise<Result<null, FxError>> {
       return super.launchBrowser(env, hub, url, browser, browserArgs);
+    }
+
+    public launchDesktopClient(
+      env: string,
+      url: string,
+      browser: constants.Browser,
+      browserArgs: string[]
+    ): Promise<Result<null, FxError>> {
+      return super.launchDesktopClient(env, url, browser, browserArgs);
     }
 
     public getRunningTasks() {
@@ -571,6 +581,92 @@ describe("PreviewEnv Steps", () => {
     );
     expect(openRes.isOk()).to.be.true;
     expect(logs.length).equals(2);
+  });
+
+  it("launchDesktopClient - without accountInfo", async () => {
+    sandbox.stub(launch, "openTeamsDesktopClient").resolves();
+    sandbox.stub(M365TokenInstance, "getStatus").returns(
+      Promise.resolve(
+        ok({
+          status: signedIn,
+          token: "token",
+        })
+      )
+    );
+
+    const previewEnv = new PreviewEnvTest();
+    const openRes = await previewEnv.launchDesktopClient(
+      "local",
+      "test-url",
+      constants.Browser.default,
+      []
+    );
+    expect(openRes.isOk()).to.be.true;
+  });
+
+  it("launchDesktopClient - without unique_name", async () => {
+    sandbox.stub(launch, "openTeamsDesktopClient").resolves();
+    sandbox.stub(M365TokenInstance, "getStatus").returns(
+      Promise.resolve(
+        ok({
+          status: signedIn,
+          token: "token",
+          accountInfo: {
+            tid: "tid",
+            upn: "upn",
+          },
+        })
+      )
+    );
+
+    const previewEnv = new PreviewEnvTest();
+    const openRes = await previewEnv.launchDesktopClient(
+      "local",
+      "test-url",
+      constants.Browser.default,
+      []
+    );
+    expect(openRes.isOk()).to.be.true;
+  });
+
+  it("launchDesktopClient - happy path", async () => {
+    sandbox.stub(launch, "openTeamsDesktopClient").resolves();
+    sandbox.stub(M365TokenInstance, "getStatus").returns(
+      Promise.resolve(
+        ok({
+          status: signedIn,
+          token: "token",
+          accountInfo: {
+            tid: "tid",
+            upn: "upn",
+            unique_name: "unique_name",
+          },
+        })
+      )
+    );
+
+    const previewEnv = new PreviewEnvTest();
+    const openRes = await previewEnv.launchDesktopClient(
+      "local",
+      "test-url",
+      constants.Browser.default,
+      []
+    );
+    expect(openRes.isOk()).to.be.true;
+  });
+
+  it("launchDesktopClient - without user information", async () => {
+    sandbox.stub(launch, "openTeamsDesktopClient").resolves();
+    sandbox.stub(M365TokenInstance, "getStatus").resolves(err(new UserError("", "", "", "")));
+
+    const previewEnv = new PreviewEnvTest();
+    const openRes = await previewEnv.launchDesktopClient(
+      "local",
+      "test-url",
+      constants.Browser.default,
+      []
+    );
+    expect(openRes.isOk()).to.be.true;
   });
 });
 

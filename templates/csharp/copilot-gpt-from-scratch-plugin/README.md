@@ -18,7 +18,7 @@
 
 ## Learn more
 
-- [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)
+- [Declarative copilots for Microsoft 365](https://aka.ms/teams-toolkit-declarative-copilot)
 
 ## Report an issue
 

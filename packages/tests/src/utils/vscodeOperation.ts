@@ -545,7 +545,7 @@ export async function createNewProject(
   appName: string,
   option?: {
     lang?: "JavaScript" | "TypeScript" | "Python";
-    spfxCompoentType?: "React" | "None" | "Minimal";
+    spfxFrameworkType?: "React" | "None" | "Minimal";
     aiType?: "Azure OpenAI" | "OpenAI";
     testRootFolder?: string;
     appNameCopySuffix?: string;
@@ -561,8 +561,8 @@ export async function createNewProject(
     ? option.testRootFolder
     : path.resolve(__dirname, "../../resource/");
   const aiType = option?.aiType ? option.aiType : "OpenAI";
-  const spfxCompoentType = option?.spfxCompoentType
-    ? option.spfxCompoentType
+  const spfxFrameworkType = option?.spfxFrameworkType
+    ? option.spfxFrameworkType
     : "React";
   const lang = option?.lang ? option.lang : "JavaScript";
   await execCommandIfExist(
@@ -679,7 +679,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose React or None
-      await input.selectQuickPick(spfxCompoentType);
+      await input.selectQuickPick(spfxFrameworkType);
       // Input Web Part Name
       await input.setText(appName);
       await driver.sleep(Timeout.input);
@@ -703,7 +703,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose React or None
-      await input.selectQuickPick(spfxCompoentType);
+      await input.selectQuickPick(spfxFrameworkType);
       // Input Web Part Name
       await input.setText(appName);
       await driver.sleep(Timeout.input);

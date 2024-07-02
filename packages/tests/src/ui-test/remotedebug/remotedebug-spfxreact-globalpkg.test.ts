@@ -63,7 +63,7 @@ describe("Remote debug Tests", function () {
     async function () {
       await configSpfxGlobalEnv();
       const driver = VSBrowser.instance.driver;
-      await createNewProject("gspfx", appName, { spfxCompoentType: "React" });
+      await createNewProject("gspfx", appName, { spfxFrameworkType: "React" });
       validateFileExist(projectPath, "src/src/index.ts");
       validateFileExist(projectPath, "src/.yo-rc.json");
       await clearNotifications();

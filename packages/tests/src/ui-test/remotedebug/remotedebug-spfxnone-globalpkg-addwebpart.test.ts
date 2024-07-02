@@ -68,7 +68,7 @@ describe("Remote debug Tests", function () {
     async function () {
       await configSpfxGlobalEnv();
       const driver = VSBrowser.instance.driver;
-      await createNewProject("gspfx", appName, { spfxCompoentType: "None" });
+      await createNewProject("gspfx", appName, { spfxFrameworkType: "None" });
       validateFileExist(projectPath, "src/src/index.ts");
       validateFileExist(projectPath, "src/.yo-rc.json");
       await addSpfxWebPart("helloworld");

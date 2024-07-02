@@ -61,8 +61,8 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfxmin", appName, {
-        spfxCompoentType: "Minimal",
+      await createNewProject("spfx", appName, {
+        spfxFrameworkType: "Minimal",
       });
       validateFileExist(projectPath, "src/src/index.ts");
       await clearNotifications();

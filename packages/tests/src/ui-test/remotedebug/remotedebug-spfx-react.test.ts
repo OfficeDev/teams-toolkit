@@ -61,7 +61,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfx", appName, { spfxCompoentType: "React" });
+      await createNewProject("spfx", appName, { spfxFrameworkType: "React" });
       validateFileExist(projectPath, "src/src/index.ts");
       await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);

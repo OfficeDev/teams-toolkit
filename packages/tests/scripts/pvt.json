@@ -66,7 +66,9 @@
       "localdebug-aiassistant-bot-ts",
       "remotedebug-aichat-bot-py-win-only",
       "remotedebug-msg-newapi-apikey-ts-win-only",
-      "remotedebug-msg-newapi-apikey-win-only"
+      "remotedebug-msg-newapi-apikey-win-only",
+      "remotedebug-spfxreact-import-single",
+      "remotedebug-spfxreact-import-multiple"
     ],
     "node-20": [
       "localdebug-obo-tab"

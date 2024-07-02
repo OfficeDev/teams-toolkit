@@ -247,7 +247,7 @@ describe("Wrapped Axios Client Test", () => {
       request: {
         method: "GET",
         host: "https://titles.prod.mos.microsoft.com",
-        path: "/",
+        path: "/users/packages",
       },
       config: {},
       response: {

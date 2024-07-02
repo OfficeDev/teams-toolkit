@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
+import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as os from "os";
-import { getFixedCommonProjectSettings } from "../chat/commands/nextstep/helper";
+import { getProjectMetadata } from "../chat/commands/nextstep/helper";
 import { ProjectActionStatus } from "../chat/commands/nextstep/types";
 import { CommandKey } from "../constants";
 
@@ -53,7 +54,7 @@ export async function updateProjectStatus(
   result: Result<unknown, Error>,
   forced = false
 ) {
-  const projectSettings = getFixedCommonProjectSettings(fsPath);
+  const projectSettings = getProjectMetadata(fsPath);
   const p = projectSettings?.projectId ?? fsPath;
   const actions = RecordedActions.map((x) => x.toString());
   if (actions.includes(commandName) || forced) {
@@ -102,4 +103,10 @@ export async function getLaunchJSON(folder: string): Promise<string | undefined>
     return await fs.readFile(launchJSONPath, "utf-8");
   }
   return undefined;
+}
+
+export function getWalkThroughId(): string {
+  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+    ? "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
+    : "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted";
 }

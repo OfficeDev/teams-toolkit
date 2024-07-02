@@ -1,21 +1,20 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 import * as path from "path";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
-import { TaskDefaultValue } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
-import * as globalVariables from "../../globalVariables";
-import { getSystemInputs, runCommand } from "../../handlers";
+import { Correlator, TaskDefaultValue } from "@microsoft/teamsfx-core";
+import { workspaceUri } from "../../globalVariables";
+import { runCommand } from "../../handlers/sharedOpts";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import * as commonUtils from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 
 interface LifecycleArgs {
   template?: string;
@@ -43,7 +42,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       [TelemetryProperty.DebugLifecycle]: this.stage,
     };
 
-    return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+    return Correlator.runWithId(getLocalDebugSession().id, () =>
       localTelemetryReporter.runWithTelemetryProperties(
         TelemetryEvent.DebugLifecycleTask,
         telemetryProperties,
@@ -66,7 +65,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
     inputs.isLocalDebug = true;
     if (this.args.template) {
       inputs.workflowFilePath = path.resolve(
-        globalVariables.workspaceUri?.fsPath ?? "",
+        workspaceUri?.fsPath ?? "",
         BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
       );
     }

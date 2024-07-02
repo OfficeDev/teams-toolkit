@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
+import { SpecParser } from "@microsoft/m365-spec-parser";
+import { ConfirmConfig, UserError, err, ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import "mocha";
+import { RestoreFn } from "mocked-env";
+import * as sinon from "sinon";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
+import { setTools } from "../../../../src/common/globalVars";
+import { UpdateOauthArgs } from "../../../../src/component/driver/oauth/interface/updateOauthArgs";
+import { UpdateOauthDriver } from "../../../../src/component/driver/oauth/update";
+import {
+  OauthRegistrationAppType,
+  OauthRegistrationTargetAudience,
+} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { setTools } from "../../../../src/core/globalVars";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { UpdateOauthDriver } from "../../../../src/component/driver/oauth/update";
-import {
-  OauthRegistrationAppType,
-  OauthRegistrationTargetAudience,
-} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
-import { SpecParser } from "@microsoft/m365-spec-parser";
-import { ConfirmConfig, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { UpdateOauthArgs } from "../../../../src/component/driver/oauth/interface/updateOauthArgs";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -55,7 +55,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("happy path: update all fields", async () => {
-    sinon.stub(AppStudioClient, "updateOauthRegistration").resolves({
+    sinon.stub(teamsDevPortalClient, "updateOauthRegistration").resolves({
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test2"],
       applicableToApps: OauthRegistrationAppType.SpecificApp,
@@ -67,7 +67,7 @@ describe("CreateOauthDriver", () => {
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
     });
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test"],
@@ -155,7 +155,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("happy path: does not update when no changes", async () => {
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "test",
       targetUrlsShouldStartWith: ["https://test"],
@@ -236,7 +236,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("happy path: should not show confirm when only devtunnel url is different", async () => {
-    sinon.stub(AppStudioClient, "updateOauthRegistration").resolves({
+    sinon.stub(teamsDevPortalClient, "updateOauthRegistration").resolves({
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test2.asse.devtunnels.ms"],
       applicableToApps: OauthRegistrationAppType.SpecificApp,
@@ -248,7 +248,7 @@ describe("CreateOauthDriver", () => {
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
     });
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "test",
       targetUrlsShouldStartWith: ["https://test.asse.devtunnels.ms"],
@@ -334,7 +334,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("should throw error when user canel", async () => {
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test"],

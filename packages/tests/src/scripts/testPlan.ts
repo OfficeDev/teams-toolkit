@@ -527,28 +527,10 @@ async function main() {
 
       const points = (await fs.readJson(process.argv[3])) as TestPoint[];
 
-      const results = (await fs.readJson(process.argv[4])).results;
-      const cases: MochaTest[] = [];
+      // const results = (await fs.readJson(process.argv[4])).results;
+      // get all the mochawesome-report/mochawesome.json
 
-      for (const result of results) {
-        for (const suite of result.suites) {
-          for (const test of suite.tests) {
-            if (test.context) {
-              try {
-                const c: MochaTestContext = JSON.parse(
-                  JSON.parse(test.context)
-                );
-                test.extractedContext = c;
-              } catch {
-                continue;
-              }
-            }
-            cases.push(test);
-          }
-        }
-      }
-
-      ADOTestPlanClient.reportTestResult(points, cases);
+      traverseFolder(process.argv[4], points);
 
       break;
     }
@@ -557,6 +539,42 @@ async function main() {
       throw new Error(`unknow command: ${process.argv[2]}`);
     }
   }
+}
+
+function traverseFolder(path: string, testPoints: TestPoint[]) {
+  fs.readdirSync(path).forEach((file) => {
+    const currentPath = `${path}/${file}`;
+
+    if (fs.statSync(currentPath).isDirectory()) {
+      traverseFolder(currentPath, testPoints);
+    } else {
+      if (currentPath.endsWith("mochawesome.json")) {
+        console.log("------------------" + currentPath + "------------------");
+        const results = fs.readJsonSync(currentPath).results;
+        const cases: MochaTest[] = [];
+
+        for (const result of results) {
+          for (const suite of result.suites) {
+            for (const test of suite.tests) {
+              if (test.context) {
+                try {
+                  const c: MochaTestContext = JSON.parse(
+                    JSON.parse(test.context)
+                  );
+                  test.extractedContext = c;
+                } catch {
+                  continue;
+                }
+              }
+              cases.push(test);
+            }
+          }
+        }
+
+        ADOTestPlanClient.reportTestResult(testPoints, cases);
+      }
+    }
+  });
 }
 
 main().catch((err) => {

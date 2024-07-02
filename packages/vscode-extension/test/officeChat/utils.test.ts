@@ -143,7 +143,7 @@ describe("File: officeChat/utils.ts", () => {
           downloadUrlInfo: {
             owner: "OfficeDev",
             repository: "Office-Samples",
-            ref: "dev",
+            ref: "main",
             dir: "Excel-Add-in-ShapeAPI-Dashboard",
           },
         },

@@ -2,17 +2,18 @@
 // Licensed under the MIT license.
 import { Inputs } from "@microsoft/teamsfx-api";
 import {
-  ApiMessageExtensionAuthOptions,
+  ApiAuthOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
 
 export enum TemplateNames {
+  Empty = "empty",
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   SsoTabObo = "sso-tab-with-obo-flow",
@@ -41,6 +42,8 @@ export enum TemplateNames {
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
   ApiPluginFromScratch = "api-plugin-from-scratch",
+  ApiPluginFromScratchBearer = "api-plugin-from-scratch-bearer",
+  ApiPluginFromScratchOAuth = "api-plugin-from-scratch-oauth",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   ApiMessageExtensionSso = "api-message-extension-sso",
@@ -57,6 +60,7 @@ export enum TemplateNames {
 
 // TODO: remove this mapping after all generators are migrated to new generator pattern
 export const Feature2TemplateName = {
+  [`${CapabilityOptions.empty().id}:undefined`]: TemplateNames.Empty,
   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
   [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
@@ -100,15 +104,20 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]: TemplateNames.ApiPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.none().id}`]:
+    TemplateNames.ApiPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.apiKey().id}`]:
+    TemplateNames.ApiPluginFromScratchBearer,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.oauth().id}`]:
+    TemplateNames.ApiPluginFromScratchOAuth,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.none().id
+    ApiAuthOptions.none().id
   }`]: TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.apiKey().id
+    ApiAuthOptions.apiKey().id
   }`]: TemplateNames.CopilotPluginFromScratchApiKey,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.microsoftEntra().id
+    ApiAuthOptions.microsoftEntra().id
   }`]: TemplateNames.ApiMessageExtensionSso,
   [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
@@ -152,6 +161,7 @@ export function getTemplateName(inputs: Inputs): TemplateNames {
 
 // When multiple template name matches, only the top one will be picked.
 export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = new Map([
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.empty().id }, TemplateNames.Empty],
   [{ [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id }, TemplateNames.Tab],
   [{ [QuestionNames.Capabilities]: CapabilityOptions.tab().id }, TemplateNames.SsoTab],
   [
@@ -272,14 +282,10 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     TemplateNames.AIAssistantBot,
   ],
   [
-    { [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id },
-    TemplateNames.ApiPluginFromScratch,
-  ],
-  [
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
     },
     TemplateNames.CopilotPluginFromScratch,
   ],
@@ -287,7 +293,7 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
     },
     TemplateNames.CopilotPluginFromScratchApiKey,
   ],
@@ -295,7 +301,7 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.microsoftEntra().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.microsoftEntra().id,
     },
     TemplateNames.ApiMessageExtensionSso,
   ],
@@ -317,13 +323,13 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.CustomCopilotRagAzureAISearch,
   ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
-      [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
-    },
-    TemplateNames.CustomCopilotRagCustomApi,
-  ],
+  // [
+  //   {
+  //     [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+  //     [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+  //   },
+  //   TemplateNames.CustomCopilotRagCustomApi,
+  // ],
   [
     {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
@@ -344,5 +350,35 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
       [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.assistantsApi().id,
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
+  ],
+  // Copilot Plugin
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+    },
+    TemplateNames.ApiPluginFromScratch,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
+    },
+    TemplateNames.ApiPluginFromScratchBearer,
+  ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+      [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
+    },
+    TemplateNames.ApiPluginFromScratchOAuth,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptBasic().id },
+    TemplateNames.BasicGpt,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptWithPlugin().id },
+    TemplateNames.GptWithPluginFromScratch,
   ],
 ]);

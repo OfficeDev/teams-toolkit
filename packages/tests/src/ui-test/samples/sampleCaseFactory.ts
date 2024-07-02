@@ -447,6 +447,7 @@ export abstract class CaseFactory {
                 },
                 (error) => {
                   const errorMsg = error.toString();
+                  console.log("[error log]", errorMsg);
                   if (
                     // skip warning messages
                     errorMsg.includes(LocalDebugError.WarningError)

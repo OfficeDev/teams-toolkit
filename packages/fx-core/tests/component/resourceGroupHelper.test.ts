@@ -4,7 +4,7 @@ import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { setTools, TOOLS } from "../../src/core/globalVars";
+import { setTools, TOOLS } from "../../src/common/globalVars";
 import { MockTools } from "../core/utils";
 import { MyTokenCredential } from "../plugins/solution/util";
 import * as armResources from "@azure/arm-resources";

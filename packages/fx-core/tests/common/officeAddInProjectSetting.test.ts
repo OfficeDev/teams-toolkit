@@ -152,4 +152,11 @@ describe("fetchManifestList", () => {
       )
       .to.deep.equal(["manifest.json"]);
   });
+
+  it("should return true when no src folder exists", () => {
+    mockFs({
+      "/test/manifest.xml": "",
+    });
+    chai.expect(projectSettingsHelper.isManifestOnlyOfficeAddinProject("/test")).to.be.true;
+  });
 });

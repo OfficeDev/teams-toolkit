@@ -1,7 +1,12 @@
 import * as chai from "chai";
 import sinon from "ts-sinon";
 import { Spec } from "../../../../src/officeChat/common/skills/spec";
-import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
+import {
+  CancellationToken,
+  ChatResponseStream,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
+} from "vscode";
 import * as utils from "../../../../src/chat/utils";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { Printer } from "../../../../src/officeChat/common/skills/printer";
@@ -35,7 +40,8 @@ describe("codeGenerator", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };
@@ -149,6 +155,36 @@ describe("codeGenerator", () => {
     chai.expect(result).to.equal(parserResult);
   });
 
+  it("userAskPreScanningAsync provided json object, json detected: not custom function", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "error");
+
+    const getCopilotResponseStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseStub.resolves(
+      JSON.stringify({
+        host: "fakeHost",
+        shouldContinue: false,
+        customFunctions: false,
+        complexity: 1,
+      })
+    );
+    const jsonParseStub = sandbox.stub(JSON, "parse");
+    const parserResult = {
+      host: "fakeHost",
+      shouldContinue: false,
+      customFunctions: false,
+      complexity: 1,
+    };
+    jsonParseStub.returns(parserResult);
+
+    const result = await codeGenerator.userAskPreScanningAsync(spec, fakeToken);
+
+    chai.expect(result).to.equal(parserResult);
+  });
+
   it("userAskPreScanningAsync provided json with markdown syntax, json detected", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
@@ -198,10 +234,11 @@ describe("codeGenerator", () => {
     const result = await codeGenerator.userAskBreakdownAsync(
       fakeToken,
       spec.appendix.complexity,
-      spec.appendix.isCustomFunction,
+      true, //isCustomFunction
       spec.appendix.host,
       spec.userInput,
-      ""
+      "Some code sample",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -222,7 +259,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     chai.expect(result).to.equal(null);
@@ -249,7 +287,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -280,7 +319,8 @@ describe("codeGenerator", () => {
       spec.appendix.isCustomFunction,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     jsonParseResult.funcs.filter((task: string) => {
@@ -311,7 +351,8 @@ describe("codeGenerator", () => {
       false,
       spec.appendix.host,
       spec.userInput,
-      ""
+      "",
+      spec
     );
 
     const mainFunc =
@@ -399,6 +440,60 @@ describe("codeGenerator", () => {
       )
     );
     getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
+
+    // Act
+    const result = await codeGenerator.generateCode(
+      fakeToken,
+      host,
+      spec,
+      codeSpec,
+      isCustomFunctions,
+      suggestedFunction,
+      fakeSampleCode
+    );
+
+    // Assert
+    chai.expect(result).to.exist; // Replace with more specific assertions
+  });
+
+  it("generateCode - Word", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const host = "Word";
+    const codeSpec = "codeSpec";
+    const isCustomFunctions = false;
+    const suggestedFunction = ["function1", "function2"];
+    const fakeSampleCode = "fakeSampleCode";
+    const codeGenerator = new CodeGenerator();
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "debug");
+    sandbox.stub(console, "error");
+    const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
+    getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getMostRelevantDeclarationsUsingLLM"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
+
+    sandbox
+      .stub(utils, "countMessagesTokens")
+      .onFirstCall()
+      .returns(4000)
+      .onSecondCall()
+      .returns(100);
 
     // Act
     const result = await codeGenerator.generateCode(
@@ -543,6 +638,150 @@ describe("codeGenerator", () => {
     chai.expect((await result).result).to.equal(ExecutionResultEnum.Failure);
   });
 
+  it("Invoke Failure: Condition 2", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "debug");
+
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    spec.appendix.codeSample = "";
+    spec.appendix.codeTaskBreakdown = [];
+    spec.appendix.codeExplanation = "";
+
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves({
+      host: "some host",
+      shouldContinue: true,
+      customFunctions: false,
+      complexity: 60,
+    });
+
+    sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves(null);
+    sandbox.stub(codeGenerator, "generateCode").resolves(null);
+
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesBM25"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
+
+    const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
+
+    chai.expect((await result).result).to.equal(ExecutionResultEnum.Failure);
+  });
+
+  it("Invoke Failure: Condition 3", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "debug");
+
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    spec.appendix.codeSample = "";
+    spec.appendix.codeTaskBreakdown = [];
+    spec.appendix.codeExplanation = "";
+
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves({
+      host: "some host",
+      shouldContinue: true,
+      customFunctions: false,
+      complexity: 60,
+    });
+
+    sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
+      spec: "",
+      funcs: ["some data"],
+    });
+    sandbox.stub(codeGenerator, "generateCode").resolves(null);
+
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesBM25"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
+
+    const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
+
+    chai.expect((await result).result).to.equal(ExecutionResultEnum.Failure);
+  });
+
+  it("Invoke Failure: Condition 4", async () => {
+    const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
+    const codeGenerator = new CodeGenerator();
+    sandbox.stub(console, "log");
+    sandbox.stub(console, "debug");
+
+    spec.appendix.host = "";
+    spec.appendix.complexity = 0;
+    spec.appendix.codeSample = "";
+    spec.appendix.codeTaskBreakdown = [];
+    spec.appendix.codeExplanation = "";
+
+    sandbox.stub(codeGenerator, "userAskPreScanningAsync").resolves({
+      host: "some host",
+      shouldContinue: true,
+      customFunctions: false,
+      complexity: 60,
+    });
+
+    sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
+      spec: "some spec",
+      funcs: [],
+    });
+    sandbox.stub(codeGenerator, "generateCode").resolves(null);
+
+    const getMostRelevantDeclarationsUsingLLMStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesBM25"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        "sample code",
+        "description",
+        "definition",
+        "usage"
+      )
+    );
+    getMostRelevantDeclarationsUsingLLMStub.returns(Promise.resolve(scenarioSamples));
+
+    const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);
+
+    chai.expect((await result).result).to.equal(ExecutionResultEnum.Failure);
+  });
+
   it("Invoke Success", async () => {
     const { spec, model, fakeResponse, fakeToken } = invokeParametersInit();
     const codeGenerator = new CodeGenerator();
@@ -563,7 +802,7 @@ describe("codeGenerator", () => {
     });
 
     sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
-      spec: "some host",
+      spec: "some host 1. point 1. 2. point 2.",
       funcs: ["some data"],
     });
     sandbox.stub(codeGenerator, "generateCode").resolves("code sample");
@@ -600,11 +839,14 @@ describe("codeGenerator", () => {
     spec.appendix.telemetryData.measurements["CodeGenExecutionTimeInTotalSec"] = 1;
 
     spec.appendix.host = "Excel";
-    spec.appendix.complexity = 50;
+    spec.appendix.complexity = 10;
     spec.appendix.shouldContinue = true;
     spec.appendix.codeSample = "sample code";
     spec.appendix.codeTaskBreakdown = ["task1", "task2"];
     spec.appendix.codeExplanation = "some explanation";
+    sandbox
+      .stub(codeGenerator, "userAskBreakdownAsync")
+      .resolves({ spec: "fakeSpec", funcs: ["fakeData1"] });
     sandbox.stub(codeGenerator, "generateCode").resolves("Some code");
 
     const result = codeGenerator.invoke(model, fakeResponse, fakeToken, spec);

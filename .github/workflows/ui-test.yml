@@ -60,9 +60,7 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    environment: engineering
     permissions:
-      id-token: write
       contents: read
     env:
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
@@ -75,12 +73,6 @@ jobs:
       - name: Init GitHub CLI
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-      
-      - uses: azure/login@v1
-        with:
-          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
-          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
-          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: bvt (dispatch)
         id: bvt
@@ -161,23 +153,6 @@ jobs:
           path: |
             ./${{ steps.ttk.outputs.package }}
 
-      - name: Archive Test Plan
-        if: ${{ github.event.inputs.target-testplan-name != '' }}
-        working-directory: ./packages/tests
-        run: |
-          pnpm install
-          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
-          echo "Testplan id is $testplanid"
-          npx ts-node src/scripts/testPlan.ts archive $testplanid
-
-      - name: Upload testplan to artifact
-        if: ${{ github.event.inputs.target-testplan-name != '' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: testplan
-          path: |
-            ./packages/tests/testplan.json
-      
       - name: clean devtunnel
         run: |
           curl -sL https://aka.ms/DevTunnelCliInstall | bash
@@ -198,9 +173,7 @@ jobs:
   main:
     name: ${{ matrix.test-case }}|${{ matrix.os }}|node ${{ matrix.node-version }}|${{ github.ref_name }}
     needs: setup
-    environment: engineering
     permissions:
-      id-token: write
       contents: read
     timeout-minutes: 50
     env:
@@ -238,12 +211,6 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: azure/login@v1
-        with:
-          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
-          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
-          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
-
       - name: Set m365 account (unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -277,6 +244,11 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Install function core tool (ubuntu)
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -287,16 +259,31 @@ jobs:
           sudo apt-get install azure-functions-core-tools-4
 
       - name: Install devtunnel (ubuntu)
-        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          curl -sL https://aka.ms/DevTunnelCliInstall | bash
+          wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
+          chmod +x ./devtunnel
+          mkdir -p ~/bin
+          mv ./devtunnel ~/bin/devtunnel
+          PATH=~/bin:$PATH
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
+
+      - name: Install devtunnel (mac)
+        if: matrix.os == 'macos-latest'
+        run: |
+          curl https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/osx-x64-devtunnel-zip -o ./devtunnel.zip 
+          unzip ./devtunnel.zip
+          chmod +x ./devtunnel
+          mkdir -p ~/bin
+          mv ./devtunnel ~/bin/devtunnel
+          PATH=~/bin:$PATH
           ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
   
       - name: Install devtunnel (windows)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
-          powershell Invoke-WebRequest -Uri https://aka.ms/TunnelsCliDownload/win-x64 -OutFile devtunnel.exe
+          powershell Invoke-WebRequest -Uri https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/devtunnel.exe -OutFile devtunnel.exe
           $currentDirectory = (Get-Location).Path
           $executablePath = Join-Path $currentDirectory "devtunnel.exe"
           [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
@@ -369,7 +356,7 @@ jobs:
           npm install @microsoft/teamsapp-cli@${{ needs.setup.outputs.npm-tag }}
 
       - name: Download samples (migration use v1.1.0)
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
+        if: contains(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -400,33 +387,57 @@ jobs:
           ref: main
           path: ./packages/tests/resource
 
-      - name: Get VSCode & chromedriver
+      - name: Get VSCode
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
-          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1
-          cd .test-resources
+          npx extest get-vscode --storage .test-resources --type insider --code_version 1.90.0-insider
+
+      - name: Get chromedriver (linux)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests/.test-resources
+        run: |
+          curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/linux64/chromedriver-linux64.zip
           ls
+
+      - name: Get chromedriver (mac)
+        if: matrix.os == 'macos-latest'
+        working-directory: packages/tests/.test-resources
+        run: |
+          if [[ $(uname -m) == "x86_64" ]]; then
+            curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-x64/chromedriver-mac-x64.zip
+          elif [[ $(uname -m) == "arm64" ]]; then
+            curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-arm64/chromedriver-mac-arm64.zip
+          fi
+          ls
+
+      - name: Get chromedriver (windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests/.test-resources
+        run: |
+            powershell Invoke-WebRequest -Uri https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win64/chromedriver-win64.zip -OutFile chromedriver-win64.zip
+            ls
   
       - name: Extract VSCode & chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver-linux64.zip" -o".test-resources" -y
-          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
 
       - name: Extract VSCode & chromedriver(mac)
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
+          if [[ $(uname -m) == "x86_64" ]]; then
+            7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
+          elif [[ $(uname -m) == "arm64" ]]; then
+            7z x ".test-resources/chromedriver-mac-arm64.zip" -o".test-resources" -y
+          fi
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
-          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
 
       - name: M365 Login
         working-directory: packages/tests
@@ -438,30 +449,35 @@ jobs:
         run: |
           npm run build
 
+      - name: Install python extension
+        working-directory: packages/tests
+        run: |
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-python.python
+
       - name: Install docker extension
         if: contains(matrix.test-case,  'docker')
         working-directory: packages/tests
         run: |
-          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-azuretools.vscode-docker
 
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
         working-directory: packages/tests
         run: |
           vsix=`find . -type f -name "*.vsix" | sed 's|.*/\(.*\)|\1|'`
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
+          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file $vsix
 
       - name: Install vsix(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
           $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
+          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file $vsix
 
       - name: proposal api support
         run: |
-          mkdir -p $HOME/.vscode
-          echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode/argv.json
+          mkdir -p $HOME/.vscode-insiders
+          echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode-insiders/argv.json
           
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -470,13 +486,13 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.90.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
      
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.90.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
       
       - name: Upload test result json file
         uses: actions/upload-artifact@v3
@@ -509,18 +525,48 @@ jobs:
           path: |
             ~/.fx/telemetryTest.log
 
-      - name: Download TestPlan
-        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
-        uses: actions/download-artifact@v3
+  test-plan-update:
+    needs: main
+    if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          name: testplan
-          path: ./packages/tests
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: setup project
+        run: |
+          pnpm --filter=@microsoft/teamsfx-test install
+      - uses: azure/login@v2
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
+          enable-AzPSSession: true
 
-      - name: Sync to Azure DevOps Test Plan
-        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
+      - name: Archive Test Plan
         working-directory: packages/tests
         run: |
-          npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
+          echo "Testplan id is $testplanid"
+          npx ts-node src/scripts/testPlan.ts archive $testplanid
+      
+      - name: Download TestPlan
+        uses: actions/download-artifact@v3
+        with:
+          path: ./packages/tests/mocha-results
+
+      - name: Sync to Azure DevOps Test Plan
+        working-directory: packages/tests
+        run: |
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mocha-results 
 
   rerun:
     permissions:

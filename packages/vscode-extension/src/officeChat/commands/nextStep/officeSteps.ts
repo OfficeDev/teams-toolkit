@@ -9,7 +9,6 @@ import {
   isDebugSucceededAfterSourceCodeChanged,
   isDependenciesInstalled,
   isDidNoActionAfterScaffolded,
-  isFirstInstalled,
   isHaveReadMe,
   isProjectOpened,
 } from "./condition";
@@ -18,40 +17,10 @@ import { OfficeWholeStatus } from "./types";
 // TODO: align the description with PM
 export const officeSteps: () => NextStep[] = () => [
   {
-    title: "Teams Toolkit",
-    description: `Teams Toolkit makes it simple to get started with app development for Microsoft Office Add-ins using Visual Studio Code. Start with a sample or a project template for common custom app built for your org (LOB app) scenarios. Save setup time with automated app registration and configuration. You can run and debug your Office Add-in locally.
-
-    `,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/install-teams-toolkit?tabs=vscode&pivots=visual-studio-code-v5",
-    commands: [
-      {
-        title: "Open Get-Started Page",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.OpenWelcome],
-      },
-      {
-        title: "Open Document",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.openOfficeDevDocument],
-      },
-    ],
-    followUps: [],
-    condition: (status: OfficeWholeStatus) => isFirstInstalled(status),
-    priority: 0,
-  },
-  {
-    title: "New Project",
-    description:
-      "You can start with built-in Office Add-in templates or start with official Office Add-in samples in Teams Toolkit.",
-    docLink: "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/learning-path-beginner",
-    commands: [
-      {
-        title: "Open Sample Gallery",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.OpenSamples],
-      },
-    ],
+    title: "Create a New Project",
+    description: `Type in "@office /create" in the input box to create a new Office add-in project per your description.`,
+    docLink: "",
+    commands: [],
     followUps: [
       {
         label: "@office /create",
@@ -59,6 +28,16 @@ export const officeSteps: () => NextStep[] = () => [
         prompt: "",
       },
     ],
+    condition: (status: OfficeWholeStatus) => !isProjectOpened(status),
+    priority: 0,
+  },
+  {
+    title: "View Samples",
+    description: `Learn how to use various features when developing Office Add-ins with the code samples.`,
+    docLink:
+      "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/office-add-in-code-samples",
+    commands: [],
+    followUps: [],
     condition: (status: OfficeWholeStatus) => !isProjectOpened(status),
     priority: 0,
   },

@@ -4,7 +4,7 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import { err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { setLocale } from "../globalVars";
+import { setLocale } from "../../common/globalVars";
 import { FilePermissionError, assembleError } from "../../error/common";
 
 /**

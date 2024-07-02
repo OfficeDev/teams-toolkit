@@ -77,7 +77,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateCreatedCard(page);
+      await validateCreatedCard(page, remoteDebugTestContext.appName);
     }
   );
 });

@@ -73,7 +73,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("functimernoti", appName, "TypeScript");
+      await createNewProject("functimernoti", appName, { lang: "TypeScript" });
       validateFileExist(projectPath, "src/httpTrigger.ts");
       validateFileExist(projectPath, "src/timerTrigger.ts");
       await provisionProject(appName, projectPath);

@@ -337,7 +337,7 @@ export class CommandPaletteCommands {
   public static readonly AddSpfxWebPart: string = "Teams: Add SPFx web part";
 }
 
-export type OptionType =
+export type AppType =
   | "tab"
   | "tabnsso"
   | "tabbot"
@@ -348,12 +348,8 @@ export type OptionType =
   | "msg"
   | "msgsa"
   | "m365lp"
-  | "spfxreact"
-  | "spfxnone"
-  | "spfxmin"
-  | "gspfxreact"
-  | "gspfxnone"
-  | "gspfxmin"
+  | "spfx"
+  | "gspfx"
   | "dashboard"
   | "workflow"
   | "timenoti"
@@ -366,7 +362,7 @@ export type OptionType =
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"
-  | "importsinglespfx";
+  | "importspfx";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

@@ -54,14 +54,14 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Create and run SPFx project with None framework",
+    "[auto] Create and run SPFx project with React framework",
     {
-      testPlanCaseId: 9454331,
+      testPlanCaseId: 11042969,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfxnone", appName);
+      await createNewProject("spfx", appName, { spfxCompoentType: "React" });
       validateFileExist(projectPath, "src/src/index.ts");
       await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);

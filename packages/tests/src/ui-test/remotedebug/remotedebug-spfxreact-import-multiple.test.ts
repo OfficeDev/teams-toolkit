@@ -11,12 +11,7 @@ import {
   Timeout,
   Notification,
 } from "../../utils/constants";
-import {
-  RemoteDebugTestContext,
-  configSpfxGlobalEnv,
-  generateYoSpfxProject,
-  runDeploy,
-} from "./remotedebugContext";
+import { RemoteDebugTestContext, runDeploy } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
@@ -31,7 +26,11 @@ import {
 import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
-import { validateFileExist } from "../../utils/commonUtils";
+import {
+  configSpfxGlobalEnv,
+  generateYoSpfxProject,
+  validateFileExist,
+} from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -77,7 +76,7 @@ describe("Remote debug Tests", function () {
         componentName: "helloworld",
       });
       const driver = VSBrowser.instance.driver;
-      await createNewProject("importsinglespfx", appName);
+      await createNewProject("importspfx", appName);
       validateFileExist(projectPath, "src/src/index.ts");
       validateFileExist(projectPath, "src/.yo-rc.json");
       await clearNotifications();

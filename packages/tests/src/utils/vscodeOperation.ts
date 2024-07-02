@@ -18,15 +18,13 @@ import {
   SideBarView,
   EditorView,
   WebElement,
-  ModalDialog,
 } from "vscode-extension-tester";
 import {
   CommandPaletteCommands,
   Extension,
-  OptionType,
   Timeout,
-  TreeViewCommands,
   CreateProjectQuestion,
+  AppType,
 } from "./constants";
 import { RetryHandler } from "./retryHandler";
 import isWsl from "is-wsl";
@@ -543,18 +541,30 @@ async function setInputTextWsl(
 }
 
 export async function createNewProject(
-  option: OptionType,
+  appType: AppType,
   appName: string,
-  lang?: "JavaScript" | "TypeScript" | "Python",
-  testRootFolder?: string,
-  appNameCopySuffix = "copy"
+  option?: {
+    lang?: "JavaScript" | "TypeScript" | "Python";
+    spfxCompoentType?: "React" | "None" | "Minimal";
+    aiType?: "Azure OpenAI" | "OpenAI";
+    testRootFolder?: string;
+    appNameCopySuffix?: string;
+  }
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
   let scaffoldingTime = 60 * 1000;
   const scaffoldingSpfxTime = 7 * 60 * 1000;
-  if (!testRootFolder) {
-    testRootFolder = path.resolve(__dirname, "../../resource/");
-  }
+  const appNameCopySuffix = option?.appNameCopySuffix
+    ? option.appNameCopySuffix
+    : "copy";
+  const testRootFolder = option?.testRootFolder
+    ? option.testRootFolder
+    : path.resolve(__dirname, "../../resource/");
+  const aiType = option?.aiType ? option.aiType : "OpenAI";
+  const spfxCompoentType = option?.spfxCompoentType
+    ? option.spfxCompoentType
+    : "React";
+  const lang = option?.lang ? option.lang : "JavaScript";
   await execCommandIfExist(
     CommandPaletteCommands.CreateProjectCommand,
     Timeout.webView
@@ -562,17 +572,13 @@ export async function createNewProject(
   console.log("Create new project: ", appName);
   const input = await InputBox.create();
   // if exist click it
-  switch (option) {
+  switch (appType) {
     case "tabnsso": {
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await input.selectQuickPick("Basic Tab");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "tab": {
@@ -580,11 +586,7 @@ export async function createNewProject(
       await input.selectQuickPick("React with Fluent UI");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "bot": {
@@ -592,11 +594,7 @@ export async function createNewProject(
       await input.selectQuickPick("Basic Bot");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "crbot": {
@@ -607,11 +605,7 @@ export async function createNewProject(
       await input.confirm();
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "funcnoti": {
@@ -628,11 +622,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "restnoti": {
@@ -644,11 +634,7 @@ export async function createNewProject(
       await input.confirm();
 
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "msg": {
@@ -656,11 +642,7 @@ export async function createNewProject(
       await input.selectQuickPick("Collect Form Input and Process Data");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "msgsa": {
@@ -669,11 +651,7 @@ export async function createNewProject(
       await input.selectQuickPick("Start with a Bot");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "m365lp": {
@@ -681,39 +659,10 @@ export async function createNewProject(
       await input.selectQuickPick("React with Fluent UI");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
-    case "spfxreact": {
-      scaffoldingTime = scaffoldingSpfxTime;
-      await input.selectQuickPick(CreateProjectQuestion.Tab);
-      await driver.sleep(Timeout.input);
-      // await input.selectQuickPick("SPFx");
-      await input.setText("SPFx");
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
-      // Wait for Node version check
-      await driver.sleep(Timeout.longTimeWait);
-      await input.selectQuickPick(
-        CreateProjectQuestion.SpfxSharepointFrameworkInTtk
-      );
-      await driver.sleep(Timeout.input);
-      // Choose React or None
-      await input.selectQuickPick("React");
-      // Input Web Part Name
-      await input.setText(appName);
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      // Input Web Part Description
-      await driver.sleep(Timeout.input);
-      break;
-    }
-    case "spfxnone": {
+    case "spfx": {
       scaffoldingTime = scaffoldingSpfxTime;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
@@ -730,7 +679,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose React or None
-      await input.selectQuickPick("None");
+      await input.selectQuickPick(spfxCompoentType);
       // Input Web Part Name
       await input.setText(appName);
       await driver.sleep(Timeout.input);
@@ -739,33 +688,7 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
-    case "spfxmin": {
-      scaffoldingTime = scaffoldingSpfxTime;
-      // Choose Tab(SPFx)
-      await input.selectQuickPick(CreateProjectQuestion.Tab);
-      await driver.sleep(Timeout.input);
-      // await input.selectQuickPick("SPFx");
-      await input.setText("SPFx");
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
-      // Wait for Node version check
-      await driver.sleep(Timeout.longTimeWait);
-      await input.selectQuickPick(
-        CreateProjectQuestion.SpfxSharepointFrameworkInTtk
-      );
-      await driver.sleep(Timeout.input);
-      // Choose React or None
-      await input.selectQuickPick("Minimal");
-      // Input Web Part Name
-      await input.setText(appName);
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      // Input Web Part Description
-      await driver.sleep(Timeout.input);
-      break;
-    }
-    case "gspfxreact": {
+    case "gspfx": {
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
       // await input.selectQuickPick("SPFx");
@@ -780,7 +703,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose React or None
-      await input.selectQuickPick("React");
+      await input.selectQuickPick(spfxCompoentType);
       // Input Web Part Name
       await input.setText(appName);
       await driver.sleep(Timeout.input);
@@ -789,31 +712,7 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
-    case "gspfxnone": {
-      await input.selectQuickPick(CreateProjectQuestion.Tab);
-      await driver.sleep(Timeout.input);
-      // await input.selectQuickPick("SPFx");
-      await input.setText("SPFx");
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
-      // Wait for Node version check
-      await driver.sleep(Timeout.longTimeWait);
-      await input.selectQuickPick(
-        CreateProjectQuestion.SpfxSharepointFrameworkGlobalEnvInTtk
-      );
-      await driver.sleep(Timeout.input);
-      // Choose React or None
-      await input.selectQuickPick("None");
-      // Input Web Part Name
-      await input.setText(appName);
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      // Input Web Part Description
-      await driver.sleep(Timeout.input);
-      break;
-    }
-    case "importsinglespfx": {
+    case "importspfx": {
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
       // await input.selectQuickPick("SPFx");
@@ -851,11 +750,7 @@ export async function createNewProject(
       await input.selectQuickPick("Dashboard");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "workflow": {
@@ -863,11 +758,7 @@ export async function createNewProject(
       await input.selectQuickPick("Sequential Workflow in Chat");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "timenoti": {
@@ -879,11 +770,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "functimernoti": {
@@ -895,11 +782,7 @@ export async function createNewProject(
       );
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "addin": {
@@ -932,11 +815,7 @@ export async function createNewProject(
       await input.selectQuickPick("Link Unfurling");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "aichat": {
@@ -945,13 +824,9 @@ export async function createNewProject(
       await input.selectQuickPick("Basic AI Chatbot");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("Azure OpenAI");
+      await input.selectQuickPick(aiType);
       await driver.sleep(Timeout.input);
       // input fake Azure OpenAI Key
       await input.setText("fake");
@@ -978,11 +853,7 @@ export async function createNewProject(
       await input.selectQuickPick("Build with Assistants API");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
       // input fake OpenAI Key
       await input.setText("fake");
@@ -998,11 +869,7 @@ export async function createNewProject(
       await input.selectQuickPick("None");
       await driver.sleep(Timeout.input);
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     case "msgopenapi": {
@@ -1030,11 +897,7 @@ export async function createNewProject(
       await input.selectQuickPick("Start with a new API");
       await input.selectQuickPick("API Key");
       // Choose programming language
-      if (lang) {
-        await input.selectQuickPick(lang);
-      } else {
-        await input.selectQuickPick("JavaScript");
-      }
+      await input.selectQuickPick(lang);
       break;
     }
     default:

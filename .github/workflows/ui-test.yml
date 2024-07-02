@@ -155,9 +155,10 @@ jobs:
 
       - name: clean devtunnel
         run: |
-          curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
-          ~/bin/devtunnel delete-all -f
+          wget https://tunnelsassetsprod.blob.core.windows.net/cli/1.0.1249+67b1cd300c/linux-x64-devtunnel -O ./devtunnel
+          chmod 777 ./devtunnel
+          ./devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
+          ./devtunnel delete-all -f
 
     outputs:
       npm-tag: ${{ steps.bvt.outputs.npm-tag || steps.pvt.outputs.npm-tag }}

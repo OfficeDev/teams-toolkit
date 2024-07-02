@@ -202,8 +202,9 @@ export class VsCodeUI extends VSCodeUI {
       diagnosticMap.set(canonicalFile, diagnostics);
 
       const fileUri = Uri.file(
-        path.join(workspaceUri?.toString() ?? "", "appPackage", "manifest.json")
+        path.join(workspaceUri?.fsPath?.toString() ?? "", "appPackage", "manifest.json")
       );
+      console.log(fileUri);
       diagnosticMap.forEach((diags, file) => {
         diagnosticCollection.set(fileUri, diags);
       });

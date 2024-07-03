@@ -51,6 +51,7 @@ export abstract class CaseFactory {
     skipDeploy?: boolean;
     skipValidate?: boolean;
     skipPackage?: boolean;
+    skipErrorMessage?: string;
   };
   public custimized?: Record<string, string>;
   public processEnv?: NodeJS.ProcessEnv;
@@ -75,6 +76,7 @@ export abstract class CaseFactory {
       skipDeploy?: boolean;
       skipValidate?: boolean;
       skipPackage?: boolean;
+      skipErrorMessage?: string;
     } = {},
     custimized?: Record<string, string>,
     processEnv?: NodeJS.ProcessEnv
@@ -180,7 +182,12 @@ export abstract class CaseFactory {
           expect(result).to.be.true;
           process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
 
-          const { success } = await Executor.provision(projectPath);
+          const { success } = await Executor.provision(
+            projectPath,
+            "dev",
+            true,
+            options?.skipErrorMessage
+          );
           expect(success).to.be.true;
 
           // Validate Provision

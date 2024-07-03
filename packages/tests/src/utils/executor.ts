@@ -153,8 +153,21 @@ export class Executor {
     );
   }
 
-  static async provision(workspace: string, env = "dev", isV3 = true) {
-    return this.executeCmd(workspace, "provision", env, undefined, false, isV3);
+  static async provision(
+    workspace: string,
+    env = "dev",
+    isV3 = true,
+    skipErrorMessage?: string
+  ) {
+    return this.executeCmd(
+      workspace,
+      "provision",
+      env,
+      undefined,
+      false,
+      isV3,
+      skipErrorMessage
+    );
   }
 
   static async provisionWithCustomizedProcessEnv(

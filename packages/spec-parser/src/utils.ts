@@ -484,10 +484,8 @@ export class Utils {
 
         currentCount += items.length;
       } else {
-        if (currentCount < maxCount) {
-          result.push(element);
-          currentCount++;
-        }
+        result.push(element);
+        currentCount++;
       }
 
       if (currentCount >= maxCount) {

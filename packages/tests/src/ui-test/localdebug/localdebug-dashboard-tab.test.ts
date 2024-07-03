@@ -1,6 +1,6 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
@@ -24,10 +24,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext(
-      "dashboard",
-      "javascript"
-    );
+    localDebugTestContext = new LocalDebugTestContext("dashboard", {
+      lang: "javascript",
+    });
     await localDebugTestContext.before();
   });
 

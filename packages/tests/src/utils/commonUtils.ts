@@ -383,21 +383,39 @@ export async function configSpfxGlobalEnv() {
 }
 
 export async function generateYoSpfxProject(option: {
-  solutionName: string;
+  solutionName?: string;
   componentName: string;
   componentType?: string;
+  existingSolutionName?: string;
 }) {
-  const resourcePath = path.resolve(__dirname, "../../.test-resources/");
   try {
-    console.log(`Start to generate SPFx project:`);
-    const result = await execAsync(
-      `yo @microsoft/sharepoint --solution-name ${option.solutionName} --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
-      {
-        cwd: resourcePath,
-      }
-    );
-    console.log(`[Successfully] completed to generate SPFx project.`);
-    console.log(`${result.stdout}`);
+    if (option?.solutionName) {
+      console.log(`Start to generate SPFx project:`);
+      const resourcePath = path.resolve(__dirname, "../../.test-resources/");
+      const result = await execAsync(
+        `yo @microsoft/sharepoint --solution-name ${option.solutionName} --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
+        {
+          cwd: resourcePath,
+        }
+      );
+      console.log(`[Successfully] completed to generate SPFx project.`);
+      console.log(`${result.stdout}`);
+    } else if (option?.existingSolutionName) {
+      console.log(`Start to add web part to SPFx project:`);
+      const resourcePath = path.resolve(
+        __dirname,
+        "../../.test-resources/",
+        option.existingSolutionName
+      );
+      const result = await execAsync(
+        `yo @microsoft/sharepoint --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
+        {
+          cwd: resourcePath,
+        }
+      );
+      console.log(`[Successfully] completed to add web part to SPFx project.`);
+      console.log(`${result.stdout}`);
+    }
   } catch (error) {
     console.log(error);
     throw new Error(`Failed to generate SPFx project: ${error}`);

@@ -35,8 +35,9 @@ export const m365UnacquireCommand: CLICommand = {
       type: "string",
     },
     {
-      name: QuestionNames.ProjectPath,
-      description: commands.uninstall.options["projectPath"],
+      name: "folder",
+      questionName: QuestionNames.ProjectPath,
+      description: commands.uninstall.options["folder"],
       type: "string",
     },
     {
@@ -55,8 +56,12 @@ export const m365UnacquireCommand: CLICommand = {
       description: "Remove the acquired M365 App by Manifest ID",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall -i false --mode env --env xxx --options m365-app,app-registration,bot-framework-registration`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall -i false --mode env --env xxx --options m365-app,app-registration,bot-framework-registration --folder ./myapp`,
       description: "Remove the acquired M365 App by local env",
+    },
+    {
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall`,
+      description: "Uninstall in interactive mode",
     },
   ],
   telemetry: {

@@ -409,7 +409,7 @@ export interface UserInteraction {
   /**
    * Supports in VSC only for now. Show diagnostic message in editor.
    */
-  showDiagnosticMessage?(): Promise<Result<string, FxError>>;
+  showDiagnosticInfo?(diagnostics: IDiagnosticInfo[]): void;
 }
 
 export interface IProgressHandler {
@@ -433,4 +433,71 @@ export interface IProgressHandler {
    * can be reused after calling end().
    */
   end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
+}
+
+export enum DiagnosticSeverity {
+  /**
+   * Something not allowed by the rules of a language or other means.
+   */
+  Error = 0,
+
+  /**
+   * Something suspicious but allowed.
+   */
+  Warning = 1,
+
+  /**
+   * Something to inform about but not a problem.
+   */
+  Information = 2,
+
+  /**
+   * Something to hint to a better way of doing it, like proposing
+   * a refactoring.
+   */
+  Hint = 3,
+}
+
+export interface IDiagnosticInfo {
+  /**
+   * Path of file where diagnostic shows.
+   */
+  filePath: string;
+  /**
+   * Line number where diagnostic info starts.
+   */
+  startLine: number;
+  /**
+   * Index of the beginning character where diagnostic info shows
+   */
+  startIndex: number;
+  /**
+   * Line number where diagnostic info ends.
+   */
+  endLine: number;
+  /**
+   * Index of the end character where diagnostic info ends.
+   */
+  endIndex: number;
+  /**
+   * Message.
+   */
+  message: string;
+  /**
+   * Severity.
+   */
+  severity: DiagnosticSeverity;
+  /**
+   * A code or identifier for this diagnostic.
+   */
+  code?: {
+    /**
+     * Value.
+     */
+    value: string;
+    /**
+     * Link to open with more information about the diagnostic error.
+     */
+    link: string;
+  };
 }

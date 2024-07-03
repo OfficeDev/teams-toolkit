@@ -10,11 +10,13 @@ import {
   Uri,
   Range,
   Position,
+  languages,
 } from "vscode";
 
 import {
   err,
   FxError,
+  IDiagnosticInfo,
   InputResult,
   ok,
   Result,
@@ -148,69 +150,95 @@ export class VsCodeUI extends VSCodeUI {
     return res;
   }
 
-  async showDiagnosticMessage(): Promise<Result<string, FxError>> {
-    // if(!diagnosticCollection) {
-
-    // }
-    await sleep(1000);
+  showDiagnosticInfo(diagnostics: IDiagnosticInfo[]): void {
     diagnosticCollection.clear();
-    const errors = [
-      {
-        id: "958d86ff-864b-474d-bea4-d8068b8c8cad",
-        title: "ShortNameContainsPreprodWording",
-        content: "Short name doesn't contain beta environment keywords",
-        helpUrl:
-          "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name",
-        filePath: "manifest.json",
-        shortCodeNumber: 4000,
-        validationCategory: "Name",
-      },
-    ];
-
     const diagnosticMap: Map<string, Diagnostic[]> = new Map();
-    errors.forEach((error) => {
-      const canonicalFile = "manifest.json";
-      const regex = new RegExp(error.validationCategory);
-
-      // const text = document.getText();
-
-      // const line = document.lineAt(document.positionAt(matches.index).line);
-      // const indexOf = line.text.indexOf(match);
-      // const position = new Position(line.lineNumber, indexOf);
-      const range = new Range(new Position(6, 2), new Position(6, 6));
-
-      let diagnostics = diagnosticMap.get(canonicalFile);
-      if (!diagnostics) {
-        diagnostics = [];
+    for (const diagnostic of diagnostics) {
+      let diagnosticsOfFile = diagnosticMap.get(diagnostic.filePath);
+      if (!diagnosticsOfFile) {
+        diagnosticsOfFile = [];
+        diagnosticMap.set(diagnostic.filePath, diagnosticsOfFile);
       }
 
-      //const message = `[✏️Edit env file](${commandUri.toString()})`;
-      const diag = new Diagnostic(
-        range,
-        "Short name doesn't contain beta environment keywords",
-        DiagnosticSeverity.Warning
-      );
-      diag.code = {
-        value: "NameField",
-        target: Uri.parse(
-          "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name"
+      const diagnosticInVSC = new Diagnostic(
+        new Range(
+          new Position(diagnostic.startLine, diagnostic.startIndex),
+          new Position(diagnostic.endLine, diagnostic.endIndex)
         ),
-      };
-      diag.source = "TTK";
-
-      diagnostics.push(diag);
-      diagnosticMap.set(canonicalFile, diagnostics);
-
-      const fileUri = Uri.file(
-        path.join(workspaceUri?.fsPath?.toString() ?? "", "appPackage", "manifest.json")
+        diagnostic.message,
+        diagnostic.severity
       );
-      console.log(fileUri);
-      diagnosticMap.forEach((diags, file) => {
-        diagnosticCollection.set(fileUri, diags);
-      });
+      if (diagnostic.code) {
+        diagnosticInVSC.code = {
+          value: diagnostic.code.value,
+          target: Uri.parse(diagnostic.code.link),
+        };
+      }
+      diagnosticsOfFile.push(diagnosticInVSC);
+    }
+    diagnosticMap.forEach((diags, filePath) => {
+      diagnosticCollection.set(Uri.file(filePath), diags);
     });
 
-    return ok("donevsc");
+    // diagnosticCollection.clear();
+    // const errors = [
+    //   {
+    //     id: "958d86ff-864b-474d-bea4-d8068b8c8cad",
+    //     title: "ShortNameContainsPreprodWording",
+    //     content: "Short name doesn't contain beta environment keywords",
+    //     helpUrl:
+    //       "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name",
+    //     filePath: "manifest.json",
+    //     shortCodeNumber: 4000,
+    //     validationCategory: "Name",
+    //   },
+    // ];
+
+    // const collection2 = languages.createDiagnosticCollection("teamstoolkit2");
+
+    // const diagnosticMap: Map<string, Diagnostic[]> = new Map();
+    // errors.forEach((error) => {
+    //   const canonicalFile = "manifest.json";
+    //   const regex = new RegExp(error.validationCategory);
+
+    //   // const text = document.getText();
+
+    //   // const line = document.lineAt(document.positionAt(matches.index).line);
+    //   // const indexOf = line.text.indexOf(match);
+    //   // const position = new Position(line.lineNumber, indexOf);
+    //   const range = new Range(new Position(6, 2), new Position(6, 6));
+
+    //   let diagnostics = diagnosticMap.get(canonicalFile);
+    //   if (!diagnostics) {
+    //     diagnostics = [];
+    //   }
+
+    //   //const message = `[✏️Edit env file](${commandUri.toString()})`;
+    //   const diag = new Diagnostic(
+    //     range,
+    //     "Short name doesn't contain beta environment keywords",
+    //     DiagnosticSeverity.Warning
+    //   );
+    //   diag.code = {
+    //     value: "NameField",
+    //     target: Uri.parse(
+    //       "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name"
+    //     ),
+    //   };
+    //   diag.source = "TTK";
+
+    //   diagnostics.push(diag);
+    //   diagnosticMap.set(canonicalFile, diagnostics);
+
+    //   const fileUri = Uri.file(
+    //     path.join(workspaceUri?.fsPath?.toString() ?? "", "appPackage", "manifest.json")
+    //   );
+    //   console.log(fileUri);
+    //   diagnosticMap.forEach((diags, file) => {
+    //     diagnosticCollection.set(fileUri, diags);
+    //     collection2.set(fileUri, diags);
+    //   });
+    // });
   }
 }
 

@@ -211,13 +211,6 @@ export class ValidateAppPackageDriver implements StepDriver {
         }
       } else {
         // logs in output window
-        if (context && context.ui) {
-          const diaMessage = await context.ui.showDiagnosticMessage!();
-          if (diaMessage.isErr()) {
-            context.logProvider?.error(diaMessage.error.message);
-          }
-        }
-
         const errors = validationResult.errors
           .map((error) => {
             let message = `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
@@ -310,6 +303,9 @@ export class ValidateAppPackageDriver implements StepDriver {
           "driver.teamsApp.validate.result.display",
           summaryStr.join(", ")
         );
+        if (context.platform === Platform.VSCode && errors.length > 0) {
+          context.ui?.showDiagnosticInfo!([]);
+        }
         if (args.showMessage) {
           // For non-lifecycle commands, just show the message
           if (validationResult.errors.length > 0) {

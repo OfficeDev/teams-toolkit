@@ -28,7 +28,7 @@ export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
 export let core: FxCore;
 export let tools: Tools;
-export let diagnosticCollection: vscode.DiagnosticCollection;
+export let diagnosticCollection: vscode.DiagnosticCollection; // Collection of diagnositcs after running app validation.
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {

@@ -1,16 +1,16 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as vsc_ui from "../../src/qm/vsc_ui";
+import * as localizeUtils from "../../../src/utils/localizeUtils";
+import * as vsc_ui from "../../../src/qm/vsc_ui";
 import * as vscode from "vscode";
 import {
   checkCopilotCallback,
   checkSideloadingCallback,
-} from "../../src/handlers/checkAccessCallback";
+} from "../../../src/handlers/accounts/checkAccessCallback";
 import { ok } from "@microsoft/teamsfx-api";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { WebviewPanel } from "../../src/controls/webviewPanel";
-import { PanelType } from "../../src/controls/PanelType";
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+import { WebviewPanel } from "../../../src/controls/webviewPanel";
+import { PanelType } from "../../../src/controls/PanelType";
 
 describe("checkAccessCallback", () => {
   describe("checkCopilotCallback", () => {
@@ -67,6 +67,10 @@ describe("checkAccessCallback", () => {
 
     afterEach(() => {
       sandbox.restore();
+    });
+
+    beforeEach(() => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     });
 
     it("checkSideloadingCallback()", async () => {

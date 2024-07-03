@@ -884,7 +884,7 @@ const V3Version = MetadataV3.projectVersion;
       assert.isTrue(res.isErr() && res.error.name === "test");
     });
 
-    it("create API Plugin with none auth (feature flag enabled)", async () => {
+    it("create API Plugin with No authentication (feature flag enabled)", async () => {
       const v3ctx = createContext();
       v3ctx.userInteraction = new MockedUserInteraction();
 

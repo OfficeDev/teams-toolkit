@@ -125,16 +125,21 @@ export class Utils {
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
 
-      if (responseObject?.content?.["application/json"]) {
-        multipleMediaType = false;
-        json = responseObject.content["application/json"];
-        if (Utils.containMultipleMediaTypes(responseObject)) {
-          multipleMediaType = true;
-          if (!allowMultipleMediaType) {
-            json = {};
+      if (responseObject?.content) {
+        for (const contentType of Object.keys(responseObject.content)) {
+          // json media type can also be "application/json; charset=utf-8"
+          if (contentType.indexOf("application/json") >= 0) {
+            multipleMediaType = false;
+            json = responseObject.content[contentType];
+            if (Utils.containMultipleMediaTypes(responseObject)) {
+              multipleMediaType = true;
+              if (!allowMultipleMediaType) {
+                json = {};
+              }
+            } else {
+              return { json, multipleMediaType };
+            }
           }
-        } else {
-          break;
         }
       }
     }
@@ -471,17 +476,21 @@ export class Utils {
           maxCount - currentCount
         );
 
-        result.push({
-          type: ConstantString.ContainerType,
-          $data: (element as ArrayElement).$data,
-          items: items,
-        });
+        if (items.length !== 0) {
+          result.push({
+            type: ConstantString.ContainerType,
+            $data: (element as ArrayElement).$data,
+            items: items,
+          });
 
-        currentCount += items.length;
+          currentCount += items.length;
+        }
       } else {
         if (currentCount < maxCount) {
           result.push(element);
           currentCount++;
+        } else {
+          break;
         }
       }
     }

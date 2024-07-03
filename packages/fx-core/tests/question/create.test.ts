@@ -249,7 +249,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode me from new api (none auth)", async () => {
+    it("traverse in vscode me from new api (No authentication)", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -2391,7 +2391,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2477,7 +2477,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2673,7 +2673,7 @@ describe("scaffold question", () => {
             {
               id: "GET /store/order",
               label: "GET /store/order",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2795,7 +2795,7 @@ describe("scaffold question", () => {
                 serverUrl: "https://server",
               },
               groupName: "GET",
-              detail: "None auth",
+              detail: "No authentication",
               id: "GET /user/{userId}",
               label: "GET /user/{userId}",
             },

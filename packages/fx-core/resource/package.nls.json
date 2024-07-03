@@ -255,7 +255,7 @@
   "core.TabSPFxOption.detailNew": "Build UI with SharePoint Framework",
   "core.TabNonSso.label": "Basic Tab",
   "core.TabNonSso.detail": "A simple implementation of a web app that's ready to customize",
-  "core.copilotPlugin.api.noAuth": "None auth",
+  "core.copilotPlugin.api.noAuth": "No authentication",
   "core.copilotPlugin.api.apiKeyAuth": "API key auth(Bearer token auth)",
   "core.copilotPlugin.api.oauth": "OAuth(Auth code flow)",
   "core.copilotPlugin.validate.apiSpec.summary": "Teams Toolkit has checked your OpenAPI description document:\n\nSummary:\n%s.\n%s\n%s",

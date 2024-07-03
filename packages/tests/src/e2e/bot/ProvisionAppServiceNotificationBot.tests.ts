@@ -12,7 +12,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 describe("Provision Notification Node", () => {
   it(
     "Provision Resource: Notification Node",
-    { testPlanCaseId: 15685832, author: "fanhu@microsoft.com" },
+    { testPlanCaseId: 24132569, author: "fanhu@microsoft.com" },
     async function () {
       await happyPathTest(Runtime.Node);
     }

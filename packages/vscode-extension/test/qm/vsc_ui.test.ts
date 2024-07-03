@@ -999,7 +999,7 @@ describe("UI Unit Tests", async () => {
         },
       } as unknown as DiagnosticCollection;
 
-      sandbox.stub(languages, "createDiagnosticCollection").returns(collection as any);
+      globalVariables.setDiagnosticCollection(collection);
       const ui = new VsCodeUI(<ExtensionContext>{});
 
       ui.showDiagnosticInfo([

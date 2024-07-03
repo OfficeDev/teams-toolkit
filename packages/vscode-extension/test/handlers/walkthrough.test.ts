@@ -19,12 +19,11 @@ describe("walkthrough", () => {
 
   it("create proejct from walkthrough", async () => {
     const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-
     const inputs = {} as Inputs;
     const systemInputsStub = sandbox.stub(environmentUtils, "getSystemInputs").callsFake(() => {
       return inputs;
     });
-    //const systemInputsStub = sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+
     const runCommandStub = sandbox.stub(handlers, "runCommand").resolves(ok(null));
 
     await createProjectFromWalkthroughHandler([
@@ -40,9 +39,11 @@ describe("walkthrough", () => {
   });
 
   it("build intelligent apps", async () => {
+    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
 
     await openBuildIntelligentAppsWalkthroughHandler();
+    sandbox.assert.calledOnce(sendTelemetryEventStub);
     sandbox.assert.calledOnceWithExactly(
       executeCommands,
       "workbench.action.openWalkthrough",

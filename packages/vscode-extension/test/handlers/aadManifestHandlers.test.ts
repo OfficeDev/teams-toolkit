@@ -9,7 +9,7 @@ import * as localizeUtils from "@microsoft/teamsfx-core/build/common/localizeUti
 import * as errorCommon from "../../src/error/common";
 import * as sharedOpts from "../../src/handlers/sharedOpts";
 import * as envHandlers from "../../src/handlers/envHandlers";
-import { err, ok } from "@microsoft/teamsfx-api";
+import { FxError, err, ok } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { MockCore } from "../mocks/mockCore";
@@ -23,6 +23,11 @@ describe("aadManifestHandlers", () => {
   describe("openPreviewAadFileHandler", () => {
     const sandbox = sinon.createSandbox();
 
+    beforeEach(() => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    });
+
     afterEach(() => {
       sandbox.restore();
     });
@@ -33,7 +38,6 @@ describe("aadManifestHandlers", () => {
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(false);
       sandbox.stub(localizeUtils, "getDefaultString").returns("InvalidProjectError");
       sandbox.stub(localizeUtils, "getLocalizedString").returns("InvalidProjectError");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
       const res = await openPreviewAadFileHandler([]);
       chai.assert.isTrue(res.isErr());
       chai.assert.equal(res.isErr() ? res.error.message : "Not Err", "InvalidProjectError");
@@ -44,7 +48,6 @@ describe("aadManifestHandlers", () => {
       sandbox.stub(globalVariables, "core").value(core);
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
       sandbox.stub(envHandlers, "askTargetEnvironment").resolves(err("selectEnvErr") as any);
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
       const res = await openPreviewAadFileHandler([]);
       chai.assert.isTrue(res.isErr());
       chai.assert.equal(res.isErr() ? res.error : "Not Err", "selectEnvErr");
@@ -56,8 +59,6 @@ describe("aadManifestHandlers", () => {
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
       sandbox.stub(envHandlers, "askTargetEnvironment").resolves(ok("dev"));
       sandbox.stub(sharedOpts, "runCommand").resolves(err("runCommandErr") as any);
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
       const res = await openPreviewAadFileHandler([]);
       chai.assert.isTrue(res.isErr());
       chai.assert.equal(res.isErr() ? res.error : "Not Err", "runCommandErr");
@@ -79,7 +80,6 @@ describe("aadManifestHandlers", () => {
       sandbox.stub(envHandlers, "askTargetEnvironment").resolves(ok("dev"));
       sandbox.stub(errorCommon, "showError").callsFake(async () => {});
       sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
       const res = await openPreviewAadFileHandler([]);
       chai.assert.isTrue(res.isErr());
     });
@@ -100,7 +100,6 @@ describe("aadManifestHandlers", () => {
       sandbox.stub(envHandlers, "askTargetEnvironment").resolves(ok("dev"));
       sandbox.stub(errorCommon, "showError").callsFake(async () => {});
       sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
       sandbox.stub(vscode.workspace, "openTextDocument").resolves();
       sandbox.stub(vscode.window, "showTextDocument").resolves();
 
@@ -112,23 +111,30 @@ describe("aadManifestHandlers", () => {
   describe("updateAadAppManifestHandler", () => {
     const sandbox = sinon.createSandbox();
 
+    beforeEach(() => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    });
+
     afterEach(() => {
       sandbox.restore();
     });
 
     it("deployAadAppmanifest", async () => {
       sandbox.stub(globalVariables, "core").value(new MockCore());
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
       await updateAadAppManifestHandler([{ fsPath: "path/aad.dev.template" }]);
       sandbox.assert.calledOnce(deployAadManifest);
-      deployAadManifest.restore();
     });
   });
 
   describe("editAadManifestTemplate", () => {
     const sandbox = sinon.createSandbox();
+
+    beforeEach(() => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    });
 
     afterEach(() => {
       sandbox.restore();
@@ -142,7 +148,7 @@ describe("aadManifestHandlers", () => {
       const openTextDocumentStub = sandbox
         .stub(vscode.workspace, "openTextDocument")
         .resolves({} as any);
-      const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
+      sandbox.stub(vscode.window, "showTextDocument");
 
       await editAadManifestTemplateHandler([null, "testTrigger"]);
 
@@ -157,9 +163,7 @@ describe("aadManifestHandlers", () => {
       const workspaceUri = vscode.Uri.file(workspacePath);
       sandbox.stub(globalVariables, "workspaceUri").value(workspaceUri);
 
-      const openTextDocumentStub = sandbox
-        .stub(vscode.workspace, "openTextDocument")
-        .resolves({} as any);
+      sandbox.stub(vscode.workspace, "openTextDocument").resolves({} as any);
       const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
 
       await editAadManifestTemplateHandler([]);
@@ -174,7 +178,7 @@ describe("aadManifestHandlers", () => {
       const openTextDocumentStub = sandbox
         .stub(vscode.workspace, "openTextDocument")
         .resolves({} as any);
-      const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
+      sandbox.stub(vscode.window, "showTextDocument");
 
       await editAadManifestTemplateHandler([null, "testTrigger"]);
 

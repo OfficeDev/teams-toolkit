@@ -489,7 +489,9 @@ describe("Core basic APIs", () => {
     };
     const res = await core.phantomMigrationV3(inputs);
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    assert.isTrue(
+      res._unsafeUnwrapErr().message.includes(new InvalidProjectError(inputs.projectPath!).message)
+    );
     await deleteTestProject(appName);
   });
 
@@ -502,7 +504,9 @@ describe("Core basic APIs", () => {
     };
     const res = await core.phantomMigrationV3(inputs);
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    assert.isTrue(
+      res._unsafeUnwrapErr().message.includes(new InvalidProjectError(inputs.projectPath!).message)
+    );
   });
 
   it("phantomMigrationV3 return error for V5 project", async () => {

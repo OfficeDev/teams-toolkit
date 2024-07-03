@@ -39,9 +39,9 @@ export async function openPreviewAadFileHandler(args: any[]): Promise<Result<any
   if (!validProject) {
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.PreviewAadManifestFile,
-      new InvalidProjectError()
+      new InvalidProjectError(workspacePath)
     );
-    return err(new InvalidProjectError());
+    return err(new InvalidProjectError(workspacePath));
   }
 
   const selectedEnv = await askTargetEnvironment();

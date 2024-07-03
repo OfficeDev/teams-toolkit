@@ -98,7 +98,16 @@ describe("Release Note", () => {
       sandbox.stub(vscode.window, "showInformationMessage").resolves();
       const instance = new ReleaseNote(context);
       await instance.show();
-      sinon.assert.notCalled(contextSpy);
+      sinon.assert.calledOnce(contextSpy);
+      chai.assert(telemetryStub.notCalled);
+    });
+    it("should not show changelog when it's a fresh install", async () => {
+      const contextSpy = sandbox.spy(context.globalState, "update");
+      sandbox.stub(context.globalState, "get").returns(undefined);
+      sandbox.stub(vscode.window, "showInformationMessage").resolves();
+      const instance = new ReleaseNote(context);
+      await instance.show();
+      sinon.assert.calledOnce(contextSpy);
       chai.assert(telemetryStub.notCalled);
     });
   });

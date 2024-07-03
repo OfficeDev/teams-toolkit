@@ -1580,7 +1580,7 @@ describe("scaffold question", () => {
         ]);
       });
 
-      it("traverse in vscode Copilot Plugin from new API with api key auth", async () => {
+      it("traverse in vscode Copilot Plugin from new API with API Key authentication", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -2380,7 +2380,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth(Bearer token auth)",
+              detail: "API Key authentication(Bearer token authentication)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2400,7 +2400,7 @@ describe("scaffold question", () => {
             {
               id: "get operation3",
               label: "get operation3",
-              detail: "OAuth(Auth code flow)",
+              detail: "OAuth(Authorization code flow)",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
@@ -2466,7 +2466,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth(Bearer token auth)",
+              detail: "API Key authentication(Bearer token authentication)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",

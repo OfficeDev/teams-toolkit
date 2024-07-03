@@ -4,16 +4,12 @@ import * as chai from "chai";
 import * as mockfs from "mock-fs";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import { Terminal } from "vscode";
 import { OfficeDevTerminal, TriggerCmdType } from "../../src/debug/taskTerminal/officeDevTerminal";
 import * as globalVariables from "../../src/globalVariables";
 import * as officeDevHandlers from "../../src/handlers/officeDevHandlers";
 import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/handlers/officeDevHandlers";
-import { VsCodeUI } from "../../src/qm/vsc_ui";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { openOfficeDevFolder } from "../../src/utils/workspaceUtils";
 import * as autoOpenHelper from "../../src/utils/autoOpenHelper";
 import * as readmeHandlers from "../../src/handlers/readmeHandlers";
@@ -30,7 +26,7 @@ describe("officeDevHandler", () => {
     openLinkFunc: (args?: any[]) => Promise<Result<boolean, FxError>>,
     urlPath: string
   ) {
-    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+    sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
     const openUrl = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
     const res = await openLinkFunc(undefined);
     chai.assert.isTrue(openUrl.calledOnce);
@@ -126,6 +122,10 @@ describe("officeDevHandler", () => {
 describe("autoOpenOfficeDevProjectHandler", () => {
   const sandbox = sinon.createSandbox();
 
+  beforeEach(() => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+  });
+
   afterEach(() => {
     sandbox.restore();
     mockfs.restore();
@@ -186,7 +186,6 @@ describe("autoOpenOfficeDevProjectHandler", () => {
       }
     });
     sandbox.stub(globalState, "globalStateUpdate");
-    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
@@ -215,6 +214,7 @@ describe("OfficeDevTerminal", () => {
     showStub = sandbox.stub();
     sendTextStub = sandbox.stub();
     getInstanceStub.returns({ show: showStub, sendText: sendTextStub });
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
   });
 
   afterEach(() => {
@@ -237,7 +237,7 @@ describe("OfficeDevTerminal", () => {
   });
 });
 
-class TerminalStub implements Terminal {
+class TerminalStub implements vscode.Terminal {
   name!: string;
   processId!: Thenable<number | undefined>;
   creationOptions!: Readonly<vscode.TerminalOptions | vscode.ExtensionTerminalOptions>;
@@ -267,6 +267,10 @@ describe("stopOfficeAddInDebug", () => {
   let sendTextStub: sinon.SinonStub;
   const sandbox = sinon.createSandbox();
 
+  beforeEach(() => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+  });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -289,6 +293,10 @@ describe("generateManifestGUID", () => {
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
   const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+  });
 
   afterEach(() => {
     sandbox.restore();

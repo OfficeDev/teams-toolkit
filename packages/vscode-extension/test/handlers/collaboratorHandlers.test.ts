@@ -8,11 +8,14 @@ import { ok, err, UserError } from "@microsoft/teamsfx-api";
 import { CollaborationState } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import { manageCollaboratorHandler } from "../../src/handlers/collaboratorHandlers";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("manageCollaboratorHandler", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     sandbox.stub(VsCodeLogInstance, "outputChannel").value({
       name: "name",
       append: (value: string) => {},
@@ -101,7 +104,7 @@ describe("manageCollaboratorHandler", () => {
     });
     const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
     sandbox
-      .stub(MockCore.prototype, "listCollaborator")
+      .stub(globalVariables.core, "listCollaborator")
       .throws(new Error("Cannot get user login information"));
 
     const result = await manageCollaboratorHandler("env");

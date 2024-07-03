@@ -2,15 +2,19 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import * as vscode from "vscode";
 import { UserCancelError } from "@microsoft/teamsfx-core";
-import { AzureAccountManager } from "../../src/commonlib/azureLogin";
-import { signinAzureCallback, signinM365Callback } from "../../src/handlers/signinAccountHandlers";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { setTools, tools } from "../../src/globalVariables";
+import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
+import {
+  signinAzureCallback,
+  signinM365Callback,
+} from "../../../src/handlers/accounts/signinAccountHandlers";
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+import { setTools, tools } from "../../../src/globalVariables";
 import { ok } from "@microsoft/teamsfx-api";
-import VsCodeLogInstance from "../../src/commonlib/log";
-import { VsCodeUI } from "../../src/qm/vsc_ui";
-import { getExpService } from "../../src/exp";
-import M365TokenInstance from "../../src/commonlib/m365Login";
+import VsCodeLogInstance from "../../../src/commonlib/log";
+import { VsCodeUI } from "../../../src/qm/vsc_ui";
+import { getExpService } from "../../../src/exp";
+import M365TokenInstance from "../../../src/commonlib/m365Login";
+import { MockTools } from "../../mocks/mockTools";
 
 describe("SigninAccountHandlers", () => {
   describe("signinAzureCallback", () => {
@@ -71,16 +75,7 @@ describe("SigninAccountHandlers", () => {
 
   describe("signinM365Callback", () => {
     const sandbox = sinon.createSandbox();
-    setTools({
-      logProvider: VsCodeLogInstance,
-      tokenProvider: {
-        azureAccountProvider: AzureAccountManager.prototype,
-        m365TokenProvider: M365TokenInstance,
-      },
-      telemetryReporter: ExtTelemetry.reporter,
-      ui: new VsCodeUI(<vscode.ExtensionContext>{}),
-      expServiceProvider: getExpService(),
-    });
+    setTools(new MockTools());
 
     afterEach(() => {
       sandbox.restore();

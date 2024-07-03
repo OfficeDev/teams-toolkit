@@ -476,22 +476,22 @@ export class Utils {
           maxCount - currentCount
         );
 
-        if (items.length !== 0) {
-          result.push({
-            type: ConstantString.ContainerType,
-            $data: (element as ArrayElement).$data,
-            items: items,
-          });
+        result.push({
+          type: ConstantString.ContainerType,
+          $data: (element as ArrayElement).$data,
+          items: items,
+        });
 
-          currentCount += items.length;
-        }
+        currentCount += items.length;
       } else {
         if (currentCount < maxCount) {
           result.push(element);
           currentCount++;
-        } else {
-          break;
         }
+      }
+
+      if (currentCount >= maxCount) {
+        break;
       }
     }
 

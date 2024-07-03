@@ -44,8 +44,9 @@ provision:
       target: ./appsettings.Development.json
 {{/isNewProjectTypeEnabled}}
       content:
-        BOT_ID: ${{BOT_ID}}
-        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        MicrosoftApptype: 'MultiTenant'
+        MicrosoftAppId: ${{BOT_ID}}
+        MicrosoftAppPassword: ${{SECRET_BOT_PASSWORD}}
         OpenAI:
           ApiKey: ${{SECRET_OPENAI_API_KEY}}
         Azure:

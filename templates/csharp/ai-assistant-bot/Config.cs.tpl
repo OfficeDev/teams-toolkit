@@ -2,8 +2,10 @@ namespace {{SafeProjectName}}
 {
     public class ConfigOptions
     {
-        public string BOT_ID { get; set; }
-        public string BOT_PASSWORD { get; set; }
+        public string MicrosoftAppType { get; set; }
+        public string MicrosoftAppId { get; set; }
+        public string MicrosoftAppTenantId { get; set; }
+        public string MicrosoftAppPassword { get; set; }
         public OpenAIConfigOptions OpenAI { get; set; }
     }
 

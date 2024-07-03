@@ -22,12 +22,6 @@ namespace {{SafeProjectName}}
 
             // Prepare Configuration for ConfigurationBotFrameworkAuthentication
             var config = builder.ConfigurationBuilder.Build().Get<ConfigOptions>();
-            builder.ConfigurationBuilder.AddInMemoryCollection(new Dictionary<string, string>()
-            {
-                { "MicrosoftAppType", "MultiTenant" },
-                { "MicrosoftAppId", config.BOT_ID },
-                { "MicrosoftAppPassword", config.BOT_PASSWORD },
-            });
         }
 
         public override void Configure(IFunctionsHostBuilder builder)

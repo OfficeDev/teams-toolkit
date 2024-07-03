@@ -6,20 +6,16 @@
 
 import * as sinon from "sinon";
 import * as chai from "chai";
-import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { VSCodeTelemetryReporter } from "../../src/telemetry/vscodeTelemetryReporter";
 import { getAllFeatureFlags } from "../../src/featureFlags";
+import { MockTelemetryReporter } from "../mocks/mockTools";
 
 const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
 
 describe("vscodeTelemetryReporter", () => {
   let tester: VSCodeTelemetryReporter;
   const sandbox = sinon.createSandbox();
-  const reporterStub = <TelemetryReporter>{
-    sendTelemetryErrorEvent: () => {},
-    sendTelemetryEvent: () => {},
-    sendTelemetryException: () => {},
-  };
+  const reporterStub = new MockTelemetryReporter();
   const sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
   const sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
   const sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");

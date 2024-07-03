@@ -67,10 +67,12 @@ describe("AccountHandlers", () => {
         .stub(vsc_ui.VS_CODE_UI, "selectOption")
         .resolves(err("error") as any);
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       await createAccountHandler([]);
 
       chai.expect(selectOptionStub.calledOnce).to.be.true;
+      chai.expect(sendTelemetryEventStub.calledOnce).to.be.true;
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
   });

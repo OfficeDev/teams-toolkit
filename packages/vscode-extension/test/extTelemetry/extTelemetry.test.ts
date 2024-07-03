@@ -1,4 +1,4 @@
-import { Stage, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import { Stage, UserError } from "@microsoft/teamsfx-api";
 import { maskSecret, telemetryUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as chai from "chai";
@@ -10,6 +10,7 @@ import * as telemetryModule from "../../src/telemetry/extTelemetry";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import * as vscTelemetryUtils from "../../src/utils/telemetryUtils";
+import { MockTelemetryReporter } from "../mocks/mockTools";
 
 describe("ExtTelemetry", () => {
   chai.util.addProperty(ExtTelemetry, "reporter", () => {});
@@ -39,21 +40,17 @@ describe("ExtTelemetry", () => {
     void
   >;
 
-  const reporterStub = <TelemetryReporter>{
-    sendTelemetryErrorEvent: () => {},
-    sendTelemetryEvent: () => {},
-    sendTelemetryException: () => {},
-  };
-
   describe("setHasSentTelemetry", () => {
     it("query-expfeature", () => {
       const eventName = "query-expfeature";
+      ExtTelemetry.hasSentTelemetry = false;
       ExtTelemetry.setHasSentTelemetry(eventName);
       chai.expect(ExtTelemetry.hasSentTelemetry).equals(false);
     });
 
     it("other-event", () => {
       const eventName = "other-event";
+      ExtTelemetry.hasSentTelemetry = false;
       ExtTelemetry.setHasSentTelemetry(eventName);
       chai.expect(ExtTelemetry.hasSentTelemetry).equals(true);
     });
@@ -103,6 +100,7 @@ describe("ExtTelemetry", () => {
 
   describe("Send Telemetry", () => {
     const sandbox = sinon.createSandbox();
+    const reporterStub = new MockTelemetryReporter();
 
     beforeEach(() => {
       sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
@@ -236,6 +234,7 @@ describe("ExtTelemetry", () => {
     });
 
     it("sendCachedTelemetryEventsAsync", async () => {
+      const reporterStub = new MockTelemetryReporter();
       sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "reporter").value(reporterStub);
       const timestamp = new Date().toISOString();

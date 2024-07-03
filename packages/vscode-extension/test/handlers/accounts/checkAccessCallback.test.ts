@@ -69,6 +69,10 @@ describe("checkAccessCallback", () => {
       sandbox.restore();
     });
 
+    beforeEach(() => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    });
+
     it("checkSideloadingCallback()", async () => {
       sandbox.stub(localizeUtils, "localize").returns("");
       let showMessageCalledCount = 0;

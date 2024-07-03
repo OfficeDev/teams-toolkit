@@ -14,6 +14,7 @@ import VsCodeLogInstance from "../../../src/commonlib/log";
 import { VsCodeUI } from "../../../src/qm/vsc_ui";
 import { getExpService } from "../../../src/exp";
 import M365TokenInstance from "../../../src/commonlib/m365Login";
+import { MockTools } from "../../mocks/mockTools";
 
 describe("SigninAccountHandlers", () => {
   describe("signinAzureCallback", () => {
@@ -74,16 +75,7 @@ describe("SigninAccountHandlers", () => {
 
   describe("signinM365Callback", () => {
     const sandbox = sinon.createSandbox();
-    setTools({
-      logProvider: VsCodeLogInstance,
-      tokenProvider: {
-        azureAccountProvider: AzureAccountManager.prototype,
-        m365TokenProvider: M365TokenInstance,
-      },
-      telemetryReporter: ExtTelemetry.reporter,
-      ui: new VsCodeUI(<vscode.ExtensionContext>{}),
-      expServiceProvider: getExpService(),
-    });
+    setTools(new MockTools());
 
     afterEach(() => {
       sandbox.restore();

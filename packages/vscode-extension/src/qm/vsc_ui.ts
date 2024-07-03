@@ -4,7 +4,6 @@
 import {
   commands,
   Diagnostic,
-  DiagnosticSeverity,
   ExtensionContext,
   extensions,
   Uri,
@@ -38,8 +37,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { diagnosticCollection, workspaceUri } from "../globalVariables";
-import path = require("path");
+import { diagnosticCollection, setDiagnosticCollection } from "../globalVariables";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
+import { FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {
@@ -151,7 +151,15 @@ export class VsCodeUI extends VSCodeUI {
   }
 
   showDiagnosticInfo(diagnostics: IDiagnosticInfo[]): void {
-    diagnosticCollection.clear();
+    if (!featureFlagManager.getBooleanValue(FeatureFlags.ShowDiagnostics)) {
+      return;
+    }
+    if (!diagnosticCollection) {
+      const collection = languages.createDiagnosticCollection("teamstoolkit");
+      setDiagnosticCollection(collection);
+    } else {
+      diagnosticCollection.clear();
+    }
     const diagnosticMap: Map<string, Diagnostic[]> = new Map();
     for (const diagnostic of diagnostics) {
       let diagnosticsOfFile = diagnosticMap.get(diagnostic.filePath);
@@ -179,66 +187,6 @@ export class VsCodeUI extends VSCodeUI {
     diagnosticMap.forEach((diags, filePath) => {
       diagnosticCollection.set(Uri.file(filePath), diags);
     });
-
-    // diagnosticCollection.clear();
-    // const errors = [
-    //   {
-    //     id: "958d86ff-864b-474d-bea4-d8068b8c8cad",
-    //     title: "ShortNameContainsPreprodWording",
-    //     content: "Short name doesn't contain beta environment keywords",
-    //     helpUrl:
-    //       "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name",
-    //     filePath: "manifest.json",
-    //     shortCodeNumber: 4000,
-    //     validationCategory: "Name",
-    //   },
-    // ];
-
-    // const collection2 = languages.createDiagnosticCollection("teamstoolkit2");
-
-    // const diagnosticMap: Map<string, Diagnostic[]> = new Map();
-    // errors.forEach((error) => {
-    //   const canonicalFile = "manifest.json";
-    //   const regex = new RegExp(error.validationCategory);
-
-    //   // const text = document.getText();
-
-    //   // const line = document.lineAt(document.positionAt(matches.index).line);
-    //   // const indexOf = line.text.indexOf(match);
-    //   // const position = new Position(line.lineNumber, indexOf);
-    //   const range = new Range(new Position(6, 2), new Position(6, 6));
-
-    //   let diagnostics = diagnosticMap.get(canonicalFile);
-    //   if (!diagnostics) {
-    //     diagnostics = [];
-    //   }
-
-    //   //const message = `[✏️Edit env file](${commandUri.toString()})`;
-    //   const diag = new Diagnostic(
-    //     range,
-    //     "Short name doesn't contain beta environment keywords",
-    //     DiagnosticSeverity.Warning
-    //   );
-    //   diag.code = {
-    //     value: "NameField",
-    //     target: Uri.parse(
-    //       "https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#name"
-    //     ),
-    //   };
-    //   diag.source = "TTK";
-
-    //   diagnostics.push(diag);
-    //   diagnosticMap.set(canonicalFile, diagnostics);
-
-    //   const fileUri = Uri.file(
-    //     path.join(workspaceUri?.fsPath?.toString() ?? "", "appPackage", "manifest.json")
-    //   );
-    //   console.log(fileUri);
-    //   diagnosticMap.forEach((diags, file) => {
-    //     diagnosticCollection.set(fileUri, diags);
-    //     collection2.set(fileUri, diags);
-    //   });
-    // });
   }
 }
 

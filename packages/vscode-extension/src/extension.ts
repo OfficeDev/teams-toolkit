@@ -177,7 +177,7 @@ import {
   handleOfficeFeedback,
   officeChatRequestHandler,
 } from "./officeChat/handlers";
-import { VsCodeUI, initVSCodeUI } from "./qm/vsc_ui";
+import { initVSCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
@@ -207,7 +207,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   initVSCodeUI(context);
   initializeGlobalVariables(context);
-
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();

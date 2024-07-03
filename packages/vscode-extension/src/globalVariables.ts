@@ -56,10 +56,6 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   } else {
     isSPFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", "SPFx"));
   }
-
-  if (!diagnosticCollection) {
-    diagnosticCollection = vscode.languages.createDiagnosticCollection("teamstoolkit");
-  }
 }
 
 export function checkIsSPFx(directory: string): boolean {
@@ -91,4 +87,8 @@ export function setTools(toolsInstance: Tools) {
 }
 export function setCore(coreInstance: FxCore) {
   core = coreInstance;
+}
+
+export function setDiagnosticCollection(collection: vscode.DiagnosticCollection) {
+  diagnosticCollection = collection;
 }

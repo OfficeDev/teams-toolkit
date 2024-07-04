@@ -64,6 +64,7 @@ import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { FeatureFlags } from "./featureFlags";
 import {
+  diagnosticCollection,
   initializeGlobalVariables,
   isExistingUser,
   isOfficeAddInProject,
@@ -312,7 +313,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   );
 
   if (vscode.workspace.isTrusted) {
-    registerCodelensAndHoverProviders(context);
+    registerLanguageFeatures(context);
   }
 
   registerDebugConfigProviders(context);
@@ -1004,7 +1005,7 @@ async function setTDPIntegrationEnabledContext() {
   );
 }
 
-function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
+function registerLanguageFeatures(context: vscode.ExtensionContext) {
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const envDataSelector = {
@@ -1163,6 +1164,8 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
   );
+
+  context.subscriptions.push(diagnosticCollection);
 }
 
 function registerOfficeDevCodeLensProviders(context: vscode.ExtensionContext) {

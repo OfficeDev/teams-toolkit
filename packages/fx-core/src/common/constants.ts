@@ -52,6 +52,7 @@ export class FeatureFlagName {
   static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
   static readonly SMEOAuth = "SME_OAUTH";
   static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
+  static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
 }
 
 export function getAllowedAppMaps(): Record<string, string> {

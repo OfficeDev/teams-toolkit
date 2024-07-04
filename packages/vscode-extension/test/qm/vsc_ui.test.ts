@@ -7,8 +7,10 @@ import * as sinon from "sinon";
 import { stubInterface } from "ts-sinon";
 import {
   commands,
+  DiagnosticCollection,
   Disposable,
   ExtensionContext,
+  languages,
   QuickInputButton,
   QuickPick,
   Terminal,
@@ -30,6 +32,8 @@ import { FxQuickPickItem, sleep, UserCancelError } from "@microsoft/vscode-ui";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
+import * as globalVariables from "../../src/globalVariables";
 
 describe("UI Unit Tests", async () => {
   afterEach(() => {
@@ -937,6 +941,85 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("testUrl");
       }
+    });
+  });
+
+  describe("showDiagnosticInfo", () => {
+    const sandbox = sinon.createSandbox();
+    let collection: DiagnosticCollection | undefined;
+
+    afterEach(() => {
+      sandbox.restore();
+      globalVariables.setDiagnosticCollection(undefined as unknown as DiagnosticCollection);
+    });
+
+    it("do nothing if feature flag is disabled", () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      ui.showDiagnosticInfo([]);
+    });
+
+    it("show diagnostics first time if feature flag is enabled", () => {
+      const records: [string, { message: string }][] = [];
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      collection = {
+        set: (filePath: string, diag: { message: string }) => {
+          records.push([filePath, diag]);
+        },
+      } as unknown as DiagnosticCollection;
+
+      sandbox.stub(languages, "createDiagnosticCollection").returns(collection as any);
+      const ui = new VsCodeUI(<ExtensionContext>{});
+
+      ui.showDiagnosticInfo([
+        {
+          startIndex: 0,
+          startLine: 1,
+          endIndex: 10,
+          endLine: 10,
+          severity: 2,
+          filePath: "test",
+          message: "error",
+        },
+      ]);
+
+      expect(globalVariables.diagnosticCollection).not.undefined;
+      expect(records.length).equals(1);
+    });
+
+    it("show diagnostics not first time if feature flag is enabled", () => {
+      const records: [string, { message: string }][] = [];
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      collection = {
+        clear: () => {
+          return;
+        },
+        set: (filePath: string, diag: { message: string }) => {
+          records.push([filePath, diag]);
+        },
+      } as unknown as DiagnosticCollection;
+
+      globalVariables.setDiagnosticCollection(collection);
+      const ui = new VsCodeUI(<ExtensionContext>{});
+
+      ui.showDiagnosticInfo([
+        {
+          startIndex: 0,
+          startLine: 1,
+          endIndex: 10,
+          endLine: 10,
+          severity: 2,
+          filePath: "test",
+          message: "error",
+          code: {
+            value: "test",
+            link: "https://test.com",
+          },
+        },
+      ]);
+
+      expect(globalVariables.diagnosticCollection).not.undefined;
+      expect(records.length).equals(1);
     });
   });
 });

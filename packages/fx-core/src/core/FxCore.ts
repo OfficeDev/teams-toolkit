@@ -1060,11 +1060,11 @@ export class FxCore {
     } else if (version.source === VersionSource.projectSettings) {
       const isValid = await checkActiveResourcePlugins(projectPath);
       if (!isValid) {
-        return err(new InvalidProjectError());
+        return err(new InvalidProjectError(projectPath));
       }
     }
     if (version.source === VersionSource.unknown) {
-      return err(new InvalidProjectError());
+      return err(new InvalidProjectError(projectPath));
     }
     return this.innerMigrationV3(inputs);
   }
@@ -1084,14 +1084,14 @@ export class FxCore {
     if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
       const versionInfo = await getProjectVersionFromPath(projectPath);
       if (!versionInfo.version) {
-        return err(new InvalidProjectError());
+        return err(new InvalidProjectError(projectPath));
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
       const isSupport = getVersionState(versionInfo);
       // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
       if (isSupport === VersionState.upgradeable) {
         if (!(await checkActiveResourcePlugins(projectPath))) {
-          return err(new InvalidProjectError());
+          return err(new InvalidProjectError(projectPath));
         }
       }
       return ok({
@@ -1101,7 +1101,7 @@ export class FxCore {
         versionSource: VersionSource[versionInfo.source],
       });
     } else {
-      return err(new InvalidProjectError());
+      return err(new InvalidProjectError(projectPath));
     }
   }
 

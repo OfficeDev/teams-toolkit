@@ -93,6 +93,10 @@ import {
 import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
+import * as projectHelper from "../../src/common/projectSettingsHelper";
+import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
+import * as projMigrator from "../../src/core/middleware/projectMigratorV3";
+import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 
 const tools = new MockTools();
 
@@ -489,7 +493,9 @@ describe("Core basic APIs", () => {
     };
     const res = await core.phantomMigrationV3(inputs);
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    assert.isTrue(
+      res._unsafeUnwrapErr().message.includes(new InvalidProjectError(inputs.projectPath!).message)
+    );
     await deleteTestProject(appName);
   });
 
@@ -502,7 +508,9 @@ describe("Core basic APIs", () => {
     };
     const res = await core.phantomMigrationV3(inputs);
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    assert.isTrue(
+      res._unsafeUnwrapErr().message.includes(new InvalidProjectError(inputs.projectPath!).message)
+    );
   });
 
   it("phantomMigrationV3 return error for V5 project", async () => {
@@ -4639,5 +4647,51 @@ describe("addPlugin", async () => {
     if (await fs.pathExists(inputs.projectPath!)) {
       await fs.remove(inputs.projectPath!);
     }
+  });
+
+  describe("projectVersionCheck", async () => {
+    it("invalid project", async () => {
+      sandbox.stub(projectHelper, "isValidProjectV3").returns(false);
+      sandbox.stub(projectHelper, "isValidProjectV2").returns(false);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Folder]: os.tmpdir(),
+        projectPath: "./",
+      };
+      const core = new FxCore(tools);
+      const result = await core.projectVersionCheck(inputs);
+      assert.isTrue(result.isErr());
+    });
+    it("version is undefined", async () => {
+      sandbox.stub(projectHelper, "isValidProjectV3").returns(true);
+      sandbox
+        .stub(migrationUtil, "getProjectVersionFromPath")
+        .resolves({ version: "", source: VersionSource.teamsapp });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Folder]: os.tmpdir(),
+        projectPath: "./",
+      };
+      const core = new FxCore(tools);
+      const result = await core.projectVersionCheck(inputs);
+      assert.isTrue(result.isErr());
+    });
+    it("no plugin", async () => {
+      sandbox.stub(projectHelper, "isValidProjectV3").returns(true);
+      sandbox
+        .stub(migrationUtil, "getProjectVersionFromPath")
+        .resolves({ version: "1.0", source: VersionSource.teamsapp });
+      sandbox.stub(migrationUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx");
+      sandbox.stub(migrationUtil, "getVersionState").returns(VersionState.upgradeable);
+      sandbox.stub(projMigrator, "checkActiveResourcePlugins").resolves(false);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Folder]: os.tmpdir(),
+        projectPath: "./",
+      };
+      const core = new FxCore(tools);
+      const result = await core.projectVersionCheck(inputs);
+      assert.isTrue(result.isErr());
+    });
   });
 });

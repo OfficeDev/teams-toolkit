@@ -68,7 +68,10 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aiassist", appName, "TypeScript");
+      await createNewProject("aiassist", appName, {
+        lang: "TypeScript",
+        aiType: "OpenAI",
+      });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");

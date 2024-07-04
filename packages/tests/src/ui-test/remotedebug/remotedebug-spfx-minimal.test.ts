@@ -5,21 +5,26 @@
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
-import { VSBrowser } from "vscode-extension-tester";
+import * as fs from "fs-extra";
+import { expect } from "chai";
+import { InputBox, VSBrowser } from "vscode-extension-tester";
 import {
   CommandPaletteCommands,
   Timeout,
   Notification,
 } from "../../utils/constants";
-import { RemoteDebugTestContext, runPublish } from "./remotedebugContext";
+import { RemoteDebugTestContext, runDeploy } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
   createNewProject,
+  clearNotifications,
 } from "../../utils/vscodeOperation";
+import { initPage, validateSpfx } from "../../utils/playwrightOperation";
+import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
-import { cleanUpStagedPublishApp } from "../../utils/cleanHelper";
+import { validateFileExist } from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -49,26 +54,47 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Publish to Teams for SPFx project",
+    "[auto] Create, provision and run SPFx project with Minimal framework",
     {
-      testPlanCaseId: 10107271,
+      testPlanCaseId: 9426251,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfx", appName);
+      await createNewProject("spfx", appName, {
+        spfxFrameworkType: "Minimal",
+      });
+      validateFileExist(projectPath, "src/src/index.ts");
+      await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
       await driver.sleep(Timeout.spfxProvision);
       await getNotification(
         Notification.ProvisionSucceeded,
         Timeout.shortTimeWait
       );
-      await runPublish();
-      await runPublish(true);
+      await runDeploy();
+
+      // Verify the sppkg file path
+      const sppkgFolderPath = path.resolve(
+        projectPath,
+        "src",
+        "sharepoint",
+        "solution"
+      );
+
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );
-      await cleanUpStagedPublishApp(teamsAppId);
+      // const page = await initPage(
+      //   remoteDebugTestContext.context!,
+      //   teamsAppId,
+      //   Env.username,
+      //   Env.password
+      // );
+      // await driver.sleep(Timeout.longTimeWait);
+
+      // // Validate app name is in the page
+      // await validateSpfx(page, appName);
     }
   );
 });

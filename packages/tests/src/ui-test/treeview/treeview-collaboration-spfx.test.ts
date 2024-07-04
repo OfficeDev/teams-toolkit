@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -58,7 +61,7 @@ describe("Collaborator Tests SPFX", function () {
 
       // //create SPFx project
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfxreact", appName);
+      await createNewProject("spfx", appName);
       console.log("Finish create SPFX project");
 
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);

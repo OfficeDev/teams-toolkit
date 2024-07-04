@@ -11,11 +11,7 @@ import {
   Timeout,
   Notification,
 } from "../../utils/constants";
-import {
-  RemoteDebugTestContext,
-  configSpfxGlobalEnv,
-  runDeploy,
-} from "./remotedebugContext";
+import { RemoteDebugTestContext, runDeploy } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
@@ -26,7 +22,10 @@ import { initPage, validateSpfx } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
-import { validateFileExist } from "../../utils/commonUtils";
+import {
+  configSpfxGlobalEnv,
+  validateFileExist,
+} from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -64,7 +63,7 @@ describe("Remote debug Tests", function () {
     async function () {
       await configSpfxGlobalEnv();
       const driver = VSBrowser.instance.driver;
-      await createNewProject("gspfxreact", appName);
+      await createNewProject("gspfx", appName, { spfxFrameworkType: "React" });
       validateFileExist(projectPath, "src/src/index.ts");
       validateFileExist(projectPath, "src/.yo-rc.json");
       await clearNotifications();

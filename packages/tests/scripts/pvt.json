@@ -9,10 +9,7 @@
       "localdebug-notification-restify",
       "localdebug-tab-regen-appid",
       "treeview-newproject-spfx",
-      "treeview-collaboration-spfx",
-      "remotedebug-spfxreact-none",
-      "remotedebug-spfxreact-minimal",
-      "remotedebug-spfxreact",
+      "treeview-collaboration-spfx", 
       "remotedebug-spfxreact-globalpkg",
       "remotedebug-spfxnone-globalpkg-addwebpart",
       "remotedebug-spfxreact-addwebpart"
@@ -66,7 +63,11 @@
       "localdebug-aiassistant-bot-ts",
       "remotedebug-aichat-bot-py-win-only",
       "remotedebug-msg-newapi-apikey-ts-win-only",
-      "remotedebug-msg-newapi-apikey-win-only"
+      "remotedebug-msg-newapi-apikey-win-only",
+      "remotedebug-spfxreact-import-single",
+      "remotedebug-spfx-none",
+      "remotedebug-spfx-minimal",
+      "remotedebug-spfx-react"
     ],
     "node-20": [
       "localdebug-obo-tab"

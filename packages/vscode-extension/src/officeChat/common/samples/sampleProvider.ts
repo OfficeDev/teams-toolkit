@@ -14,6 +14,7 @@ import {
 } from "../../officePrompts";
 import { DeclarationFinder } from "../declarationFinder";
 import { getTokenLimitation } from "../../consts";
+import { Spec } from "../skills/spec";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;
@@ -68,7 +69,8 @@ export class SampleProvider {
     token: CancellationToken,
     host: string,
     codeSpec: string,
-    sample: string
+    sample: string,
+    spec: Spec
   ): Promise<Map<string, SampleData>> {
     const pickedDeclarations: Map<string, SampleData> = new Map<string, SampleData>();
     const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-4";
@@ -102,7 +104,10 @@ export class SampleProvider {
 
     countOfLLMInvoke += 1;
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
-
+    spec.appendix.telemetryData.chatMessages.push(sampleMessage);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     const returnObject: { picked: string[] } = JSON.parse(
       copilotResponse.replace("```json", "").replace("```", "").replace(/\\n/g, "")
     );
@@ -195,7 +200,8 @@ export class SampleProvider {
         sample,
         methodsOrProperties,
         token,
-        model
+        model,
+        spec
       );
       picked.forEach((value, key) => {
         if (!pickedDeclarations.has(key)) {
@@ -242,7 +248,8 @@ export class SampleProvider {
             sample,
             methodOrPropertyDeclarations,
             token,
-            model
+            model,
+            spec
           );
           picked.forEach((value, key) => {
             if (!pickedDeclarations.has(key)) {
@@ -274,7 +281,8 @@ export class SampleProvider {
     sample: string,
     methodsOrProperties: SampleData[],
     token: CancellationToken,
-    model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4"
+    model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
+    spec: Spec
   ): Promise<Map<string, SampleData>> {
     const pickedDeclarations: Map<string, SampleData> = new Map<string, SampleData>();
     const getMoreRelevantMethodsOrPropertiesPrompt = getMostRelevantMethodPropertyPrompt(
@@ -288,7 +296,10 @@ export class SampleProvider {
       getMoreRelevantMethodsOrPropertiesPrompt
     );
     const copilotResponse = await getCopilotResponseAsString(model, [sampleMessage], token);
-
+    spec.appendix.telemetryData.chatMessages.push(sampleMessage);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     let returnObject: { picked: string[] } = { picked: [] };
     try {
       returnObject = JSON.parse(

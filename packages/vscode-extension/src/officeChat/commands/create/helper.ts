@@ -14,22 +14,23 @@ import {
   LanguageModelChatMessage,
   LanguageModelChatMessageRole,
 } from "vscode";
-import { IChatTelemetryData } from "../../../chat/types";
 import { ProjectMetadata } from "../../../chat/commands/create/types";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
-import { getOfficeSampleDownloadUrlInfo } from "../../utils";
+import { getOfficeSample } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
+import { OfficeChatTelemetryData } from "../../telemetry";
 import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
 import { CreateProjectInputs } from "@microsoft/teamsfx-api";
 import { core } from "../../../globalVariables";
+import { OfficeProjectInfo } from "../../types";
 
 export async function matchOfficeProject(
   request: ChatRequest,
   token: CancellationToken,
-  telemetryMetadata: IChatTelemetryData
+  telemetryData: OfficeChatTelemetryData
 ): Promise<ProjectMetadata | undefined> {
   const allOfficeProjectMetadata = [
     ...getOfficeTemplateMetadata(),
@@ -39,8 +40,12 @@ export async function matchOfficeProject(
     getOfficeProjectMatchSystemPrompt(allOfficeProjectMetadata),
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
   ];
-  telemetryMetadata.chatMessages.push(...messages);
-  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  let response = "";
+  telemetryData.chatMessages.push(...messages);
+  response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  telemetryData.responseChatMessages.push(
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
+  );
   let matchedProjectId: string;
   if (response) {
     try {
@@ -95,23 +100,27 @@ export function getOfficeTemplateMetadata(): ProjectMetadata[] {
 export async function showOfficeSampleFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
-): Promise<string> {
+): Promise<OfficeProjectInfo> {
   response.markdown(
     "\nWe've found a sample project that matches your description. Take a look at it below."
   );
-  const downloadUrlInfo = await getOfficeSampleDownloadUrlInfo(projectMetadata.id);
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
+  const sample = await getOfficeSample(projectMetadata.id);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sample.downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
   const nodes = await buildFileTree(
     fileUrlPrefix,
     samplePaths,
     tempFolder,
-    downloadUrlInfo.dir,
+    sample.downloadUrlInfo.dir,
     2,
     20
   );
-  response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
-  return path.join(tempFolder, downloadUrlInfo.dir);
+  response.filetree(nodes, Uri.file(path.join(tempFolder, sample.downloadUrlInfo.dir)));
+  const result: OfficeProjectInfo = {
+    path: path.join(tempFolder, sample.downloadUrlInfo.dir),
+    host: sample.types[0],
+  };
+  return result;
 }
 
 export async function showOfficeTemplateFileTree(

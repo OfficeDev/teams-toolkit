@@ -35,6 +35,7 @@ import { DevTunnelManager } from "../../src/debug/taskTerminal/utils/devTunnelMa
 
 import { ExtensionErrors, ExtensionSource } from "../../src/error/error";
 import * as globalVariables from "../../src/globalVariables";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 chai.use(chaiAsPromised);
 
@@ -78,11 +79,14 @@ describe("devTunnelTaskTerminal", () => {
   describe("do", () => {
     const sandbox = sinon.createSandbox();
     let filePath: string | undefined = undefined;
+
     beforeEach(async () => {
       filePath = path.resolve(baseDir, uuid.v4().substring(0, 6));
       await fs.ensureDir(filePath);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse(filePath));
       sandbox.stub(process, "env").value({ TEAMSFX_DEV_TUNNEL_TEST: "true" });
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     });
 
     afterEach(async () => {

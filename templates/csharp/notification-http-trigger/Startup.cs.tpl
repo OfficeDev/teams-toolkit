@@ -22,7 +22,7 @@ namespace {{SafeProjectName}}
 
             // Prepare Configuration for ConfigurationBotFrameworkAuthentication
             var config = builder.ConfigurationBuilder.Build().Get<ConfigOptions>();
-            builder.AddInMemoryCollection(new Dictionary<string, string>()
+            builder.ConfigurationBuilder.AddInMemoryCollection(new Dictionary<string, string>()
             {
                 { "MicrosoftAppType", config.BOT_TYPE },
                 { "MicrosoftAppId", config.BOT_ID },

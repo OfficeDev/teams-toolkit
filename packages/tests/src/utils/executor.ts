@@ -52,6 +52,10 @@ export class Executor {
           return { success: true, ...result };
         }
       } catch (e: any) {
+        if (skipErrorMessage && e.message.includes(skipErrorMessage)) {
+          console.log(`[Skip Warning] ${e.message}`);
+          return { success: true, ...e };
+        }
         if (e.killed && e.signal == "SIGTERM") {
           console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
         } else {

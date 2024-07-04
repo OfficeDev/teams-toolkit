@@ -94,6 +94,10 @@ export class FeatureFlags {
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
+  static readonly ShowDiagnostics = {
+    name: FeatureFlagName.ShowDiagnostics,
+    defaultValue: "false",
+  };
 }
 
 export class FeatureFlagManager {

@@ -27,7 +27,6 @@ class MockClipboard {
 }
 
 export function initialize() {
-  //generateMock("languages");
   generateMock("debug");
   generateMock("scm");
   generateNotebookMocks();

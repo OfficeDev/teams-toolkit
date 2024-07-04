@@ -49,6 +49,7 @@ describe("autoOpenProjectHandler", () => {
     });
     const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse("test"));
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommandFunc = sandbox.stub(vscode.commands, "executeCommand");
 
@@ -75,6 +76,7 @@ describe("autoOpenProjectHandler", () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
     sandbox.stub(ManifestUtil, "parseCommonProperties").resolves({ isCopilotPlugin: false });
     sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await autoOpenProjectHandler();

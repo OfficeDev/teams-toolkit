@@ -1,17 +1,17 @@
 import * as vscode from "vscode";
 import * as sinon from "sinon";
 import * as chai from "chai";
-import M365TokenInstance from "../../src/commonlib/m365Login";
+import M365TokenInstance from "../../../src/commonlib/m365Login";
 import { err, ok } from "@microsoft/teamsfx-api";
-import { AzureAccountManager } from "../../src/commonlib/azureLogin";
-import * as vsc_ui from "../../src/qm/vsc_ui";
+import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
+import * as vsc_ui from "../../../src/qm/vsc_ui";
 import {
   azureAccountSignOutHelpHandler,
   cmpAccountsHandler,
   createAccountHandler,
-} from "../../src/handlers/accountHandlers";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import * as localizeUtils from "../../src/utils/localizeUtils";
+} from "../../../src/handlers/accounts/accountHandlers";
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+import * as localizeUtils from "../../../src/utils/localizeUtils";
 
 describe("AccountHandlers", () => {
   describe("createAccountHandler", () => {
@@ -67,10 +67,12 @@ describe("AccountHandlers", () => {
         .stub(vsc_ui.VS_CODE_UI, "selectOption")
         .resolves(err("error") as any);
       const sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
       await createAccountHandler([]);
 
       chai.expect(selectOptionStub.calledOnce).to.be.true;
+      chai.expect(sendTelemetryEventStub.calledOnce).to.be.true;
       chai.expect(sendTelemetryErrorEventStub.calledOnce).to.be.true;
     });
   });

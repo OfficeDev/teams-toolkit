@@ -18,6 +18,13 @@ var host = new HostBuilder()
             .Build();
         builder.AddConfiguration(configuration);
         var config = builder.Build().Get<ConfigOptions>();
+        builder.AddInMemoryCollection(new Dictionary<string, string>()
+        {
+            { "MicrosoftAppType", config.BOT_TYPE },
+            { "MicrosoftAppId", config.BOT_ID },
+            { "MicrosoftAppPassword", config.BOT_PASSWORD },
+            { "MicrosoftAppTenantId", config.BOT_TENANT_ID },
+        });
     })
     .ConfigureServices((hostContext, services) =>
     {

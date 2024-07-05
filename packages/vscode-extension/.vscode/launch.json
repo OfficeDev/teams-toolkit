@@ -26,11 +26,11 @@
       "args": [
         "${workspaceFolder}/test/**/*.test.ts",
         "--require=ts-node/register",
-        "--require=out/test/setup.js",
+        "--require=build/test/setup.js",
         "--recursive",
         "--colors"
       ],
-      "preLaunchTask": "npm: compile",
+      "preLaunchTask": "npm: build:test",
       "skipFiles": ["<node_internals>/**"]
     }
   ]

@@ -204,7 +204,7 @@ jobs:
           python3 --version
           pip3 --version
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 8
 
@@ -512,7 +512,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 8
 

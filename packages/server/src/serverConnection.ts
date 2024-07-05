@@ -418,7 +418,7 @@ export default class ServerConnection implements IServerConnection {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
-      (params) => listDevTunnels(inputs.devTunnelToken),
+      (params) => listDevTunnels(inputs.devTunnelToken, inputs.isGitHub),
       inputs
     );
     return standardizeResult(res);

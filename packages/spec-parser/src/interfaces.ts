@@ -93,10 +93,12 @@ export enum ErrorType {
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  AddedAPINotInOriginalSpec = "added-api-not-in-original-spec",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",
   SpecVersionNotSupported = "spec-version-not-supported",
+  CircularReferenceNotSupported = "circular-reference-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -159,17 +161,19 @@ export interface ImageElement {
   $when: string;
 }
 
+export type AdaptiveCardBody = Array<TextBlockElement | ImageElement | ArrayElement>;
+
 export interface ArrayElement {
   type: string;
   $data: string;
-  items: Array<TextBlockElement | ImageElement | ArrayElement>;
+  items: AdaptiveCardBody;
 }
 
 export interface AdaptiveCard {
   type: string;
   $schema: string;
   version: string;
-  body: Array<TextBlockElement | ImageElement | ArrayElement>;
+  body: AdaptiveCardBody;
 }
 
 export interface PreviewCardTemplate {
@@ -305,8 +309,10 @@ export interface ListAPIResult {
   APIs: ListAPIInfo[];
 }
 
+export type AuthType = OpenAPIV3.SecuritySchemeObject | { type: "multipleAuth" };
+
 export interface AuthInfo {
-  authScheme: OpenAPIV3.SecuritySchemeObject;
+  authScheme: AuthType;
   name: string;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.22.7",
+  "version": "0.23.1",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -17,7 +17,7 @@
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "prebuild": "npx json2ts --input src/schemas/envConfig.json --output src/schemas/envConfig.ts",
-    "build": "tsc -p ./ && npx api-extractor run --local",
+    "build": "tsc -p ./",
     "build:api-markdown": "npm run build && rimraf ../../docs/api && npx api-documenter markdown -i temp -o ../../docs/api",
     "postbuild": "npx copyfiles src/schemas/*.json build/schemas/",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",

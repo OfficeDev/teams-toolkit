@@ -108,7 +108,10 @@ describe("ProjectTypeChecker", () => {
         bots: [1],
         composeExtensions: [1],
         extensions: [1],
-        plugins: [1],
+        copilotExtensions: {
+          plugins: [1],
+          declarativeCopilots: [1],
+        },
       };
       const capabilities = getCapabilities(manifest);
       assert.deepEqual(capabilities, [
@@ -118,6 +121,7 @@ describe("ProjectTypeChecker", () => {
         "composeExtension",
         "extension",
         "plugin",
+        "copilotGpt",
       ]);
     });
     it("empty manifest", async () => {

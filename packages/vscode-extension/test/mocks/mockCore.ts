@@ -7,9 +7,8 @@ import {
   Result,
   ok,
 } from "@microsoft/teamsfx-api";
-import { CoreCallbackFunc, FxCore } from "@microsoft/teamsfx-core";
+import { CoreCallbackFunc } from "@microsoft/teamsfx-core";
 import { ProjectTypeResult } from "@microsoft/teamsfx-core/build/common/projectTypeChecker";
-import { TelemetryMeasurements } from "../../src/telemetry/extTelemetryEvents";
 
 export class MockCore {
   constructor() {}
@@ -31,7 +30,9 @@ export class MockCore {
   async deployAadManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
-
+  async deployTeamsManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
   async deployArtifacts(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
@@ -43,7 +44,9 @@ export class MockCore {
   async publishApplication(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
-
+  async createAppPackage(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
   async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
     return ok("");
   }
@@ -140,5 +143,9 @@ export class MockCore {
       dependsOnTeamsJs: false,
       lauguages: ["ts"],
     });
+  }
+
+  async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
   }
 }

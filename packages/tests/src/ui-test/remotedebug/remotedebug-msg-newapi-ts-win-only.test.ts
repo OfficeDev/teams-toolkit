@@ -17,10 +17,7 @@ import {
   createNewProject,
 } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import {
-  initNoAddappPage,
-  validateSearchCmdResult,
-} from "../../utils/playwrightOperation";
+import { initPage, validateApiMeResult } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -61,29 +58,26 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Remote debug for new API message extension project",
+    "[auto] [Typescript] Remote debug for API Message Extension with none auth",
     {
-      testPlanCaseId: 25270400,
+      testPlanCaseId: 28253811,
       author: "v-annefu@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("msgnewapi", appName, "TypeScript");
+      await createNewProject("msgnewapi", appName, { lang: "TypeScript" });
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );
-      //disable validation
-      /*
-      const page = await initNoAddappPage(
+      const page = await initPage(
         remoteDebugTestContext.context!,
         teamsAppId,
         Env.username,
         Env.password
       );
-      const envName = "dev";*/
-      //await validateSearchCmdResult(page, appName, envName);
+      await validateApiMeResult(page, remoteDebugTestContext.appName);
     }
   );
 });

@@ -2,7 +2,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
   "manifestVersion": "devPreview",
   "id": "${{TEAMS_APP_ID}}",
-  "packageName": "com.microsoft.teams.extension",
   "version": "1.0.0",
   "developer": {
     "name": "Teams App, Inc.",
@@ -23,12 +22,14 @@
     "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze."
   },
   "accentColor": "#FFFFFF",
-  "plugins": [
-    {
-      "file": "ai-plugin.json",
-      "id": "plugin_1"
-    }
-  ],
+  "copilotExtensions": {    
+    "plugins": [
+      {
+        "id": "plugin_1",
+        "file": "ai-plugin.json"
+      }
+    ]
+  },
   "permissions": [
     "identity",
     "messageTeamMembers"

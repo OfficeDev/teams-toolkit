@@ -1,44 +1,41 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { EOL } from "os";
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  Result,
+  Colors,
   FxError,
-  ok,
-  err,
-  TeamsAppManifest,
   ManifestUtil,
   Platform,
-  Colors,
+  Result,
+  TeamsAppManifest,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { hooks } from "@feathersjs/hooks/lib";
-import { Service } from "typedi";
-import fs from "fs-extra";
-import * as path from "path";
-import { merge } from "lodash";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "./clients/appStudioClient";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes, waitSeconds } from "../../../common/tools";
 import AdmZip from "adm-zip";
-import {
-  Constants,
-  getAppStudioEndpoint,
-  CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS,
-} from "./constants";
-import { metadataUtil } from "../../utils/metadataUtil";
+import fs from "fs-extra";
+import { merge } from "lodash";
+import { EOL } from "os";
+import * as path from "path";
+import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes, getAppStudioEndpoint } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { waitSeconds } from "../../../common/utils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { SummaryConstant } from "../../configManager/constant";
+import { metadataUtil } from "../../utils/metadataUtil";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS, Constants } from "./constants";
 import {
   AsyncAppValidationResponse,
   AsyncAppValidationStatus,
 } from "./interfaces/AsyncAppValidationResponse";
 import { AsyncAppValidationResultsResponse } from "./interfaces/AsyncAppValidationResultsResponse";
-import { SummaryConstant } from "../../configManager/constant";
+import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 
 const actionName = "teamsApp/validateWithTestCases";
 
@@ -100,9 +97,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
       // Check if the app has ongoing validation
-      const existingValidationResponse = await AppStudioClient.getAppValidationRequestList(
-        manifest.id,
-        appStudioToken
+      const existingValidationResponse = await teamsDevPortalClient.getAppValidationRequestList(
+        appStudioToken,
+        manifest.id
       );
       if (existingValidationResponse.appValidations) {
         for (const validation of existingValidationResponse.appValidations) {
@@ -135,10 +132,8 @@ export class ValidateWithTestCasesDriver implements StepDriver {
           }
         }
       }
-      const response: AsyncAppValidationResponse = await AppStudioClient.submitAppValidationRequest(
-        manifest.id,
-        appStudioToken
-      );
+      const response: AsyncAppValidationResponse =
+        await teamsDevPortalClient.submitAppValidationRequest(appStudioToken, manifest.id);
 
       if (context.platform === Platform.CLI) {
         const message: Array<{ content: string; color: Colors }> = [
@@ -212,9 +207,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
           validationRequestListUrl
         );
         context.logProvider.info(message);
-        resultResp = await AppStudioClient.getAppValidationById(
-          resultResp.appValidationId,
-          appStudioToken
+        resultResp = await teamsDevPortalClient.getAppValidationById(
+          appStudioToken,
+          resultResp.appValidationId
         );
       }
       this.evaluateValidationResults(args, context, resultResp, teamsAppId);
@@ -332,7 +327,13 @@ export class ValidateWithTestCasesDriver implements StepDriver {
 
   private validateArgs(args: ValidateWithTestCasesArgs): Result<any, FxError> {
     if (!args || !args.appPackagePath) {
-      return err(new InvalidActionInputError(actionName, ["appPackagePath"]));
+      return err(
+        new InvalidActionInputError(
+          actionName,
+          ["appPackagePath"],
+          "https://aka.ms/teamsfx-actions/teamsapp-validate-test-cases"
+        )
+      );
     }
     return ok(undefined);
   }

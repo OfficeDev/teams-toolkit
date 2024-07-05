@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import crypto from "crypto";
 import { ConfigFolderName, ProductName } from "@microsoft/teamsfx-api";
 import properLock from "proper-lockfile";
-import { waitSeconds } from "./tools";
+import { waitSeconds } from "./utils";
 
 const GlobalStateFileName = "state.json";
 

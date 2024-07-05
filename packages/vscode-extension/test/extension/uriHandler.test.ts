@@ -1,15 +1,12 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-
-import { UriHandler } from "../../src/uriHandler";
+import { UriHandler, setUriEventHandler } from "../../src/uriHandler";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();
-  beforeEach(() => {
-    sandbox.restore();
-  });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -126,5 +123,10 @@ describe("uri handler", () => {
       TelemetryTriggerFrom.ExternalUrl,
       "hello-world-teams-tab-and-outlook-add-in"
     );
+  });
+
+  it("set uri handler", async () => {
+    const uriHandler = new UriHandler();
+    setUriEventHandler(uriHandler);
   });
 });

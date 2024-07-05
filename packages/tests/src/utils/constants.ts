@@ -57,6 +57,8 @@ export enum TemplateProject {
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
   LargeScaleBot = "Large Scale Notification Bot",
+  BotSSODocker = "Containerized Bot App with SSO Enabled",
+  HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
 }
 
 export enum TemplateProjectFolder {
@@ -90,6 +92,7 @@ export enum TemplateProjectFolder {
   RetailDashboard = "react-retail-dashboard",
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
+  HelloWorldTabDocker = "hello-world-tab-docker",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -128,6 +131,9 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
     [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
+    [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
+    [TemplateProject.HelloWorldTabDocker]:
+      TemplateProjectFolder.HelloWorldTabDocker,
   };
 
 export enum Resource {
@@ -165,6 +171,8 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
+  CopilotPluginFromExistingAPI = "copilot-plugin-existing-api",
+  CopilotPluginFromScratch = "copilot-plugin-new-api",
 }
 
 export enum Trigger {
@@ -329,7 +337,7 @@ export class CommandPaletteCommands {
   public static readonly AddSpfxWebPart: string = "Teams: Add SPFx web part";
 }
 
-export type OptionType =
+export type AppType =
   | "tab"
   | "tabnsso"
   | "tabbot"
@@ -340,12 +348,8 @@ export type OptionType =
   | "msg"
   | "msgsa"
   | "m365lp"
-  | "spfxreact"
-  | "spfxnone"
-  | "spfxmin"
-  | "gspfxreact"
-  | "gspfxnone"
-  | "gspfxmin"
+  | "spfx"
+  | "gspfx"
   | "dashboard"
   | "workflow"
   | "timenoti"
@@ -356,7 +360,9 @@ export type OptionType =
   | "aichat"
   | "aiassist"
   | "msgnewapi"
-  | "msgopenapi";
+  | "msgopenapi"
+  | "msgapikey"
+  | "importspfx";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -380,6 +386,8 @@ export enum LocalDebugTaskLabel {
   Azurite = "Start Azurite emulator",
   Compile = "Compile typescript",
   StartWebServer = "Start web server",
+  DockerRun = "docker-run: debug",
+  DockerTask = "docker",
 }
 
 export class LocalDebugTaskResult {
@@ -394,10 +402,12 @@ export class LocalDebugTaskResult {
   static readonly Error = "error";
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
+  static readonly DockerFinish = "press any key to close it";
 }
 
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
+  PythonDebugConsole = "Python Debug Console",
 }
 
 export enum LocalDebugError {
@@ -429,9 +439,9 @@ export class Notification {
     "Upgrade your Teams Toolkit project to stay compatible with the latest version. A backup directory will be created along with an Upgrade Summary.";
   static readonly Upgrade_dicarded =
     "Please upgrade your project to stay compatible with the latest version, your current project contains configurations from an older Teams Toolkit. The auto-upgrade process will generate backups in case an error occurs.";
-  static readonly ProvisionSucceeded = "Successfully executed";
-  static readonly DeploySucceeded = "Successfully executed";
-  static readonly PublishSucceeded = "Successfully executed";
+  static readonly ProvisionSucceeded = "successfully";
+  static readonly DeploySucceeded = "successfully";
+  static readonly PublishSucceeded = "successfully";
   static readonly UnresolvedPlaceholderError =
     "MissingEnvironmentVariablesError";
   static readonly ZipAppPackageSucceeded = "successfully built";
@@ -449,6 +459,7 @@ export class CreateProjectQuestion {
     "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
   static readonly CreateNewSpfxSolution = "Create New SPFx Solution";
+  static readonly ImportExistingSpfxSolution = "Import Existing SPFx Solution";
 }
 
 export class ValidationContent {
@@ -461,6 +472,7 @@ export class ValidationContent {
   static readonly AiAssistantBotWelcomeInstruction =
     "I'm an assistant bot. How can I help you today?";
   static readonly AiBotErrorMessage = "The bot encountered an error or bug";
+  static readonly AiBotErrorMessage2 = "An AI request failed";
 }
 
 export class CliVersion {

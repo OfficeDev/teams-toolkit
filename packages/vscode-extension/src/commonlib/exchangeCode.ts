@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Disposable, Uri } from "vscode";
-import { uriEventHandler } from "../globalVariables";
+import { uriEventHandler } from "../uriHandler";
 
 export async function getExchangeCode(): Promise<string> {
   let uriEventListener: Disposable;

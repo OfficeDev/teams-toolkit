@@ -6,7 +6,7 @@ import { glob } from "glob";
 import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
-import { cpUtils, DebugLogger } from "../../../../common/deps-checker/util/cpUtils";
+import { cpUtils, DebugLogger } from "../../../deps-checker/util/cpUtils";
 import * as os from "os";
 import { Constants } from "./constants";
 

@@ -26,7 +26,7 @@ jobs:
         run: |
           links=`git grep -hEo "https://aka[a-zA-Z0-9./?=_%:-]*[a-zA-Z0-9]"  | sort -nr | uniq`
 
-          white_list=""
+          white_list="https://aka.ms/teamsfx-plugin-api;https://aka.ms/dotnet;"
 
           while IFS= read -r link;
           do
@@ -75,7 +75,13 @@ jobs:
               then
                 label="SKIPPED"
               else
-                label="VALID"
+                httpcode=`curl -s -o /dev/null -w %{http_code} $redirect`
+                if [[ $httpcode == 404 ]];
+                then
+                  label="INVALID"
+                else
+                  label="VALID"
+                fi
               fi
 
               row="$file $aka $label"
@@ -116,8 +122,10 @@ jobs:
               redirect=`echo $line | awk -F '=>' '{print $2}'`
 
               label=""
+              invalid_url=false
               if [[ $redirect == *"bing.com"* ]];
               then
+                invalid_url=true
                 invalid=$((invalid+1))
                 label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
               elif [[ $redirect == *"white list"* ]];
@@ -125,14 +133,22 @@ jobs:
                 valid=$((valid+1))
                 label="<span style=\\\"background-color:#b58900;color:white;font-weight:bold;\\\">SKIPPED</span>"
               else
-                valid=$((valid+1))
-                label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">VALID</span>"
+                httpcode=`curl -s -o /dev/null -w %{http_code} $redirect`
+                if [[ $httpcode == 404 ]];
+                then
+                  invalid_url=true
+                  invalid=$((invalid+1))
+                  label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
+                else
+                  valid=$((valid+1))
+                  label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">VALID</span>"
+                fi
               fi
 
               row="<tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: left;\\\">$aka</td> <td style=\\\"text-align: center;\\\">$label</td> </tr>"
               echo $row
               
-              if [[ $redirect == *"bing.com"* ]];
+              if [[ $invalid_url == true ]];
               then
                 lists="$row $lists"
               else

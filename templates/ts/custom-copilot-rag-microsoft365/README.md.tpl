@@ -22,6 +22,9 @@ This app template also demonstrates usage of techniques like:
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 {{/useAzureOpenAI}}
 
+> [!TIP]
+> You can adjust this template to use data from a Microsoft Graph connector. Follow the steps in the [CodeTour](https://marketplace.visualstudio.com/items?itemName=vsls-contrib.codetour) included in the project to apply the necessary changes. To use data from a Microsoft Graph connector, you need a Graph connector deployed to your tenant. For testing, we recommend using the [Ingest custom API data using TypeScript, Node.js and Teams Toolkit for Visual Studio Code](https://adoption.microsoft.com/sample-solution-gallery/sample/pnp-graph-connector-nodejs-typescript-food-catalog) sample.
+
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -31,7 +34,7 @@ This app template also demonstrates usage of techniques like:
 {{#useAzureOpenAI}}
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>` and deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`.
 {{/useAzureOpenAI}}
-1. Microsoft Graph Search API is available for searching SharePoint content, thus you just need to ensure your document in *src/data/\*.md* is uploaded to SharePoint / OneDrive, no extra data ingestion required.
+1. Microsoft Graph Search API is available for searching SharePoint content, thus you just need to ensure your document in *src/data/\*.txt* is [uploaded to SharePoint / OneDrive](https://support.microsoft.com/office/upload-files-and-folders-to-a-library-da549fb1-1fcb-4167-87d0-4693e93cb7a0), no extra data ingestion required.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You can send any message to get a response from the bot.
@@ -61,7 +64,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/prompts/chat/config.json`| Configures the prompt.|
 |`src/app/app.ts`| Handles business logics for the RAG bot.|
 |`src/app/m365DataSource.ts`| Defines the m365 data source.|
-|`src/data/*.md`| Raw text data sources.|
+|`src/data/*.txt`| Raw text data sources.|
 |`src/public/*.html`| Auth start page and an auth end page to be used by the user sign in flow.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.

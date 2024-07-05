@@ -3,8 +3,12 @@
 
 import { FxError, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
-import { TelemetryConstants } from "../constants";
-import { fillInTelemetryPropsForFxError } from "../../common/telemetry";
+import {
+  TelemetryConstants,
+  TelemetryProperty,
+  TelemetrySuccess,
+  telemetryUtils,
+} from "../../common/telemetry";
 
 export class TeamsFxTelemetryReporter {
   constructor(
@@ -18,7 +22,7 @@ export class TeamsFxTelemetryReporter {
       const actualConfig = this.mergeConfig(config, this.defaultConfig);
       if (actualConfig.componentName) {
         actualConfig.properties = {
-          [TelemetryConstants.properties.component]: actualConfig.componentName,
+          [TelemetryProperty.Component]: actualConfig.componentName,
           ...actualConfig.properties,
         };
       }
@@ -38,7 +42,7 @@ export class TeamsFxTelemetryReporter {
       const actualConfig = this.mergeConfig(config, this.defaultConfig);
       if (actualConfig.componentName) {
         actualConfig.properties = {
-          [TelemetryConstants.properties.component]: actualConfig.componentName,
+          [TelemetryProperty.Component]: actualConfig.componentName,
           ...actualConfig.properties,
         };
       }
@@ -46,14 +50,12 @@ export class TeamsFxTelemetryReporter {
         // sendTelemetryErrorEvent
         actualConfig.properties = actualConfig.properties || {};
 
-        fillInTelemetryPropsForFxError(actualConfig.properties, error);
+        telemetryUtils.fillInErrorProperties(actualConfig.properties, error);
 
         if (!actualConfig.errorProps) {
           actualConfig.errorProps = [];
         }
-        actualConfig.errorProps = actualConfig.errorProps.concat([
-          TelemetryConstants.properties.errorMessage,
-        ]);
+        actualConfig.errorProps = actualConfig.errorProps.concat([TelemetryProperty.ErrorMessage]);
 
         this.telemetryReporter.sendTelemetryErrorEvent(
           actualConfig.eventName,
@@ -64,7 +66,7 @@ export class TeamsFxTelemetryReporter {
       } else {
         // sendTelemetryEvent
         actualConfig.properties = {
-          [TelemetryConstants.properties.success]: TelemetryConstants.values.yes,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
           ...actualConfig.properties,
         };
 

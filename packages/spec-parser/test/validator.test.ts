@@ -1960,6 +1960,69 @@ describe("Validator", () => {
       assert.strictEqual(isValid, false);
       assert.deepEqual(reason, [ErrorType.ResponseContainMultipleMediaTypes]);
     });
+
+    it("should return false if contain circular reference", () => {
+      const method = "POST";
+      const path = "/users";
+      const circularSchema = {
+        type: "object",
+        properties: {
+          item: {},
+        },
+      };
+
+      circularSchema.properties.item = circularSchema;
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: circularSchema,
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid, reason } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.CircularReferenceNotSupported]);
+    });
   });
 
   describe("CopilotValidator", () => {
@@ -2548,6 +2611,69 @@ describe("Validator", () => {
       assert.strictEqual(isValid, false);
       assert.deepEqual(reason, [ErrorType.RequestBodyContainsNestedObject]);
     });
+
+    it("should return false if contain circular reference", () => {
+      const method = "POST";
+      const path = "/users";
+      const circularSchema = {
+        type: "object",
+        properties: {
+          item: {},
+        },
+      };
+
+      circularSchema.properties.item = circularSchema;
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: circularSchema,
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid, reason } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.CircularReferenceNotSupported]);
+    });
   });
 
   describe("TeamsAIValidator", () => {
@@ -2863,6 +2989,69 @@ describe("Validator", () => {
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid } = validator.validateAPI(method, path);
       assert.strictEqual(isValid, true);
+    });
+
+    it("should return false if contain circular reference", () => {
+      const method = "POST";
+      const path = "/users";
+      const circularSchema = {
+        type: "object",
+        properties: {
+          item: {},
+        },
+      };
+
+      circularSchema.properties.item = circularSchema;
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: circularSchema,
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid, reason } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.CircularReferenceNotSupported]);
     });
   });
 });

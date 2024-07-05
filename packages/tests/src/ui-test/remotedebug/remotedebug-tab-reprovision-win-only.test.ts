@@ -77,6 +77,8 @@ describe("Remote debug Tests", function () {
       await provisionProject(appName, projectPath);
       await clearNotifications();
       await cleanUpResourceGroup(appName, "dev");
+      // wait for resource group to be deleted
+      await driver.sleep(180 * 1000);
       await createResourceGroup(appName, "dev", "westus");
       // rerun provision
       await provisionProject(appName, projectPath, false);

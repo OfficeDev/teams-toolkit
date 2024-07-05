@@ -1,21 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { UserError } from "@microsoft/teamsfx-api";
+import chai from "chai";
 import "mocha";
 import * as sinon from "sinon";
-import chai from "chai";
-
+import { DepsType } from "../../../../src/component/deps-checker/depsChecker";
+import { DepsCheckerError } from "../../../../src/component/deps-checker/depsError";
+import { DotnetChecker } from "../../../../src/component/deps-checker/internal/dotnetChecker";
+import { FuncToolChecker } from "../../../../src/component/deps-checker/internal/funcToolChecker";
+import { TestToolChecker } from "../../../../src/component/deps-checker/internal/testToolChecker";
 import { ToolsInstallDriver } from "../../../../src/component/driver/devTool/installDriver";
-import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
-import { LocalCertificateManager } from "../../../../src/common/local/localCertificateManager";
-import { UserError } from "@microsoft/teamsfx-api";
-import { CoreSource } from "../../../../src/core/error";
 import { InstallToolArgs } from "../../../../src/component/driver/devTool/interfaces/InstallToolArgs";
-import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/funcToolChecker";
-import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
-import { DepsCheckerError } from "../../../../src/common/deps-checker/depsError";
-import { DotnetChecker } from "../../../../src/common/deps-checker/internal/dotnetChecker";
-import { TestToolChecker } from "../../../../src/common/deps-checker/internal/testToolChecker";
+import { LocalCertificateManager } from "../../../../src/component/local/localCertificateManager";
+import { CoreSource } from "../../../../src/error";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 
 describe("Tools Install Driver test", () => {
   const sandbox = sinon.createSandbox();

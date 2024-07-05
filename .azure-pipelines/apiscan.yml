@@ -6,8 +6,7 @@ schedules:
     include:
     - dev
 
-pool:
-  vmImage: windows-2019
+pool: "$(POOLAGENT)"
 
 steps:
 - task: UseDotNet@2
@@ -24,7 +23,7 @@ steps:
     arguments: '/p:Configuration=Release'
 
 # Remove files that won't be released
-- task: APIScan@3
+- task: APIScan@2
   displayName: 'Run APIScan'
   inputs:
     softwareFolder: 'packages/function-extension/src/bin/Release/netcoreapp3.1'
@@ -33,9 +32,9 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId={335a8848-d80e-4963-93c7-a471d627936f of user-assigned identity}'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=$(ApiScanClientId)'
 
-- task: APIScan@3
+- task: APIScan@2
   displayName: 'Run APIScan on Microsoft.TeamsFx'
   inputs:
     softwareFolder: packages/dotnet-sdk/src/TeamsFx/bin/Release/net6.0
@@ -44,4 +43,4 @@ steps:
     isLargeApp: false
     verbosityLevel: 'none'
   env:
-    AzureServicesAuthConnectionString: 'RunAs=App;AppId={f3b77a44-7963-4341-8e1f-b47e83ed007c of user-assigned identity}'
+    AzureServicesAuthConnectionString: 'RunAs=App;AppId=$(ApiScanClientId)'

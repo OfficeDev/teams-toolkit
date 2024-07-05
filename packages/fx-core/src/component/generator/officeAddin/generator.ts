@@ -9,6 +9,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   Context,
   FxError,
+  GeneratorResult,
   Inputs,
   ManifestUtil,
   Result,
@@ -17,6 +18,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
+import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
 import { join } from "path";
@@ -25,21 +27,17 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
-  OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
-  getOfficeAddinFramework,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
+  QuestionNames,
+} from "../../../question/constants";
+import { getOfficeAddinFramework, getOfficeAddinTemplateConfig } from "../../../question/create";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
-import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
-import { HelperMethods } from "./helperMethods";
-import { toLower } from "lodash";
-import { convertToLangKey } from "../utils";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
-import { fetchAndUnzip } from "../../utils";
+import { convertToLangKey } from "../utils";
+import { HelperMethods } from "./helperMethods";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -109,11 +107,7 @@ export class OfficeAddinGenerator {
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
     let host: string = inputHost;
-    if (
-      projectType === ProjectTypeOptions.outlookAddin().id ||
-      (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-        inputHost === OfficeAddinHostOptions.outlook().id)
-    ) {
+    if (projectType === ProjectTypeOptions.outlookAddin().id) {
       host = "outlook";
     } else if (projectType === ProjectTypeOptions.officeAddin().id) {
       if (capability === "json-taskpane") {
@@ -134,15 +128,16 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const framework = getOfficeAddinFramework(inputs);
-        const templateConfig = getOfficeAddinTemplateConfig(
-          projectType,
-          inputs[QuestionNames.OfficeAddinHost]
-        );
+        const templateConfig = getOfficeAddinTemplateConfig();
         const projectLink = templateConfig[capability].framework[framework][language];
 
         // Copy project template files from project repository
         if (projectLink) {
-          const fetchRes = await fetchAndUnzip("office-addin-generator", projectLink, addinRoot);
+          const fetchRes = await HelperMethods.fetchAndUnzip(
+            "office-addin-generator",
+            projectLink,
+            addinRoot
+          );
           if (fetchRes.isErr()) {
             return err(fetchRes.error);
           }
@@ -238,6 +233,7 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
   public async getTemplateInfos(
     context: Context,
     inputs: Inputs,
+    destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
     const projectType = inputs[QuestionNames.ProjectType];
@@ -257,7 +253,9 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    return await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+    if (res.isErr()) return err(res.error);
+    return ok({});
   }
 }

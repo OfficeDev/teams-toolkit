@@ -3,22 +3,20 @@
 
 import * as util from "util";
 import * as vscode from "vscode";
-
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
-
+import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core";
 import { M365Login } from "../commonlib/m365Login";
-import AzureAccountManager from "../commonlib/azureLogin";
+import azureAccountManager from "../commonlib/azureLogin";
 import { signedIn } from "../commonlib/common/constant";
-import * as globalVariables from "../globalVariables";
+import { isSPFxProject } from "../globalVariables";
 import {
   getM365TenantFromEnv,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-} from "../utils/commonUtils";
+} from "../utils/envTreeUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
-import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
@@ -111,7 +109,7 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     // Check Azure account status
-    if (globalVariables.isSPFxProject) {
+    if (isSPFxProject) {
       return {
         isM365AccountLogin,
         warnings,
@@ -119,12 +117,12 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     let isAzureAccountLogin = true;
-    if (AzureAccountManager.getAccountInfo() !== undefined) {
+    if (azureAccountManager.getAccountInfo() !== undefined) {
       const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
       const provisionedSubId = subscriptionInfo?.subscriptionId;
 
       if (provisionedSubId) {
-        const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+        const subscriptions: SubscriptionInfo[] = await azureAccountManager.listSubscriptions();
         const targetSub = subscriptions.find(
           (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
         );

@@ -18,7 +18,7 @@ provision:
   - uses: script
     with:
       run:
-        echo "::set-teamsfx-env FUNC_NAME=repair";
+        echo "::set-teamsfx-env FUNC_NAME=repairs";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 
   # Build Teams app package with latest env value

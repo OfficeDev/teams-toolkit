@@ -10,13 +10,17 @@ import { TemplateProject } from "../../utils/constants";
 import { validateQueryOrg } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
+import { SampledebugContext } from "./sampledebugContext";
 
 class QueryOrgTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    option?: { displayName: string }
+    options?: { context: SampledebugContext }
   ): Promise<void> {
-    return await validateQueryOrg(page, { displayName: Env.displayName });
+    return await validateQueryOrg(page, {
+      displayName: Env.displayName,
+      appName: options?.context.appName.substring(0, 10) || "",
+    });
   }
 }
 

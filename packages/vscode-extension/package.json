@@ -110,7 +110,7 @@
         }
       },
       "teamsfx-custom-copilot": {
-        "description": "Custom Copilot icon in scaffold questions",
+        "description": "Custom Engine Copilot icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E006"

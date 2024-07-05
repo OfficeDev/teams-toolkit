@@ -30,7 +30,7 @@ class ChefBotTestCase extends CaseFactory {
     const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      ".env.local.user"
+      ".env.local"
     );
     // create .env.local.user file
     fs.writeFileSync(envFile, "SECRET_OPENAI_KEY=yourapikey");

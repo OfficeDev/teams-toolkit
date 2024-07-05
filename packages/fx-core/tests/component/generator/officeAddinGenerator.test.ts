@@ -1030,6 +1030,7 @@ describe("OfficeAddinGeneratorNew", () => {
         projectPath: "./",
       };
       sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
+      sandbox.stub(generator, "fixIconPath").resolves();
       const res = await generator.post(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
     });
@@ -1042,6 +1043,41 @@ describe("OfficeAddinGeneratorNew", () => {
       sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(err(new UserCancelError()));
       const res = await generator.post(context, inputs, "./");
       chai.assert.isTrue(res.isErr());
+    });
+  });
+  describe("fixIconPath()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    // it("manifest not found", async () => {
+    //   sandbox.stub(fse, "pathExists").resolves(false);
+    //   const move = sandbox.stub(fse, "move").resolves();
+    //   await generator.fixIconPath("./");
+    //   chai.assert.isTrue(move.notCalled);
+    // });
+    it("happy", async () => {
+      sandbox.stub(fse, "pathExists").callsFake(async (path) => {
+        if (path.endsWith("manifest.json")) {
+          return true;
+        } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
+          return true;
+        } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
+          return true;
+        } else if (path.endsWith("color.png")) {
+          return false;
+        } else if (path.endsWith("outline.png")) {
+          return false;
+        }
+      });
+      sandbox
+        .stub(fse, "readJson")
+        .resolves({ icons: { outline: "assets/outline.png", color: "assets/color.png" } });
+      const move = sandbox.stub(fse, "move").resolves();
+      const writeJson = sandbox.stub(fse, "writeJson").resolves();
+      await generator.fixIconPath("./");
+      chai.assert.isTrue(move.calledTwice);
+      chai.assert.isTrue(writeJson.calledOnce);
     });
   });
 });

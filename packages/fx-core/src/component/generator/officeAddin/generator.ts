@@ -18,6 +18,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
+import fse from "fs-extra";
 import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
@@ -256,6 +257,39 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
   ): Promise<Result<GeneratorResult, FxError>> {
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
+    await this.fixIconPath(destinationPath);
     return ok({});
+  }
+
+  /**
+   * this is a work around for MOS API bug that will return invalid package if the icon path is not root folder of appPackage
+   * so this function will move the two icon files to root folder of appPackage and update the manifest.json
+   */
+  async fixIconPath(projectPath: string): Promise<void> {
+    const outlineOldPath = join(projectPath, "appPackage", "assets", "outline.png");
+    const colorOldPath = join(projectPath, "appPackage", "assets", "color.png");
+    const outlineNewPath = join(projectPath, "appPackage", "outline.png");
+    const colorNewPath = join(projectPath, "appPackage", "color.png");
+    const manifestPath = join(projectPath, "appPackage", "manifest.json");
+    if (!(await fse.pathExists(manifestPath))) return;
+    const manifest = await fse.readJson(manifestPath);
+    let change = false;
+    if (manifest.icons.outline === "assets/outline.png") {
+      if ((await fse.pathExists(outlineOldPath)) && !(await fse.pathExists(outlineNewPath))) {
+        await fse.move(outlineOldPath, outlineNewPath);
+        manifest.icons.outline = "outline.png";
+        change = true;
+      }
+    }
+    if (manifest.icons.color === "assets/color.png") {
+      if ((await fse.pathExists(colorOldPath)) && !(await fse.pathExists(colorNewPath))) {
+        await fse.move(colorOldPath, colorNewPath);
+        manifest.icons.color = "color.png";
+        change = true;
+      }
+    }
+    if (change) {
+      await fse.writeJson(manifestPath, manifest, { spaces: 4 });
+    }
   }
 }

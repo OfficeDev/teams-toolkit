@@ -35,6 +35,7 @@ describe("Open link handlers", () => {
 
   beforeEach(() => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
     sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
   });
 

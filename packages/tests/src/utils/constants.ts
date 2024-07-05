@@ -337,7 +337,7 @@ export class CommandPaletteCommands {
   public static readonly AddSpfxWebPart: string = "Teams: Add SPFx web part";
 }
 
-export type OptionType =
+export type AppType =
   | "tab"
   | "tabnsso"
   | "tabbot"
@@ -348,12 +348,8 @@ export type OptionType =
   | "msg"
   | "msgsa"
   | "m365lp"
-  | "spfxreact"
-  | "spfxnone"
-  | "spfxmin"
-  | "gspfxreact"
-  | "gspfxnone"
-  | "gspfxmin"
+  | "spfx"
+  | "gspfx"
   | "dashboard"
   | "workflow"
   | "timenoti"
@@ -365,7 +361,8 @@ export type OptionType =
   | "aiassist"
   | "msgnewapi"
   | "msgopenapi"
-  | "msgapikey";
+  | "msgapikey"
+  | "importspfx";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -462,6 +459,7 @@ export class CreateProjectQuestion {
     "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
   static readonly CreateNewSpfxSolution = "Create New SPFx Solution";
+  static readonly ImportExistingSpfxSolution = "Import Existing SPFx Solution";
 }
 
 export class ValidationContent {

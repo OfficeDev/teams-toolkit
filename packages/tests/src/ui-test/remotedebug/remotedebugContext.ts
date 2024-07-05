@@ -453,17 +453,3 @@ export async function setSkipAddingSqlUser(
   parameters["skipAddingSqlUser"] = true;
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
-
-export async function configSpfxGlobalEnv() {
-  try {
-    console.log(`Start to set up global environment:`);
-    const result = await execAsync(
-      "npm install gulp-cli yo @microsoft/generator-sharepoint --global"
-    );
-    console.log(`[Successfully] set up global environment.`);
-    console.log(`${result.stdout}`);
-  } catch (error) {
-    console.log(error);
-    throw new Error(`Failed to set up global environment: ${error}`);
-  }
-}

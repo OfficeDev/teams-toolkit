@@ -1,53 +1,56 @@
-import * as chai from "chai";
-import * as spies from "chai-spies";
 import { Stage, UserError } from "@microsoft/teamsfx-api";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import * as telemetryModule from "../../src/telemetry/extTelemetry";
-import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
-import sinon = require("sinon");
-import * as vscTelemetryUtils from "../../src/utils/telemetryUtils";
-import * as fs from "fs-extra";
-import * as globalVariables from "../../src/globalVariables";
-import { Uri } from "vscode";
+import { maskSecret, telemetryUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import { telemetryUtils, maskSecret } from "@microsoft/teamsfx-core";
-
-chai.use(spies);
-const spy = chai.spy;
-
-const reporterSpy = spy.interface({
-  sendTelemetryErrorEvent(
-    eventName: string,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number },
-    errorProps?: string[]
-  ): void {},
-  sendTelemetryEvent(
-    eventName: string,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number }
-  ): void {},
-  sendTelemetryException(
-    error: Error,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number }
-  ): void {},
-});
+import * as chai from "chai";
+import * as fs from "fs-extra";
+import * as sinon from "sinon";
+import { Uri } from "vscode";
+import * as globalVariables from "../../src/globalVariables";
+import * as telemetryModule from "../../src/telemetry/extTelemetry";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
+import * as vscTelemetryUtils from "../../src/utils/telemetryUtils";
+import { MockTelemetryReporter } from "../mocks/mockTools";
 
 describe("ExtTelemetry", () => {
-  afterEach(() => {
-    // Restore the default sandbox here
-    sinon.restore();
-  });
+  chai.util.addProperty(ExtTelemetry, "reporter", () => {});
+  let sendTelemetryErrorEventSpy: sinon.SinonSpy<
+    [
+      eventName: string,
+      properties?: { [key: string]: string } | undefined,
+      measurements?: { [key: string]: number } | undefined,
+      errorProps?: string[] | undefined
+    ],
+    void
+  >;
+  let sendTelemetryEventSpy: sinon.SinonSpy<
+    [
+      eventName: string,
+      properties?: { [key: string]: string } | undefined,
+      measurements?: { [key: string]: number } | undefined
+    ],
+    void
+  >;
+  let sendTelemetryExceptionSpy: sinon.SinonSpy<
+    [
+      error: Error,
+      properties?: { [key: string]: string } | undefined,
+      measurements?: { [key: string]: number } | undefined
+    ],
+    void
+  >;
+
   describe("setHasSentTelemetry", () => {
     it("query-expfeature", () => {
       const eventName = "query-expfeature";
+      ExtTelemetry.hasSentTelemetry = false;
       ExtTelemetry.setHasSentTelemetry(eventName);
       chai.expect(ExtTelemetry.hasSentTelemetry).equals(false);
     });
 
     it("other-event", () => {
       const eventName = "other-event";
+      ExtTelemetry.hasSentTelemetry = false;
       ExtTelemetry.setHasSentTelemetry(eventName);
       chai.expect(ExtTelemetry.hasSentTelemetry).equals(true);
     });
@@ -97,9 +100,14 @@ describe("ExtTelemetry", () => {
 
   describe("Send Telemetry", () => {
     const sandbox = sinon.createSandbox();
+    const reporterStub = new MockTelemetryReporter();
+
     beforeEach(() => {
-      chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
-      chai.util.addProperty(ExtTelemetry, "settingsVersion", () => "1.0.0");
+      sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
+      sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
+      sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");
+      sandbox.stub(ExtTelemetry, "reporter").value(reporterStub);
+      sandbox.stub(ExtTelemetry, "settingsVersion").value("1.0.0");
       sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(globalVariables, "isSPFxProject").value(false);
@@ -117,7 +125,8 @@ describe("ExtTelemetry", () => {
         { numericMeasure: 123 }
       );
 
-      chai.expect(reporterSpy.sendTelemetryEvent).to.have.been.called.with(
+      sinon.assert.calledOnceWithMatch(
+        sendTelemetryEventSpy,
         "sampleEvent",
         {
           stringProp: "some string",
@@ -145,7 +154,8 @@ describe("ExtTelemetry", () => {
         ["errorProps"]
       );
 
-      chai.expect(reporterSpy.sendTelemetryErrorEvent).to.have.been.called.with(
+      sinon.assert.calledOnceWithMatch(
+        sendTelemetryErrorEventSpy,
         "sampleEvent",
         {
           stringProp: "some string",
@@ -177,7 +187,8 @@ describe("ExtTelemetry", () => {
         { numericMeasure: 123 }
       );
 
-      chai.expect(reporterSpy.sendTelemetryException).to.have.been.called.with(
+      sinon.assert.calledOnceWithMatch(
+        sendTelemetryExceptionSpy,
         error,
         {
           stringProp: "some string",
@@ -223,6 +234,9 @@ describe("ExtTelemetry", () => {
     });
 
     it("sendCachedTelemetryEventsAsync", async () => {
+      const reporterStub = new MockTelemetryReporter();
+      sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "reporter").value(reporterStub);
       const timestamp = new Date().toISOString();
       const telemetryEvents = {
         eventName: "deactivate",
@@ -235,11 +249,10 @@ describe("ExtTelemetry", () => {
       const telemetryData = JSON.stringify(telemetryEvents);
       sandbox.stub(globalState, "globalStateGet").callsFake(async () => telemetryData);
       sandbox.stub(globalState, "globalStateUpdate");
-      chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
 
       await ExtTelemetry.sendCachedTelemetryEventsAsync();
 
-      chai.expect(reporterSpy.sendTelemetryEvent).to.have.been.called.with("deactivate", {
+      sinon.assert.calledOnceWithMatch(sendTelemetryEventSpy, "deactivate", {
         "correlation-id": "correlation-id",
         "project-id": "project-id",
         timestamp: timestamp,

@@ -31,10 +31,10 @@ class ChefBotTestCase extends CaseFactory {
     fs.mkdirSync(path.resolve(projectPath, "env"), {
       recursive: true,
     });
-    const userFile = path.resolve(projectPath, "env", ".env.dev.user");
+    const userFile = path.resolve(projectPath, "env", ".env.dev");
     const KEY = "SECRET_OPENAI_KEY=MY_OPENAI_API_KEY";
     fs.writeFileSync(userFile, KEY);
-    console.log(`add key ${KEY} to .env.dev.user file`);
+    console.log(`add key ${KEY} to .env.dev file`);
   }
 }
 

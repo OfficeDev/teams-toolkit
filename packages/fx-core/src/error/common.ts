@@ -12,6 +12,8 @@ import { camelCase } from "lodash";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { globalVars } from "../common/globalVars";
 import { ErrorCategory } from "./types";
+import path from "path";
+import { MetadataV3 } from "../common/versionMetadata";
 
 export class FileNotFoundError extends UserError {
   constructor(source: string, filePath: string, helpLink?: string) {
@@ -79,10 +81,15 @@ export class InvalidActionInputError extends UserError {
 }
 
 export class InvalidProjectError extends UserError {
-  constructor() {
+  constructor(projectPath: string) {
+    const ymlFilePath = path.join(projectPath, MetadataV3.configFile);
+    const localYmlPath = path.join(projectPath, MetadataV3.localConfigFile);
     super({
       message: getDefaultString("error.common.InvalidProjectError"),
-      displayMessage: getLocalizedString("error.common.InvalidProjectError"),
+      displayMessage: getLocalizedString(
+        "error.common.InvalidProjectError.display",
+        `'${ymlFilePath}' or '${localYmlPath}'`
+      ),
       source: "coordinator",
       categories: [ErrorCategory.Internal],
     });

@@ -83,6 +83,9 @@ export enum TelemetryProperty {
   HasAzureOpenAIEndpoint = "has-azure-openai-endpoint",
   HasAzureOpenAIDeploymentName = "has-azure-openai-deployment-name",
   HasOpenAIKey = "has-openai-key",
+
+  TDPTraceId = "tdp-trace-id",
+  MOSTraceId = "mos-trace-id",
 }
 
 export const TelemetryConstants = {
@@ -156,6 +159,7 @@ export enum TelemetryEvent {
   ProjectType = "project-type",
   DependencyApi = "dependency-api",
   AppStudioApi = "app-studio-api",
+  MOSApi = "ttk-mos-api",
 }
 
 export enum ProjectTypeProps {

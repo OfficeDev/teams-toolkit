@@ -1,11 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { commands, ExtensionContext, extensions } from "vscode";
+import {
+  commands,
+  Diagnostic,
+  ExtensionContext,
+  extensions,
+  Uri,
+  Range,
+  Position,
+  languages,
+} from "vscode";
 
 import {
   err,
   FxError,
+  IDiagnosticInfo,
   InputResult,
   ok,
   Result,
@@ -27,6 +37,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
+import { diagnosticCollection, setDiagnosticCollection } from "../globalVariables";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
+import { FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {
@@ -135,6 +148,45 @@ export class VsCodeUI extends VSCodeUI {
       }
     }
     return res;
+  }
+
+  showDiagnosticInfo(diagnostics: IDiagnosticInfo[]): void {
+    if (!featureFlagManager.getBooleanValue(FeatureFlags.ShowDiagnostics)) {
+      return;
+    }
+    if (!diagnosticCollection) {
+      const collection = languages.createDiagnosticCollection("teamstoolkit");
+      setDiagnosticCollection(collection);
+    } else {
+      diagnosticCollection.clear();
+    }
+    const diagnosticMap: Map<string, Diagnostic[]> = new Map();
+    for (const diagnostic of diagnostics) {
+      let diagnosticsOfFile = diagnosticMap.get(diagnostic.filePath);
+      if (!diagnosticsOfFile) {
+        diagnosticsOfFile = [];
+        diagnosticMap.set(diagnostic.filePath, diagnosticsOfFile);
+      }
+
+      const diagnosticInVSC = new Diagnostic(
+        new Range(
+          new Position(diagnostic.startLine, diagnostic.startIndex),
+          new Position(diagnostic.endLine, diagnostic.endIndex)
+        ),
+        diagnostic.message,
+        diagnostic.severity
+      );
+      if (diagnostic.code) {
+        diagnosticInVSC.code = {
+          value: diagnostic.code.value,
+          target: Uri.parse(diagnostic.code.link),
+        };
+      }
+      diagnosticsOfFile.push(diagnosticInVSC);
+    }
+    diagnosticMap.forEach((diags, filePath) => {
+      diagnosticCollection.set(Uri.file(filePath), diags);
+    });
   }
 }
 

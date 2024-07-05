@@ -49,9 +49,9 @@ export class FeatureFlagName {
   static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
-  static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
   static readonly SMEOAuth = "SME_OAUTH";
   static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
+  static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
 }
 
 export function getAllowedAppMaps(): Record<string, string> {

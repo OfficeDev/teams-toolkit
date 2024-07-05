@@ -64,6 +64,7 @@ import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { FeatureFlags } from "./featureFlags";
 import {
+  diagnosticCollection,
   initializeGlobalVariables,
   isExistingUser,
   isOfficeAddInProject,
@@ -82,11 +83,14 @@ import {
   azureAccountSignOutHelpHandler,
   cmpAccountsHandler,
   createAccountHandler,
-} from "./handlers/accountHandlers";
+} from "./handlers/accounts/accountHandlers";
 import { activate as activateHandlers } from "./handlers/activate";
 import { autoOpenProjectHandler } from "./handlers/autoOpenProjectHandler";
-import { checkCopilotCallback, checkSideloadingCallback } from "./handlers/checkAccessCallback";
-import { checkCopilotAccessHandler } from "./handlers/checkCopilotAccess";
+import {
+  checkCopilotCallback,
+  checkSideloadingCallback,
+} from "./handlers/accounts/checkAccessCallback";
+import { checkCopilotAccessHandler } from "./handlers/accounts/checkCopilotAccess";
 import { manageCollaboratorHandler } from "./handlers/collaboratorHandlers";
 import {
   openFolderHandler,
@@ -158,9 +162,9 @@ import { openReadMeHandler } from "./handlers/readmeHandlers";
 import {
   refreshCopilotCallback,
   refreshSideloadingCallback,
-} from "./handlers/refreshAccessHandlers";
+} from "./handlers/accounts/refreshAccessHandlers";
 import { showOutputChannelHandler } from "./handlers/showOutputChannel";
-import { signinAzureCallback, signinM365Callback } from "./handlers/signinAccountHandlers";
+import { signinAzureCallback, signinM365Callback } from "./handlers/accounts/signinAccountHandlers";
 import { openTutorialHandler, selectTutorialsHandler } from "./handlers/tutorialHandlers";
 import {
   createProjectFromWalkthroughHandler,
@@ -309,7 +313,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   );
 
   if (vscode.workspace.isTrusted) {
-    registerCodelensAndHoverProviders(context);
+    registerLanguageFeatures(context);
   }
 
   registerDebugConfigProviders(context);
@@ -1001,7 +1005,7 @@ async function setTDPIntegrationEnabledContext() {
   );
 }
 
-function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
+function registerLanguageFeatures(context: vscode.ExtensionContext) {
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
   const envDataSelector = {
@@ -1160,6 +1164,8 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
   );
+
+  context.subscriptions.push(diagnosticCollection);
 }
 
 function registerOfficeDevCodeLensProviders(context: vscode.ExtensionContext) {

@@ -8,6 +8,7 @@ import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import { EnvConstants, PluginId, StateConfigKey } from "./constants";
+// eslint-disable-next-line import/no-cycle
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -39,6 +40,7 @@ enum BaseConfig {
   API_ENDPOINT = "API_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
   IDENTITY_ID = "IDENTITY_ID",
+  WEBSITE_CONTENTSHARE = "WEBSITE_CONTENTSHARE",
 }
 
 enum SQLConfig {
@@ -110,14 +112,11 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
-    const endpoint =
-      (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
-      (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
-    chai.assert.equal(
-      webappSettingsResponse[BaseConfig.API_ENDPOINT],
-      endpoint
-    );
 
+    const contentShare =
+      webappSettingsResponse[BaseConfig.WEBSITE_CONTENTSHARE];
+    const functionNameInAzure = contentShare.split("-")[0];
+    chai.assert.equal(functionNameInAzure, this.functionAppName);
     console.log("Successfully validate Function Provision.");
   }
 

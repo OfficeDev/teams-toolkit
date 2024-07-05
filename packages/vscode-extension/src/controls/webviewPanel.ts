@@ -323,6 +323,9 @@ export class WebviewPanel {
     const codiconsUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
     );
+    const stylesheetUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "client.css")
+    );
     const dompurifyUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "purify.min.js")
     );
@@ -341,6 +344,7 @@ export class WebviewPanel {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
             <base href='${scriptBaseUri.toString()}' />
+            <link href="${stylesheetUri.toString()}" rel="stylesheet" />
             <link href="${codiconsUri.toString()}" rel="stylesheet" />
           </head>
           <body>

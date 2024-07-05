@@ -7,15 +7,14 @@
   "configurations": [
     {
       "name": "Run Extension",
-      "type": "pwa-extensionHost",
+      "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "resolveSourceMapLocations": [],
       "env": {
         "NODE_ENV": "development",
         "TEAMSFX_SAMPLE_CONFIG_BRANCH": "dev"
       },
-      "preLaunchTask": "npm: build"
+      "preLaunchTask": "watch"
     },
     {
       "name": "Extension Unit Tests",

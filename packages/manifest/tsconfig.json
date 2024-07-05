@@ -11,14 +11,13 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "declarationMap": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "jsx": "react",
     "declaration": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "types" : []
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/tests/*"]

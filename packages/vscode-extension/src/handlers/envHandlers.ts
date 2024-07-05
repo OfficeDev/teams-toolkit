@@ -142,7 +142,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
 export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   const projectPath = workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
-    return err(new InvalidProjectError());
+    return err(new InvalidProjectError(projectPath || ""));
   }
   const envProfilesResult = await environmentManager.listAllEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {

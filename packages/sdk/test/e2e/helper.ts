@@ -17,16 +17,6 @@ export function extractIntegrationEnvVariables() {
     process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME = accountData[0];
     process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD = accountData[1];
   }
-  if (!process.env.SDK_INTEGRATION_TEST_SQL) {
-    throw new Error("Please set env SDK_INTEGRATION_TEST_SQL");
-  }
-  const sqlData = process.env.SDK_INTEGRATION_TEST_SQL.split(";");
-  if (sqlData.length === 4) {
-    process.env.SDK_INTEGRATION_SQL_ENDPOINT = sqlData[0];
-    process.env.SDK_INTEGRATION_SQL_DATABASE_NAME = sqlData[1];
-    process.env.SDK_INTEGRATION_SQL_USER_NAME = sqlData[2];
-    process.env.SDK_INTEGRATION_SQL_PASSWORD = sqlData[3];
-  }
   if (!process.env.SDK_INTEGRATION_TEST_AAD) {
     throw new Error("Please set env SDK_INTEGRATION_TEST_AAD");
   }
@@ -71,7 +61,7 @@ export async function getAccessToken(
   if (scope) {
     scopes = [scope];
   } else {
-    const defaultScope = `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`;
+    const defaultScope = `api://localhost:53000/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`;
     scopes = [defaultScope!];
   }
   const pca = new msal.PublicClientApplication(msalConfig);
@@ -112,7 +102,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
     process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!,
     process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD!,
     process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!,
-    `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`
+    `api://localhost:53000/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`
   );
 }
 
@@ -127,12 +117,7 @@ export function MockEnvironmentVariable(): () => void {
     M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
     M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
     INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
-    M365_APPLICATION_ID_URI: `api://localhost/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}`,
-
-    SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
-    SQL_DATABASE_NAME: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
-    SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
-    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
+    M365_APPLICATION_ID_URI: `api://localhost:53000/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}`,
   });
 }
 

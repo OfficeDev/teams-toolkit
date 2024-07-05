@@ -146,7 +146,7 @@ describe("OpenAPISpecGenerator", function () {
     assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
   });
 
-  it("success with api key auth", async function () {
+  it("success with API Key authentication", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",

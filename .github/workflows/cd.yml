@@ -75,8 +75,6 @@ jobs:
           node-version: 18
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: Install wine64
         run: |

@@ -205,8 +205,6 @@ jobs:
           pip3 --version
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: Setup project
         run: |
@@ -513,8 +511,6 @@ jobs:
         with:
           node-version: 18
       - uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: mv files
         working-directory: packages/tests

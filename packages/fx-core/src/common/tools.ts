@@ -44,14 +44,22 @@ export async function getSPFxToken(
 
 // this function will be deleted after VS has added get dev tunnel and list dev tunnels API
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
-export async function listDevTunnels(token: string): Promise<Result<Tunnel[], FxError>> {
+export async function listDevTunnels(
+  token: string,
+  isGitHub = false
+): Promise<Result<Tunnel[], FxError>> {
   try {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
       ManagementApiVersions.Version20230927preview,
       () => {
-        const res = `Bearer ${token}`;
-        return Promise.resolve(res);
+        if (isGitHub === true) {
+          const res = `github client_id=a200baed193bb2088a6e ${token}`;
+          return Promise.resolve(res);
+        } else {
+          const res = `Bearer ${token}`;
+          return Promise.resolve(res);
+        }
       }
     );
 

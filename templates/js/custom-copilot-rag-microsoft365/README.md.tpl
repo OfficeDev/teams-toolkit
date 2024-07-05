@@ -22,6 +22,9 @@ This app template also demonstrates usage of techniques like:
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 {{/useAzureOpenAI}}
 
+> [!TIP]
+> You can adjust this template to use data from a Microsoft Graph connector. Follow the steps in the [CodeTour](https://marketplace.visualstudio.com/items?itemName=vsls-contrib.codetour) included in the project to apply the necessary changes. To use data from a Microsoft Graph connector, you need a Graph connector deployed to your tenant. For testing, we recommend using the [Ingest custom API data using TypeScript, Node.js and Teams Toolkit for Visual Studio Code](https://adoption.microsoft.com/sample-solution-gallery/sample/pnp-graph-connector-nodejs-typescript-food-catalog) sample.
+
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.

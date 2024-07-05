@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Anne Fu <v-annefu@microsoft.com>
+ */
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
   initPage,

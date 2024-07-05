@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ivan Chen <v-ivanchen@microsoft.com>
+ */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {

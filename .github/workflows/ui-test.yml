@@ -108,9 +108,7 @@ jobs:
         with:
           node-version: 18
       
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
 
       - name: create pvt file (random platform/node)
         if: ${{ github.event.schedule == '0 18 * * *' }} || ${{ github.event.inputs.test-case }} == ''
@@ -539,9 +537,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
       - name: setup project
         run: |
           pnpm --filter=@microsoft/teamsfx-test install

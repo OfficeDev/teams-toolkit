@@ -1050,12 +1050,12 @@ describe("OfficeAddinGeneratorNew", () => {
     afterEach(() => {
       sandbox.restore();
     });
-    // it("manifest not found", async () => {
-    //   sandbox.stub(fse, "pathExists").resolves(false);
-    //   const move = sandbox.stub(fse, "move").resolves();
-    //   await generator.fixIconPath("./");
-    //   chai.assert.isTrue(move.notCalled);
-    // });
+    it("manifest not found", async () => {
+      sandbox.stub(fse, "pathExists").resolves(false);
+      const move = sandbox.stub(fse, "move").resolves();
+      await generator.fixIconPath("./");
+      chai.assert.isTrue(move.notCalled);
+    });
     it("happy", async () => {
       sandbox.stub(fse, "pathExists").callsFake(async (path) => {
         if (path.endsWith("manifest.json")) {

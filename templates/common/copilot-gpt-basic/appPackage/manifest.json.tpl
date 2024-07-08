@@ -3,7 +3,6 @@
     "manifestVersion": "devPreview",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
-    "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -28,6 +27,13 @@
         "identity",
         "messageTeamMembers"
     ],
-    "copilotGpts" [],
+    "copilotExtensions": {
+        "declarativeCopilots": [            
+            {
+                "id": "declarativeCopilot",
+                "file": "declarativeCopilot.json"
+            }
+        ]
+    },
     "validDomains": []
 }

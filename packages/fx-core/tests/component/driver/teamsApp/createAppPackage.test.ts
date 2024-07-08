@@ -14,7 +14,7 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import { FileNotFoundError, JSONSyntaxError } from "../../../../src/error/common";
-import { FeatureFlagName } from "../../../../src/common/constants";
+import { FeatureFlagName } from "../../../../src/common/featureFlags";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, PluginManifestSchema, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
@@ -212,12 +212,14 @@ describe("teamsApp/createAppPackage", async () => {
       });
 
       const manifest = new TeamsAppManifest();
-      manifest.plugins = [
-        {
-          file: "plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",
@@ -249,12 +251,14 @@ describe("teamsApp/createAppPackage", async () => {
         color: "resources/color.png",
         outline: "resources/outline.png",
       };
-      manifest.plugins = [
-        {
-          file: "resources/ai-plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "resources/ai-plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
       sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
       sinon.stub(fs, "chmod").callsFake(async () => {});
       sinon.stub(fs, "writeFile").callsFake(async () => {});
@@ -301,12 +305,15 @@ describe("teamsApp/createAppPackage", async () => {
         color: "resources/color.png",
         outline: "resources/outline.png",
       };
-      manifest.plugins = [
-        {
-          file: "resources/ai-plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "resources/ai-plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
+
       sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
       sinon.stub(fs, "chmod").callsFake(async () => {});
       sinon.stub(fs, "writeFile").callsFake(async () => {});
@@ -339,12 +346,14 @@ describe("teamsApp/createAppPackage", async () => {
       });
 
       const manifest = new TeamsAppManifest();
-      manifest.plugins = [
-        {
-          file: "resources/ai-plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "resources/ai-plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",
@@ -371,12 +380,14 @@ describe("teamsApp/createAppPackage", async () => {
       sinon.stub(fs, "readJSON").throws(new Error("fake error"));
 
       const manifest = new TeamsAppManifest();
-      manifest.plugins = [
-        {
-          file: "resources/ai-plugin.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        plugins: [
+          {
+            file: "resources/ai-plugin.json",
+            id: "plugin1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",
@@ -697,12 +708,14 @@ describe("teamsApp/createAppPackage", async () => {
     };
 
     const manifest = new TeamsAppManifest();
-    manifest.plugins = [
-      {
-        file: "resources/ai-plugin.json",
-        id: "plugin1",
-      },
-    ];
+    manifest.copilotExtensions = {
+      plugins: [
+        {
+          file: "resources/ai-plugin.json",
+          id: "plugin1",
+        },
+      ],
+    };
     manifest.icons = {
       color: "resources/color.png",
       outline: "resources/outline.png",
@@ -893,12 +906,14 @@ describe("teamsApp/createAppPackage", async () => {
       };
 
       const manifest = new TeamsAppManifest();
-      manifest.copilotGpts = [
-        {
-          file: "resources/gpt.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            file: "resources/gpt.json",
+            id: "action_1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",
@@ -957,12 +972,14 @@ describe("teamsApp/createAppPackage", async () => {
       };
 
       const manifest = new TeamsAppManifest();
-      manifest.copilotGpts = [
-        {
-          file: "resources/gpt.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            file: "resources/gpt.json",
+            id: "action_1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",
@@ -998,12 +1015,15 @@ describe("teamsApp/createAppPackage", async () => {
       };
 
       const manifest = new TeamsAppManifest();
-      manifest.copilotGpts = [
-        {
-          file: "resources/gpt.json",
-          id: "plugin1",
-        },
-      ];
+
+      manifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            file: "resources/gpt.json",
+            id: "action_1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",
@@ -1045,12 +1065,14 @@ describe("teamsApp/createAppPackage", async () => {
         color: "resources/color.png",
         outline: "resources/outline.png",
       };
-      manifest.copilotGpts = [
-        {
-          file: "resources/gpt.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            file: "resources/gpt.json",
+            id: "action_1",
+          },
+        ],
+      };
       sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
       sinon.stub(fs, "chmod").callsFake(async () => {});
       sinon.stub(fs, "writeFile").callsFake(async () => {});
@@ -1076,12 +1098,14 @@ describe("teamsApp/createAppPackage", async () => {
       };
 
       const manifest = new TeamsAppManifest();
-      manifest.copilotGpts = [
-        {
-          file: "resources/gpt.json",
-          id: "plugin1",
-        },
-      ];
+      manifest.copilotExtensions = {
+        declarativeCopilots: [
+          {
+            file: "resources/gpt.json",
+            id: "action_1",
+          },
+        ],
+      };
       manifest.icons = {
         color: "resources/color.png",
         outline: "resources/outline.png",

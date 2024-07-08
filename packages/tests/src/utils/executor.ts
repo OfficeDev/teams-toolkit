@@ -14,41 +14,63 @@ import * as os from "os";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
-import { EnvConstants } from "../../src/commonlib/constants";
 
 export class Executor {
   static async execute(
     command: string,
     cwd: string,
     processEnv?: NodeJS.ProcessEnv,
-    timeout?: number
+    timeout?: number,
+    skipErrorMessage?: string | undefined
   ) {
-    try {
-      const result = await execAsync(command, {
-        cwd,
-        env: processEnv ?? process.env,
-        timeout: timeout ?? 0,
-      });
-      if (result.stderr) {
-        /// the command exit with 0
+    let retryCount = 0;
+    const maxRetries = 2;
+
+    while (retryCount < maxRetries) {
+      // if failed, retry. 2 times at most.
+      try {
+        console.log(`[Start] "${command}" in ${cwd}.`);
+        const options = {
+          cwd,
+          env: processEnv ?? process.env,
+          timeout: timeout ?? 0,
+        };
+        const result = await execAsync(command, options);
+
+        if (result.stderr) {
+          if (skipErrorMessage && result.stderr.includes(skipErrorMessage)) {
+            console.log(`[Skip Warning] ${result.stderr}`);
+            return { success: true, ...result };
+          }
+          // the command exit with 0
+          console.log(
+            `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+          );
+          return { success: false, ...result };
+        } else {
+          console.log(`[Success] "${command}" in ${cwd}.`);
+          return { success: true, ...result };
+        }
+      } catch (e: any) {
+        if (e.killed && e.signal == "SIGTERM") {
+          console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
+        } else {
+          console.error(
+            `[Failed] "${command}" in ${cwd} with error: ${e.message}`
+          );
+        }
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          return { success: false, stdout: "", stderr: e.message as string };
+        }
+
         console.log(
-          `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
-        );
-        return { ...result, success: false };
-      } else {
-        console.log(`[Success] "${command}" in ${cwd}.`);
-        return { ...result, success: true };
-      }
-    } catch (e: any) {
-      if (e.killed && e.signal == "SIGTERM") {
-        console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
-      } else {
-        console.error(
-          `[Failed] "${command}" in ${cwd} with error: ${e.message}`
+          `Retrying "${command}" in ${cwd}. Attempt ${retryCount} of ${maxRetries}.`
         );
       }
-      return { stdout: "", stderr: e.message as string, success: false };
     }
+    console.log(`[Failed] Not executed command ${command}`);
+    return { success: false, stdout: "", stderr: "" };
   }
 
   static async login() {
@@ -115,12 +137,19 @@ export class Executor {
     env = "dev",
     processEnv?: NodeJS.ProcessEnv,
     npx = false,
-    isV3 = true
+    isV3 = true,
+    skipErrorMessage?: string
   ) {
     const npxCommand = npx ? "npx " : "";
     const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
     const command = `${npxCommand} ${cliPrefix} ${cmd} --env ${env}`;
-    return this.execute(command, workspace, processEnv);
+    return this.execute(
+      command,
+      workspace,
+      processEnv,
+      undefined,
+      skipErrorMessage
+    );
   }
 
   static async provision(workspace: string, env = "dev", isV3 = true) {
@@ -177,6 +206,25 @@ export class Executor {
     return this.executeCmd(workspace, "publish", env);
   }
 
+  static async listAppOwners(workspace: string, env = "dev") {
+    return this.executeCmd(
+      workspace,
+      "collaborator status --interactive false"
+    );
+  }
+
+  static async addAppOwner(
+    workspace: string,
+    email: string,
+    teamsManifestFilePath: string,
+    env = "dev"
+  ) {
+    return this.executeCmd(
+      workspace,
+      `collaborator grant --email ${email} -t ${teamsManifestFilePath}  --interactive false`
+    );
+  }
+
   static async publishWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
@@ -188,7 +236,17 @@ export class Executor {
   }
 
   static async preview(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "preview", env);
+    const skipErrorMessage =
+      "Warning: If you changed the manifest file, please run";
+    return this.executeCmd(
+      workspace,
+      "preview",
+      env,
+      undefined,
+      undefined,
+      undefined,
+      skipErrorMessage
+    );
   }
 
   static debugProject(
@@ -197,7 +255,8 @@ export class Executor {
     v3 = true,
     processEnv: NodeJS.ProcessEnv = process.env,
     onData?: (data: string) => void,
-    onError?: (data: string) => void
+    onError?: (data: string) => void,
+    openOnly?: boolean
   ) {
     console.log(`[start] ${env} debug ... `);
     const childProcess = spawn(
@@ -208,7 +267,12 @@ export class Executor {
         : v3
         ? "teamsapp"
         : "teamsfx",
-      ["preview", v3 ? "--env" : "", v3 ? `${env}` : `--${env}`],
+      [
+        "preview",
+        v3 ? "--env" : "",
+        v3 ? `${env}` : `--${env}`,
+        openOnly ? "--open-only" : "",
+      ],
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -594,6 +658,8 @@ export class Executor {
       } catch (error) {
         console.log(error);
       }
+    } else {
+      console.log(childProcess);
     }
   }
 }

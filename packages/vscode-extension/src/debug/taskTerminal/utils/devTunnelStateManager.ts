@@ -8,9 +8,8 @@
 import { Mutex, withTimeout } from "async-mutex";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
-import * as globalVariables from "../../../globalVariables";
-import { FeatureFlags } from "../../../utils/commonUtils";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
+import { context, workspaceUri } from "../../../globalVariables";
 
 interface IDevTunnelState {
   tunnelId?: string;
@@ -29,7 +28,7 @@ export class DevTunnelStateManager {
   }
 
   public static create(): DevTunnelStateManager {
-    const stateService = isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
+    const stateService = featureFlagManager.getBooleanValue(FeatureFlags.DevTunnelTest)
       ? new FileStateService()
       : new VSCodeStateService();
     return new DevTunnelStateManager(stateService);
@@ -91,12 +90,12 @@ interface IStateService {
 class VSCodeStateService implements IStateService {
   get<T>(key: string): Promise<T | undefined> {
     return new Promise((resolve) => {
-      resolve(globalVariables.context.workspaceState.get<T>(key));
+      resolve(context.workspaceState.get<T>(key));
     });
   }
 
   async update(key: string, value: any): Promise<void> {
-    await globalVariables.context.workspaceState.update(key, value);
+    await context.workspaceState.update(key, value);
   }
 }
 
@@ -104,12 +103,10 @@ class FileStateService implements IStateService {
   private readonly stateFileName = "devtunnel.state.json";
   async get<T>(key: string): Promise<T | undefined> {
     try {
-      if (!globalVariables.workspaceUri?.fsPath) {
+      if (!workspaceUri?.fsPath) {
         return undefined;
       }
-      const data = await fs.readJson(
-        path.resolve(globalVariables.workspaceUri.fsPath, this.stateFileName)
-      );
+      const data = await fs.readJson(path.resolve(workspaceUri.fsPath, this.stateFileName));
 
       return data?.[key] as T;
     } catch {
@@ -119,10 +116,10 @@ class FileStateService implements IStateService {
 
   async update(key: string, value: any): Promise<void> {
     try {
-      if (!globalVariables.workspaceUri?.fsPath) {
+      if (!workspaceUri?.fsPath) {
         return;
       }
-      const stateFilePath = path.resolve(globalVariables.workspaceUri.fsPath, this.stateFileName);
+      const stateFilePath = path.resolve(workspaceUri.fsPath, this.stateFileName);
       let data: { [key: string]: any } = {};
       try {
         data = await fs.readJson(stateFilePath);

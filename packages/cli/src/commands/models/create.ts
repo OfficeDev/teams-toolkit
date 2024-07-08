@@ -14,10 +14,8 @@ import {
   CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
-  FeatureFlags,
   MeArchitectureOptions,
   QuestionNames,
-  featureFlagManager,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -45,13 +43,7 @@ function adjustOptions(options: CLICommandOption[]) {
       break;
     }
   }
-  if (!featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
-    //skip customize GPT questions if customize GPT is not enabled.
-    const customizeGptQuestionNames = [QuestionNames.CustomizeGptWithPluginStart];
-    options = options.filter(
-      (option) => !customizeGptQuestionNames.includes(option.name as QuestionNames)
-    );
-  }
+
   return options;
 }
 

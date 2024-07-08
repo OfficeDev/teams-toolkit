@@ -4,11 +4,13 @@
 /**
  * @author darrmill@microsoft.com, yefuwang@microsoft.com
  */
-import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
+import { FxError, ManifestUtil, Result, devPreview, err, ok } from "@microsoft/teamsfx-api";
 import fse from "fs-extra";
 import * as path from "path";
-import { ReadFileError } from "../../../error/common";
+import { AccessGithubError, ReadFileError, WriteFileError } from "../../../error/common";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import AdmZip from "adm-zip";
+import { fetchZipFromUrl } from "../utils";
 
 export class HelperMethods {
   static copyAddinFiles(fromFolder: string, toFolder: string): void {
@@ -86,6 +88,51 @@ export class HelperMethods {
         await fse.writeFile(htmlPath, data);
       }
     }
+  }
+
+  static async fetchAndUnzip(
+    component: string,
+    zipUrl: string,
+    targetDir: string,
+    skipRootFolder = true
+  ): Promise<Result<undefined, FxError>> {
+    let zip: AdmZip;
+    try {
+      zip = await fetchZipFromUrl(zipUrl);
+    } catch (e: any) {
+      return err(new AccessGithubError(zipUrl, component, e));
+    }
+    if (!zip) {
+      return err(
+        new AccessGithubError(
+          zipUrl,
+          component,
+          new Error(`Failed to fetch zip from url: ${zipUrl}, result is undefined.`)
+        )
+      );
+    }
+    const entries = zip.getEntries();
+    let rootFolderName = "";
+    for (const entry of entries) {
+      const entryName: string = entry.entryName;
+      if (skipRootFolder && !rootFolderName) {
+        rootFolderName = entryName;
+        continue;
+      }
+      const rawEntryData: Buffer = entry.getData();
+      const entryData: string | Buffer = rawEntryData;
+      const targetPath = path.join(targetDir, entryName.replace(rootFolderName, ""));
+      try {
+        if (entry.isDirectory) {
+          await fse.ensureDir(targetPath);
+        } else {
+          await fse.writeFile(targetPath, entryData);
+        }
+      } catch (error: any) {
+        return err(new WriteFileError(error, component));
+      }
+    }
+    return ok(undefined);
   }
 }
 

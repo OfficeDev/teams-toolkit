@@ -1,8 +1,8 @@
-# Overview of the Copilot GPT template
+# Overview of the basic declarative copilot template
 
-## Build a Copilot GPT from OpenAPI description document
+## Build a basic declarative copilot
 
-With Copilot GPT, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot GPT can be used to create a grocery list based on a meal plan that you send to the Copilot GPT. 
+With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
 
 ## Get started with the template
 
@@ -19,22 +19,31 @@ With Copilot GPT, you can build a custom version of Copilot that can be used for
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
-5. Open the `Copilot` app and send a prompt to trigger your GPT.
+5. Once the Copilot app is loaded in the browser, click on the "…" menu and select "Copilot chats". You will see your declarative copilot on the right rail. Clicking on it will change the experience to showcase the logo and name of your declarative copilot.
+6. Ask a question to your declarative copilot and it should respond based on the instructions provided.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 
-| Folder       | Contents                                     |
-| ------------ | -------------------------------------------- |
-| `.vscode`    | VSCode files for debugging                   |
+| Folder       | Contents                                                                                 |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                                                               |
 | `appPackage` | Templates for the Teams application manifest, the GPT manifest and the API specification |
-| `env`        | Environment files                            |
+| `env`        | Environment files                                                                        |
+
+The following files can be customized and demonstrate an example implementation to get you started.
+
+| File                                 | Contents                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------ |
+| `appPackage/declarativeCopilot.json` | Define the behaviour and configurations of the declarative copilot.            |
+| `appPackage/manifest.json`           | Teams application manifest that defines metadata for your declarative copilot. |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-| File                 | Contents                                                                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
+| File           | Contents                                                                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml` | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
 
 ## Addition information and references
 
-- [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
+- [Declarative copilots for Microsoft 365](https://aka.ms/teams-toolkit-declarative-copilot)

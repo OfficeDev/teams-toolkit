@@ -2,12 +2,21 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, IGenerator, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  Context,
+  FxError,
+  GeneratorResult,
+  IGenerator,
+  Inputs,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import { ProgrammingLanguage, QuestionNames } from "../../../question";
+import { ProgrammingLanguage, QuestionNames } from "../../../question/constants";
 import { Generator, templateDefaultOnActionError } from "../generator";
 import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
 import { merge } from "lodash";
@@ -40,8 +49,8 @@ export class DefaultTemplateGenerator implements IGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    const preResult = await this.getTemplateInfos(context, inputs, actionContext);
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const preResult = await this.getTemplateInfos(context, inputs, destinationPath, actionContext);
     if (preResult.isErr()) return err(preResult.error);
 
     const templateInfos = preResult.value;
@@ -51,15 +60,14 @@ export class DefaultTemplateGenerator implements IGenerator {
     }
 
     const postRes = await this.post(context, inputs, destinationPath, actionContext);
-    if (postRes.isErr()) return postRes;
-
-    return ok(undefined);
+    return postRes;
   }
 
-  // override this method to provide information of templates to be generated
+  // override this method to 1) do pre-step before template download and 2) provide information of templates to be downloaded
   public getTemplateInfos(
     context: Context,
     inputs: Inputs,
+    destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
     const templateName = getTemplateName(inputs);
@@ -67,14 +75,14 @@ export class DefaultTemplateGenerator implements IGenerator {
     return Promise.resolve(ok([{ templateName, language }]));
   }
 
-  // override this method to do post process
+  // override this method to do post-step after template download
   public post(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    return Promise.resolve(ok(undefined));
+  ): Promise<Result<GeneratorResult, FxError>> {
+    return Promise.resolve(ok({}));
   }
 
   private async scaffolding(

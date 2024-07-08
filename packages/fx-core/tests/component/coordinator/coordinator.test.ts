@@ -15,9 +15,9 @@ import {
   Platform,
   Result,
   UserError,
-  Void,
 } from "@microsoft/teamsfx-api";
 
+import { createContext, setTools } from "../../../src/common/globalVars";
 import { MetadataV3, VersionInfo, VersionSource } from "../../../src/common/versionMetadata";
 import {
   DriverInstance,
@@ -26,21 +26,19 @@ import {
   ExecutionResult,
   ProjectModel,
 } from "../../../src/component/configManager/interface";
-import { ExecutionResult as DriverExecutionResult } from "../../../src/component/driver/interface/stepDriver";
 import { coordinator } from "../../../src/component/coordinator";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
+import { ExecutionResult as DriverExecutionResult } from "../../../src/component/driver/interface/stepDriver";
 import * as appStudio from "../../../src/component/driver/teamsApp/appStudio";
 import { CreateAppPackageDriver } from "../../../src/component/driver/teamsApp/createAppPackage";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ValidateManifestDriver } from "../../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../../src/component/driver/teamsApp/validateAppPackage";
-import { createContextV3 } from "../../../src/component/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../../src/component/utils/pathUtils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
-import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { MissingEnvironmentVariablesError } from "../../../src/error/common";
 import { QuestionNames } from "../../../src/question";
@@ -413,7 +411,7 @@ describe("component coordinator test", () => {
       sandbox.restore();
     });
     it("missing token provider", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = undefined;
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
@@ -425,7 +423,7 @@ describe("component coordinator test", () => {
     });
 
     it("missing appPackagePath", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = {
         m365TokenProvider: new MockM365TokenProvider(),
         azureAccountProvider: new MockAzureAccountProvider(),
@@ -439,7 +437,7 @@ describe("component coordinator test", () => {
     });
 
     it("success", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = {
         m365TokenProvider: new MockM365TokenProvider(),
         azureAccountProvider: new MockAzureAccountProvider(),
@@ -461,7 +459,7 @@ describe("component coordinator test", () => {
     });
 
     it("update manifest error", async () => {
-      const context = createContextV3();
+      const context = createContext();
       context.tokenProvider = {
         m365TokenProvider: new MockM365TokenProvider(),
         azureAccountProvider: new MockAzureAccountProvider(),

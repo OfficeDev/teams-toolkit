@@ -11,11 +11,7 @@ import config from "./config";
 
 const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
   {},
-  new ConfigurationServiceClientCredentialFactory({
-    MicrosoftAppId: config.botId,
-    MicrosoftAppPassword: process.env.BOT_PASSWORD,
-    MicrosoftAppType: "MultiTenant",
-  })
+  new ConfigurationServiceClientCredentialFactory(config)
 );
 
 // Create adapter.

@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, ManifestUtil } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
-import isUUID from "validator/lib/isUUID";
+import { FxError, ManifestUtil, Result, err, ok } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
 import { merge } from "lodash";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
+import { Service } from "typedi";
+import isUUID from "validator/lib/isUUID";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { getAbsolutePath } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "./clients/appStudioClient";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { AppStudioError } from "./errors";
+import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { AppStudioResultFactory } from "./results";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { AppStudioError } from "./errors";
-import { AppStudioScopes } from "../../../common/tools";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { Service } from "typedi";
-import { getAbsolutePath } from "../../utils/common";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 export const actionName = "teamsApp/update";
 
@@ -100,7 +100,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
     }
     try {
-      await AppStudioClient.getApp(teamsAppId, appStudioToken, context.logProvider);
+      await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
     } catch (error) {
       return err(
         AppStudioResultFactory.UserError(
@@ -114,10 +114,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     try {
       let message = getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage");
 
-      const appDefinition = await AppStudioClient.importApp(
-        archivedFile,
+      const appDefinition = await teamsDevPortalClient.importApp(
         appStudioToken,
-        context.logProvider,
+        archivedFile,
         true
       );
       message = getLocalizedString(

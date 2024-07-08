@@ -5,7 +5,7 @@ import { ProjectType, SpecParser } from "@microsoft/m365-spec-parser";
 import { getAbsolutePath } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { CreateOauthArgs } from "../interface/createOauthArgs";
-import { isCopilotAuthEnabled } from "../../../../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../../../../common/featureFlags";
 import { OpenAPIV3 } from "openapi-types";
 import { isEqual } from "lodash";
 import { maxDomainPerOauth } from "./constants";
@@ -37,9 +37,9 @@ export async function getandValidateOauthInfoFromSpec(
   const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
   const parser = new SpecParser(absolutePath, {
     allowAPIKeyAuth: false,
-    allowBearerTokenAuth: isCopilotAuthEnabled(),
+    allowBearerTokenAuth: true,
     allowMultipleParameters: true,
-    allowOauth2: isCopilotAuthEnabled(),
+    allowOauth2: true,
     projectType: ProjectType.Copilot,
     allowMissingId: true,
     allowSwagger: true,

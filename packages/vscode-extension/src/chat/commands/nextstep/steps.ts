@@ -70,7 +70,7 @@ export const allSteps: () => NextStep[] = () => [
     priority: 0,
   },
   {
-    title: "Learn more about the project with README",
+    title: "Get more info about the project with README",
     description: (status: WholeStatus) => {
       // readme must exist because the condition has checked it
       const readme = status.projectOpened!.readmeContent!;
@@ -143,7 +143,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Join Microsoft 365 Developer Program",
     description: `If you don't have any Microsoft 365 tenant, you might qualify for a Microsoft 365 E5 developer subscription through the Microsoft 365 Developer Program; Alternatively, you can sign up for a 1-month free trial or purchase a Microsoft 365 plan.`,
-    docLink: "https://aka.ms/vsc-ttk-m365-dev-program",
+    docLink: "https://aka.ms/vsc-ttk-create-m365-dev-account",
     commands: [
       {
         title: "Join Microsoft 365 Developer Program",

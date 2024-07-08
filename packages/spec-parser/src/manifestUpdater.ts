@@ -22,8 +22,6 @@ import {
   TeamsAppManifest,
   PluginManifestSchema,
   FunctionObject,
-  FunctionParameters,
-  FunctionParameter,
   AuthObject,
 } from "@microsoft/teams-manifest";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
@@ -37,12 +35,13 @@ export class ManifestUpdater {
     spec: OpenAPIV3.Document,
     options: ParseOptions,
     authInfo?: AuthInfo
-  ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
+  ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
+    manifest.copilotExtensions = manifest.copilotExtensions || {};
     // Insert plugins in manifest.json if it is plugin for Copilot.
     if (!options.isGptPlugin) {
-      manifest.plugins = [
+      manifest.copilotExtensions.plugins = [
         {
           file: apiPluginRelativePath,
           id: ConstantString.DefaultPluginId,
@@ -54,7 +53,7 @@ export class ManifestUpdater {
     const appName = this.removeEnvs(manifest.name.short);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-    const apiPlugin = await ManifestUpdater.generatePluginManifestSchema(
+    const [apiPlugin, warnings] = await ManifestUpdater.generatePluginManifestSchema(
       spec,
       specRelativePath,
       apiPluginFilePath,
@@ -63,7 +62,7 @@ export class ManifestUpdater {
       options
     );
 
-    return [manifest, apiPlugin];
+    return [manifest, apiPlugin, warnings];
   }
 
   static updateManifestDescription(manifest: TeamsAppManifest, spec: OpenAPIV3.Document): void {
@@ -76,48 +75,21 @@ export class ManifestUpdater {
     };
   }
 
-  static mapOpenAPISchemaToFuncParam(
-    schema: OpenAPIV3.SchemaObject,
-    method: string,
-    pathUrl: string
-  ): FunctionParameter {
-    let parameter: FunctionParameter;
-
+  static checkSchema(schema: OpenAPIV3.SchemaObject, method: string, pathUrl: string): void {
     if (schema.type === "array") {
       const items = schema.items as OpenAPIV3.SchemaObject;
-      parameter = {
-        type: "array",
-        items: ManifestUpdater.mapOpenAPISchemaToFuncParam(items, method, pathUrl),
-      };
+      ManifestUpdater.checkSchema(items, method, pathUrl);
     } else if (
-      schema.type === "string" ||
-      schema.type === "boolean" ||
-      schema.type === "integer" ||
-      schema.type === "number"
+      schema.type !== "string" &&
+      schema.type !== "boolean" &&
+      schema.type !== "integer" &&
+      schema.type !== "number"
     ) {
-      parameter = {
-        type: schema.type,
-      };
-    } else {
       throw new SpecParserError(
         Utils.format(ConstantString.UnsupportedSchema, method, pathUrl, JSON.stringify(schema)),
         ErrorType.UpdateManifestFailed
       );
     }
-
-    if (schema.enum) {
-      parameter.enum = schema.enum;
-    }
-
-    if (schema.description) {
-      parameter.description = schema.description;
-    }
-
-    if (schema.default) {
-      parameter.default = schema.default;
-    }
-
-    return parameter;
   }
 
   static async generatePluginManifestSchema(
@@ -127,7 +99,8 @@ export class ManifestUpdater {
     appName: string,
     authInfo: AuthInfo | undefined,
     options: ParseOptions
-  ): Promise<PluginManifestSchema> {
+  ): Promise<[PluginManifestSchema, WarningResult[]]> {
+    const warnings: WarningResult[] = [];
     const functions: FunctionObject[] = [];
     const functionNames: string[] = [];
     const conversationStarters: string[] = [];
@@ -164,58 +137,28 @@ export class ManifestUpdater {
             const confirmationBodies: string[] = [];
             if (operationItem) {
               const operationId = operationItem.operationId!;
+              const safeFunctionName = operationId.replace(/[^a-zA-Z0-9]/g, "_");
               const description = operationItem.description ?? "";
               const summary = operationItem.summary;
               const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
               const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
 
-              const parameters: Required<FunctionParameters> = {
-                type: "object",
-                properties: {},
-                required: [],
-              };
-
               if (paramObject) {
                 for (let i = 0; i < paramObject.length; i++) {
                   const param = paramObject[i];
-
                   const schema = param.schema as OpenAPIV3.SchemaObject;
-
-                  parameters.properties[param.name] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
-                    schema,
-                    method,
-                    pathUrl
-                  );
-
+                  ManifestUpdater.checkSchema(schema, method, pathUrl);
                   confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
-
-                  if (param.required) {
-                    parameters.required.push(param.name);
-                  }
-
-                  if (!parameters.properties[param.name].description) {
-                    parameters.properties[param.name].description = param.description ?? "";
-                  }
                 }
               }
 
               if (requestBody) {
                 const requestJsonBody = requestBody.content!["application/json"];
                 const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-
                 if (requestBodySchema.type === "object") {
-                  if (requestBodySchema.required) {
-                    parameters.required.push(...requestBodySchema.required);
-                  }
-
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
-                    parameters.properties[property] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
-                      schema,
-                      method,
-                      pathUrl
-                    );
-
+                    ManifestUpdater.checkSchema(schema, method, pathUrl);
                     confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
                   }
                 } else {
@@ -232,23 +175,29 @@ export class ManifestUpdater {
               }
 
               const funcObj: FunctionObject = {
-                name: operationId,
+                name: safeFunctionName,
                 description: description,
               };
 
-              if (paramObject || requestBody) {
-                funcObj.parameters = parameters;
-              }
-
               if (options.allowResponseSemantics) {
-                const { json } = Utils.getResponseJson(operationItem);
-                if (json.schema) {
-                  const [card, jsonPath] =
-                    AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
-                  const responseSemantic = wrapResponseSemantics(card, jsonPath);
-                  funcObj.capabilities = {
-                    response_semantics: responseSemantic,
-                  };
+                try {
+                  const { json } = Utils.getResponseJson(operationItem);
+                  if (json.schema) {
+                    const [card, jsonPath] =
+                      AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+
+                    card.body = Utils.limitACBodyProperties(card.body, 5);
+                    const responseSemantic = wrapResponseSemantics(card, jsonPath);
+                    funcObj.capabilities = {
+                      response_semantics: responseSemantic,
+                    };
+                  }
+                } catch (err) {
+                  warnings.push({
+                    type: WarningType.GenerateCardFailed,
+                    content: (err as Error).toString(),
+                    data: operationId,
+                  });
                 }
               }
 
@@ -268,7 +217,7 @@ export class ManifestUpdater {
               }
 
               functions.push(funcObj);
-              functionNames.push(operationId);
+              functionNames.push(safeFunctionName);
               const conversationStarterStr = (summary ?? description).slice(
                 0,
                 ConstantString.ConversationStarterMaxLens
@@ -287,6 +236,7 @@ export class ManifestUpdater {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
     } else {
       apiPlugin = {
+        $schema: ConstantString.PluginManifestSchema,
         schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",
@@ -353,7 +303,7 @@ export class ManifestUpdater {
       }
     }
 
-    return apiPlugin;
+    return [apiPlugin, warnings];
   }
 
   static async updateManifest(
@@ -392,9 +342,6 @@ export class ManifestUpdater {
             `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
-            const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
-            );
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",
               apiSecretServiceAuthConfiguration: {
@@ -402,16 +349,12 @@ export class ManifestUpdater {
               },
             };
           } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
+            // TODO: below schema is coming from design doc, may need to update when shcema is finalized
             (composeExtension as any).authorization = {
               authType: "oAuth2.0",
               oAuthConfiguration: {
                 oauthConfigurationId: `\${{${safeRegistrationIdName}}}`,
               },
-            };
-
-            updatedPart.webApplicationInfo = {
-              id: "${{AAD_APP_CLIENT_ID}}",
-              resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
             };
           }
         }
@@ -459,15 +402,20 @@ export class ManifestUpdater {
                 ) {
                   command.parameters = command.parameters.filter((param) => param.isRequired);
                 } else if (command.parameters && command.parameters.length > 0) {
-                  command.parameters = [command.parameters[0]];
-                  warnings.push({
-                    type: WarningType.OperationOnlyContainsOptionalParam,
-                    content: Utils.format(
-                      ConstantString.OperationOnlyContainsOptionalParam,
-                      command.id
-                    ),
-                    data: command.id,
-                  });
+                  if (command.parameters.length > 1) {
+                    command.parameters = [command.parameters[0]];
+                    warnings.push({
+                      type: WarningType.OperationOnlyContainsOptionalParam,
+                      content: Utils.format(
+                        ConstantString.OperationOnlyContainsOptionalParam,
+                        command.id
+                      ),
+                      data: {
+                        commandId: command.id,
+                        parameterName: command.parameters[0].name,
+                      },
+                    });
+                  }
                 }
 
                 if (adaptiveCardFolder) {

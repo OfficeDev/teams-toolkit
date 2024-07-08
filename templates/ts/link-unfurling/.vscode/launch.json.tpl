@@ -8,7 +8,7 @@
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "group 1: Teams",
-                "order": 3
+                "order": 4
             },
             "internalConsoleOptions": "neverOpen"
         },
@@ -19,7 +19,7 @@
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "group 1: Teams",
-                "order": 3
+                "order": 5
             },
             "internalConsoleOptions": "neverOpen"
         },
@@ -57,7 +57,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Teams (Chrome)",
@@ -71,7 +72,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Outlook (Edge)",
@@ -85,7 +87,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Outlook (Chrome)",
@@ -99,7 +102,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Attach to Local Service",
@@ -112,11 +116,22 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Teams (Desktop)",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 6
+            },
+            "internalConsoleOptions": "neverOpen",
         }
     ],
     "compounds": [
         {
-            "name": "Debug in Test Tool (Preview)",
+            "name": "Debug in Test Tool",
             "configurations": [
                 "Attach to Local Service"
             ],
@@ -168,6 +183,18 @@
             "presentation": {
                 "group": "group 2: Outlook",
                 "order": 1
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Teams (Desktop)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 3
             },
             "stopAll": true
         },

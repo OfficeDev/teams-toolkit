@@ -1,28 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as cp from "child_process";
-import * as vscode from "vscode";
-import * as util from "util";
-import * as globalVariables from "../../globalVariables";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
-import { getLocalDebugSession } from "../commonUtils";
+import {
+  QuestionNames,
+  Correlator,
+  environmentNameManager,
+  HubOptions,
+} from "@microsoft/teamsfx-core";
+import * as cp from "child_process";
+import * as util from "util";
+import * as vscode from "vscode";
 import VsCodeLogInstance from "../../commonlib/log";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
+import { core, workspaceUri } from "../../globalVariables";
+import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { SolutionSource } from "@microsoft/teamsfx-core";
-import { ExtensionErrors } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
 import {
   launchingTeamsClientDisplayMessages,
   openTerminalDisplayMessage,
   openTerminalMessage,
-} from "../constants";
-import { core, getSystemInputs } from "../../handlers";
-import { CoreQuestionNames, environmentNameManager } from "@microsoft/teamsfx-core";
-import { HubOptions } from "@microsoft/teamsfx-core";
+} from "../common/debugConstants";
+import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
+import { BaseTaskTerminal } from "./baseTaskTerminal";
 
 interface LaunchTeamsClientArgs {
   env?: string;
@@ -59,9 +61,9 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
-    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
-    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
+    inputs[QuestionNames.M365Host] = HubOptions.teams().id;
+    inputs[QuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
+    inputs[QuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
     const result = await core.previewWithManifest(inputs);
     if (result.isErr()) {
       return err(result.error);
@@ -87,7 +89,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   private openUrl(url: string): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>((resolve) => {
       const options: cp.SpawnOptions = {
-        cwd: globalVariables.workspaceUri?.fsPath ?? "",
+        cwd: workspaceUri?.fsPath ?? "",
         shell: false,
         detached: false,
       };
@@ -110,7 +112,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
         resolve(
           err(
             new UserError(
-              SolutionSource,
+              ExtensionSource,
               ExtensionErrors.LaunchTeamsWebClientError,
               `${getDefaultString("teamstoolkit.localDebug.launchTeamsWebClientError")} ${
                 error?.message ?? ""
@@ -130,7 +132,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
           resolve(
             err(
               new UserError(
-                SolutionSource,
+                ExtensionSource,
                 ExtensionErrors.LaunchTeamsWebClientError,
                 util.format(
                   getDefaultString("teamstoolkit.localDebug.launchTeamsWebClientStoppedError"),

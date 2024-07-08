@@ -10,6 +10,7 @@ import {
   TaskCommand,
   TaskLabel,
   TaskOverallLabel,
+  TeamsFxNpmCommands,
 } from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../globalVariables";
@@ -20,11 +21,10 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
-import { getLocalDebugSession } from "./commonUtils";
-import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
-import { TeamsFxNpmCommands } from "@microsoft/teamsfx-core";
+import { getLocalDebugSession } from "./common/localDebugSession";
 import { updateProjectStatus } from "../utils/projectStatusUtils";
 import { CommandKey } from "../constants";
+import { TeamsFxTaskType } from "./common/debugConstants";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -253,7 +253,7 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
       for (const label of labelList) {
         const task = findTask(taskJson, label);
         const isTeamsFxTask =
-          task?.type === TeamsfxTaskProvider.type ||
+          task?.type === TeamsFxTaskType ||
           (task?.type === "shell" &&
             task?.command &&
             Object.values(TeamsFxNpmCommands).includes(task?.command));
@@ -261,7 +261,7 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
         // Only send the info scaffold by Teams Toolkit. If user changed some property, the value will be "unknown".
         dependsOnArr.push({
           label: maskValue(label, Object.values(TaskLabel)),
-          type: maskValue(task?.type, [TeamsfxTaskProvider.type]),
+          type: maskValue(task?.type, [TeamsFxTaskType]),
           command: !isTeamsFxTask
             ? task?.command
               ? UnknownPlaceholder
@@ -284,9 +284,7 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
 
     const teamsfxTasks = taskJson?.tasks?.filter(
       (t) =>
-        t?.type === TeamsfxTaskProvider.type &&
-        t?.command &&
-        Object.values(TaskCommand).includes(t?.command)
+        t?.type === TeamsFxTaskType && t?.command && Object.values(TaskCommand).includes(t?.command)
     );
 
     return {

@@ -6,8 +6,8 @@
  */
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { validateFiles } from "./helper.ts";
-import { CopilotPluginCommonTest } from "./copilotPluginCommonTest.ts";
+import { validateFiles } from "./helper";
+import { CopilotPluginCommonTest } from "./copilotPluginCommonTest";
 
 class CopilotPluginWithNoneAuthForJsCase extends CopilotPluginCommonTest {
   public override async onAfterCreate(projectPath: string): Promise<void> {

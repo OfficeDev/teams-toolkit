@@ -6,8 +6,8 @@
  */
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { replaceSecretKey, validateFiles } from "./helper.ts";
-import { CopilotPluginCommonTest } from "./copilotPluginCommonTest.ts";
+import { replaceSecretKey, validateFiles } from "./helper";
+import { CopilotPluginCommonTest } from "./copilotPluginCommonTest";
 import * as path from "path";
 
 class CopilotPluginWithNoneAuthForJsCase extends CopilotPluginCommonTest {

@@ -14,7 +14,6 @@ import {
   featureFlagManager,
   FeatureFlags,
   getProjectMetadata,
-  isFeatureFlagEnabled,
 } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import { workspaceUri } from "../globalVariables";

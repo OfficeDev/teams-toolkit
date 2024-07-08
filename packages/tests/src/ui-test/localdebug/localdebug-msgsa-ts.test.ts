@@ -20,7 +20,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("msgsa", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("msgsa", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 

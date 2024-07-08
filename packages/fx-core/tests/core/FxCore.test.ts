@@ -34,7 +34,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
-import { FeatureFlagName } from "../../src/common/constants";
+import { FeatureFlagName } from "../../src/common/featureFlags";
 import { LaunchHelper } from "../../src/component/m365/launchHelper";
 import {
   TeamsfxConfigType,

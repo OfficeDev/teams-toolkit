@@ -24,7 +24,7 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import { FeatureFlagName } from "../../src/common/constants";
+import { FeatureFlagName } from "../../src/common/featureFlags";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import {
   newResourceGroupOption,

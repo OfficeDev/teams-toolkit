@@ -7,11 +7,11 @@
 // eslint-disable-next-line import/default
 import TelemetryReporter from "@vscode/extension-telemetry";
 import * as sinon from "sinon";
-import { getAllFeatureFlags } from "../../src/featureFlags";
 import { VSCodeTelemetryReporter } from "../../src/telemetry/vscodeTelemetryReporter";
 import { MockTelemetryReporter } from "../mocks/mockTools";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
 
-const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
+const featureFlags = featureFlagManager.listEnabled().join(";") ?? "";
 
 describe("vscodeTelemetryReporter", () => {
   let tester: VSCodeTelemetryReporter;

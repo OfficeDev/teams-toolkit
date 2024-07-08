@@ -37,22 +37,6 @@ export class OutlookClientId {
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
   static readonly Mobile = "27922004-5251-4030-b22d-91ecd9a37ea4";
 }
-export class FeatureFlagName {
-  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
-  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
-  static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
-  static readonly TestTool = "TEAMSFX_TEST_TOOL";
-  static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
-  static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
-  static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
-  static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
-  static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
-  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
-  static readonly SMEOAuth = "SME_OAUTH";
-  static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
-  static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
-}
 
 export function getAllowedAppMaps(): Record<string, string> {
   return {

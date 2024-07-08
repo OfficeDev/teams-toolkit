@@ -33,7 +33,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aichat", "python");
+    localDebugTestContext = new LocalDebugTestContext("aichat", {
+      lang: "python",
+    });
     await localDebugTestContext.before();
   });
 

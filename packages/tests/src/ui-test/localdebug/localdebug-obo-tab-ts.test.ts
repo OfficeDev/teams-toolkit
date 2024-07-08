@@ -30,7 +30,9 @@ describe("Local Debug M365 Tests", function () {
     process.env.TEAMSFX_M365_APP = "true";
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("m365lp", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("m365lp", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 

@@ -8,9 +8,8 @@
 import { Mutex, withTimeout } from "async-mutex";
 import fs from "fs-extra";
 import path from "path";
-import { isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 import { context, workspaceUri } from "../../../globalVariables";
-import { FeatureFlags } from "../../../featureFlags";
 
 interface IDevTunnelState {
   tunnelId?: string;
@@ -29,7 +28,7 @@ export class DevTunnelStateManager {
   }
 
   public static create(): DevTunnelStateManager {
-    const stateService = isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
+    const stateService = featureFlagManager.getBooleanValue(FeatureFlags.DevTunnelTest)
       ? new FileStateService()
       : new VSCodeStateService();
     return new DevTunnelStateManager(stateService);

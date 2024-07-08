@@ -950,17 +950,17 @@ function uninstallModeQuestion(): SingleSelectQuestion {
       {
         id: QuestionNames.UninstallModeManifestId,
         label: getLocalizedString("core.uninstallQuestion.manifestIdMode"),
-        description: getLocalizedString("core.uninstallQuestion.manifestIdMode.description"),
+        detail: getLocalizedString("core.uninstallQuestion.manifestIdMode.detail"),
       },
       {
         id: QuestionNames.UninstallModeEnv,
         label: getLocalizedString("core.uninstallQuestion.envMode"),
-        description: getLocalizedString("core.uninstallQuestion.envMode.description"),
+        detail: getLocalizedString("core.uninstallQuestion.envMode.detail"),
       },
       {
         id: QuestionNames.UninstallModeTitleId,
         label: getLocalizedString("core.uninstallQuestion.titleIdMode"),
-        description: getLocalizedString("core.uninstallQuestion.titleIdMode.description"),
+        detail: getLocalizedString("core.uninstallQuestion.titleIdMode.detail"),
       },
     ],
     default: QuestionNames.UninstallModeManifestId,

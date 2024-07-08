@@ -159,10 +159,10 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
     expect(result.summaries).includes(
-      `Created Microsoft Entra application with object id 00000000-0000-0000-0000-000000000000`
+      `Microsoft Entra app created with object id ${expectedObjectId}`
     );
     expect(result.summaries).includes(
-      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
+      `Client secret for Microsoft Entra app generated with object id ${expectedObjectId}`
     );
   });
 
@@ -270,10 +270,10 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
     expect(result.summaries).includes(
-      `Created Microsoft Entra application with object id 00000000-0000-0000-0000-000000000000`
+      `Microsoft Entra app created with object id ${expectedObjectId}`
     );
     expect(result.summaries).includes(
-      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
+      `Client secret for Microsoft Entra app generated with object id ${expectedObjectId}`
     );
   });
 
@@ -297,7 +297,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(1); // 1 new env and 2 existing env
     expect(result.summaries.length).to.equal(1);
     expect(result.summaries).includes(
-      `Generated client secret for Microsoft Entra application with object id existing value`
+      `Client secret for Microsoft Entra app generated with object id existing value`
     );
   });
 
@@ -355,7 +355,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(5);
     expect(result.summaries.length).to.equal(1);
     expect(result.summaries).includes(
-      `Created Microsoft Entra application with object id 00000000-0000-0000-0000-000000000000`
+      `Microsoft Entra app created with object id ${expectedObjectId}`
     );
   });
 
@@ -691,10 +691,10 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
     expect(result.summaries).includes(
-      `Created Microsoft Entra application with object id 00000000-0000-0000-0000-000000000000`
+      `Microsoft Entra app created with object id ${expectedObjectId}`
     );
     expect(result.summaries).includes(
-      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
+      `Client secret for Microsoft Entra app generated with object id ${expectedObjectId}`
     );
   });
 

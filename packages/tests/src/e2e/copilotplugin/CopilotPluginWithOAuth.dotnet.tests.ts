@@ -20,7 +20,7 @@ class CopilotPluginOAuthForCsharpTestCase extends CopilotPluginCommonTest {
 }
 
 new CopilotPluginOAuthForCsharpTestCase(
-  27569691,
+  28641204,
   "huimiao@microsoft.com",
   "oauth",
   ProgrammingLanguage.CSharp

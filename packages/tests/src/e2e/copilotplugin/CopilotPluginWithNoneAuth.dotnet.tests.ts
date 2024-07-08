@@ -20,7 +20,7 @@ class CopilotPluginWithNoneAuthForCsharpCase extends CopilotPluginCommonTest {
 }
 
 new CopilotPluginWithNoneAuthForCsharpCase(
-  27569734,
+  28641262,
   "yimin@microsoft.com",
   "none",
   ProgrammingLanguage.CSharp

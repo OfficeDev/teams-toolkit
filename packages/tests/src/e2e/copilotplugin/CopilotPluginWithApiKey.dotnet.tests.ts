@@ -30,7 +30,7 @@ class CopilotPluginWithNoneAuthForJsCase extends CopilotPluginCommonTest {
 }
 
 new CopilotPluginWithNoneAuthForJsCase(
-  28640069,
+  28641218,
   "yimin@microsoft.com",
   "api-key",
   ProgrammingLanguage.CSharp

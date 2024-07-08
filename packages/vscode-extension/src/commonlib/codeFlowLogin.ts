@@ -39,11 +39,12 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { ExtensionErrors } from "../error";
+import { ExtensionErrors } from "../error/error";
 import { env, Uri } from "vscode";
 import { randomBytes } from "crypto";
 import { getExchangeCode } from "./exchangeCode";
 import * as os from "os";
+import { ErrorCategory } from "@microsoft/teamsfx-core";
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
   reject: (reason: any) => void;
@@ -177,14 +178,14 @@ export class CodeFlowLogin {
       } else {
         this.status = loggedOut;
       }
-      deferredRedirect.reject(
-        new UserError(
-          getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
-          getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
-          getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutDescription"),
-          localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
-        )
+      const err = new UserError(
+        getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
+        getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle"),
+        getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutDescription"),
+        localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
       );
+      err.categories = [ErrorCategory.Internal];
+      deferredRedirect.reject(err);
     }, 5 * 60 * 1000); // keep the same as azure login
 
     function cancelCodeTimer() {
@@ -394,7 +395,7 @@ export class CodeFlowLogin {
             )
         );
         if (!(await checkIsOnline())) {
-          return error(CheckOnlineError());
+          return err(CheckOnlineError());
         }
         await this.logout();
         if (refresh) {

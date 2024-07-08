@@ -18,7 +18,196 @@ describe("SpecParser in Browser", () => {
     sinon.restore();
   });
 
-  describe("listSupportedAPIInfo", () => {
+  describe("listSupporttedAPIInfo", () => {
+    it("should list parameters successfully with required and optional parameters", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, {
+        allowMissingId: false,
+        allowMultipleParameters: true,
+      });
+      const spec = {
+        openapi: "3.0.0",
+        info: {
+          title: "Repair Service",
+          description: "A simple service to manage repairs",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://poc-apim-gateway-fkh0bdaufkfpdugz.b02.azurefd.net",
+            description: "The repair api server",
+          },
+        ],
+        paths: {
+          "/assignRepair": {
+            get: {
+              operationId: "assignRepair",
+              summary:
+                "Assign repair to technician for the customer based on car type and repair type",
+              description:
+                "Assign repair to technician for the customer based on car type and repair type",
+              parameters: [
+                {
+                  name: "carType",
+                  in: "query",
+                  description: "Car type to repair",
+                  schema: {
+                    type: "string",
+                  },
+                  required: false,
+                },
+                {
+                  name: "customerStatus",
+                  in: "query",
+                  description: "Customer status",
+                  schema: {
+                    type: "string",
+                    enum: ["available", "pending", "sold"],
+                  },
+                },
+                {
+                  name: "customerToggle",
+                  in: "query",
+                  description: "Customer Toggle",
+                  schema: {
+                    type: "boolean",
+                  },
+                  allowEmptyValue: true,
+                  required: true,
+                },
+                {
+                  name: "limit",
+                  in: "query",
+                  schema: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 50,
+                  },
+                  description: "The numbers of items to return",
+                  required: true,
+                },
+                {
+                  name: "startDateString",
+                  in: "query",
+                  schema: {
+                    type: "string",
+                  },
+                  description: "The start date for the report in different format",
+                  required: true,
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "The response that represents an appointment for the repair",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          id: {
+                            type: "string",
+                            description: "Id of the repair",
+                          },
+                          title: {
+                            type: "string",
+                            description: "The short summary of the repair",
+                          },
+                          assignedTo: {
+                            type: "string",
+                            description: "The engineer who is responsible for the repair",
+                          },
+                          customerPhoneNumber: {
+                            type: "string",
+                            description: "The phone number of the customer",
+                          },
+                          date: {
+                            type: "string",
+                            format: "date-time",
+                            description:
+                              "The date and time when the repair is scheduled or completed",
+                          },
+                          image: {
+                            type: "string",
+                            format: "uri",
+                            description:
+                              "The URL of the image of the item to be repaired or the repair process",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.listSupportedAPIInfo();
+      expect(result).to.deep.equal([
+        {
+          method: "GET",
+          path: "/assignRepair",
+          title: "Assign repair to technician for ",
+          id: "assignRepair",
+          description:
+            "Assign repair to technician for the customer based on car type and repair type",
+          parameters: [
+            {
+              name: "customerToggle",
+              title: "CustomerToggle",
+              description: "Customer Toggle",
+              inputType: "toggle",
+              isRequired: true,
+            },
+            {
+              name: "limit",
+              title: "Limit",
+              description: "The numbers of items to return",
+              inputType: "number",
+              isRequired: true,
+            },
+            {
+              name: "startDateString",
+              title: "StartDateString",
+              description: "The start date for the report in different format",
+              inputType: "text",
+              isRequired: true,
+            },
+            {
+              name: "carType",
+              title: "CarType",
+              description: "Car type to repair",
+              inputType: "text",
+            },
+            {
+              name: "customerStatus",
+              title: "CustomerStatus",
+              description: "Customer status",
+              inputType: "choiceset",
+              choices: [
+                {
+                  title: "available",
+                  value: "available",
+                },
+                {
+                  title: "pending",
+                  value: "pending",
+                },
+                {
+                  title: "sold",
+                  value: "sold",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
     it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
@@ -190,85 +379,6 @@ describe("SpecParser in Browser", () => {
           description: "Get user by user id, balabala",
         },
       ]);
-    });
-
-    it("should reuse apiMap if listSupportedAPIInfo is called multiple times", async () => {
-      const specPath = "valid-spec.yaml";
-      const specParser = new SpecParser(specPath, { allowMissingId: false });
-      const spec = {
-        servers: [
-          {
-            url: "https://example.com",
-          },
-        ],
-        paths: {
-          "/user/{userId}": {
-            get: {
-              operationId: "getUserById",
-              description: "Get user by user id, balabala",
-              summary: "Get user by user id",
-              parameters: [
-                {
-                  name: "userId",
-                  in: "path",
-                  description: "User Id",
-                  schema: {
-                    type: "string",
-                  },
-                },
-              ],
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
-          },
-        },
-      };
-
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listAPIsSyp = sinon.spy(SMEValidator.prototype, "listAPIs");
-      let result = await specParser.listSupportedAPIInfo();
-      result = await specParser.listSupportedAPIInfo();
-      expect(result).to.deep.equal([
-        {
-          method: "GET",
-          path: "/user/{userId}",
-          title: "Get user by user id",
-          id: "getUserById",
-          parameters: [
-            {
-              name: "userId",
-              title: "UserId",
-              description: "User Id",
-            },
-          ],
-          description: "Get user by user id, balabala",
-        },
-      ]);
-      expect(listAPIsSyp.callCount).to.equal(1);
     });
 
     it("should not list api without operationId with allowMissingId is true", async () => {

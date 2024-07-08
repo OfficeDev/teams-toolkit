@@ -23,14 +23,13 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
+import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
+import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { getResourceGroupInPortal } from "../../common/tools";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { environmentNameManager } from "../../core/environmentName";
-import { ObjectIsUndefinedError } from "../../core/error";
-import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
 import {
   InputValidationError,
@@ -40,18 +39,11 @@ import {
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
-  ApiMessageExtensionAuthOptions,
   AppNamePattern,
-  CapabilityOptions,
-  CustomCopilotAssistantOptions,
-  CustomCopilotRagOptions,
-  MeArchitectureOptions,
-  NotificationTriggerOptions,
-  OfficeAddinHostOptions,
   ProjectTypeOptions,
+  QuestionNames,
   ScratchOptions,
-} from "../../question/create";
-import { QuestionNames } from "../../question/questionNames";
+} from "../../question/constants";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
 import { CoordinatorSource } from "../constants";
@@ -59,13 +51,9 @@ import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
-import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
+import { Constants } from "../driver/teamsApp/constants";
 import { Generator } from "../generator/generator";
-import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
-import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
-import { convertToLangKey } from "../generator/utils";
+import { Generators } from "../generator/generatorProvider";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
@@ -74,122 +62,6 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-
-export enum TemplateNames {
-  Tab = "non-sso-tab",
-  SsoTab = "sso-tab",
-  TabSSR = "non-sso-tab-ssr",
-  SsoTabSSR = "sso-tab-ssr",
-  DashboardTab = "dashboard-tab",
-  NotificationRestify = "notification-restify",
-  NotificationWebApi = "notification-webapi",
-  NotificationHttpTrigger = "notification-http-trigger",
-  NotificationHttpTriggerIsolated = "notification-http-trigger-isolated",
-  NotificationTimerTrigger = "notification-timer-trigger",
-  NotificationTimerTriggerIsolated = "notification-timer-trigger-isolated",
-  NotificationHttpTimerTrigger = "notification-http-timer-trigger",
-  NotificationHttpTimerTriggerIsolated = "notification-http-timer-trigger-isolated",
-  CommandAndResponse = "command-and-response",
-  Workflow = "workflow",
-  DefaultBot = "default-bot",
-  MessageExtension = "message-extension",
-  MessageExtensionAction = "message-extension-action",
-  MessageExtensionSearch = "message-extension-search",
-  MessageExtensionCopilot = "message-extension-copilot",
-  M365MessageExtension = "m365-message-extension",
-  TabAndDefaultBot = "non-sso-tab-default-bot",
-  BotAndMessageExtension = "default-bot-message-extension",
-  SsoTabObo = "sso-tab-with-obo-flow",
-  LinkUnfurling = "link-unfurling",
-  CopilotPluginFromScratch = "copilot-plugin-from-scratch",
-  CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
-  ApiMessageExtensionSso = "api-message-extension-sso",
-  ApiPluginFromScratch = "api-plugin-from-scratch",
-  AIBot = "ai-bot",
-  AIAssistantBot = "ai-assistant-bot",
-  CustomCopilotBasic = "custom-copilot-basic",
-  CustomCopilotRagCustomize = "custom-copilot-rag-customize",
-  CustomCopilotRagAzureAISearch = "custom-copilot-rag-azure-ai-search",
-  CustomCopilotRagCustomApi = "custom-copilot-rag-custom-api",
-  CustomCopilotRagMicrosoft365 = "custom-copilot-rag-microsoft365",
-  CustomCopilotAssistantNew = "custom-copilot-assistant-new",
-  CustomCopilotAssistantAssistantsApi = "custom-copilot-assistant-assistants-api",
-}
-
-const Feature2TemplateName: any = {
-  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
-    TemplateNames.NotificationRestify,
-  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
-    TemplateNames.NotificationWebApi,
-  [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsHttpTrigger().id
-  }`]: TemplateNames.NotificationHttpTrigger,
-  [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsHttpTriggerIsolated().id
-  }`]: TemplateNames.NotificationHttpTriggerIsolated,
-  [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsTimerTrigger().id
-  }`]: TemplateNames.NotificationTimerTrigger,
-  [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsTimerTriggerIsolated().id
-  }`]: TemplateNames.NotificationTimerTriggerIsolated,
-  [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
-  }`]: TemplateNames.NotificationHttpTimerTrigger,
-  [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
-  }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
-  [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
-  [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
-  [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
-  [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
-  [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botMe().id}`]:
-    TemplateNames.M365MessageExtension,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botPlugin().id}`]:
-    TemplateNames.MessageExtensionCopilot,
-  [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
-  [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
-  [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
-  [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
-  [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
-  [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
-  [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
-  [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]: TemplateNames.ApiPluginFromScratch,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.none().id
-  }`]: TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.apiKey().id
-  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.microsoftEntra().id
-  }`]: TemplateNames.ApiMessageExtensionSso,
-  [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
-  [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-  [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
-  [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
-  [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
-  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-    CustomCopilotRagOptions.customize().id
-  }`]: TemplateNames.CustomCopilotRagCustomize,
-  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-    CustomCopilotRagOptions.azureAISearch().id
-  }`]: TemplateNames.CustomCopilotRagAzureAISearch,
-  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-    CustomCopilotRagOptions.customApi().id
-  }`]: TemplateNames.CustomCopilotRagCustomApi,
-  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-    CustomCopilotRagOptions.microsoft365().id
-  }`]: TemplateNames.CustomCopilotRagMicrosoft365,
-  [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
-    CustomCopilotAssistantOptions.new().id
-  }`]: TemplateNames.CustomCopilotAssistantNew,
-  [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
-    CustomCopilotAssistantOptions.assistantsApi().id
-  }`]: TemplateNames.CustomCopilotAssistantAssistantsApi,
-};
 
 const M365Actions = [
   "botAadApp/create",
@@ -267,157 +139,43 @@ class Coordinator {
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
       const projectType = inputs[QuestionNames.ProjectType];
-      const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-      const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
+      if (projectType === ProjectTypeOptions.customCopilot().id) {
+        merge(actionContext?.telemetryProps, {
+          [TelemetryProperty.CustomCopilotRAG]: inputs["custom-copilot-rag"] ?? "",
+          [TelemetryProperty.CustomCopilotAgent]: inputs["custom-copilot-agent"] ?? "",
+          [TelemetryProperty.LlmService]: inputs["llm-service"] ?? "",
+          [TelemetryProperty.HasAzureOpenAIKey]: inputs["azure-openai-key"] ? "true" : "false",
+          [TelemetryProperty.HasAzureOpenAIEndpoint]: inputs["azure-openai-endpoint"]
+            ? "true"
+            : "false",
+          [TelemetryProperty.HasAzureOpenAIDeploymentName]: inputs["azure-openai-deployment-name"]
+            ? "true"
+            : "false",
+          [TelemetryProperty.HasOpenAIKey]: inputs["openai-key"] ? "true" : "false",
+        });
+      }
 
-      if (capability === CapabilityOptions.SPFxTab().id) {
-        const res = await SPFxGenerator.generate(context, inputs, projectPath);
-        if (res.isErr()) return err(res.error);
-      } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
-        const addinHost = inputs[QuestionNames.OfficeAddinHost];
-        if (
-          projectType === ProjectTypeOptions.officeXMLAddin().id &&
-          addinHost &&
-          addinHost !== OfficeAddinHostOptions.outlook().id
-        ) {
-          const res = await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
-          if (res.isErr()) return err(res.error);
-        } else {
-          const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-          if (res.isErr()) return err(res.error);
-        }
-      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
-        const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
-        const res = await CopilotPluginGenerator.generateMeFromApiSpec(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else if (capability === CapabilityOptions.copilotPluginOpenAIPlugin().id) {
-        const res = await CopilotPluginGenerator.generateFromOpenAIPlugin(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else {
-        if (
-          capability === CapabilityOptions.m365SsoLaunchPage().id ||
-          capability === CapabilityOptions.m365SearchMe().id
-        ) {
-          inputs.isM365 = true;
-        }
-        const trigger = inputs[QuestionNames.BotTrigger] as string;
-        let feature = `${capability}:${trigger}`;
-
-        if (
-          language === "csharp" &&
-          capability === CapabilityOptions.notificationBot().id &&
-          inputs.isIsolated === true
-        ) {
-          feature += "-isolated";
-        }
-
-        if (meArchitecture) {
-          feature = `${feature}:${meArchitecture}`;
-        }
-        if (
-          inputs.targetFramework &&
-          inputs.targetFramework !== "net6.0" &&
-          inputs.targetFramework !== "net7.0" &&
-          (capability === CapabilityOptions.nonSsoTab().id ||
-            capability === CapabilityOptions.tab().id)
-        ) {
-          feature = `${capability}:ssr`;
-        }
-
-        if (
-          capability === CapabilityOptions.m365SearchMe().id &&
-          meArchitecture === MeArchitectureOptions.newApi().id
-        ) {
-          feature = `${feature}:${apiMEAuthType}`;
-        }
-
-        if (capability === CapabilityOptions.customCopilotRag().id) {
-          feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
-        } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
-          feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
-        }
-
-        const templateName = Feature2TemplateName[feature];
-
-        if (templateName) {
-          const langKey = convertToLangKey(language);
-          const safeProjectNameFromVS =
-            language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-          const llmService: string | undefined = inputs[QuestionNames.LLMService];
-          const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
-          const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
-          const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
-          const azureOpenAIDeploymentName: string | undefined =
-            inputs[QuestionNames.AzureOpenAIDeploymentName];
-          context.templateVariables = Generator.getDefaultVariables(
-            appName,
-            safeProjectNameFromVS,
-            inputs.targetFramework,
-            inputs.placeProjectFileInSolutionDir === "true",
-            undefined,
-            {
-              llmService,
-              openAIKey,
-              azureOpenAIKey,
-              azureOpenAIEndpoint,
-              azureOpenAIDeploymentName,
-            }
-          );
-          const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
-          if (res.isErr()) return err(res.error);
-          if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
-            const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
-              context,
-              inputs,
-              projectPath
-            );
-            if (res.isErr()) {
-              return err(res.error);
-            } else {
-              warnings = res.value.warnings;
-            }
-          }
-        } else {
-          return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
-        }
+      // refactored generator
+      const generator = Generators.find((g) => g.activate(context, inputs));
+      if (!generator) {
+        return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
+      }
+      const res = await generator.run(context, inputs, projectPath);
+      if (res.isErr()) return err(res.error);
+      else {
+        warnings = res.value.warnings;
       }
     }
 
     // generate unique projectId in teamsapp.yaml (optional)
     const ymlPath = path.join(projectPath, MetadataV3.configFile);
-    if (fs.pathExistsSync(ymlPath)) {
+    if (await fs.pathExists(ymlPath)) {
       const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
       if (ensureRes.isErr()) return err(ensureRes.error);
       inputs.projectId = ensureRes.value;
@@ -857,8 +615,9 @@ class Coordinator {
         void ctx.ui!.showMessage("info", msg, false);
       }
     }
-    ctx.logProvider.info(msg);
-
+    if (ctx.platform !== Platform.CLI) {
+      ctx.logProvider.info(msg);
+    }
     return ok(output);
   }
 
@@ -1029,10 +788,10 @@ class Coordinator {
   ): Promise<Result<undefined, FxError>> {
     // update teams app
     if (!ctx.tokenProvider) {
-      return err(new ObjectIsUndefinedError("tokenProvider"));
+      return err(new InputValidationError("tokenProvider", "undefined"));
     }
     if (!inputs[QuestionNames.AppPackagePath]) {
-      return err(new ObjectIsUndefinedError("appPackagePath"));
+      return err(new InputValidationError("appPackagePath", "undefined"));
     }
     const updateRes = await updateTeamsAppV3ForPublish(ctx, inputs);
 

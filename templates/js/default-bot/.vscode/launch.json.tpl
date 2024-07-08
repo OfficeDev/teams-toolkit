@@ -35,7 +35,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App (Chrome)",
@@ -49,7 +50,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Attach to Local Service",
@@ -62,6 +64,17 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote (Desktop)",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "3-remote",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen",
         }
     ],
     "compounds": [
@@ -102,7 +115,19 @@
             "stopAll": true
         },
         {
-            "name": "Debug in Test Tool (Preview)",
+            "name": "Debug in Teams (Desktop)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client",
+            "presentation": {
+                "group": "2-local",
+                "order": 3
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Test Tool",
             "configurations": [
                 "Attach to Local Service"
             ],

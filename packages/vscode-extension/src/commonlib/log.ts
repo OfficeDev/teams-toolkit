@@ -7,6 +7,7 @@ import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 import * as fs from "fs-extra";
 import { defaultExtensionLogPath } from "../globalVariables";
+import { SummaryConstant } from "@microsoft/teamsfx-core";
 
 const outputChannelDisplayName = "Teams Toolkit";
 
@@ -86,6 +87,35 @@ export class VsCodeLogProvider implements LogProvider {
       const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;
       this.outputChannel.appendLine(formattedMessage);
     } catch (e) {}
+  }
+
+  /**
+   * @Sample (×) Error: Lifecycle stage deploy failed.
+   * @Sample (√) Done: devTool/install was executed successfully.
+   */
+  semLog(
+    messages:
+      | Array<{ content: string; status?: SummaryConstant }>
+      | { content: string; status?: SummaryConstant }
+  ): void {
+    try {
+      this.outputChannel.show();
+      const data: Array<{ content: string; status?: SummaryConstant }> = [];
+      if (Array.isArray(messages)) {
+        data.push(...messages);
+      } else {
+        data.push(messages);
+      }
+
+      data.forEach((v) => {
+        if (v.status) {
+          this.outputChannel.appendLine(`${v.status} ${v.content}`);
+        } else {
+          this.outputChannel.appendLine(v.content);
+        }
+      });
+    } catch (e) {}
+    return;
   }
 
   async logInFile(logLevel: LogLevel, message: string): Promise<void> {

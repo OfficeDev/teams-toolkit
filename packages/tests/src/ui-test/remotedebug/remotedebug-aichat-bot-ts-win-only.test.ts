@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  deployProject,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -68,14 +68,17 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aichat", appName, "TypeScript");
+      await createNewProject("aichat", appName, {
+        lang: "TypeScript",
+        aiType: "Azure OpenAI",
+      });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
       editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
       editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

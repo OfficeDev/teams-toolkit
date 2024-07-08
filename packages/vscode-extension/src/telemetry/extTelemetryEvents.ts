@@ -7,6 +7,7 @@ export enum TelemetryEvent {
   CreateAccount = "create-account",
 
   GetStarted = "quick-start",
+  WalkThroughBuildIntelligentApps = "walkthrough-build-intelligent-apps",
 
   Samples = "samples",
 
@@ -144,6 +145,7 @@ export enum TelemetryEvent {
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
   DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
+  LaunchDesktopClientTask = "launch-desktop-client",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -188,6 +190,9 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowPreivewNotification = "show-preview-notification",
+
+  ShowProvisionNotification = "show-provision-notification",
+  ClickProvision = "click-provision",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
@@ -257,6 +262,15 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  InvokeTeamsAgent = "invoke-teams-agent",
+
+  // Copilot Chat
+  CopilotChatStart = "copilot-chat-start",
+  CopilotChat = "copilot-chat",
+  CopilotChatFeedback = "copilot-chat-feedback",
+  CopilotChatClickButton = "copilot-chat-click-button",
+  CopilotChatUserAction = "copilot-chat-action",
+
   //Office add-in related
   validateAddInManifest = "validate-addin-manifest",
   installAddInDependencies = "install-addin-dependencies",
@@ -277,7 +291,7 @@ export enum TelemetryProperty {
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
   ErrorStack = "error-stack",
   Errors = "errors",
   Hub = "hub",
@@ -362,6 +376,26 @@ export enum TelemetryProperty {
   ChangedFilter = "changed-filter",
   SampleFilters = "sample-filters",
   Layout = "layout",
+  // Used in ChatParticipant
+  CopilotChatTokenCount = "copilot-chat-token-count",
+  CopilotChatTimeToComplete = "copilot-chat-time-to-complete",
+  CopilotChatFeedbackHelpful = "copilot-chat-helpful",
+  CopilotChatUserAction = "copilot-chat-action",
+  CopilotChatHasCodeBlock = "copilot-chat-has-code-block",
+  CopilotChatCommand = "copilot-chat-command",
+  CopilotChatRequestId = "copilot-chat-request-id",
+  CopilotChatRunCommandId = "copilot-chat-run-command-id", // the id of clicked button in the response
+  CopilotChatParticipantId = "copilot-chat-participant-id",
+  CopilotChatLocation = "copilot-chat-location",
+  CopilotChatCompleteType = "copilot-chat-complete-type",
+  CopilotMatchResultType = "copilot-match-result-type",
+  CopilotChatBlockReason = "copilot-chat-block-reason",
+  CopilotChatRelatedSampleName = "copilot-chat-related-sample-name",
+  CopilotChatTimeToFirstToken = "copilot-chat-time-to-first-token",
+  CopilotChatRequestTokenPerSecond = "copilot-chat-request-token-per-second",
+  CopilotChatResponseTokenPerSecond = "copilot-chat-response-token-per-second",
+  CopilotChatRequestToken = "copilot-chat-request-token",
+  CopilotChatResponseToken = "copilot-chat-response-token",
 }
 
 export enum TelemetryMeasurements {
@@ -392,6 +426,8 @@ export enum TelemetryTriggerFrom {
   SideloadingDisabled = "SideloadingDisabled",
   SampleGallery = "SampleGallery",
   SampleDetailPage = "SampleDetailPage",
+  CopilotChat = "CopilotChat",
+  CreateAppQuestionFlow = "CreateAppQuestionFlow",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

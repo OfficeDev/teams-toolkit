@@ -6,7 +6,7 @@ import "./SampleGallery.scss";
 import Fuse from "fuse.js";
 import * as React from "react";
 
-import { Icon } from "@fluentui/react";
+import { Icon, Link } from "@fluentui/react";
 
 import { GlobalKey } from "../../constants";
 import {
@@ -22,7 +22,11 @@ import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
 import SampleListItem from "./sampleListItem";
 
-export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
+interface SampleGalleryProps {
+  shouldShowChat: string;
+}
+
+export default class SampleGallery extends React.Component<SampleGalleryProps, SampleGalleryState> {
   private samples: SampleInfo[] = [];
   private filterOptions: SampleFilterOptionType = {
     capabilities: [],
@@ -30,7 +34,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     technologies: [],
   };
 
-  constructor(props: unknown) {
+  constructor(props: SampleGalleryProps) {
     super(props);
     this.state = {
       loading: true,
@@ -61,10 +65,25 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         </div>
         <div className="title">
           <h1>Samples</h1>
-          <h3>
-            Explore our sample gallery filled with solutions that work seamlessly with Teams
-            Toolkit.
-          </h3>
+          {this.props.shouldShowChat === "true" ? (
+            <h3>
+              Explore our sample gallery filled with solutions that work seamlessly with Teams
+              Toolkit. Need help choosing? Let{" "}
+              <Link
+                onClick={() => {
+                  this.onInvokeTeamsAgent();
+                }}
+              >
+                Github Copilot
+              </Link>{" "}
+              assists you in selecting the right sample to create your Teams app.
+            </h3>
+          ) : (
+            <h3>
+              Explore our sample gallery filled with solutions that work seamlessly with Teams
+              Toolkit.
+            </h3>
+          )}
         </div>
       </div>
     );
@@ -169,7 +188,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
   }
 
   private get selectedSample(): SampleInfo | null {
-    if (!this.state.selectedSampleId) {
+    if (!this.state.selectedSampleId || this.state.selectedSampleId === "") {
       return null;
     }
     const selectedSamples = this.samples.filter(
@@ -185,9 +204,11 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         const error = event.data.error;
         this.samples = event.data.samples as SampleInfo[];
         this.filterOptions = event.data.filterOptions as SampleFilterOptionType;
+        const initialSample = event.data.initialSample as string;
         this.setState({
           loading: false,
           error,
+          selectedSampleId: initialSample,
         });
         break;
       case Commands.GetData:
@@ -198,9 +219,6 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
             layout: value || "grid",
           });
         }
-        break;
-      case Commands.OpenDesignatedSample:
-        this.onSampleSelected(event.data.sampleId, TelemetryTriggerFrom.ExternalUrl);
         break;
       default:
         break;
@@ -349,6 +367,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       data: {
         version: sample.minimumToolkitVersion,
       },
+    });
+  };
+
+  private onInvokeTeamsAgent = () => {
+    vscode.postMessage({
+      command: Commands.InvokeTeamsAgent,
     });
   };
 }

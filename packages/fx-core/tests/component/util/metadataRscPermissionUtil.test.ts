@@ -9,11 +9,18 @@ import {
   ProjectModel,
 } from "../../../src/component/configManager/interface";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { MockTools } from "../../core/utils";
 import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";
-import { ProjectTypeProps, TelemetryProperty } from "../../../src/common/telemetry";
-import { metadataRscPermissionUtil } from "../../../src/component/utils/metadataRscPermission";
+import {
+  ProjectTypeProps,
+  TelemetryProperty,
+  WebApplicationIdValue,
+} from "../../../src/common/telemetry";
+import {
+  getWebApplicationIdStatus,
+  metadataRscPermissionUtil,
+} from "../../../src/component/utils/metadataRscPermission";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
@@ -33,11 +40,10 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
 describe("metadata rsc permission util", () => {
   const manifestContent = `
   {
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-    "manifestVersion": "1.16",
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.17",
     "version": "1.0.0",
     "id": "TEAMS_APP_ID",
-    "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -63,7 +69,7 @@ describe("metadata rsc permission util", () => {
             "scopes": [
                 "personal",
                 "team",
-                "groupchat"
+                "groupChat"
             ],
             "supportsFiles": false,
             "isNotificationOnly": false,
@@ -72,7 +78,7 @@ describe("metadata rsc permission util", () => {
                     "scopes": [
                         "personal",
                         "team",
-                        "groupchat"
+                        "groupChat"
                     ],
                     "commands": [
                         {
@@ -175,7 +181,7 @@ describe("metadata rsc permission util", () => {
 
   it("parseManifest happy path", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(readAppManifestRes as any));
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(readAppManifestRes as any));
     let props: any = {};
     await metadataRscPermissionUtil.parseManifest(ymlPath, mockProjectModel, props);
     assert(props[ProjectTypeProps.TeamsManifestVersion] === "1.16");
@@ -197,5 +203,14 @@ describe("metadata rsc permission util", () => {
     const props: any = {};
     await metadataRscPermissionUtil.parseManifest(ymlPath, mockProjectModel, props);
     assert(props[ProjectTypeProps.TeamsManifestVersion] === undefined);
+  });
+
+  it("get Web ApplicationIdStatus", async () => {
+    const resNone = getWebApplicationIdStatus("");
+    assert(resNone === WebApplicationIdValue.None);
+    const resDefault = getWebApplicationIdStatus("${{AAD_APP_CLIENT_ID}}");
+    assert(resDefault === WebApplicationIdValue.Default);
+    const resCustomized = getWebApplicationIdStatus("00000000-0000-0000-0000-000000000000");
+    assert(resCustomized === WebApplicationIdValue.Customized);
   });
 });

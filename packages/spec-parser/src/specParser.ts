@@ -11,7 +11,6 @@ import path from "path";
 import {
   APIInfo,
   APIMap,
-  AuthInfo,
   ErrorResult,
   ErrorType,
   GenerateResult,
@@ -42,7 +41,6 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: APIMap | undefined;
   private validator: Validator | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
@@ -56,7 +54,11 @@ export class SpecParser {
     allowMultipleParameters: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
+    allowConversationStarters: false,
+    allowResponseSemantics: false,
+    allowConfirmation: false,
     projectType: ProjectType.SME,
+    isGptPlugin: false,
   };
 
   /**
@@ -82,7 +84,12 @@ export class SpecParser {
     try {
       try {
         await this.loadSpec();
-        await this.parser.validate(this.spec!);
+        if (!this.parser.$refs.circular) {
+          await this.parser.validate(this.spec!);
+        } else {
+          const clonedUnResolveSpec = JSON.parse(JSON.stringify(this.unResolveSpec));
+          await this.parser.validate(clonedUnResolveSpec);
+        }
       } catch (e) {
         return {
           status: ValidationStatus.Error,
@@ -180,19 +187,34 @@ export class SpecParser {
           reason: reason,
         };
 
-        if (isValid) {
+        // Try best to parse server url and auth type
+        try {
           const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
           if (serverObj) {
-            apiResult.server = Utils.resolveEnv(serverObj.url);
+            apiResult.server = serverObj.url;
           }
+        } catch (err) {
+          // ignore
+        }
 
+        try {
           const authArray = Utils.getAuthArray(operation.security, spec);
-          for (const auths of authArray) {
-            if (auths.length === 1) {
-              apiResult.auth = auths[0];
-              break;
+
+          if (authArray.length !== 0) {
+            for (const auths of authArray) {
+              if (auths.length === 1) {
+                apiResult.auth = auths[0];
+                break;
+              } else {
+                apiResult.auth = {
+                  authScheme: { type: "multipleAuth" },
+                  name: auths.map((auth) => auth.name).join(", "),
+                };
+              }
             }
           }
+        } catch (err) {
+          // ignore
         }
 
         result.APIs.push(apiResult);
@@ -239,7 +261,8 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+      const clonedUnResolveSpec = JSON.parse(JSON.stringify(newUnResolvedSpec));
+      const newSpec = (await this.parser.dereference(clonedUnResolveSpec)) as OpenAPIV3.Document;
       return [newUnResolvedSpec, newSpec];
     } catch (err) {
       if (err instanceof SpecParserError) {
@@ -273,28 +296,28 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      let resultStr;
-      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
-        resultStr = jsyaml.dump(newUnResolvedSpec);
-      } else {
-        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
-      }
-      await fs.outputFile(outputSpecPath, resultStr);
+      const authInfo = Utils.getAuthInfo(newSpec);
+
+      await this.saveFilterSpec(outputSpecPath, newUnResolvedSpec);
 
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
-        manifestPath,
-        outputSpecPath,
-        pluginFilePath,
-        newSpec,
-        this.options
-      );
+      const [updatedManifest, apiPlugin, warnings] =
+        await ManifestUpdater.updateManifestWithAiPlugin(
+          manifestPath,
+          outputSpecPath,
+          pluginFilePath,
+          newSpec,
+          this.options,
+          authInfo
+        );
 
-      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
-      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 2 });
+      result.warnings.push(...warnings);
+
+      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 4 });
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 4 });
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;
@@ -327,42 +350,13 @@ export class SpecParser {
       const newSpecs = await this.getFilteredSpecs(filter, signal);
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
+      let authInfo = undefined;
 
-      let hasMultipleAuth = false;
-      let authInfo: AuthInfo | undefined = undefined;
-
-      for (const url in newSpec.paths) {
-        for (const method in newSpec.paths[url]) {
-          const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
-
-          const authArray = Utils.getAuthArray(operation.security, newSpec);
-
-          if (authArray && authArray.length > 0) {
-            const currentAuth = authArray[0][0];
-            if (!authInfo) {
-              authInfo = authArray[0][0];
-            } else if (authInfo.name !== currentAuth.name) {
-              hasMultipleAuth = true;
-              break;
-            }
-          }
-        }
+      if (this.options.projectType === ProjectType.SME) {
+        authInfo = Utils.getAuthInfo(newSpec);
       }
 
-      if (hasMultipleAuth && this.options.projectType !== ProjectType.TeamsAi) {
-        throw new SpecParserError(
-          ConstantString.MultipleAuthNotSupported,
-          ErrorType.MultipleAuthNotSupported
-        );
-      }
-
-      let resultStr;
-      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
-        resultStr = jsyaml.dump(newUnResolvedSpec);
-      } else {
-        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
-      }
-      await fs.outputFile(outputSpecPath, resultStr);
+      await this.saveFilterSpec(outputSpecPath, newUnResolvedSpec);
 
       if (adaptiveCardFolder) {
         for (const url in newSpec.paths) {
@@ -372,12 +366,13 @@ export class SpecParser {
               const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
               try {
                 const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
-                const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
+                const safeAdaptiveCardName = operation.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
+                const fileName = path.join(adaptiveCardFolder, `${safeAdaptiveCardName}.json`);
                 const wrappedCard = wrapAdaptiveCard(card, jsonPath);
                 await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
                 const dataFileName = path.join(
                   adaptiveCardFolder,
-                  `${operation.operationId!}.data.json`
+                  `${safeAdaptiveCardName}.data.json`
                 );
                 await fs.outputJSON(dataFileName, {}, { spaces: 2 });
               } catch (err) {
@@ -421,7 +416,8 @@ export class SpecParser {
 
   private async loadSpec(): Promise<void> {
     if (!this.spec) {
-      this.unResolveSpec = (await this.parser.parse(this.pathOrSpec)) as OpenAPIV3.Document;
+      const spec = (await this.parser.parse(this.pathOrSpec)) as OpenAPIV3.Document;
+      this.unResolveSpec = this.resolveEnvForSpec(spec);
       // Convert swagger 2.0 to openapi 3.0
       if (!this.unResolveSpec.openapi && (this.unResolveSpec as any).swagger === "2.0") {
         const specObj = await converter.convert(this.unResolveSpec as any, {});
@@ -437,7 +433,6 @@ export class SpecParser {
   private getAPIs(spec: OpenAPIV3.Document): APIMap {
     const validator = this.getValidator(spec);
     const apiMap = validator.listAPIs();
-    this.apiMap = apiMap;
     return apiMap;
   }
 
@@ -448,5 +443,24 @@ export class SpecParser {
     const validator = ValidatorFactory.create(spec, this.options);
     this.validator = validator;
     return validator;
+  }
+
+  private async saveFilterSpec(
+    outputSpecPath: string,
+    unResolvedSpec: OpenAPIV3.Document
+  ): Promise<void> {
+    let resultStr;
+    if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+      resultStr = jsyaml.dump(unResolvedSpec);
+    } else {
+      resultStr = JSON.stringify(unResolvedSpec, null, 2);
+    }
+    await fs.outputFile(outputSpecPath, resultStr);
+  }
+
+  private resolveEnvForSpec(spec: OpenAPIV3.Document): OpenAPIV3.Document {
+    const specString = JSON.stringify(spec);
+    const specResolved = Utils.resolveEnv(specString);
+    return JSON.parse(specResolved) as OpenAPIV3.Document;
   }
 }

@@ -6,16 +6,35 @@ import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
 import { pluginManifestUtils } from "../../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
-import { PluginManifestSchema, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
-import { FileNotFoundError, JSONSyntaxError } from "../../../../src";
+import {
+  Colors,
+  ManifestUtil,
+  Platform,
+  PluginManifestSchema,
+  SystemError,
+  TeamsAppManifest,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import {
+  FileNotFoundError,
+  JSONSyntaxError,
+  MissingEnvironmentVariablesError,
+} from "../../../../src";
 import path from "path";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
+import { PluginManifestValidationResult } from "../../../../src/component/driver/teamsApp/interfaces/ValidationResult";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("pluginManifestUtils", () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn;
 
   afterEach(async () => {
     sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
   });
 
   const pluginManifest: PluginManifestSchema = {
@@ -25,7 +44,7 @@ describe("pluginManifestUtils", () => {
     runtimes: [
       {
         type: "OpenApi",
-        auth: { type: "none" },
+        auth: { type: "None" },
         spec: {
           url: "openapi.yaml",
         },
@@ -72,12 +91,14 @@ describe("pluginManifestUtils", () => {
     staticTabs: [],
     permissions: [],
     validDomains: [],
-    plugins: [
-      {
-        file: "resources/plugin.json",
-        id: "plugin1",
-      },
-    ],
+    copilotExtensions: {
+      plugins: [
+        {
+          file: "resources/plugin.json",
+          id: "plugin1",
+        },
+      ],
+    },
   };
 
   it("readPluginManifestFile success", async () => {
@@ -145,7 +166,7 @@ describe("pluginManifestUtils", () => {
   it("getApiSpecFilePathFromTeamsManifest error: invalid plugin node case 1", async () => {
     const testManifest = {
       ...teamsManifest,
-      plugins: [],
+      copilotExtensions: { plugins: [] },
     };
     sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
@@ -224,7 +245,7 @@ describe("pluginManifestUtils", () => {
       runtimes: [
         {
           type: "OpenApi",
-          auth: { type: "none" },
+          auth: { type: "None" },
           spec: {
             url: "",
           },
@@ -248,9 +269,165 @@ describe("pluginManifestUtils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
 
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
-      { ...teamsManifest, plugins: [] },
+      { ...teamsManifest, copilotExtensions: {} },
       "/test/path"
     );
     chai.assert.isTrue(res.isErr());
+  });
+
+  describe("logValidationErrors", () => {
+    it("skip if no errors", () => {
+      const validationRes: PluginManifestValidationResult = {
+        id: "1",
+        filePath: "testPath",
+        validationResult: [],
+      };
+
+      const res = pluginManifestUtils.logValidationErrors(validationRes, Platform.VSCode);
+      chai.assert.isEmpty(res);
+    });
+    it("log if VSC", () => {
+      const validationRes: PluginManifestValidationResult = {
+        id: "1",
+        filePath: "testPath",
+        validationResult: ["error1", "error2"],
+      };
+
+      const res = pluginManifestUtils.logValidationErrors(validationRes, Platform.VSCode) as string;
+
+      chai.assert.isTrue(res.includes("error1"));
+      chai.assert.isTrue(res.includes("error2"));
+    });
+
+    it("log if CLI", () => {
+      const validationRes: PluginManifestValidationResult = {
+        id: "1",
+        filePath: "testPath",
+        validationResult: ["error1", "error2"],
+      };
+
+      const res = pluginManifestUtils.logValidationErrors(validationRes, Platform.CLI) as Array<{
+        content: string;
+        color: Colors;
+      }>;
+
+      chai.assert.isTrue(res.find((item) => item.content.includes("error1")) !== undefined);
+      chai.assert.isTrue(res.find((item) => item.content.includes("error2")) !== undefined);
+    });
+  });
+
+  describe("getManifest", async () => {
+    const testPluginManifest = {
+      ...pluginManifest,
+      name_for_human: "name${{APP_NAME_SUFFIX}}",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: { type: "None" },
+          spec: {
+            url: "",
+          },
+        },
+      ],
+    };
+    it("get manifest success", async () => {
+      mockedEnvRestore = mockedEnv({
+        ["APP_NAME_SUFFIX"]: "test",
+      });
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(JSON.stringify(testPluginManifest) as any);
+
+      const res = await pluginManifestUtils.getManifest("testPath");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal("nametest", res.value.name_for_human);
+      }
+    });
+
+    it("get manifest error: file not found", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const res = await pluginManifestUtils.getManifest("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof FileNotFoundError);
+      }
+    });
+
+    it("get manifest error: unresolved env error", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(JSON.stringify(testPluginManifest) as any);
+
+      const res = await pluginManifestUtils.getManifest("testPath");
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof MissingEnvironmentVariablesError);
+      }
+    });
+  });
+
+  describe("validateAgainstSchema", async () => {
+    it("validate success", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
+      sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
+
+      const res = await pluginManifestUtils.validateAgainstSchema(
+        { id: "1", file: "file" },
+        "testPath"
+      );
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.deepEqual(res.value, {
+          id: "1",
+          filePath: "testPath",
+          validationResult: [],
+        });
+      }
+    });
+
+    it("validate action error", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
+      sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
+      sandbox
+        .stub(pluginManifestUtils, "validateAgainstSchema")
+        .resolves(err(new SystemError("error", "error", "error", "error")));
+
+      const res = await pluginManifestUtils.validateAgainstSchema(
+        { id: "1", file: "file" },
+        "testPath"
+      );
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal("error", res.error.name);
+      }
+    });
+
+    it("validate schema error", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
+      sandbox.stub(ManifestUtil, "validateManifest").throws("error");
+
+      const res = await pluginManifestUtils.validateAgainstSchema(
+        { id: "1", file: "file" },
+        "testPath"
+      );
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(AppStudioError.ValidationFailedError.name, res.error.name);
+      }
+    });
+
+    it("error: cannot get manifest", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+
+      const res = await pluginManifestUtils.validateAgainstSchema(
+        { id: "1", file: "file" },
+        "testPath"
+      );
+      chai.assert.isTrue(res.isErr());
+    });
   });
 });

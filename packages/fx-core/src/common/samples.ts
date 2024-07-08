@@ -2,22 +2,27 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-
 import { hooks } from "@feathersjs/hooks";
-
-import { SampleUrlInfo, sendRequestWithTimeout } from "../component/generator/utils";
-import { ErrorContextMW } from "../core/globalVars";
+import { ErrorContextMW } from "./globalVars";
 import { AccessGithubError } from "../error/common";
-import { FeatureFlagName } from "./constants";
+import { FeatureFlagName } from "./featureFlags";
+import { sendRequestWithTimeout } from "./requestUtils";
 
 const packageJson = require("../../package.json");
 
 const SampleConfigOwner = "OfficeDev";
 const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
-export const SampleConfigTag = "v2.4.0";
+export const SampleConfigTag = "v2.5.0";
 // prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "main";
+
+export type SampleUrlInfo = {
+  owner: string;
+  repository: string;
+  ref: string;
+  dir: string;
+};
 
 export interface SampleConfig {
   id: string;

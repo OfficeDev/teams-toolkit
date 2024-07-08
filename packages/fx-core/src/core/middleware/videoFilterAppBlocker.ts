@@ -3,9 +3,9 @@
 "use strict";
 
 import { NextFunction } from "@feathersjs/hooks";
-import { Inputs, err, Func } from "@microsoft/teamsfx-api";
-import { isVideoFilterProject } from "../../common/tools";
-import { VideoFilterAppRemoteNotSupportedError } from "../error";
+import { Func, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
+import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
+import { VideoFilterAppRemoteNotSupportedError, assembleError } from "../../error/common";
 import { CoreHookContext } from "../types";
 
 const userTasksToBlock: Func[] = [
@@ -25,7 +25,21 @@ const userTasksToBlock: Func[] = [
     method: "validateManifest",
   },
 ];
-
+export async function isVideoFilterProject(projectPath: string): Promise<Result<boolean, FxError>> {
+  let manifestResult;
+  try {
+    manifestResult = await manifestUtils.readAppManifest(projectPath);
+  } catch (e) {
+    return err(assembleError(e));
+  }
+  if (manifestResult.isErr()) {
+    return err(manifestResult.error);
+  }
+  const manifest = manifestResult.value;
+  return ok(
+    (manifest.meetingExtensionDefinition as any)?.videoFiltersConfigurationUrl !== undefined
+  );
+}
 async function shouldBlockExecution(ctx: CoreHookContext): Promise<boolean> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {

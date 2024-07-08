@@ -11,14 +11,13 @@ import { ErrorType, ProjectType, ValidationStatus, WarningType } from "../src/in
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
-import { OpenAPIV3 } from "openapi-types";
+import { OpenAPI, OpenAPIV3 } from "openapi-types";
 import { SpecFilter } from "../src/specFilter";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
 import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { Validator } from "../src/validators/validator";
 import { SMEValidator } from "../src/validators/smeValidator";
 import { ValidatorFactory } from "../src/validators/validatorFactory";
 
@@ -613,6 +612,105 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return a valid result if one api contains circular reference", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "Pet Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        components: {
+          schemas: {
+            Circular: {
+              type: "object",
+              properties: {
+                item: {
+                  $ref: "#/components/schemas/Circular",
+                },
+              },
+            },
+            Pet: {
+              type: "object",
+              properties: {
+                item: {
+                  type: "string",
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "getPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              tags: ["pet"],
+              operationId: "postPet",
+              summary: "Post pet information from the store",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Circular",
+                    },
+                  },
+                },
+              },
+              responses: {
+                "200": {
+                  description: "postPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(spec as any, { projectType: ProjectType.Copilot });
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+    });
+
     it("should only create validator once if already created", async () => {
       const specPath = "path/to/spec";
       const spec = {
@@ -985,7 +1083,7 @@ describe("SpecParser", () => {
 
       const updateManifestWithAiPluginStub = sinon
         .stub(ManifestUpdater, "updateManifestWithAiPlugin")
-        .resolves([{}, {}] as any);
+        .resolves([{}, {}, []] as any);
 
       const filter = ["get /hello"];
 
@@ -1222,6 +1320,7 @@ describe("SpecParser", () => {
         paths: {
           "/hello": {
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -1297,6 +1396,7 @@ describe("SpecParser", () => {
           "/hello": {
             description: "additional description",
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -1943,13 +2043,17 @@ describe("SpecParser", () => {
               name: "api_key",
               in: "header",
             },
+            BearerAuth: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         paths: {
           "/pets": {
             get: {
               operationId: "getPetById",
-              security: [{ api_key: [] }],
+              security: [{ api_key: [], BearerAuth: [] }],
             },
           },
           "/user/{userId}": {
@@ -2003,28 +2107,43 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /pets",
-            server: "",
+            server: "https://server1",
             operationId: "getPetById",
+            auth: {
+              authScheme: {
+                type: "multipleAuth",
+              },
+              name: "api_key, BearerAuth",
+            },
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
           },
           {
             api: "GET /user/{userId}",
             server: "https://server1",
+
             operationId: "getUserById",
             isValid: true,
             reason: [],
           },
           {
             api: "POST /user/{userId}",
-            server: "",
+            auth: {
+              authScheme: {
+                in: "header",
+                name: "api_key",
+                type: "apiKey",
+              },
+              name: "api_key",
+            },
+            server: "https://server1",
             operationId: "createUser",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
           },
           {
             api: "POST /store/order",
-            server: "",
+            server: "https://server1",
             operationId: "placeOrder",
             reason: ["response-json-is-empty", "no-parameter"],
             isValid: false,
@@ -2486,6 +2605,152 @@ describe("SpecParser", () => {
       });
     });
 
+    it("should return correct auth information when auth is in the spec root", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            aad_auth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://authorize",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+            api_key1: {
+              type: "apiKey",
+              name: "api_key1",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        security: [
+          { api_key1: [], api_key2: [], aad_auth: ["write:pets"] },
+          { api_key2: [], api_key1: [], aad_auth: ["write:pets"] },
+          { api_key1: [] },
+          { api_key2: [] },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal({
+        APIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
+            operationId: "getUserById",
+            isValid: true,
+            reason: [],
+          },
+          {
+            api: "POST /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
+            operationId: "postUserById",
+            isValid: true,
+            reason: [],
+          },
+        ],
+        allAPICount: 2,
+        validAPICount: 2,
+      });
+    });
+
     it("should allow multiple parameters if allowMultipleParameters is true", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMultipleParameters: true });
@@ -2609,7 +2874,7 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /user/{userId}",
-            server: "",
+            server: "https://server1",
             operationId: "getUserUserId",
             isValid: false,
             reason: ["missing-operation-id"],
@@ -2762,7 +3027,12 @@ describe("SpecParser", () => {
       };
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .callsFake(async (api: string | OpenAPI.Document) => {
+          expect((api as OpenAPIV3.Document).servers![0].url == "https://server1");
+          return api as any;
+        });
 
       const result = await specParser.list();
 
@@ -2804,6 +3074,182 @@ describe("SpecParser", () => {
         expect(err.errorType).to.equal(ErrorType.GetSpecFailed);
         expect(err.message).to.equal("Error: parse error");
       }
+    });
+
+    it("should works fine when filter spec", async () => {
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      };
+      const specParser = new SpecParser(spec as any);
+
+      const filter = ["get /user/{userId}"];
+      const result = await specParser.getFilteredSpecs(filter);
+      expect(result[0]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
+      expect(result[1]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
     });
   });
 });

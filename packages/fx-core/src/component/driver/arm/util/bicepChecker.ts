@@ -6,9 +6,11 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
+  FxError,
   LogProvider,
   SystemError,
   TelemetryReporter,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import { cpUtils } from "../../../utils/depsChecker/cpUtils";
@@ -26,11 +28,12 @@ import {
 } from "../../../constants";
 
 import { performance } from "perf_hooks";
-import { sendErrorTelemetryThenReturnError } from "../../../utils";
 import { DriverContext } from "../../interface/commonArgs";
 import { InstallSoftwareError } from "../../../../error/common";
 import { DownloadBicepCliError } from "../../../../error/arm";
-import { isMacOS, isWindows } from "../../../../common/deps-checker/util/system";
+import { isMacOS, isWindows } from "../../../deps-checker/util/system";
+import { maskSecret } from "../../../../common/stringUtils";
+import { TelemetryProperty } from "../../../../common/telemetry";
 
 const BicepName = "Bicep";
 
@@ -297,7 +300,37 @@ function getCommonProps(): { [key: string]: string } {
   const properties: { [key: string]: string } = {};
   properties[TelemetryMeasurement.OSArch] = os.arch();
   properties[TelemetryMeasurement.OSRelease] = os.release();
-  properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
-  properties[SolutionTelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
+  properties[TelemetryProperty.Component] = SolutionTelemetryComponentName;
+  properties[TelemetryProperty.Success] = SolutionTelemetrySuccess.Yes;
   return properties;
+}
+
+function sendErrorTelemetryThenReturnError(
+  eventName: string,
+  error: FxError,
+  reporter?: TelemetryReporter,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number },
+  errorProps?: string[]
+): FxError {
+  if (!properties) {
+    properties = {};
+  }
+
+  if (TelemetryProperty.Component in properties === false) {
+    properties[TelemetryProperty.Component] = SolutionTelemetryComponentName;
+  }
+
+  properties[TelemetryProperty.Success] = "no";
+  if (error instanceof UserError) {
+    properties[TelemetryProperty.ErrorType] = "user";
+  } else {
+    properties[TelemetryProperty.ErrorType] = "system";
+  }
+
+  properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
+  properties[TelemetryProperty.ErrorMessage] = maskSecret(error.message);
+
+  reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+  return error;
 }

@@ -3,21 +3,18 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { ConstantString } from "./constants";
 import {
-  APIMap,
+  AdaptiveCardBody,
+  ArrayElement,
   AuthInfo,
+  AuthType,
   ErrorResult,
   ErrorType,
   ParseOptions,
-  ProjectType,
-  ValidateResult,
-  ValidationStatus,
-  WarningResult,
-  WarningType,
 } from "./interfaces";
 import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
+import { SpecParserError } from "./specParserError";
 
 export class Utils {
   static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
@@ -38,15 +35,15 @@ export class Utils {
     return Object.keys(bodyObject?.content || {}).length > 1;
   }
 
-  static isBearerTokenAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+  static isBearerTokenAuth(authScheme: AuthType): boolean {
     return authScheme.type === "http" && authScheme.scheme === "bearer";
   }
 
-  static isAPIKeyAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+  static isAPIKeyAuth(authScheme: AuthType): boolean {
     return authScheme.type === "apiKey";
   }
 
-  static isOAuthWithAuthCodeFlow(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+  static isOAuthWithAuthCodeFlow(authScheme: AuthType): boolean {
     return !!(
       authScheme.type === "oauth2" &&
       authScheme.flows &&
@@ -60,9 +57,10 @@ export class Utils {
   ): AuthInfo[][] {
     const result: AuthInfo[][] = [];
     const securitySchemas = spec.components?.securitySchemes;
-    if (securities && securitySchemas) {
-      for (let i = 0; i < securities.length; i++) {
-        const security = securities[i];
+    const securitiesArr = securities ?? spec.security;
+    if (securitiesArr && securitySchemas) {
+      for (let i = 0; i < securitiesArr.length; i++) {
+        const security = securitiesArr[i];
 
         const authArray: AuthInfo[] = [];
         for (const name in security) {
@@ -84,11 +82,40 @@ export class Utils {
     return result;
   }
 
+  static getAuthInfo(spec: OpenAPIV3.Document): AuthInfo | undefined {
+    let authInfo: AuthInfo | undefined = undefined;
+
+    for (const url in spec.paths) {
+      for (const method in spec.paths[url]) {
+        const operation = (spec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
+
+        const authArray = Utils.getAuthArray(operation.security, spec);
+
+        if (authArray && authArray.length > 0) {
+          const currentAuth = authArray[0][0];
+          if (!authInfo) {
+            authInfo = authArray[0][0];
+          } else if (authInfo.name !== currentAuth.name) {
+            throw new SpecParserError(
+              ConstantString.MultipleAuthNotSupported,
+              ErrorType.MultipleAuthNotSupported
+            );
+          }
+        }
+      }
+    }
+
+    return authInfo;
+  }
+
   static updateFirstLetter(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  static getResponseJson(operationObject: OpenAPIV3.OperationObject | undefined): {
+  static getResponseJson(
+    operationObject: OpenAPIV3.OperationObject | undefined,
+    allowMultipleMediaType = false
+  ): {
     json: OpenAPIV3.MediaTypeObject;
     multipleMediaType: boolean;
   } {
@@ -98,14 +125,21 @@ export class Utils {
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
 
-      if (responseObject?.content?.["application/json"]) {
-        multipleMediaType = false;
-        json = responseObject.content["application/json"];
-        if (Utils.containMultipleMediaTypes(responseObject)) {
-          multipleMediaType = true;
-          json = {};
-        } else {
-          break;
+      if (responseObject?.content) {
+        for (const contentType of Object.keys(responseObject.content)) {
+          // json media type can also be "application/json; charset=utf-8"
+          if (contentType.indexOf("application/json") >= 0) {
+            multipleMediaType = false;
+            json = responseObject.content[contentType];
+            if (Utils.containMultipleMediaTypes(responseObject)) {
+              multipleMediaType = true;
+              if (!allowMultipleMediaType) {
+                json = {};
+              }
+            } else {
+              return { json, multipleMediaType };
+            }
+          }
         }
       }
     }
@@ -429,5 +463,36 @@ export class Utils {
     const serverUrl = operationServer || methodServer || rootServer;
 
     return serverUrl;
+  }
+
+  static limitACBodyProperties(body: AdaptiveCardBody, maxCount: number): AdaptiveCardBody {
+    const result: AdaptiveCardBody = [];
+    let currentCount = 0;
+
+    for (const element of body) {
+      if (element.type === ConstantString.ContainerType) {
+        const items = this.limitACBodyProperties(
+          (element as ArrayElement).items,
+          maxCount - currentCount
+        );
+
+        result.push({
+          type: ConstantString.ContainerType,
+          $data: (element as ArrayElement).$data,
+          items: items,
+        });
+
+        currentCount += items.length;
+      } else {
+        result.push(element);
+        currentCount++;
+      }
+
+      if (currentCount >= maxCount) {
+        break;
+      }
+    }
+
+    return result;
   }
 }

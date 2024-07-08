@@ -23,10 +23,14 @@ class ChefBotTestCase extends CaseFactory {
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
   ): Promise<void> {
+    fs.mkdirSync(path.resolve(sampledebugContext.projectPath, "env"), {
+      recursive: true,
+    });
+
     const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      ".env.local.user"
+      ".env.local"
     );
     // create .env.local.user file
     fs.writeFileSync(envFile, "SECRET_OPENAI_KEY=yourapikey");
@@ -58,7 +62,7 @@ new ChefBotTestCase(
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
   {
-    repoPath: "./resource/js/samples",
+    repoPath: "./resource/js/samples/04.ai-apps",
     testRootFolder: path.resolve(os.homedir(), "resource"),
   }
 ).test();

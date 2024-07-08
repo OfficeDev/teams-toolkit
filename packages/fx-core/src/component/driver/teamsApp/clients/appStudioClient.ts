@@ -5,46 +5,43 @@
 /**
  * @author yuqizhou77 <86260893+yuqizhou77@users.noreply.github.com>
  */
+import { LogProvider, SystemError } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
-import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
-import { AppDefinition } from "../../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
-import { AppUser } from "../../../driver/teamsApp/interfaces/appdefinitions/appUser";
-import { AppStudioError } from ".././errors";
-import { IPublishingAppDenition } from "../interfaces/appdefinitions/IPublishingAppDefinition";
-import { AppStudioResultFactory } from ".././results";
-import {
-  Constants,
-  ErrorMessages,
-  APP_STUDIO_API_NAMES,
-  getAppStudioEndpoint,
-} from ".././constants";
-import { RetryHandler } from "../utils/utils";
-import { HelpLinks } from "../../../../common/constants";
+import { HelpLinks, getAppStudioEndpoint } from "../../../../common/constants";
+import { setErrorContext } from "../../../../common/globalVars";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
   Component,
-  sendTelemetryErrorEvent,
-  sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
 } from "../../../../common/telemetry";
-import { waitSeconds } from "../../../../common/tools";
-import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
-import { HttpStatusCode } from "../../../constant/commonConstant";
-import { manifestUtils } from "../utils/ManifestUtils";
-import { setErrorContext } from "../../../../core/globalVars";
+import { waitSeconds } from "../../../../common/utils";
+import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,
 } from "../../../../error/teamsApp";
+import { HttpStatusCode } from "../../../constant/commonConstant";
+import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
+import { AppDefinition } from "../../../driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { AppUser } from "../../../driver/teamsApp/interfaces/appdefinitions/appUser";
+import { APP_STUDIO_API_NAMES, Constants, ErrorMessages } from ".././constants";
+import { AppStudioError } from ".././errors";
+import { AppStudioResultFactory } from ".././results";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationUpdate,
 } from "../interfaces/ApiSecretRegistration";
-import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
+import { AsyncAppValidationDetailsResponse } from "../interfaces/AsyncAppValidationDetailsResponse";
 import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResponse";
 import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
-import { AsyncAppValidationDetailsResponse } from "../interfaces/AsyncAppValidationDetailsResponse";
+import { OauthConfigurationId } from "../interfaces/OauthConfigurationId";
+import { OauthRegistration } from "../interfaces/OauthRegistration";
+import { IPublishingAppDenition } from "../interfaces/appdefinitions/IPublishingAppDefinition";
+import { manifestUtils } from "../utils/ManifestUtils";
+import { RetryHandler } from "../utils/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -122,7 +119,7 @@ export namespace AppStudioClient {
         const error = AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message(),
-          HelpLinks.SwitchAccountOrSub
+          HelpLinks.SwitchTenant
         );
         throw error;
       }
@@ -635,7 +632,7 @@ export namespace AppStudioClient {
   export async function submitAppValidationRequest(
     teamsAppId: string,
     appStudioToken: string,
-    timeoutSeconds = 10
+    timeoutSeconds = 20
   ): Promise<AsyncAppValidationResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     requester.defaults.timeout = timeoutSeconds * 1000;
@@ -685,7 +682,7 @@ export namespace AppStudioClient {
   export async function getAppValidationById(
     appValidationId: string,
     appStudioToken: string,
-    timeoutSeconds = 10
+    timeoutSeconds = 20
   ): Promise<AsyncAppValidationResultsResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     requester.defaults.timeout = timeoutSeconds * 1000;
@@ -836,6 +833,55 @@ export namespace AppStudioClient {
       return response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
+      throw error;
+    }
+  }
+
+  export async function getOauthRegistrationById(
+    appStudioToken: string,
+    oauthRegistrationId: string
+  ): Promise<OauthRegistration> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/oAuthConfigurations/${oauthRegistrationId}`)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_OAUTH);
+      throw error;
+    }
+  }
+
+  export async function createOauthRegistration(
+    appStudioToken: string,
+    oauthRegistration: OauthRegistration
+  ): Promise<OauthConfigurationId> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/v1.0/oAuthConfigurations", oauthRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_OAUTH);
+      throw error;
+    }
+  }
+
+  export async function updateOauthRegistration(
+    appStudioToken: string,
+    oauthRegistration: OauthRegistration,
+    oauthRegistrationId: string
+  ): Promise<OauthRegistration> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.patch(`/api/v1.0/oAuthConfigurations/${oauthRegistrationId}`, oauthRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
       throw error;
     }
   }

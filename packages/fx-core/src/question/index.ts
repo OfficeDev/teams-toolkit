@@ -8,6 +8,7 @@ import {
   createSampleProjectQuestionNode,
 } from "./create";
 import {
+  addPluginQuestionNode,
   addWebPartQuestionNode,
   apiSpecApiKeyQuestion,
   copilotPluginAddAPIQuestionNode,
@@ -15,17 +16,15 @@ import {
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
   listCollaboratorQuestionNode,
+  oauthQuestion,
   previewWithTeamsAppManifestQuestionNode,
   selectTeamsAppManifestQuestionNode,
   validateTeamsAppQuestionNode,
 } from "./other";
-export { HubTypes, HubOptions } from "./other";
+export * from "./constants";
 export * from "./create";
-export * from "./questionNames";
-
 export * from "./inputs";
 export * from "./options";
-export * from "./constants";
 
 export class QuestionNodes {
   createProject(): IQTreeNode {
@@ -66,6 +65,12 @@ export class QuestionNodes {
   }
   apiKey(): IQTreeNode {
     return apiSpecApiKeyQuestion();
+  }
+  oauth(): IQTreeNode {
+    return oauthQuestion();
+  }
+  addPlugin(): IQTreeNode {
+    return addPluginQuestionNode();
   }
 }
 

@@ -43,6 +43,7 @@ function adjustOptions(options: CLICommandOption[]) {
       break;
     }
   }
+
   return options;
 }
 

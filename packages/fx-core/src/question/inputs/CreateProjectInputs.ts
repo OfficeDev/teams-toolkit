@@ -14,17 +14,10 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?:
-    | "bot-type"
-    | "tab-type"
-    | "me-type"
-    | "office-xml-addin-type"
-    | "office-addin-type"
-    | "outlook-addin-type";
-  /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
-  "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "office-addin-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
+    | "empty"
     | "bot"
     | "notification"
     | "command-bot"
@@ -45,22 +38,10 @@ export interface CreateProjectInputs extends Inputs {
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
+    | "basic-declarative-copilot"
+    | "declarative-copilot-with-plugin-from-scratch"
     | "json-taskpane"
-    | "office-content-addin"
-    | "word-taskpane"
-    | "word-sso"
-    | "word-react"
-    | "word-manifest"
-    | "excel-taskpane"
-    | "excel-sso"
-    | "excel-react"
-    | "excel-custom-functions-shared"
-    | "excel-custom-functions-js"
-    | "excel-manifest"
-    | "powerpoint-taskpane"
-    | "powerpoint-sso"
-    | "powerpoint-react"
-    | "powerpoint-manifest";
+    | "office-content-addin";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -80,18 +61,18 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
-  /** @description OpenAPI Description Document */
-  "openapi-spec-location"?: string;
-  /** @description Select Operation(s) Teams Can Interact with */
-  "api-operation"?: string[];
   /** @description Authentication Type */
-  "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
+  "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
   /** @description Chat With Your Data */
   "custom-copilot-rag"?:
     | "custom-copilot-rag-customize"
     | "custom-copilot-rag-azureAISearch"
     | "custom-copilot-rag-customApi"
     | "custom-copilot-rag-microsoft365";
+  /** @description OpenAPI Description Document */
+  "openapi-spec-location"?: string;
+  /** @description Select Operation(s) Teams Can Interact with */
+  "api-operation"?: string[];
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */

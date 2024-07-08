@@ -93,10 +93,12 @@ export enum ErrorType {
   RelativeServerUrlNotSupported = "relative-server-url-not-supported",
   NoSupportedApi = "no-supported-api",
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
+  AddedAPINotInOriginalSpec = "added-api-not-in-original-spec",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",
   SpecVersionNotSupported = "spec-version-not-supported",
+  CircularReferenceNotSupported = "circular-reference-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -159,17 +161,19 @@ export interface ImageElement {
   $when: string;
 }
 
+export type AdaptiveCardBody = Array<TextBlockElement | ImageElement | ArrayElement>;
+
 export interface ArrayElement {
   type: string;
   $data: string;
-  items: Array<TextBlockElement | ImageElement | ArrayElement>;
+  items: AdaptiveCardBody;
 }
 
 export interface AdaptiveCard {
   type: string;
   $schema: string;
   version: string;
-  body: Array<TextBlockElement | ImageElement | ArrayElement>;
+  body: AdaptiveCardBody;
 }
 
 export interface PreviewCardTemplate {
@@ -235,10 +239,30 @@ export interface ParseOptions {
   allowMethods?: string[];
 
   /**
+   * If true, the parser will allow conversation starters in plugin file. Only take effect in Copilot project
+   */
+  allowConversationStarters?: boolean;
+
+  /**
+   * If true, the parser will allow response semantics in plugin file. Only take effect in Copilot project
+   */
+  allowResponseSemantics?: boolean;
+
+  /**
+   * If true, the paser will allow confirmation in plugin file. Only take effect in Copilot project
+   */
+  allowConfirmation?: boolean;
+
+  /**
    * The type of project that the parser is being used for.
    * Project can be SME/Copilot/TeamsAi
    */
   projectType?: ProjectType;
+
+  /**
+   * If true, we will generate files of plugin for GPT (Declarative Extensions in a Copilot Extension). Otherwise, we will generate files of plugin for Copilot.
+   */
+  isGptPlugin?: boolean;
 }
 
 export enum ProjectType {
@@ -285,12 +309,20 @@ export interface ListAPIResult {
   APIs: ListAPIInfo[];
 }
 
+export type AuthType = OpenAPIV3.SecuritySchemeObject | { type: "multipleAuth" };
+
 export interface AuthInfo {
-  authScheme: OpenAPIV3.SecuritySchemeObject;
+  authScheme: AuthType;
   name: string;
 }
 
 export interface InvalidAPIInfo {
   api: string;
   reason: ErrorType[];
+}
+
+export interface InferredProperties {
+  title?: string;
+  subtitle?: string;
+  imageUrl?: string;
 }

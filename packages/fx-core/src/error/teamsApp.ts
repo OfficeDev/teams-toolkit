@@ -63,3 +63,14 @@ export class InvalidFileOutsideOfTheDirectotryError extends UserError {
     super(errorOptions);
   }
 }
+
+export class AppIdNotExist extends UserError {
+  constructor(appId: string, source?: string) {
+    super({
+      source: source || "core",
+      name: AppIdNotExist.name,
+      message: getDefaultString("error.core.appIdNotExist", appId),
+      displayMessage: getLocalizedString("error.core.appIdNotExist", appId),
+    });
+  }
+}

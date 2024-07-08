@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import { err, Inputs, ok, Platform, Stage, UserError, Void } from "@microsoft/teamsfx-api";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import {
+  DependencyStatus,
+  DepsManager,
+  NodeNotFoundError,
+  teamsDevPortalClient,
+  TestToolInstallOptions,
+} from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -10,12 +16,6 @@ import { Duplex } from "stream";
 import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
 import ServerConnection from "../src/serverConnection";
-import {
-  DependencyStatus,
-  DepsManager,
-  NodeNotFoundError,
-  TestToolInstallOptions,
-} from "@microsoft/teamsfx-core";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -416,7 +416,7 @@ describe("serverConnections", () => {
     const accountToken = {
       token: "fakeToken",
     };
-    sinon.stub(tools, "setRegion").callsFake(async () => {});
+    sinon.stub(teamsDevPortalClient, "setRegionEndpointByToken").callsFake(async () => {});
 
     const res = connection.setRegionRequest(accountToken, {} as CancellationToken);
     res.then((data) => {
@@ -437,17 +437,6 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     assert.isTrue(res.isErr());
-  });
-
-  it("loadOpenAIPluginManifestRequest succeed", async () => {
-    const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(ok({}));
-    sandbox.replace(connection["core"], "copilotPluginLoadOpenAIManifest", fake);
-    const res = await connection.loadOpenAIPluginManifestRequest(
-      {} as Inputs,
-      {} as CancellationToken
-    );
-    assert.isTrue(res.isOk());
   });
 
   it("copilotPluginListOperations fail", async () => {

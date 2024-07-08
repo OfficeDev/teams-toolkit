@@ -85,6 +85,7 @@ export enum TelemetryEvent {
   PreviewSideloadingStart = "preview-sideloading-start",
   PreviewPrereqsCheckM365Account = "preview-prereqs-check-m365-account",
   PreviewStartServices = "preview-start-services",
+  PreviewTeamsDesktopClient = "preview-teams-desktop-client",
 
   ConfigGet = "config-get",
   ConfigSet = "config-set",
@@ -117,6 +118,8 @@ export enum TelemetryEvent {
   M365LaunchInfo = "m365-launch-info",
 
   Doctor = "doctor",
+
+  AddCopilotPlugin = "add-copilot-plugin",
 }
 
 export enum TelemetryProperty {
@@ -131,7 +134,7 @@ export enum TelemetryProperty {
   Duration = "duration",
   ErrorType = "error-type",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
   SampleName = "sample-app-name",
   Capabilities = "capabilities",
   Resources = "resources",

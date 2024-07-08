@@ -1,40 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  DeployStepArgs,
-  AzureUploadConfig,
-  DeployArgs,
-  AxiosDeployQueryResult,
-  DeployResult,
-} from "../../../interface/buildAndDeployArgs";
-import { checkMissingArgs } from "../../../../utils/common";
-import { LogProvider } from "@microsoft/teamsfx-api";
-import { BaseDeployImpl } from "./baseDeployImpl";
-import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
-import { DeployConstant, DeployStatus } from "../../../../constant/deployConstant";
-import { default as axios } from "axios";
-import { waitSeconds } from "../../../../../common/tools";
-import { HttpStatusCode } from "../../../../constant/commonConstant";
-import {
-  getAzureAccountCredential,
-  parseAzureResourceId,
-} from "../../../../utils/azureResourceOperation";
-import { AzureResourceInfo } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
+import { hooks } from "@feathersjs/hooks";
+import { LogProvider } from "@microsoft/teamsfx-api";
+import { default as axios } from "axios";
 import * as fs from "fs-extra";
-import { PrerequisiteError } from "../../../../error/componentError";
-import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
+import { Base64 } from "js-base64";
+import path from "path";
 import { getDefaultString, getLocalizedString } from "../../../../../common/localizeUtils";
+import { waitSeconds } from "../../../../../common/utils";
+import { ErrorContextMW } from "../../../../../common/globalVars";
 import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
   GetPublishingCredentialsError,
 } from "../../../../../error";
-import { hooks } from "@feathersjs/hooks";
-import { ErrorContextMW } from "../../../../../core/globalVars";
-import path from "path";
+import { HttpStatusCode } from "../../../../constant/commonConstant";
+import { DeployConstant, DeployStatus } from "../../../../constant/deployConstant";
+import { PrerequisiteError } from "../../../../error/componentError";
+import {
+  getAzureAccountCredential,
+  parseAzureResourceId,
+} from "../../../../utils/azureResourceOperation";
+import { wrapAzureOperation } from "../../../../utils/azureSdkErrorHandler";
+import { checkMissingArgs } from "../../../../utils/common";
+import {
+  AxiosDeployQueryResult,
+  AzureUploadConfig,
+  DeployArgs,
+  DeployResult,
+  DeployStepArgs,
+} from "../../../interface/buildAndDeployArgs";
+import { AzureResourceInfo } from "../../../interface/commonArgs";
+import { BaseDeployImpl } from "./baseDeployImpl";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;

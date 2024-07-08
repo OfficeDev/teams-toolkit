@@ -21,7 +21,7 @@ import isUUID from "validator/lib/isUUID";
 import * as vscode from "vscode";
 import { environmentVariableRegex } from "./constants";
 import { commandIsRunning } from "./globalVariables";
-import { getSystemInputs } from "./handlers";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
 import * as _ from "lodash";
@@ -568,7 +568,7 @@ export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
       const manifestContent = fs.readFileSync(manifestFilePath, "utf-8");
       const manifest = JSON.parse(manifestContent);
       const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
-      if (!manifestProperties.isPlugin) {
+      if (!manifestProperties.capabilities.includes("plugin")) {
         return [];
       }
 

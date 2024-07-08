@@ -21,7 +21,6 @@ import {
   GraphApiCleanHelper,
   createResourceGroup,
 } from "../../utils/cleanHelper";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
@@ -70,18 +69,15 @@ export class MigrationTestContext extends TestContext {
   }
 
   public async createProjectCLI(V3: boolean): Promise<string> {
-    if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
-    } else {
-      process.env["TEAMSFX_V3"] = "false";
-    }
+    V3 ? CliHelper.setV3Enable() : CliHelper.setV2Enable();
     if (this.trigger) {
       await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
         this.lang,
-        `--bot-host-type-trigger ${this.trigger}`
+        `--bot-host-type-trigger ${this.trigger}`,
+        process.env
       );
     } else if (this.framework) {
       await CliHelper.createProjectWithCapabilityMigration(
@@ -89,14 +85,17 @@ export class MigrationTestContext extends TestContext {
         this.testRootFolder,
         this.testName,
         this.lang,
-        `--spfx-framework-type ${this.framework}`
+        `--spfx-framework-type ${this.framework}`,
+        process.env
       );
     } else {
       await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
-        this.lang
+        this.lang,
+        undefined,
+        process.env
       );
     }
     const projectPath = path.resolve(this.testRootFolder, this.appName);
@@ -133,30 +132,17 @@ export class MigrationTestContext extends TestContext {
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {
-    if (isV3Enabled()) {
-      const userDataFile = path.join(
-        TestFilePath.configurationFolder,
-        `.env.${env}`
-      );
-      const configFilePath = path.resolve(this.projectPath, userDataFile);
-      const context = dotenvUtil.deserialize(
-        await fs.readFile(configFilePath, { encoding: "utf8" })
-      );
-      const result = context.obj.TEAMS_APP_ID as string;
-      console.log(`TEAMS APP ID: ${result}`);
-      return result;
-    } else {
-      const userDataFile = path.join(".fx", "states", `state.${env}.json`);
-      const configFilePath = path.resolve(
-        this.testRootFolder,
-        this.appName,
-        userDataFile
-      );
-      const context = await fs.readJSON(configFilePath);
-      const result = context["fx-resource-appstudio"]["teamsAppId"] as string;
-      console.log(`fx-resource-appstudio.teamsAppId: ${result}`);
-      return result;
-    }
+    const userDataFile = path.join(
+      TestFilePath.configurationFolder,
+      `.env.${env}`
+    );
+    const configFilePath = path.resolve(this.projectPath, userDataFile);
+    const context = dotenvUtil.deserialize(
+      await fs.readFile(configFilePath, { encoding: "utf8" })
+    );
+    const result = context.obj.TEAMS_APP_ID as string;
+    console.log(`TEAMS APP ID: ${result}`);
+    return result;
   }
 
   public async getAadObjectId(): Promise<string> {

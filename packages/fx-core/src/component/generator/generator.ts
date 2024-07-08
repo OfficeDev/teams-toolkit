@@ -6,7 +6,6 @@ import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { convertToAlphanumericOnly } from "../../common/utils";
 import { BaseComponentInnerError } from "../error/componentError";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -35,12 +34,9 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import {
-  enableMETestToolByDefault,
-  enableTestToolByDefault,
-  isNewProjectTypeEnabled,
-} from "../../common/featureFlags";
+import { featureFlagManager, FeatureFlags } from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
+import { convertToAlphanumericOnly } from "../../common/stringUtils";
 
 export class Generator {
   public static getDefaultVariables(
@@ -48,7 +44,12 @@ export class Generator {
     safeProjectNameFromVS?: string,
     targetFramework?: string,
     placeProjectFileInSolutionDir?: boolean,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
+    authData?: {
+      authName: string;
+      openapiSpecPath: string;
+      registrationIdEnvName: string;
+      authType?: string;
+    },
     llmServiceData?: {
       llmService?: string;
       openAIKey?: string;
@@ -60,7 +61,7 @@ export class Generator {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
     const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
-      apiKeyAuthData?.registrationIdEnvName ?? ""
+      authData?.registrationIdEnvName ?? ""
     );
 
     return {
@@ -70,18 +71,26 @@ export class Generator {
       PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthName: authData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
-      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
-      enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
-      enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
+      ApiSpecPath: authData?.openapiSpecPath ?? "",
+      ApiKey: authData?.authType === "apiKey" ? "true" : "",
+      OAuth: authData?.authType === "oauth2" ? "true" : "",
+      enableTestToolByDefault: featureFlagManager.getBooleanValue(FeatureFlags.TestTool)
+        ? "true"
+        : "",
+      enableMETestToolByDefault: featureFlagManager.getBooleanValue(FeatureFlags.METestTool)
+        ? "true"
+        : "",
       useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",
       useAzureOpenAI: llmServiceData?.llmService === "llm-service-azure-openai" ? "true" : "",
       openAIKey: llmServiceData?.openAIKey ?? "",
       azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
       azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
       azureOpenAIDeploymentName: llmServiceData?.azureOpenAIDeploymentName ?? "",
-      isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
+      isNewProjectTypeEnabled: featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType)
+        ? "true"
+        : "",
       NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
       NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
     };
@@ -172,7 +181,7 @@ export class Generator {
     return ok(undefined);
   }
 
-  private static async generate(
+  public static async generate(
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {

@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { ErrorContextMW } from "../../../core/globalVars";
+import { ErrorContextMW } from "../../../common/globalVars";
 import {
   FileNotFoundError,
   InvalidActionInputError,
@@ -25,7 +25,8 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
-import { normalizePath } from "./utils/utils";
+import { getResolvedManifest, normalizePath } from "./utils/utils";
+import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -217,18 +218,32 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
+    const plugins = manifest.copilotExtensions?.plugins;
     // API plugin
-    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].file) {
-      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].file);
-      const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
+    if (plugins?.length && plugins[0].file) {
+      const addFilesRes = await this.addPlugin(zip, plugins[0].file, appDirectory, context);
+      if (addFilesRes.isErr()) {
+        return err(addFilesRes.error);
+      }
+    }
+
+    const declarativeCopilots = manifest.copilotExtensions?.declarativeCopilots;
+
+    // Copilot GPT
+    if (declarativeCopilots?.length && declarativeCopilots[0].file) {
+      const copilotGptManifestFile = path.resolve(appDirectory, declarativeCopilots[0].file);
+      const checkExistenceRes = await this.validateReferencedFile(
+        copilotGptManifestFile,
+        appDirectory
+      );
       if (checkExistenceRes.isErr()) {
         return err(checkExistenceRes.error);
       }
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.plugins[0].file,
-        pluginFile,
+        declarativeCopilots[0].file,
+        copilotGptManifestFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context
       );
@@ -236,14 +251,37 @@ export class CreateAppPackageDriver implements StepDriver {
         return err(addFileWithVariableRes.error);
       }
 
-      const addFilesRes = await this.addPluginRelatedFiles(
-        zip,
-        manifest.plugins[0].file,
-        appDirectory,
-        context
+      const getCopilotGptRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
+        copilotGptManifestFile
       );
-      if (addFilesRes.isErr()) {
-        return err(addFilesRes.error);
+
+      if (getCopilotGptRes.isOk()) {
+        if (getCopilotGptRes.value.actions) {
+          const pluginFiles = getCopilotGptRes.value.actions.map((action) => action.file);
+
+          for (const pluginFile of pluginFiles) {
+            const pluginFileAbsolutePath = path.resolve(
+              path.dirname(copilotGptManifestFile),
+              pluginFile
+            );
+
+            const pluginFileRelativePath = path.relative(appDirectory, pluginFileAbsolutePath);
+            const useForwardSlash = declarativeCopilots[0].file.concat(pluginFile).includes("/");
+
+            const addPluginRes = await this.addPlugin(
+              zip,
+              normalizePath(pluginFileRelativePath, useForwardSlash),
+              appDirectory,
+              context
+            );
+
+            if (addPluginRes.isErr()) {
+              return err(addPluginRes.error);
+            }
+          }
+        }
+      } else {
+        return err(getCopilotGptRes.error);
       }
     }
 
@@ -271,18 +309,7 @@ export class CreateAppPackageDriver implements StepDriver {
     telemetryKey: TelemetryPropertyKey
   ): Promise<Result<string, FxError>> {
     const content = await fs.readFile(filePath, "utf8");
-    const vars = getEnvironmentVariables(content);
-    ctx.addTelemetryProperties({
-      [telemetryKey]: vars.join(";"),
-    });
-    const result = expandEnvironmentVariable(content);
-    const notExpandedVars = getEnvironmentVariables(result);
-    if (notExpandedVars.length > 0) {
-      return err(
-        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), filePath)
-      );
-    }
-    return ok(result);
+    return getResolvedManifest(content, filePath, telemetryKey, ctx);
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {
@@ -331,6 +358,58 @@ export class CreateAppPackageDriver implements StepDriver {
     return ok(undefined);
   }
 
+  /**
+   * Add plugin file and plugin related files to zip.
+   * @param zip zip
+   * @param pluginRelativePath plugin file path relative to app package folder
+   * @param appDirectory app package path
+   * @param context context
+   * @returns result of adding plugin file and plugin related files
+   */
+  private async addPlugin(
+    zip: AdmZip,
+    pluginRelativePath: string,
+    appDirectory: string,
+    context: WrapDriverContext
+  ): Promise<Result<undefined, FxError>> {
+    const pluginFile = path.resolve(appDirectory, pluginRelativePath);
+    const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
+    if (checkExistenceRes.isErr()) {
+      return err(checkExistenceRes.error);
+    }
+
+    const addFileWithVariableRes = await this.addFileWithVariable(
+      zip,
+      pluginRelativePath,
+      pluginFile,
+      TelemetryPropertyKey.customizedAIPluginKeys,
+      context
+    );
+    if (addFileWithVariableRes.isErr()) {
+      return err(addFileWithVariableRes.error);
+    }
+
+    const addFilesRes = await this.addPluginRelatedFiles(
+      zip,
+      pluginRelativePath,
+      appDirectory,
+      context
+    );
+    if (addFilesRes.isErr()) {
+      return err(addFilesRes.error);
+    } else {
+      return ok(undefined);
+    }
+  }
+
+  /**
+   * Add plugin related files (OpenAPI spec) to zip.
+   * @param zip zip.
+   * @param pluginFile plugin file path relative to app package folder.
+   * @param appDirectory app package folder.
+   * @param context context.
+   * @returns results whether add files related to plugin is successful.
+   */
   private async addPluginRelatedFiles(
     zip: AdmZip,
     pluginFile: string,

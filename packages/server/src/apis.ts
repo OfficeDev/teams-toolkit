@@ -15,7 +15,6 @@ import {
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
-  OpenAIPluginManifest,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -170,11 +169,7 @@ export interface IServerConnection {
   copilotPluginAddAPIRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<undefined, FxError>>;
-  loadOpenAIPluginManifestRequest: (
-    inputs: Inputs,
-    token: CancellationToken
-  ) => Promise<Result<OpenAIPluginManifest, FxError>>;
+  ) => Promise<Result<string, FxError>>;
   listOpenAPISpecOperationsRequest: (
     inputs: Inputs,
     token: CancellationToken

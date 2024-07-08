@@ -40,7 +40,7 @@ jobs:
         if: ${{ always() }}
         id: template-email
         run: |
-          emails="yiqingzhao@microsoft.com"
+          emails="teamsfxdigest@microsoft.com"
           subject="Templates Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
           body=${{steps.getUpdatedTemplatesDependencies.outputs.result}}
 
@@ -62,7 +62,7 @@ jobs:
         if: ${{ always() }}
         id: sdk-email
         run: |
-          emails="yiqingzhao@microsoft.com"
+          emails="teamsfxdigest@microsoft.com"
           subject="SDK Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
           body=${{steps.getUpdatedSDKDependencies.outputs.result}}
 

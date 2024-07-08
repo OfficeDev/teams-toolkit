@@ -13,9 +13,7 @@
     <ProjectCapability Include="TeamsFx" />
     <ProjectCapability Include="APIME" />
   </ItemGroup>
-{{/isNewProjectTypeEnabled}}
 
-{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <None Remove="build/**/*" />
     <Content Remove="build/**/*" />

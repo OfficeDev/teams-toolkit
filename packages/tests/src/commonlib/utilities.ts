@@ -275,3 +275,31 @@ export async function getExpectedBotClientSecret(
   }
   return botClientSecret;
 }
+
+export async function getContainerAppProperties(
+  subscriptionId: string,
+  rg: string,
+  containerAppName: string,
+  token: string
+) {
+  const baseUrlAppSettings = (
+    subscriptionId: string,
+    rg: string,
+    containerAppName: string
+  ) =>
+    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.App/containerApps/${containerAppName}?api-version=2023-05-01`;
+
+  try {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    const planResponse = await runWithRetry(() =>
+      axios.get(baseUrlAppSettings(subscriptionId, rg, containerAppName))
+    );
+    if (planResponse && planResponse.data && planResponse.data.properties) {
+      return planResponse.data.properties;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return undefined;
+}

@@ -2,16 +2,16 @@
 // Licensed under the MIT license.
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
-import { WrapDriverContext } from "../util/wrapUtil";
+import { performance } from "perf_hooks";
+import { maskSecretValues } from "../../../common/stringUtils";
+import { TelemetryProperty } from "../../../common/telemetry";
+import { TelemetryConstant } from "../../constant/commonConstant";
 import {
   TeamsFxTelemetryConfig,
   TeamsFxTelemetryReporter,
 } from "../../utils/teamsFxTelemetryReporter";
-import { TelemetryConstant } from "../../constant/commonConstant";
-import { performance } from "perf_hooks";
-import { TelemetryConstants } from "../../constants";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { isExecutionResult } from "./addStartAndEndTelemetry";
-import { maskSecretValues } from "../../utils/envUtil";
 
 /**
  * A special telemetry middleware for SWA deployment.
@@ -43,7 +43,7 @@ export function addSWADeployTelemetry(eventName: string): Middleware {
     const telemetryConfig: TeamsFxTelemetryConfig = {
       eventName: eventName,
       properties: { command: command, ...driverContext.telemetryProperties },
-      measurements: { [TelemetryConstants.properties.timeCost]: timeCost },
+      measurements: { [TelemetryProperty.TimeCost]: timeCost },
     };
 
     if (result.isOk()) {

@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.1.0
+version: v1.5
 
 environmentFolderPath: ./env
 
@@ -16,6 +16,34 @@ provision:
     # the specified environment variable(s).
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
+
+{{#ApiKey}}
+  # Register API KEY
+  - uses: apiKey/register
+    with:
+      # Name of the API Key
+      name: {{ApiSpecAuthName}}
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+    # Write the registration information of API Key into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
+{{/ApiKey}}
+{{#OAuth}}
+  - uses: oauth/register
+    with:
+      name: {{ApiSpecAuthName}}
+      flow: authorizationCode
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+    writeToEnvironmentFile:
+      configurationId: {{ApiSpecAuthRegistrationIdEnvName}}
+{{/OAuth}}
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

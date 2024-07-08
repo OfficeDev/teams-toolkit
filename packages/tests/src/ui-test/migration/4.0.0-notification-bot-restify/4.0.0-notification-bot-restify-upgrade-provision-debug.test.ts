@@ -21,13 +21,15 @@ import {
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import {
-  CLIVersionCheck,
   getBotSiteEndpoint,
   updateDeverloperInManifestFile,
 } from "../../../utils/commonUtils";
 import { updatePakcageJson } from "./helper";
 import path from "path";
-import { runDeploy, runProvision } from "../../remotedebug/remotedebugContext";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -62,7 +64,7 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.createProjectCLI(false);
 
       // update package.json in bot folder
-      await updatePakcageJson(
+      updatePakcageJson(
         path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
       );
 
@@ -90,8 +92,11 @@ describe("Migration Tests", function () {
       );
 
       // v3 provision
-      await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy(Timeout.botDeploy * 2);
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

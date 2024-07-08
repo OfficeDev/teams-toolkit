@@ -16,17 +16,20 @@ const mockedVSCode: Partial<VSCode> = {};
 const mockedVSCodeNamespaces: { [P in keyof VSCode]?: TypeMoq.IMock<VSCode[P]> } = {};
 const originalLoad = Module._load;
 
+class MockClipboard {
+  private text = "";
+  public readText(): Promise<string> {
+    return Promise.resolve(this.text);
+  }
+  public async writeText(value: string): Promise<void> {
+    this.text = value;
+  }
+}
+
 export function initialize() {
-  generateMock("languages");
-  generateMock("env");
   generateMock("debug");
   generateMock("scm");
   generateNotebookMocks();
-
-  // Use mock clipboard fo testing purposes.
-  const clipboard = new MockClipboard();
-  mockedVSCodeNamespaces.env?.setup((e) => e.clipboard).returns(() => clipboard);
-  mockedVSCodeNamespaces.env?.setup((e) => e.appName).returns(() => "Insider");
 
   // When upgrading to npm 9-10, this might have to change, as we could have explicit imports (named imports).
   Module._load = function (request: any, _parent: any) {
@@ -103,6 +106,10 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
 (mockedVSCode as any).CancellationError = vscodeMocks.vscMockExtHostedTypes.CancellationError;
 (mockedVSCode as any).LSPCancellationError = vscodeMocks.vscMockExtHostedTypes.LSPCancellationError;
 mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
+mockedVSCode.LanguageModelChatMessage = vscodeMocks.chat.LanguageModelChatMessage;
+mockedVSCode.LanguageModelChatMessageRole = vscodeMocks.chat.LanguageModelChatMessageRole;
+mockedVSCode.TextDocumentSaveReason = vscodeMocks.TextDocumentSaveReason;
+(mockedVSCode as any).version = "test";
 
 // Setup window APIs
 (mockedVSCode as any).window = {
@@ -120,6 +127,7 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
     return await task({ report: () => {} }, new vscodeMocks.CancellationToken());
   },
   createQuickPick: () => {},
+  showQuickPick: () => {},
   showOpenDialog: () => {},
   showTextDocument: () => {},
   createTerminal: () => {},
@@ -127,8 +135,50 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
 (mockedVSCode as any).workspace = {
   workspaceFolders: undefined,
   openTextDocument: () => {},
-  createFileSystemWatcher: (globPattern: vscode.GlobPattern) => {},
+  createFileSystemWatcher: (globPattern: vscode.GlobPattern) => {
+    return {
+      ignoreCreateEvents: false,
+      ignoreChangeEvents: false,
+      ignoreDeleteEvents: false,
+      onDidCreate: () => {
+        return new Disposable(() => {
+          return;
+        });
+      },
+      onDidChange: () => {
+        return new Disposable(() => {
+          return;
+        });
+      },
+      onDidDelete: () => {
+        return new Disposable(() => {
+          return;
+        });
+      },
+      dispose: () => {},
+    };
+  },
   getConfiguration: () => {},
+  onDidCreateFiles: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
+  onDidDeleteFiles: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
+  onDidRenameFiles: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
+  onDidSaveTextDocument: () => {
+    return new Disposable(() => {
+      return;
+    });
+  },
 };
 
 // Setup extensions APIs
@@ -142,6 +192,12 @@ mockedVSCode.extensions = {
     });
   },
   all: [],
+};
+
+(mockedVSCode as any).languages = {
+  createDiagnosticCollection: () => {},
+  registerCodeLensProvider: () => {},
+  registerHoverProvider: () => {},
 };
 
 // Setup commands APIs
@@ -173,6 +229,19 @@ mockedVSCode.commands = {
   },
 };
 
+// Setup chat APIs
+(mockedVSCode as any).lm = {
+  selectChatModels: () => {},
+  languageModels: [],
+  onDidChangeLanguageModels: undefined as any,
+};
+
+(mockedVSCode as any).env = {
+  openExternal: () => {},
+  clipboard: new MockClipboard(),
+  appName: "Insider",
+};
+
 function generateNotebookMocks() {
   const mockedObj = TypeMoq.Mock.ofType<Record<string, unknown>>();
   (mockedVSCode as any).notebook = mockedObj.object;
@@ -183,14 +252,4 @@ function generateMock<K extends keyof VSCode>(name: K): void {
   const mockedObj = TypeMoq.Mock.ofType<VSCode[K]>();
   (mockedVSCode as any)[name] = mockedObj.object;
   mockedVSCodeNamespaces[name] = mockedObj as any;
-}
-
-class MockClipboard {
-  private text = "";
-  public readText(): Promise<string> {
-    return Promise.resolve(this.text);
-  }
-  public async writeText(value: string): Promise<void> {
-    this.text = value;
-  }
 }

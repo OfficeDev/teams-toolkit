@@ -3,7 +3,7 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { Inputs, err } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../common/globalVars";
 import { QuestionNodes, questionNodes } from "../../question";
 import { traverse } from "../../ui/visitor";
 
@@ -16,7 +16,14 @@ export function QuestionMW(key: keyof QuestionNodes, fromAction = false): Middle
     const node = questionNodes[key]();
     const askQuestionRes = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (askQuestionRes.isErr()) {
-      ctx.result = err(askQuestionRes.error);
+      if (fromAction) {
+        ctx.result = {
+          result: err(askQuestionRes.error),
+          summaries: [],
+        };
+      } else {
+        ctx.result = err(askQuestionRes.error);
+      }
       return;
     }
     await next();

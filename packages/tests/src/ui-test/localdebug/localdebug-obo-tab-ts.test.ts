@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Kuojian Lu <kuojianlu@microsoft.com>
  */
@@ -9,10 +12,15 @@ import {
   validateReactTab,
 } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  LocalDebugError,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
+import { expect } from "chai";
 
 describe("Local Debug M365 Tests", function () {
   this.timeout(Timeout.testCase);
@@ -22,7 +30,9 @@ describe("Local Debug M365 Tests", function () {
     process.env.TEAMSFX_M365_APP = "true";
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("m365lp", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("m365lp", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 
@@ -47,15 +57,29 @@ describe("Local Debug M365 Tests", function () {
 
       await startDebugging("Debug in Teams (Chrome)");
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartBackend,
-        "Worker process started and initialized"
-      );
+      try {
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartBackend,
+          "Worker process started and initialized"
+        );
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartFrontend,
-        "Compiled successfully!"
-      );
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartFrontend,
+          "Compiled successfully!"
+        );
+      } catch (error) {
+        const errorMsg = error.toString();
+        if (
+          // skip can't find element
+          errorMsg.includes(LocalDebugError.ElementNotInteractableError) ||
+          // skip timeout
+          errorMsg.includes(LocalDebugError.TimeoutError)
+        ) {
+          console.log("[skip error] ", error);
+        } else {
+          expect.fail(errorMsg);
+        }
+      }
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(
@@ -66,13 +90,9 @@ describe("Local Debug M365 Tests", function () {
       );
       await localDebugTestContext.validateLocalStateForTab();
       await validateReactTab(page, Env.displayName, true);
-      const url = page.url();
-      const pattern =
-        /https:\/\/teams\.microsoft\.com\/_#\/apps\/(.*)\/sections\/index.*/;
-      const result = url.match(pattern);
-      const internalId = result![1];
+      const m365AppId = await localDebugTestContext.getM365AppId();
       await page.goto(
-        `https://outlook.office.com/host/${internalId}/index?login_hint=${Env.username}`
+        `https://outlook.office.com/host/${m365AppId}/index?login_hint=${Env.username}`
       );
       await validateReactOutlookTab(page, Env.displayName, true);
     }

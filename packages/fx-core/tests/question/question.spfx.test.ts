@@ -1,11 +1,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import {
-  SPFxPackageSelectQuestion,
-  SPFxVersionOptionIds,
-  SPFxWebpartNameQuestion,
-} from "../../src/question/create";
+import { SPFxPackageSelectQuestion, SPFxWebpartNameQuestion } from "../../src/question/create";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import {
   FuncValidation,
@@ -21,6 +17,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { Utils } from "../../src/component/generator/spfx/utils/utils";
 import { getValidationFunction } from "../../src/ui/validationUtils";
+import { SPFxVersionOptionIds } from "../../src";
 describe("SPFx question-helpers", () => {
   describe("SPFxWebpartNameQuestion", () => {
     let mockedEnvRestore: RestoreFn;

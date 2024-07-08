@@ -18,15 +18,6 @@ export function ScaffoldError(error: Error): UserError | SystemError {
   }
 }
 
-export function NpmInstallError(error: Error): SystemError {
-  return new SystemError(
-    Constants.PLUGIN_NAME,
-    "NpmInstallFailed",
-    getDefaultString("plugins.spfx.error.npmInstallFailed", error.message),
-    getLocalizedString("plugins.spfx.error.npmInstallFailed", error.message)
-  );
-}
-
 export function DependencyValidateError(dependency: string): SystemError {
   return new SystemError(
     Constants.PLUGIN_NAME,

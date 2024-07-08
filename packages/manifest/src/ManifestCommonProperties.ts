@@ -3,7 +3,7 @@
 
 export interface ManifestCommonProperties {
   /**
-   * Capabilities, e.g. "staticTab" | "configurableTab" | "MessageExtension" | "WebApplicationInfo"
+   * Capabilities, e.g. "staticTab" | "configurableTab" | "MessageExtension" | "WebApplicationInfo" | "plugin" | "copilotGpt"
    */
   capabilities: string[];
   /**
@@ -27,7 +27,7 @@ export interface ManifestCommonProperties {
    */
   isSPFx: boolean;
   /**
-   * Whether it's an API plugin
+   * Whether it's an API ME with AAD auth
    */
-  isPlugin: boolean;
+  isApiMeAAD: boolean;
 }

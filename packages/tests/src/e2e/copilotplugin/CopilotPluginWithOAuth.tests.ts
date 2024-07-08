@@ -14,6 +14,7 @@ env["API_COPILOT_PLUGIN"] = "true";
 env["DEVELOP_COPILOT_PLUGIN"] = "true";
 
 const options = {
+  skipValidate: true,
   skipErrorMessage: "No elements found in the manifest",
 };
 

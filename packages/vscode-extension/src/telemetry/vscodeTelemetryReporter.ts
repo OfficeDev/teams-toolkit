@@ -7,10 +7,14 @@ import * as path from "path";
 import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { anonymizeFilePaths } from "../utils/fileSystemUtils";
-import { isFeatureFlagEnabled, FeatureFlags, getAllFeatureFlags } from "../featureFlags";
 import { getPackageVersion } from "../utils/telemetryUtils";
 import { TelemetryProperty } from "./extTelemetryEvents";
-import { Correlator, getProjectMetadata } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  featureFlagManager,
+  FeatureFlags,
+  getProjectMetadata,
+} from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import { workspaceUri } from "../globalVariables";
 
@@ -37,7 +41,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     super(async () => await this.reporter.dispose());
     this.reporter = new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
-    this.testFeatureFlag = isFeatureFlagEnabled(FeatureFlags.TelemetryTest);
+    this.testFeatureFlag = featureFlagManager.getBooleanValue(FeatureFlags.TelemetryTest);
     if (this.testFeatureFlag) {
       const logFile = path.join(os.homedir(), `.${ConfigFolderName}`, TelemetryTestLoggerFile);
       configure({
@@ -92,7 +96,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    const featureFlags = getAllFeatureFlags();
+    const featureFlags = featureFlagManager.listEnabled();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
     if (TelemetryProperty.ErrorMessage in properties) {
@@ -131,7 +135,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     }
 
-    const featureFlags = getAllFeatureFlags();
+    const featureFlags = featureFlagManager.listEnabled();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
     if (this.testFeatureFlag) {
@@ -155,7 +159,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    const featureFlags = getAllFeatureFlags();
+    const featureFlags = featureFlagManager.listEnabled();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
 
     if (this.testFeatureFlag) {

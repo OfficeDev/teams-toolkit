@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FeatureFlagName } from "./constants";
 
 // Determine whether feature flag is enabled based on environment variable setting
 export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
@@ -11,61 +10,24 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
     return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// Notes for Office Addin Feature flags:
-// Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false
-//   1.1 project-type option: `outlook-addin-type`
-//   1.2 addin-host: not show but use `outlook` internally
-//   1.3 capabilities options: [`json-taskpane`, `outlook-addin-import`]
-//   1.4 programming-language options: [`typescript`] (skip in UI)
-//   1.5 office-addin-framework-type: not show question but use `default_old` internally
-//   1.6 generator class: OfficeAddinGenerator
-//   1.7 template link: config.json.json-taskpane.default_old.typescript
-// Case 2: TEAMSFX_OFFICE_ADDIN = false AND TEAMSFX_OFFICE_XML_ADDIN = true
-//   2.1 project-type option: `office-xml-addin-type`
-//   2.2 addin-host options: [`outlook`, `word`, `excel`, `powerpoint`]
-//   2.3 capabilities options:
-//     if (addin-host == `outlook`) then [`json-taskpane`, `outlook-addin-import`]
-//     else if (addin-host == `word`) then [`word-taskpane`, `word-xxx`, ...]
-//     else if (addin-host == `excel`) then [`excel-taskpane`, `excel-xxx`, ...]
-//     else if (addin-host === `powerpoint`) then [`powerpoint-taskpane`, `powerpoint-xxx`, ...]
-//   2.4 programming-language options:
-//     if (addin-host == `outlook`) then [`typescript`] (skip in UI)
-//     else two options: [`typescript`, `javascript`]
-//   2.5 office-addin-framework-type options:
-//      if (word excel and powerpoint) use `default` internally
-//      else if (outlook) use `default_old` internally
-//   2.6 generator class:
-//     if (addin-host == `outlook`) then OfficeAddinGenerator
-//     else OfficeXMLAddinGenerator
-//   2.7 template link:
-//     if (addin-host == `outlook`) config.json.json-taskpane.default.[programming-language]
-//     else config[addin-host].[capabilities].default.[programming-language]
-// Case 3: TEAMSFX_OFFICE_ADDIN = true AND TEAMSFX_OFFICE_XML_ADDIN = true
-//   3.1 project-type option: `office-addin-type`
-//   3.2 addin-host: not show but will use `wxpo` internally
-//   3.3 capabilities options: [`json-taskpane`, `office-addin-import`, `office-content-addin`]
-//   3.4 programming-language options: [`typescript`, `javascript`]
-//   3.5 office-addin-framework-type options: [`default`, `react`]
-//     if (capabilities == `json-taskpane`) then [`default`, `react`]
-//     else if (capabilities == `office-addin-import`) then [`default`] (skip in UI)
-//     else if (capabilities == `office-content-addin`) then [`default`] (skip in UI)
-//   3.6 generator class: OfficeAddinGenerator
-//   3.7 template link: config.json.[capabilities].[office-addin-framework-type].[programming-language]
-// case 4: TEAMSFX_OFFICE_ADDIN = true AND TEAMSFX_OFFICE_XML_ADDIN = fasle
-//   4.1 project-type option: `office-addin-type`
-//   4.2 addin-host: not show but will use `wxpo` internally
-//   4.3 capabilities options: [`json-taskpane`, `office-addin-import`]
-//   4.4 programming-language options: [`typescript`, `javascript`]
-//   4.5 office-addin-framework-type options: [`default`, `react`]
-//     if (capabilities == `json-taskpane`) then [`default`, `react`]
-//     else if (capabilities == `office-addin-import`) then [`default`] (skip in UI)
-//     else if (capabilities == `office-content-addin`) then [`default`] (skip in UI)
-//   4.6 generator class: OfficeAddinGenerator
-//   4.7 template link: config.json.[capabilities].[office-addin-framework-type].[programming-language]
-///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+export class FeatureFlagName {
+  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
+  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
+  static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
+  static readonly TestTool = "TEAMSFX_TEST_TOOL";
+  static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
+  static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
+  static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
+  static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
+  static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
+  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
+  static readonly SMEOAuth = "SME_OAUTH";
+  static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
+  static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
+  static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
+}
 export interface FeatureFlag {
   name: string;
   defaultValue: string;
@@ -97,6 +59,14 @@ export class FeatureFlags {
     name: FeatureFlagName.ShowDiagnostics,
     defaultValue: "false",
   };
+  static readonly TelemetryTest = {
+    name: FeatureFlagName.TelemetryTest,
+    defaultValue: "false",
+  };
+  static readonly DevTunnelTest = {
+    name: FeatureFlagName.DevTunnelTest,
+    defaultValue: "false",
+  };
 }
 
 export class FeatureFlagManager {
@@ -106,11 +76,19 @@ export class FeatureFlagManager {
       featureFlag.defaultValue === "true" || featureFlag.defaultValue === "1"
     );
   }
+  setBooleanValue(featureFlag: FeatureFlag, value: boolean): void {
+    process.env[featureFlag.name] = value ? "true" : "false";
+  }
   getStringValue(featureFlag: FeatureFlag): string {
     return process.env[featureFlag.name] || featureFlag.defaultValue;
   }
   list(): FeatureFlag[] {
     return Object.values(FeatureFlags);
+  }
+  listEnabled(): string[] {
+    return this.list()
+      .filter((f) => isFeatureFlagEnabled(f.name))
+      .map((f) => f.name);
   }
 }
 

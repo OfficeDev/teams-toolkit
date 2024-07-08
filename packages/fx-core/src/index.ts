@@ -25,7 +25,12 @@ export {
   getAllowedAppMaps,
 } from "./common/constants";
 export { Correlator } from "./common/correlator";
-export { FeatureFlags, featureFlagManager, isFeatureFlagEnabled } from "./common/featureFlags";
+export {
+  FeatureFlags,
+  featureFlagManager,
+  isFeatureFlagEnabled,
+  FeatureFlagName,
+} from "./common/featureFlags";
 export { globalStateGet, globalStateUpdate } from "./common/globalState";
 export { getDefaultString, getLocalizedString } from "./common/localizeUtils";
 export * from "./common/permissionInterface";

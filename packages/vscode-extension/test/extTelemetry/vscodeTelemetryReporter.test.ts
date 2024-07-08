@@ -7,10 +7,10 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import { VSCodeTelemetryReporter } from "../../src/telemetry/vscodeTelemetryReporter";
-import { getAllFeatureFlags } from "../../src/featureFlags";
 import { MockTelemetryReporter } from "../mocks/mockTools";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
 
-const featureFlags = getAllFeatureFlags()?.join(";") ?? "";
+const featureFlags = featureFlagManager.listEnabled().join(";") ?? "";
 
 describe("vscodeTelemetryReporter", () => {
   let tester: VSCodeTelemetryReporter;

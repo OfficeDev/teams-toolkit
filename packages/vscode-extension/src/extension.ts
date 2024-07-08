@@ -15,6 +15,7 @@ import {
   AuthSvcScopes,
   FeatureFlags as CoreFeatureFlags,
   Correlator,
+  FeatureFlags,
   VersionState,
   featureFlagManager,
   teamsDevPortalClient,
@@ -62,7 +63,6 @@ import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { showError } from "./error/common";
 import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
-import { FeatureFlags } from "./featureFlags";
 import {
   diagnosticCollection,
   initializeGlobalVariables,
@@ -198,11 +198,11 @@ import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 
 export async function activate(context: vscode.ExtensionContext) {
-  process.env[FeatureFlags.ChatParticipant] = (
+  const value =
     IsChatParticipantEnabled &&
     semver.gte(vscode.version, "1.90.0-insider") &&
-    vscode.version.includes("insider")
-  ).toString();
+    vscode.version.includes("insider");
+  featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
   configMgr.registerConfigChangeCallback();
 

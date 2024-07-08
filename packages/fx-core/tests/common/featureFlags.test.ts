@@ -22,6 +22,12 @@ describe("FeatureFlagManager", () => {
     const stringRes = featureFlagManager.getStringValue(FeatureFlags.CLIDotNet);
     chai.assert.equal(stringRes, "true");
   });
+  it("setBooleanValue", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
+    featureFlagManager.setBooleanValue(FeatureFlags.CLIDotNet, true);
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
+    chai.assert.isTrue(booleanRes);
+  });
   it("getBooleanValue, getStringValue is false", async () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
     const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
@@ -32,5 +38,10 @@ describe("FeatureFlagManager", () => {
   it("list", async () => {
     const list = featureFlagManager.list();
     chai.assert.deepEqual(list, Object.values(FeatureFlags));
+  });
+  it("listEnabled", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "true", SME_OAUTH: "true" });
+    const list = featureFlagManager.listEnabled();
+    chai.assert.deepEqual(list, ["TEAMSFX_CLI_DOTNET", "SME_OAUTH"]);
   });
 });

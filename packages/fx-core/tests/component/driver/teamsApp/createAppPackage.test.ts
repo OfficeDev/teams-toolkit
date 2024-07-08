@@ -14,7 +14,7 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import { FileNotFoundError, JSONSyntaxError } from "../../../../src/error/common";
-import { FeatureFlagName } from "../../../../src/common/constants";
+import { FeatureFlagName } from "../../../../src/common/featureFlags";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, PluginManifestSchema, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";

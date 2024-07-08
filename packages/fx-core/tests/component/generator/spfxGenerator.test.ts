@@ -435,6 +435,40 @@ describe("SPFxGenerator", function () {
     }
   });
 
+  it("No valid web part manifest when import SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else {
+        return [];
+      }
+    });
+    sinon.stub(fs, "statSync").returns({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    sinon.stub(fs, "copy").resolves();
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).to.eq("FileNotFoundError");
+    }
+  });
+
   it("Copy existing SPFx solution failed when import SPFx solution", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

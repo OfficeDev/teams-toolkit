@@ -18,7 +18,8 @@ var outlookDesktopAppClientId = 'd3590ed6-52b3-4102-aeff-aad2292ab01c'
 var outlookWebAppClientId = '00000002-0000-0ff1-ce00-000000000000'
 var officeUwpPwaClientId = '0ec893e0-5785-4de6-99da-4ed124e5296c'
 var outlookOnlineAddInAppClientId = 'bc59ab01-8403-45c6-8796-ac3ef710b3e3'
-var allowedClientApplications = '"${teamsMobileOrDesktopAppClientId}","${teamsWebAppClientId}","${officeWebAppClientId1}","${officeWebAppClientId2}","${outlookDesktopAppClientId}","${outlookWebAppClientId}","${officeUwpPwaClientId}","${outlookOnlineAddInAppClientId}"'
+var outlookMobileAppClientId = '27922004-5251-4030-b22d-91ecd9a37ea4'
+var allowedClientApplications = '"${teamsMobileOrDesktopAppClientId}","${teamsWebAppClientId}","${officeWebAppClientId1}","${officeWebAppClientId2}","${outlookDesktopAppClientId}","${outlookWebAppClientId}","${officeUwpPwaClientId}","${outlookOnlineAddInAppClientId}","${outlookMobileAppClientId}"'
 
 // Azure Static Web Apps that hosts your static web site
 resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
@@ -126,6 +127,7 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
 
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output TAB_DOMAIN string = siteDomain
+output TAB_HOSTNAME string = siteDomain
 output TAB_ENDPOINT string = 'https://${siteDomain}'
 output API_FUNCTION_ENDPOINT string = apiEndpoint
 output AZURE_STATIC_WEB_APPS_RESOURCE_ID string = swa.id

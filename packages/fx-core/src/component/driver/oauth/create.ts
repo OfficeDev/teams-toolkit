@@ -2,31 +2,29 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { CreateOauthArgs } from "./interface/createOauthArgs";
-import { DriverContext } from "../interface/commonArgs";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
+import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes, GraphScopes } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
-import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
+import { QuestionNames } from "../../../question/constants";
+import { QuestionMW } from "../../middleware/questionMW";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
-import { CreateOauthOutputs, OutputKeys } from "./interface/createOauthOutputs";
-import { loadStateFromEnv } from "../util/utils";
-import { AppStudioScopes } from "../teamsApp/constants";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import {
+  OauthRegistration,
   OauthRegistrationAppType,
   OauthRegistrationTargetAudience,
-  OauthRegistration,
-  OauthRegistrationUserAccessType,
 } from "../teamsApp/interfaces/OauthRegistration";
+import { loadStateFromEnv } from "../util/utils";
 import { OauthNameTooLongError } from "./error/oauthNameTooLong";
-import { GraphScopes } from "../../../common/tools";
+import { CreateOauthArgs } from "./interface/createOauthArgs";
+import { CreateOauthOutputs, OutputKeys } from "./interface/createOauthOutputs";
+import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
 import { OauthInfo, getandValidateOauthInfoFromSpec } from "./utility/utility";
-import { QuestionMW } from "../../middleware/questionMW";
-import { QuestionNames } from "../../../question/questionNames";
-import { Service } from "typedi";
 
 const actionName = "oauth/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-register";
@@ -64,7 +62,10 @@ export class CreateOauthDriver implements StepDriver {
 
       if (state && state.configurationId) {
         try {
-          await AppStudioClient.getOauthRegistrationById(appStudioToken, state.configurationId);
+          await teamsDevPortalClient.getOauthRegistrationById(
+            appStudioToken,
+            state.configurationId
+          );
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.skipCreateOauth,
@@ -100,7 +101,7 @@ export class CreateOauthDriver implements StepDriver {
           authInfo
         );
 
-        const oauthRegistrationRes = await AppStudioClient.createOauthRegistration(
+        const oauthRegistrationRes = await teamsDevPortalClient.createOauthRegistration(
           appStudioToken,
           oauthRegistration
         );

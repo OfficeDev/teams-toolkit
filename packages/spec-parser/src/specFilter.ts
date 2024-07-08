@@ -8,6 +8,7 @@ import { SpecParserError } from "./specParserError";
 import { ErrorType, ParseOptions } from "./interfaces";
 import { ConstantString } from "./constants";
 import { ValidatorFactory } from "./validators/validatorFactory";
+import { SpecOptimizer } from "./specOptimizer";
 
 export class SpecFilter {
   static specFilter(
@@ -55,7 +56,7 @@ export class SpecFilter {
       }
 
       newSpec.paths = newPaths;
-      return newSpec;
+      return SpecOptimizer.optimize(newSpec);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.FilterSpecFailed);
     }

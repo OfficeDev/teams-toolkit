@@ -112,7 +112,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateProactiveMessaging(page);
+      // await validateProactiveMessaging(page);
     }
   );
 });

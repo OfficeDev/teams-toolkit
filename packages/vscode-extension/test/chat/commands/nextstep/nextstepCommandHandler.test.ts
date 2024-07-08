@@ -18,9 +18,13 @@ import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../../sr
 chai.use(chaiPromised);
 
 describe("chat nextstep handler", () => {
-  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe("nextstepCommandHandler()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });

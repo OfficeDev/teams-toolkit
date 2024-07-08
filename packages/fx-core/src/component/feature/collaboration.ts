@@ -13,15 +13,16 @@ import {
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../common/constants";
+import { ErrorContextMW } from "../../common/globalVars";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
-import { AppIdNotExist } from "../../core/error";
-import { ErrorContextMW } from "../../core/globalVars";
 import { HttpClientError, HttpServerError, assembleError } from "../../error/common";
+import { AppIdNotExist } from "../../error/teamsApp";
 import { AadAppClient } from "../driver/aad/utility/aadAppClient";
 import { permissionsKeys } from "../driver/aad/utility/constants";
 import { addStartAndEndTelemetry } from "../driver/middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../driver/teamsApp/clients/appStudioClient";
-import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { Constants } from "../driver/teamsApp/constants";
 import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
 
 const EventName = {
@@ -147,12 +148,7 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      await AppStudioClient.grantPermission(
-        teamsAppId,
-        appStudioToken as string,
-        userInfo,
-        ctx.logProvider
-      );
+      await teamsDevPortalClient.grantPermission(appStudioToken as string, teamsAppId, userInfo);
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
@@ -180,10 +176,9 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const userLists = await AppStudioClient.getUserList(
-        teamsAppId,
+      const userLists = await teamsDevPortalClient.getUserList(
         appStudioToken as string,
-        ctx.logProvider
+        teamsAppId
       );
       if (!userLists) {
         return ok([]);
@@ -222,11 +217,10 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const teamsAppRoles = await AppStudioClient.checkPermission(
-        teamsAppId,
+      const teamsAppRoles = await teamsDevPortalClient.checkPermission(
         appStudioToken as string,
-        userInfo.aadId,
-        ctx.logProvider
+        teamsAppId,
+        userInfo.aadId
       );
 
       const result: ResourcePermission[] = [

@@ -7,10 +7,10 @@ import { assert } from "chai";
 import "mocha";
 import mockFs from "mock-fs";
 import * as path from "path";
-import { VideoFilterAppRemoteNotSupportedError } from "../../../src/core/error";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { VideoFilterAppBlockerMW } from "../../../src/core/middleware/videoFilterAppBlocker";
 import { CoreHookContext } from "../../../src/core/types";
+import { VideoFilterAppRemoteNotSupportedError } from "../../../src/error/common";
 import { MockTools } from "../utils";
 
 describe("Middleware - VideoFilterAppBlockerMW", () => {

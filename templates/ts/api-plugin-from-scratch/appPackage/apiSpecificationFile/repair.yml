@@ -25,26 +25,30 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  properties:
-                    id:
-                      type: string
-                      description: The unique identifier of the repair
-                    title:
-                      type: string
-                      description: The short summary of the repair
-                    description:
-                      type: string
-                      description: The detailed description of the repair
-                    assignedTo:
-                      type: string
-                      description: The user who is responsible for the repair
-                    date:
-                      type: string
-                      format: date-time
-                      description: The date and time when the repair is scheduled or completed
-                    image:
-                      type: string
-                      format: uri
-                      description: The URL of the image of the item to be repaired or the repair process
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: The unique identifier of the repair
+                        title:
+                          type: string
+                          description: The short summary of the repair
+                        description:
+                          type: string
+                          description: The detailed description of the repair
+                        assignedTo:
+                          type: string
+                          description: The user who is responsible for the repair
+                        date:
+                          type: string
+                          format: date-time
+                          description: The date and time when the repair is scheduled or completed
+                        image:
+                          type: string
+                          format: uri
+                          description: The URL of the image of the item to be repaired or the repair process

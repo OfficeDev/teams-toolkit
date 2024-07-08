@@ -19,6 +19,7 @@ import {
   assembleError,
   FilePermissionError,
   InternalError,
+  InvalidActionInputError,
   matchDnsError,
   UnhandledError,
   UnhandledUserError,
@@ -176,6 +177,12 @@ describe("Errors", () => {
     const e2 = new InvalidYamlSchemaError(".");
     assert.isTrue(e1 instanceof InvalidYamlSchemaError);
     assert.isTrue(e2 instanceof InvalidYamlSchemaError);
+  });
+  it("InvalidActionInputError", async () => {
+    const e1 = new InvalidActionInputError(".", []);
+    const e2 = new InvalidActionInputError(".", [], "https://aka.ms/teamsfx-actions");
+    assert.isTrue(e1 instanceof InvalidActionInputError);
+    assert.isTrue(e2 instanceof InvalidActionInputError);
   });
 });
 

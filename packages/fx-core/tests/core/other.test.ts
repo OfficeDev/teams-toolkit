@@ -11,8 +11,8 @@ import os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
-import { execPowerShell, execShell } from "../../src/common/local/process";
-import { TaskDefinition } from "../../src/common/local/taskDefinition";
+import { execPowerShell, execShell } from "../../src/component/local/process";
+import { TaskDefinition } from "../../src/component/local/taskDefinition";
 import {
   isValidOfficeAddInProject,
   isValidProject,

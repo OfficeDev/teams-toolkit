@@ -70,7 +70,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("timenoti", appName, "TypeScript");
+      await createNewProject("timenoti", appName, { lang: "TypeScript" });
       validateFileExist(projectPath, "src/timerTrigger.ts");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);

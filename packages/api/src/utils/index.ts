@@ -7,7 +7,6 @@ import { CryptoProvider } from "./crypto";
 import { ExpServiceProvider } from "./exp";
 import { LogProvider } from "./log";
 import { TokenProvider } from "./login";
-import { PermissionRequestProvider } from "./permissionRequest";
 import { TelemetryReporter } from "./telemetry";
 import { TreeProvider } from "./tree";
 
@@ -16,7 +15,6 @@ export * from "./log";
 export * from "./telemetry";
 export * from "./tree";
 export * from "./crypto";
-export * from "./permissionRequest";
 export * from "./exp";
 
 export interface Tools {
@@ -26,6 +24,5 @@ export interface Tools {
   treeProvider?: TreeProvider;
   ui: UserInteraction;
   cryptoProvider?: CryptoProvider;
-  permissionRequest?: PermissionRequestProvider;
   expServiceProvider?: ExpServiceProvider;
 }

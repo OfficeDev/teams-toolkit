@@ -1,4 +1,5 @@
 {
+  "$schema": "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json",
   "schema_version": "v2.1",
   "namespace": "repairs",
   "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
@@ -10,7 +11,7 @@
       "description": "Returns a list of repairs with their details and images",
       "capabilities": {
         "response_semantics": {
-          "data_path": "$",
+          "data_path": "$.results",
           "properties": {
             "title": "$.title",
             "subtitle": "$.description",

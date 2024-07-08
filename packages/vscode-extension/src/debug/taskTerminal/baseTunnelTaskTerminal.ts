@@ -7,27 +7,32 @@
 import * as util from "util";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { assembleError, envUtil, TunnelType } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { LocalTelemetryReporter } from "@microsoft/teamsfx-core";
-import { DotenvOutput } from "@microsoft/teamsfx-core";
-import { pathUtils } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  DotenvOutput,
+  LocalTelemetryReporter,
+  TunnelType,
+  assembleError,
+  envUtil,
+  pathUtils,
+} from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../../error";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import * as globalVariables from "../../globalVariables";
-import { ProgressHandler } from "../../progressHandler";
+import { ProgressHandler } from "../progressHandler";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { getLocalDebugSession, Step } from "../commonUtils";
+import { getLocalDebugSession } from "../common/localDebugSession";
+import { Step } from "../common/step";
 import {
   baseTunnelDisplayMessages,
   RecommendedOperations,
   TunnelDisplayMessages,
-} from "../constants";
+} from "../common/debugConstants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";

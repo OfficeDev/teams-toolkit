@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as chai from "chai";
-import * as sinon from "sinon";
-import * as vscode from "vscode";
-import { v4 } from "uuid";
 import { ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
+import * as chai from "chai";
+import * as sinon from "sinon";
+import { v4 } from "uuid";
+import * as vscode from "vscode";
 import { environmentVariableRegex } from "../../src/constants";
-import * as handlers from "../../src/handlers";
+import * as globalVariables from "../../src/globalVariables";
+import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
 import { MockCore } from "../mocks/mockCore";
 
 describe("Manifest template hover - V3", async () => {
+  const sandbox = sinon.createSandbox();
   const text = `{
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
     "manifestVersion": "1.14",
@@ -38,17 +38,17 @@ describe("Manifest template hover - V3", async () => {
   } as any;
 
   beforeEach(() => {
-    sinon.stub(handlers, "core").value(new MockCore());
-    sinon.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
+    sandbox.stub(globalVariables, "core").value(new MockCore());
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
   });
 
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
     environmentVariableRegex.lastIndex = 0;
   });
 
   it("hover - match", async () => {
-    sinon.stub(envUtil, "readEnv").resolves(
+    sandbox.stub(envUtil, "readEnv").resolves(
       ok({
         ["TEAMS_APP_ID"]: v4(),
       })
@@ -66,7 +66,7 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover - local", async () => {
-    sinon.stub(envUtil, "readEnv").resolves(
+    sandbox.stub(envUtil, "readEnv").resolves(
       ok({
         ["TEAMS_APP_ID"]: v4(),
       })
@@ -101,7 +101,7 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover-undefined", async () => {
-    sinon.stub(envUtil, "readEnv").resolves(
+    sandbox.stub(envUtil, "readEnv").resolves(
       ok({
         ["TEAMS_APP_ID"]: v4(),
       })
@@ -116,7 +116,7 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover - no value", async () => {
-    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
 
     const hoverProvider = new ManifestTemplateHoverProvider();
     const position = new vscode.Position(5, 15);

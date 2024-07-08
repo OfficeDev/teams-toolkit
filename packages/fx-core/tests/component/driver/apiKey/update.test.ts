@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
+import { SpecParser } from "@microsoft/m365-spec-parser";
+import { ConfirmConfig, UserError, err, ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import "mocha";
 import { RestoreFn } from "mocked-env";
+import * as sinon from "sinon";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
+import { setTools } from "../../../../src/common/globalVars";
+import { UpdateApiKeyArgs } from "../../../../src/component/driver/apiKey/interface/updateApiKeyArgs";
+import { UpdateApiKeyDriver } from "../../../../src/component/driver/apiKey/update";
+import {
+  ApiSecretRegistrationAppType,
+  ApiSecretRegistrationTargetAudience,
+} from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { UpdateApiKeyDriver } from "../../../../src/component/driver/apiKey/update";
-import { setTools } from "../../../../src/core/globalVars";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import {
-  ApiSecretRegistrationAppType,
-  ApiSecretRegistrationTargetAudience,
-} from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
-import { SpecParser } from "@microsoft/m365-spec-parser";
-import { UpdateApiKeyArgs } from "../../../../src/component/driver/apiKey/interface/updateApiKeyArgs";
-import { ConfirmConfig, UserError, err, ok } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -55,14 +55,14 @@ describe("UpdateApiKeyDriver", () => {
   });
 
   it("happy path: update all fields", async () => {
-    sinon.stub(AppStudioClient, "updateApiKeyRegistration").resolves({
+    sinon.stub(teamsDevPortalClient, "updateApiKeyRegistration").resolves({
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test2"],
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
       targetAudience: ApiSecretRegistrationTargetAudience.HomeTenant,
       specificAppId: "mockedAppId",
     });
-    sinon.stub(AppStudioClient, "getApiKeyRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getApiKeyRegistrationById").resolves({
       id: "mockedRegistrationId",
       description: "mockedDescription",
       clientSecrets: [],
@@ -131,7 +131,7 @@ describe("UpdateApiKeyDriver", () => {
   });
 
   it("happy path: does not update when no changes", async () => {
-    sinon.stub(AppStudioClient, "getApiKeyRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getApiKeyRegistrationById").resolves({
       id: "test",
       description: "test",
       clientSecrets: [],
@@ -190,13 +190,13 @@ describe("UpdateApiKeyDriver", () => {
   });
 
   it("happy path: should not show confirm when only devtunnel url is different", async () => {
-    sinon.stub(AppStudioClient, "updateApiKeyRegistration").resolves({
+    sinon.stub(teamsDevPortalClient, "updateApiKeyRegistration").resolves({
       description: "test",
       targetUrlsShouldStartWith: ["https://test2.asse.devtunnels.ms"],
       applicableToApps: ApiSecretRegistrationAppType.AnyApp,
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
     });
-    sinon.stub(AppStudioClient, "getApiKeyRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getApiKeyRegistrationById").resolves({
       id: "test",
       description: "test",
       clientSecrets: [],
@@ -248,7 +248,7 @@ describe("UpdateApiKeyDriver", () => {
   });
 
   it("should throw error when user canel", async () => {
-    sinon.stub(AppStudioClient, "getApiKeyRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getApiKeyRegistrationById").resolves({
       id: "mockedRegistrationId",
       description: "mockedDescription",
       clientSecrets: [],

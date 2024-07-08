@@ -7,6 +7,7 @@ export enum TelemetryEvent {
   CreateAccount = "create-account",
 
   GetStarted = "quick-start",
+  WalkThroughBuildIntelligentApps = "walkthrough-build-intelligent-apps",
 
   Samples = "samples",
 
@@ -144,6 +145,7 @@ export enum TelemetryEvent {
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
   DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
+  LaunchDesktopClientTask = "launch-desktop-client",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -188,6 +190,9 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowPreivewNotification = "show-preview-notification",
+
+  ShowProvisionNotification = "show-provision-notification",
+  ClickProvision = "click-provision",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
@@ -286,7 +291,7 @@ export enum TelemetryProperty {
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
   ErrorStack = "error-stack",
   Errors = "errors",
   Hub = "hub",
@@ -383,6 +388,14 @@ export enum TelemetryProperty {
   CopilotChatParticipantId = "copilot-chat-participant-id",
   CopilotChatLocation = "copilot-chat-location",
   CopilotChatCompleteType = "copilot-chat-complete-type",
+  CopilotMatchResultType = "copilot-match-result-type",
+  CopilotChatBlockReason = "copilot-chat-block-reason",
+  CopilotChatRelatedSampleName = "copilot-chat-related-sample-name",
+  CopilotChatTimeToFirstToken = "copilot-chat-time-to-first-token",
+  CopilotChatRequestTokenPerSecond = "copilot-chat-request-token-per-second",
+  CopilotChatResponseTokenPerSecond = "copilot-chat-response-token-per-second",
+  CopilotChatRequestToken = "copilot-chat-request-token",
+  CopilotChatResponseToken = "copilot-chat-response-token",
 }
 
 export enum TelemetryMeasurements {

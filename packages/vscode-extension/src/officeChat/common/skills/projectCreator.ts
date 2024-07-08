@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ChatResponseStream, LanguageModelChatUserMessage, CancellationToken } from "vscode";
+import { ChatResponseStream, LanguageModelChatMessage, CancellationToken } from "vscode";
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
@@ -29,14 +29,16 @@ export class projectCreator implements ISkill {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const host = spec.appendix.host.toLowerCase();
     const createInputs = {
-      capabilities: spec.appendix.isCustomFunction ? "excel-cfshared" : `${host}-taskpane`,
+      capabilities: spec.appendix.isCustomFunction
+        ? "excel-custom-functions-shared"
+        : `${host}-taskpane`,
       "project-type": "office-xml-addin-type",
       "addin-host": host,
       "programming-language": "typescript",
@@ -50,7 +52,7 @@ export class projectCreator implements ISkill {
     const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
     response.button({
       command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-      arguments: [rootFolder],
+      arguments: [rootFolder, spec.appendix.telemetryData.requestId, "No Match Result Type"],
       title: sampleTitle,
     });
     return { result: ExecutionResultEnum.Success, spec: spec };

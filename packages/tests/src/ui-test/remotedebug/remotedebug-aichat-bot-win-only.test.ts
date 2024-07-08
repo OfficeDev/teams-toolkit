@@ -68,7 +68,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aichat", appName);
+      await createNewProject("aichat", appName, { aiType: "Azure OpenAI" });
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");

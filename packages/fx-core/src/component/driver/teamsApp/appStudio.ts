@@ -3,47 +3,48 @@
 import {
   AppPackageFolderName,
   BuildFolderName,
-  err,
+  Colors,
+  Context,
   FxError,
   InputsWithProjectPath,
+  LogProvider,
   M365TokenProvider,
-  ok,
+  ManifestUtil,
+  Platform,
   Result,
   TeamsAppManifest,
   UserError,
-  LogProvider,
-  Platform,
-  Colors,
-  ManifestUtil,
-  Context,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
-import * as path from "path";
 import _ from "lodash";
+import set from "lodash/set";
+import * as path from "path";
+import { basename, extname } from "path";
+import { Container } from "typedi";
 import * as util from "util";
 import isUUID from "validator/lib/isUUID";
-import { Container } from "typedi";
-import { AppStudioScopes } from "../../../common/tools";
-import { AppStudioClient } from "./clients/appStudioClient";
-import { AppStudioError } from "./errors";
-import { AppStudioResultFactory } from "./results";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { manifestUtils } from "./utils/ManifestUtils";
-import { Constants, supportedLanguageCodes } from "./constants";
-import { CreateAppPackageDriver } from "./createAppPackage";
-import { ConfigureTeamsAppDriver } from "./configure";
-import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
-import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
-import { DriverContext } from "../interface/commonArgs";
-import { envUtil } from "../../utils/envUtil";
-import { AppPackage } from "./interfaces/appdefinitions/appPackage";
-import { basename, extname } from "path";
-import set from "lodash/set";
-import { actionName as createAppPackageActionName } from "./createAppPackage";
-import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
-import { QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/constants";
+import { envUtil } from "../../utils/envUtil";
+import { DriverContext } from "../interface/commonArgs";
+import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
+import { Constants, supportedLanguageCodes } from "./constants";
+import {
+  CreateAppPackageDriver,
+  actionName as createAppPackageActionName,
+} from "./createAppPackage";
+import { AppStudioError } from "./errors";
+import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
+import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
+import { AppPackage } from "./interfaces/appdefinitions/appPackage";
+import { AppStudioResultFactory } from "./results";
+import { manifestUtils } from "./utils/ManifestUtils";
 
 export async function checkIfAppInDifferentAcountSameTenant(
   teamsAppId: string,
@@ -60,11 +61,10 @@ export async function checkIfAppInDifferentAcountSameTenant(
   const appStudioToken = appStudioTokenRes.value;
 
   try {
-    await AppStudioClient.getApp(teamsAppId, appStudioToken, logger);
+    await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
   } catch (error: any) {
     if (error.message && error.message.includes("404")) {
-      const exists = await AppStudioClient.checkExistsInTenant(teamsAppId, appStudioToken, logger);
-
+      const exists = await teamsDevPortalClient.checkExistsInTenant(appStudioToken, teamsAppId);
       return ok(exists);
     }
   }
@@ -155,7 +155,7 @@ export async function updateManifestV3(
   try {
     const localUpdateTime = process.env.TEAMS_APP_UPDATE_TIME;
     if (localUpdateTime) {
-      const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
+      const app = await teamsDevPortalClient.getApp(appStudioToken, teamsAppId);
       const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
       if (new Date(localUpdateTime).getTime() < devPortalUpdateTime) {
         const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
@@ -311,11 +311,7 @@ export async function getAppPackage(
     return err(appStudioTokenRes.error);
   }
   try {
-    const data = await AppStudioClient.getAppPackage(
-      teamsAppId,
-      appStudioTokenRes.value,
-      logProvider
-    );
+    const data = await teamsDevPortalClient.getAppPackage(appStudioTokenRes.value, teamsAppId);
 
     const appPackage: AppPackage = {};
 

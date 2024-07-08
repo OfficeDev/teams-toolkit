@@ -1,26 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
+import { SpecParser } from "@microsoft/m365-spec-parser";
+import { SystemError, err } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import * as sinon from "sinon";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
+import { setTools } from "../../../../src/common/globalVars";
+import { CreateOauthDriver } from "../../../../src/component/driver/oauth/create";
+import {
+  OauthRegistrationAppType,
+  OauthRegistrationTargetAudience,
+} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { setTools } from "../../../../src/core/globalVars";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import {
-  OauthRegistrationAppType,
-  OauthRegistrationTargetAudience,
-} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
-import { SpecParser } from "@microsoft/m365-spec-parser";
-import { CreateOauthDriver } from "../../../../src/component/driver/oauth/create";
-import { SystemError, UserError, err } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -60,7 +60,7 @@ describe("CreateOauthDriver", () => {
 
   it("happy path: read clientSecret, refreshurl from input ", async () => {
     sinon
-      .stub(AppStudioClient, "createOauthRegistration")
+      .stub(teamsDevPortalClient, "createOauthRegistration")
       .callsFake(async (token, oauthRegistration) => {
         expect(oauthRegistration.clientId).to.equals("mockedClientId");
         expect(oauthRegistration.clientSecret).to.equals("mockedClientSecret");
@@ -129,7 +129,7 @@ describe("CreateOauthDriver", () => {
 
   it("happy path: read refreshurl from input, client and clientSecret from env", async () => {
     sinon
-      .stub(AppStudioClient, "createOauthRegistration")
+      .stub(teamsDevPortalClient, "createOauthRegistration")
       .callsFake(async (token, oauthRegistration) => {
         expect(oauthRegistration.clientId).to.equals("mockedClientId");
         expect(oauthRegistration.clientSecret).to.equals("mockedClientSecret");
@@ -201,7 +201,7 @@ describe("CreateOauthDriver", () => {
 
   it("happy path: read clientSecret from input and refreshurl from spec", async () => {
     sinon
-      .stub(AppStudioClient, "createOauthRegistration")
+      .stub(teamsDevPortalClient, "createOauthRegistration")
       .callsFake(async (token, oauthRegistration) => {
         expect(oauthRegistration.clientId).to.equals("mockedClientId");
         expect(oauthRegistration.clientSecret).to.equals("mockedClientSecret");
@@ -271,7 +271,7 @@ describe("CreateOauthDriver", () => {
 
   it("happy path: read applicableToApps, targetAudience from input", async () => {
     sinon
-      .stub(AppStudioClient, "createOauthRegistration")
+      .stub(teamsDevPortalClient, "createOauthRegistration")
       .callsFake(async (token, oauthRegistration) => {
         expect(oauthRegistration.clientId).to.equals("mockedClientId");
         expect(oauthRegistration.clientSecret).to.equals("mockedClientSecret");
@@ -341,7 +341,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("happy path: registration id exists in env", async () => {
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedId",
       clientId: "mockedClientId",
       clientSecret: "mockedClientSecret",
@@ -410,7 +410,7 @@ describe("CreateOauthDriver", () => {
 
   it("should show warning if registration id exists and failed to get Oauth registration", async () => {
     sinon
-      .stub(AppStudioClient, "getOauthRegistrationById")
+      .stub(teamsDevPortalClient, "getOauthRegistrationById")
       .throws(new SystemError("source", "name", "message"));
 
     const args: any = {
@@ -741,7 +741,7 @@ describe("CreateOauthDriver", () => {
 
   it("should throw error if failed to create Oauth registration", async () => {
     sinon
-      .stub(AppStudioClient, "createOauthRegistration")
+      .stub(teamsDevPortalClient, "createOauthRegistration")
       .throws(new SystemError("source", "name", "message"));
     sinon.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -789,7 +789,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("should throw unhandled error if error is not SystemError or UserError", async () => {
-    sinon.stub(AppStudioClient, "createOauthRegistration").throws(new Error("error"));
+    sinon.stub(teamsDevPortalClient, "createOauthRegistration").throws(new Error("error"));
     sinon.stub(SpecParser.prototype, "list").resolves({
       APIs: [
         {

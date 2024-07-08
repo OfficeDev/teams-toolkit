@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "sme${{RESOURCE_SUFFIX}}"
+      "value": "plugin${{RESOURCE_SUFFIX}}"
     },    
     "functionAppSKU": {
       "value": "Y1"

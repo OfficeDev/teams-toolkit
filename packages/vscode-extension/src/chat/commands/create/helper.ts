@@ -28,7 +28,7 @@ import {
   getCopilotResponseAsString,
   getSampleDownloadUrlInfo,
 } from "../../utils";
-import * as teamsTemplateMetadata from "./templateMetadata.json";
+import teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 
 const TOKEN_LIMITS = 2700;

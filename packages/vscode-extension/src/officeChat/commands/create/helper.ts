@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as tmp from "tmp";
-import * as officeTemplateMeatdata from "./officeTemplateMetadata.json";
+import officeTemplateMeatdata from "./officeTemplateMetadata.json";
 import * as fs from "fs-extra";
 import * as path from "path";
 import {

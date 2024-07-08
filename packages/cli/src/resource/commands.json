@@ -147,9 +147,9 @@
     "description": "Clean up resources associated with Teams App ID, Title ID or an environment in Teams Toolkit generated project. Resources including application registration in Teams Developer Portal, bot registration in Bot Framework Portal and uploaded custom applications in Microsoft 365 apps.",
     "options": {
       "mode": "Choose a way to clean up resources.",
-      "title-id": "Title ID of the acquired M365 App.",
-      "manifest-id": "Manifest ID of the acquired M365 App.",
-      "env": "Env of the acquired M365 App.",
+      "title-id": "Title ID of the App.",
+      "manifest-id": "Manifest ID of the App.",
+      "env": "The specific environment in the project created by Teams Toolkit.",
       "folder": "Project path to uninstall, only used in env mode.",
       "options": "Selected resourecs to uninstall. example: --uninstall-option m365-app,app-registration,bot-framework-registration"
     }

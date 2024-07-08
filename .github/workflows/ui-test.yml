@@ -31,8 +31,8 @@ on:
         type: string
 
       node-version:
-        default: "[16]"
-        description: "node version, e.g. [16]"
+        default: "[18]"
+        description: "node version, e.g. [18]"
         required: false
         type: string
 

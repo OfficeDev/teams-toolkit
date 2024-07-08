@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
@@ -24,10 +27,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext(
-      "dashboard",
-      "javascript"
-    );
+    localDebugTestContext = new LocalDebugTestContext("dashboard", {
+      lang: "javascript",
+    });
     await localDebugTestContext.before();
   });
 

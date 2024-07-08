@@ -22,7 +22,7 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import { FeatureFlagName } from "../../src/common/constants";
+import { FeatureFlagName } from "../../src/common/featureFlags";
 import * as utils from "../../src/common/globalVars";
 import { setTools } from "../../src/common/globalVars";
 import { getLocalizedString } from "../../src/common/localizeUtils";

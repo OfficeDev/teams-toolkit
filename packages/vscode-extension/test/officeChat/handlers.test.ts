@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as vscode from "vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -22,7 +22,7 @@ import {
 import { Correlator } from "@microsoft/teamsfx-core";
 import { OfficeChatTelemetryData } from "../../src/officeChat/telemetry";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: officeChat/handlers.ts", () => {
   describe("Method: officeChatRequestHandler", () => {

@@ -1,12 +1,12 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as fs from "fs";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as commonUtils from "../../../src/officeChat/common/utils";
 import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
 import { AxiosResponse } from "axios";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: officeChat/common/utils", () => {
   const sandbox = sinon.createSandbox();

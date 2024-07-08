@@ -33,9 +33,9 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
   private sharedProperties: { [key: string]: string } = {};
 
-  constructor(key: string, extensionVersion: string, extensionId: string) {
+  constructor(key: string, extensionVersion: string, extensionId: string, reporter?: Reporter) {
     super(async () => await this.reporter.dispose());
-    this.reporter = new Reporter(extensionId, extensionVersion, key, true);
+    this.reporter = reporter ?? new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
     this.testFeatureFlag = isFeatureFlagEnabled(FeatureFlags.TelemetryTest);
     if (this.testFeatureFlag) {

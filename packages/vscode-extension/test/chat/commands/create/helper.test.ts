@@ -2,7 +2,7 @@ import { sampleProvider } from "@microsoft/teamsfx-core";
 import * as generatorUtils from "@microsoft/teamsfx-core/build/component/generator/utils";
 import axios from "axios";
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";

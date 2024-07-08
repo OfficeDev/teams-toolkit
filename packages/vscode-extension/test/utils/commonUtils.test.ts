@@ -14,7 +14,7 @@ import {
   acpInstalled,
   getLocalDebugMessageTemplate,
 } from "../../src/utils/commonUtils";
-import * as mockfs from "mock-fs";
+import mockfs from "mock-fs";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("CommonUtils", () => {

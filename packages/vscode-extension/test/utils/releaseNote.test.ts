@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 import * as chai from "chai";
-import * as spies from "chai-spies";
+import spies from "chai-spies";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 

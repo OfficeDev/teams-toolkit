@@ -649,23 +649,24 @@ export class SPFxGenerator {
         return undefined;
       }
 
-      const webpartName = webparts[0].split(path.sep).pop();
-      const webpartManifestPath = path.join(
-        webpartsDir,
-        webparts[0],
-        `${webpartName as string}WebPart.manifest.json`
+      const webpartManifest = (await fs.readdir(path.join(webpartsDir, webparts[0]))).find((file) =>
+        file.endsWith("WebPart.manifest.json")
       );
-      if (!(await fs.pathExists(webpartManifestPath))) {
+      if (webpartManifest === undefined) {
         throw new FileNotFoundError(
           Constants.PLUGIN_NAME,
-          webpartManifestPath,
+          path.join(
+            webpartsDir,
+            webparts[0],
+            `${webparts[0].split(path.sep).pop() as string}WebPart.manifest.json`
+          ),
           Constants.IMPORT_HELP_LINK
         );
       }
 
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifest = JSON.parse(
-        (await fs.readFile(webpartManifestPath, "utf8"))
+        (await fs.readFile(path.join(webpartsDir, webparts[0], webpartManifest), "utf8"))
           .toString()
           .replace(matchHashComment, "")
           .trim()

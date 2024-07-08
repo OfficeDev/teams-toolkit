@@ -7,10 +7,19 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { CopilotPluginCommonTest } from "./copilotPluginCommonTest";
+import { validateFiles } from "./helper";
 
-class CopilotPluginOAuthTestCase extends CopilotPluginCommonTest {}
+class CopilotPluginOAuthForTsTestCase extends CopilotPluginCommonTest {
+  public override async onAfterCreate(projectPath: string): Promise<void> {
+    const files: string[] = [
+      "appPackage/ai-plugin.json",
+      "appPackage/manifest.json",
+    ];
+    validateFiles(projectPath, files);
+  }
+}
 
-new CopilotPluginOAuthTestCase(
+new CopilotPluginOAuthForTsTestCase(
   27569691,
   "huimiao@microsoft.com",
   "oauth",

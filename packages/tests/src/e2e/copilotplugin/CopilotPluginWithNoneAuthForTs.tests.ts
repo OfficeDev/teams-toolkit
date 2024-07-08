@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 /**
- * @author Hui Miao <huimiao@microsoft.com>
+ * @author Yimin Jin <yiminjin@microsoft.com>
  */
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { CopilotPluginCommonTest } from "./copilotPluginCommonTest";
-import { validateFiles } from "./helper";
+import { validateFiles } from "./helper.ts";
+import { CopilotPluginCommonTest } from "./copilotPluginCommonTest.ts";
 
-class CopilotPluginOAuthForJsTestCase extends CopilotPluginCommonTest {
+class CopilotPluginWithNoneAuthForTsCase extends CopilotPluginCommonTest {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     const files: string[] = [
       "appPackage/ai-plugin.json",
@@ -19,9 +19,9 @@ class CopilotPluginOAuthForJsTestCase extends CopilotPluginCommonTest {
   }
 }
 
-new CopilotPluginOAuthForJsTestCase(
-  27569691,
-  "huimiao@microsoft.com",
-  "oauth",
-  ProgrammingLanguage.JS
+new CopilotPluginWithNoneAuthForTsCase(
+  27569734,
+  "yimin@microsoft.com",
+  "none",
+  ProgrammingLanguage.TS
 ).test();

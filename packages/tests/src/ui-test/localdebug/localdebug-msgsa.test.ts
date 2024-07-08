@@ -6,7 +6,7 @@
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import { initPage, validateMsg } from "../../utils/playwrightOperation";
+import { initPage, validateNpm } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
@@ -52,7 +52,10 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateMsg(page);
+      await validateNpm(page, {
+        npmName: "axios",
+        appName: localDebugTestContext.appName,
+      });
     }
   );
 });

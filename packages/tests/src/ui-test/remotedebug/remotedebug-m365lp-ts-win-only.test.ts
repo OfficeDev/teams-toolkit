@@ -67,7 +67,7 @@ describe("Remote debug Tests", function () {
     async function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
-      await createNewProject("m365lp", appName, "TypeScript");
+      await createNewProject("m365lp", appName, { lang: "TypeScript" });
       await provisionProject(appName, projectPath);
       await deployProject(projectPath);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(

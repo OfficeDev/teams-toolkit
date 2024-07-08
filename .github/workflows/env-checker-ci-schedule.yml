@@ -38,9 +38,7 @@ jobs:
         with:
           node-version: 18
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
   
       # https://github.com/marketplace/actions/retry-step
       - name: Setup project with Retry
@@ -106,9 +104,7 @@ jobs:
         with:
           node-version: 18
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
 
       # https://github.com/marketplace/actions/retry-step
       - name: Setup project with Retry
@@ -187,9 +183,7 @@ jobs:
         with:
           node-version: 18
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
   
       # https://github.com/marketplace/actions/retry-step
       - name: Setup project with Retry

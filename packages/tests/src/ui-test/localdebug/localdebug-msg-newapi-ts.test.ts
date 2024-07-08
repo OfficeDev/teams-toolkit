@@ -20,10 +20,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext(
-      "msgnewapi",
-      "typescript"
-    );
+    localDebugTestContext = new LocalDebugTestContext("msgnewapi", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 
@@ -57,7 +56,7 @@ describe("Local Debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateApiMeResult(page);
+      await validateApiMeResult(page, localDebugTestContext.appName);
     }
   );
 });

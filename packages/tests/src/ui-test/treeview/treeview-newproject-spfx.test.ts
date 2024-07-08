@@ -41,7 +41,7 @@ describe("New project Tests", function () {
     },
     async function () {
       const appName = treeViewTestContext.appName;
-      await createNewProject("spfxreact", appName);
+      await createNewProject("spfx", appName);
       newAppFolderName = appName + appNameCopySuffix;
       projectPath = path.resolve(testRootFolder, newAppFolderName);
       const filePath = path.join(projectPath, "src", "src", "index.ts");

@@ -19,25 +19,10 @@ This template showcases a bot app that responds to user questions like an AI ass
 {{#useOpenAI}}
 > - An account with [OpenAI](https://platform.openai.com/).
 {{/useOpenAI}}
-{{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
-{{/enableTestToolByDefault}}
-{{#enableTestToolByDefault}}
-> - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
-{{/enableTestToolByDefault}}
 
 ### Configurations
 1. Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
-{{#enableTestToolByDefault}}
-{{#useAzureOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `AZURE_OPENAI_ENDPOINT`.
-{{/useAzureOpenAI}}
-{{#useOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
-1. In this template, default model name is `gpt-3.5-turbo`. If you want to use a different model from OpenAI, fill in your model name in [src/config.py](./src/config.py).
-{{/useOpenAI}}
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
 {{#useAzureOpenAI}}
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `AZURE_OPENAI_ENDPOINT`.
 {{/useAzureOpenAI}}
@@ -45,30 +30,19 @@ This template showcases a bot app that responds to user questions like an AI ass
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
 1. In this template, default model name is `gpt-3.5-turbo`. If you want to use a different model from OpenAI, fill in your model name in [src/config.py](./src/config.py).
 {{/useOpenAI}}
-{{/enableTestToolByDefault}}
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
-{{#enableTestToolByDefault}}
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-{{/enableTestToolByDefault}}
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
-{{#enableTestToolByDefault}}
-![ai chat bot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
 ![ai chat bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
-{{/enableTestToolByDefault}}
 
 ## What's included in the template
 

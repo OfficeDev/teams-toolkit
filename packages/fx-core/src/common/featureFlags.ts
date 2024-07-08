@@ -77,7 +77,6 @@ export class FeatureFlags {
   static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
-  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,
@@ -94,6 +93,10 @@ export class FeatureFlags {
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
+  static readonly ShowDiagnostics = {
+    name: FeatureFlagName.ShowDiagnostics,
+    defaultValue: "false",
+  };
 }
 
 export class FeatureFlagManager {

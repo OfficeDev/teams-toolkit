@@ -41,7 +41,7 @@ describe("New project Tests", function () {
     },
     async function () {
       const appName = treeViewTestContext.appName;
-      await createNewProject("tab", appName, "TypeScript");
+      await createNewProject("tab", appName, { lang: "TypeScript" });
       newAppFolderName = appName + appNameCopySuffix;
       projectPath = path.resolve(testRootFolder, newAppFolderName);
       const filePath1 = path.join(projectPath, "src", "index.tsx");

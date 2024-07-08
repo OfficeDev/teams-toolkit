@@ -20,10 +20,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext(
-      "linkunfurl",
-      "typescript"
-    );
+    localDebugTestContext = new LocalDebugTestContext("linkunfurl", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 
@@ -58,7 +57,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateUnfurlCard(page);
+      await validateUnfurlCard(page, localDebugTestContext.appName);
     }
   );
 });

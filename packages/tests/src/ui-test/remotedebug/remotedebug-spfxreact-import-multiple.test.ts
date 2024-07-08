@@ -5,8 +5,6 @@
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
-import * as fs from "fs-extra";
-import { expect } from "chai";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
 import {
   CommandPaletteCommands,
@@ -20,11 +18,19 @@ import {
   createNewProject,
   clearNotifications,
 } from "../../utils/vscodeOperation";
-import { initPage, validateSpfx } from "../../utils/playwrightOperation";
+import {
+  initPage,
+  switchToTab,
+  validateSpfx,
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
-import { validateFileExist } from "../../utils/commonUtils";
+import {
+  configSpfxGlobalEnv,
+  generateYoSpfxProject,
+  validateFileExist,
+} from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -54,15 +60,25 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Create and run SPFx project with None framework",
+    "[auto] Import existing SPFx solution with multiple web parts",
     {
-      testPlanCaseId: 9454331,
+      testPlanCaseId: 24434596,
       author: "v-helzha@microsoft.com",
     },
     async function () {
+      await configSpfxGlobalEnv();
+      await generateYoSpfxProject({
+        solutionName: "existingspfx",
+        componentName: appName,
+      });
+      await generateYoSpfxProject({
+        existingSolutionName: "existingspfx",
+        componentName: "helloworld",
+      });
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfxnone", appName);
+      await createNewProject("importspfx", appName);
       validateFileExist(projectPath, "src/src/index.ts");
+      validateFileExist(projectPath, "src/.yo-rc.json");
       await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
       await driver.sleep(Timeout.spfxProvision);
@@ -85,6 +101,10 @@ describe("Remote debug Tests", function () {
 
       // Validate app name is in the page
       await validateSpfx(page, { displayName: appName });
+      await switchToTab(page, "helloworld");
+      await validateSpfx(page, {
+        displayName: "helloworld",
+      });
     }
   );
 });

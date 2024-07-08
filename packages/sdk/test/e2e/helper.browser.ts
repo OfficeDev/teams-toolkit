@@ -37,7 +37,7 @@ export async function getSSOToken(): Promise<SSOToken> {
     username: env.SDK_INTEGRATION_TEST_ACCOUNT_NAME,
     password: env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD,
     client_id: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-    scope: `api://localhost/${env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`,
+    scope: `api://localhost:53000/${env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`,
     grant_type: "password",
   };
   const formBody = [];

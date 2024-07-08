@@ -66,7 +66,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("msgapikey", appName, "TypeScript");
+      await createNewProject("msgapikey", appName, { lang: "TypeScript" });
       const userFile = path.resolve(projectPath, "env", ".env.dev.user");
       const SECRET_API_KEY = "SECRET_API_KEY=gbxEWvk4p3sg";
       const KEY = "\n" + SECRET_API_KEY;
@@ -83,7 +83,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateApiMeResult(page);
+      await validateApiMeResult(page, remoteDebugTestContext.appName);
     }
   );
 });

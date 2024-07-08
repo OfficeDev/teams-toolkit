@@ -14,7 +14,7 @@ export const UninstallOptions: CLICommandOption[] = [
   {
     name: "mode",
     type: "string",
-    description: "Choose uninstall mode",
+    description: "Choose a way to clean up resources",
     required: true,
     default: "manifest-id",
     choices: ["manifest-id", "env", "title-id"],

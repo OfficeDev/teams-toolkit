@@ -11,7 +11,7 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface UninstallInputs extends Inputs {
-  /** @description Choose uninstall mode */
+  /** @description Choose a way to clean up resources */
   mode?: "manifest-id" | "env" | "title-id";
   /** @description Manifest ID */
   "manifest-id"?: string;

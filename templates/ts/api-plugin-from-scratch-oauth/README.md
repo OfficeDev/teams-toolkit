@@ -1,6 +1,6 @@
-# Overview of the Copilot Plugin template
+# Overview of the API Plugin template
 
-## Build a Copilot Plugin from a new API with Azure Functions
+## Build an API Plugin from a new API with Azure Functions
 
 With Copilot extensibility, you can augment Copilot for Microsoft 365 with custom skills and organizational knowledge specific to your enterprise and users to enable truly spectacular AI scenarios. For example:
 
@@ -48,8 +48,8 @@ The following files can be customized and demonstrate an example implementation 
 | `appPackage/apiSpecificationFile/repair.dev.yml`   | A file that describes the structure and behavior of the repair API.                                   |
 | `appPackage/apiSpecificationFile/repair.local.yml` | A file that describes the structure and behavior of the repair API for local execution and debugging. |
 | `appPackage/manifest.json`                         | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.              |
-| `appPackage/ai-plugin.dev.json`                    | The manifest file for your Copilot Plugin that contains information for your API and used by LLM.     |
-| `appPackage/ai-plugin.local.json`                  | The manifest file for your Copilot Plugin for local execution and debugging.                          |
+| `appPackage/ai-plugin.dev.json`                    | The manifest file for your API plugin that contains information for your API and used by LLM.     |
+| `appPackage/ai-plugin.local.json`                  | The manifest file for your API plugin for local execution and debugging.                          |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -59,7 +59,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                                                                                                                                   |
 | `aad.manifest.json`  | This file defines the configuration of Microsoft Entra app. This template will only provision [single tenant](https://learn.microsoft.com/azure/active-directory/develop/single-and-multi-tenant-apps#who-can-sign-in-to-your-app) Microsoft Entra app. |
 
-## How OAuth works in the Copilot plugin
+## How OAuth works in the API plugin
 
 ![oauth-flow](https://github.com/OfficeDev/teams-toolkit/assets/107838226/f074abbe-d9e3-4a46-8e08-feb66b17a539)
 

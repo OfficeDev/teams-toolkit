@@ -133,7 +133,7 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
   }
 
   signout(): boolean {
-    throw new Error("Method not implemented.");
+    return true;
   }
 }
 

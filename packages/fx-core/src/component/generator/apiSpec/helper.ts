@@ -61,6 +61,7 @@ import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestU
 const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
+  specNotValidDetails = "spec-not-valid-details",
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
@@ -361,6 +362,12 @@ export function logValidationResults(
         .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
         .join(";"),
     };
+
+    const specNotValidError = errors.find((error) => error.type === ErrorType.SpecNotValid);
+    if (specNotValidError) {
+      properties[telemetryProperties.specNotValidDetails] = specNotValidError.content;
+    }
+
     if (existingCorrelationId) {
       properties["correlation-id"] = existingCorrelationId;
     }

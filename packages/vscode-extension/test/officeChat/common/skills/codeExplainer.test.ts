@@ -2,7 +2,12 @@ import * as chai from "chai";
 import sinon from "ts-sinon";
 import { Explainer } from "../../../../src/officeChat/common/skills/codeExplainer";
 import { Spec } from "../../../../src/officeChat/common/skills/spec";
-import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
+import {
+  CancellationToken,
+  ChatResponseStream,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
+} from "vscode";
 import * as utils from "../../../../src/chat/utils";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
@@ -27,6 +32,17 @@ describe("CodeExplainer", () => {
         apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
+          requestId: "Id",
+          isHarmful: false,
+          relatedSampleName: ["sample1", "sample2"],
+          chatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
+          ],
+          responseChatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+          ],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -34,7 +50,8 @@ describe("CodeExplainer", () => {
         shouldContinue: false,
       };
 
-      const model: LanguageModelChatUserMessage = {
+      const model: LanguageModelChatMessage = {
+        role: LanguageModelChatMessageRole.User,
         content: "",
         name: undefined,
       };
@@ -86,6 +103,17 @@ describe("CodeExplainer", () => {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
+        requestId: "Id",
+        isHarmful: false,
+        relatedSampleName: ["sample1", "sample2"],
+        chatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
+        ],
+        responseChatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+        ],
         properties: {
           property1: "value1",
           property2: "value2",

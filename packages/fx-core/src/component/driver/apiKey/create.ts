@@ -4,16 +4,16 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { InvalidActionInputError, assembleError } from "../../../error";
-import { QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/constants";
 import { QuestionMW } from "../../middleware/questionMW";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
@@ -63,7 +63,10 @@ export class CreateApiKeyDriver implements StepDriver {
 
       if (state && state.registrationId) {
         try {
-          await AppStudioClient.getApiKeyRegistrationById(appStudioToken, state.registrationId);
+          await teamsDevPortalClient.getApiKeyRegistrationById(
+            appStudioToken,
+            state.registrationId
+          );
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.skipCreateApiKey,
@@ -95,7 +98,7 @@ export class CreateApiKeyDriver implements StepDriver {
           domains
         );
 
-        const apiRegistrationRes = await AppStudioClient.createApiKeyRegistration(
+        const apiRegistrationRes = await teamsDevPortalClient.createApiKeyRegistration(
           appStudioToken,
           apiKey
         );

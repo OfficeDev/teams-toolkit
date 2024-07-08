@@ -47,6 +47,7 @@ export type CliCapabilities =
 export type CliTriggerType =
   | "http-restify"
   | "http-functions"
+  | "http-and-timer-functions"
   | "timer-functions";
 
 export enum Resource {

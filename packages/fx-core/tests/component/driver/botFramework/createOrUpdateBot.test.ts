@@ -1,18 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-
 import * as chai from "chai";
+import "mocha";
 import * as sinon from "sinon";
 import * as util from "util";
-
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import * as localizeUtils from "../../../../src/common/localizeUtils";
 import { CreateOrUpdateBotFrameworkBotDriver } from "../../../../src/component/driver/botFramework/createOrUpdateBot";
-import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
-import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import { InvalidActionInputError, UnhandledError } from "../../../../src/error/common";
+import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 
 describe("CreateOrUpdateM365BotDriver", () => {
   const mockedDriverContext: any = {
@@ -163,7 +161,7 @@ describe("CreateOrUpdateM365BotDriver", () => {
     });
 
     it("exception", async () => {
-      sinon.stub(AppStudioClient, "getBotRegistration").throws(new Error("exception"));
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").throws(new Error("exception"));
       const args: any = {
         botId: "11111111-1111-1111-1111-111111111111",
         name: "test-bot",
@@ -179,13 +177,13 @@ describe("CreateOrUpdateM365BotDriver", () => {
     });
 
     it("happy path: create", async () => {
-      sinon.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").returns(Promise.resolve(undefined));
       let createBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "createBotRegistration").callsFake(async () => {
         createBotRegistrationCalled = true;
       });
       let updateBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "updateBotRegistration").callsFake(async () => {
         updateBotRegistrationCalled = true;
       });
       const args: any = {
@@ -220,15 +218,15 @@ describe("CreateOrUpdateM365BotDriver", () => {
         iconUrl: "",
         callingEndpoint: "",
       };
-      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (token, botId) => {
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").callsFake(async (token, botId) => {
         return botId === botRegistration.botId ? botRegistration : undefined;
       });
       let createBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "createBotRegistration").callsFake(async () => {
         createBotRegistrationCalled = true;
       });
       let updateBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "updateBotRegistration").callsFake(async () => {
         updateBotRegistrationCalled = true;
       });
       const args: any = {
@@ -250,13 +248,13 @@ describe("CreateOrUpdateM365BotDriver", () => {
 
   describe("execute", () => {
     it("happy path: create", async () => {
-      sinon.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").returns(Promise.resolve(undefined));
       let createBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "createBotRegistration").callsFake(async () => {
         createBotRegistrationCalled = true;
       });
       let updateBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "updateBotRegistration").callsFake(async () => {
         updateBotRegistrationCalled = true;
       });
       const args: any = {
@@ -287,15 +285,15 @@ describe("CreateOrUpdateM365BotDriver", () => {
         iconUrl: "",
         callingEndpoint: "",
       };
-      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (token, botId) => {
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").callsFake(async (token, botId) => {
         return botId === botRegistration.botId ? botRegistration : undefined;
       });
       let createBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "createBotRegistration").callsFake(async () => {
         createBotRegistrationCalled = true;
       });
       let updateBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "updateBotRegistration").callsFake(async () => {
         updateBotRegistrationCalled = true;
       });
       const args: any = {
@@ -341,13 +339,13 @@ describe("CreateOrUpdateM365BotDriver", () => {
         logProvider: undefined,
         m365TokenProvider: new MockedM365Provider(),
       };
-      sinon.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").returns(Promise.resolve(undefined));
       let createBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "createBotRegistration").callsFake(async () => {
         createBotRegistrationCalled = true;
       });
       let updateBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "updateBotRegistration").callsFake(async () => {
         updateBotRegistrationCalled = true;
       });
       const args: any = {
@@ -374,15 +372,15 @@ describe("CreateOrUpdateM365BotDriver", () => {
         iconUrl: "",
         callingEndpoint: "",
       };
-      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (token, botId) => {
+      sinon.stub(teamsDevPortalClient, "getBotRegistration").callsFake(async (token, botId) => {
         return botId === botRegistration.botId ? botRegistration : undefined;
       });
       let createBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "createBotRegistration").callsFake(async () => {
         createBotRegistrationCalled = true;
       });
       let updateBotRegistrationCalled = false;
-      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+      sinon.stub(teamsDevPortalClient, "updateBotRegistration").callsFake(async () => {
         updateBotRegistrationCalled = true;
       });
       const args: any = {

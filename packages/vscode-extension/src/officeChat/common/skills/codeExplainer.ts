@@ -5,7 +5,7 @@ import {
   CancellationToken,
   ChatResponseStream,
   LanguageModelChatMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
@@ -30,7 +30,7 @@ export class Explainer implements ISkill {
   }
 
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
@@ -53,13 +53,17 @@ Let's think it step by step.
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(systemPrompt),
-      new LanguageModelChatUserMessage(userPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, systemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo",
       messages,
       token
+    );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
 
     if (!copilotResponse) {

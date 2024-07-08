@@ -2,35 +2,35 @@
 // Licensed under the MIT license.
 
 import * as tmp from "tmp";
-import * as crypto from "crypto";
 import * as officeTemplateMeatdata from "./officeTemplateMetadata.json";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as vscode from "vscode";
 import {
   ChatRequest,
   CancellationToken,
-  LanguageModelChatUserMessage,
   ChatResponseStream,
   ChatResponseFileTree,
   Uri,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
-import { IChatTelemetryData } from "../../../chat/types";
 import { ProjectMetadata } from "../../../chat/commands/create/types";
 import { getCopilotResponseAsString } from "../../../chat/utils";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
-import { CommandKey } from "../../../constants";
-import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
-import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
-import { getOfficeSampleDownloadUrlInfo } from "../../utils";
+import { getOfficeSample } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
+import { OfficeChatTelemetryData } from "../../telemetry";
+import { OfficeXMLAddinGenerator } from "./officeXMLAddinGenerator/generator";
+import { CreateProjectInputs } from "@microsoft/teamsfx-api";
+import { core } from "../../../globalVariables";
+import { OfficeProjectInfo } from "../../types";
 
 export async function matchOfficeProject(
   request: ChatRequest,
   token: CancellationToken,
-  telemetryMetadata: IChatTelemetryData
+  telemetryData: OfficeChatTelemetryData
 ): Promise<ProjectMetadata | undefined> {
   const allOfficeProjectMetadata = [
     ...getOfficeTemplateMetadata(),
@@ -38,10 +38,14 @@ export async function matchOfficeProject(
   ];
   const messages = [
     getOfficeProjectMatchSystemPrompt(allOfficeProjectMetadata),
-    new LanguageModelChatUserMessage(request.prompt),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
   ];
-  telemetryMetadata.chatMessages.push(...messages);
-  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  let response = "";
+  telemetryData.chatMessages.push(...messages);
+  response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  telemetryData.responseChatMessages.push(
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response)
+  );
   let matchedProjectId: string;
   if (response) {
     try {
@@ -96,23 +100,27 @@ export function getOfficeTemplateMetadata(): ProjectMetadata[] {
 export async function showOfficeSampleFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
-): Promise<string> {
+): Promise<OfficeProjectInfo> {
   response.markdown(
     "\nWe've found a sample project that matches your description. Take a look at it below."
   );
-  const downloadUrlInfo = await getOfficeSampleDownloadUrlInfo(projectMetadata.id);
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
+  const sample = await getOfficeSample(projectMetadata.id);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sample.downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
   const nodes = await buildFileTree(
     fileUrlPrefix,
     samplePaths,
     tempFolder,
-    downloadUrlInfo.dir,
+    sample.downloadUrlInfo.dir,
     2,
     20
   );
-  response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
-  return path.join(tempFolder, downloadUrlInfo.dir);
+  response.filetree(nodes, Uri.file(path.join(tempFolder, sample.downloadUrlInfo.dir)));
+  const result: OfficeProjectInfo = {
+    path: path.join(tempFolder, sample.downloadUrlInfo.dir),
+    host: sample.types[0],
+  };
+  return result;
 }
 
 export async function showOfficeTemplateFileTree(
@@ -121,43 +129,41 @@ export async function showOfficeTemplateFileTree(
   codeSnippet?: string
 ): Promise<string> {
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
-  const tempAppName = `office-addin-${crypto.randomBytes(8).toString("hex")}`;
-  const nodes = await buildTemplateFileTree(data, tempFolder, tempAppName, codeSnippet);
-  response.filetree(nodes, Uri.file(path.join(tempFolder, tempAppName)));
-  return path.join(tempFolder, tempAppName);
+  const nodes = await buildTemplateFileTree(data, tempFolder, data.capabilities, codeSnippet);
+  response.filetree(nodes, Uri.file(path.join(tempFolder, data.capabilities)));
+  return path.join(tempFolder, data.capabilities);
 }
 
 export async function buildTemplateFileTree(
   data: any,
   tempFolder: string,
-  tempAppName: string,
+  appName: string,
   codeSnippet?: string
 ): Promise<ChatResponseFileTree[]> {
-  const createInputs = {
+  const createInputs: CreateProjectInputs = {
     ...data,
     folder: tempFolder,
-    "app-name": tempAppName,
+    "app-name": appName,
   };
-  await vscode.commands.executeCommand(
-    CHAT_EXECUTE_COMMAND_ID,
-    CommandKey.Create,
-    TelemetryTriggerFrom.CopilotChat,
-    createInputs
-  );
-  const rootFolder = path.join(tempFolder, tempAppName);
-  const isCustomFunction = data.capabilities.includes("excel-cf");
+  const generator = new OfficeXMLAddinGenerator();
+  const result = await core.createProjectByCustomizedGenerator(createInputs, generator);
+  if (result.isErr()) {
+    throw new Error("Failed to generate the project.");
+  }
+  const projectPath = result.value.projectPath;
+  const isCustomFunction = data.capabilities.includes("excel-custom-functions");
   if (!!isCustomFunction && !!codeSnippet) {
-    await mergeCFCode(rootFolder, codeSnippet);
+    await mergeCFCode(projectPath, codeSnippet);
   } else if (!!codeSnippet) {
-    await mergeTaskpaneCode(rootFolder, codeSnippet);
+    await mergeTaskpaneCode(projectPath, codeSnippet);
   }
   const root: ChatResponseFileTree = {
-    name: rootFolder,
+    name: projectPath,
     children: [],
   };
-  await fs.ensureDir(rootFolder);
-  traverseFiles(rootFolder, (fullPath) => {
-    const relativePath = path.relative(rootFolder, fullPath);
+  await fs.ensureDir(projectPath);
+  traverseFiles(projectPath, (fullPath) => {
+    const relativePath = path.relative(projectPath, fullPath);
     fileTreeAdd(root, relativePath);
   });
   return root.children ?? [];
@@ -203,7 +209,7 @@ export async function mergeTaskpaneCode(filePath: string, generatedCode: string)
     const ulStart = htmlFileContent.indexOf('<ul class="ms-List ms-welcome__features">');
     const ulEnd = htmlFileContent.indexOf("</ul>") + "</ul>".length;
     const ulSection = htmlFileContent.slice(ulStart, ulEnd);
-    const htmlIntroduction = `<p class="ms-font-l"> This is an add-in generated by Office Agent in GitHub Copilot</p>`;
+    const htmlIntroduction = `<p class="ms-font-l"> This is an add-in generated by GitHub Copilot Extension for Office Add-ins</p>`;
     const modifiedHtmlContent = htmlFileContent.replace(ulSection, htmlIntroduction);
 
     // Write the modified content back to the file

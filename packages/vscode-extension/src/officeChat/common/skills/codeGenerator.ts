@@ -5,8 +5,7 @@ import {
   CancellationToken,
   ChatResponseStream,
   LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { correctPropertyLoadSpelling } from "../utils";
 import { SampleProvider } from "../samples/sampleProvider";
@@ -19,21 +18,24 @@ import {
   MeasurementCodeGenExecutionTimeInTotalSec,
   PropertySystemCodeGenResult,
   MeasurementSystemCodegenTaskBreakdownAttemptFailedCount,
+  MeasurementCodeGenTaskBreakdownTimeInTotalSec,
+  MeasurementCodeGenPreScanTimeInTotalSec,
+  MeasurementCodeGenGetSampleTimeInTotalSec,
 } from "../telemetryConsts";
 import {
   excelSystemPrompt,
   customFunctionSystemPrompt,
   getUserInputBreakdownTaskUserPrompt,
   getUserAskPreScanningSystemPrompt,
-  getUserComplexAskBreakdownTaskSystemPrompt,
   getUserSimpleAskBreakdownTaskSystemPrompt,
   getGenerateCodeUserPrompt,
   getGenerateCodeSamplePrompt,
   getCodeSamplePrompt,
-  getGenerateCodeDeclarationPrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";
+// import { SampleData } from "../samples/sampleData";
+// import { DeclarationFinder } from "../declarationFinder";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -49,19 +51,21 @@ export class CodeGenerator implements ISkill {
   }
 
   public async invoke(
-    languageModel: LanguageModelChatUserMessage,
+    languageModel: LanguageModelChatMessage,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
-    const t0 = performance.now();
-
     response.progress("Identify code-generation scenarios...");
     if (
       (!spec.appendix.host || spec.appendix.host.length === 0) &&
       spec.appendix.complexity === 0
     ) {
+      const t0 = performance.now();
       const scanResult = await this.userAskPreScanningAsync(spec, token);
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenPreScanTimeInTotalSec] = duration;
       if (!scanResult) {
         return { result: ExecutionResultEnum.Failure, spec: spec };
       }
@@ -77,30 +81,45 @@ export class CodeGenerator implements ISkill {
     }
 
     if (!spec.appendix.codeSample || spec.appendix.codeSample.length === 0) {
+      const t0 = performance.now();
       const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesBM25(
         token,
         spec.appendix.host,
         spec.userInput,
         1
       );
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenGetSampleTimeInTotalSec] =
+        duration;
       if (samples.size > 0) {
         console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
+        spec.appendix.telemetryData.relatedSampleName = Array.from(samples.values()).map(
+          (sample) => {
+            // remove the '-1' behind the sample name
+            const lastIndex = sample.name.lastIndexOf("-");
+            return lastIndex !== -1 ? sample.name.substring(0, lastIndex) : sample.name;
+          }
+        );
         spec.appendix.codeSample = Array.from(samples.values())[0].codeSample;
       }
     }
 
-    if (
-      spec.appendix.codeTaskBreakdown.length === 0 &&
-      spec.appendix.codeExplanation.length === 0
-    ) {
+    if (!spec.appendix.codeTaskBreakdown || !spec.appendix.codeExplanation) {
+      const t0 = performance.now();
       const breakdownResult = await this.userAskBreakdownAsync(
         token,
         spec.appendix.complexity,
         spec.appendix.isCustomFunction,
         spec.appendix.host,
         spec.userInput,
-        spec.appendix.codeSample
+        spec.appendix.codeSample,
+        spec
       );
+      const t1 = performance.now();
+      const duration = (t1 - t0) / 1000;
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenTaskBreakdownTimeInTotalSec] =
+        duration;
 
       console.debug(`functional spec: ${breakdownResult?.spec || ""}`);
       console.debug(breakdownResult?.funcs.map((task) => `- ${task}`).join("\n"));
@@ -121,8 +140,12 @@ export class CodeGenerator implements ISkill {
       }
       spec.appendix.codeTaskBreakdown = breakdownResult.funcs;
       spec.appendix.codeExplanation = breakdownResult.spec;
+      response.markdown(`
+${spec.appendix.codeExplanation
+  .substring(spec.appendix.codeExplanation.indexOf("1."))
+  .replace(/\b\d+\./g, (match) => `\n${match}`)}
+`);
     }
-
     if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
       spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;
     }
@@ -140,6 +163,7 @@ export class CodeGenerator implements ISkill {
       );
     }
     response.progress(progressMessageStr);
+    const t0 = performance.now();
     let codeSnippet: string | null = "";
     codeSnippet = await this.generateCode(
       token,
@@ -184,13 +208,17 @@ export class CodeGenerator implements ISkill {
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
-      new LanguageModelChatUserMessage(userPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
     ];
-    const copilotResponse = await getCopilotResponseAsString(
+    let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
+    );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
       host: string;
@@ -203,6 +231,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
+      copilotResponse = copilotResponse.replace(/\\n/g, "").replace(/\n/g, "");
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
@@ -210,7 +239,11 @@ export class CodeGenerator implements ISkill {
       } else {
         copilotRet = JSON.parse(codeSnippetRet[1].trim());
       }
-      console.log(`The complexity score: ${copilotRet.complexity}`);
+      console.debug(
+        `Custom functions: ${copilotRet.customFunctions ? "true" : "false"}, Complexity score: ${
+          copilotRet.complexity
+        }`
+      );
     } catch (error) {
       console.error("[User task scanning] Failed to parse the response from Copilot:", error);
       return null;
@@ -225,31 +258,79 @@ export class CodeGenerator implements ISkill {
     isCustomFunctions: boolean,
     host: string,
     userInput: string,
-    sampleCode: string
+    sampleCode: string,
+    spec: Spec
   ): Promise<null | {
     spec: string;
     funcs: string[];
   }> {
-    const userPrompt = getUserInputBreakdownTaskUserPrompt(userInput);
-    const defaultSystemPrompt =
-      complexity >= 50
-        ? getUserComplexAskBreakdownTaskSystemPrompt(userInput)
-        : getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+    let userPrompt: string = getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+    if (isCustomFunctions) {
+      userPrompt = `This is a task about Excel custom functions, pay attention if this is a regular custom functions or streaming custom functions:\n\n ${userPrompt}`;
+    }
+    userPrompt += "\nDo not generate code snippets.\n\nThink about that step by step.";
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
     ];
 
+    //     let declarations = new Map<string, SampleData>();
+    //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
+    //       declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+    //         token,
+    //         host,
+    //         userInput,
+    //         "" //sampleCode
+    //       );
+
+    //       spec.appendix.apiDeclarationsReference = declarations;
+    //     } else {
+    //       declarations = spec.appendix.apiDeclarationsReference;
+    //     }
+
+    //     if (declarations.size > 0) {
+    //       const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+    //       declarations.forEach((declaration) => {
+    //         if (!groupedMethodsOrProperties.has(declaration.definition)) {
+    //           groupedMethodsOrProperties.set(declaration.definition, []);
+    //         }
+    //         groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+    //       });
+
+    //       let tempClassDeclaration = "\n```typescript\n";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+    // }
+    // \n
+    //       `;
+    //       });
+    //       tempClassDeclaration += "```\n";
+
+    //       console.debug(`API declarations: \n${tempClassDeclaration}`);
+    //       const classPrompt = `Here are some API declaration that you may want to use as reference, you should only pick those relevant to the user's ask. List the name of used method, property with its class as part of the spec and function descriptions :\n\n${tempClassDeclaration}`;
+    //       messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.System, classPrompt));
+    //     }
+
     if (sampleCode.length > 0) {
-      messages.push(new LanguageModelChatSystemMessage(getCodeSamplePrompt(sampleCode)));
+      messages.push(
+        new LanguageModelChatMessage(
+          LanguageModelChatMessageRole.System,
+          getCodeSamplePrompt(sampleCode)
+        )
+      );
     }
 
-    const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+    let copilotResponse = await getCopilotResponseAsString(
+      "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
+    );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
       spec: string;
@@ -260,6 +341,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
+      copilotResponse = copilotResponse.replace(/\\n/g, "  ").replace(/\n/g, "  ");
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
@@ -268,7 +350,7 @@ export class CodeGenerator implements ISkill {
         copilotRet = JSON.parse(codeSnippetRet[1].trim());
       }
     } catch (error) {
-      console.error("[User task breakdown] Failed to parse the response from Copilot:", error);
+      console.error("[User task breakdown] Failed to parse the response " + copilotResponse, error);
       return null;
     }
     // We're not able to control the LLM output very precisely, so we need to do some post-processing here
@@ -293,6 +375,51 @@ export class CodeGenerator implements ISkill {
     sampleCode: string
   ) {
     const userPrompt = getGenerateCodeUserPrompt(codeSpec, host, suggestedFunction);
+
+    //     if (!spec.appendix.apiDeclarationsReference || !spec.appendix.apiDeclarationsReference.size) {
+    //       const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+    //         token,
+    //         host,
+    //         codeSpec,
+    //         "" //sampleCode
+    //       );
+
+    //       spec.appendix.apiDeclarationsReference = declarations;
+    //     }
+
+    //     let declarationPrompt = getGenerateCodeDeclarationPrompt();
+    //     if (spec.appendix.apiDeclarationsReference.size > 0) {
+    //       const groupedMethodsOrProperties: Map<string, SampleData[]> = new Map<string, SampleData[]>();
+    //       spec.appendix.apiDeclarationsReference.forEach((declaration) => {
+    //         if (!groupedMethodsOrProperties.has(declaration.definition)) {
+    //           groupedMethodsOrProperties.set(declaration.definition, []);
+    //         }
+    //         groupedMethodsOrProperties.get(declaration.definition)?.push(declaration);
+    //       });
+
+    //       let tempClassDeclaration = "\n```typescript\n";
+    //       groupedMethodsOrProperties.forEach((methodsOrPropertiesCandidates, className) => {
+    //         tempClassDeclaration += `
+    // class ${className} extends OfficeExtension.ClientObject {
+    //   ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
+    // }
+    // \n
+    //       `;
+    //       });
+    //       tempClassDeclaration += "```\n";
+
+    //       declarationPrompt += tempClassDeclaration;
+    //       // console.debug(`API declarations: \n${declarationPrompt}`);
+    //     }
+    const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";
+    let msgCount = 0;
+
+    // Perform the desired operation
+    // The order in array is matter, don't change it unless you know what you are doing
+    const messages: LanguageModelChatMessage[] = [
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
+    ];
+
     let referenceUserPrompt = "";
     switch (host) {
       case "Excel":
@@ -301,46 +428,46 @@ export class CodeGenerator implements ISkill {
         } else {
           referenceUserPrompt = customFunctionSystemPrompt;
         }
+        messages.push(
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+        );
         break;
       default:
         referenceUserPrompt = "";
         break;
     }
-
-    const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
-      token,
-      host,
-      codeSpec,
-      sampleCode
-    );
-
-    spec.appendix.apiDeclarationsReference = declarations;
-
-    let declarationPrompt = getGenerateCodeDeclarationPrompt();
-    if (declarations.size > 0) {
-      declarationPrompt += Array.from(declarations.values())
-        .map((declaration) => `- ${declaration.definition}`)
-        .join("\n");
-    }
-
-    let samplePrompt = getGenerateCodeSamplePrompt();
+    // // May sure for the custom functions, the reference user prompt is shown first so it has lower risk to be cut off
+    // if (isCustomFunctions) {
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    //   );
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
+    //   );
+    // } else {
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, declarationPrompt)
+    //   );
+    //   messages.push(
+    //     new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+    //   );
+    // }
     if (sampleCode.length > 0) {
+      let samplePrompt = getGenerateCodeSamplePrompt();
       samplePrompt += `
+      \n
       \`\`\`typescript
       ${sampleCode}
       \`\`\`
+
+      Let's think step by step.
       `;
+      messages.push(
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, samplePrompt)
+      );
     }
-    // Perform the desired operation
-    // The order in array is matter, don't change it unless you know what you are doing
-    const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatSystemMessage(declarationPrompt),
-      new LanguageModelChatSystemMessage(samplePrompt),
-      new LanguageModelChatSystemMessage(referenceUserPrompt),
-    ];
-    const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";
-    let msgCount = countMessagesTokens(messages);
+    // Because of the token window limitation, we have to cut off the messages if it exceeds the limitation
+    msgCount = countMessagesTokens(messages);
     while (msgCount > getTokenLimitation(model)) {
       messages.pop();
       msgCount = countMessagesTokens(messages);
@@ -348,7 +475,10 @@ export class CodeGenerator implements ISkill {
     console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
 
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);
     if (!codeSnippetRet) {

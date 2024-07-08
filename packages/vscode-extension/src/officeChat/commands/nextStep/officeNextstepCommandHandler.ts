@@ -7,6 +7,8 @@ import {
   ChatFollowup,
   ChatRequest,
   ChatResponseStream,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
@@ -14,13 +16,16 @@ import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import followupProvider from "../../../chat/followupProvider";
-import { ChatTelemetryData } from "../../../chat/telemetry";
-import { describeStep } from "../../../chat/commands/nextstep/nextstepCommandHandler";
 import { officeSteps } from "./officeSteps";
 import { OfficeWholeStatus } from "./types";
 import { getWholeStatus } from "./status";
 import { localize } from "../../../utils/localizeUtils";
 import { ICopilotChatOfficeResult } from "../../types";
+import { NextStep } from "../../../chat/commands/nextstep/types";
+import { describeOfficeStepSystemPrompt } from "../../officePrompts";
+import { getCopilotResponseAsString } from "../../../chat/utils";
+import { IChatTelemetryData } from "../../../chat/types";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
 
 export default async function officeNextStepCommandHandler(
   request: ChatRequest,
@@ -28,10 +33,9 @@ export default async function officeNextStepCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    OfficeChatCommand.NextStep,
-    request.location
+    OfficeChatCommand.NextStep
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
@@ -39,8 +43,10 @@ export default async function officeNextStepCommandHandler(
   );
 
   if (request.prompt) {
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
-    officeChatTelemetryData.markComplete("unsupportedPrompt");
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,
@@ -61,6 +67,7 @@ export default async function officeNextStepCommandHandler(
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);
   if (steps.length > 1) {
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown("Here are the next steps you can do:\n");
   }
   for (let index = 0; index < Math.min(3, steps.length); index++) {
@@ -68,11 +75,15 @@ export default async function officeNextStepCommandHandler(
     if (s.description instanceof Function) {
       s.description = s.description(status);
     }
-    const stepDescription = await describeStep(s, token, officeChatTelemetryData);
+    const stepDescription = await describeOfficeStep(s, token, officeChatTelemetryData);
+    officeChatTelemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, stepDescription)
+    );
     const title = s.docLink ? `[${s.title}](${s.docLink})` : s.title;
     if (steps.length > 1) {
       response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);
     } else {
+      officeChatTelemetryData.setTimeToFirstToken();
       response.markdown(`${title}: ${stepDescription}\n`);
     }
     s.commands.forEach((c) => {
@@ -101,4 +112,23 @@ export default async function officeNextStepCommandHandler(
       requestId: officeChatTelemetryData.requestId,
     },
   };
+}
+
+export async function describeOfficeStep(
+  step: NextStep,
+  token: CancellationToken,
+  telemetryMetadata: IChatTelemetryData
+): Promise<string> {
+  const messages = [
+    describeOfficeStepSystemPrompt(),
+    new LanguageModelChatMessage(
+      LanguageModelChatMessageRole.User,
+      `The content is '${JSON.stringify({
+        description: step.description as string,
+      })}'.`
+    ),
+  ];
+
+  telemetryMetadata.chatMessages.push(...messages);
+  return await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
 }

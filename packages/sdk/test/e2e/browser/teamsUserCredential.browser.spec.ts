@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { assert, expect, use as chaiUse } from "chai";
+import * as chai from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { AccessToken } from "@azure/core-auth";
 import * as sinon from "sinon";
@@ -9,7 +9,7 @@ import { getSSOToken, AADJwtPayLoad, SSOToken, getGraphToken } from "../helper.b
 import jwtDecode from "jwt-decode";
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
-chaiUse(chaiPromises);
+chai.use(chaiPromises);
 const env = (window as any).__env__;
 
 describe("TeamsUserCredential Tests - Browser", () => {
@@ -41,10 +41,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
       clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     });
     const info = await credential.getUserInfo();
-    assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT.split(";")[0]);
-    assert.strictEqual(info.displayName, "Integration Test");
-    assert.strictEqual(info.objectId, TEST_USER_OBJECT_ID);
-    assert.strictEqual(info.tenantId, TEST_AAD_TENANT_ID);
+    chai.assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT.split(";")[0]);
+    chai.assert.strictEqual(info.displayName, "TestBot");
+    chai.assert.strictEqual(info.objectId, TEST_USER_OBJECT_ID);
+    chai.assert.strictEqual(info.tenantId, TEST_AAD_TENANT_ID);
   });
 
   it("GetToken should success with consent scope", async function () {
@@ -77,8 +77,8 @@ describe("TeamsUserCredential Tests - Browser", () => {
     // await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property("token");
     const accessToken = await credential.getToken(["User.Read"]);
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken!.token);
-    assert.strictEqual(decodedToken.aud, "00000003-0000-0000-c000-000000000000");
-    assert.isTrue(decodedToken.scp!.includes("User.Read"));
+    chai.assert.strictEqual(decodedToken.aud, "00000003-0000-0000-c000-000000000000");
+    chai.assert.isTrue(decodedToken.scp!.includes("User.Read"));
   });
 
   it("GetToken should throw UiRequiredError with unconsent scope", async function () {
@@ -86,7 +86,8 @@ describe("TeamsUserCredential Tests - Browser", () => {
       initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
       clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     });
-    await expect(credential.getToken(["Calendars.Read"]))
+    await chai
+      .expect(credential.getToken(["Calendars.Read"]))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", UIREQUIREDERROR);
   });

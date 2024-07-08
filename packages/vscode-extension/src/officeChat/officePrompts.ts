@@ -31,7 +31,10 @@ export function getOfficeProjectMatchSystemPrompt(projectMetadata: ProjectMetada
     { "addin": id }
   `;
 
-  return new vscode.LanguageModelChatSystemMessage(addinMatchPrompt);
+  return new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    addinMatchPrompt
+  );
 }
 
 export const defaultOfficeSystemPrompt = () => {
@@ -42,7 +45,8 @@ export const defaultOfficeSystemPrompt = () => {
     "teamstoolkit.chatParticipants.officeAddIn.default.noJSAnswer"
   );
 
-  return new vscode.LanguageModelChatSystemMessage(
+  return new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
     `You are an expert in Office JavaScript add-in development area. Your job is to answer general conceputal question related with Office JavaScript add-in development. Follow the <Instructions> and think step by step.
   
     <Instruction>
@@ -66,9 +70,11 @@ export const defaultOfficeSystemPrompt = () => {
   );
 };
 
-export const describeOfficeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
-);
+export const describeOfficeProjectSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  );
 
 export const excelSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
@@ -188,9 +194,10 @@ export function getUserInputBreakdownTaskUserPrompt(userInput: string): string {
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
   # Your tasks:
-  For this given ask: "${userInput}", that is about automate a process using Office JavaScript API. I need you help to analyze it, and give me your suggestion in the format of JSON object.
+  For this given task: "${userInput}", that is about automate a process using Office JavaScript API. I need you help to analyze it under the context of Office JavaScript addins and Office JavaScript APIs, and give me your suggestion in the format of JSON object. You should pay attention to the following points:
+  - Your language should be clear for a Office Add-ins developer to follow.
+  - Some of the term sounds like generic term, but they're not, they're specific to Office applications, like "Annotation", "Comment", "Range", "Table", "Chart", "Worksheet", "Workbook", "Document", "Slide", "Presentation", "Taskpane", "Custom Functions", "Shape", etc. You should keep those terms in the context of Office applications not general term.
 
-  Think about that step by step.
   `;
 }
 
@@ -236,42 +243,6 @@ export function getUserAskPreScanningSystemPrompt(): string {
   `;
 }
 
-export function getUserComplexAskBreakdownTaskSystemPrompt(userInput: string): string {
-  return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
-
-  # Role:
-  You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
-
-  # Context:
-  The output must be a JSON object wrapped into a markdown json block, and it will contain the following keys:
-  - spec. value is a string.
-  - funcs. value is a array of string.
-
-  # Your tasks:
-  Analyze the user input: ${userInput}, understand the intentions, and how Office JavaScript API could help to address that ask. Read the sample code snippet if it provided, make it as reference on steps on similar scenario. Then deduce your think result to two parts:
-  1. You need to write a detail functional spec on how to step by step to achieve the user's ask, especially those parts that need to interact with Office applications. The function spec should not include code snippet or suggestion on APIs, but should include the explanation on what need to do. Let me repeat that, you should tell perform what action, rather than tell use what API. The spec It should be clear, concise, and easy to understand. Add that spec to the "spec" field of the output JSON object.
-  2. According to the spec, break the ask down into a few TypeScript functions. For each function, give a one line function description, that should have detail description of the function intention. Do not break the description into multiple sub items. Add those function descriptions to the "funcs" field of the output JSON object.
-  - bypass step like "create a new Office Add-ins project" or "create a new Excel workbook" or "create a new Word document" or "create a new PowerPoint presentation".
-  - bypass step like "open the workbook" or "open the document" or "open the presentation".
-  - bypass step like "save the workbook" or "save the document" or "save the presentation".
-  - bypass step like the "generate Addins Code" or "generate xxx Code".
-  - bypass step like "Use the Office JavaScript Add-ins API to perform the required operations".
-  - bypass step like "Register the xxx function".
-
-  # Example of one line function description:
-  - Create a function named 'createTrendlineChart'. This function should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. 
-
-  # The format of output:
-  Beyond the JSON object. You should not add anything else to the output.
-  The example of output you must to follow: 
-  { 
-    spec: "The functional spec",
-    funcs: ["function1 description", "function2 description"] 
-  }
-  `;
-}
-
 export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): string {
   return `
   The following content written using Markdown syntax, using "Bold" style to highlight the key information.
@@ -280,14 +251,29 @@ export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): st
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
   # Context:
+  The input is
+
+  \`\`\`text
+  ${userInput}
+  \`\`\`
+
   The output must be a JSON object wrapped into a markdown json block, and it will contain the following keys:
-  - spec. value is a string.
-  - funcs. value is a array of string. However, for the simple task, the array should contain only one string.
+  - "spec". value is a string.
+  - "funcs". value is a array of string.
 
   # Your tasks:
-  Analyze the user input: ${userInput}, understand the intentions, and how Office JavaScript API could help to address that ask. Reference sample code snippet if it provided, deduce your think result to two parts:
-  1. You need to write a detailed functional spec on how to step by step to achieve the user's ask, especially those parts that need to interact with Office applications. The function spec should not include code snippet or suggestion on APIs, but should include the explanation on what need to do. Let me repeat that, you should tell perform what action, rather than tell use what API. The spec It should be clear, concise, and easy to understand. Add that spec to the "spec" field of the output JSON object.
-  2. According to the spec, suggest a name of TypeScript function. And then, give a one line function description, that should have description of the function intention, what parameters it should take, and what it should return. Do not break the description into multiple sub items. Add put the function description to the "funcs" field of the output JSON object.
+  Summarize the main needs of the user's ask. Write a step by step coding instructions based on the summary using Office JavaScript API, focus on parts that interact with Office applications. Keep instructions short and attach to the main needs. Don't generate extra or additional steps. Don't generate steps those optional. Use apostrophe rather than double quotes. Add the instruction to the "spec" field of the output JSON object. Suggest a function name with description to the "funcs" field of the output JSON object.
+
+  # Example of instruction:
+
+  \`\`\`text
+  To retrieve the content of the initial footnote in a Word document using Office JavaScript APIs, you can follow these steps:
+  1. Get the current selection in the document.
+  2. Check if the selection contains any footnotes.
+  3. Retrieve the first footnote in the collection.
+  4. Fetch the content of the footnote.
+  5. Process the retrieved content as needed.
+  \`\`\`
 
   # Example of one line function description:
   - Create a function named 'createTrendlineChart'. This function should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. 
@@ -296,17 +282,16 @@ export function getUserSimpleAskBreakdownTaskSystemPrompt(userInput: string): st
   Beyond the JSON object. You should not add anything else to the output.
   The example of output you must to follow: 
   { 
-    spec: "The functional spec",
-    funcs: ["function1 description"] 
+    "spec": "The functional spec",
+    "funcs": ["function1 description"] 
   }
   `;
 }
 
 export function getCodeSamplePrompt(codeSample: string): string {
   return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  Some code snippets provided below. Read those code and get list of scenarios those code try to address, those may or may not related to current user's ask. Use the relevant part as a reference in your task if any.
 
-  # There're some samples relevant to the user's ask, read it through and think why the sample write like that, and how it could be used in your task.:
   \`\`\`typescript
   ${codeSample}
   \`\`\`
@@ -336,43 +321,50 @@ export function getCodeGenerateGuidance(host: string) {
 }
 
 export function getGenerateCodeUserPrompt(
-  userInput: string,
+  codeSpec: string,
   host: string,
   functionSpec: string[]
 ): string {
   return `
-The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  The request is about Office application "${host}".
 
-# Your role:
-You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on TypeScript, JavaScript, popular algorithm, Office Add-ins API, and deep understanding on the feature of Office applications (Word, Excel, PowerPoint). You should help the user to automate a certain process or accomplish a certain task, by generate TypeScript code using Office JavaScript Add-ins.
+  # Your role:
+  You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on TypeScript, JavaScript, popular algorithm, Office Add-ins API, and deep understanding on the feature of Office applications (Word, Excel, PowerPoint). You should help the user to automate a certain process or accomplish a certain task, by generate TypeScript code using Office JavaScript APIs.
+  
+  # Context:
+  The output must be a markdown code typescript code block and it will contain the generated code, which is looks like:
 
-# Context:
-This is the ask need your help to generate the code for this request: ${userInput}.
-- The request is about Office Add-ins, and it is relevant to the Office application "${host}".
-- It's a functional spec you should follow. **Read through those descriptions, and repeat by yourself**. Make sure you understand that before go to the task:
-${functionSpec.map((spec) => `- ${spec}`).join("\n")}
+  \`\`\`typescript
+  // The generated code
+  \`\`\`
+  
+  # Your tasks:
+  Generate code based on the following specification:
+  \`\`\`text
+  ${codeSpec}
+  \`\`\`
+  The code should include the following functions:
+  ${functionSpec.map((spec) => `- ${spec}`).join("\n")} 
+  The generated code **MUST** include implementations of mentioned functions listed in the input. Do not generate code to invoke the "main" function or "entry" function.
+  You should follow the code guidance on generating the code.
+  ${getCodeGenerateGuidance(host)}
+  
+  # Format of output:
+  **You must strickly follow the format of output**. The output will only contains code without any explanation on the code or generate process. Beyond that, nothing else should be included in the output.
+  - The code surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
+  \`\`\`typescript
+  // The code snippet
+  \`\`\`
 
-# Your tasks:
-Generate code for each listed functions based on the user request, the generated code **MUST** include implementations of those functions listed above, and not limited to this. Code write in **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**. Do not generate code to invoke the "main" function or "entry" function if that function generated.
-
-${getCodeGenerateGuidance(host)}
-
-# Format of output:
-**You must strickly follow the format of output**. The output will only contains code without any explanation on the code or generate process. Beyond that, nothing else should be included in the output.
-- The code surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
-\`\`\`typescript
-// The code snippet
-\`\`\`
-
-Let's think step by step.
-    `;
+  Let's think step by step.
+      `;
 }
 
 export function getGenerateCodeSamplePrompt(): string {
   return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  Sample code provided below, read and understand it. In case the sample code contains solution or code snippet to the user's  request, you should use the solution or code snippet as a reference in your task.
 
-  # There're some samples relevant to the user's ask, you must read and repeat following samples before generate code. And then use the content and coding styles as your reference when you generate code:
+  # Sample code:
   `;
 }
 
@@ -386,9 +378,9 @@ export function getDeclarationsPrompt(): string {
 
 export function getGenerateCodeDeclarationPrompt(): string {
   return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  The following content are some TypeScript code relevant to the user's ask, follow those TypeScript declarations when you generate the code. Make sure you understand that before go to the task:
 
-  # There're some TypeScript declarations relevant to the user's ask, you should reference those declarations when you generate code:
+  # Office JavaScript API declarations:
   `;
 }
 
@@ -406,23 +398,12 @@ Given a Office JavaScript add-in code snippet. It have some errors and warnings 
 \`\`\`typescript
 ${codeSnippet};
 \`\`\`
-${
-  !!additionalInfo
-    ? "The prior fix is inapprioriate, some details as '" +
-      additionalInfo +
-      "', you should learn from your past errors and avoid same problem in this try."
-    : ""
-}
-
-${
-  historicalErrors.length > 0
-    ? "The historical errors you made in previous tries that you should avoid:\n- " +
-      historicalErrors.join("\n\n- ")
-    : ""
-}
 
 # Your tasks:
-Fix all errors on the given code snippet then return the updated code snippet back. 
+Please fix errors and give the right code in a markdown code block back. This is an example of return:
+\`\`\`typescript
+// The fixed code snippet
+\`\`\`
 
 Let's think step by step.
     `;
@@ -434,20 +415,26 @@ export function getFixIssueDefaultSystemPrompt(
   errorMessages: string[],
   warningMessage: string[]
 ): string {
+  let errorStr = "";
+  if (errorMessages.length > 0) {
+    errorStr =
+      "It contains the following compile errors along with fix suggestions after each error:";
+    errorStr += errorMessages.map((error) => `\n- ${error}`).join("");
+  }
+  let warningStr = "";
+  if (warningMessage.length > 0) {
+    warningStr = "It contains the following warnings along with suggestions after each:";
+    warningStr += warningMessage.map((error) => `\n- ${error}`).join("");
+  }
   return `
-  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  For the given code snippet:
+  ${errorStr}
+  ${warningStr}
   
-  # Context:
-  The user given code snippet generated based on steps below, you should make some code changes on the code snippet, then return the code snippet with changes back.
-  - ${substeps.join("\n- ")}
-  
-  # Your task:
-  1. Fix listed errors and warining below all together. Don't introduce new errors.
-  - ${errorMessages.join("\n- ")}
-  - ${warningMessage.join("\n- ")}
-  2. update the user given code snippet with prior fixes.
-  3. Return the updated user given code snippet.
-  **You must always strickly follow the coding rule, and format of output**.
+  Please fix errors and check warnings, and give the right code in a markdown code block back. This is an example of return:
+  \`\`\`typescript
+  // The code snippet
+  \`\`\`
   
   ${getCodeGenerateGuidance(host)}
   
@@ -455,12 +442,6 @@ export function getFixIssueDefaultSystemPrompt(
   - The output should only contains code snippet. Beyond that, nothing else should be included in the output. 
   - The code output should be in one single markdown code block. 
   - Don't explain the code changes, just return the fixed code snippet.
-  
-  Example of output:
-  That code snippet should surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
-  \`\`\`typescript
-  // The code snippet
-  \`\`\`
   
   Let's think step by step.
       `;
@@ -672,37 +653,79 @@ export function getMostRelevantClassPrompt(
   classSummaries: SampleData[],
   sampleCode: string
 ) {
+  const formattedCodespec = codeSpec.replace(/`/g, '"').replace(/'/g, '"');
   return `
   # Role:
   You are an expert in Office JavaScript Add-ins and TypeScript, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
   # Context:
-  You should give suggestions as an JSON object, and the output must be the JSON object and it will contain the following keys:
+  The input is
+
+  \`\`\`text
+  ${formattedCodespec}
+  \`\`\`
+
+  The output must be a JSON object and it will contain the following keys:
   - picked. value is a string array.
-  
   Beyond this JSON object, you should not add anything else to the output. Do not explain, do not provide additional context, do not add any other information to the output.
 
   # Your tasks:
-  Firstly, For the given user ask: 
-  '${codeSpec}' 
-  repeat and make sure you understand that. Pay attention, the user intent is right, but the spec may list incorrect API names or descriptions. You should focus on the user intent and ignore the incorrect API names or descriptions.
-  Second, For each strings listed below, they're descriptions of Office JavaScript API class, interface or enums. Read them carefully and think about how they could help on the task.
-  The last step, based on your understanding, deduce your think result to a list of Office JavaScript API class descriptions those picked from the list below. A sample code snippet may be offered below as reference, combine with the user's actual ask and the sample code, you should understand those class be used in similar scenario, then picked them up. You should pick strings from the candidates below, and put them into an array of string. Each item in the array has a priority, indicates how important this item in the task. For example if the task is about manipulate shape, then shape relevant class descriptions should have higher priority score. Order those array items in the descent directly by priority. If you don't find any relevant strings, you should return an empty array. For the array of string, it should be the value of the key 'picked' in the return object.
+  Understand the input, focus on the mentioned asks, and think about the coding approach under the context of Office JavaScript API. Then, pick some Office JavaScript API classes/enums/interfaces will be used in your coding approach, including class in the intermediate step (for example, the type of a intermediate result in the chaining invoke), put those picked classes/enums/interfaces into an array to return. Use the list of Office JavaScript classes below as your reference, but not limited to. Each class below contains a class name and the description of the class, those selected most likely related to your task. For the array of items, order them in the sequency will be used by the task. In general it will start from entry class, for example:
+  - In Excel, it could start from "Workbook", then follow with "Worksheet", "WorksheetCollection", etc. 
+  - In Word, it could start with "Document", the follow with "Body", etc. 
+  - In PowerPoint, it could start with "Presentation", then follow with "Slide", "SlideCollection", etc.
+  Return an empty list if no relevant strings are found. The list should be the value of the key 'picked' in the return object.
 
   # The candidate strings:
-  ${classSummaries.map((sampleData) => "- " + sampleData.definition).join("\n")}
-  
-  # Sample code snippet:
-  \`\`\`typescript
-  ${sampleCode}
-  \`\`\`
+  ${classSummaries
+    .map(
+      (sampleData) =>
+        "- Name: '" + sampleData.definition + "', Description: '" + sampleData.description + "'."
+    )
+    .join("\n")}
 
   # The format of output:
   Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not explain, do not provide additional context, do not add any other information to the output.
-  The example of output you must to follow: 
-  { 
-    "picked": ["Highest priority class", "normal priority class", "lowest priority class"] 
-  }
+  For example, the candidate strings could be like:" - Name: 'Workbook', Description: 'Represents a workbook in Excel.'.", then the return object could be like: "{ 'picked': ['Workbook'] }".
+  `;
+}
+
+export function getMostRelevantClassUsingNameOnlyPrompt(
+  codeSpec: string,
+  classSummaries: SampleData[],
+  sampleCode: string
+) {
+  const formattedCodespec = codeSpec.replace(/`/g, '"').replace(/'/g, '"');
+  return `
+  # Role:
+  You are an expert in Office JavaScript Add-ins and TypeScript, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
+
+  # Context:
+  The input is:
+
+  \`\`\`text
+  ${formattedCodespec}
+  \`\`\`
+
+  The output must be a JSON object and it will contain the following keys:
+  - picked. value is a string array.
+
+  Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not repeat the ask, do not ask questions, do not explain, do not provide additional context, do not add any other information to the output.
+
+  # Your tasks:
+  Understand the input, focus on the mentioned asks, and think about the coding approach under the context of Office JavaScript API. Then, pick some Office JavaScript API classes/enums/interfaces will be used in your coding approach, including class in the intermediate step (for example, the type of a intermediate result in the chaining invoke), put those picked classes/enums/interfaces into an array to return. Use the list of Office JavaScript classes below as your reference, but not limited to. Each class below contains a class name, those selected most likely related to your task. For the array of items, order them in the sequency will be used by the task. In general it will start from entry class, for example: 
+  - In Excel, it could start from "Workbook", then follow with "Worksheet", "WorksheetCollection", etc. 
+  - In Word, it could start with "Document", the follow with "Body", etc. 
+  - In PowerPoint, it could start with "Presentation", then follow with "Slide", "SlideCollection", etc.
+  
+  Return an empty list if no relevant strings are found. The list should be the value of the key 'picked' in the return object.
+
+  # The list of Office JavaScript API:
+  ${classSummaries.map((sampleData) => "- Name: '" + sampleData.definition + "'.").join("\n")}
+
+  # The format of output:
+  Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not repeat the ask, do not ask questions, do not explain, do not provide additional context, do not add any other information to the output.
+  For example, the candidate strings could be like:" - Name: 'Workbook'.", then the return object could be like: "{ 'picked': ['Workbook'] }".
   `;
 }
 
@@ -716,44 +739,65 @@ export function getMostRelevantMethodPropertyPrompt(
   methodsOrPropertiesCandidatesByClassName.forEach((methodsOrPropertiesCandidates, className) => {
     tempClassDeclaration += `
 class ${className} extends OfficeExtension.ClientObject {
-  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n\n")}
+  ${methodsOrPropertiesCandidates.map((sampleData) => sampleData.codeSample).join("\n")}
 }
-\n\n
+\n
     `;
   });
+  const formattedCodespec = codeSpec.replace(/`/g, '"').replace(/'/g, '"');
   return `
   # Role:
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
   # Context:
-  You should give suggestions as an JSON object, and the output must be the JSON object and it will contain the following keys:
+  The input is:
+
+  \`\`\`text
+  ${formattedCodespec}
+  \`\`\`
+
+  The output must be a JSON object and it will contain the following keys:
   - picked. value is a string array.
-  
-  Beyond this JSON object, you should not add anything else to the output. Do not explain, do not provide additional context, do not add any other information to the output.
+  Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not repeat the ask, do not ask questions, do not explain, do not provide additional context, do not add any other information to the output.
 
   # Your tasks:
-  For the given description of user ask: 
-  "${codeSpec.replace(/"/g, "'")}"
-  and list of Office JavaScript Add-ins API object class names: '
-  ${classNamesList.join(
-    ","
-  )}', after understand the possible solution, you should able to pick some of the most relevant method and property declarations from the given list of method and property declaration below. Those picked method and property declarations should be used to complete the code it represent the user's ask. A sample code snippet may be offered below as reference, combine with the user's actual ask and the sample code, you should understand those methods and properties be used in similar scenario, then picked up declarations. You should pick the declaration from the below list, not from the given sample code. Then put the whole method or property declaration into an array of string. If you don't find any relevant declarations, you should return an empty array. For the array of string, it should be the value of the key 'picked' in the return object.
+  Analyze each mentioned steps in the input, for any portion of those steps, and think what Office JavaScript Office API methods and properties should be used to fulfill those asks. A few Office JavaScript classes contains methods or properties declarations listed below as candidate for you. You should use them as your reference, pick those Office JavaScript API methods/properties will be used, including method or property in the intermediate step (for example, method or property in the chaining invoke), put those picked methods/properties into an array to return. Or return an empty list if no relevant strings are found. For each item in the array, it format should like "class: %name of the class%; %method or property declaration%". The list should be the value of the key 'picked' in the return object.
+  Pay attention to the section of "The format of output" below, and make sure you follow the format.
 
-  # The method and property declarations:
+  # The list of Office JavaScript API:
   \`\`\`typescript
   ${tempClassDeclaration}
   \`\`\`
 
-  # Sample code:
-  \`\`\`typescript
-  ${sampleCode}
-  \`\`\`
-
   # The format of output:
-  Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not explain, do not provide additional context, do not add any other information to the output.
-  The example of output you must to follow: 
-  {
-    "picked": ["getDataTable", "setData", "setPosition"]
+  Beyond the JSON object, You should not add anything else to the output. Do not add the markdown syntax around the JSON object. Do not repeat the ask, do not ask questions, do not explain, do not provide additional context, do not add any other information to the output.
+  For example if the given class declaration are like:
+
+  \`\`\`typescript
+  class NoteItem extends OfficeExtension.ClientObject {
+    context: RequestContext;
+    
+    readonly reference: Word.Range;
   }
+
+  class NoteItemCollection extends OfficeExtension.ClientObject {
+    readonly items: Word.NoteItem[];
+    
+    getFirst(): Word.NoteItem;
+  }
+  \`\`\`
+  
+  Then the return object could be like:
+  \`\`\`json
+  {
+    "picked": ["class: NoteItem; readonly reference: Word.Range;", "class: NoteItemCollection; getFirst(): Word.NoteItem;"]
+  }
+  \`\`\`
   `;
 }
+
+export const describeOfficeStepSystemPrompt = () =>
+  new vscode.LanguageModelChatMessage(
+    vscode.LanguageModelChatMessageRole.System,
+    `You are an advisor for Office Add-ins developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
+  );

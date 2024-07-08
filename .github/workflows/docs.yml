@@ -26,7 +26,7 @@ jobs:
         run: |
           links=`git grep -hEo "https://aka[a-zA-Z0-9./?=_%:-]*[a-zA-Z0-9]"  | sort -nr | uniq`
 
-          white_list=""
+          white_list="https://aka.ms/teamsfx-plugin-api;https://aka.ms/dotnet;"
 
           while IFS= read -r link;
           do
@@ -75,7 +75,13 @@ jobs:
               then
                 label="SKIPPED"
               else
-                label="VALID"
+                httpcode=`curl -s -o /dev/null -w %{http_code} $redirect`
+                if [[ $httpcode == 404 ]];
+                then
+                  label="INVALID"
+                else
+                  label="VALID"
+                fi
               fi
 
               row="$file $aka $label"
@@ -116,8 +122,10 @@ jobs:
               redirect=`echo $line | awk -F '=>' '{print $2}'`
 
               label=""
+              invalid_url=false
               if [[ $redirect == *"bing.com"* ]];
               then
+                invalid_url=true
                 invalid=$((invalid+1))
                 label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
               elif [[ $redirect == *"white list"* ]];
@@ -125,14 +133,22 @@ jobs:
                 valid=$((valid+1))
                 label="<span style=\\\"background-color:#b58900;color:white;font-weight:bold;\\\">SKIPPED</span>"
               else
-                valid=$((valid+1))
-                label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">VALID</span>"
+                httpcode=`curl -s -o /dev/null -w %{http_code} $redirect`
+                if [[ $httpcode == 404 ]];
+                then
+                  invalid_url=true
+                  invalid=$((invalid+1))
+                  label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">INVALID</span>"
+                else
+                  valid=$((valid+1))
+                  label="<span style=\\\"background-color:#2aa198;color:white;font-weight:bold;\\\">VALID</span>"
+                fi
               fi
 
               row="<tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: left;\\\">$aka</td> <td style=\\\"text-align: center;\\\">$label</td> </tr>"
               echo $row
               
-              if [[ $redirect == *"bing.com"* ]];
+              if [[ $invalid_url == true ]];
               then
                 lists="$row $lists"
               else
@@ -141,7 +157,7 @@ jobs:
             done < $file/akas.data
           done
 
-          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/34d3400d-aa60-4ad5-9746-9d1b525da16e\/_djb2_msteams_prefix_3816426998?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>REPO</th> <th>AKA</th> <th>STATUS</th> </tr> $lists </table> <br />"
+          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/c439ae8d-3ab3-4efd-9223-87366d8c170c\/_djb2_msteams_prefix_1252604900?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>REPO</th> <th>AKA</th> <th>STATUS</th> </tr> $lists </table> <br />"
           total=$((valid+invalid))
           subject="TeamsFx AKA Link Report ($valid/$total Passed)"
           if [ $invalid -gt 0 ]; then

@@ -28,11 +28,13 @@ class ChefBotTestCase extends CaseFactory {
   }
   public override async onAfterCreate(projectPath: string): Promise<void> {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
-
-    const userFile = path.resolve(projectPath, "env", ".env.dev.user");
+    fs.mkdirSync(path.resolve(projectPath, "env"), {
+      recursive: true,
+    });
+    const userFile = path.resolve(projectPath, "env", ".env.dev");
     const KEY = "SECRET_OPENAI_KEY=MY_OPENAI_API_KEY";
     fs.writeFileSync(userFile, KEY);
-    console.log(`add key ${KEY} to .env.dev.user file`);
+    console.log(`add key ${KEY} to .env.dev file`);
   }
 }
 

@@ -92,23 +92,25 @@ describe("LocalTelemetryReporter", () => {
   });
 
   describe("getTaskInfo()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
-      sinon.restore();
+      sandbox.restore();
     });
 
     it("Failed to get task.json", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
-      sinon.stub(LocalEnvManager.prototype, "getTaskJson").returns(Promise.resolve(undefined));
+      sandbox.stub(LocalEnvManager.prototype, "getTaskJson").returns(Promise.resolve(undefined));
       const res = await getTaskInfo();
       chai.assert.isUndefined(res);
     });
 
     it("Failed to get renamed label", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "renameLabel")));
       const res = await getTaskInfo();
@@ -117,8 +119,8 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("task.json of old tab project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "oldTab")));
       const res = await getTaskInfo();
@@ -147,8 +149,8 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("task.json of a tab + bot + func project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "tabbotfunc")));
       const res = await getTaskInfo();
@@ -203,8 +205,8 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("task.json of a m365 project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "m365")));
       const res = await getTaskInfo();
@@ -288,8 +290,8 @@ describe("LocalTelemetryReporter", () => {
       );
     });
     it("task.json of user customized project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
+      sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+      sandbox
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "customized")));
       const res = await getTaskInfo();

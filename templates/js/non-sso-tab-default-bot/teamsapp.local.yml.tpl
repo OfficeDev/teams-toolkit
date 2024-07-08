@@ -43,7 +43,7 @@ provision:
   - uses: script
     with:
       run:
-        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -106,3 +106,4 @@ deploy:
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        BOT_TYPE: 'MultiTenant'

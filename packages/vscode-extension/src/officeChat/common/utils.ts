@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-import { sendRequestWithTimeout } from "@microsoft/teamsfx-core/build/component/generator/utils";
+import { sendRequestWithTimeout } from "@microsoft/teamsfx-core";
 
 export async function fetchRawFileContent(url: string): Promise<string> {
   try {

@@ -8,8 +8,8 @@ import {
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
-  ChatUserActionEvent,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
   ProviderResult,
   Uri,
   commands,
@@ -19,7 +19,6 @@ import {
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
 import { Correlator } from "@microsoft/teamsfx-core";
 import followupProvider from "../chat/followupProvider";
-import { ChatTelemetryData } from "../chat/telemetry";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -34,6 +33,7 @@ import { verbatimCopilotInteraction } from "../chat/utils";
 import { localize } from "../utils/localizeUtils";
 import { ICopilotChatOfficeResult } from "./types";
 import { ITelemetryData } from "../chat/types";
+import { OfficeChatTelemetryData } from "./telemetry";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
@@ -59,16 +59,25 @@ async function officeDefaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    "",
-    request.location
+    ""
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
-  const messages = [defaultOfficeSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+
+  if (!request.prompt) {
+    throw new Error(`
+Please specify a question when using this command.
+
+Usage: @office Ask questions about Office Add-ins development.`);
+  }
+  const messages = [
+    defaultOfficeSystemPrompt(),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+  ];
   officeChatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 
@@ -81,7 +90,22 @@ async function officeDefaultHandler(
   return { metadata: { command: undefined, requestId: officeChatTelemetryData.requestId } };
 }
 
-export async function chatCreateOfficeProjectCommandHandler(folder: string) {
+export async function chatCreateOfficeProjectCommandHandler(
+  folder: string,
+  requestId: string,
+  matchResultInfo: string
+) {
+  const officeChatTelemetryData = OfficeChatTelemetryData.get(requestId);
+  if (officeChatTelemetryData) {
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChatClickButton,
+      {
+        ...officeChatTelemetryData.properties,
+        [TelemetryProperty.CopilotMatchResultType]: matchResultInfo,
+      },
+      officeChatTelemetryData.measurements
+    );
+  }
   // Let user choose the project folder
   let dstPath = "";
   let folderChoice: string | undefined = undefined;
@@ -142,6 +166,14 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
       [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
       [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
       [TelemetryProperty.CorrelationId]: Correlator.getId(),
+      [TelemetryProperty.HostType]:
+        OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+          TelemetryProperty.HostType
+        ] ?? "",
+      [TelemetryProperty.CopilotChatRelatedSampleName]:
+        OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+          TelemetryProperty.CopilotChatRelatedSampleName
+        ] ?? "",
     },
     measurements: {
       [TelemetryProperty.CopilotChatFeedbackHelpful]: e.kind,
@@ -150,25 +182,6 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatFeedback,
-    telemetryData.properties,
-    telemetryData.measurements
-  );
-}
-
-export function handleOfficeUserAction(e: ChatUserActionEvent): void {
-  const result = e.result as ICopilotChatOfficeResult;
-  const telemetryData: ITelemetryData = {
-    properties: {
-      [TelemetryProperty.CopilotChatRequestId]: result.metadata?.requestId ?? "",
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
-      [TelemetryProperty.CorrelationId]: Correlator.getId(),
-      [TelemetryProperty.CopilotChatUserAction]: e.action.kind,
-    },
-    measurements: {},
-  };
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatUserAction,
     telemetryData.properties,
     telemetryData.measurements
   );

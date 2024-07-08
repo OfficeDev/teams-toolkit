@@ -18,17 +18,17 @@ import { err, FxError, ok, Result, SystemError, UserError, Void } from "@microso
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
-import { ExtensionErrors } from "../../error";
-import { VS_CODE_UI } from "../../extension";
-import { tools } from "../../handlers";
+import { ExtensionErrors } from "../../error/error";
+import { VS_CODE_UI } from "../../qm/vsc_ui";
+import { tools } from "../../globalVariables";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
-import { FeatureFlags, isFeatureFlagEnabled } from "../../utils/commonUtils";
-import { devTunnelDisplayMessages } from "../constants";
+import { FeatureFlags, isFeatureFlagEnabled } from "../../featureFlags";
+import { devTunnelDisplayMessages } from "../common/debugConstants";
 import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import {

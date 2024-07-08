@@ -13,7 +13,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { M365TenantRes, provisionUtils } from "../../src/component/provisionUtils";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import { ResourceGroupNotExistError } from "../../src/error/azure";
 import { M365TenantIdNotFoundInTokenError, M365TokenJSONNotFoundError } from "../../src/error/m365";
 import { MockAzureAccountProvider, MockTelemetryReporter, MockTools } from "../core/utils";
@@ -29,7 +29,9 @@ describe("provisionUtils", () => {
 
   describe("ensureSubscription", () => {
     const mocker = sinon.createSandbox();
-
+    beforeEach(() => {
+      setTools(tools);
+    });
     afterEach(() => {
       mocker.restore();
     });

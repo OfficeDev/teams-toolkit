@@ -7,13 +7,13 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from "axios";
-import { TOOLS } from "../core/globalVars";
+import { TOOLS } from "./globalVars";
 import { APP_STUDIO_API_NAMES, Constants } from "../component/driver/teamsApp/constants";
 import {
   TelemetryPropertyKey,
   TelemetryPropertyValue,
 } from "../component/driver/teamsApp/utils/telemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
 import { HttpMethod } from "../component/constant/commonConstant";
 
@@ -47,14 +47,7 @@ export class WrappedAxiosClient {
       params: this.generateParameters(request.params),
       ...this.generateExtraProperties(fullPath, request.data),
     };
-
-    let eventName: string;
-    if (this.isTDPApi(fullPath)) {
-      eventName = TelemetryEvent.AppStudioApi;
-    } else {
-      eventName = TelemetryEvent.DependencyApi;
-    }
-
+    const eventName = this.getEventName(fullPath);
     TOOLS?.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties);
     return request;
   }
@@ -75,17 +68,12 @@ export class WrappedAxiosClient {
       url: `<${apiName}-url>`,
       method: method,
       params: this.generateParameters(response.config.params),
-      [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       "status-code": response.status.toString(),
       ...this.generateExtraProperties(fullPath, response.data),
     };
 
-    let eventName: string;
-    if (this.isTDPApi(fullPath)) {
-      eventName = TelemetryEvent.AppStudioApi;
-    } else {
-      eventName = TelemetryEvent.DependencyApi;
-    }
+    const eventName = this.getEventName(fullPath);
     TOOLS?.telemetryReporter?.sendTelemetryEvent(eventName, properties);
     return response;
   }
@@ -114,16 +102,16 @@ export class WrappedAxiosClient {
       url: `<${apiName}-url>`,
       method: method,
       params: this.generateParameters(error.config!.params),
-      [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
-      [TelemetryPropertyKey.errorMessage]: error.response
+      [TelemetryProperty.Success]: TelemetrySuccess.No,
+      [TelemetryProperty.ErrorMessage]: error.response
         ? JSON.stringify(error.response.data)
         : error.message ?? "undefined",
       "status-code": error.response?.status.toString() ?? "undefined",
       ...this.generateExtraProperties(fullPath, requestData),
     };
 
-    let eventName: string;
-    if (this.isTDPApi(fullPath)) {
+    const eventName = this.getEventName(fullPath);
+    if (eventName === TelemetryEvent.AppStudioApi) {
       const correlationId = error.response?.headers[Constants.CORRELATION_ID] ?? "undefined";
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const extraData = error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : "";
@@ -134,12 +122,19 @@ export class WrappedAxiosClient {
         extraData
       );
       properties[
-        TelemetryPropertyKey.errorCode
+        TelemetryProperty.ErrorCode
       ] = `${TDPApiFailedError.source}.${TDPApiFailedError.name}`;
-      properties[TelemetryPropertyKey.errorMessage] = TDPApiFailedError.message;
-      eventName = TelemetryEvent.AppStudioApi;
-    } else {
-      eventName = TelemetryEvent.DependencyApi;
+      properties[TelemetryProperty.ErrorMessage] = TDPApiFailedError.message;
+      properties[TelemetryProperty.TDPTraceId] = correlationId;
+    } else if (eventName === TelemetryEvent.MOSApi) {
+      const tracingId = (error.response?.headers?.traceresponse ?? "undefined") as string;
+      const originalMessage = error.message;
+      const innerError = (error.response?.data as any).error || { code: "", message: "" };
+      const finalMessage = `${originalMessage} (tracingId: ${tracingId}) ${
+        innerError.code as string
+      }: ${innerError.message as string} `;
+      properties[TelemetryProperty.ErrorMessage] = finalMessage;
+      properties[TelemetryProperty.MOSTraceId] = tracingId;
     }
 
     TOOLS?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
@@ -293,6 +288,18 @@ export class WrappedAxiosClient {
     const regex = /(^https:\/\/)?dev(-int)?\.teams\.microsoft\.com/;
     const matches = regex.exec(baseUrl);
     return matches != null && matches.length > 0;
+  }
+
+  private static getEventName(
+    baseUrl: string
+  ): TelemetryEvent.MOSApi | TelemetryEvent.AppStudioApi | TelemetryEvent.DependencyApi {
+    if (this.isTDPApi(baseUrl)) {
+      return TelemetryEvent.AppStudioApi;
+    } else if (baseUrl.includes("titles.prod.mos.microsoft.com")) {
+      return TelemetryEvent.MOSApi;
+    } else {
+      return TelemetryEvent.DependencyApi;
+    }
   }
 
   /**

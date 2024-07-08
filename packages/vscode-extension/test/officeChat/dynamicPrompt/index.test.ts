@@ -36,7 +36,11 @@ describe("File: dynamicPrompt/index", () => {
     it("build dynamic prompts successfully", async () => {
       sandbox.stub(buildDynamicPromptInternal, "buildDynamicPromptInternal").returns("test");
       const result = buildDynamicPrompt.buildDynamicPrompt(fakedFormat, prompt);
-      chai.expect(result.messages[0]).deep.equal(new vscode.LanguageModelChatSystemMessage("test"));
+      chai
+        .expect(result.messages[0])
+        .deep.equal(
+          new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.System, "test")
+        );
     });
 
     it("throw exceptions", async () => {
@@ -69,9 +73,14 @@ describe("File: dynamicPrompt/index", () => {
         const result = buildDynamicPrompt.buildDynamicPrompt(fakedAssistantFormat, prompt);
         chai
           .expect(result.messages[0])
-          .deep.equal(new vscode.LanguageModelChatAssistantMessage("test"));
+          .deep.equal(
+            new vscode.LanguageModelChatMessage(
+              vscode.LanguageModelChatMessageRole.Assistant,
+              "test"
+            )
+          );
       } catch (error) {
-        chai.expect((error as Error).name).equal("TypeError"); // Currently throwing TypeError: vscode_1.LanguageModelChatAssistantMessage is not a constructor
+        chai.expect((error as Error).name).equal("TypeError");
       }
     });
   });

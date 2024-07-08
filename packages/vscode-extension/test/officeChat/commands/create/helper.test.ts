@@ -5,8 +5,6 @@ import * as vscode from "vscode";
 import * as tmp from "tmp";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as crypto from "crypto";
-import * as telemetry from "../../../../src/chat/telemetry";
 import * as util from "../../../../src/chat/utils";
 import * as officeChatUtils from "../../../../src/officeChat/utils";
 import * as officeChathelper from "../../../../src/officeChat/commands/create/helper";
@@ -17,6 +15,10 @@ import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { officeSampleProvider } from "../../../../src/officeChat/commands/create/officeSamples";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
+import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
+import { core } from "../../../../src/globalVariables";
+import { CreateProjectResult, FxError, err, ok } from "@microsoft/teamsfx-api";
+import { SampleConfig } from "@microsoft/teamsfx-core";
 
 chai.use(chaiPromised);
 
@@ -26,7 +28,7 @@ describe("File: office chat create helper", () => {
   describe("Method: matchOfficeProject", () => {
     let officeChatTelemetryDataMock: any;
     beforeEach(() => {
-      officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      officeChatTelemetryDataMock = sandbox.createStubInstance(OfficeChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {
         return undefined;
       });
@@ -45,8 +47,9 @@ describe("File: office chat create helper", () => {
         };
       });
       officeChatTelemetryDataMock.chatMessages = [];
+      officeChatTelemetryDataMock.responseChatMessages = [];
       sandbox
-        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .stub(OfficeChatTelemetryData, "createByParticipant")
         .returns(officeChatTelemetryDataMock);
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     });
@@ -95,12 +98,15 @@ describe("File: office chat create helper", () => {
     });
 
     it("call filetree API", async () => {
-      sandbox.stub(officeChatUtils, "getOfficeSampleDownloadUrlInfo").resolves({
-        owner: "test",
-        repository: "testRepo",
-        ref: "testRef",
-        dir: "testDir",
-      });
+      sandbox.stub(officeChatUtils, "getOfficeSample").resolves({
+        downloadUrlInfo: {
+          owner: "test",
+          repository: "testRepo",
+          ref: "testRef",
+          dir: "testDir",
+        },
+        types: ["testHost"],
+      } as SampleConfig);
       sandbox.stub(generatorUtils, "getSampleFileInfo").resolves({
         samplePaths: ["test"],
         fileUrlPrefix: "https://test.com/",
@@ -134,21 +140,20 @@ describe("File: office chat create helper", () => {
         response as unknown as vscode.ChatResponseStream
       );
       chai.assert.isTrue(response.filetree.calledOnce);
-      chai.assert.strictEqual(result, path.join("tempDir", "testDir"));
+      chai.assert.deepEqual(result, { path: path.join("tempDir", "testDir"), host: "testHost" });
     });
   });
 
   describe("Method: showOfficeTemplateFileTree", () => {
+    const result: CreateProjectResult = { projectPath: path.join("tempDir", "test") };
     beforeEach(() => {
       sandbox.stub(tmp, "dirSync").returns({
         name: "tempDir",
       } as unknown as tmp.DirResult);
-      const mockBuffer = Buffer.from("0");
-      sandbox.stub(crypto, "randomBytes").returns(mockBuffer as unknown as void);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
       sandbox.stub(fs, "writeFile").resolves();
-      sandbox.stub(vscode.commands, "executeCommand");
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       sandbox.stub(fs, "readdirSync").returns([]);
     });
     afterEach(() => {
@@ -174,12 +179,12 @@ describe("File: office chat create helper", () => {
         codeSnippet
       );
       chai.assert.isTrue(response.filetree.calledOnce);
-      chai.assert.strictEqual(result, path.join("tempDir", "office-addin-30"));
+      chai.assert.strictEqual(result, path.join("tempDir", "test"));
     });
 
     it("call filetree API with cf project", async () => {
       const data = {
-        capabilities: "excel-cftest",
+        capabilities: "excel-custom-functions-test",
         "project-type": "test",
         "addin-host": "test",
         agent: "test",
@@ -196,7 +201,7 @@ describe("File: office chat create helper", () => {
         codeSnippet
       );
       chai.assert.isTrue(response.filetree.calledOnce);
-      chai.assert.strictEqual(result, path.join("tempDir", "office-addin-30"));
+      chai.assert.strictEqual(result, path.join("tempDir", "excel-custom-functions-test"));
     });
 
     it("code snippet is null", async () => {
@@ -225,20 +230,32 @@ describe("File: office chat create helper", () => {
   });
 
   describe("Method: buildTemplateFileTree", () => {
+    const result: CreateProjectResult = { projectPath: path.join("testFolder", "test") };
     let tempFolder: string;
-    let tempAppName: string;
     beforeEach(() => {
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(fs, "writeFile").resolves();
       tempFolder = "testFolder";
-      tempAppName = "testAppName";
     });
     afterEach(() => {
       sandbox.restore();
     });
 
+    it("fail to generate the project", async () => {
+      sandbox
+        .stub(core, "createProjectByCustomizedGenerator")
+        .resolves(err(undefined as any as FxError));
+      try {
+        await officeChathelper.buildTemplateFileTree({}, tempFolder, "test", "test");
+        chai.assert.fail("should not reach here");
+      } catch (error) {
+        chai.assert.strictEqual((error as Error).message, "Failed to generate the project.");
+      }
+    });
+
     it("traverse the folder", async () => {
       sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       const data = {
         capabilities: "test",
         "project-type": "test",
@@ -264,18 +281,22 @@ describe("File: office chat create helper", () => {
         .returns(subdirFiles as any);
       const fileTreeAddStub = sandbox.stub(chatHelper, "fileTreeAdd");
       const lstatSyncStub = sandbox.stub(fs, "lstatSync");
-      lstatSyncStub.withArgs(path.join(tempFolder, tempAppName, "file1")).returns(nonDirStats);
-      lstatSyncStub.withArgs(path.join(tempFolder, tempAppName, "subdir")).returns(dirStat);
-      lstatSyncStub
-        .withArgs(path.join(tempFolder, tempAppName, "subdir", "file2"))
-        .returns(nonDirStats);
+      lstatSyncStub.withArgs(path.join(tempFolder, "test", "file1")).returns(nonDirStats);
+      lstatSyncStub.withArgs(path.join(tempFolder, "test", "subdir")).returns(dirStat);
+      lstatSyncStub.withArgs(path.join(tempFolder, "test", "subdir", "file2")).returns(nonDirStats);
 
-      await officeChathelper.buildTemplateFileTree(data, tempFolder, tempAppName, codeSnippet);
+      await officeChathelper.buildTemplateFileTree(
+        data,
+        tempFolder,
+        data.capabilities,
+        codeSnippet
+      );
       chai.assert.isTrue(fileTreeAddStub.calledTwice);
     });
 
     it("fail to merge taskpane code snippet", async () => {
       sandbox.stub(fs, "readFile").rejects(new Error("test"));
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       const data = {
         capabilities: "test",
         "project-type": "test",
@@ -285,7 +306,12 @@ describe("File: office chat create helper", () => {
       };
       const codeSnippet = "test";
       try {
-        await officeChathelper.buildTemplateFileTree(data, tempFolder, tempAppName, codeSnippet);
+        await officeChathelper.buildTemplateFileTree(
+          data,
+          tempFolder,
+          data.capabilities,
+          codeSnippet
+        );
         chai.assert.fail("should not reach here");
       } catch (error) {
         chai.assert.strictEqual((error as Error).message, "Failed to merge the taskpane project.");
@@ -294,8 +320,9 @@ describe("File: office chat create helper", () => {
 
     it("fail to merge taskpane code snippet", async () => {
       sandbox.stub(fs, "readFile").rejects(new Error("test"));
+      sandbox.stub(core, "createProjectByCustomizedGenerator").resolves(ok(result));
       const data = {
-        capabilities: "excel-cftest",
+        capabilities: "excel-custom-functions-test",
         "project-type": "test",
         "addin-host": "test",
         agent: "test",
@@ -303,7 +330,12 @@ describe("File: office chat create helper", () => {
       };
       const codeSnippet = "test";
       try {
-        await officeChathelper.buildTemplateFileTree(data, tempFolder, tempAppName, codeSnippet);
+        await officeChathelper.buildTemplateFileTree(
+          data,
+          tempFolder,
+          data.capabilities,
+          codeSnippet
+        );
         chai.assert.fail("should not reach here");
       } catch (error) {
         chai.assert.strictEqual((error as Error).message, "Failed to merge the CF project.");

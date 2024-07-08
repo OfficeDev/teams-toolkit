@@ -71,7 +71,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("restnoti", appName, "TypeScript");
+      await createNewProject("restnoti", appName, { lang: "TypeScript" });
       validateFileExist(projectPath, "src/index.ts");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);

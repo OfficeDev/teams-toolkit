@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { ErrorContextMW } from "../../../core/globalVars";
+import { ErrorContextMW } from "../../../common/globalVars";
 import {
   FileNotFoundError,
   InvalidActionInputError,
@@ -25,7 +25,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
-import { normalizePath } from "./utils/utils";
+import { getResolvedManifest, normalizePath } from "./utils/utils";
 import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 
 export const actionName = "teamsApp/zipAppPackage";
@@ -218,22 +218,20 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
+    const plugins = manifest.copilotExtensions?.plugins;
     // API plugin
-    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].file) {
-      const addFilesRes = await this.addPlugin(
-        zip,
-        manifest.plugins[0].file,
-        appDirectory,
-        context
-      );
+    if (plugins?.length && plugins[0].file) {
+      const addFilesRes = await this.addPlugin(zip, plugins[0].file, appDirectory, context);
       if (addFilesRes.isErr()) {
         return err(addFilesRes.error);
       }
     }
 
+    const declarativeCopilots = manifest.copilotExtensions?.declarativeCopilots;
+
     // Copilot GPT
-    if (manifest.copilotGpts && manifest.copilotGpts.length > 0 && manifest.copilotGpts[0].file) {
-      const copilotGptManifestFile = path.resolve(appDirectory, manifest.copilotGpts[0].file);
+    if (declarativeCopilots?.length && declarativeCopilots[0].file) {
+      const copilotGptManifestFile = path.resolve(appDirectory, declarativeCopilots[0].file);
       const checkExistenceRes = await this.validateReferencedFile(
         copilotGptManifestFile,
         appDirectory
@@ -244,7 +242,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.copilotGpts[0].file,
+        declarativeCopilots[0].file,
         copilotGptManifestFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context
@@ -268,7 +266,7 @@ export class CreateAppPackageDriver implements StepDriver {
             );
 
             const pluginFileRelativePath = path.relative(appDirectory, pluginFileAbsolutePath);
-            const useForwardSlash = manifest.copilotGpts[0].file.concat(pluginFile).includes("/");
+            const useForwardSlash = declarativeCopilots[0].file.concat(pluginFile).includes("/");
 
             const addPluginRes = await this.addPlugin(
               zip,
@@ -311,18 +309,7 @@ export class CreateAppPackageDriver implements StepDriver {
     telemetryKey: TelemetryPropertyKey
   ): Promise<Result<string, FxError>> {
     const content = await fs.readFile(filePath, "utf8");
-    const vars = getEnvironmentVariables(content);
-    ctx.addTelemetryProperties({
-      [telemetryKey]: vars.join(";"),
-    });
-    const result = expandEnvironmentVariable(content);
-    const notExpandedVars = getEnvironmentVariables(result);
-    if (notExpandedVars.length > 0) {
-      return err(
-        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), filePath)
-      );
-    }
-    return ok(result);
+    return getResolvedManifest(content, filePath, telemetryKey, ctx);
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {

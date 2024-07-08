@@ -27,7 +27,7 @@ export const UninstallOptions: CLICommandOption[] = [
   {
     name: "env",
     type: "string",
-    description: "Env",
+    description: "Environment",
   },
   {
     name: "projectPath",

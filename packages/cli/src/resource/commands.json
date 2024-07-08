@@ -151,7 +151,7 @@
       "manifest-id": "Manifest ID of the App.",
       "env": "The specific environment in the project created by Teams Toolkit.",
       "folder": "Project path to uninstall, only used in env mode.",
-      "options": "Selected resourecs to uninstall. example: --uninstall-option m365-app,app-registration,bot-framework-registration"
+      "options": "Selected resourecs to uninstall. example: --options m365-app,app-registration,bot-framework-registration"
     }
   },
   "update": {

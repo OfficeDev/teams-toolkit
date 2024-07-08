@@ -6,7 +6,7 @@
  */
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { CopilotPluginCommonTest } from "./CopilotPluginCommonTest";
+import { CopilotPluginCommonTest } from "./copilotPluginCommonTest";
 
 class CopilotPluginOAuthTestCase extends CopilotPluginCommonTest {}
 

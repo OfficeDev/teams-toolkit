@@ -3,7 +3,7 @@
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
-import * as path from "path";
+import path from "path";
 import * as vscode from "vscode";
 import { PanelType } from "../controls/PanelType";
 import { WebviewPanel } from "../controls/webviewPanel";

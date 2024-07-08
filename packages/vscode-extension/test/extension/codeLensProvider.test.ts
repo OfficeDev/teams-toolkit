@@ -1,7 +1,7 @@
 import { TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import {

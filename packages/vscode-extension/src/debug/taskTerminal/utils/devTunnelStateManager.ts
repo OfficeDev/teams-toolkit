@@ -6,8 +6,8 @@
  */
 
 import { Mutex, withTimeout } from "async-mutex";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { context, workspaceUri } from "../../../globalVariables";
 import { FeatureFlags } from "../../../featureFlags";

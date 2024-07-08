@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import chaiPromised from "chai-as-promised";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import * as projectStatusUtils from "../../src/utils/projectStatusUtils";
 import { err, ok } from "@microsoft/teamsfx-api";

@@ -14,8 +14,8 @@ import {
 } from "@azure/msal-node";
 import express from "express";
 import * as http from "http";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { Mutex } from "async-mutex";
 import { FxError, ok, Result, UserError, err } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";

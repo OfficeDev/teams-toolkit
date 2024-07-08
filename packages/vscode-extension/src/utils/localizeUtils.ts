@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
-import * as fs from "fs-extra";
+import path from "path";
+import fs from "fs-extra";
 import { context } from "../globalVariables";
 import VsCodeLogInstance from "../commonlib/log";
 

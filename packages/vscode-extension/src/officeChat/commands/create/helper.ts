@@ -3,8 +3,8 @@
 
 import * as tmp from "tmp";
 import officeTemplateMeatdata from "./officeTemplateMetadata.json";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import {
   ChatRequest,
   CancellationToken,

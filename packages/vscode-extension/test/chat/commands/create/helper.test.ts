@@ -3,10 +3,10 @@ import * as generatorUtils from "@microsoft/teamsfx-core/build/component/generat
 import axios from "axios";
 import * as chai from "chai";
 import chaiPromised from "chai-as-promised";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import * as sinon from "sinon";
-import * as tmp from "tmp";
+import tmp from "tmp";
 import * as vscode from "vscode";
 import * as helper from "../../../../src/chat/commands/create/helper";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";

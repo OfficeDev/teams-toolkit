@@ -109,7 +109,9 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
 mockedVSCode.LanguageModelChatMessage = vscodeMocks.chat.LanguageModelChatMessage;
 mockedVSCode.LanguageModelChatMessageRole = vscodeMocks.chat.LanguageModelChatMessageRole;
 mockedVSCode.TextDocumentSaveReason = vscodeMocks.TextDocumentSaveReason;
-(mockedVSCode as any).version = "test";
+// (mockedVSCode as any).version = "test";
+Object.defineProperty(mockedVSCode, "version", { value: "test", configurable: true });
+// mockedVSCode.version
 
 // Setup window APIs
 (mockedVSCode as any).window = {

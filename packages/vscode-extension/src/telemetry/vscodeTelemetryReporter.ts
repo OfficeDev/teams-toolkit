@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import * as os from "os";
-import * as path from "path";
+import path from "path";
 // eslint-disable-next-line import/default
 import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";

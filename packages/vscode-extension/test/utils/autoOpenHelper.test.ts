@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as runIconHandlers from "../../src/debug/runIconHandler";

@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as fs from "fs";
+import fs from "fs";
 import chaiPromised from "chai-as-promised";
 import * as commonUtils from "../../../src/officeChat/common/utils";
 import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";

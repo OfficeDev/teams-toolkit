@@ -2,7 +2,7 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import * as vscode from "vscode";
 import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import * as projectChecker from "../../src/utils/projectChecker";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";

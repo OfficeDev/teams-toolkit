@@ -1,8 +1,8 @@
 import * as chai from "chai";
-import * as fs from "fs-extra";
-import * as os from "os";
+import fs from "fs-extra";
+import os from "os";
 import * as sinon from "sinon";
-import * as cp from "child_process";
+import cp from "child_process";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
 import {

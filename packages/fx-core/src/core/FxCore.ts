@@ -526,7 +526,7 @@ export class FxCore {
         getLocalizedString("core.uninstall.confirm.cancel.m365App"),
         false
       );
-      return ok(undefined);
+      return err(new UserCancelError("Uninstall M365 App"));
     }
     return ok(undefined);
   }
@@ -565,7 +565,7 @@ export class FxCore {
         getLocalizedString("core.uninstall.confirm.cancel.tdp"),
         false
       );
-      return ok(undefined);
+      return err(new UserCancelError("Uninstall App Registration"));
     }
   }
 
@@ -616,6 +616,7 @@ export class FxCore {
         getLocalizedString("core.uninstall.confirm.cancel.bot"),
         false
       );
+      return err(new UserCancelError("Uninstall Bot Framework Registration"));
     }
     return ok(undefined);
   }

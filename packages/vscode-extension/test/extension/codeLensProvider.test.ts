@@ -129,7 +129,6 @@ describe("CodeLens Provider", () => {
 
       const aadProvider = new AadAppTemplateCodeLensProvider();
       const res = await aadProvider.provideCodeLenses(document);
-      console.log(res);
       chai.assert.isTrue(
         res != null && res[0].command!.command === "fx-extension.updateAadAppManifest"
       );
@@ -154,8 +153,6 @@ describe("CodeLens Provider", () => {
 
       const aadProvider = new AadAppTemplateCodeLensProvider();
       const res = await aadProvider.provideCodeLenses(document);
-
-      console.log(res);
 
       chai.assert.isTrue(
         res != null &&

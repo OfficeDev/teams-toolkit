@@ -1591,7 +1591,7 @@
     "watch:esbuild": "node esbuild.mjs --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "watch:vite": "vite build --config vite.config.ts --watch",
-    "build:test": "tsc --project tsconfig.json --incremental",
+    "build:test": "tsc --project tsconfig.test.json --incremental",
     "test:unit": "npm run build:test && nyc mocha --config .mocharc.json \"test/**/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",

@@ -69,6 +69,14 @@
         "group": "watch",
         "reveal": "never"
       }
+    },
+    {
+      "type": "npm",
+      "script": "build:test",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build:test",
+      "detail": "tsc --project tsconfig.test.json --incremental"
     }
   ]
 }

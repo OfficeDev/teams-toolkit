@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
+// eslint-disable-next-line import/no-cycle
 import { execAsync, editDotEnvFile } from "./commonUtils";
 import {
   TemplateProjectFolder,

@@ -518,7 +518,7 @@
   "teamstoolkit.walkthroughs.buildIntelligentApps.twoPathsToIntelligentApps.title": "Two Paths to Intelligent Apps",
   "teamstoolkit.walkthroughs.buildIntelligentApps.twoPathsToIntelligentApps.description": "Build your intelligent apps with Microsoft 365 in two ways:\n🎯 Extend Microsoft Copilot with a plugin, Or\n✨ Build your own Copilot in Teams using Teams AI Library and Azure services",
 
-  "teamstoolkit.walkthroughs.buildIntelligentApps.copilotPlugin.title": "Copilot Plugin",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.copilotPlugin.title": "API Plugin",
   "teamstoolkit.walkthroughs.buildIntelligentApps.copilotPlugin.description": "Transform your app into a plugin to enhance Copilot's skills and boost user productivity in daily tasks and workflows. Explore [Copilot Extensibility](https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/)\n[Check Copilot Access](command:fx-extension.checkCopilotAccess?%5B%22WalkThrough%22%5D)",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.buildPlugin.title": "Build a Plugin",

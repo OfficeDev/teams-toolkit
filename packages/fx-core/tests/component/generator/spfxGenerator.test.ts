@@ -469,8 +469,10 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readdir").callsFake((directory: any) => {
       if (directory === path.join("c:\\test", "teams")) {
         return ["1_color.png", "1_outline.png"] as any;
-      } else {
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
         return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
       }
     });
     sinon.stub(fs, "statSync").returns({
@@ -502,7 +504,15 @@ describe("SPFxGenerator", function () {
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readdir").resolves(["helloworld", "second"] as any);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
+      }
+    });
     sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
@@ -532,8 +542,10 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readdir").callsFake((directory: any) => {
       if (directory === path.join("c:\\test", "teams")) {
         return ["1_color.png", "1_outline.png"] as any;
-      } else {
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
         return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
       }
     });
     sinon.stub(fs, "statSync").returns({

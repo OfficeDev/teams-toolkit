@@ -104,8 +104,12 @@ export class Executor {
     customized: Record<string, string> = {},
     processEnv?: NodeJS.ProcessEnv
   ) {
+    const langCommand =
+      language === ProgrammingLanguage.CSharp
+        ? "--runtime dotnet"
+        : `--programming-language ${language}`;
     const command =
-      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
+      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} ${langCommand} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");

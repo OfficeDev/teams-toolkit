@@ -17,8 +17,10 @@ export class CopilotPluginCommonTest extends CaseFactory {
     programmingLanguage?: ProgrammingLanguage
   ) {
     const env = Object.assign({}, process.env);
-    env["API_COPILOT_PLUGIN"] = "true";
     env["DEVELOP_COPILOT_PLUGIN"] = "true";
+    if (programmingLanguage === ProgrammingLanguage.CSharp) {
+      env["TEAMSFX_CLI_DOTNET"] = "true";
+    }
 
     const skipOptions = {
       skipValidate: true,

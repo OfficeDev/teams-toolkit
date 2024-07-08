@@ -145,6 +145,15 @@ describe("Start a new project", function () {
         SharepointValidator.init();
         SharepointValidator.validateDeploy(appId);
       }
+
+      {
+        // preview
+        const result = await Executor.preview(
+          projectPath,
+          environmentNameManager.getDefaultEnvName()
+        );
+        expect(result.success).to.be.true;
+      }
     }
   );
 

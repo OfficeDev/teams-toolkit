@@ -124,7 +124,9 @@ export async function listOperations(
   shouldLogWarning = true,
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-  const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
+  const isPlugin =
+    inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId ||
+    !!inputs[QuestionNames.PluginAvailability];
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 

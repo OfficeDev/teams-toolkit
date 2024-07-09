@@ -240,6 +240,11 @@ mockedVSCode.commands = {
   appName: "Insider",
 };
 
+(mockedVSCode as any).authentication = {
+  getSession: () => {},
+  onDidChangeSessions: () => {},
+};
+
 function generateNotebookMocks() {
   const mockedObj = TypeMoq.Mock.ofType<Record<string, unknown>>();
   (mockedVSCode as any).notebook = mockedObj.object;

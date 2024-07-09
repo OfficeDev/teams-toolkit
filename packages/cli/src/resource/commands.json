@@ -49,7 +49,7 @@
   "add.spfx-web-part": {
     "description": "Auto-hosted SPFx web part tightly integrated with Microsoft Teams."
   },
-  "add.copilot-plugin": {
+  "add.plugin": {
     "description": "A plugin to extend Copilot using your APIs."
   },
   "create": {

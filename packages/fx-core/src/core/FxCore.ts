@@ -135,7 +135,7 @@ import {
   SPFxVersionOptionIds,
   ScratchOptions,
   TeamsAppValidationOptions,
-  copilotPluginApiSpecOptionId,
+  apiPluginApiSpecOptionId,
 } from "../question/constants";
 import { createProjectCliHelpNode } from "../question/create";
 import { ValidateTeamsAppInputs } from "../question/inputs/ValidateTeamsAppInputs";
@@ -1245,7 +1245,7 @@ export class FxCore {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation];
     const manifestPath = inputs[QuestionNames.ManifestPath];
-    const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+    const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
     const context = createContext();
 
     // Get API spec file path from manifest

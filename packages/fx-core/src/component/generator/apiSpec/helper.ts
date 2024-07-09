@@ -52,7 +52,7 @@ import {
   CustomCopilotRagOptions,
   ProgrammingLanguage,
   QuestionNames,
-  copilotPluginApiSpecOptionId,
+  apiPluginApiSpecOptionId,
 } from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -124,7 +124,7 @@ export async function listOperations(
   shouldLogWarning = true,
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
@@ -683,7 +683,7 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
 }
 
 function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs): string {
-  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {

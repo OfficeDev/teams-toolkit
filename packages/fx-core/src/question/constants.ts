@@ -101,10 +101,10 @@ export enum ProgrammingLanguage {
   None = "none",
 }
 
-export const copilotPluginApiSpecOptionId = "copilot-plugin-existing-api";
-export const copilotPluginExistingApiOptionIds = [copilotPluginApiSpecOptionId];
-export const copilotPluginNewApiOptionId = "copilot-plugin-new-api";
-export const copilotPluginOptionIds = [copilotPluginNewApiOptionId, copilotPluginApiSpecOptionId];
+export const apiPluginApiSpecOptionId = "api-plugin-existing-api";
+export const apiPluginExistingApiOptionIds = [apiPluginApiSpecOptionId];
+export const apiPluginNewApiOptionId = "api-plugin-new-api";
+export const apiPluginOptionIds = [apiPluginNewApiOptionId, apiPluginApiSpecOptionId];
 export const capabilitiesHavePythonOption = [
   "custom-copilot-basic",
   "custom-copilot-rag-azureAISearch",
@@ -236,7 +236,7 @@ export class ProjectTypeOptions {
 
   static copilotPlugin(platform?: Platform): OptionItem {
     return {
-      id: "copilot-plugin-type",
+      id: "api-plugin-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
@@ -703,7 +703,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: copilotPluginNewApiOptionId,
+      id: apiPluginNewApiOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -715,7 +715,7 @@ export class CapabilityOptions {
 
   static copilotPluginApiSpec(): OptionItem {
     return {
-      id: copilotPluginApiSpecOptionId,
+      id: apiPluginApiSpecOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
@@ -1172,13 +1172,13 @@ export class PluginAvailabilityOptions {
   }
   static copilotPlugin(): OptionItem {
     return {
-      id: "copilot-plugin",
+      id: "api-plugin",
       label: getLocalizedString("core.pluginAvailability.copilotForM365"),
     };
   }
   static copilotPluginAndAction(): OptionItem {
     return {
-      id: "copilot-plugin-and-action",
+      id: "api-plugin-and-action",
       label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
     };
   }

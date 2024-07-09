@@ -519,7 +519,7 @@ describe("AadAppClient", async () => {
           expect(err.source).equals("AadAppClient");
           expect(err.name).equals("HostNameNotOnVerifiedDomain");
           expect(err.message).equals(
-            "Unable to set identifierUri because the value is not on verified domain: Mocked error message"
+            "Unable to set identifierUri as the value is not on verified domain: Mocked error message"
           );
           expect(err.helpLink).equals("https://aka.ms/teamsfx-multi-tenant");
         }

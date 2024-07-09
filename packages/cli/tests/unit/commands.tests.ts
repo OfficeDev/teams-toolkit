@@ -237,7 +237,7 @@ describe("CLI commands", () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "addPlugin").resolves(ok(undefined));
       const ctx: CLIContext = {
-        command: { ...addPluginCommand, fullName: "add copilot-plugin" },
+        command: { ...addPluginCommand, fullName: "add plugin" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1148,7 +1148,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -1186,7 +1186,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
     });
   });
   describe("listSamplesCommand", async () => {

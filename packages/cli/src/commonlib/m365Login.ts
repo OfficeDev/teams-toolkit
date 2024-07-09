@@ -146,6 +146,41 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   }
 }
 
-const m365Login = !ui.interactive ? M365TokenProviderUserPassword : M365Login.getInstance();
+/**
+ * this class is a wrapper for M365TokenProvider that will use M365Login if interactive is true, otherwise use M365TokenProviderUserPassword
+ */
+class MM365TokenProviderWrapper implements M365TokenProvider {
+  getProvider(): M365TokenProvider {
+    const m365Login = !ui.interactive ? M365TokenProviderUserPassword : M365Login.getInstance();
+    return m365Login;
+  }
+  getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    return this.getProvider().getAccessToken(tokenRequest);
+  }
+  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
+    return this.getProvider().getJsonObject(tokenRequest);
+  }
+  getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    return this.getProvider().getStatus(tokenRequest);
+  }
+  setStatusChangeMap(
+    name: string,
+    tokenRequest: TokenRequest,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<Result<boolean, FxError>> {
+    return this.getProvider().setStatusChangeMap(name, tokenRequest, statusChange, immediateCall);
+  }
+  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    return this.getProvider().removeStatusChangeMap(name);
+  }
+  async signout(): Promise<boolean> {
+    return await (this.getProvider() as any).signout();
+  }
+}
 
-export default m365Login;
+export default new MM365TokenProviderWrapper();

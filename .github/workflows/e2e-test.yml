@@ -42,6 +42,10 @@ jobs:
   setup:
     if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
     env:
@@ -50,17 +54,21 @@ jobs:
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
-      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
-      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_M365_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_M365_TENANT_ID }}
       CI_ENABLED: "true"
-      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
-      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME_2 }}
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-name }}
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: setup project
         uses: ./.github/actions/setup-project
@@ -126,20 +134,22 @@ jobs:
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
-      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
-      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_M365_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_M365_TENANT_ID }}
       CI_ENABLED: "true"
-      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
-      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME_2 }}
       TEAMSFX_DEBUG_TEMPLATE: "true"
       NODE_ENV: "development"
       TEAMSFX_AAD_DEPLOY_ONLY: "true"
       SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
       SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
     needs: setup
     runs-on: ubuntu-latest
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -151,6 +161,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: Setup node
         uses: actions/setup-node@v3
@@ -180,9 +196,15 @@ jobs:
             6.0.x
             8.0.x
 
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - name: Setup Python
+        run: |
+          sudo apt-get install python3.11
+          sudo apt-get install python3-pip
+          sudo apt-get install python3.11-venv
+          python3 --version
+          pip3 --version
+
+      - uses: pnpm/action-setup@v4
 
       - name: Setup project
         run: |
@@ -212,7 +234,7 @@ jobs:
           path: packages/tests/src/e2e/resource
 
       - name: Download samples(rc)
-        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false
+        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false && contains(matrix.cases, 'ChefBot') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -232,6 +254,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Office-Add-in-samples
+          ref: main
+          path: packages/tests/src/e2e/resource
+
+      - name: Download samples from ai repo
+        if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ChefBot')
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/teams-ai
           ref: main
           path: packages/tests/src/e2e/resource
 
@@ -287,12 +317,11 @@ jobs:
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
-      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
-      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_M365_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_M365_TENANT_ID }}
       CI_ENABLED: "true"
-      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
-      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME_2 }}
     steps:
       - name: Checkout (dev)
         uses: actions/checkout@v3
@@ -348,7 +377,7 @@ jobs:
           while :
           do
 
-            url=https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
+            url=https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
             resp=`curl -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url`
 
             new_jobs=`echo $resp | jq -cr '.jobs'`
@@ -426,7 +455,7 @@ jobs:
                   failed=$((failed+1))
                   label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
                   if [[ ! -z "$email" && ! "$emails" == *"$email"* ]]; then
-                    emails="$emails;$email;zhendr@microsoft.com"
+                    emails="$emails;$email;zhendr@microsoft.com;ccdevexperiencefc@microsoft.com"
                   fi
                 elif [[ ! -z `echo $test | jq 'select(.skipped==true)'` || ! -z `echo $test | jq 'select(.pending==true)'` ]]; then
                   skipped=$((skipped+1))
@@ -448,7 +477,7 @@ jobs:
 
           done <<< $cases
 
-          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/34d3400d-aa60-4ad5-9746-9d1b525da16e\/_djb2_msteams_prefix_3816426998?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $skipped_lists $passed_lists </table> <br />"
+          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/c439ae8d-3ab3-4efd-9223-87366d8c170c\/_djb2_msteams_prefix_1252604900?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $skipped_lists $passed_lists </table> <br />"
 
           total=$((passed+failed+skipped))
 
@@ -481,9 +510,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
 
       - name: mv files
         working-directory: packages/tests
@@ -533,13 +560,11 @@ jobs:
           M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
           CI_ENABLED: "true"
           M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
           TEAMSFX_DEBUG_TEMPLATE: "true"
           NODE_ENV: "development"
           TEAMSFX_AAD_DEPLOY_ONLY: "true"
           SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
           SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
-          ADO_TOKEN: ${{ secrets.ADO_PAT }}
         run: |
           npx nyc mocha --parallel ../tests/src/e2e/*/*.tests.ts
       

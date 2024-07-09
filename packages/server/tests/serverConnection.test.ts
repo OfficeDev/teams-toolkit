@@ -1,8 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import { err, Inputs, ok, Platform, Stage, UserError, Void } from "@microsoft/teamsfx-api";
+import {
+  DependencyStatus,
+  DepsManager,
+  NodeNotFoundError,
+  teamsDevPortalClient,
+  TestToolInstallOptions,
+} from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
@@ -10,12 +16,6 @@ import { Duplex } from "stream";
 import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
 import ServerConnection from "../src/serverConnection";
-import {
-  DependencyStatus,
-  DepsManager,
-  NodeNotFoundError,
-  TestToolInstallOptions,
-} from "@microsoft/teamsfx-core";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -416,7 +416,7 @@ describe("serverConnections", () => {
     const accountToken = {
       token: "fakeToken",
     };
-    sinon.stub(tools, "setRegion").callsFake(async () => {});
+    sinon.stub(teamsDevPortalClient, "setRegionEndpointByToken").callsFake(async () => {});
 
     const res = connection.setRegionRequest(accountToken, {} as CancellationToken);
     res.then((data) => {
@@ -439,20 +439,9 @@ describe("serverConnections", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("loadOpenAIPluginManifestRequest succeed", async () => {
-    const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(ok({}));
-    sandbox.replace(connection["core"], "copilotPluginLoadOpenAIManifest", fake);
-    const res = await connection.loadOpenAIPluginManifestRequest(
-      {} as Inputs,
-      {} as CancellationToken
-    );
-    assert.isTrue(res.isOk());
-  });
-
   it("copilotPluginListOperations fail", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(err([{ content: "error1" }, { content: "error2" }]));
+    const fake = sandbox.fake.resolves(err(new UserError("source", "name", "", "")));
     sandbox.replace(connection["core"], "copilotPluginListOperations", fake);
     const res = await connection.listOpenAPISpecOperationsRequest(
       {} as Inputs,
@@ -460,7 +449,7 @@ describe("serverConnections", () => {
     );
     assert.isTrue(res.isErr());
     if (res.isErr()) {
-      assert.equal(res.error.message, "error1\nerror2");
+      assert.equal(res.error.source, "source");
     }
   });
 
@@ -522,5 +511,21 @@ describe("serverConnections", () => {
     );
     assert.isFalse(res.isOk());
     assert.match(res._unsafeUnwrapErr().message, /MockError/);
+  });
+
+  it("listPluginApiSpecs fail", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err("error"));
+    sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
+    const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isErr());
+  });
+
+  it("listPluginApiSpecsRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok(undefined));
+    sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
+    const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
   });
 });

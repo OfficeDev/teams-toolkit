@@ -11,17 +11,212 @@ import { ConstantString } from "../../src/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "../../src/utils";
 import SwaggerParser from "@apidevtools/swagger-parser";
+import { SMEValidator } from "../../src/validators/smeValidator";
 
 describe("SpecParser in Browser", () => {
   afterEach(() => {
     sinon.restore();
   });
 
-  describe("listSupportedAPIInfo", () => {
+  describe("listSupporttedAPIInfo", () => {
+    it("should list parameters successfully with required and optional parameters", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, {
+        allowMissingId: false,
+        allowMultipleParameters: true,
+      });
+      const spec = {
+        openapi: "3.0.0",
+        info: {
+          title: "Repair Service",
+          description: "A simple service to manage repairs",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://poc-apim-gateway-fkh0bdaufkfpdugz.b02.azurefd.net",
+            description: "The repair api server",
+          },
+        ],
+        paths: {
+          "/assignRepair": {
+            get: {
+              operationId: "assignRepair",
+              summary:
+                "Assign repair to technician for the customer based on car type and repair type",
+              description:
+                "Assign repair to technician for the customer based on car type and repair type",
+              parameters: [
+                {
+                  name: "carType",
+                  in: "query",
+                  description: "Car type to repair",
+                  schema: {
+                    type: "string",
+                  },
+                  required: false,
+                },
+                {
+                  name: "customerStatus",
+                  in: "query",
+                  description: "Customer status",
+                  schema: {
+                    type: "string",
+                    enum: ["available", "pending", "sold"],
+                  },
+                },
+                {
+                  name: "customerToggle",
+                  in: "query",
+                  description: "Customer Toggle",
+                  schema: {
+                    type: "boolean",
+                  },
+                  allowEmptyValue: true,
+                  required: true,
+                },
+                {
+                  name: "limit",
+                  in: "query",
+                  schema: {
+                    type: "integer",
+                    minimum: 1,
+                    maximum: 50,
+                  },
+                  description: "The numbers of items to return",
+                  required: true,
+                },
+                {
+                  name: "startDateString",
+                  in: "query",
+                  schema: {
+                    type: "string",
+                  },
+                  description: "The start date for the report in different format",
+                  required: true,
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "The response that represents an appointment for the repair",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          id: {
+                            type: "string",
+                            description: "Id of the repair",
+                          },
+                          title: {
+                            type: "string",
+                            description: "The short summary of the repair",
+                          },
+                          assignedTo: {
+                            type: "string",
+                            description: "The engineer who is responsible for the repair",
+                          },
+                          customerPhoneNumber: {
+                            type: "string",
+                            description: "The phone number of the customer",
+                          },
+                          date: {
+                            type: "string",
+                            format: "date-time",
+                            description:
+                              "The date and time when the repair is scheduled or completed",
+                          },
+                          image: {
+                            type: "string",
+                            format: "uri",
+                            description:
+                              "The URL of the image of the item to be repaired or the repair process",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.listSupportedAPIInfo();
+      expect(result).to.deep.equal([
+        {
+          method: "GET",
+          path: "/assignRepair",
+          title: "Assign repair to technician for ",
+          id: "assignRepair",
+          description:
+            "Assign repair to technician for the customer based on car type and repair type",
+          parameters: [
+            {
+              name: "customerToggle",
+              title: "CustomerToggle",
+              description: "Customer Toggle",
+              inputType: "toggle",
+              isRequired: true,
+            },
+            {
+              name: "limit",
+              title: "Limit",
+              description: "The numbers of items to return",
+              inputType: "number",
+              isRequired: true,
+            },
+            {
+              name: "startDateString",
+              title: "StartDateString",
+              description: "The start date for the report in different format",
+              inputType: "text",
+              isRequired: true,
+            },
+            {
+              name: "carType",
+              title: "CarType",
+              description: "Car type to repair",
+              inputType: "text",
+            },
+            {
+              name: "customerStatus",
+              title: "CustomerStatus",
+              description: "Customer status",
+              inputType: "choiceset",
+              choices: [
+                {
+                  title: "available",
+                  value: "available",
+                },
+                {
+                  title: "pending",
+                  value: "pending",
+                },
+                {
+                  title: "sold",
+                  value: "sold",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
     it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/pets": {
             get: {
@@ -100,6 +295,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/user/{userId}": {
             get: {
@@ -170,95 +370,26 @@ describe("SpecParser in Browser", () => {
               title: "UserId",
               description: "User Id",
             },
-          ],
-          description: "Get user by user id, balabala",
-          warning: {
-            type: WarningType.OperationOnlyContainsOptionalParam,
-            content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
-            data: "getUserById",
-          },
-        },
-      ]);
-    });
-
-    it("should reuse apiMap if listSupportedAPIInfo is called multiple times", async () => {
-      const specPath = "valid-spec.yaml";
-      const specParser = new SpecParser(specPath, { allowMissingId: false });
-      const spec = {
-        paths: {
-          "/user/{userId}": {
-            get: {
-              operationId: "getUserById",
-              description: "Get user by user id, balabala",
-              summary: "Get user by user id",
-              parameters: [
-                {
-                  name: "userId",
-                  in: "path",
-                  description: "User Id",
-                  schema: {
-                    type: "string",
-                  },
-                },
-              ],
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
-          },
-        },
-      };
-
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(Utils, "listSupportedAPIs");
-      let result = await specParser.listSupportedAPIInfo();
-      result = await specParser.listSupportedAPIInfo();
-      expect(result).to.deep.equal([
-        {
-          method: "GET",
-          path: "/user/{userId}",
-          title: "Get user by user id",
-          id: "getUserById",
-          parameters: [
             {
-              name: "userId",
-              title: "UserId",
-              description: "User Id",
+              name: "name",
+              title: "Name",
+              description: "User Name",
             },
           ],
           description: "Get user by user id, balabala",
         },
       ]);
-      expect(listSupportedAPIsSyp.callCount).to.equal(1);
     });
 
     it("should not list api without operationId with allowMissingId is true", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: true });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/pets": {
             get: {
@@ -449,7 +580,72 @@ describe("SpecParser in Browser", () => {
         warnings: [],
         errors: [
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return no supported API error with invalid api info", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://servers1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.NoSupportedApi,
+            content: ConstantString.NoSupportedApi,
+            data: [
+              {
+                api: "GET /pet",
+                reason: [ErrorType.MissingOperationId],
+              },
+            ],
+          },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -474,7 +670,7 @@ describe("SpecParser in Browser", () => {
             content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -503,7 +699,7 @@ describe("SpecParser in Browser", () => {
               },
             ],
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -522,7 +718,9 @@ describe("SpecParser in Browser", () => {
       expect(result).to.deep.equal({
         status: ValidationStatus.Error,
         warnings: [],
-        errors: [{ type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi }],
+        errors: [
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -740,7 +938,7 @@ describe("SpecParser in Browser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(SMEValidator.prototype, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");

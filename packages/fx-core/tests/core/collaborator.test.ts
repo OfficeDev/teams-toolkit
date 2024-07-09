@@ -17,7 +17,6 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FeatureFlagName } from "../../src/common/constants";
 import { CollaborationState } from "../../src/common/permissionInterface";
 import { SolutionError } from "../../src/component/constants";
 import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
@@ -54,12 +53,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("listCollaborator", () => {
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
@@ -175,13 +169,6 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("checkPermission", () => {
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    });
-    afterEach(() => {
-      mockedEnvRestore();
-    });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
         tenantId: "fake_tid",
@@ -269,13 +256,6 @@ describe("Collaborator APIs for V3", () => {
     });
   });
   describe("grantPermission", () => {
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" });
-    });
-    afterEach(() => {
-      mockedEnvRestore();
-    });
     it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
       sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
         tenantId: "fake_tid",
@@ -476,13 +456,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("loadDotEnvFile v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
     it("happy path", async () => {
@@ -524,13 +498,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("getTeamsAppIdAndAadObjectId v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -712,10 +680,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("collaboration v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -726,7 +691,6 @@ describe("Collaborator APIs for V3", () => {
       );
     });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -1291,13 +1255,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("loadManifestId v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -1333,13 +1291,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("requireEnvQuestion", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -1360,13 +1312,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("parseManifestId", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 

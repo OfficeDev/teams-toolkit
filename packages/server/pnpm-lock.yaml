@@ -9,8 +9,8 @@ dependencies:
     specifier: ^1.4.0
     version: 1.4.0
   '@azure/identity':
-    specifier: ^3.1.3
-    version: 3.1.3
+    specifier: ^4.1.0
+    version: 4.1.0
   '@microsoft/dev-tunnels-contracts':
     specifier: 1.1.9
     version: 1.1.9
@@ -33,8 +33,8 @@ dependencies:
     specifier: ^6.0.0
     version: 6.0.0
   ws:
-    specifier: ^8.2.3
-    version: 8.2.3
+    specifier: ^8.17.1
+    version: 8.17.1
 
 optionalDependencies:
   keytar:
@@ -236,6 +236,13 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@azure/abort-controller@2.1.2:
+    resolution: {integrity: sha512-nBrLsEWm4J2u5LpAPjxADTlq3trDgVZZXHNKabeXZtpq3d3AbN/KGO82R87rdDz5/lYB024rtEf10/q0urNgsA==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      tslib: 2.6.2
+    dev: false
+
   /@azure/core-auth@1.4.0:
     resolution: {integrity: sha512-HFrcTgmuSuukRf/EdPmqBrc5l6Q5Uu+2TbuhaKbgaCpP2TfAeiNaQPAadxO+CYBRHGUzIDteMAjFspFLDLnKVQ==}
     engines: {node: '>=12.0.0'}
@@ -244,12 +251,21 @@ packages:
       tslib: 2.6.2
     dev: false
 
+  /@azure/core-auth@1.7.2:
+    resolution: {integrity: sha512-Igm/S3fDYmnMq1uKS38Ae1/m37B3zigdlZw+kocwEhh5GjyKjPrXKO2J6rzpC1wAxrNil/jX9BJRqBshyjnF3g==}
+    engines: {node: '>=18.0.0'}
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-util': 1.6.1
+      tslib: 2.6.2
+    dev: false
+
   /@azure/core-client@1.7.3:
     resolution: {integrity: sha512-kleJ1iUTxcO32Y06dH9Pfi9K4U+Tlb111WXEnbt7R/ne+NLRwppZiTGJuTD5VVoxTMK5NTbEtm5t2vcdNCFe2g==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.4.0
+      '@azure/core-auth': 1.7.2
       '@azure/core-rest-pipeline': 1.13.0
       '@azure/core-tracing': 1.0.1
       '@azure/core-util': 1.6.1
@@ -264,7 +280,7 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.4.0
+      '@azure/core-auth': 1.7.2
       '@azure/core-tracing': 1.0.1
       '@azure/core-util': 1.6.1
       '@azure/logger': 1.0.4
@@ -290,27 +306,24 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@azure/identity@3.1.3:
-    resolution: {integrity: sha512-y0jFjSfHsVPwXSwi3KaSPtOZtJZqhiqAhWUXfFYBUd/+twUBovZRXspBwLrF5rJe0r5NyvmScpQjL+TYDTQVvw==}
-    engines: {node: '>=14.0.0'}
-    deprecated: Please upgrade to the latest version of this package to get necessary fixes
+  /@azure/identity@4.1.0:
+    resolution: {integrity: sha512-BhYkF8Xr2gXjyDxocm0pc9RI5J5a1jw8iW0dw6Bx95OGdYbuMyFZrrwNw4eYSqQ2BB6FZOqpJP3vjsAqRcvDhw==}
+    engines: {node: '>=18.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
-      '@azure/core-auth': 1.4.0
+      '@azure/core-auth': 1.7.2
       '@azure/core-client': 1.7.3
       '@azure/core-rest-pipeline': 1.13.0
       '@azure/core-tracing': 1.0.1
       '@azure/core-util': 1.6.1
       '@azure/logger': 1.0.4
-      '@azure/msal-browser': 2.38.3
-      '@azure/msal-common': 9.1.1
-      '@azure/msal-node': 1.18.4
+      '@azure/msal-browser': 3.13.0
+      '@azure/msal-node': 2.7.0
       events: 3.3.0
       jws: 4.0.0
       open: 8.4.2
       stoppable: 1.1.0
       tslib: 2.6.2
-      uuid: 8.3.2
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -322,30 +335,23 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@azure/msal-browser@2.38.3:
-    resolution: {integrity: sha512-2WuLFnWWPR1IdvhhysT18cBbkXx1z0YIchVss5AwVA95g7CU5CpT3d+5BcgVGNXDXbUU7/5p0xYHV99V5z8C/A==}
+  /@azure/msal-browser@3.13.0:
+    resolution: {integrity: sha512-fD906nmJei3yE7la6DZTdUtXKvpwzJURkfsiz9747Icv4pit77cegSm6prJTKLQ1fw4iiZzrrWwxnhMLrTf5gQ==}
     engines: {node: '>=0.8.0'}
-    deprecated: A newer major version of this library is available. Please upgrade to the latest available version.
     dependencies:
-      '@azure/msal-common': 13.3.1
+      '@azure/msal-common': 14.9.0
     dev: false
 
-  /@azure/msal-common@13.3.1:
-    resolution: {integrity: sha512-Lrk1ozoAtaP/cp53May3v6HtcFSVxdFrg2Pa/1xu5oIvsIwhxW6zSPibKefCOVgd5osgykMi5jjcZHv8XkzZEQ==}
+  /@azure/msal-common@14.9.0:
+    resolution: {integrity: sha512-yzBPRlWPnTBeixxLNI3BBIgF5/bHpbhoRVuuDBnYjCyWRavaPUsKAHUDYLqpGkBLDciA6TCc6GOxN4/S3WiSxg==}
     engines: {node: '>=0.8.0'}
     dev: false
 
-  /@azure/msal-common@9.1.1:
-    resolution: {integrity: sha512-we9xR8lvu47fF0h+J8KyXoRy9+G/fPzm3QEa2TrdR3jaVS3LKAyE2qyMuUkNdbVkvzl8Zr9f7l+IUSP22HeqXw==}
-    engines: {node: '>=0.8.0'}
-    dev: false
-
-  /@azure/msal-node@1.18.4:
-    resolution: {integrity: sha512-Kc/dRvhZ9Q4+1FSfsTFDME/v6+R2Y1fuMty/TfwqE5p9GTPw08BPbKgeWinE8JRHRp+LemjQbUZsn4Q4l6Lszg==}
-    engines: {node: 10 || 12 || 14 || 16 || 18}
-    deprecated: A newer major version of this library is available. Please upgrade to the latest available version.
+  /@azure/msal-node@2.7.0:
+    resolution: {integrity: sha512-wXD8LkUvHICeSWZydqg6o8Yvv+grlBEcmLGu+QEI4FcwFendbTEZrlSygnAXXSOCVaGAirWLchca35qrgpO6Jw==}
+    engines: {node: '>=16'}
     dependencies:
-      '@azure/msal-common': 13.3.1
+      '@azure/msal-common': 14.9.0
       jsonwebtoken: 9.0.2
       uuid: 8.3.2
     dev: false
@@ -5671,12 +5677,12 @@ packages:
       typedarray-to-buffer: 3.1.5
     dev: true
 
-  /ws@8.2.3:
-    resolution: {integrity: sha512-wBuoj1BDpC6ZQ1B7DWQBYVLphPWkm8i9Y0/3YdHjHKHiohOJ1ws+3OccDWtH+PoC9DZD5WOTrJvNbWvjS6JWaA==}
+  /ws@8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
-      utf-8-validate: ^5.0.2
+      utf-8-validate: '>=5.0.2'
     peerDependenciesMeta:
       bufferutil:
         optional: true

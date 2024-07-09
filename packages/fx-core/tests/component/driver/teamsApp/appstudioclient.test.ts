@@ -21,8 +21,15 @@ import { DeveloperPortalAPIFailedError } from "../../../../src/error/teamsApp";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
+  ApiSecretRegistrationUpdate,
 } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { AsyncAppValidationStatus } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
+import {
+  OauthRegistration,
+  OauthRegistrationAppType,
+  OauthRegistrationTargetAudience,
+  OauthRegistrationUserAccessType,
+} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
@@ -46,6 +53,25 @@ describe("App Studio API Test", () => {
     ],
     applicableToApps: ApiSecretRegistrationAppType.AnyApp,
     targetUrlsShouldStartWith: ["https://www.example.com"],
+  };
+
+  const fakeOauthRegistration: OauthRegistration = {
+    description: "fake-description",
+    scopes: ["fake-scope"],
+    clientId: "fake-client-id",
+    clientSecret: "fake-client-secret",
+    authorizationEndpoint: "fake-authorization-url",
+    tokenExchangeEndpoint: "fake-token-endpoint",
+    tokenRefreshEndpoint: "fake-refresh-endpoint",
+    applicableToApps: OauthRegistrationAppType.AnyApp,
+    targetAudience: OauthRegistrationTargetAudience.AnyTenant,
+    manageableByUsers: [
+      {
+        userId: "fake-user-id",
+        accessType: OauthRegistrationUserAccessType.ReadWrite,
+      },
+    ],
+    targetUrlsShouldStartWith: ["fake-domain"],
   };
 
   beforeEach(() => {
@@ -505,7 +531,7 @@ describe("App Studio API Test", () => {
             displayName: "fakeApp",
             developerName: "Teams",
             version: "0.0.1",
-            manifestVersion: "1.16",
+            manifestVersion: "1.17",
           },
         },
       };
@@ -908,6 +934,171 @@ describe("App Studio API Test", () => {
     });
   });
 
+  describe("updateApiKeyRegistration", () => {
+    const appApiRegistration: ApiSecretRegistrationUpdate = {
+      description: "fake description",
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+      targetUrlsShouldStartWith: ["https://www.example.com"],
+    };
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "patch").throws(error);
+
+      try {
+        await AppStudioClient.updateApiKeyRegistration(
+          appStudioToken,
+          appApiRegistration,
+          "fakeId"
+        );
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appApiRegistration,
+      };
+      sinon.stub(fakeAxiosInstance, "patch").resolves(response);
+
+      const res = await AppStudioClient.updateApiKeyRegistration(
+        appStudioToken,
+        appApiRegistration,
+        "fakeId"
+      );
+      chai.assert.equal(res, appApiRegistration);
+    });
+  });
+
+  describe("createOauthRegistration", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: {
+          configurationRegistrationId: {
+            oAuthConfigId: "fakeId",
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      const res = await AppStudioClient.createOauthRegistration(
+        appStudioToken,
+        fakeOauthRegistration
+      );
+      chai.assert.equal(res.configurationRegistrationId.oAuthConfigId, "fakeId");
+    });
+
+    it("Graph API failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          staus: 400,
+          data: {
+            statusCode: 400,
+            errorMessage:
+              "Unsuccessful response received from Teams Graph Service. Error Message: System.Net.Http.HttpConnectionResponseContent",
+          },
+          headers: {
+            "x-correlation-id": uuid(),
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      try {
+        await AppStudioClient.createOauthRegistration(appStudioToken, fakeOauthRegistration);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("getOauthRegistration", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: fakeOauthRegistration,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getOauthRegistrationById(appStudioToken, "fakeId");
+      chai.assert.equal(res, fakeOauthRegistration);
+    });
+
+    it("Graph API failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      try {
+        await AppStudioClient.getOauthRegistrationById(appStudioToken, "fakeId");
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("updateOauthRegistration", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: fakeOauthRegistration,
+      };
+      sinon.stub(fakeAxiosInstance, "patch").resolves(response);
+
+      const res = await AppStudioClient.updateOauthRegistration(
+        appStudioToken,
+        fakeOauthRegistration,
+        "fakeId"
+      );
+      chai.assert.equal(res, fakeOauthRegistration);
+    });
+
+    it("Graph API failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "patch").throws(error);
+
+      try {
+        await AppStudioClient.updateOauthRegistration(
+          appStudioToken,
+          fakeOauthRegistration,
+          "fakeId"
+        );
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
   describe("list Teams app", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
@@ -1084,7 +1275,7 @@ describe("App Studio API Test", () => {
           appId: "fakeAppId",
           status: AsyncAppValidationStatus.Completed,
           appVersion: "1.0.0",
-          manifestVersion: "1.16",
+          manifestVersion: "1.17",
           createdAt: Date(),
           updatedAt: Date(),
           validationResults: {

@@ -5,7 +5,7 @@
  * @author Huajie Zhang <huajiezhang@microsoft.com>
  */
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../constants";
+import { ComponentNames } from "../../migrate";
 
 const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
@@ -32,7 +32,7 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   {
     configurationUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/config`,
     canUpdateConfiguration: true,
-    scopes: ["team", "groupchat"],
+    scopes: ["team", "groupChat"],
   },
 ];
 
@@ -41,12 +41,12 @@ const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
     commandLists: [
       {
-        scopes: ["personal", "team", "groupchat"],
+        scopes: ["personal", "team", "groupChat"],
         commands: [
           {
             title: "helloWorld",
@@ -61,7 +61,7 @@ export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
 export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
   },
@@ -70,12 +70,12 @@ export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
 export const BOTS_TPL_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
     commandLists: [
       {
-        scopes: ["personal", "team", "groupchat"],
+        scopes: ["personal", "team", "groupChat"],
         commands: [
           {
             title: "welcome",
@@ -190,16 +190,6 @@ export const WEB_APPLICATION_INFO_V3 = {
   resource: `{{{state.${AAD_STATE_KEY}.applicationIdUris}}}`,
 };
 
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
-
-export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
-
 export class Constants {
   public static readonly MANIFEST_FILE = "manifest.json";
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
@@ -252,10 +242,14 @@ export class APP_STUDIO_API_NAMES {
   public static readonly DELETE_BOT = "delete-bot";
   public static readonly UPDATE_BOT = "update-bot";
   public static readonly CREATE_API_KEY = "create-api-key";
+  public static readonly UPDATE_API_KEY = "update-api-key";
   public static readonly GET_API_KEY = "get-api-key";
   public static readonly SUMIT_APP_VALIDATION = "submit-app-validation";
   public static readonly GET_APP_VALIDATION_RESULT = "get-app-validation-result";
   public static readonly GET_APP_VALIDATION_REQUESTS = "get-app-validation-requests";
+  public static readonly GET_OAUTH = "get-oauth";
+  public static readonly CREATE_OAUTH = "create-oauth";
+  public static readonly UPDATE_OAUTH = "update-oauth";
 }
 
 /**
@@ -284,12 +278,12 @@ export const DEFAULT_DESCRIPTION = {
 export const BOTS_TPL_EXISTING_APP: IBot[] = [
   {
     botId: "{{config.manifest.botId}}",
-    scopes: ["personal", "team", "groupchat"],
+    scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
     commandLists: [
       {
-        scopes: ["personal", "team", "groupchat"],
+        scopes: ["personal", "team", "groupChat"],
         commands: [],
       },
     ],
@@ -315,7 +309,7 @@ export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
   {
     configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
     canUpdateConfiguration: true,
-    scopes: ["team", "groupchat"],
+    scopes: ["team", "groupChat"],
   },
 ];
 

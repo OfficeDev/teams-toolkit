@@ -9,6 +9,7 @@ import { stopDebugging } from "../../utils/vscodeOperation";
 import { TestContext } from "../testContext";
 import { dotenvUtil } from "../../utils/envUtil";
 import { TestFilePath } from "../../utils/constants";
+import { VSBrowser } from "vscode-extension-tester";
 
 export type LocalDebugTestName =
   | "tab"
@@ -22,6 +23,7 @@ export type LocalDebugTestName =
   | "crbot" // command an response bot
   | "tabbot"
   | "spfx"
+  | "spfximport"
   | "botfunc"
   | "template"
   | "m365lp"
@@ -32,28 +34,40 @@ export type LocalDebugTestName =
   | "linkunfurl"
   | "aichat"
   | "aiassist"
-  | "msgnewapi";
+  | "msgnewapi"
+  | "msgapikey";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
-  public lang: "javascript" | "typescript" = "javascript";
-  needMigrate: boolean | undefined;
+  public lang: "javascript" | "typescript" | "python";
+  public framework: "react" | "minimal" | "none";
+  public needMigrate: boolean | undefined;
+  public existingSpfxFolder: string;
 
   constructor(
     testName: LocalDebugTestName,
-    lang: "javascript" | "typescript" = "javascript",
-    needMigrate?: boolean
+    option?: {
+      lang?: "javascript" | "typescript" | "python";
+      framework?: "react" | "minimal" | "none";
+      needMigrate?: boolean;
+      existingSpfxFolder?: string;
+    }
   ) {
     super(testName);
     this.testName = testName;
-    this.lang = lang;
-    this.needMigrate = needMigrate;
+    this.lang = option?.lang ? option.lang : "javascript";
+    this.framework = option?.framework ? option.framework : "react";
+    this.needMigrate = option?.needMigrate;
+    this.existingSpfxFolder = option?.existingSpfxFolder
+      ? option.existingSpfxFolder
+      : "existingspfx";
   }
 
   public async before() {
     await super.before();
     await this.createProject();
-    await this.disableDebugConsole();
+    await VSBrowser.instance.driver.sleep(30000);
+    // await this.disableDebugConsole();
     const testFolder = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(testFolder);
   }
@@ -83,6 +97,24 @@ export class LocalDebugTestContext extends TestContext {
     return result;
   }
 
+  public async getM365AppId(): Promise<string> {
+    const userDataFile = path.join(
+      TestFilePath.configurationFolder,
+      `.env.local`
+    );
+    const configFilePath = path.resolve(
+      this.testRootFolder,
+      this.appName,
+      userDataFile
+    );
+    const context = dotenvUtil.deserialize(
+      await fs.readFile(configFilePath, { encoding: "utf8" })
+    );
+    const result = context.obj.M365_APP_ID as string;
+    console.log(`M365 APP ID: ${result}`);
+    return result;
+  }
+
   public async createProject(): Promise<void> {
     if (this.needMigrate) {
       await execCommand(this.testRootFolder, `set TEAMSFX_V3=false`);
@@ -91,143 +123,160 @@ export class LocalDebugTestContext extends TestContext {
       case "tab":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "tabnsso":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-non-sso --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-non-sso --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "funcNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-functions --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-functions --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "restNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-restify --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-restify --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "crbot":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability command-bot --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability command-bot --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "function":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang} --telemetry false`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
-          `teamsapp add azure-function`
+          `teamsapp add azure-function --telemetry false`
         );
         break;
       case "bot":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability bot --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability bot --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msg":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability collect-form-message-extension --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability collect-form-message-extension --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msgsa":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app --me-architecture bot --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app --me-architecture bot --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "tabbot":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang} --telemetry false`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
-          `teamsapp add bot`
+          `teamsapp add bot --telemetry false`
         );
         break;
       case "spfx":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type none --spfx-webpart-name ${this.appName}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName} --telemetry false`
+        );
+        break;
+      case "spfximport":
+        const resourcePath = path.resolve(
+          __dirname,
+          "../../../.test-resources/",
+          this.existingSpfxFolder
+        );
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-solution import --spfx-folder ${resourcePath} --telemetry false`
         );
         break;
       case "botfunc":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang} --telemetry false`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
-          `teamsapp add azure-function`
+          `teamsapp add azure-function --telemetry false`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
-          `teamsapp add bot`
+          `teamsapp add bot --telemetry false`
         );
         break;
       case "m365lp":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability sso-launch-page --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "workflow":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability workflow-bot --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability workflow-bot --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "dashboard":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability dashboard-tab --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability dashboard-tab --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "timeNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger timer-functions --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger timer-functions --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "ftNoti":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-and-timer-functions --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-and-timer-functions --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "linkunfurl":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability link-unfurling  --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability link-unfurling  --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "aichat":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "aiassist":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-assistant --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msgnewapi":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "msgapikey":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth api-key --programming-language ${this.lang} --telemetry false`
         );
         break;
     }
@@ -305,21 +354,5 @@ export class LocalDebugSampleTestContext extends LocalDebugTestContext {
     super("template");
     this.testName = "template";
     this.sampleName = sampleName;
-  }
-}
-
-export class LocalDebugSpfxTestContext extends LocalDebugTestContext {
-  public framework: "react" | "minimal" | "none";
-  constructor(framework: "react" | "minimal" | "none" = "react") {
-    super("spfx");
-    this.testName = "spfx";
-    this.framework = framework;
-  }
-
-  public async createProject(): Promise<void> {
-    await execCommand(
-      this.testRootFolder,
-      `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName}`
-    );
   }
 }

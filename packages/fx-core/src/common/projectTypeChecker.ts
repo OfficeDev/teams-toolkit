@@ -6,6 +6,7 @@ import path from "path";
 import semver from "semver";
 import { parseDocument } from "yaml";
 import { MetadataV2, MetadataV3 } from "./versionMetadata";
+import { isValidOfficeAddInProject } from "./projectSettingsHelper";
 
 export enum TeamsfxConfigType {
   projectSettingsJson = "projectSettings.json",
@@ -34,6 +35,7 @@ export interface ProjectTypeResult {
   manifestVersion?: string;
   dependsOnTeamsJs?: boolean;
   isSPFx?: boolean;
+  officeAddinProjectType?: string;
   lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
 
@@ -195,6 +197,16 @@ class ProjectTypeChecker {
     }
     return true;
   }
+
+  findOfficeAddinProject(filePath: string, data: ProjectTypeResult): boolean {
+    if (isValidOfficeAddInProject(filePath)) {
+      data.officeAddinProjectType = "XML";
+      data.isTeamsFx = false;
+      return false;
+    }
+    return true;
+  }
+
   async checkProjectType(projectPath: string) {
     const result: ProjectTypeResult = {
       isTeamsFx: false,
@@ -236,6 +248,7 @@ class ProjectTypeChecker {
         2,
         0
       );
+      this.findOfficeAddinProject(projectPath, result);
     } catch (e) {}
     return result;
   }
@@ -256,6 +269,15 @@ export function getCapabilities(manifest: any): string[] {
   }
   if (manifest.extensions && manifest.extensions.length > 0) {
     capabilities.push("extension");
+  }
+  if (manifest.copilotExtensions?.plugins && manifest.copilotExtensions.plugins.length > 0) {
+    capabilities.push("plugin");
+  }
+  if (
+    manifest.copilotExtensions?.declarativeCopilots &&
+    manifest.copilotExtensions.declarativeCopilots > 0
+  ) {
+    capabilities.push("copilotGpt");
   }
   return capabilities;
 }

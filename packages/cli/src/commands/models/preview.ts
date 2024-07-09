@@ -19,12 +19,13 @@ import {
 import * as constants from "../../cmds/preview/constants";
 import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporter";
 import PreviewEnv from "../../cmds/preview/previewEnv";
+import { commands } from "../../resource";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const previewCommand: CLICommand = {
   name: "preview",
-  description: "Preview the current application.",
+  description: commands.preview.description,
   options: [
     ...PreviewTeamsAppOptions.map((option) => {
       if (option.name === "teams-manifest-file") {
@@ -85,6 +86,14 @@ export const previewCommand: CLICommand = {
       required: true,
       default: "local",
     },
+    {
+      name: "desktop",
+      type: "boolean",
+      shortName: "d",
+      description: "If true, open Teams desktop client instead of web client.",
+      default: false,
+      required: true,
+    },
     ProjectFolderOption,
   ],
   telemetry: {
@@ -103,6 +112,7 @@ export const previewCommand: CLICommand = {
     const execPath: string = inputs["exec-path"] as string;
     const browser = inputs.browser as constants.Browser;
     const browserArguments = (inputs["browser-arg"] as string[]) ?? [];
+    const desktop: boolean = inputs["desktop"] as boolean;
     ctx.telemetryProperties[TelemetryProperty.PreviewType] =
       environmentNameManager.isRemoteEnvironment(env.toLowerCase())
         ? `remote-${env}`
@@ -123,7 +133,8 @@ export const previewCommand: CLICommand = {
           m365Host,
           browser,
           browserArguments,
-          execPath
+          execPath,
+          desktop
         ),
       (result: Result<null, FxError>, c: TelemetryContext) => {
         // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements

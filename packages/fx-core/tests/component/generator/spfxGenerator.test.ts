@@ -1,16 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Context,
-  err,
-  Inputs,
-  ok,
-  Platform,
-  Stage,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { Context, err, Inputs, ok, Platform, Stage, SystemError } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -18,20 +9,28 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { cpUtils } from "../../../src/common/deps-checker";
+import { createContext, setTools } from "../../../src/common/globalVars";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { cpUtils } from "../../../src/component/deps-checker/";
 import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
 import { GeneratorChecker } from "../../../src/component/generator/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/generator/spfx/depsChecker/yoChecker";
-import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
+import {
+  SPFxGenerator,
+  SPFxGeneratorImport,
+  SPFxGeneratorNew,
+} from "../../../src/component/generator/spfx/spfxGenerator";
 import { Utils } from "../../../src/component/generator/spfx/utils/utils";
-import { createContextV3 } from "../../../src/component/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
-import { setTools } from "../../../src/core/globalVars";
-import { QuestionNames, SPFxVersionOptionIds } from "../../../src/question";
+import { FileNotFoundError, UserCancelError } from "../../../src/error";
+import {
+  CapabilityOptions,
+  ProjectTypeOptions,
+  QuestionNames,
+  SPFxVersionOptionIds,
+} from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { FileNotFoundError } from "../../../src/error";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -41,7 +40,7 @@ describe("SPFxGenerator", function () {
   beforeEach(async () => {
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
@@ -62,8 +61,8 @@ describe("SPFxGenerator", function () {
       if (directory.includes("teams")) {
         return {
           $schema:
-            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-          manifestVersion: "1.16",
+            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+          manifestVersion: "1.17",
           id: "fakedId",
           name: {
             short: "thisisaverylongappnametotestifitwillbetruncated",
@@ -436,6 +435,40 @@ describe("SPFxGenerator", function () {
     }
   });
 
+  it("No valid web part manifest when import SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else {
+        return [];
+      }
+    });
+    sinon.stub(fs, "statSync").returns({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    sinon.stub(fs, "copy").resolves();
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).to.eq("FileNotFoundError");
+    }
+  });
+
   it("Copy existing SPFx solution failed when import SPFx solution", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -470,8 +503,10 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readdir").callsFake((directory: any) => {
       if (directory === path.join("c:\\test", "teams")) {
         return ["1_color.png", "1_outline.png"] as any;
-      } else {
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
         return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
       }
     });
     sinon.stub(fs, "statSync").returns({
@@ -503,7 +538,15 @@ describe("SPFxGenerator", function () {
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readdir").resolves(["helloworld", "second"] as any);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
+      }
+    });
     sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
@@ -533,8 +576,10 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readdir").callsFake((directory: any) => {
       if (directory === path.join("c:\\test", "teams")) {
         return ["1_color.png", "1_outline.png"] as any;
-      } else {
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
         return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
       }
     });
     sinon.stub(fs, "statSync").returns({
@@ -1099,5 +1144,191 @@ describe("Utils", () => {
     const appName = "appNameWithoutSuffix";
     const res = Utils.truncateAppShortName(appName);
     chai.expect(res).equals("appNameWithoutSuffix");
+  });
+});
+
+describe("SPFxGeneratorNew", () => {
+  const gtools = new MockTools();
+  setTools(gtools);
+  const generator = new SPFxGeneratorNew();
+  const context = createContext();
+  describe("activate", () => {
+    it("happy path", () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "new",
+      };
+      const isActive = generator.activate(context, inputs);
+      chai.expect(isActive).to.be.true;
+    });
+  });
+  describe("getTemplateInfos", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(SPFxGenerator, "doYeomanScaffold").resolves(ok(""));
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "new",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "");
+      chai.expect(res.isOk()).to.be.true;
+    });
+    it("doYeomanScaffold error", async () => {
+      sandbox.stub(SPFxGenerator, "doYeomanScaffold").resolves(err(new UserCancelError()));
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "new",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+  });
+});
+
+describe("SPFxGeneratorImport", () => {
+  const gtools = new MockTools();
+  setTools(gtools);
+  const generator = new SPFxGeneratorImport();
+  const context = createContext();
+  describe("activate", () => {
+    it("happy path", () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const isActive = generator.activate(context, inputs);
+      chai.expect(isActive).to.be.true;
+    });
+  });
+  describe("getTemplateInfos", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(SPFxGenerator, "copySPFxSolution").resolves();
+      sandbox.stub(SPFxGenerator, "getWebpartManifest").resolves({
+        id: "test-id",
+        preconfiguredEntries: [{ title: { default: "defaultTitle" } }],
+      });
+      sandbox.stub(SPFxGenerator, "getNodeVersion").resolves("18.0");
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "");
+      chai.expect(res.isOk()).to.be.true;
+    });
+
+    it("throw error", async () => {
+      sandbox.stub(SPFxGenerator, "copySPFxSolution").rejects(new Error());
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+
+    it("throw FxError", async () => {
+      sandbox.stub(SPFxGenerator, "copySPFxSolution").rejects(new UserCancelError());
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+
+    it("RetrieveSPFxInfoError", async () => {
+      sandbox.stub(SPFxGenerator, "copySPFxSolution").resolves();
+      sandbox.stub(SPFxGenerator, "getWebpartManifest").resolves({});
+      sandbox.stub(SPFxGenerator, "getNodeVersion").resolves("18.0");
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.getTemplateInfos(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+  });
+
+  describe("post", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(SPFxGenerator, "updateSPFxTemplate").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.post(context, inputs, "");
+      chai.expect(res.isOk()).to.be.true;
+    });
+
+    it("throw error", async () => {
+      sandbox.stub(SPFxGenerator, "updateSPFxTemplate").rejects(new Error());
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.post(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
+
+    it("throw FxError", async () => {
+      sandbox.stub(SPFxGenerator, "updateSPFxTemplate").rejects(new UserCancelError());
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.AppName]: "testspfx",
+        [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+        [QuestionNames.SPFxSolution]: "import",
+      };
+      const res = await generator.post(context, inputs, "");
+      chai.expect(res.isErr()).to.be.true;
+    });
   });
 });

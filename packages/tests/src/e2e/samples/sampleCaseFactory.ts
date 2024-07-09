@@ -25,6 +25,7 @@ import {
   FrontendValidator,
   BotValidator,
   FunctionValidator,
+  ContainerAppValidator,
 } from "../../commonlib";
 import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 
@@ -41,12 +42,14 @@ export abstract class CaseFactory {
     | "function"
     | "spfx"
     | "tab & bot"
+    | "aca"
   )[] = [];
   public options?: {
     skipProvision?: boolean;
     skipDeploy?: boolean;
     skipValidate?: boolean;
     skipPackage?: boolean;
+    skipPreview?: boolean;
     manifestFolderName?: string;
   };
 
@@ -63,6 +66,7 @@ export abstract class CaseFactory {
       | "function"
       | "spfx"
       | "tab & bot"
+      | "aca"
     )[] = [],
     options: {
       skipProvision?: boolean;
@@ -183,6 +187,11 @@ export abstract class CaseFactory {
             );
             await functionValidator.validateProvision();
           }
+          if (validate.includes("aca")) {
+            // Validate Container App Provision
+            const aca = new ContainerAppValidator(context);
+            await aca.validateProvision(false);
+          }
         }
 
         // deploy
@@ -192,6 +201,12 @@ export abstract class CaseFactory {
             console.log("debug finish!");
             return;
           }
+
+          if (validate.includes("aca")) {
+            const { success } = await Executor.login();
+            expect(success).to.be.true;
+          }
+
           const { success } = await Executor.deploy(projectPath);
           expect(success).to.be.true;
 
@@ -201,6 +216,10 @@ export abstract class CaseFactory {
             // Validate Bot Deploy
             const bot = new BotValidator(context, projectPath, env);
             await bot.validateDeploy();
+          }
+          if (validate.includes("aca")) {
+            const aca = new ContainerAppValidator(context);
+            await aca.validateContainerAppStatus();
           }
         }
 
@@ -231,6 +250,17 @@ export abstract class CaseFactory {
             "dev",
             options?.manifestFolderName
           );
+          expect(success).to.be.true;
+        }
+
+        // preview
+        {
+          if (options?.skipPreview) {
+            console.log("skip Preview...");
+            console.log("debug finish!");
+            return;
+          }
+          const { success } = await Executor.preview(projectPath);
           expect(success).to.be.true;
         }
       });

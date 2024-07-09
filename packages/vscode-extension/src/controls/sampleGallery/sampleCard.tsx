@@ -16,25 +16,14 @@ export default class SampleCard extends React.Component<SampleProps, { imageUrl:
     super(props);
     const downloadUrlInfo = props.sample.downloadUrlInfo;
     this.state = {
-      imageUrl: `https://raw.githubusercontent.com/${downloadUrlInfo.owner}/${downloadUrlInfo.repository}/${downloadUrlInfo.ref}/${downloadUrlInfo.dir}/${props.sample.thumbnailPath}`,
+      imageUrl: `https://github.com/${downloadUrlInfo.owner}/${downloadUrlInfo.repository}/blob/${downloadUrlInfo.ref}/${downloadUrlInfo.dir}/${props.sample.thumbnailPath}?raw=1`,
     };
   }
 
   render() {
     const sample = this.props.sample;
     const unavailable = sample.versionComparisonResult != 0;
-    const previewImage = (
-      <Image
-        className="thumbnail"
-        src={this.state.imageUrl}
-        onError={() => {
-          const downloadUrlInfo = sample.downloadUrlInfo;
-          this.setState({
-            imageUrl: `https://media.githubusercontent.com/media/${downloadUrlInfo.owner}/${downloadUrlInfo.repository}/${downloadUrlInfo.ref}/${downloadUrlInfo.dir}/${sample.thumbnailPath}`,
-          });
-        }}
-      />
-    );
+    const previewImage = <Image className="thumbnail" src={this.state.imageUrl} />;
     const legacySampleImage = (
       <div className="unavailableSampleImage">
         <Turtle className="turtle" />

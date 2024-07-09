@@ -4,13 +4,84 @@
 import { expect } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { inferPreviewCardTemplate, wrapAdaptiveCard } from "../src/adaptiveCardWrapper";
+import {
+  inferPreviewCardTemplate,
+  wrapAdaptiveCard,
+  wrapResponseSemantics,
+} from "../src/adaptiveCardWrapper";
 import { AdaptiveCard } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 
 describe("adaptiveCardWrapper", () => {
   afterEach(() => {
     sinon.restore();
+  });
+
+  describe("wrapResponseSemantics", () => {
+    it("should infer response semanitcs card template correctly", () => {
+      const card: AdaptiveCard = {
+        type: "AdaptiveCard",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "id: ${if(id, id, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "petId: ${if(petId, petId, 'N/A')}",
+            wrap: true,
+          },
+          {
+            $when: "${imageUrl != null && imageUrl != ''}",
+            type: "Image",
+            url: "${imageUrl}",
+          },
+        ],
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+      };
+
+      const result = wrapResponseSemantics(card, "$");
+
+      expect(result.data_path).to.equal("$");
+      expect(result.properties!.title).to.equal("$.petId");
+      expect(result.properties!.subtitle).to.equal("$.id");
+      expect(result.properties!.url).to.equal("$.imageUrl");
+    });
+
+    it("should infer response semanitcs card with json path correctly", () => {
+      const card: AdaptiveCard = {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "Container",
+            $data: "${$root}",
+            items: [
+              {
+                type: "TextBlock",
+                text: "name: ${if(name, name, 'N/A')}",
+                wrap: true,
+              },
+              {
+                type: "TextBlock",
+                text: "age: ${if(age, age, 'N/A')}",
+                wrap: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = wrapResponseSemantics(card, "items");
+
+      expect(result.data_path).to.equal("$.items");
+      expect(result.properties!.title).to.equal("$.name");
+      expect(result.properties!.subtitle).to.equal("$.age");
+      expect(result.properties!.url).to.be.undefined;
+    });
   });
 
   describe("inferPreviewCardTemplate", () => {
@@ -186,7 +257,7 @@ describe("adaptiveCardWrapper", () => {
       expect(result.image).to.be.deep.equal({
         url: "${photoUrl}",
         alt: "${if(photoUrl, photoUrl, 'N/A')}",
-        $when: "${photoUrl != null}",
+        $when: "${photoUrl != null && photoUrl != ''}",
       });
     });
   });
@@ -262,7 +333,7 @@ describe("adaptiveCardWrapper", () => {
           subtitle: "${if(petId, petId, 'N/A')}",
           image: {
             url: "${imageUrl}",
-            $when: "${imageUrl != null}",
+            $when: "${imageUrl != null && imageUrl != ''}",
             alt: "${if(imageUrl, imageUrl, 'N/A')}",
           },
         },

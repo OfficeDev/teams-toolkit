@@ -66,6 +66,30 @@ export class MissingResourceAccessIdUserError extends UserError {
   }
 }
 
+export class ResourceAccessShouldBeArrayUserError extends UserError {
+  constructor(actionName: string) {
+    super({
+      source: actionName,
+      name: "ResourceAccessShouldBeArray",
+      message: getDefaultString("error.aad.manifest.ResourceAccessShouldBeArray"),
+      displayMessage: getLocalizedString("error.aad.manifest.ResourceAccessShouldBeArray"),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}
+
+export class RequiredResourceAccessShouldBeArrayUserError extends UserError {
+  constructor(actionName: string) {
+    super({
+      source: actionName,
+      name: "RequiredResourceAccessShouldBeArray",
+      message: getDefaultString("error.aad.manifest.RequiredResourceAccessShouldBeArray"),
+      displayMessage: getLocalizedString("error.aad.manifest.RequiredResourceAccessShouldBeArray"),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}
+
 export class UnknownResourceAccessIdUserError extends UserError {
   constructor(actionName: string, unknownId: string) {
     super({

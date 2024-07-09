@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  deployProject,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -68,14 +68,16 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aiassist", appName, "TypeScript");
+      await createNewProject("aiassist", appName, {
+        lang: "TypeScript",
+        aiType: "OpenAI",
+      });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
-      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
-      editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
+      editDotEnvFile(envPath, "OPENAI_ASSISTANT_ID", "fake");
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );
@@ -92,7 +94,7 @@ describe("Remote debug Tests", function () {
         botCommand: "helloWorld",
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
-        expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+        expectedReplyMessage: ValidationContent.AiBotErrorMessage2,
       });
     }
   );

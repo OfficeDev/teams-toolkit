@@ -6,19 +6,19 @@ import {
   Context,
   FxError,
   IProgressHandler,
+  IQTreeNode,
   InputsWithProjectPath,
   MaybePromise,
-  IQTreeNode,
   Result,
   SystemError,
   UserError,
   err,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
-import { TOOLS, globalVars } from "../../core/globalVars";
+import { TOOLS, globalVars } from "../../common/globalVars";
+import { TelemetryProperty } from "../../common/telemetry";
 import { assembleError } from "../../error/common";
 import { traverse } from "../../ui/visitor";
-import { TelemetryConstants } from "../constants";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { sendErrorEvent, sendStartEvent, sendSuccessEvent } from "../telemetry";
 import { settingsUtil } from "../utils/settingsUtil";
@@ -47,12 +47,14 @@ export interface ActionContext {
 }
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
-    const componentName = action.componentName || ctx.self?.constructor.name;
+    const componentName =
+      action.componentName || ctx.self?.componentName || ctx.self?.constructor.name;
     const telemetryComponentName = action.telemetryComponentName || componentName;
+    const errorSource = action.errorSource || componentName;
     const methodName = ctx.method!;
     const eventName = action.telemetryEventName || methodName;
-    const telemetryProps = {
-      [TelemetryConstants.properties.component]: telemetryComponentName,
+    const telemetryProps: any = {
+      [TelemetryProperty.Component]: telemetryComponentName,
       env: process.env.TEAMSFX_ENV || "",
     };
     const telemetryMeasures: Record<string, number> = {};
@@ -68,7 +70,8 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           }
         }
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
-        if (globalVars.trackingId) telemetryProps["project-id"] = globalVars.trackingId; // add trackingId prop in telemetry
+        if (globalVars.trackingId)
+          telemetryProps[TelemetryProperty.ProjectId] = globalVars.trackingId; // add trackingId prop in telemetry
         sendStartEvent(eventName, telemetryProps);
       }
       // run question model
@@ -109,7 +112,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
-      merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
+      merge(telemetryMeasures, { [TelemetryProperty.TimeCost]: timeCost });
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
       }
@@ -118,7 +121,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       await progressBar?.end(false);
       const fxError = assembleError(e);
       if (fxError.source === "unknown") {
-        fxError.source = action.errorSource || fxError.source;
+        fxError.source = errorSource || fxError.source;
         if (fxError instanceof UserError) {
           fxError.helpLink = fxError.helpLink || action.errorHelpLink;
         }

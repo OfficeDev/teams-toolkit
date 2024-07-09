@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { getLocalizedString } from "./localizeUtils";
 
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
@@ -10,8 +11,6 @@ export class ConstantString {
 
 export class HelpLinks {
   static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
-  static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
-  static readonly SwitchAccountOrSub = "https://aka.ms/teamsfx-switch-account-or-subscription-help";
   static readonly SwitchTenant = "https://aka.ms/teamsfx-switch-tenant";
 }
 
@@ -36,36 +35,45 @@ export class OutlookClientId {
   static readonly Desktop = "d3590ed6-52b3-4102-aeff-aad2292ab01c";
   static readonly Web1 = "00000002-0000-0ff1-ce00-000000000000";
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
+  static readonly Mobile = "27922004-5251-4030-b22d-91ecd9a37ea4";
 }
-export class FeatureFlagName {
-  static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
-  // This will default to true and this environment is only for tests. It does not expose to user.
-  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly VSCallingCLI = "VS_CALLING_CLI";
-  static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
-  static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
-  static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
-  static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
-  static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
-  static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
-  static readonly Preview = "TEAMSFX_PREVIEW";
-  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
-  static readonly V3 = "TEAMSFX_V3";
-  static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
-  static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
-  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
-  static readonly OfficeXMLAddin = "TEAMSFX_OFFICE_XML_ADDIN";
-  static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
-  static readonly TeamsSampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
-  static readonly OfficeSampleConfigBranch = "TEAMSFX_OFFICE_SAMPLE_CONFIG_BRANCH";
-  static readonly TestTool = "TEAMSFX_TEST_TOOL";
-  static readonly ApiKey = "API_COPILOT_API_KEY";
-  static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";
-  static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
-  static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
-  static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
-  static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
-  static readonly ApiMeSSO = "API_ME_SSO";
+
+export function getAllowedAppMaps(): Record<string, string> {
+  return {
+    [TeamsClientId.MobileDesktop]: getLocalizedString("core.common.TeamsMobileDesktopClientName"),
+    [TeamsClientId.Web]: getLocalizedString("core.common.TeamsWebClientName"),
+    [OfficeClientId.Desktop]: getLocalizedString("core.common.OfficeDesktopClientName"),
+    [OfficeClientId.Web1]: getLocalizedString("core.common.OfficeWebClientName1"),
+    [OfficeClientId.Web2]: getLocalizedString("core.common.OfficeWebClientName2"),
+    [OutlookClientId.Desktop]: getLocalizedString("core.common.OutlookDesktopClientName"),
+    [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
+    [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
+  };
 }
+
+const AzurePortalUrl = "https://portal.azure.com";
+export function getResourceGroupInPortal(
+  subscriptionId?: string,
+  tenantId?: string,
+  resourceGroupName?: string
+): string | undefined {
+  if (subscriptionId && tenantId && resourceGroupName) {
+    return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
+  } else {
+    return undefined;
+  }
+}
+export function getAppStudioEndpoint(): string {
+  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
+    return "https://dev-int.teams.microsoft.com";
+  } else {
+    return "https://dev.teams.microsoft.com";
+  }
+}
+
+export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
+export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
+export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
+export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
+export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];

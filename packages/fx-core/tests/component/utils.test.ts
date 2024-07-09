@@ -14,10 +14,10 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import { deployUtils } from "../../src/component/deployUtils";
-import { createDriverContext } from "../../src/component/utils";
+import { createDriverContext } from "../../src/component/driver/util/utils";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import { MockTools } from "../core/utils";
 import { MockedTelemetryReporter } from "../plugins/solution/util";
 import { resolveString } from "../../src/component/configManager/lifecycle";
@@ -277,7 +277,6 @@ describe("TeamsFxTelemetryReporter", () => {
             success: "no",
             "error-code": "source.name",
             "error-type": "user",
-            "error-message": "message",
           });
           reporterCalled = true;
         });
@@ -299,7 +298,6 @@ describe("TeamsFxTelemetryReporter", () => {
             success: "no",
             "error-code": "my error code",
             "error-type": "user",
-            "error-message": "message",
             "my-property": "value",
           });
           reporterCalled = true;
@@ -322,7 +320,6 @@ describe("TeamsFxTelemetryReporter", () => {
         .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
         .callsFake((eventName, properties, measurements, errorProps) => {
           expect(errorProps).include("test");
-          expect(errorProps).include("error-message");
           reporterCalled = true;
         });
 

@@ -10,7 +10,7 @@
     <link href="{{ProjectName}}.styles.css" rel="stylesheet" />
 </head>
 <body>
-    <Routes />
+    <Routes @rendermode="@RenderMode.InteractiveServer" />
     <script src="_framework/blazor.web.js"></script>
     <script type="module" src="https://unpkg.com/@@fluentui/web-components"></script>
 </body>

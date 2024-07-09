@@ -21,6 +21,11 @@ export enum PrereleaseState {
   Version = "teamsToolkit:prerelease:version",
 }
 
+export enum ResourceInfo {
+  Subscription = "Subscription",
+  ResourceGroup = "Resource Group",
+}
+
 export enum GlobalKey {
   OpenWalkThrough = "fx-extension.openWalkThrough",
   OpenReadMe = "fx-extension.openReadMe",
@@ -28,7 +33,32 @@ export enum GlobalKey {
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   CreateWarnings = "CreateWarnings",
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
+  SampleGalleryInitialSample = "teamsToolkit:sampleGallery:initialSample",
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
+}
+
+export enum CommandKey {
+  Create = "fx-extension.create",
+  OpenWelcome = "fx-extension.openWelcome",
+  BuildIntelligentAppsWalkthrough = "fx-extension.buildIntelligentAppsWalkthrough",
+  CheckCopilotAccess = "fx-extension.checkCopilotAccess",
+  OpenDocument = "fx-extension.openDocument",
+  OpenSamples = "fx-extension.openSamples",
+  DownloadSample = "fx-extension.downloadSample",
+  ValidateGetStartedPrerequisites = "fx-extension.validate-getStarted-prerequisites",
+  OpenReadMe = "fx-extension.openReadMe",
+  DebugInTestToolFromMessage = "fx-extension.debugInTestToolFromMessage",
+  SigninM365 = "fx-extension.signinM365",
+  LocalDebug = "fx-extension.localdebug",
+  SigninAzure = "fx-extension.signinAzure",
+  Provision = "fx-extension.provision",
+  Deploy = "fx-extension.deploy",
+  Publish = "fx-extension.publish",
+  Preview = "fx-extension.preview",
+  installDependency = "fx-extension.installDependency",
+  publishToAppSource = "fx-extension.publishToAppSource",
+  openDeployLink = "fx-extension.officeDevDeploy",
+  openOfficeDevDocument = "fx-extension.openOfficeDevDocument",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
@@ -39,3 +69,5 @@ export const PublishAppLearnMoreLink =
 export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
 
 export const TerminalName = "Teams Toolkit";
+
+export const InstallCopilotChatLink = "https://aka.ms/install-github-copilot-chat";

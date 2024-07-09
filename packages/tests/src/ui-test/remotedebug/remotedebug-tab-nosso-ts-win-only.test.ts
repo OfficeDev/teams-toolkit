@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -6,9 +9,9 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
   setSkuNameToB1,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -63,11 +66,11 @@ describe("Remote debug Tests", function () {
     async function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
-      await createNewProject("tabnsso", appName, "TypeScript");
+      await createNewProject("tabnsso", appName, { lang: "TypeScript" });
       await setSkuNameToB1(projectPath);
       await driver.sleep(Timeout.shortTimeWait);
-      await runProvision(appName);
-      await runDeploy();
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

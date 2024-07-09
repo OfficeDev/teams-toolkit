@@ -6,13 +6,37 @@ Teams Toolkit continuously focuses on:
 
 - **Microsoft 365 Platform:** We’re committed to providing Day 1 support for new Microsoft 365 capabilities and features.
 
-- **Support for familiar language & tools:** Teams Toolkit works with the languages, frameworks, tools, and services you know and love.
+- **Support for Familiar Language & Tools:** Teams Toolkit works with the languages, frameworks, tools, and services you know and love.
 
-- **Get started fast:** Teams Toolkit is the simplest way to get started building for Microsoft 365 with delightful tooling, samples, and documentation.
+- **Get Started Fast:** Teams Toolkit is the simplest way to get started building for Microsoft 365 with delightful tooling, samples, and documentation.
 
-- **Development velocity:** best-in-class productivity to create, build, and deliver your apps.
+- **Development Belocity:** best-in-class productivity to create, build, and deliver your apps.
 
-- **Ship with confidence:** Teams Toolkit is enterprise-ready to help developers and IT administrators deliver, manage, and monitor apps with confidence.
+- **Ship with Confidence:** Teams Toolkit is enterprise-ready to help developers and IT administrators deliver, manage, and monitor apps with confidence.
+
+## Q1-Q2, 2024
+
+- **Build intelligent apps for Microsoft 365 and Copilot platform**: AI exploded in 2023, promising a transformation for the way people communicate, collaborate and work. Teams platform also formed a strategy to create engaging app experiences that leverage AI to ease complex conversational app development.There are 2 major types of experience: You can bring AI to your Teams application (Chat Bot in Teams with Teams AI Library): Teams AI Library enables developers to add natural language processing to their conversational apps and respond to end-user with AI generated content. Or integrate with Copilot (Plugin for Microsoft 365 Copilot): Copilot plugin allows developers to extend Microsoft Copilot via message extensions to access real-time information. 
+
+    - Copilot plugins (Microsoft version of OpenAI plugin) E2E DevX.
+    - Custom Copilots (Intelligent chat bots that use Teams AI Library) with AI Agent and RAG scenarios.  
+
+- **AI Enhanced Developer Experience**: 
+    - Getting Started with Teams app development using GitHub Copilot Chat. 
+    - Help early stage developers navigate through Microsoft 365 platform concepts, terminology and technical stacks. 
+    - Facilitate developers move fast in the development journey. 
+
+- **Improve Teams app Testability**: Teams App Test Tool (Test Tool) makes debugging bot-based apps effortless. You can chat with your bot and see its messages and Adaptive Cards as they appear in Microsoft Teams. Now we are expanding its capability to cover Message Extensions. 
+
+- **Streamlined DevX with Revamped Documentation**:
+    - Revamp Information Architecture: Restructure the Table of Contents (TOC) in the documentation to improve clarity and navigation. 
+    - Incremental Documentation Improvements: Continue to enhance the documentation by completing Visual Studio (VS) documentation, adding a samples overview table, and adding advanced usage tips content to the documentation site. 
+
+- **Move Applications to Production Environment**: Teams Toolkit has been optimizing the experiences for Getting Started scenarios for developers who are new to the platform. There’s another chunk of users who have already invested a lot / familiar with the platform while we haven’t provided a lot of value for them. This Epic intends to optimize the experience for developers when they have completed the development process and want to ship their applications. 
+    - Enable shift-left functional app testing for Teams applications.
+    - Deploy static contents to Azure Static Web applications. 
+    - Improved CI/CD pipeline creation through pipeline templates and tailored guides. 
+    - Containerize the Teams application deployment with ACS. 
 
 ## Q3-Q4, 2023
 

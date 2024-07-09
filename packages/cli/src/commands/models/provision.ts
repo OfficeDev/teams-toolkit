@@ -1,28 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
+import { QuestionNames, newResourceGroupOption } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
-import { strings } from "../../resource";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, IgnoreLoadEnvOption, ProjectFolderOption } from "../common";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { newResourceGroupOption } from "@microsoft/teamsfx-core/build/question/other";
 
 export const provisionCommand: CLICommand = {
   name: "provision",
-  description: strings.command.provision.description,
+  description: commands.provision.description,
   options: [
     EnvOption,
     ProjectFolderOption,
     {
       name: "resource-group",
-      description: "Specifies resource group name.",
+      description: commands.provision.options["resource-group"],
       type: "string",
       hidden: true,
     },
     {
       name: "region",
-      description: "Specifies resource group region.",
+      description: commands.provision.options.region,
       type: "string",
       hidden: true,
     },
@@ -36,12 +35,12 @@ export const provisionCommand: CLICommand = {
     const inputs = ctx.optionValues as InputsWithProjectPath;
     if (!ctx.globalOptionValues.interactive) {
       if (inputs["region"]) {
-        inputs[CoreQuestionNames.TargetResourceGroupName] = {
+        inputs[QuestionNames.TargetResourceGroupName] = {
           id: newResourceGroupOption,
           label: newResourceGroupOption,
         };
-        inputs[CoreQuestionNames.NewResourceGroupName] = inputs["resource-group"];
-        inputs[CoreQuestionNames.NewResourceGroupLocation] = inputs["region"];
+        inputs[QuestionNames.NewResourceGroupName] = inputs["resource-group"];
+        inputs[QuestionNames.NewResourceGroupLocation] = inputs["region"];
       }
     }
     const res = await core.provisionResources(inputs);

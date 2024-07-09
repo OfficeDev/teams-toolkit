@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, TeamsAppInputs, err } from "@microsoft/teamsfx-api";
+import { CLICommand, CLICommandOption, TeamsAppInputs, err } from "@microsoft/teamsfx-api";
+import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../../activate";
+import { commands } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 import {
   EnvFileOption,
@@ -11,21 +13,14 @@ import {
   TeamsAppOuputPackageOption,
   TeamsAppOutputManifestFileOption,
   TeamsAppPackageOption,
+  ValidateMethodOption,
 } from "../../common";
 import { validateArgumentConflict } from "./update";
 
 export const teamsappValidateCommand: CLICommand = {
   name: "validate",
-  description: "Validate the Microsoft Teams app using manifest schema or validation rules.",
-  options: [
-    TeamsAppManifestFileOption,
-    TeamsAppPackageOption,
-    TeamsAppOuputPackageOption,
-    TeamsAppOutputManifestFileOption,
-    EnvOption,
-    EnvFileOption,
-    ProjectFolderOption,
-  ],
+  description: commands.validate.description,
+  options: getOptions(),
   telemetry: {
     event: TelemetryEvent.ValidateManifest,
   },
@@ -41,3 +36,21 @@ export const teamsappValidateCommand: CLICommand = {
     return res;
   },
 };
+
+function getOptions(): CLICommandOption[] {
+  const options = [
+    TeamsAppManifestFileOption,
+    TeamsAppPackageOption,
+    TeamsAppOuputPackageOption,
+    TeamsAppOutputManifestFileOption,
+    EnvOption,
+    EnvFileOption,
+    ProjectFolderOption,
+  ];
+
+  if (featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation)) {
+    options.push(ValidateMethodOption);
+  }
+
+  return options;
+}

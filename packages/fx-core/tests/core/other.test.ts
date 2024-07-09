@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ResourceManagementClient } from "@azure/arm-resources";
 import { TokenCredential } from "@azure/identity";
 import { AzureAccountProvider, Settings, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -12,10 +11,13 @@ import os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { isFeatureFlagEnabled } from "../../src/common/featureFlags";
-import { execPowerShell, execShell } from "../../src/common/local/process";
-import { TaskDefinition } from "../../src/common/local/taskDefinition";
-import { isValidProject } from "../../src/common/projectSettingsHelper";
-import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import { execPowerShell, execShell } from "../../src/component/local/process";
+import { TaskDefinition } from "../../src/component/local/taskDefinition";
+import {
+  isValidOfficeAddInProject,
+  isValidProject,
+  isValidProjectV3,
+} from "../../src/common/projectSettingsHelper";
 import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
@@ -229,6 +231,7 @@ describe("Other test case", () => {
     };
     sandbox.stub(fs, "readJsonSync").returns(projectSettings);
     sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "readdirSync").returns([]);
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
   });
@@ -243,6 +246,7 @@ describe("Other test case", () => {
       };
       sandbox.stub(fs, "readJsonSync").returns(settings);
       sandbox.stub(fs, "existsSync").returns(true);
+      sandbox.stub(fs, "readdirSync").returns([]);
       const isValid = isValidProject("aaa");
       assert.isTrue(isValid);
     } finally {
@@ -278,5 +282,13 @@ describe("Other test case", () => {
     } finally {
       mockedEnvRestore();
     }
+  });
+  it("projectSettingsHelper - isValidProjectV3 - office add-in", () => {
+    sandbox.stub(fs, "readdirSync").returns(["manifest.xml"] as any);
+    assert.equal(isValidProjectV3("test"), false);
+  });
+  it("projectSettingsHelper - isValidOfficeAddInProject - metaos add-in", () => {
+    sandbox.stub(fs, "readdirSync").returns(["manifest.json", "manifest.xml"] as any);
+    assert.equal(isValidOfficeAddInProject("test"), false);
   });
 });

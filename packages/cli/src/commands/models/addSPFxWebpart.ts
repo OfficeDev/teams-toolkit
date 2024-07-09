@@ -3,12 +3,13 @@
 import { CLICommand, Stage } from "@microsoft/teamsfx-api";
 import { SPFxAddWebpartInputs, SPFxAddWebpartOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const addSPFxWebpartCommand: CLICommand = {
   name: "spfx-web-part",
-  description: "Auto-hosted SPFx web part tightly integrated with Microsoft Teams.",
+  description: commands["add.spfx-web-part"].description,
   options: [...SPFxAddWebpartOptions, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.AddWebpart,

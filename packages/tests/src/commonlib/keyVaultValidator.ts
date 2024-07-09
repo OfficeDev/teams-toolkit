@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import axios from "axios";
-import * as chai from "chai";
 import MockAzureAccountProvider, {
   AzureAccountProviderUserPassword,
 } from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { AzureScopes } from "@microsoft/teamsfx-core";
+import axios from "axios";
+import * as chai from "chai";
 import {
   getActivePluginsFromProjectSetting,
   getAzureAccountObjectId,
@@ -14,7 +14,7 @@ import {
   getProvisionParameterValueByKey,
 } from "../e2e/commonUtils";
 import { CliHelper } from "./cliHelper";
-import { PluginId, provisionParametersKey, StateConfigKey } from "./constants";
+import { PluginId, StateConfigKey, provisionParametersKey } from "./constants";
 import {
   getKeyVaultNameFromResourceId,
   getResourceGroupNameFromResourceId,

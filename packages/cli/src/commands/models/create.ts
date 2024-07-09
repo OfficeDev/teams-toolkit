@@ -16,7 +16,6 @@ import {
   CreateProjectOptions,
   MeArchitectureOptions,
   QuestionNames,
-  isApiCopilotPluginEnabled,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -24,6 +23,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
+import { commands } from "../../resource";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { createSampleCommand } from "./createSample";
 
@@ -43,13 +43,14 @@ function adjustOptions(options: CLICommandOption[]) {
       break;
     }
   }
+
   return options;
 }
 
 export function getCreateCommand(): CLICommand {
   return {
     name: "new",
-    description: "Create a new Microsoft Teams application.",
+    description: commands.create.description,
     options: [...adjustOptions(CreateProjectOptions)],
     examples: [
       {

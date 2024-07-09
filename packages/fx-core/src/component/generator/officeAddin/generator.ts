@@ -5,38 +5,51 @@
  * @author yefuwang@microsoft.com
  */
 
-import {
-  FxError,
-  Inputs,
-  Result,
-  ok,
-  err,
-  ManifestUtil,
-  devPreview,
-  Context,
-} from "@microsoft/teamsfx-api";
-import { join } from "path";
-import { HelperMethods } from "./helperMethods";
-import { OfficeAddinManifest } from "office-addin-manifest";
-import projectsJsonData from "./config/projectsJsonData";
-import * as childProcess from "child_process";
-import { promisify } from "util";
-import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { Generator } from "../generator";
+import {
+  Context,
+  FxError,
+  GeneratorResult,
+  Inputs,
+  ManifestUtil,
+  Result,
+  devPreview,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import * as childProcess from "child_process";
+import fse from "fs-extra";
+import { toLower } from "lodash";
+import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
-import { QuestionNames } from "../../../question/questionNames";
-import { ProjectTypeOptions, getTemplate } from "../../../question/create";
+import { join } from "path";
+import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
-import { isOfficeXMLAddinEnabled } from "../../../common/featureFlags";
+import {
+  CapabilityOptions,
+  ProgrammingLanguage,
+  ProjectTypeOptions,
+  QuestionNames,
+} from "../../../question/constants";
+import { getOfficeAddinFramework, getOfficeAddinTemplateConfig } from "../../../question/create";
+import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { Generator } from "../generator";
+import { DefaultTemplateGenerator } from "../templates/templateGenerator";
+import { TemplateInfo } from "../templates/templateInfo";
+import { convertToLangKey } from "../utils";
+import { HelperMethods } from "./helperMethods";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
 const templateName = "office-addin";
 const templateNameForWXPO = "office-json-addin";
 
+/**
+ * case 1: project-type=office-xml-addin-type AND addin-host=outlook
+ * case 2: project-type=office-addin-type (addin-host=undefined)
+ * case 3: project-type=outlook-addin-type (addin-host=undefined)
+ */
 export class OfficeAddinGenerator {
   @hooks([
     ActionExecutionMW({
@@ -57,9 +70,12 @@ export class OfficeAddinGenerator {
     }
 
     // If lang is undefined, it means the project is created from a folder.
-    const lang = inputs[QuestionNames.ProgrammingLanguage];
+    const lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as "javascript" | "typescript";
     const langKey =
-      lang != "No Options" ? (lang?.toLowerCase() === "typescript" ? "ts" : "js") : undefined;
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
+        ? "ts"
+        : convertToLangKey(lang);
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
@@ -82,51 +98,58 @@ export class OfficeAddinGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
-    const template = getTemplate(inputs);
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
-    const language = inputs[QuestionNames.ProgrammingLanguage];
-    const host = isOfficeXMLAddinEnabled()
-      ? inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
-        ? "Outlook"
-        : inputs[QuestionNames.OfficeAddinCapability]
-      : inputs[QuestionNames.OfficeAddinHost];
+    const language = toLower(inputs[QuestionNames.ProgrammingLanguage]) as
+      | "javascript"
+      | "typescript";
+    const projectType = inputs[QuestionNames.ProjectType];
+    const capability = inputs[QuestionNames.Capabilities];
+    const inputHost = inputs[QuestionNames.OfficeAddinHost];
+    let host: string = inputHost;
+    if (projectType === ProjectTypeOptions.outlookAddin().id) {
+      host = "outlook";
+    } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+      if (capability === "json-taskpane") {
+        host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
+      } else if (capability === CapabilityOptions.officeContentAddin().id) {
+        host = "xp"; // content add-in support excel, powerpoint
+      }
+    }
     const workingDir = process.cwd();
-    const importProgress = context.userInteraction.createProgressBar(
-      getLocalizedString("core.generator.officeAddin.importProject.title"),
-      3
-    );
+    const importProgressStr =
+      projectType === ProjectTypeOptions.officeAddin().id
+        ? getLocalizedString("core.generator.officeAddin.importOfficeProject.title")
+        : getLocalizedString("core.generator.officeAddin.importProject.title");
+    const importProgress = context.userInteraction.createProgressBar(importProgressStr, 3);
 
     process.chdir(addinRoot);
     try {
       if (!fromFolder) {
         // from template
-        const jsonData = new projectsJsonData();
-        const isOfficeAddin =
-          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id;
-        const framework = isOfficeAddin ? inputs[QuestionNames.OfficeAddinFramework] : undefined;
-        const projectLink = isOfficeAddin
-          ? jsonData.getProjectDownloadLinkNew(template, language, framework)
-          : jsonData.getProjectDownloadLink(template, language);
+        const framework = getOfficeAddinFramework(inputs);
+        const templateConfig = getOfficeAddinTemplateConfig();
+        const projectLink = templateConfig[capability].framework[framework][language];
 
         // Copy project template files from project repository
         if (projectLink) {
-          await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
-
-          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
-              "wxpo" // support word, excel, powerpoint, outlook
-            )} ${"json"}`;
-            await OfficeAddinGenerator.childProcessExec(cmdLine);
-          } else {
-            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-            await OfficeAddinGenerator.childProcessExec(cmdLine);
+          const fetchRes = await HelperMethods.fetchAndUnzip(
+            "office-addin-generator",
+            projectLink,
+            addinRoot
+          );
+          if (fetchRes.isErr()) {
+            return err(fetchRes.error);
           }
-
-          const manifestPath = jsonData.getManifestPath(template) as string;
+          let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+            cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
+          } else {
+            cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
+          }
+          await OfficeAddinGenerator.childProcessExec(cmdLine);
+          const manifestPath = templateConfig[capability].manifestPath as string;
           // modify manifest guid and DisplayName
           await OfficeAddinManifest.modifyManifestFile(
             `${join(addinRoot, manifestPath)}`,
@@ -171,26 +194,102 @@ export class OfficeAddinGenerator {
 
 // TODO: update to handle different hosts when support for them is implemented
 // TODO: handle multiple scopes
-type OfficeHost = "Outlook"; // | "Word" | "OneNote" | "PowerPoint" | "Project" | "Excel"
-async function getHost(addinManifestPath: string): Promise<OfficeHost> {
+type OfficeHost = "Outlook" | "Word" | "Excel" | "PowerPoint"; // | "OneNote" | "Project"
+export async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   // Read add-in manifest file
   const addinManifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
     addinManifestPath
   );
   let host: OfficeHost = "Outlook";
   switch (addinManifest.extensions?.[0].requirements?.scopes?.[0]) {
-    // case "document":
-    //   host = "Word";
+    case "document":
+      host = "Word";
+      break;
     case "mail":
       host = "Outlook";
+      break;
     // case "notebook":
     //   host = "OneNote";
-    // case "presentation":
-    //   host = "PowerPoint";
+    case "presentation":
+      host = "PowerPoint";
+      break;
     // case "project":
     //   host = "Project";
-    // case "workbook":
-    //   host = "Excel";
+    case "workbook":
+      host = "Excel";
+      break;
   }
   return host;
+}
+
+export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
+  componentName = "office-addin-generator";
+
+  // activation condition
+  public activate(context: Context, inputs: Inputs): boolean {
+    const projectType = inputs[QuestionNames.ProjectType];
+    return ProjectTypeOptions.officeAddinAllIds().includes(projectType);
+  }
+
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const projectType = inputs[QuestionNames.ProjectType];
+    const tplName =
+      projectType === ProjectTypeOptions.officeAddin().id ? templateNameForWXPO : templateName;
+    let lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as ProgrammingLanguage;
+    lang =
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
+        ? ProgrammingLanguage.TS
+        : lang;
+    return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
+  }
+
+  public async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+    if (res.isErr()) return err(res.error);
+    await this.fixIconPath(destinationPath);
+    return ok({});
+  }
+
+  /**
+   * this is a work around for MOS API bug that will return invalid package if the icon path is not root folder of appPackage
+   * so this function will move the two icon files to root folder of appPackage and update the manifest.json
+   */
+  async fixIconPath(projectPath: string): Promise<void> {
+    const outlineOldPath = join(projectPath, "appPackage", "assets", "outline.png");
+    const colorOldPath = join(projectPath, "appPackage", "assets", "color.png");
+    const outlineNewPath = join(projectPath, "appPackage", "outline.png");
+    const colorNewPath = join(projectPath, "appPackage", "color.png");
+    const manifestPath = join(projectPath, "appPackage", "manifest.json");
+    if (!(await fse.pathExists(manifestPath))) return;
+    const manifest = await fse.readJson(manifestPath);
+    let change = false;
+    if (manifest.icons.outline === "assets/outline.png") {
+      if ((await fse.pathExists(outlineOldPath)) && !(await fse.pathExists(outlineNewPath))) {
+        await fse.move(outlineOldPath, outlineNewPath);
+        manifest.icons.outline = "outline.png";
+        change = true;
+      }
+    }
+    if (manifest.icons.color === "assets/color.png") {
+      if ((await fse.pathExists(colorOldPath)) && !(await fse.pathExists(colorNewPath))) {
+        await fse.move(colorOldPath, colorNewPath);
+        manifest.icons.color = "color.png";
+        change = true;
+      }
+    }
+    if (change) {
+      await fse.writeJson(manifestPath, manifest, { spaces: 4 });
+    }
+  }
 }

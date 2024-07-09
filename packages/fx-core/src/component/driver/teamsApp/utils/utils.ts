@@ -2,9 +2,13 @@
 // Licensed under the MIT license.
 import { includes } from "lodash";
 import Mustache from "mustache";
-import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from ".././constants";
 import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
 import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { WrapDriverContext } from "../../util/wrapUtil";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { MissingEnvironmentVariablesError } from "../../../../error";
+import { TelemetryPropertyKey } from "./telemetry";
 
 export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   let keys: string[] = [];
@@ -177,7 +181,7 @@ const includeGroupChatScope = (scopes: string[]): boolean => {
 export enum CommandScope {
   Team = "team",
   Personal = "personal",
-  GroupChat = "groupchat",
+  GroupChat = "groupChat",
 }
 
 export enum MeetingsContext {
@@ -209,4 +213,26 @@ export class RetryHandler {
       }
     }
   }
+}
+
+export function normalizePath(path: string, useForwardSlash: boolean): string {
+  return useForwardSlash ? path.replace(/\\/g, "/") : path;
+}
+
+export function getResolvedManifest(
+  content: string,
+  path: string,
+  telemetryKey: TelemetryPropertyKey,
+  ctx?: WrapDriverContext
+): Result<string, FxError> {
+  const vars = getEnvironmentVariables(content);
+  ctx?.addTelemetryProperties({
+    [telemetryKey]: vars.join(";"),
+  });
+  const result = expandEnvironmentVariable(content);
+  const notExpandedVars = getEnvironmentVariables(result);
+  if (notExpandedVars.length > 0) {
+    return err(new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), path));
+  }
+  return ok(result);
 }

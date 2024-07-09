@@ -13,13 +13,16 @@ const Path = {
   Solution: resolve(__dirname, ".."),
 };
 
-const RegExp = {
+const RegExps = {
   AllPlaceholders: /(?<!\$){{(?!\/).*?}}/g,
   AllMustacheDelimiters: /[{#}]/g,
+  SchemaVersion:
+    /(https:\/\/aka.ms\/teams-toolkit\/)([v0-9.]+)(\/yaml.schema.json)(\s*.*\s*.*\s*version: )([v0-9.]+)/,
+  SchemaVersionReplacement: (newVersion) => `$1${newVersion}$3$4${newVersion}`,
 };
 
 module.exports = {
   Ext,
   Path,
-  RegExp,
+  RegExps,
 };

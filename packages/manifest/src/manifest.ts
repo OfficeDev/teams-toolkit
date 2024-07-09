@@ -52,7 +52,7 @@ export interface IConfigurableTab {
   /**
    * Specifies whether the tab offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive. Currently, configurable tabs are only supported in the teams and groupchats scopes.
    */
-  scopes: ("team" | "groupchat")[];
+  scopes: ("team" | "groupchat" | "groupChat")[];
   /**
    * The set of contextItem scopes that a tab belong to
    */
@@ -184,7 +184,7 @@ export interface IWebApplicationInfo {
   applicationPermissions?: string[];
 }
 
-export type BotOrMeScopes = ("team" | "personal" | "groupchat")[];
+export type BotOrMeScopes = ("team" | "personal" | "groupchat" | "groupChat")[];
 
 export interface IComposeExtension {
   objectId?: string;
@@ -215,6 +215,11 @@ export interface IComposeExtension {
    * To support SME, it's the relative path to api spec file in the manifest
    */
   apiSpecificationFile?: string;
+
+  /**
+   * Authorization information.
+   */
+  authorization?: IAuthorization;
 }
 
 export interface IComposeExtensionMessageHandler {
@@ -269,6 +274,24 @@ export interface IMessagingExtensionCommand {
    * To support SME
    */
   apiResponseRenderingTemplateFile?: string;
+}
+
+export interface IAuthorization {
+  /**
+   * The type of authorization to use.
+   */
+  authType?: "none" | "apiSecretServiceAuth" | "microsoftEntra";
+  /**
+   * Capturing details needed to do microsoftEntra auth flow. It will be only present when auth type is microsoftEntra.
+   */
+  microsoftEntraConfiguration?: IMicrosoftEntraConfiguration;
+}
+
+export interface IMicrosoftEntraConfiguration {
+  /**
+   * Boolean indicating whether single sign on is configured for the app.
+   */
+  supportsSingleSignOn?: boolean;
 }
 
 export interface IParameter {
@@ -365,7 +388,13 @@ export interface ITogetherModeScene {
 }
 
 export interface IPlugin {
-  pluginFile: string;
+  file: string;
+  id: string;
+}
+
+export interface IDeclarativeCopilot {
+  file: string;
+  id: string;
 }
 
 export type AppManifest = Record<string, any>;
@@ -505,7 +534,7 @@ export class TeamsAppManifest implements AppManifest {
   /**
    * The install scope defined for this app by default. This will be the option displayed on the button when a user tries to add the app
    */
-  defaultInstallScope?: "personal" | "team" | "groupchat" | "meetings";
+  defaultInstallScope?: "personal" | "team" | "groupchat" | "groupChat" | "meetings";
   /**
    * When a group install scope is selected, this will define the default capability when the user installs the app
    */
@@ -544,8 +573,15 @@ export class TeamsAppManifest implements AppManifest {
       resourceSpecific?: IAppPermission[];
     };
   };
-  /**
-   * Pointer to plugin manifest.
-   */
-  plugins?: IPlugin[];
+
+  copilotExtensions?: {
+    /**
+     * Pointer to plugins.
+     */
+    plugins?: IPlugin[];
+    /**
+     * Pointer to declarative Copilot.
+     */
+    declarativeCopilots?: IDeclarativeCopilot[];
+  };
 }

@@ -17,6 +17,7 @@ import {
   cleanAppStudio,
   cleanUpLocalProject,
   cleanUpResourceGroup,
+  createResourceGroup,
 } from "../../utils/cleanHelper";
 import {
   execCommandIfExist,
@@ -26,6 +27,7 @@ import {
 import { ModalDialog, InputBox, VSBrowser } from "vscode-extension-tester";
 import { dotenvUtil } from "../../utils/envUtil";
 import { execAsync } from "../../utils/commonUtils";
+import { CliHelper } from "../cliHelper";
 
 export class RemoteDebugTestContext extends TestContext {
   public testName: string;
@@ -179,6 +181,90 @@ export async function inputSqlUserName(
   await input.confirm();
   await input.setText(sqlPassword);
   await input.confirm();
+}
+
+export async function provisionProject(
+  appName: string,
+  projectPath = "",
+  createRg = true,
+  tool: "ttk" | "cli" = "cli",
+  option = "",
+  env: "dev" | "local" = "dev",
+  processEnv?: NodeJS.ProcessEnv
+) {
+  if (tool === "cli") {
+    await runCliProvision(
+      projectPath,
+      appName,
+      createRg,
+      option,
+      env,
+      processEnv
+    );
+  } else {
+    await runProvision(appName);
+  }
+}
+
+export async function deployProject(
+  projectPath: string,
+  waitTime: number = Timeout.tabDeploy,
+  tool: "ttk" | "cli" = "cli",
+  option = "",
+  env: "dev" | "local" = "dev",
+  processEnv?: NodeJS.ProcessEnv,
+  retries?: number,
+  newCommand?: string
+) {
+  if (tool === "cli") {
+    await runCliDeploy(
+      projectPath,
+      option,
+      env,
+      processEnv,
+      retries,
+      newCommand
+    );
+  } else {
+    await runDeploy(waitTime);
+  }
+}
+
+export async function runCliProvision(
+  projectPath: string,
+  appName: string,
+  createRg = true,
+  option = "",
+  env: "dev" | "local" = "dev",
+  processEnv?: NodeJS.ProcessEnv
+) {
+  if (createRg) {
+    await createResourceGroup(appName, env, "westus");
+  }
+  const resourceGroupName = `${appName}-${env}-rg`;
+  await CliHelper.showVersion(projectPath, processEnv);
+  await CliHelper.provisionProject2(projectPath, option, env, {
+    ...process.env,
+    AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+  });
+}
+
+export async function runCliDeploy(
+  projectPath: string,
+  option = "",
+  env: "dev" | "local" = "dev",
+  processEnv?: NodeJS.ProcessEnv,
+  retries?: number,
+  newCommand?: string
+) {
+  await CliHelper.deployAll(
+    projectPath,
+    option,
+    env,
+    processEnv,
+    retries,
+    newCommand
+  );
 }
 
 export async function runProvision(
@@ -366,18 +452,4 @@ export async function setSkipAddingSqlUser(
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["skipAddingSqlUser"] = true;
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
-}
-
-export async function configSpfxGlobalEnv() {
-  try {
-    console.log(`Start to set up global environment:`);
-    const result = await execAsync(
-      "npm install gulp-cli yo @microsoft/generator-sharepoint --global"
-    );
-    console.log(`[Successfully] set up global environment.`);
-    console.log(`${result.stdout}`);
-  } catch (error) {
-    console.log(error);
-    throw new Error(`Failed to set up global environment: ${error}`);
-  }
 }

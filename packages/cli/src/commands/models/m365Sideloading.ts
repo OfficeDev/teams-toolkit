@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService, serviceEndpoint, serviceScope } from "@microsoft/teamsfx-core";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
+import { PackageService, MosServiceEndpoint, MosServiceScope } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
 import M365TokenProvider from "../../commonlib/m365Login";
+import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
+import { commands } from "../../resource";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 export const sideloadingServiceEndpoint =
-  process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
-export const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+  process.env.SIDELOADING_SERVICE_ENDPOINT ?? MosServiceEndpoint;
+export const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? MosServiceScope;
 
 class M365Utils {
   async getTokenAndUpn(): Promise<[string, string]> {
@@ -48,16 +49,16 @@ export const m365utils = new M365Utils();
 export const m365SideloadingCommand: CLICommand = {
   name: "install",
   aliases: ["sideloading"],
-  description: "Sideload a given application package across Microsoft 365.",
+  description: commands.install.description,
   options: [
     {
       name: "file-path",
-      description: "Path to the App manifest zip package.",
+      description: commands.install.options["file-path"],
       type: "string",
     },
     {
       name: "xml-path",
-      description: "Path to the XML manifest xml file.",
+      description: commands.install.options["xml-path"],
       type: "string",
     },
   ],
@@ -78,10 +79,6 @@ export const m365SideloadingCommand: CLICommand = {
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {
-    // Command is preview, set log level to verbose
-    logger.logLevel = logger.logLevel > LogLevel.Verbose ? LogLevel.Verbose : logger.logLevel;
-    logger.warning("This command is in preview.");
-
     const zipAppPackagePath = ctx.optionValues["file-path"] as string;
     const xmlPath = ctx.optionValues["xml-path"] as string;
 

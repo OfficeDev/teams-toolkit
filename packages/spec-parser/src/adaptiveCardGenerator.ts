@@ -15,9 +15,12 @@ import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 
 export class AdaptiveCardGenerator {
-  static generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): [AdaptiveCard, string] {
+  static generateAdaptiveCard(
+    operationItem: OpenAPIV3.OperationObject,
+    allowMultipleMediaType = false
+  ): [AdaptiveCard, string] {
     try {
-      const json = Utils.getResponseJson(operationItem);
+      const { json } = Utils.getResponseJson(operationItem, allowMultipleMediaType);
 
       let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
 
@@ -152,7 +155,7 @@ export class AdaptiveCardGenerator {
             {
               type: "Image",
               url: `\${${name}}`,
-              $when: `\${${name} != null}`,
+              $when: `\${${name} != null && ${name} != ''}`,
             },
           ];
         } else {
@@ -160,7 +163,7 @@ export class AdaptiveCardGenerator {
             {
               type: "Image",
               url: "${$data}",
-              $when: "${$data != null}",
+              $when: "${$data != null && $data != ''}",
             },
           ];
         }

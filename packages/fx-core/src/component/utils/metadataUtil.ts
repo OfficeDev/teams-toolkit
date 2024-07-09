@@ -4,11 +4,12 @@
 import { FxError, Result, TeamsAppManifest, devPreview } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { MetadataV3 } from "../../common/versionMetadata";
-import { TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../common/globalVars";
 import { LifecycleNames, ProjectModel } from "../configManager/interface";
 import { yamlParser } from "../configManager/parser";
 import { createHash } from "crypto";
 import { metadataGraphPermissionUtil } from "./metadataGraphPermssion";
+import { metadataRscPermissionUtil } from "./metadataRscPermission";
 
 class MetadataUtil {
   async parse(path: string, env: string | undefined): Promise<Result<ProjectModel, FxError>> {
@@ -33,6 +34,7 @@ class MetadataUtil {
         res.value.additionalMetadata
       );
       await metadataGraphPermissionUtil.parseAadManifest(path, res.value, props);
+      await metadataRscPermissionUtil.parseManifest(path, res.value, props);
 
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
     }

@@ -5,7 +5,7 @@
             "name": "Preview in Teams (Edge)",
             "type": "msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com?${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 1
@@ -16,12 +16,23 @@
             "name": "Preview in Teams (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com?${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
                 "group": "remote",
                 "order": 2
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Preview in Teams (Desktop)",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "remote",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen",
         }
     ]
 }

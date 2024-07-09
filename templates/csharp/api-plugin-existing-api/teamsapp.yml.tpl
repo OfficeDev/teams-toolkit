@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.1.0
+version: v1.5
 
 environmentFolderPath: ./env
 
@@ -17,11 +17,34 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Validate using manifest schema
-  - uses: teamsApp/validateManifest
+{{#ApiKey}}
+  # Register API KEY
+  - uses: apiKey/register
     with:
-      # Path to manifest template
-      manifestPath: ./appPackage/manifest.json
+      # Name of the API Key
+      name: {{ApiSpecAuthName}}
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+    # Write the registration information of API Key into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
+{{/ApiKey}}
+
+{{#OAuth}}
+  - uses: oauth/register
+    with:
+      name: {{ApiSpecAuthName}}
+      flow: authorizationCode
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+    writeToEnvironmentFile:
+      configurationId: {{ApiSpecAuthRegistrationIdEnvName}}
+{{/OAuth}}
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
@@ -30,12 +53,6 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
-
-  # Validate app package using validation rules
-  - uses: teamsApp/validateAppPackage
-    with:
-      # Relative path to this file. This is the path for built zip file.
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.

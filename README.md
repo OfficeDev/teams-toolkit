@@ -7,14 +7,15 @@
 
 Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) are tools for building Teams apps, fast. Whether you are new to Teams platform or a seasoned developer, Teams Toolkit is the best way to create, build, debug, test, and deploy apps.
 
-<img width="1350" alt="MicrosoftTeams-image" src="https://user-images.githubusercontent.com/11220663/236773048-e2ce0d87-b1f6-4651-9938-f118b415af3b.png">
+<img width="1350" alt="MicrosoftTeams-image" src="https://github.com/OfficeDev/TeamsFx/assets/11220663/103b3f96-40b1-466b-b67c-34db0aab393c">
 
 Teams Toolkit provides support for the end-to-end Teams development journey, including:
 
-- Support for all major Teams extensibility surfaces, including tabs, bots, and message extensions.
+- Seamless integration with [Teams AI Library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/conversation-ai-quick-start?pivots=qs-javascript) to build intelligent apps with ease.
+- Support for all major Microsoft 365 platform extensibility surfaces, including Copilot for Microsoft 365, tabs, bots, message extensions for Teams as well as Outlook Add-ins.
 - Integrations with the tools, languages, and frameworks you know and love.
 - Scaffolds for getting started fast with Teams extensibility surfaces and common scenarios such as notifications and command & response-style bots.
-- Rapid iteration with full stack debugging, hot reload, and secure tunneling.
+- Rapid iteration with full stack debugging, hot reload, secure tunneling and Teams App Test Tool.
 - Simplified SSO authentication.
 - Integrated support for hosting, data storage, and serverless functions.
 - CI/CD actions for GitHub and Azure DevOps to deliver apps with confidence.
@@ -73,7 +74,7 @@ provided by the bot. You will only need to do this once across all repos using o
 
 ## Telemetry
 
-Teams Toolkit collects usage data and sends it to Microsoft to help improve our products and services. Read our [Privacy Statement](https://privacy.microsoft.com/privacystatement) and [Data Collection Notice](https://docs.opensource.microsoft.com/content/releasing/telemetry.html) to learn more. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+Teams Toolkit collects usage data and sends it to Microsoft to help improve our products and services. Read our [Privacy Statement](https://go.microsoft.com/fwlink/?LinkId=521839) and [Data Collection Notice](https://docs.opensource.microsoft.com/content/releasing/telemetry.html) to learn more. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
 
 ## Trademarks
 

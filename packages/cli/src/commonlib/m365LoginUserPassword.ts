@@ -7,23 +7,23 @@ import dotenv from "dotenv";
 
 import * as msal from "@azure/msal-node";
 import {
-  M365TokenProvider,
-  LogLevel,
-  TokenRequest,
-  Result,
-  FxError,
-  ok,
-  err,
-  LoginStatus,
-  UserError,
   BasicLogin,
+  err,
+  FxError,
+  LoginStatus,
+  LogLevel,
+  M365TokenProvider,
+  ok,
+  Result,
+  TokenRequest,
+  UserError,
 } from "@microsoft/teamsfx-api";
 
-import * as cfg from "./common/userPasswordConfig";
-import CLILogProvider from "./log";
+import { AppStudioScopes, AuthSvcScopes, teamsDevPortalClient } from "@microsoft/teamsfx-core";
 import { ConvertTokenToJson, ErrorMessage } from "./codeFlowLogin";
 import { signedIn, signedOut } from "./common/constant";
-import { AppStudioScopes, AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core";
+import * as cfg from "./common/userPasswordConfig";
+import CLILogProvider from "./log";
 
 dotenv.config();
 
@@ -89,7 +89,7 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
             CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
           });
         if (authSvcToken) {
-          await setRegion(authSvcToken);
+          await teamsDevPortalClient.setRegionEndpointByToken(authSvcToken);
         }
       }
 
@@ -133,7 +133,7 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
   }
 
   signout(): boolean {
-    throw new Error("Method not implemented.");
+    return true;
   }
 }
 

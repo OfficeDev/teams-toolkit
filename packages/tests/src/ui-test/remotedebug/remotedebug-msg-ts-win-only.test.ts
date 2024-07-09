@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -64,9 +64,9 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("msg", appName, "TypeScript");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      await createNewProject("msg", appName, { lang: "TypeScript" });
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );
@@ -76,7 +76,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateCreatedCard(page);
+      await validateCreatedCard(page, remoteDebugTestContext.appName);
     }
   );
 });

@@ -14,11 +14,10 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type" | "office-addin-type";
-  /** @description Select to create an Outlook, Word, Excel, or PowerPoint Add-in */
-  "addin-office-capability"?: "outlook-addin-type" | "word" | "excel" | "powerpoint";
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "office-addin-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
+    | "empty"
     | "bot"
     | "notification"
     | "command-bot"
@@ -34,11 +33,15 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "custom-copilot-basic"
+    | "custom-copilot-rag"
     | "custom-copilot-agent"
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
-    | "taskpane";
+    | "basic-declarative-copilot"
+    | "declarative-copilot-with-plugin-from-scratch"
+    | "json-taskpane"
+    | "office-content-addin";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -56,16 +59,20 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
-  /** @description Add-in Host */
-  "addin-host"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
+  /** @description Authentication Type */
+  "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
+  /** @description Chat With Your Data */
+  "custom-copilot-rag"?:
+    | "custom-copilot-rag-customize"
+    | "custom-copilot-rag-azureAISearch"
+    | "custom-copilot-rag-customApi"
+    | "custom-copilot-rag-microsoft365";
   /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
-  /** @description Authentication Type */
-  "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */
@@ -76,6 +83,8 @@ export interface CreateProjectInputs extends Inputs {
   "azure-openai-key"?: string;
   /** @description Azure OpenAI Endpoint */
   "azure-openai-endpoint"?: string;
+  /** @description Azure OpenAI Deployment Name */
+  "azure-openai-deployment-name"?: string;
   /** @description OpenAI Key */
   "openai-key"?: string;
   /** @description Framework */

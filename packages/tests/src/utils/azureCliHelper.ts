@@ -4,6 +4,7 @@
 import { Executor } from "./executor";
 import sql from "mssql";
 import * as uuid from "uuid";
+import os from "os";
 import { expect } from "chai";
 import { Env } from "../utils/env";
 
@@ -48,8 +49,7 @@ export class AzSqlHelper {
   public async createTable(sqlServerEndpoint: string) {
     // login
     console.log(`Logging in...`);
-    const { success: loginSuccess } = await AzSqlHelper.login();
-    if (!loginSuccess) return;
+    await AzSqlHelper.login();
 
     // add firewall rule
     console.log(`Adding firewall rule...`);
@@ -68,8 +68,7 @@ export class AzSqlHelper {
   public async createSql() {
     // login
     console.log(`Logging in...`);
-    const { success: loginSuccess } = await AzSqlHelper.login();
-    if (!loginSuccess) return;
+    await AzSqlHelper.login();
 
     // create resource group
     console.log("Creating resource group: ", this.resourceGroupName, "...");
@@ -109,12 +108,13 @@ export class AzSqlHelper {
   }
 
   static async login() {
-    const command = `az login --service-principal -u ${Env["AZURE_CLIENT_ID"]} -p ${Env["AZURE_CLIENT_SECRET"]} -t ${Env["azureTenantId"]}`;
-    const { success } = await Executor.execute(command, process.cwd());
-    if (!success) {
-      console.error(`Failed to login`);
-      return { success: false };
+    let command = "";
+    if (os.type() === "Windows_NT") {
+      command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
+    } else {
+      command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
     }
+    await Executor.execute(command, process.cwd());
     // set subscription
     const subscription = Env["azureSubscriptionId"];
     const setSubscriptionCommand = `az account set --subscription ${subscription}`;
@@ -210,8 +210,7 @@ export class AzServiceBusHelper {
   public async createServiceBus() {
     // login
     console.log(`Logging in...`);
-    const { success: loginSuccess } = await AzServiceBusHelper.login();
-    if (!loginSuccess) return;
+    await AzServiceBusHelper.login();
 
     // create resource group
     console.log("Creating resource group: ", this.resourceGroupName, "...");
@@ -244,12 +243,14 @@ export class AzServiceBusHelper {
   }
 
   static async login() {
-    const command = `az login --service-principal -u ${Env["AZURE_CLIENT_ID"]} -p ${Env["AZURE_CLIENT_SECRET"]} -t ${Env["azureTenantId"]}`;
-    const { success } = await Executor.execute(command, process.cwd());
-    if (!success) {
-      console.error(`Failed to login`);
-      return { success: false };
+    let command = "";
+    if (os.type() === "Windows_NT") {
+      command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
+    } else {
+      command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
     }
+    await Executor.execute(command, process.cwd());
+
     // set subscription
     const subscription = Env["azureSubscriptionId"];
     const setSubscriptionCommand = `az account set --subscription ${subscription}`;
@@ -279,7 +280,7 @@ export class AzServiceBusHelper {
 }
 
 export async function cleanRG() {
-  const { success, stdout } = await AzSqlHelper.listResourceGroup("fxui");
+  const { stdout } = await AzSqlHelper.listResourceGroup("fxui");
   for (const rg of stdout) {
     await AzSqlHelper.deleteResourceGroup(rg);
   }

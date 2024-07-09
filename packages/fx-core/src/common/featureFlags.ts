@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FeatureFlagName } from "./constants";
 
 // Determine whether feature flag is enabled based on environment variable setting
 export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
@@ -11,77 +10,86 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
     return flag === "1" || flag.toLowerCase() === "true"; // can enable feature flag by set environment variable value to "1" or "true"
   }
 }
-
-/**
- * Update all preview feature flags.
- */
-export function initializePreviewFeatureFlags(): void {
-  process.env[FeatureFlagName.BotNotification] = "true";
-  process.env[FeatureFlagName.M365App] = "true";
-  process.env[FeatureFlagName.AadManifest] = "true";
-  process.env[FeatureFlagName.ApiConnect] = "true";
-  process.env[FeatureFlagName.DeployManifest] = "true";
-  process.env[FeatureFlagName.OfficeXMLAddin] = "true";
-  process.env[FeatureFlagName.OfficeAddin] = "false";
+export class FeatureFlagName {
+  static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
+  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
+  static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
+  static readonly TestTool = "TEAMSFX_TEST_TOOL";
+  static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
+  static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
+  static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
+  static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
+  static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
+  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
+  static readonly SMEOAuth = "SME_OAUTH";
+  static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
+  static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
+  static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
+  static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
+}
+export interface FeatureFlag {
+  name: string;
+  defaultValue: string;
+  description?: string;
 }
 
-export function isCLIDotNetEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
+export class FeatureFlags {
+  static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
+  static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
+  static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
+  static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
+  static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
+  static readonly TdpTemplateCliTest = {
+    name: FeatureFlagName.TdpTemplateCliTest,
+    defaultValue: "false",
+  };
+  static readonly AsyncAppValidation = {
+    name: FeatureFlagName.AsyncAppValidation,
+    defaultValue: "false",
+  };
+  static readonly NewProjectType = { name: FeatureFlagName.NewProjectType, defaultValue: "true" };
+  static readonly ChatParticipant = {
+    name: FeatureFlagName.ChatParticipant,
+    defaultValue: "false",
+  };
+  static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
+  static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
+  static readonly ShowDiagnostics = {
+    name: FeatureFlagName.ShowDiagnostics,
+    defaultValue: "false",
+  };
+  static readonly TelemetryTest = {
+    name: FeatureFlagName.TelemetryTest,
+    defaultValue: "false",
+  };
+  static readonly DevTunnelTest = {
+    name: FeatureFlagName.DevTunnelTest,
+    defaultValue: "false",
+  };
 }
 
-export function isV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
+export class FeatureFlagManager {
+  getBooleanValue(featureFlag: FeatureFlag): boolean {
+    return isFeatureFlagEnabled(
+      featureFlag.name,
+      featureFlag.defaultValue === "true" || featureFlag.defaultValue === "1"
+    );
+  }
+  setBooleanValue(featureFlag: FeatureFlag, value: boolean): void {
+    process.env[featureFlag.name] = value ? "true" : "false";
+  }
+  getStringValue(featureFlag: FeatureFlag): string {
+    return process.env[featureFlag.name] || featureFlag.defaultValue;
+  }
+  list(): FeatureFlag[] {
+    return Object.values(FeatureFlags);
+  }
+  listEnabled(): string[] {
+    return this.list()
+      .filter((f) => isFeatureFlagEnabled(f.name))
+      .map((f) => f.name);
+  }
 }
 
-export function isVideoFilterEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
-}
-
-export function isCopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
-}
-
-export function isApiCopilotPluginEnabled(): boolean {
-  // return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, true) && isCopilotPluginEnabled();
-  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
-}
-
-export function enableTestToolByDefault(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
-}
-
-export function isApiKeyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
-}
-
-export function isMultipleParametersEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
-}
-
-export function isOfficeXMLAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, false);
-}
-
-export function isTeamsFxRebrandingEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
-}
-
-export function isTdpTemplateCliTestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
-}
-
-export function isAsyncAppValidationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.AsyncAppValidation, false);
-}
-
-export function isNewProjectTypeEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
-}
-
-export function isOfficeJSONAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
-}
-
-export function isApiMeSSOEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
-}
+export const featureFlagManager = new FeatureFlagManager();

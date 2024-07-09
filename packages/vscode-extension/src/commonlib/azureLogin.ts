@@ -14,7 +14,7 @@ import {
   SingleSelectConfig,
   OptionItem,
 } from "@microsoft/teamsfx-api";
-import { ExtensionErrors } from "../error";
+import { ExtensionErrors } from "../error/error";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
@@ -29,14 +29,16 @@ import {
   AccountType,
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
-import { VS_CODE_UI } from "../extension";
-import { AzureScopes } from "@microsoft/teamsfx-core";
+import { VS_CODE_UI } from "../qm/vsc_ui";
+import { AzureScopes, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import {
   Microsoft,
   VSCodeAzureSubscriptionProvider,
   getSessionFromVSCode,
 } from "./vscodeAzureSubscriptionProvider";
+
+const showAzureSignOutHelp = "ShowAzureSignOutHelp";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -112,9 +114,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
         );
       }
-      void vscode.window.showInformationMessage(
-        localize("teamstoolkit.commands.azureAccount.signOutHelp")
-      );
+      if (await globalStateGet(showAzureSignOutHelp, true)) {
+        void vscode.window
+          .showInformationMessage(
+            localize("teamstoolkit.commands.azureAccount.signOutHelp"),
+            "Got it"
+          )
+          .then(async (userClicked) => {
+            if (userClicked === "Got it") {
+              await globalStateUpdate(showAzureSignOutHelp, false);
+            }
+          });
+      }
     } catch (e) {
       AzureAccountManager.currentStatus = loggedOut;
       void this.notifyStatus();

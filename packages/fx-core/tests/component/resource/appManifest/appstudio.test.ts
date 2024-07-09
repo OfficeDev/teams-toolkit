@@ -1,48 +1,46 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as chai from "chai";
-import sinon from "sinon";
-import fs from "fs-extra";
 import {
-  MockLogProvider,
-  MockM365TokenProvider,
-  MockTools,
-  randomAppName,
-} from "../../../core/utils";
-import {
-  err,
-  InputsWithProjectPath,
-  ok,
-  Platform,
-  UserError,
-  ManifestUtil,
-  TeamsAppManifest,
   Context,
+  InputsWithProjectPath,
+  ManifestUtil,
+  Platform,
+  TeamsAppManifest,
+  UserError,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import * as chai from "chai";
+import fs from "fs-extra";
+import "mocha";
+import { RestoreFn } from "mocked-env";
+import sinon from "sinon";
+import Container from "typedi";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
+import { createContext, setTools } from "../../../../src/common/globalVars";
+import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
 import {
   checkIfAppInDifferentAcountSameTenant,
   getAppPackage,
   updateManifestV3,
   updateTeamsAppV3ForPublish,
 } from "../../../../src/component/driver/teamsApp/appStudio";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import AdmZip from "adm-zip";
-import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
-import { createContextV3 } from "../../../../src/component/utils";
-import { RestoreFn } from "mocked-env";
-import Container from "typedi";
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
 import { envUtil } from "../../../../src/component/utils/envUtil";
-import { setTools } from "../../../../src/core/globalVars";
 import { QuestionNames } from "../../../../src/question";
-import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import {
+  MockLogProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
-import * as commonTools from "../../../../src/common/featureFlags";
-import { ExecutionResult } from "../../../../src/component/driver/interface/stepDriver";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
 
 describe.skip("appStudio", () => {
   const tools = new MockTools();
@@ -59,7 +57,7 @@ describe.skip("appStudio", () => {
 
     it("get app successfully: returns false", async () => {
       m365TokenProvider.getAccessToken = sandbox.stub().returns(ok("token"));
-      sandbox.stub(AppStudioClient, "getApp").resolves();
+      sandbox.stub(teamsDevPortalClient, "getApp").resolves();
 
       const res = await checkIfAppInDifferentAcountSameTenant(
         teamsAppId,
@@ -91,8 +89,8 @@ describe.skip("appStudio", () => {
 
     it("app in tenant but different account: returns true", async () => {
       m365TokenProvider.getAccessToken = sandbox.stub().returns(ok("token"));
-      sandbox.stub(AppStudioClient, "getApp").throws({ message: "404" });
-      sandbox.stub(AppStudioClient, "checkExistsInTenant").returns(Promise.resolve(true));
+      sandbox.stub(teamsDevPortalClient, "getApp").throws({ message: "404" });
+      sandbox.stub(teamsDevPortalClient, "checkExistsInTenant").returns(Promise.resolve(true));
       const res = await checkIfAppInDifferentAcountSameTenant(
         teamsAppId,
         m365TokenProvider,
@@ -107,7 +105,7 @@ describe.skip("appStudio", () => {
 
     it("get app error (not 404): returns false", async () => {
       m365TokenProvider.getAccessToken = sandbox.stub().returns(ok("token"));
-      sandbox.stub(AppStudioClient, "getApp").throws({ message: "401" });
+      sandbox.stub(teamsDevPortalClient, "getApp").throws({ message: "401" });
       const res = await checkIfAppInDifferentAcountSameTenant(
         teamsAppId,
         m365TokenProvider,
@@ -216,7 +214,7 @@ describe.skip("appStudio", () => {
       }
     });
     it("not valid json", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const zip = new AdmZip();
       zip.addFile("manifest.json", new Buffer(""));
       const info = zip.toBuffer();
@@ -235,7 +233,7 @@ describe.skip("appStudio", () => {
     });
 
     it("no manifest file", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const zip = new AdmZip();
       const info = zip.toBuffer();
 
@@ -252,7 +250,7 @@ describe.skip("appStudio", () => {
     });
 
     it("manifest without id", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         $schema: "schema",
       };
@@ -274,7 +272,7 @@ describe.skip("appStudio", () => {
     });
 
     it("manifest invalid id", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         id: "fe58d257",
       };
@@ -297,7 +295,7 @@ describe.skip("appStudio", () => {
     });
 
     it.skip("manifest no schema", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         id: "fe58d257-4ce6-427e-a388-496c89633774",
       };
@@ -319,7 +317,7 @@ describe.skip("appStudio", () => {
     });
 
     it.skip("manifest validation failed", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
 
       const json = {
         $schema: "schema",
@@ -347,7 +345,7 @@ describe.skip("appStudio", () => {
     });
 
     it("update teams app error", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         $schema: "schema",
         id: "fe58d257-4ce6-427e-a388-496c89633774",
@@ -382,7 +380,7 @@ describe.skip("appStudio", () => {
     });
 
     it("happy path", async () => {
-      const ctx = createContextV3();
+      const ctx = createContext();
       const json = {
         $schema: "schema",
         id: "fe58d257-4ce6-427e-a388-496c89633774",
@@ -434,7 +432,7 @@ describe("App-manifest Component - v3", () => {
   setTools(tools);
 
   beforeEach(() => {
-    context = createContextV3();
+    context = createContext();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
       ok({
@@ -447,8 +445,6 @@ describe("App-manifest Component - v3", () => {
       m365TokenProvider: new MockedM365Provider(),
       azureAccountProvider: new MockedAzureAccountProvider(),
     };
-
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox
       .stub(Container, "get")
       .withArgs(sandbox.match("teamsApp/zipAppPackage"))
@@ -519,7 +515,7 @@ describe("App-manifest Component - v3", () => {
   it("updateManifestV3 - getManifestV3 Error", async () => {
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
     sandbox.stub(manifestUtils, "getManifestV3").resolves(err(new UserError({})));
-    const ctx = createContextV3();
+    const ctx = createContext();
     const inputs: InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: "projectPath",

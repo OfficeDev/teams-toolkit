@@ -2,6 +2,91 @@
 
 ## Changelog
 
+> Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
+
+### June 12, 2024
+
+#### New Features
+
+- **Build AI Agent With Assistant API and Python**: Previously we have included the AI Assistant Bot app template to help you get started with building a GPT-like chat bot with AI capabilities using `Teams AI Library`. Now we have added a new AI Agent app template to help you build an AI agent with Assistant API and Python. This template showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
+
+#### Bug Fixes
+
+- Fixed an issue where sometimes you may not be able to scroll down in Teams Toolkit CLI. [#11762](https://github.com/OfficeDev/teams-toolkit/pull/11762)
+- Fixed an issue where Teams Toolkit generated Adaptive Cards may contain empty property. [#11759](https://github.com/OfficeDev/teams-toolkit/pull/11759)
+- Fixed an issue where you may need to press enter twice after selecting resource group during provision using Teams Toolkit CLI. [#11724](https://github.com/OfficeDev/teams-toolkit/pull/11724)
+- Fixed an issue to enable shell option in Windows platform to avoid [command injection via args parameters](https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2#command-injection-via-args-parameter-of-child_processspawn-without-shell-option-enabled-on-windows-cve-2024-27980---high). [#11699](https://github.com/OfficeDev/teams-toolkit/pull/11699)
+- Fixed an issue where provision summary logs are printed twice. [#11658](https://github.com/OfficeDev/teams-toolkit/pull/11658)
+
+
+### April 18, 2024
+
+#### New Features 
+
+- **Create API based Message Extensions using auth-protected API** </br> 
+  Teams Toolkit supports two types of API authentication protection in your API based Message Extension app: </br> 
+  ![add-auth-api-me](https://github.com/OfficeDev/TeamsFx/assets/113089977/c5faea2f-676b-4a8c-82d6-f3b037e54f0e) 
+  - API-Key: you can either add the API key of your existing API, or if you don't have an API, Teams Toolkit will generate one to show how authentication works. 
+  - Microsoft Entra (Azure AD): Teams Toolkit can help you create Microsoft Entra ID to authenticate your new API. 
+
+- **Debug Message Extensions in Teams App Test Tool** </br> 
+  Teams App Test Tool helps developers to debug and test in a web-based environment that emulates Microsoft Teams without using tunnels or Microsoft 365 account. In this version we add Teams App Test Tool support to search-based, action-based and link unfurling Message Extension app. 
+  ![ME-test-tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/2b55996f-87a9-4683-abaf-3089b7ea878e) 
+  The picture below shows search-based and action-based Message Extension app running in Teams App Test Tool:</br> 
+  ![ME-in-test-tool-example](https://github.com/OfficeDev/TeamsFx/assets/113089977/b255737a-9bfc-4c58-9324-985aaf81298a) 
+
+- **Create intelligent chatbot with domain knowledge from custom data** </br> 
+  Custom Copilot is an AI-powered chatbot with RAG capability that can understand natural language and retrieve domain data to answer domain-specific questions. Teams Toolkit now supports to access your custom data in Custome Copilot app.</br> 
+  When create the Custom Copilot app, you can select "Chat with your data" and then select the desired data source.</br> 
+  ![access-data-custom-copilot](https://github.com/OfficeDev/TeamsFx/assets/113089977/d40cfc84-8cb8-4816-b587-668a2bcf9560) 
+  There are four kinds of data source for you to choose:</br> 
+  ![data-source-custom-copilot](https://github.com/OfficeDev/TeamsFx/assets/113089977/2d010366-96a0-4f8b-861d-28d5bb9e36b8) 
+  - Custom data source: you can add whatever data source you want to Custom Copilot app, for example file system or vector DB. 
+  - Azure AI Search: your chatbot can access data on Azure AI search service and use it in conversation with users. 
+  - Custom API: your chatbot can invoke the API defined in the OpenAPI description document to retrieve domain data from API service.  
+  - Microsoft Graph + SharePoint: your chatbot can query M365 context data from Microsoft Graph Search API as data source in the conversation. 
+
+- **Develop Word, Excel and PowerPoint Add-ins in Teams Toolkit**
+  ![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/30679a8c-b0b0-4b1c-ad4f-114547a12a6b)
+  Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. Now you can see the above side pane offering a unified and centralized experience for checking dependencies, running and debugging add-ins, managing lifecycle, leveraging utility, getting help, and providing feedback.
+
+#### Enhancements
+
+- Users may encounter issues when creating Microsoft Entra client secrete due to tenant regulations. We smooth this experience by enabling users to customize parameters when creating Microsoft Entra client secret and provide help docs to easily resolve issues. The parameters user can specify in teamsapp.yml file are `clientSecretExpireDays` and `clientSecretDescription`.
+![create-aad-parameter](https://github.com/OfficeDev/TeamsFx/assets/113089977/76d219d6-6f40-464c-81c6-1b660953cc1f)
+
+### March 19, 2024
+
+#### New Features
+
+- **Build Your Own Copilots in Teams with Teams AI Library**
+![Custom Copilots](https://github.com/OfficeDev/TeamsFx/assets/11220663/0387a2ce-ec39-4c72-aabc-1ec2b9e85d59)
+We have enhanced the user experience for developers to create their custom copilots, an AI-powered intelligent chatbot for Teams, with the following improvements:
+  - Streamlined UX for scaffolding, including top-level entry points and easy configuration of LLM services and credentials during the scaffolding flow.
+  - New application templates allowing developers to build an AI Agent from scratch.
+  - Python language support for building a `Basic AI Chatbot`.
+
+#### Enhancements
+
+- Updated the default app icon in the Teams Toolkit-generated app templates and samples with Microsoft 365 and Copilot-themed colors.
+- Added `LLM.Description` in the app manifest for bot-based message extensions when used as copilot plugin for better reasoning with LLMs. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and create a new app via `Create a New App` -> `Message Extension` -> `Custom Search Results` -> `Start with Bot`.
+- Improved Azure account authentication with a built-in Microsoft authentication provider in Visual Studio Code. This enhancement increases the reliability of Azure authentication, especially when using a proxy.
+- Upgraded `Custom Search Results` (Start with a New API) template to Azure Functions v4, the officially recommended version with better support. See more details for [Azure Functions runtime versions overview](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=isolated-process%2Cv4&pivots=programming-language-javascript).
+- Multiple parameters are now supported for API-based message extensions.
+- Updated `Teams Chef Bot` sample to [teams-ai repository](https://github.com/microsoft/teams-ai/tree/main/js/samples/04.ai.a.teamsChefBot).
+
+#### Bug Fixes
+
+- Fixed an issue where an empty env file path might appear in error messages. [#11024](https://github.com/OfficeDev/TeamsFx/pull/11024)
+- Fixed an issue where `arm/deploy.UnhandledError` might appear. [#10911](https://github.com/OfficeDev/TeamsFx/pull/10911)
+- Fixed an issue with inconsistent capitalizations in the project creation dialog. [#10792](https://github.com/OfficeDev/TeamsFx/pull/10792)
+- Fixed an issue with Teams Toolkit CLI where `Error: TeamsfxCLI.CannotDetectRunCommand` might appear when using the `teamsapp preview` command. [#10808](https://github.com/OfficeDev/TeamsFx/pull/10808)
+- Fixed an issue with unclear error messages when sideloading the app using an unsupported file format. [#10799](https://github.com/OfficeDev/TeamsFx/pull/10799)
+- Fixed an issue where an unexpected error might occur when executing `teamsapp account login azure`. [#11015](https://github.com/OfficeDev/TeamsFx/pull/11015)
+- Fixed broken links in README documentation. [#10836](https://github.com/OfficeDev/TeamsFx/pull/10836), [#10831](https://github.com/OfficeDev/TeamsFx/pull/10831)
+- Fixed an issue where featured samples are not shown in the full list. [#10841](https://github.com/OfficeDev/TeamsFx/pull/10841)
+
+
 ### January 23, 2024
 
 #### New Features

@@ -2,7 +2,6 @@
   "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
   "manifestVersion": "devPreview",
   "id": "${{TEAMS_APP_ID}}",
-  "packageName": "com.microsoft.teams.extension",
   "version": "1.0.0",
   "developer": {
     "name": "Teams App, Inc.",
@@ -50,7 +49,7 @@
       "authorization": {
         "authType": "apiSecretServiceAuth",
         "apiSecretServiceAuthConfiguration": {
-          "apiSecretRegistrationId": "${{X_API_KEY_REGISTRATION_ID}}"
+          "apiSecretRegistrationId": "${{APIKEY_REGISTRATION_ID}}"
         }
       }
     }

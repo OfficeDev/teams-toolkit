@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/wy-z/requests-openapi",
+                    "commitHash": "aff050977213a0624dc09fa4b1bb0f2cf22198ae"
+                }
+            }
+        }
+    ]
+}

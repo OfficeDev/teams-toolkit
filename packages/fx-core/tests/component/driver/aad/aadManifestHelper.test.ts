@@ -48,6 +48,13 @@ describe("Microsoft Entra manifest helper Test", () => {
     chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
   });
 
+  it("validateManifest with no accessToken property", async () => {
+    const invalidAadManifest = JSON.parse(JSON.stringify(fakeAadManifest));
+    delete invalidAadManifest.optionalClaims.accessToken;
+    const warning = AadManifestHelper.validateManifest(invalidAadManifest);
+    chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
+  });
+
   it("processRequiredResourceAccessInManifest with id", async () => {
     const manifestWithId: any = {
       requiredResourceAccess: [
@@ -235,7 +242,7 @@ describe("Microsoft Entra manifest helper Test", () => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
       .to.throw(
-        "Unknown resourceAccess id: User.Read, if you're using permission as resourceAccess id, please try to use permission id instead."
+        "Unknown resourceAccess id: User.Read, try to use permission id instead of resourceAccess id."
       );
 
     manifest = {
@@ -257,8 +264,46 @@ describe("Microsoft Entra manifest helper Test", () => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
       .to.throw(
-        "Unknown resourceAccess id: Sites.Read.All, if you're using permission as resourceAccess id, please try to use permission id instead."
+        "Unknown resourceAccess id: Sites.Read.All, try to use permission id instead of resourceAccess id."
       );
+  });
+
+  it("processRequiredResourceAccessInManifest with non-array required resource access/resource access", async () => {
+    let manifest: any = {
+      requiredResourceAccess: {
+        resourceAppId: "Microsoft Graph",
+        resourceAccess: [
+          {
+            id: "User.Read",
+            type: "Scope",
+          },
+        ],
+      },
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      })
+      .to.throw("requiredResourceAccess should be an array.");
+
+    manifest = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "Microsoft Graph",
+          resourceAccess: {
+            id: "Sites.Read.All",
+            type: "Role",
+          },
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
+      })
+      .to.throw("resourceAccess should be an array.");
   });
 });
 

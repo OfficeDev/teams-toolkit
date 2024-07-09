@@ -17,7 +17,7 @@ export interface SPFxAddWebpartInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description Framework */
   "spfx-framework-type"?: "react" | "minimal" | "none";
-  /** @description Select Teams manifest.json file */
+  /** @description Select Teams manifest.json File */
   "manifest-path"?: string;
   /** @description Select local Teams manifest.json file */
   "local-manifest-path"?: string;

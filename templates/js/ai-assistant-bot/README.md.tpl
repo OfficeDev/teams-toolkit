@@ -25,6 +25,7 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 > **Note**
 >
 > The `AssistantsPlanner` in Teams AI Library is currently in preview version.
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ### Create your own OpenAI Assistant
 
@@ -63,7 +64,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:

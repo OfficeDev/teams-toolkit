@@ -41,7 +41,7 @@ new MyFirstMettingTestCase(
   "dev",
   [],
   {
-    teamsAppName: "hello-world-in-meetingdev",
+    teamsAppName: "fxuiMyFirsdev",
     type: "meeting",
     skipValidation: true,
   }

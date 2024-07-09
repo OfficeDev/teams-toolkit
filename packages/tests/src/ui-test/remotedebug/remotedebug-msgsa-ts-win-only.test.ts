@@ -9,15 +9,15 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
   createNewProject,
 } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import { initPage, validateMsg } from "../../utils/playwrightOperation";
+import { initPage, validateNpm } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -64,9 +64,9 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("msgsa", appName, "TypeScript");
-      await runProvision(appName);
-      await runDeploy();
+      await createNewProject("msgsa", appName, { lang: "TypeScript" });
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );
@@ -76,7 +76,10 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateMsg(page);
+      await validateNpm(page, {
+        npmName: "axios",
+        appName: remoteDebugTestContext.appName,
+      });
     }
   );
 });

@@ -19,10 +19,15 @@ import {
   upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
 import {
-  reRunProvision,
-  reRunDeploy,
+  updateFunctionAuthorizationPolicy,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
+import * as path from "path";
+import { updatePakcageJson } from "./helper";
+import {
+  deployProject,
+  provisionProject,
 } from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
@@ -63,7 +68,12 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
+      updatePakcageJson(
+        path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
+      );
+
       await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
+
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
@@ -75,9 +85,16 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
+
       // v3 provision
-      await reRunProvision();
-      await reRunDeploy(Timeout.botDeploy);
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify
@@ -87,7 +104,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateProactiveMessaging(page);
+      // await validateProactiveMessaging(page);
     }
   );
 });

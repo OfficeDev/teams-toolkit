@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { hooks } from "@feathersjs/hooks";
 import {
   FxError,
+  IComposeExtension,
+  IMessagingExtensionCommand,
   InputsWithProjectPath,
   ManifestCapability,
   Result,
   TeamsAppManifest,
-  IComposeExtension,
-  IMessagingExtensionCommand,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -19,15 +20,14 @@ import "reflect-metadata";
 import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import {
-  FileNotFoundError,
-  JSONSyntaxError,
-  MissingEnvironmentVariablesError,
-} from "../../../../error/common";
-import { CapabilityOptions } from "../../../../question/create";
+import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
+import { ErrorContextMW } from "../../../../common/globalVars";
+import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
+import { CapabilityOptions } from "../../../../question/constants";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { expandEnvironmentVariable } from "../../../utils/common";
+import { WrapDriverContext } from "../../util/wrapUtil";
 import {
   BOTS_TPL_EXISTING_APP,
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
@@ -47,9 +47,7 @@ import {
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
-import { WrapDriverContext } from "../../util/wrapUtil";
-import { hooks } from "@feathersjs/hooks";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { getResolvedManifest } from "./utils";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -155,8 +153,8 @@ export class ManifestUtils {
             if (capability.existingApp) {
               appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
             } else {
-              // import CoreQuestionNames introduces dependency cycle and breaks the whole program
-              // inputs[CoreQuestionNames.Features]
+              // import QuestionNames introduces dependency cycle and breaks the whole program
+              // inputs[QuestionNames.Features]
               if (inputs.features) {
                 const feature = inputs.features;
                 if (
@@ -252,20 +250,7 @@ export class ManifestUtils {
     }
   }
   public getCapabilities(template: TeamsAppManifest): string[] {
-    const capabilities: string[] = [];
-    if (template.staticTabs && template.staticTabs.length > 0) {
-      capabilities.push("staticTab");
-    }
-    if (template.configurableTabs && template.configurableTabs.length > 0) {
-      capabilities.push("configurableTab");
-    }
-    if (template.bots && template.bots.length > 0) {
-      capabilities.push("Bot");
-    }
-    if (template.composeExtensions) {
-      capabilities.push("MessageExtension");
-    }
-    return capabilities;
+    return checkManifestCapabilities(template);
   }
 
   /**
@@ -286,7 +271,7 @@ export class ManifestUtils {
     manifest: TeamsAppManifest,
     manifestPath: string
   ): Promise<Result<string, FxError>> {
-    const pluginFile = manifest.plugins?.[0]?.pluginFile;
+    const pluginFile = manifest.copilotExtensions?.plugins?.[0]?.file;
     if (pluginFile) {
       const plugin = path.resolve(path.dirname(manifestPath), pluginFile);
       const doesFileExist = await fs.pathExists(plugin);
@@ -326,22 +311,17 @@ export class ManifestUtils {
     const manifestTemplateString = JSON.stringify(manifest);
 
     // Add environment variable keys to telemetry
-    const customizedKeys = getEnvironmentVariables(manifestTemplateString);
-    const telemetryProps: { [key: string]: string } = {};
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = customizedKeys.join(";");
-    if (context) {
-      context.addTelemetryProperties(telemetryProps);
+    const resolvedManifestRes = getResolvedManifest(
+      manifestTemplateString,
+      manifestTemplatePath,
+      TelemetryPropertyKey.customizedKeys,
+      context
+    );
+
+    if (resolvedManifestRes.isErr()) {
+      return err(resolvedManifestRes.error);
     }
-
-    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
-
-    const tokens = getEnvironmentVariables(resolvedManifestString);
-    if (tokens.length > 0) {
-      return err(
-        new MissingEnvironmentVariablesError("teamsApp", tokens.join(","), manifestTemplatePath)
-      );
-    }
-
+    const resolvedManifestString = resolvedManifestRes.value;
     manifest = JSON.parse(resolvedManifestString);
 
     if (generateIdIfNotResolved) {

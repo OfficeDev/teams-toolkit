@@ -17,10 +17,10 @@ class CopilotPluginWithNoneAuthForJsCase extends CopilotPluginCommonTest {
       "appPackage/manifest.json",
       "src/keyGen.js",
     ];
-    validateFiles(projectPath, files);
+    await validateFiles(projectPath, files);
 
     const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
-    replaceSecretKey(userFile);
+    await replaceSecretKey(userFile);
   }
 }
 

@@ -11,10 +11,10 @@ import { CopilotPluginCommonTest } from "./copilotPluginCommonTest";
 class CopilotPluginWithNoneAuthForCsharpCase extends CopilotPluginCommonTest {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     const files: string[] = [
-      "TeamsApp/appPackage/ai-plugin.json",
-      "TeamsApp/appPackage/manifest.json",
+      "appPackage/ai-plugin.json",
+      "appPackage/manifest.json",
     ];
-    validateFiles(projectPath, files);
+    await validateFiles(projectPath, files);
   }
 }
 

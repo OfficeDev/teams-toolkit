@@ -13,19 +13,14 @@ import * as path from "path";
 class CopilotPluginWithNoneAuthForJsCase extends CopilotPluginCommonTest {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     const files: string[] = [
-      "TeamsApp/appPackage/ai-plugin.json",
-      "TeamsApp/appPackage/manifest.json",
-      "TeamsApp/GenerateApiKey.ps1",
+      "appPackage/ai-plugin.json",
+      "appPackage/manifest.json",
+      "GenerateApiKey.ps1",
     ];
-    validateFiles(projectPath, files);
+    await validateFiles(projectPath, files);
 
-    const userFile = path.resolve(
-      projectPath,
-      "TeamsApp",
-      "env",
-      `.env.dev.user`
-    );
-    replaceSecretKey(userFile);
+    const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
+    await replaceSecretKey(userFile);
   }
 }
 

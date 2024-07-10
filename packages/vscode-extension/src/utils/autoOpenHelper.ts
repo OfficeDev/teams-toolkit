@@ -63,12 +63,12 @@ export async function showLocalDebugMessage() {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowManualStepRequiredNotification);
     const message = isWindows
       ? util.format(
-          localize("teamstoolkit.handlers.provisionDescription"),
+          localize("teamstoolkit.handlers.manualStepRequired"),
           appName,
           openFolderCommand
         )
       : util.format(
-          localize("teamstoolkit.handlers.provisionDescription.fallback"),
+          localize("teamstoolkit.handlers.manualStepRequired.fallback"),
           appName,
           workspaceUri?.fsPath
         );

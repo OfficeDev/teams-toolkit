@@ -118,6 +118,7 @@
       "localdebug-spfx-minimal",
       "localdebug-spfx-none",
       "localdebug-spfx",
+      "localdebug-spfx-import-multiple",
       "localdebug-msg-newapi-apikey-ts",
       "localdebug-msg-newapi-apikey"
     ],

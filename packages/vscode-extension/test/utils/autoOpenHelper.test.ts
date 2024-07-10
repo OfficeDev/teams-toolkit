@@ -21,6 +21,7 @@ describe("autoOpenHelper", () => {
   it("showLocalDebugMessage() - has local env", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
     sandbox.stub(fs, "pathExists").onFirstCall().resolves(true);
     const runLocalDebug = sandbox.stub(runIconHandlers, "selectAndDebug").resolves(ok(null));
 

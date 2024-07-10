@@ -94,12 +94,18 @@ export class CodeGenerator implements ISkill {
         duration;
       if (samples.size > 0) {
         console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
+        spec.appendix.telemetryData.relatedSampleName = Array.from(samples.values()).map(
+          (sample) => {
+            // remove the '-1' behind the sample name
+            const lastIndex = sample.name.lastIndexOf("-");
+            return lastIndex !== -1 ? sample.name.substring(0, lastIndex) : sample.name;
+          }
+        );
         spec.appendix.codeSample = Array.from(samples.values())[0].codeSample;
       }
     }
 
-    // Always generate the breakdown
-    {
+    if (!spec.appendix.codeTaskBreakdown || !spec.appendix.codeExplanation) {
       const t0 = performance.now();
       const breakdownResult = await this.userAskBreakdownAsync(
         token,
@@ -134,6 +140,11 @@ export class CodeGenerator implements ISkill {
       }
       spec.appendix.codeTaskBreakdown = breakdownResult.funcs;
       spec.appendix.codeExplanation = breakdownResult.spec;
+      response.markdown(`
+${spec.appendix.codeExplanation
+  .substring(spec.appendix.codeExplanation.indexOf("1."))
+  .replace(/\b\d+\./g, (match) => `\n${match}`)}
+`);
     }
     if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
       spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;
@@ -204,6 +215,10 @@ export class CodeGenerator implements ISkill {
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
+    );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
       host: string;
@@ -312,6 +327,10 @@ export class CodeGenerator implements ISkill {
       "copilot-gpt-4", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
+    );
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
     );
     let copilotRet: {
       spec: string;
@@ -456,7 +475,10 @@ export class CodeGenerator implements ISkill {
     console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
 
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
-
+    spec.appendix.telemetryData.chatMessages.push(...messages);
+    spec.appendix.telemetryData.responseChatMessages.push(
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, copilotResponse)
+    );
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);
     if (!codeSnippetRet) {

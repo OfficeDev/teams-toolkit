@@ -24,7 +24,6 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
-import { FeatureFlags, featureFlagManager } from "../../common/featureFlags";
 import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/stringUtils";
@@ -41,10 +40,6 @@ import {
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
   AppNamePattern,
-  CapabilityOptions,
-  CustomCopilotRagOptions,
-  MeArchitectureOptions,
-  OfficeAddinHostOptions,
   ProjectTypeOptions,
   QuestionNames,
   ScratchOptions,
@@ -57,14 +52,8 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { Constants } from "../driver/teamsApp/constants";
-import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
 import { Generators } from "../generator/generatorProvider";
-import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
-import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
-import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
-import { Feature2TemplateName } from "../generator/templates/templateNames";
-import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { provisionUtils } from "../provisionUtils";
 import { ResourceGroupInfo, resourceGroupHelper } from "../utils/ResourceGroupHelper";
@@ -150,8 +139,6 @@ class Coordinator {
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
       const projectType = inputs[QuestionNames.ProjectType];
-      const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-      const apiMEAuthType = inputs[QuestionNames.ApiAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -174,161 +161,21 @@ class Coordinator {
         });
       }
 
-      if (featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator)) {
-        // refactored generator
-        const generator = Generators.find((g) => g.activate(context, inputs));
-        if (!generator) {
-          return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
-        }
-        const res = await generator.run(context, inputs, projectPath);
-        if (res.isErr()) return err(res.error);
-        else {
-          warnings = res.value.warnings;
-        }
-      } else {
-        // legacy logic
-        if (capability === CapabilityOptions.SPFxTab().id) {
-          const res = await SPFxGenerator.generate(context, inputs, projectPath);
-          if (res.isErr()) return err(res.error);
-        } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
-          const addinHost = inputs[QuestionNames.OfficeAddinHost];
-          if (
-            projectType === ProjectTypeOptions.officeXMLAddin().id &&
-            addinHost &&
-            addinHost !== OfficeAddinHostOptions.outlook().id
-          ) {
-            const res = await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
-            if (res.isErr()) return err(res.error);
-          } else {
-            const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-            if (res.isErr()) return err(res.error);
-          }
-        } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
-          const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
-            context,
-            inputs,
-            projectPath
-          );
-          if (res.isErr()) {
-            return err(res.error);
-          } else {
-            warnings = res.value.warnings;
-          }
-        } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
-          const res = await CopilotPluginGenerator.generateMeFromApiSpec(
-            context,
-            inputs,
-            projectPath
-          );
-          if (res.isErr()) {
-            return err(res.error);
-          } else {
-            warnings = res.value.warnings;
-          }
-        } else {
-          if (
-            capability === CapabilityOptions.m365SsoLaunchPage().id ||
-            capability === CapabilityOptions.m365SearchMe().id
-          ) {
-            inputs.isM365 = true;
-          }
-          const trigger = inputs[QuestionNames.BotTrigger] as string;
-          let feature = `${capability}:${trigger}`;
-
-          if (
-            language === "csharp" &&
-            capability === CapabilityOptions.notificationBot().id &&
-            inputs.isIsolated === true
-          ) {
-            feature += "-isolated";
-          }
-
-          if (meArchitecture) {
-            feature = `${feature}:${meArchitecture}`;
-          }
-          if (
-            inputs.targetFramework &&
-            inputs.targetFramework !== "net6.0" &&
-            inputs.targetFramework !== "net7.0" &&
-            (capability === CapabilityOptions.nonSsoTab().id ||
-              capability === CapabilityOptions.tab().id)
-          ) {
-            feature = `${capability}:ssr`;
-          }
-
-          if (
-            capability === CapabilityOptions.m365SearchMe().id &&
-            meArchitecture === MeArchitectureOptions.newApi().id
-          ) {
-            feature = `${feature}:${apiMEAuthType}`;
-          }
-
-          if (capability === CapabilityOptions.copilotPluginNewApi().id) {
-            feature = `${feature}:${apiMEAuthType}`;
-          }
-
-          if (capability === CapabilityOptions.customCopilotRag().id) {
-            feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
-          } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
-            feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
-          }
-
-          const templateName = Feature2TemplateName[feature];
-
-          if (templateName) {
-            const langKey = convertToLangKey(language);
-            const safeProjectNameFromVS =
-              language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-            const llmService: string | undefined = inputs[QuestionNames.LLMService];
-            const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
-            const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
-            const azureOpenAIEndpoint: string | undefined =
-              inputs[QuestionNames.AzureOpenAIEndpoint];
-            const azureOpenAIDeploymentName: string | undefined =
-              inputs[QuestionNames.AzureOpenAIDeploymentName];
-            context.templateVariables = Generator.getDefaultVariables(
-              appName,
-              safeProjectNameFromVS,
-              inputs.targetFramework,
-              inputs.placeProjectFileInSolutionDir === "true",
-              undefined,
-              {
-                llmService,
-                openAIKey,
-                azureOpenAIKey,
-                azureOpenAIEndpoint,
-                azureOpenAIDeploymentName,
-              }
-            );
-            const res = await Generator.generateTemplate(
-              context,
-              projectPath,
-              templateName,
-              langKey
-            );
-            if (res.isErr()) return err(res.error);
-            if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
-              const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
-                context,
-                inputs,
-                projectPath
-              );
-              if (res.isErr()) {
-                return err(res.error);
-              } else {
-                warnings = res.value.warnings;
-              }
-            }
-          } else {
-            return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
-          }
-        }
+      // refactored generator
+      const generator = Generators.find((g) => g.activate(context, inputs));
+      if (!generator) {
+        return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
+      }
+      const res = await generator.run(context, inputs, projectPath);
+      if (res.isErr()) return err(res.error);
+      else {
+        warnings = res.value.warnings;
       }
     }
 
     // generate unique projectId in teamsapp.yaml (optional)
     const ymlPath = path.join(projectPath, MetadataV3.configFile);
-    if (fs.pathExistsSync(ymlPath)) {
+    if (await fs.pathExists(ymlPath)) {
       const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
       if (ensureRes.isErr()) return err(ensureRes.error);
       inputs.projectId = ensureRes.value;

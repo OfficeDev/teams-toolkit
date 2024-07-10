@@ -5,7 +5,7 @@ import axios from "axios";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "./globalVars";
 import { AccessGithubError } from "../error/common";
-import { FeatureFlagName } from "./constants";
+import { FeatureFlagName } from "./featureFlags";
 import { sendRequestWithTimeout } from "./requestUtils";
 
 const packageJson = require("../../package.json");

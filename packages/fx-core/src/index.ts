@@ -25,7 +25,12 @@ export {
   getAllowedAppMaps,
 } from "./common/constants";
 export { Correlator } from "./common/correlator";
-export { FeatureFlags, featureFlagManager, isFeatureFlagEnabled } from "./common/featureFlags";
+export {
+  FeatureFlags,
+  featureFlagManager,
+  isFeatureFlagEnabled,
+  FeatureFlagName,
+} from "./common/featureFlags";
 export { globalStateGet, globalStateUpdate } from "./common/globalState";
 export { getDefaultString, getLocalizedString } from "./common/localizeUtils";
 export * from "./common/permissionInterface";
@@ -72,7 +77,7 @@ export { getPermissionMap } from "./component/driver/aad/permissions/index";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
 export { pluginManifestUtils } from "./component/driver/teamsApp/utils/PluginManifestUtils";
-export { generateScaffoldingSummary } from "./component/generator/copilotPlugin/helper";
+export { generateScaffoldingSummary } from "./component/generator/apiSpec/helper";
 export { HelperMethods } from "./component/generator/officeAddin/helperMethods";
 export { DefaultTemplateGenerator } from "./component/generator/templates/templateGenerator";
 export { getSampleFileInfo, runWithLimitedConcurrency } from "./component/generator/utils";
@@ -98,3 +103,5 @@ export * from "./error/index";
 export * from "./question/constants";
 export * from "./question/inputs";
 export * from "./question/options";
+export * from "./component/middleware/actionExecutionMW";
+export { TemplateInfo } from "./component/generator/templates/templateInfo";

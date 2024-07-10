@@ -7,25 +7,12 @@
 "use strict";
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
-import {
-  globalStateGet,
-  globalStateUpdate,
-  isManifestOnlyOfficeAddinProject,
-} from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { GlobalKey } from "../constants";
 import { OfficeDevTerminal, TriggerCmdType } from "../debug/taskTerminal/officeDevTerminal";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
-import {
-  ShowScaffoldingWarningSummary,
-  autoInstallDependencyHandler,
-  openReadMeHandler,
-  openSampleReadmeHandler,
-  showLocalDebugMessage,
-} from "../handlers";
 import {
   TelemetryTriggerFrom,
   TelemetryEvent,
@@ -34,6 +21,12 @@ import {
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  ShowScaffoldingWarningSummary,
+  autoInstallDependencyHandler,
+  showLocalDebugMessage,
+} from "../utils/autoOpenHelper";
+import { openReadMeHandler, openSampleReadmeHandler } from "./readmeHandlers";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]
@@ -168,26 +161,6 @@ export function installOfficeAddInDependencies(args?: any[]): Promise<Result<nul
   return Promise.resolve(ok(null));
 }
 
-export async function popupOfficeAddInDependenciesMessage() {
-  const buttonOptions = ["Yes", "No"];
-  const notificationMessage = localize("teamstoolkit.handlers.askInstallOfficeAddinDependency");
-
-  const result = await vscode.window.showInformationMessage(notificationMessage, ...buttonOptions);
-
-  if (result === "Yes") {
-    // Handle Yes button click
-    await autoInstallDependencyHandler();
-  } else if (result === "No") {
-    // Handle No button click
-    void vscode.window.showInformationMessage(
-      localize("teamstoolkit.handlers.installOfficeAddinDependencyCancelled")
-    );
-  } else {
-    // Handle case where pop-up was dismissed without clicking a button
-    // No action.
-  }
-}
-
 export function stopOfficeAddInDebug(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.stopAddInDebug, getTriggerFromProperty(args));
   const terminal = OfficeDevTerminal.getInstance(TriggerCmdType.triggerStopDebug);
@@ -209,7 +182,6 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
-  const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
   if (isOpenWalkThrough) {
     // current the welcome walkthrough is not supported for wxp add in
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
@@ -226,21 +198,4 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
-  if (autoInstallDependency) {
-    if (!isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? ""))
-      void popupOfficeAddInDependenciesMessage();
-    await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
-  }
-  if (
-    globalVariables.isOfficeAddInProject &&
-    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "") &&
-    !isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? "")
-  ) {
-    void popupOfficeAddInDependenciesMessage();
-  }
-}
-
-export function checkOfficeAddInInstalled(directory: string): boolean {
-  const nodeModulesExists = fs.existsSync(path.join(directory, "node_modules"));
-  return nodeModulesExists;
 }

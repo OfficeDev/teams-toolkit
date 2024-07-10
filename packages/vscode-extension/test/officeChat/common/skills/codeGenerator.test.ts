@@ -33,6 +33,17 @@ describe("codeGenerator", () => {
         apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
+          requestId: "Id",
+          isHarmful: false,
+          relatedSampleName: ["sample1", "sample2"],
+          chatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
+          ],
+          responseChatMessages: [
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+            new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+          ],
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
@@ -93,6 +104,17 @@ describe("codeGenerator", () => {
       apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
+        requestId: "Id",
+        isHarmful: false,
+        relatedSampleName: ["sample1", "sample2"],
+        chatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "requestMessage2"),
+        ],
+        responseChatMessages: [
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage1"),
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, "responseMessage2"),
+        ],
         properties: {
           property1: "value1",
           property2: "value2",
@@ -802,7 +824,7 @@ describe("codeGenerator", () => {
     });
 
     sandbox.stub(codeGenerator, "userAskBreakdownAsync").resolves({
-      spec: "some host",
+      spec: "some host 1. point 1. 2. point 2.",
       funcs: ["some data"],
     });
     sandbox.stub(codeGenerator, "generateCode").resolves("code sample");

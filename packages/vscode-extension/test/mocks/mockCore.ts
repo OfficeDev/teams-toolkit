@@ -7,9 +7,8 @@ import {
   Result,
   ok,
 } from "@microsoft/teamsfx-api";
-import { CoreCallbackFunc, FxCore } from "@microsoft/teamsfx-core";
+import { CoreCallbackFunc } from "@microsoft/teamsfx-core";
 import { ProjectTypeResult } from "@microsoft/teamsfx-core/build/common/projectTypeChecker";
-import { TelemetryMeasurements } from "../../src/telemetry/extTelemetryEvents";
 
 export class MockCore {
   constructor() {}
@@ -144,5 +143,9 @@ export class MockCore {
       dependsOnTeamsJs: false,
       lauguages: ["ts"],
     });
+  }
+
+  async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
   }
 }

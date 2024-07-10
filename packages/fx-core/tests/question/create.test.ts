@@ -22,7 +22,7 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import { FeatureFlagName } from "../../src/common/constants";
+import { FeatureFlagName } from "../../src/common/featureFlags";
 import * as utils from "../../src/common/globalVars";
 import { setTools } from "../../src/common/globalVars";
 import { getLocalizedString } from "../../src/common/localizeUtils";
@@ -40,7 +40,6 @@ import {
   CustomCopilotRagOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
-  OfficeAddinHostOptions,
   ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
@@ -57,7 +56,6 @@ import {
   getLanguageOptions,
   getSolutionName,
   officeAddinFrameworkQuestion,
-  officeAddinHostingQuestion,
   programmingLanguageQuestion,
   projectTypeQuestion,
 } from "../../src/question";
@@ -251,7 +249,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode me from new api (none auth)", async () => {
+    it("traverse in vscode me from new api (No authentication)", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -568,76 +566,7 @@ describe("scaffold question", () => {
         QuestionNames.AppName,
       ]);
     });
-    it("traverse in vscode Office XML addin", async () => {
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-      };
-      const questions: string[] = [];
-      const visitor: QuestionTreeVisitor = async (
-        question: Question,
-        ui: UserInteraction,
-        inputs: Inputs
-      ) => {
-        questions.push(question.name);
-        await callFuncs(question, inputs);
 
-        if (question.name === QuestionNames.ProjectType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          return ok({ type: "success", result: ProjectTypeOptions.officeXMLAddin().id });
-        } else if (question.name === QuestionNames.OfficeAddinHost) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.staticOptions;
-          assert.deepEqual(options, [
-            OfficeAddinHostOptions.outlook(),
-            OfficeAddinHostOptions.word(),
-            OfficeAddinHostOptions.excel(),
-            OfficeAddinHostOptions.powerpoint(),
-          ]);
-          const title =
-            typeof question.title === "function" ? await question.title(inputs) : question.title;
-          assert.equal(
-            title,
-            getLocalizedString("core.createProjectQuestion.officeXMLAddin.create.title")
-          );
-          return ok({ type: "success", result: OfficeAddinHostOptions.excel().id });
-        } else if (question.name === QuestionNames.Capabilities) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          const items = CapabilityOptions.officeAddinDynamicCapabilities(
-            ProjectTypeOptions.officeXMLAddin().id,
-            OfficeAddinHostOptions.excel().id
-          );
-          assert.deepEqual(options, items);
-          const title =
-            typeof question.title === "function" ? await question.title(inputs) : question.title;
-          assert.equal(
-            title,
-            getLocalizedString("core.createProjectQuestion.officeXMLAddin.excel.create.title")
-          );
-          return ok({ type: "success", result: "excel-react" });
-        } else if (question.name === QuestionNames.ProgrammingLanguage) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 2);
-          return ok({ type: "success", result: "typescript" });
-        } else if (question.name === QuestionNames.Folder) {
-          return ok({ type: "success", result: "./" });
-        } else if (question.name === QuestionNames.AppName) {
-          return ok({ type: "success", result: "test001" });
-        }
-        return ok({ type: "success", result: undefined });
-      };
-      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
-      assert.deepEqual(questions, [
-        QuestionNames.ProjectType,
-        QuestionNames.OfficeAddinHost,
-        QuestionNames.Capabilities,
-        QuestionNames.ProgrammingLanguage,
-        QuestionNames.Folder,
-        QuestionNames.AppName,
-      ]);
-    });
     it("traverse in vscode Office addin", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -1617,7 +1546,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1651,7 +1580,7 @@ describe("scaffold question", () => {
         ]);
       });
 
-      it("traverse in vscode Copilot Plugin from new API with api key auth", async () => {
+      it("traverse in vscode Copilot Plugin from new API with API Key authentication", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1669,7 +1598,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1723,7 +1652,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -2451,7 +2380,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth(Bearer token auth)",
+              detail: "API Key authentication(Bearer token authentication)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2462,7 +2391,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2471,7 +2400,7 @@ describe("scaffold question", () => {
             {
               id: "get operation3",
               label: "get operation3",
-              detail: "OAuth(Auth code flow)",
+              detail: "OAuth(Authorization code flow)",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
@@ -2537,7 +2466,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth(Bearer token auth)",
+              detail: "API Key authentication(Bearer token authentication)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2548,7 +2477,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2744,7 +2673,7 @@ describe("scaffold question", () => {
             {
               id: "GET /store/order",
               label: "GET /store/order",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2866,7 +2795,7 @@ describe("scaffold question", () => {
                 serverUrl: "https://server",
               },
               groupName: "GET",
-              detail: "None auth",
+              detail: "No authentication",
               id: "GET /user/{userId}",
               label: "GET /user/{userId}",
             },
@@ -3383,15 +3312,9 @@ describe("scaffold question", () => {
     });
 
     describe("officeAddinStaticCapabilities()", () => {
-      it("should return correct capabilities for specific host", () => {
-        const capabilities = CapabilityOptions.officeAddinStaticCapabilities(
-          OfficeAddinHostOptions.word().id
-        );
-        assert.equal(capabilities.length, 4);
-      });
       it("should return correct capabilities without specific host", () => {
         const capabilities = CapabilityOptions.officeAddinStaticCapabilities();
-        assert.equal(capabilities.length, 16);
+        assert.equal(capabilities.length, 2);
       });
     });
 
@@ -3407,20 +3330,6 @@ describe("scaffold question", () => {
           ProjectTypeOptions.officeAddin().id
         );
         assert.equal(capabilities.length, 3);
-      });
-      it("should return correct capabilities for office xml addin with outlook host", () => {
-        const capabilities = CapabilityOptions.officeAddinDynamicCapabilities(
-          ProjectTypeOptions.officeXMLAddin().id,
-          OfficeAddinHostOptions.outlook().id
-        );
-        assert.equal(capabilities.length, 2);
-      });
-      it("should return correct capabilities for office xml addin with word host", () => {
-        const capabilities = CapabilityOptions.officeAddinDynamicCapabilities(
-          ProjectTypeOptions.officeXMLAddin().id,
-          OfficeAddinHostOptions.word().id
-        );
-        assert.equal(capabilities.length, 4);
       });
     });
   });
@@ -3516,37 +3425,6 @@ describe("scaffold question", () => {
       assert.equal(lang, "typescript");
     });
 
-    it("office xml addin: normal project have ts and js", async () => {
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-        [QuestionNames.Capabilities]: "word-react",
-      };
-      assert.isDefined(question.dynamicOptions);
-      if (question.dynamicOptions) {
-        const options = await question.dynamicOptions(inputs);
-        assert.deepEqual(options, [
-          { label: "TypeScript", id: "typescript" },
-          { label: "JavaScript", id: "javascript" },
-        ]);
-      }
-    });
-
-    it("office xml addin: manifest-only project only have js option as default", async () => {
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-        [QuestionNames.Capabilities]: "word-manifest",
-      };
-      assert.isDefined(question.dynamicOptions);
-      if (question.dynamicOptions) {
-        const options = await question.dynamicOptions(inputs);
-        assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
-      }
-    });
-
     it("office addin: should have typescript as options", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = "json-taskpane";
@@ -3635,26 +3513,6 @@ describe("scaffold question", () => {
         }
       }
     });
-
-    it("office xml addin: patch coverage getLanguageOptions", async () => {
-      sandbox.stub(OfficeAddinProjectConfig, "word").value({
-        "word-taskpane": {
-          localTemplate: "word-taskpane",
-          title: "core.createProjectQuestion.officeXMLAddin.taskpane.title",
-          detail: "core.createProjectQuestion.officeXMLAddin.taskpane.detail",
-          framework: {
-            default: {},
-          },
-        },
-      });
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-        [QuestionNames.Capabilities]: "word-taskpane",
-      };
-      assert.deepEqual(getLanguageOptions(inputs), []);
-    });
   });
 
   describe("folderQuestion", () => {
@@ -3671,16 +3529,6 @@ describe("scaffold question", () => {
       assert.equal(title, "Directory where the project folder will be created in");
       assert.equal(defaultV, "./");
     });
-  });
-
-  describe("officeAddinHostingQuestion", async () => {
-    const q = officeAddinHostingQuestion();
-    const options = await q.dynamicOptions!({ platform: Platform.VSCode });
-    assert.equal(options.length, 4);
-    if (typeof q.default === "function") {
-      const defaultV = await q.default({ platform: Platform.VSCode });
-      assert.isDefined(defaultV);
-    }
   });
 
   describe("officeAddinFrameworkQuestion", () => {
@@ -3741,18 +3589,6 @@ describe("scaffold question", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
       mockedEnvRestore();
-    });
-    it("trigger from agent", async () => {
-      const question = projectTypeQuestion();
-      const inputs: Inputs = { platform: Platform.CLI, agent: "office" };
-      assert.isDefined(question.dynamicOptions);
-      if (question.dynamicOptions) {
-        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
-        const officeAddinOption = options.find(
-          (o) => o.id === ProjectTypeOptions.officeXMLAddin().id
-        );
-        assert.isDefined(officeAddinOption);
-      }
     });
     it("show customize GPT if CLI and enable declarative GPT() ", async () => {
       mockedEnvRestore = mockedEnv({

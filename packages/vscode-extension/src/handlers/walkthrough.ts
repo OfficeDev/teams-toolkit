@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as vscode from "vscode";
 import { runCommand } from "../handlers/sharedOpts";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import { CreateProjectResult, FxError, Result, Stage } from "@microsoft/teamsfx-api";
+import { CreateProjectResult, FxError, Result, Stage, ok } from "@microsoft/teamsfx-api";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 
@@ -23,4 +24,18 @@ export async function createProjectFromWalkthroughHandler(
 
   const result = await runCommand(Stage.create, inputs);
   return result;
+}
+
+export async function openBuildIntelligentAppsWalkthroughHandler(
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.WalkThroughBuildIntelligentApps,
+    getTriggerFromProperty(args)
+  );
+  const data = await vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+  );
+  return Promise.resolve(ok(data));
 }

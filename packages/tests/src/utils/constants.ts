@@ -171,8 +171,8 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
-  CopilotPluginFromExistingAPI = "copilot-plugin-existing-api",
-  CopilotPluginFromScratch = "copilot-plugin-new-api",
+  CopilotPluginFromExistingAPI = "api-plugin-existing-api",
+  CopilotPluginFromScratch = "api-plugin-new-api",
 }
 
 export enum Trigger {
@@ -337,7 +337,7 @@ export class CommandPaletteCommands {
   public static readonly AddSpfxWebPart: string = "Teams: Add SPFx web part";
 }
 
-export type OptionType =
+export type AppType =
   | "tab"
   | "tabnsso"
   | "tabbot"
@@ -348,12 +348,8 @@ export type OptionType =
   | "msg"
   | "msgsa"
   | "m365lp"
-  | "spfxreact"
-  | "spfxnone"
-  | "spfxmin"
-  | "gspfxreact"
-  | "gspfxnone"
-  | "gspfxmin"
+  | "spfx"
+  | "gspfx"
   | "dashboard"
   | "workflow"
   | "timenoti"
@@ -365,7 +361,8 @@ export type OptionType =
   | "aiassist"
   | "msgnewapi"
   | "msgopenapi"
-  | "msgapikey";
+  | "msgapikey"
+  | "importspfx";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -451,7 +448,7 @@ export class Notification {
 }
 
 export class CreateProjectQuestion {
-  static readonly CustomCopilot = "Custom Copilot";
+  static readonly CustomCopilot = "Custom Engine Copilot";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";
@@ -462,6 +459,7 @@ export class CreateProjectQuestion {
     "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
   static readonly CreateNewSpfxSolution = "Create New SPFx Solution";
+  static readonly ImportExistingSpfxSolution = "Import Existing SPFx Solution";
 }
 
 export class ValidationContent {
@@ -474,6 +472,7 @@ export class ValidationContent {
   static readonly AiAssistantBotWelcomeInstruction =
     "I'm an assistant bot. How can I help you today?";
   static readonly AiBotErrorMessage = "The bot encountered an error or bug";
+  static readonly AiBotErrorMessage2 = "An AI request failed";
 }
 
 export class CliVersion {

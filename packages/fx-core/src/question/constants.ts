@@ -77,8 +77,18 @@ export enum QuestionNames {
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",
-
+  ManifestId = "manifest-id",
+  TitleId = "title-id",
   UserEmail = "email",
+
+  UninstallMode = "mode",
+  UninstallModeManifestId = "manifest-id",
+  UninstallModeEnv = "env",
+  UninstallModeTitleId = "title-id",
+  UninstallOptions = "options",
+  UninstallOptionM365 = "m365-app",
+  UninstallOptionTDP = "app-registration",
+  UninstallOptionBot = "bot-framework-registration",
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
@@ -97,13 +107,14 @@ export enum ProgrammingLanguage {
   TS = "typescript",
   CSharp = "csharp",
   PY = "python",
+  Common = "common",
   None = "none",
 }
 
-export const copilotPluginApiSpecOptionId = "copilot-plugin-existing-api";
-export const copilotPluginExistingApiOptionIds = [copilotPluginApiSpecOptionId];
-export const copilotPluginNewApiOptionId = "copilot-plugin-new-api";
-export const copilotPluginOptionIds = [copilotPluginNewApiOptionId, copilotPluginApiSpecOptionId];
+export const apiPluginApiSpecOptionId = "api-plugin-existing-api";
+export const apiPluginExistingApiOptionIds = [apiPluginApiSpecOptionId];
+export const apiPluginNewApiOptionId = "api-plugin-new-api";
+export const apiPluginOptionIds = [apiPluginNewApiOptionId, apiPluginApiSpecOptionId];
 export const capabilitiesHavePythonOption = [
   "custom-copilot-basic",
   "custom-copilot-rag-azureAISearch",
@@ -215,17 +226,6 @@ export class ProjectTypeOptions {
     };
   }
 
-  static officeXMLAddin(platform?: Platform): OptionItem {
-    return {
-      id: "office-xml-addin-type",
-      label: `${platform === Platform.VSCode ? "$(teamsfx-m365) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
-      )}`,
-      detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
-    };
-  }
-
   static officeAddin(platform?: Platform): OptionItem {
     return {
       id: "office-addin-type",
@@ -240,14 +240,13 @@ export class ProjectTypeOptions {
   static officeAddinAllIds(platform?: Platform): string[] {
     return [
       ProjectTypeOptions.officeAddin(platform).id,
-      ProjectTypeOptions.officeXMLAddin(platform).id,
       ProjectTypeOptions.outlookAddin(platform).id,
     ];
   }
 
   static copilotPlugin(platform?: Platform): OptionItem {
     return {
-      id: "copilot-plugin-type",
+      id: "api-plugin-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
@@ -567,9 +566,6 @@ export class CapabilityOptions {
     const items: OptionItem[] = [];
     const isOutlookAddin = projectType === ProjectTypeOptions.outlookAddin().id;
     const isOfficeAddin = projectType === ProjectTypeOptions.officeAddin().id;
-    const isOfficeXMLAddinForOutlook =
-      projectType === ProjectTypeOptions.officeXMLAddin().id &&
-      host === OfficeAddinHostOptions.outlook().id;
 
     const pushToItems = (option: any) => {
       const capabilityValue = OfficeAddinProjectConfig.json[option];
@@ -580,11 +576,11 @@ export class CapabilityOptions {
       });
     };
 
-    if (isOutlookAddin || isOfficeAddin || isOfficeXMLAddinForOutlook) {
+    if (isOutlookAddin || isOfficeAddin) {
       pushToItems("json-taskpane");
-      if (isOutlookAddin || isOfficeXMLAddinForOutlook) {
+      if (isOutlookAddin) {
         items.push(CapabilityOptions.outlookAddinImport());
-      } else if (isOfficeAddin) {
+      } else {
         items.push(CapabilityOptions.officeContentAddin());
         items.push(CapabilityOptions.officeAddinImport());
       }
@@ -717,7 +713,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: copilotPluginNewApiOptionId,
+      id: apiPluginNewApiOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -729,7 +725,7 @@ export class CapabilityOptions {
 
   static copilotPluginApiSpec(): OptionItem {
     return {
-      id: copilotPluginApiSpecOptionId,
+      id: apiPluginApiSpecOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
@@ -819,53 +815,6 @@ export class CapabilityOptions {
   }
 }
 
-export class OfficeAddinHostOptions {
-  static all(platform?: Platform): OptionItem[] {
-    return [
-      OfficeAddinHostOptions.outlook(platform),
-      OfficeAddinHostOptions.word(),
-      OfficeAddinHostOptions.excel(),
-      OfficeAddinHostOptions.powerpoint(),
-    ];
-  }
-  static outlook(platform?: Platform): OptionItem {
-    return {
-      id: "outlook",
-      label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.outlookAddin.label"
-      )}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
-      data: "Outlook",
-    };
-  }
-  static word(): OptionItem {
-    return {
-      id: "word",
-      label: getLocalizedString("core.createProjectQuestion.officeXMLAddin.word.title"),
-      detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.word.detail"),
-      data: "Word",
-    };
-  }
-
-  static excel(): OptionItem {
-    return {
-      id: "excel",
-      label: getLocalizedString("core.createProjectQuestion.officeXMLAddin.excel.title"),
-      detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.excel.detail"),
-      data: "Excel",
-    };
-  }
-
-  static powerpoint(): OptionItem {
-    return {
-      id: "powerpoint",
-      label: getLocalizedString("core.createProjectQuestion.officeXMLAddin.powerpoint.title"),
-      detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.powerpoint.detail"),
-      data: "PowerPoint",
-    };
-  }
-}
-
 export class ApiAuthOptions {
   static none(): OptionItem {
     return {
@@ -876,7 +825,7 @@ export class ApiAuthOptions {
   static apiKey(): OptionItem {
     return {
       id: "api-key",
-      label: "API Key",
+      label: "API Key (Bearer Token Auth)",
     };
   }
 
@@ -1233,13 +1182,13 @@ export class PluginAvailabilityOptions {
   }
   static copilotPlugin(): OptionItem {
     return {
-      id: "copilot-plugin",
+      id: "api-plugin",
       label: getLocalizedString("core.pluginAvailability.copilotForM365"),
     };
   }
   static copilotPluginAndAction(): OptionItem {
     return {
-      id: "copilot-plugin-and-action",
+      id: "api-plugin-and-action",
       label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
     };
   }

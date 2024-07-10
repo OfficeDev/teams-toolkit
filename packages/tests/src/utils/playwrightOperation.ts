@@ -342,6 +342,7 @@ export async function reopenPage(
         await addBtn?.click();
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
+      console.log("[success] app loaded");
       // verify add page is closed
       await page?.waitForSelector("button>span:has-text('Add')", {
         state: "detached",
@@ -456,7 +457,10 @@ export async function initTeamsPage(
         await page?.waitForSelector(`h1:has-text('to a team')`);
         try {
           try {
-            const items = await page?.waitForSelector("li.ui-dropdown__item");
+            // select 2nd li item
+            const items = await page?.waitForSelector(
+              "li.ui-dropdown__item:nth-child(2)"
+            );
             await items?.click();
             console.log("selected a team.");
           } catch (error) {
@@ -465,7 +469,6 @@ export async function initTeamsPage(
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
-
             const items = await page?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
             console.log("[catch] selected a team.");
@@ -825,54 +828,57 @@ export async function validateOneProducitvity(
 
 export async function validateTab(
   page: Page,
-  options?: { displayName?: string; includeFunction?: boolean }
+  options?: { displayName?: string; includeFunction?: boolean },
+  rerun = false
 ) {
+  console.log("start to verify tab");
   try {
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
+    if (!rerun) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          frame?.click('button:has-text("Authorize")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
+        ]);
+        console.log("after popup");
 
-    await RetryHandler.retry(async () => {
-      console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup)
-          )
-          .catch(() => {}),
-        frame?.click('button:has-text("Authorize")', {
-          timeout: Timeout.playwrightAddAppButton,
-          force: true,
-          noWaitAfter: true,
-          clickCount: 2,
-          delay: 10000,
-        }),
-      ]);
-      console.log("after popup");
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
 
-      if (popup && !popup?.isClosed()) {
-        await popup
-          .click('button:has-text("Reload")', {
-            timeout: Timeout.playwrightConsentPageReload,
-          })
-          .catch(() => {});
-        await popup.click("input.button[type='submit'][value='Accept']");
-      }
-
-      await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
-    });
+        await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
+      });
+    }
 
     if (options?.includeFunction) {
       await RetryHandler.retry(async () => {
         console.log("verify function info");
         const authorizeButton = await frame?.waitForSelector(
-          'button:has-text("Call Azure Function")'
+          'button:has-text("Authorize and call Azure Function")'
         );
         await authorizeButton?.click();
         const backendElement = await frame?.waitForSelector(
@@ -1458,7 +1464,8 @@ export async function validateNpm(
         `span:has-text("${searchPack}")`
       );
       await targetItem?.click();
-      await page?.waitForSelector(`card span:has-text("${searchPack}")`);
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page?.waitForSelector(`card:has-text("${searchPack}")`);
       const sendBtn = await frame?.waitForSelector('button[name="send"]');
       await sendBtn?.click();
       console.log("verify npm search successfully!!!");
@@ -1619,15 +1626,12 @@ export async function validateDeeplinking(page: Page, displayName: string) {
 
 export async function validateQueryOrg(
   page: Page,
-  options?: { displayName?: string }
+  options: { displayName?: string; appName: string }
 ) {
   try {
     console.log("start to verify query org");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     try {
       console.log("dismiss message");
       await frame?.waitForSelector("div.ui-box");
@@ -1639,13 +1643,12 @@ export async function validateQueryOrg(
     } catch (error) {
       console.log("no message to dismiss");
     }
-    const inputBar = await frame?.waitForSelector(
-      "div.ui-popup__content input.ui-box"
-    );
+    await messageExtensionActivate(page, options.appName);
+    const inputBar = await page?.waitForSelector("div.ui-box input.ui-box");
     await inputBar?.fill(options?.displayName || "");
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    const loginBtn = await frame?.waitForSelector(
-      'div.ui-popup__content a:has-text("sign in")'
+    const loginBtn = await page?.waitForSelector(
+      'div.ui-box a:has-text("sign in")'
     );
     // todo add more verify
     // await RetryHandler.retry(async () => {
@@ -2026,6 +2029,7 @@ export async function validateTeamsWorkbench(page: Page, displayName: string) {
     const frame = await frameElementHandle?.contentFrame();
     await frame?.click('button:has-text("Load debug scripts")');
     console.log("Debug scripts loaded");
+    await validateSpfx(page, { displayName: displayName });
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -2040,7 +2044,11 @@ export async function validateSpfx(
   options?: { displayName?: string }
 ) {
   try {
-    const frame = await page.waitForSelector("div#app");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(`text=Web part property value`);
     await frame?.waitForSelector(`text=${options?.displayName}`);
     console.log(`Found: "${options?.displayName}"`);
   } catch (error) {
@@ -2523,15 +2531,12 @@ export async function validateCreatedCard(page: Page, appName: string) {
   }
 }
 
-export async function validateUnfurlCard(page: Page) {
+export async function validateUnfurlCard(page: Page, appName: string) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    const frame = await page.waitForSelector("div#app");
     console.log("start to validate unfurl an adaptive card");
     const unfurlurl = "https://www.botframework.com/";
-    await frame?.press("div.ui-box input.ui-box", "Escape");
+    //await frame?.press("div.ui-box input.ui-box", "Escape");
     const msgTxtbox = await frame?.waitForSelector("div[data-tid='ckeditor']");
     await msgTxtbox?.focus();
     await msgTxtbox?.fill(unfurlurl);
@@ -2683,7 +2688,10 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       console.log("check result...");
-      const spfxFrame = await page.waitForSelector("div#app");
+      const frameElementHandle = await page.waitForSelector(
+        `iframe[name="embedded-page-container"]`
+      );
+      const spfxFrame = await frameElementHandle?.contentFrame();
       // title
       console.log("check title");
       const title = await spfxFrame?.waitForSelector(
@@ -2718,22 +2726,19 @@ export async function validateTodoListSpfx(page: Page) {
   }
 }
 
-export async function validateApiMeResult(page: Page) {
+export async function validateApiMeResult(page: Page, appName: string) {
   try {
-    const frameElementHandle = await page.waitForSelector(
-      "iframe.embedded-page-content"
-    );
-    const frame = await frameElementHandle?.contentFrame();
+    await messageExtensionActivate(page, appName);
     console.log("start to validate search command");
-    const searchcmdInput = await frame?.waitForSelector(
+    const searchcmdInput = await page?.waitForSelector(
       "div.ui-box input.ui-box"
     );
-    await searchcmdInput?.type("Karin");
+    await searchcmdInput?.fill("Karin");
     try {
-      await frame?.waitForSelector('ul[datatid="app-picker-list"]');
+      await page?.waitForSelector('ul[datatid="app-picker-list"]');
       console.log("verify search successfully!!!");
     } catch (error) {
-      await frame?.waitForSelector(
+      await page?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
       assert.fail("Unable to reach app. Please try again.");

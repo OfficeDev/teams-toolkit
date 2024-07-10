@@ -99,21 +99,26 @@
 /packages/fx-core/scripts/delete-unused-strings.js @jayzhang
 /packages/fx-core/scripts/find-unused-strings.js @jayzhang
 /packages/fx-core/scripts/generate-appdef.ps1 @nliu-ms
+/packages/fx-core/src/common/azureUtil.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/constants.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/correlator.ts @chagong @jayzhang @LongOddCode
-/packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587
+/packages/fx-core/src/common/featureFlags.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/globalState.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/src/common/globalVars.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft @chagong
 /packages/fx-core/src/common/permissionInterface.ts @SLdragon @KennethBWSong
 /packages/fx-core/src/common/projectSettingsHelper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/projectSettingsHelperV3.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/src/common/requestUtils.ts @jayzhang @hund030
 /packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
+/packages/fx-core/src/common/stringUtils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/telemetry.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/templates-config.json @hund030 @eriolchan @huimiu
 /packages/fx-core/src/common/tools.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/utils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/versionMetadata.ts @xzf0587 @blackchoey
+/packages/fx-core/src/common/wrappedAxiosClient.ts @nliu-ms @anchenyi
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
@@ -166,9 +171,13 @@
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/tests/common/featureFlags.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
+/packages/fx-core/tests/common/globalVars.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/projectTypeChecker.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
+/packages/fx-core/tests/common/stringUtils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/tools.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/common/utils.test.ts @jayzhang @xzf0587 @LongOddCode
+/packages/fx-core/tests/common/wrappedAxiosClient.ts @nliu-ms @anchenyi
 /packages/fx-core/tests/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/tests/component/coordinator @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
@@ -259,11 +268,24 @@
 /packages/vscode-extension/README.md @therealjohn @sffamily
 /packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
 /packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
+/packages/vscode-extension/src/chat @tecton @Alive-Fish @lijie-lee @1openwindow
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/controls @tecton @yiqing-zhao
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug/officeTaskHandler.ts @swatDong @jayzhang @tecton
 /packages/vscode-extension/src/debug/taskTerminal/officeDevTerminal.ts @tecton @swatDong
+/packages/vscode-extension/src/handlers @tecton @jayzhang @yiqing-zhao
+/packages/vscode-extension/src/handlers/accounts @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/handlers/aadManifestHandlers.ts @blackchoey @wenytang-ms @KennethBWSong
+/packages/vscode-extension/src/handlers/collaboratorHandlers.ts @KennethBWSong @SLdragon
+/packages/vscode-extension/src/handlers/copilotChatHandlers.ts @yuqizhou77
+/packages/vscode-extension/src/handlers/manifestHandlers.ts @nliu-ms @yuqizhou77 @anchenyi
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/officeChat @1openwindow @MSFT-yiz
+/packages/vscode-extension/src/qm @jayzhang
+/packages/vscode-extension/src/telemetry @chagong @tecton @yiqing-zhao
+/packages/vscode-extension/src/treeview @tecton @yiqing-zhao
+/packages/vscode-extension/test @tecton @yiqing-zhao @HuihuiWu-Microsoft
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 

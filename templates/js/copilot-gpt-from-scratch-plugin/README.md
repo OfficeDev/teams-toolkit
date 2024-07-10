@@ -39,7 +39,7 @@ The following files can be customized and demonstrate an example implementation 
 | `src/functions/repairs.js`                   | The main file of a function in Azure Functions.                                                        |
 | `src/repairsData.json`                       | The data source for the repair API.                                                                    |
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                                    |
-| `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your copilot plugin and declarative copilot.      |
+| `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your API plugin and declarative copilot.      |
 | `appPackage/ai-plugin.json`                  | The manifest file for your declarative copilot that contains information for your API and used by LLM. |
 | `appPackage/repairDeclarativeCopilot.json`   | Define the behaviour and configurations of the declarative copilot.                                    |
 
@@ -52,4 +52,4 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Addition information and references
 
-- [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
+- [Declarative copilots for Microsoft 365](https://aka.ms/teams-toolkit-declarative-copilot)

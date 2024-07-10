@@ -103,14 +103,14 @@
         }
       },
       "teamsfx-copilot-plugin": {
-        "description": "Copilot Plugin icon in scaffold questions",
+        "description": "API Plugin icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E005"
         }
       },
       "teamsfx-custom-copilot": {
-        "description": "Custom Copilot icon in scaffold questions",
+        "description": "Custom Engine Copilot icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E006"
@@ -171,11 +171,6 @@
         "view": "teamsfx-project-and-check-upgradeV3",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content%",
         "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-feedback",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-feedback.content%",
-        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -221,12 +216,6 @@
           "name": "Help",
           "when": "false",
           "visibility": "collapsed"
-        },
-        {
-          "id": "teamsfx-feedback",
-          "name": "Feedback",
-          "when": "false",
-          "visibility": "visible"
         },
         {
           "id": "teamsfx-empty-project",
@@ -593,10 +582,6 @@
           "when": "fx-extension.canUpgradeV3"
         },
         {
-          "command": "fx-extension.openSurvey",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.openOfficeDevLifecycleLink",
           "when": "false"
         },
@@ -913,10 +898,6 @@
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",
         "icon": "$(sign-out)"
-      },
-      {
-        "command": "fx-extension.openSurvey",
-        "title": "%teamstoolkit.commandsTreeViewProvider.openSurveyTitle%"
       },
       {
         "command": "fx-extension.addWebpart",
@@ -1739,6 +1720,7 @@
     "jsonc-parser": "^3.0.0",
     "log4js": "^6.4.0",
     "node-rsa": "^1.1.1",
+    "office-addin-manifest": "^1.13.1",
     "query-string": "6.14.1",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",

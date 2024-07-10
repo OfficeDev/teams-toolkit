@@ -232,7 +232,7 @@ describe("updateManifestWithAiPlugin", () => {
                       wrap: true,
                     },
                     {
-                      $when: "${imageUrl != null}",
+                      $when: "${imageUrl != null && imageUrl != ''}",
                       type: "Image",
                       url: "${imageUrl}",
                     },
@@ -531,7 +531,7 @@ describe("updateManifestWithAiPlugin", () => {
                       wrap: true,
                     },
                     {
-                      $when: "${imageUrl != null}",
+                      $when: "${imageUrl != null && imageUrl != ''}",
                       type: "Image",
                       url: "${imageUrl}",
                     },
@@ -738,7 +738,7 @@ describe("updateManifestWithAiPlugin", () => {
                       type: "Container",
                     },
                     {
-                      $when: "${imageUrl != null}",
+                      $when: "${imageUrl != null && imageUrl != ''}",
                       type: "Image",
                       url: "${imageUrl}",
                     },
@@ -746,6 +746,249 @@ describe("updateManifestWithAiPlugin", () => {
                       text: "id: ${if(id, id, 'N/A')}",
                       type: "TextBlock",
                       wrap: true,
+                    },
+                  ],
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                },
+              },
+            },
+          },
+        ],
+        runtimes: [
+          {
+            type: "OpenApi",
+            auth: {
+              type: "None",
+            },
+            spec: {
+              url: "spec/outputSpec.yaml",
+            },
+            run_for_functions: ["getPets"],
+          },
+        ],
+      };
+      sinon.stub(fs, "readJSON").resolves(originalManifest);
+      sinon
+        .stub(fs, "pathExists")
+        .withArgs(manifestPath)
+        .resolves(true)
+        .withArgs(pluginFilePath)
+        .resolves(false);
+
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+        allowResponseSemantics: true,
+      };
+      const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec,
+        options
+      );
+
+      expect(manifest).to.deep.equal(expectedManifest);
+      expect(apiPlugin).to.deep.equal(expectedPlugins);
+      expect(warnings).to.deep.equal([]);
+    });
+
+    it("should not contain empty container in adaptive card", async () => {
+      const spec: any = {
+        openapi: "3.0.2",
+        info: {
+          title: "My API",
+          description: "My API description",
+        },
+        servers: [
+          {
+            url: "/v3",
+          },
+        ],
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "getPets",
+              summary: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              parameters: [
+                {
+                  name: "limit",
+                  description: "Maximum number of pets to return",
+                  required: true,
+                  schema: {
+                    type: "integer",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json; charset=utf-8": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          photos: {
+                            type: "array",
+                            items: {
+                              type: "object",
+                              properties: {
+                                id: {
+                                  type: "number",
+                                },
+                                sol: {
+                                  type: "number",
+                                },
+                                camera: {
+                                  type: "object",
+                                  properties: {
+                                    id: {
+                                      type: "number",
+                                    },
+                                    name: {
+                                      type: "string",
+                                    },
+                                    rover_id: {
+                                      type: "number",
+                                    },
+                                    full_name: {
+                                      type: "string",
+                                    },
+                                  },
+                                },
+                                img_src: {
+                                  type: "string",
+                                },
+                                earth_date: {
+                                  type: "string",
+                                },
+                                rover: {
+                                  type: "object",
+                                  properties: {
+                                    id: {
+                                      type: "number",
+                                    },
+                                    name: {
+                                      type: "string",
+                                    },
+                                    landing_date: {
+                                      type: "string",
+                                    },
+                                    launch_date: {
+                                      type: "string",
+                                    },
+                                    status: {
+                                      type: "string",
+                                    },
+                                    max_sol: {
+                                      type: "number",
+                                    },
+                                    max_date: {
+                                      type: "string",
+                                    },
+                                    total_photos: {
+                                      type: "number",
+                                    },
+                                    cameras: {
+                                      type: "array",
+                                      items: {
+                                        type: "object",
+                                        properties: {
+                                          name: {
+                                            type: "string",
+                                          },
+                                          full_name: {
+                                            type: "string",
+                                          },
+                                        },
+                                      },
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const manifestPath = "/path/to/your/manifest.json";
+      const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+      const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+      const originalManifest = {
+        name: { short: "Original Name", full: "Original Full Name" },
+        description: { short: "Original Short Description", full: "Original Full Description" },
+      };
+      const expectedManifest = {
+        name: { short: "Original Name", full: "Original Full Name" },
+        description: { short: "My API", full: "My API description" },
+        copilotExtensions: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
+      };
+
+      const expectedPlugins: PluginManifestSchema = {
+        $schema: ConstantString.PluginManifestSchema,
+        schema_version: "v2.1",
+        name_for_human: "Original Name",
+        namespace: "originalname",
+        description_for_human: "My API description",
+        functions: [
+          {
+            name: "getPets",
+            description: "Returns all pets from the system that the user has access to",
+            capabilities: {
+              response_semantics: {
+                data_path: "$",
+                properties: {
+                  title: "$.camera.name",
+                  subtitle: "$.id",
+                },
+                static_template: {
+                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  body: [
+                    {
+                      type: "Container",
+                      $data: "${photos}",
+                      items: [
+                        {
+                          type: "TextBlock",
+                          text: "photos.id: ${if(id, id, 'N/A')}",
+                          wrap: true,
+                        },
+                        {
+                          type: "TextBlock",
+                          text: "photos.sol: ${if(sol, sol, 'N/A')}",
+                          wrap: true,
+                        },
+                        {
+                          type: "TextBlock",
+                          text: "photos.camera.id: ${if(camera.id, camera.id, 'N/A')}",
+                          wrap: true,
+                        },
+                        {
+                          type: "TextBlock",
+                          text: "photos.camera.name: ${if(camera.name, camera.name, 'N/A')}",
+                          wrap: true,
+                        },
+                        {
+                          type: "TextBlock",
+                          text: "photos.camera.rover_id: ${if(camera.rover_id, camera.rover_id, 'N/A')}",
+                          wrap: true,
+                        },
+                      ],
                     },
                   ],
                   type: "AdaptiveCard",

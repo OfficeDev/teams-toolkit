@@ -35,9 +35,6 @@ export class Printer implements ISkill {
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const template = `
-${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
-${spec.userInput}
-
 ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.codeIntro")}\n
 \`\`\`typescript
 ${spec.appendix.codeSnippet}
@@ -45,9 +42,10 @@ ${spec.appendix.codeSnippet}
 
 ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.ending")}\n
 `;
-    const isHarmful = await isOutputHarmful(template, token);
+    const isHarmful = await isOutputHarmful(template, token, spec);
     if (isHarmful) {
       response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.printer.raiBlock"));
+      spec.appendix.telemetryData.isHarmful = true;
       return { result: ExecutionResultEnum.Failure, spec: spec };
     } else {
       response.markdown(template);

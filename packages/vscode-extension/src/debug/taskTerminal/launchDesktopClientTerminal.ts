@@ -71,7 +71,7 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
       });
       let username = "";
       if (accountInfo.isOk() && accountInfo.value["unique_name"]) {
-        username = "(" + (accountInfo.value["unique_name"] as string) + ")";
+        username = " (" + (accountInfo.value["unique_name"] as string) + ")";
       }
       if (config.obj[showDebugDesktopClientWizard] === "false") {
         void vscode.window

@@ -15,7 +15,12 @@ import {
 } from "@microsoft/dev-tunnels-management";
 import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 import { err, FxError, ok, Result, SystemError, UserError, Void } from "@microsoft/teamsfx-api";
-import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
+import {
+  featureFlagManager,
+  FeatureFlags,
+  TaskDefaultValue,
+  TunnelType,
+} from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors } from "../../error/error";
@@ -27,7 +32,6 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
-import { FeatureFlags, isFeatureFlagEnabled } from "../../featureFlags";
 import { devTunnelDisplayMessages } from "../common/debugConstants";
 import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -106,7 +110,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   static create(taskDefinition: vscode.TaskDefinition): DevTunnelTaskTerminal {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
-      isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
+      featureFlagManager.getBooleanValue(FeatureFlags.DevTunnelTest)
         ? TunnelManagementTestUserAgent
         : TunnelManagementUserAgent,
       ManagementApiVersions.Version20230927preview,

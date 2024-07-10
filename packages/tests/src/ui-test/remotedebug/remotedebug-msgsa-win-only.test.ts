@@ -18,7 +18,7 @@ import {
   createNewProject,
 } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import { initPage, validateMsg } from "../../utils/playwrightOperation";
+import { initPage, validateNpm } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -77,7 +77,10 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateMsg(page);
+      await validateNpm(page, {
+        npmName: "axios",
+        appName: remoteDebugTestContext.appName,
+      });
     }
   );
 });

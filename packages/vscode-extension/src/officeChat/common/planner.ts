@@ -12,7 +12,6 @@ import { ISkill } from "./skills/iSkill";
 import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
 import { ICopilotChatOfficeResult } from "../types";
-import { ChatTelemetryData } from "../../chat/telemetry";
 import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { ExecutionResultEnum } from "./skills/executionResultEnum";
@@ -33,6 +32,7 @@ import {
 } from "./telemetryConsts";
 import { purifyUserMessage } from "../utils";
 import { localize } from "../../utils/localizeUtils";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../telemetry";
 
 export class Planner {
   private static instance: Planner;
@@ -54,7 +54,7 @@ export class Planner {
     response: ChatResponseStream,
     token: CancellationToken,
     command: OfficeChatCommand,
-    telemetryData: ChatTelemetryData
+    telemetryData: OfficeChatTelemetryData
   ): Promise<ICopilotChatOfficeResult> {
     const candidates: ISkill[] = SkillsManager.getInstance().getCapableSkills(command);
     const t0 = performance.now();
@@ -81,8 +81,13 @@ export class Planner {
     }
 
     // dispatcher
-    const purified = await purifyUserMessage(request.prompt, token);
-    const spec = new Spec(purified);
+    const purified = await purifyUserMessage(request.prompt, token, telemetryData);
+    telemetryData.setTimeToFirstToken();
+    response.markdown(`
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
+${purified}
+`);
+    const spec = new Spec(purified, telemetryData.requestId);
     try {
       for (let index = 0; index < candidates.length; index++) {
         const candidate = candidates[index];
@@ -96,6 +101,11 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemRequestFailed] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
+          if (spec.appendix.telemetryData.isHarmful === true) {
+            telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
+          } else {
+            telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.PlannerFailure);
+          }
           throw new Error("Failed to process the request.");
         }
 
@@ -105,6 +115,7 @@ export class Planner {
           spec.appendix.telemetryData.properties[PropertySystemRequesRejected] = "true";
           spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
             candidate.name || "unknown";
+          telemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.OffTopic);
           throw new Error(
             `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
           );
@@ -127,6 +138,7 @@ export class Planner {
         "teamstoolkit.chatParticipants.officeAddIn.default.canNotAssist"
       );
       response.markdown(errorDetails);
+      throw new Error("Failed or rejected to process the request.");
     }
     const t1 = performance.now();
     const duration = (t1 - t0) / 1000;
@@ -135,6 +147,14 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
+    telemetryData.setHostType(spec.appendix.host.toLowerCase());
+    telemetryData.setRelatedSampleName(spec.appendix.telemetryData.relatedSampleName.toString());
+    for (const chatMessage of spec.appendix.telemetryData.chatMessages) {
+      telemetryData.chatMessages.push(chatMessage);
+    }
+    for (const responseChatMessage of spec.appendix.telemetryData.responseChatMessages) {
+      telemetryData.responseChatMessages.push(responseChatMessage);
+    }
     const debugInfo = `
       ## Time cost:\n
       In total ${Math.ceil(duration)} seconds.\n

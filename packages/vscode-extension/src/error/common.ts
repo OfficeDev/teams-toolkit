@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { UserError, SystemError, FxError, Result, err } from "@microsoft/teamsfx-api";
+import { UserError, SystemError, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { isUserCancelError, ConcurrentError } from "@microsoft/teamsfx-core";
 import { Uri, commands, window } from "vscode";
 import {
@@ -10,7 +10,6 @@ import {
   openTestToolDisplayMessage,
 } from "../debug/common/debugConstants";
 import { workspaceUri } from "../globalVariables";
-import { debugInTestToolHandler } from "../handlers/debugInTestTool";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { anonymizeFilePaths } from "../utils/fileSystemUtils";
 import { localize } from "../utils/localizeUtils";
@@ -24,7 +23,11 @@ export async function showError(e: UserError | SystemError) {
   const errorCode = `${e.source}.${e.name}`;
   const runTestTool = {
     title: localize("teamstoolkit.handlers.debugInTestTool"),
-    run: () => debugInTestToolHandler("message")(),
+    run: async () => {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MessageDebugInTestTool);
+      await commands.executeCommand("workbench.action.quickOpen", "debug Debug in Test Tool");
+      return ok<unknown, FxError>(null);
+    },
   };
   const recommendTestTool =
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&

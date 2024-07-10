@@ -14,15 +14,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?:
-    | "bot-type"
-    | "tab-type"
-    | "me-type"
-    | "office-xml-addin-type"
-    | "office-addin-type"
-    | "outlook-addin-type";
-  /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
-  "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "office-addin-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
     | "empty"
@@ -38,8 +30,8 @@ export interface CreateProjectInputs extends Inputs {
     | "collect-form-message-extension"
     | "search-message-extension"
     | "link-unfurling"
-    | "copilot-plugin-new-api"
-    | "copilot-plugin-existing-api"
+    | "api-plugin-new-api"
+    | "api-plugin-existing-api"
     | "custom-copilot-basic"
     | "custom-copilot-rag"
     | "custom-copilot-agent"
@@ -49,21 +41,7 @@ export interface CreateProjectInputs extends Inputs {
     | "basic-declarative-copilot"
     | "declarative-copilot-with-plugin-from-scratch"
     | "json-taskpane"
-    | "office-content-addin"
-    | "word-taskpane"
-    | "word-sso"
-    | "word-react"
-    | "word-manifest"
-    | "excel-taskpane"
-    | "excel-sso"
-    | "excel-react"
-    | "excel-custom-functions-shared"
-    | "excel-custom-functions-js"
-    | "excel-manifest"
-    | "powerpoint-taskpane"
-    | "powerpoint-sso"
-    | "powerpoint-react"
-    | "powerpoint-manifest";
+    | "office-content-addin";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

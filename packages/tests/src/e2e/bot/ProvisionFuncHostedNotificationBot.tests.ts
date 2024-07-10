@@ -16,4 +16,20 @@ describe("Provision for Node", () => {
       await happyPathTest(Runtime.Node, "notification", ["http-functions"]);
     }
   );
+  it(
+    "Provision Resource: func hosted notification timer trigger",
+    { testPlanCaseId: 24132574, author: "qidon@microsoft.com" },
+    async function () {
+      await happyPathTest(Runtime.Node, "notification", ["timer-functions"]);
+    }
+  );
+  it(
+    "Provision Resource: func hosted notification http and timer triggers",
+    { testPlanCaseId: 24132576, author: "qidon@microsoft.com" },
+    async function () {
+      await happyPathTest(Runtime.Node, "notification", [
+        "http-and-timer-functions",
+      ]);
+    }
+  );
 });

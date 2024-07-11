@@ -17,6 +17,10 @@
 - **Clean Up Resources Created After Development**: You can now safely clean up resources created after application development by deleting the application registration in the Teams Developer Portal and Bot Framework Portal, and removing uploaded custom apps in Microsoft 365 applications. This can be done via the `teamsapp uninstall` command, either by using the App ID in the Teams application manifest file or by specifying an environment if your project is managed by the Teams Toolkit.
 ![Uninstall](https://github.com/OfficeDev/teams-toolkit/assets/11220663/294447b7-d5f9-47cc-ab37-9235dbd5c111)
 
+- **Integrated CodeTour Instructions for Using Graph Connector Data Source**: The `Chat With Your Data - Microsoft 365` app template in Teams Toolkit now includes interactive CodeTour instructions. By default, the app uses content uploaded to SharePoint, but with these instructions, you can easily switch to a Graph connector data source if you have external content. Learn more about using the [Graph connector](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector).
+![Code Tour](https://github.com/OfficeDev/teams-toolkit/assets/11220663/be2eb3d6-0468-4316-8e6f-e8025408045a)
+
+
 #### Enhancements
 
 - Updated application templates to use the latest [manifest schema version v1.17](https://learn.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema).

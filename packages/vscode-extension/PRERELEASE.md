@@ -8,22 +8,23 @@
 
 #### New Features
 
-- **Debug Apps in Teams Desktop Client**: Using Teams desktop client enables a faster and reliable way to debug your Teams applications with the same capabilities as it is in the Teams web clients - break points, hot reload etc. Now you can use this feature for Custom Engine Copilots, Bots and Message Extensions apps. 
+- **Debug Apps in Teams Desktop Client**: The Teams desktop client now offers a faster and more reliable way to debug your Teams applications, with the same capabilities available in the Teams web client, such as breakpoints and hot reload. This feature is now available for Custom Engine Copilots, Bots, and Message Extensions apps.
 ![Debug in Desktop](https://github.com/OfficeDev/teams-toolkit/assets/11220663/dc85ee11-e847-40d7-bceb-b5dc3e83f040)
 
-- **Use Managed Identity for Bot and Message Extension**: Teams Toolkit has switched from client id and secret based identity to user assigned managed-identity for Bot and Message Extension application templates for the enhanced security experience. [Read more](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) to understand the benefits of using managed identities for Azure resources.
+- **Use Managed Identity for Bot and Message Extension**: The Teams Toolkit has transitioned from client ID and secret-based identity to user-assigned managed identity for Bot and Message Extension application templates, enhancing security. [Learn more](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) about the benefits of using managed identities for Azure resources.
 ![MSI](https://github.com/OfficeDev/teams-toolkit/assets/11220663/b2ffddb2-8c04-4ee4-aaaa-ae7c666af6e1)
 
-- **Clean Up Resources Created After Development**: Now you can safely clean up the resources created after application development, delete the application registration in Teams Developer Portal and Bot Framework Portal and remove uploaded the custom apps in Microsoft 365 applications. You can do this via `teamsapp uninstall` command with your prefered approach - by using the App ID in Teams application manifest file, or specify an environment to clean up the resources if your project is managed by Teams Toolkit.
+- **Clean Up Resources Created After Development**: You can now safely clean up resources created after application development by deleting the application registration in the Teams Developer Portal and Bot Framework Portal, and removing uploaded custom apps in Microsoft 365 applications. This can be done via the `teamsapp uninstall` command, either by using the App ID in the Teams application manifest file or by specifying an environment if your project is managed by the Teams Toolkit.
 ![Uninstall](https://github.com/OfficeDev/teams-toolkit/assets/11220663/294447b7-d5f9-47cc-ab37-9235dbd5c111)
 
 #### Bug Fixes
 
-- Fixed an issue where users still sees a pop up window when logining to Microsoft 365 account in non-interactive mode. [#11978](https://github.com/OfficeDev/teams-toolkit/pull/11978)
-- Fixed an issue where import SPFx project will fail due to case sensitive file system on ununtu. [#11972](https://github.com/OfficeDev/teams-toolkit/pull/11972)
-- Fixed an issue where debugging Outlook Add-in might fail with error `Package is invalid`. [#11963](https://github.com/OfficeDev/teams-toolkit/pull/11963)
-- Fixed an issue where error message is not clearn when some commands only works for project created by Teams Toolkit. [#11945](https://github.com/OfficeDev/teams-toolkit/pull/11945)
-- Fixed vulnerability issue [#650](https://github.com/OfficeDev/teams-toolkit/security/dependabot/650) - `ws affected by a DoS when handling a request with many HTTP headers`. [#11937](https://github.com/OfficeDev/teams-toolkit/pull/11937).
+- Resolved an issue where users still saw a pop-up window when logging into a Microsoft 365 account in non-interactive mode. [#11978](https://github.com/OfficeDev/teams-toolkit/pull/11978)
+- Fixed an issue where importing an SPFx project failed due to case-sensitive file systems on Ubuntu. [#11972](https://github.com/OfficeDev/teams-toolkit/pull/11972)
+- Addressed an issue where debugging an Outlook Add-in might fail with the error `Package is invalid`. [#11963](https://github.com/OfficeDev/teams-toolkit/pull/11963)
+- Corrected unclear error messages for commands that only work for projects created by the Teams Toolkit. [#11945](https://github.com/OfficeDev/teams-toolkit/pull/11945)
+- Fixed a vulnerability issue with `ws` affected by a DoS when handling a request with many HTTP headers. [#650](https://github.com/OfficeDev/teams-toolkit/security/dependabot/650) [#11937](https://github.com/OfficeDev/teams-toolkit/pull/11937)
+
 
 ### June 12, 2024
 

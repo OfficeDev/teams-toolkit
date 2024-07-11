@@ -900,6 +900,15 @@ export async function createNewProject(
       await input.selectQuickPick(lang);
       break;
     }
+    case "msgmicroentra": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a new API");
+      await input.selectQuickPick("Microsoft Entra");
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      break;
+    }
     default:
       break;
   }

@@ -54,7 +54,7 @@ import {
   MeArchitectureOptions,
   ProgrammingLanguage,
   QuestionNames,
-  copilotPluginApiSpecOptionId,
+  apiPluginApiSpecOptionId,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 
@@ -1000,7 +1000,7 @@ describe("formatValidationErrors", () => {
 
     const res = formatValidationErrors(errors, {
       platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: copilotPluginApiSpecOptionId,
+      [QuestionNames.Capabilities]: apiPluginApiSpecOptionId,
     });
 
     const errorMessage1 = [

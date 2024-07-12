@@ -9,12 +9,7 @@ import * as path from "path";
 import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorContextMW } from "../../../common/globalVars";
-import {
-  FileNotFoundError,
-  InvalidActionInputError,
-  JSONSyntaxError,
-  MissingEnvironmentVariablesError,
-} from "../../../error/common";
+import { FileNotFoundError, InvalidActionInputError, JSONSyntaxError } from "../../../error/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
@@ -22,7 +17,6 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants } from "./constants";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
 import { getResolvedManifest, normalizePath } from "./utils/utils";

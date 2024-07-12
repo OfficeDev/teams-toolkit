@@ -14,6 +14,7 @@ import {
 import path from "path";
 import { ExecutionResult } from "../driver/interface/stepDriver";
 import { getLocalizedString } from "../../common/localizeUtils";
+import fs from "fs-extra";
 
 const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
 
@@ -171,3 +172,110 @@ export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: str
     ? relativeOrAbsolutePath
     : path.join(projectPath, relativeOrAbsolutePath);
 }
+
+// export function getVariablesInFunctions(content: string): string[] {
+//   const regex =/\${{ *[a-zA-Z_][a-zA-Z0-9_() ]*\) *}}/g;
+//   const matches = content.match(regex)
+//   const variables = [];
+
+//   if(!matches){
+//     return [];
+//   }
+//   for(const placeholder of matches){
+//     const variable = checkValidFunction(placeholder.slice(3, -2).trim());
+//     if(variable) {
+//       variables.push(variable);
+//     }
+//   }
+
+//   return variables;
+// }
+
+export function expandVariableWithFunction(
+  content: string,
+  envs?: { [key in string]: string }
+): string {
+  const regex = /\${{ *[a-zA-Z_][a-zA-Z0-9_() ]*\) *}}/g;
+  const matches = content.match(regex);
+
+  if (!matches) {
+    return content;
+  }
+  for (const placeholder of matches) {
+    const value = processFunction(placeholder.slice(3, -2).trim(), envs);
+    if (value) {
+      content = content.replace(placeholder, value);
+    }
+  }
+  return content;
+}
+
+export function processFunction(
+  content: string | undefined,
+  envs?: { [key in string]: string }
+): string | undefined {
+  // undefined means it is invalid.
+  if (!content) {
+    return undefined;
+  }
+  if (!content.includes("(") && !content.includes(")")) {
+    // variable name.
+    const trimmedContent = content.trim();
+    if (trimmedContent.includes(" ") || !trimmedContent) {
+      return undefined;
+    } else {
+      return envs ? envs[trimmedContent] : process.env[trimmedContent];
+    }
+  } else {
+    const beginingBracket = content.indexOf("(");
+    if (content[content.length - 1] !== ")") {
+      return undefined;
+    }
+    const funcName = content.substring(0, beginingBracket);
+    if (!allowedFunc.includes(funcName)) {
+      return undefined;
+    }
+
+    if (funcName === "file") {
+      const filePath = processFunction(
+        content.substring(beginingBracket + 1, content.length - 1),
+        envs
+      );
+      if (filePath) {
+        const fileContent = fs.readFileSync(filePath, "utf8");
+        return fileContent;
+      }
+    }
+
+    return undefined;
+  }
+}
+
+const allowedFunc = ["file"]; // only file function with single parameter is allowed.
+
+// function checkValidFunction(content: string | undefined): string | undefined { // undefined means it is invalid.
+//   if(!content) {
+//     return undefined;
+//   }
+//   if(!content.includes('(') && !content.includes(')')) {
+//     // variable name.
+//     const trimmedContent = content.trim();
+//     if(trimmedContent.includes(' ') ||!trimmedContent) {
+//       return undefined;
+//     } else {
+//       return trimmedContent;
+
+//     }
+//   } else {
+//     const beginingBracket = content.indexOf('(');
+//     if(content[content.length -1] !== ')') {
+//       return undefined;
+//     }
+//     const funcName = content.substring(0, beginingBracket);
+//     if(!allowedFunc.includes(funcName)){
+//       return undefined;
+//     }
+
+//     return checkValidFunction(content.substring(beginingBracket+1, content.length -1));
+//   }
+// }

@@ -4,7 +4,11 @@ import { includes } from "lodash";
 import Mustache from "mustache";
 import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
 import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import {
+  expandEnvironmentVariable,
+  expandVariableWithFunction,
+  getEnvironmentVariables,
+} from "../../../utils/common";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { MissingEnvironmentVariablesError } from "../../../../error";
@@ -229,7 +233,8 @@ export function getResolvedManifest(
   ctx?.addTelemetryProperties({
     [telemetryKey]: vars.join(";"),
   });
-  const result = expandEnvironmentVariable(content);
+  let result = expandEnvironmentVariable(content);
+  result = expandVariableWithFunction(result);
   const notExpandedVars = getEnvironmentVariables(result);
   if (notExpandedVars.length > 0) {
     return err(new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), path));

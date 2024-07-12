@@ -1050,10 +1050,12 @@ describe("OfficeAddinGeneratorNew", () => {
 describe("fixIconPath()", () => {
   const generator = new OfficeAddinGeneratorNew();
   const sandbox = sinon.createSandbox();
-  afterEach(() => {
-    sandbox.restore();
+  beforeEach(() => {
     sandbox.stub(fse, "readFile").resolves("" as any);
     sandbox.stub(fse, "writeFile").resolves();
+  });
+  afterEach(() => {
+    sandbox.restore();
   });
   it("manifest not found", async () => {
     sandbox.stub(fse, "pathExists").resolves(false);

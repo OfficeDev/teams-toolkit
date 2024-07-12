@@ -8,13 +8,18 @@
 import { Capability } from "../../utils/constants";
 import { CaseFactory } from "../caseFactory";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-
+import { replaceSecretKey, validateFiles } from "./helper";
+import * as path from "path";
 export class CopilotPluginCommonTest extends CaseFactory {
+  validateFileList?: string[];
+  authOption?: string;
+
   public constructor(
     testPlanCaseId: number,
     author: string,
     authOption: "none" | "api-key" | "oauth",
-    programmingLanguage?: ProgrammingLanguage
+    programmingLanguage?: ProgrammingLanguage,
+    validateFileList?: string[]
   ) {
     const env = Object.assign({}, process.env);
     env["DEVELOP_COPILOT_PLUGIN"] = "true";
@@ -40,5 +45,17 @@ export class CopilotPluginCommonTest extends CaseFactory {
       authOptions,
       env
     );
+    this.validateFileList = validateFileList;
+    this.authOption = authOption;
+    this.onAfterCreate = this.onAfterCreate.bind(this);
+  }
+
+  public override async onAfterCreate(projectPath: string): Promise<void> {
+    await validateFiles(projectPath, this.validateFileList || []);
+
+    if (this.authOption === "api-key") {
+      const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
+      await replaceSecretKey(userFile);
+    }
   }
 }

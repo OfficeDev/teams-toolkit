@@ -290,6 +290,13 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     }
     if (change) {
       await fse.writeJson(manifestPath, manifest, { spaces: 4 });
+      const webpackConfigPath = join(projectPath, "webpack.config.js");
+      const content = await fse.readFile(webpackConfigPath, "utf8");
+      const newContent = content.replace(
+        'from: "appPackage/assets/*",\r\n            to: "assets/[name][ext][query]",\r\n          },',
+        'from: "appPackage/assets/*",\r\n            to: "assets/[name][ext][query]",\r\n          },\r\n          {\r\n            from: "appPackage/*.png",\r\n            to: "[name]" + "[ext]",\r\n          },'
+      );
+      await fse.writeFile(webpackConfigPath, newContent);
     }
   }
 }

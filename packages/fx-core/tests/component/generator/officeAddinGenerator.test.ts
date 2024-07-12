@@ -1049,6 +1049,8 @@ describe("OfficeAddinGeneratorNew", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => {
       sandbox.restore();
+      sandbox.stub(fse, "readFile").resolves("" as any);
+      sandbox.stub(fse, "writeFile").resolves();
     });
     it("manifest not found", async () => {
       sandbox.stub(fse, "pathExists").resolves(false);

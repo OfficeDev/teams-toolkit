@@ -1045,87 +1045,89 @@ describe("OfficeAddinGeneratorNew", () => {
       chai.assert.isTrue(res.isErr());
     });
   });
-  describe("fixIconPath()", () => {
-    const sandbox = sinon.createSandbox();
-    afterEach(() => {
-      sandbox.restore();
-      sandbox.stub(fse, "readFile").resolves("" as any);
-      sandbox.stub(fse, "writeFile").resolves();
+});
+
+describe("fixIconPath()", () => {
+  const generator = new OfficeAddinGeneratorNew();
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+    sandbox.stub(fse, "readFile").resolves("" as any);
+    sandbox.stub(fse, "writeFile").resolves();
+  });
+  it("manifest not found", async () => {
+    sandbox.stub(fse, "pathExists").resolves(false);
+    const move = sandbox.stub(fse, "move").resolves();
+    await generator.fixIconPath("./");
+    chai.assert.isTrue(move.notCalled);
+  });
+  it("happy", async () => {
+    sandbox.stub(fse, "pathExists").callsFake(async (path) => {
+      if (path.endsWith("manifest.json")) {
+        return true;
+      } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
+        return true;
+      } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
+        return true;
+      } else if (path.endsWith("color.png")) {
+        return false;
+      } else if (path.endsWith("outline.png")) {
+        return false;
+      }
     });
-    it("manifest not found", async () => {
-      sandbox.stub(fse, "pathExists").resolves(false);
-      const move = sandbox.stub(fse, "move").resolves();
-      await generator.fixIconPath("./");
-      chai.assert.isTrue(move.notCalled);
+    sandbox
+      .stub(fse, "readJson")
+      .resolves({ icons: { outline: "assets/outline.png", color: "assets/color.png" } });
+    const move = sandbox.stub(fse, "move").resolves();
+    const writeJson = sandbox.stub(fse, "writeJson").resolves();
+    await generator.fixIconPath("./");
+    chai.assert.isTrue(move.calledTwice);
+    chai.assert.isTrue(writeJson.calledOnce);
+  });
+  it("no need to move", async () => {
+    sandbox.stub(fse, "pathExists").callsFake(async (path) => {
+      if (path.endsWith("manifest.json")) {
+        return true;
+      } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
+        return true;
+      } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
+        return true;
+      } else if (path.endsWith("color.png")) {
+        return false;
+      } else if (path.endsWith("outline.png")) {
+        return false;
+      }
     });
-    it("happy", async () => {
-      sandbox.stub(fse, "pathExists").callsFake(async (path) => {
-        if (path.endsWith("manifest.json")) {
-          return true;
-        } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
-          return true;
-        } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
-          return true;
-        } else if (path.endsWith("color.png")) {
-          return false;
-        } else if (path.endsWith("outline.png")) {
-          return false;
-        }
-      });
-      sandbox
-        .stub(fse, "readJson")
-        .resolves({ icons: { outline: "assets/outline.png", color: "assets/color.png" } });
-      const move = sandbox.stub(fse, "move").resolves();
-      const writeJson = sandbox.stub(fse, "writeJson").resolves();
-      await generator.fixIconPath("./");
-      chai.assert.isTrue(move.calledTwice);
-      chai.assert.isTrue(writeJson.calledOnce);
+    sandbox
+      .stub(fse, "readJson")
+      .resolves({ icons: { outline: "outline.png", color: "color.png" } });
+    const move = sandbox.stub(fse, "move").resolves();
+    const writeJson = sandbox.stub(fse, "writeJson").resolves();
+    await generator.fixIconPath("./");
+    chai.assert.isTrue(move.notCalled);
+    chai.assert.isTrue(writeJson.notCalled);
+  });
+  it("no need to move", async () => {
+    sandbox.stub(fse, "pathExists").callsFake(async (path) => {
+      if (path.endsWith("manifest.json")) {
+        return true;
+      } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
+        return false;
+      } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
+        return false;
+      } else if (path.endsWith("color.png")) {
+        return false;
+      } else if (path.endsWith("outline.png")) {
+        return false;
+      }
     });
-    it("no need to move", async () => {
-      sandbox.stub(fse, "pathExists").callsFake(async (path) => {
-        if (path.endsWith("manifest.json")) {
-          return true;
-        } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
-          return true;
-        } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
-          return true;
-        } else if (path.endsWith("color.png")) {
-          return false;
-        } else if (path.endsWith("outline.png")) {
-          return false;
-        }
-      });
-      sandbox
-        .stub(fse, "readJson")
-        .resolves({ icons: { outline: "outline.png", color: "color.png" } });
-      const move = sandbox.stub(fse, "move").resolves();
-      const writeJson = sandbox.stub(fse, "writeJson").resolves();
-      await generator.fixIconPath("./");
-      chai.assert.isTrue(move.notCalled);
-      chai.assert.isTrue(writeJson.notCalled);
-    });
-    it("no need to move", async () => {
-      sandbox.stub(fse, "pathExists").callsFake(async (path) => {
-        if (path.endsWith("manifest.json")) {
-          return true;
-        } else if (path.endsWith("assets/outline.png") || path.endsWith("assets\\outline.png")) {
-          return false;
-        } else if (path.endsWith("assets/color.png") || path.endsWith("assets\\color.png")) {
-          return false;
-        } else if (path.endsWith("color.png")) {
-          return false;
-        } else if (path.endsWith("outline.png")) {
-          return false;
-        }
-      });
-      sandbox
-        .stub(fse, "readJson")
-        .resolves({ icons: { outline: "assets/outline.png", color: "assets/color.png" } });
-      const move = sandbox.stub(fse, "move").resolves();
-      const writeJson = sandbox.stub(fse, "writeJson").resolves();
-      await generator.fixIconPath("./");
-      chai.assert.isTrue(move.notCalled);
-      chai.assert.isTrue(writeJson.notCalled);
-    });
+    sandbox
+      .stub(fse, "readJson")
+      .resolves({ icons: { outline: "assets/outline.png", color: "assets/color.png" } });
+    const move = sandbox.stub(fse, "move").resolves();
+    const writeJson = sandbox.stub(fse, "writeJson").resolves();
+    await generator.fixIconPath("./");
+    chai.assert.isTrue(move.notCalled);
+    chai.assert.isTrue(writeJson.notCalled);
   });
 });

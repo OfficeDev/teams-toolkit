@@ -217,7 +217,7 @@ describe("autoOpenHelper", () => {
     chai.assert.isFalse(executeCommandStub.called);
   });
 
-  it("showLocalDebugMessage() - generate an API key manually (TS)", async () => {
+  it("showLocalDebugMessage() - generate an API key manually (TS - windows)", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
@@ -260,7 +260,7 @@ describe("autoOpenHelper", () => {
     chai.assert.isTrue(openReadMeHandlerStub.called);
   });
 
-  it("showLocalDebugMessage() - generate an API key manually (TS) not clicked", async () => {
+  it("showLocalDebugMessage() - generate an API key manually (TS - windows) not clicked", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
@@ -303,7 +303,47 @@ describe("autoOpenHelper", () => {
     chai.assert.isFalse(openReadMeHandlerStub.called);
   });
 
-  it("showLocalDebugMessage() - generate an API key manually (JS)", async () => {
+  it("showLocalDebugMessage() - generate an API key manually (TS - windows - non selection)", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(true)
+      .onThirdCall()
+      .resolves(false);
+    const openReadMeHandlerStub = sandbox
+      .stub(readmeHandlers, "openReadMeHandler")
+      .resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve(undefined);
+        }
+      );
+
+    await showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isFalse(openReadMeHandlerStub.called);
+  });
+
+  it("showLocalDebugMessage() - generate an API key manually (JS - windows)", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
@@ -346,7 +386,7 @@ describe("autoOpenHelper", () => {
     chai.assert.isTrue(openReadMeHandlerStub.called);
   });
 
-  it("showLocalDebugMessage() - generate an API key manually (JS) non windows", async () => {
+  it("showLocalDebugMessage() - generate an API key manually (JS - non windows)", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("linux");

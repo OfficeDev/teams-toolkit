@@ -193,7 +193,8 @@ export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: str
 
 export function expandVariableWithFunction(
   content: string,
-  envs?: { [key in string]: string }
+  envs?: { [key in string]: string },
+  isJson?: boolean
 ): string {
   const regex = /\${{ *[a-zA-Z_][a-zA-Z0-9_() ]*\) *}}/g;
   const matches = content.match(regex);
@@ -202,8 +203,13 @@ export function expandVariableWithFunction(
     return content;
   }
   for (const placeholder of matches) {
-    const value = processFunction(placeholder.slice(3, -2).trim(), envs);
+    let value = processFunction(placeholder.slice(3, -2).trim(), envs);
+    if (isJson && value) {
+      value = JSON.stringify(value).slice(1, -1);
+    }
     if (value) {
+      console.log("value");
+      console.log(value);
       content = content.replace(placeholder, value);
     }
   }
@@ -236,14 +242,18 @@ export function processFunction(
       return undefined;
     }
 
-    if (funcName === "file") {
+    if (funcName === "file" || funcName === "escapeFile") {
       const filePath = processFunction(
         content.substring(beginingBracket + 1, content.length - 1),
         envs
       );
       if (filePath) {
-        const fileContent = fs.readFileSync(filePath, "utf8");
-        return fileContent;
+        if (fs.existsSync(filePath)) {
+          const fileContent = fs.readFileSync(filePath, "utf8");
+          console.log("fileContent:");
+          console.log(fileContent);
+          return funcName === "file" ? fileContent : JSON.stringify(fileContent).slice(1, -1);
+        }
       }
     }
 

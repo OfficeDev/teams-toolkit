@@ -248,7 +248,7 @@ describe("autoOpenHelper", () => {
       .callsFake(
         (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
           return Promise.resolve({
-            title: "Get more info",
+            title: "Open README",
             run: (options as any).run,
           } as vscode.MessageItem);
         }
@@ -291,7 +291,7 @@ describe("autoOpenHelper", () => {
       .callsFake(
         (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
           return Promise.resolve({
-            title: "Not Get more info",
+            title: "Not Open README",
             run: (options as any).run,
           } as vscode.MessageItem);
         }
@@ -374,7 +374,7 @@ describe("autoOpenHelper", () => {
       .callsFake(
         (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
           return Promise.resolve({
-            title: "Get more info",
+            title: "Open README",
             run: (options as any).run,
           } as vscode.MessageItem);
         }
@@ -417,7 +417,7 @@ describe("autoOpenHelper", () => {
       .callsFake(
         (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
           return Promise.resolve({
-            title: "Get more info",
+            title: "Open README",
             run: (options as any).run,
           } as vscode.MessageItem);
         }

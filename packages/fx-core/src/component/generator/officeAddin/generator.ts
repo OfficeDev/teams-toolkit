@@ -246,6 +246,8 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
       inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
         ? ProgrammingLanguage.TS
         : lang;
+    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+    if (res.isErr()) return err(res.error);
     return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
   }
 
@@ -255,8 +257,6 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<GeneratorResult, FxError>> {
-    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
-    if (res.isErr()) return err(res.error);
     await this.fixIconPath(destinationPath);
     return ok({});
   }

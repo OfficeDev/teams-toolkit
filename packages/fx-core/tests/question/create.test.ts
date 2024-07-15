@@ -22,7 +22,7 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import { FeatureFlagName } from "../../src/common/constants";
+import { FeatureFlagName } from "../../src/common/featureFlags";
 import * as utils from "../../src/common/globalVars";
 import { setTools } from "../../src/common/globalVars";
 import { getLocalizedString } from "../../src/common/localizeUtils";
@@ -249,7 +249,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode me from new api (none auth)", async () => {
+    it("traverse in vscode me from new api (No authentication)", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -1546,7 +1546,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1580,7 +1580,7 @@ describe("scaffold question", () => {
         ]);
       });
 
-      it("traverse in vscode Copilot Plugin from new API with api key auth", async () => {
+      it("traverse in vscode Copilot Plugin from new API with API Key authentication", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1598,7 +1598,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1652,7 +1652,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -2380,7 +2380,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth(Bearer token auth)",
+              detail: "API Key authentication(Bearer token authentication)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2391,7 +2391,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2400,7 +2400,7 @@ describe("scaffold question", () => {
             {
               id: "get operation3",
               label: "get operation3",
-              detail: "OAuth(Auth code flow)",
+              detail: "OAuth(Authorization code flow)",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
@@ -2466,7 +2466,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth(Bearer token auth)",
+              detail: "API Key authentication(Bearer token authentication)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2477,7 +2477,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2673,7 +2673,7 @@ describe("scaffold question", () => {
             {
               id: "GET /store/order",
               label: "GET /store/order",
-              detail: "None auth",
+              detail: "No authentication",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2795,7 +2795,7 @@ describe("scaffold question", () => {
                 serverUrl: "https://server",
               },
               groupName: "GET",
-              detail: "None auth",
+              detail: "No authentication",
               id: "GET /user/{userId}",
               label: "GET /user/{userId}",
             },

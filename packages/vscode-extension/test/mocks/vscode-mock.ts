@@ -27,7 +27,6 @@ class MockClipboard {
 }
 
 export function initialize() {
-  generateMock("languages");
   generateMock("debug");
   generateMock("scm");
   generateNotebookMocks();
@@ -193,6 +192,12 @@ mockedVSCode.extensions = {
     });
   },
   all: [],
+};
+
+(mockedVSCode as any).languages = {
+  createDiagnosticCollection: () => {},
+  registerCodeLensProvider: () => {},
+  registerHoverProvider: () => {},
 };
 
 // Setup commands APIs

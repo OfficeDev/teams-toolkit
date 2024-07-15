@@ -23,6 +23,7 @@ export type LocalDebugTestName =
   | "crbot" // command an response bot
   | "tabbot"
   | "spfx"
+  | "spfximport"
   | "botfunc"
   | "template"
   | "m365lp"
@@ -34,22 +35,33 @@ export type LocalDebugTestName =
   | "aichat"
   | "aiassist"
   | "msgnewapi"
-  | "msgapikey";
+  | "msgapikey"
+  | "msgmicroentra";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
-  public lang: "javascript" | "typescript" | "python" = "javascript";
-  needMigrate: boolean | undefined;
+  public lang: "javascript" | "typescript" | "python";
+  public framework: "react" | "minimal" | "none";
+  public needMigrate: boolean | undefined;
+  public existingSpfxFolder: string;
 
   constructor(
     testName: LocalDebugTestName,
-    lang: "javascript" | "typescript" | "python" = "javascript",
-    needMigrate?: boolean
+    option?: {
+      lang?: "javascript" | "typescript" | "python";
+      framework?: "react" | "minimal" | "none";
+      needMigrate?: boolean;
+      existingSpfxFolder?: string;
+    }
   ) {
     super(testName);
     this.testName = testName;
-    this.lang = lang;
-    this.needMigrate = needMigrate;
+    this.lang = option?.lang ? option.lang : "javascript";
+    this.framework = option?.framework ? option.framework : "react";
+    this.needMigrate = option?.needMigrate;
+    this.existingSpfxFolder = option?.existingSpfxFolder
+      ? option.existingSpfxFolder
+      : "existingspfx";
   }
 
   public async before() {
@@ -180,7 +192,18 @@ export class LocalDebugTestContext extends TestContext {
       case "spfx":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type none --spfx-webpart-name ${this.appName} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName} --telemetry false`
+        );
+        break;
+      case "spfximport":
+        const resourcePath = path.resolve(
+          __dirname,
+          "../../../.test-resources/",
+          this.existingSpfxFolder
+        );
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-solution import --spfx-folder ${resourcePath} --telemetry false`
         );
         break;
       case "botfunc":
@@ -255,6 +278,12 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth api-key --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "msgmicroentra":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth microsoft-entra --programming-language ${this.lang} --telemetry false`
         );
         break;
     }
@@ -332,21 +361,5 @@ export class LocalDebugSampleTestContext extends LocalDebugTestContext {
     super("template");
     this.testName = "template";
     this.sampleName = sampleName;
-  }
-}
-
-export class LocalDebugSpfxTestContext extends LocalDebugTestContext {
-  public framework: "react" | "minimal" | "none";
-  constructor(framework: "react" | "minimal" | "none" = "react") {
-    super("spfx");
-    this.testName = "spfx";
-    this.framework = framework;
-  }
-
-  public async createProject(): Promise<void> {
-    await execCommand(
-      this.testRootFolder,
-      `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName} --telemetry false`
-    );
   }
 }

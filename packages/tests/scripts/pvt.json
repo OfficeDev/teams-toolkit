@@ -65,9 +65,12 @@
       "remotedebug-msg-newapi-apikey-ts-win-only",
       "remotedebug-msg-newapi-apikey-win-only",
       "remotedebug-spfxreact-import-single",
+      "remotedebug-spfxreact-import-multiple",
       "remotedebug-spfx-none",
       "remotedebug-spfx-minimal",
-      "remotedebug-spfx-react"
+      "remotedebug-spfx-react",
+      "remotedebug-msg-newapi-microsoftentra-ts-win-only",
+      "remotedebug-msg-newapi-microsoftentra-win-only"
     ],
     "node-20": [
       "localdebug-obo-tab"
@@ -118,7 +121,9 @@
       "localdebug-spfx-none",
       "localdebug-spfx",
       "localdebug-msg-newapi-apikey-ts",
-      "localdebug-msg-newapi-apikey"
+      "localdebug-msg-newapi-apikey",
+      "localdebug-msg-newapi-microsoftentra-ts",
+      "localdebug-msg-newapi-microsoftentra"
     ],
     "node-20": [
       "localdebug-obo-tab"

@@ -13,6 +13,7 @@ import {
   DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
+  InputResult,
   Inputs,
   LogProvider,
   Ok,
@@ -25,7 +26,7 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import fs from "fs-extra";
 import jsyaml from "js-yaml";
 import "mocha";
@@ -33,8 +34,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore, getUuid } from "../../src";
-import { FeatureFlagName } from "../../src/common/constants";
+import { FxCore, PackageService, getUuid, teamsDevPortalClient } from "../../src";
+import { FeatureFlagName } from "../../src/common/featureFlags";
 import { LaunchHelper } from "../../src/component/m365/launchHelper";
 import {
   TeamsfxConfigType,
@@ -48,6 +49,7 @@ import {
   ILifecycle,
   LifecycleName,
   Output,
+  ProjectModel,
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
 import { YamlParser } from "../../src/component/configManager/parser";
@@ -93,6 +95,12 @@ import {
 import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
+import { UninstallInputs } from "../../build";
+import { CoreHookContext } from "../../src/core/types";
+import * as projectHelper from "../../src/common/projectSettingsHelper";
+import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
+import * as projMigrator from "../../src/core/middleware/projectMigratorV3";
+import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 
 const tools = new MockTools();
 
@@ -430,11 +438,12 @@ describe("Core basic APIs", () => {
       // Cannot assert the full message because the mocked code can't get correct env file path
       assert.include(
         res.error.message,
-        "The program cannot proceed because the following environment variables are missing: 'AAD_APP_OBJECT_ID' for file: fake path. Please set them by editing the .env file"
+        "Missing environment variables 'AAD_APP_OBJECT_ID' for file: fake path. Please edit the .env file"
       );
+
       assert.include(
         res.error.message,
-        "For new Teams Toolkit projects, running provision or debug will register correct values for these environment variables."
+        "For new Teams Toolkit projects, make sure you've run provision or debug to set these variables correctly."
       );
     }
   });
@@ -489,7 +498,9 @@ describe("Core basic APIs", () => {
     };
     const res = await core.phantomMigrationV3(inputs);
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    assert.isTrue(
+      res._unsafeUnwrapErr().message.includes(new InvalidProjectError(inputs.projectPath!).message)
+    );
     await deleteTestProject(appName);
   });
 
@@ -502,7 +513,9 @@ describe("Core basic APIs", () => {
     };
     const res = await core.phantomMigrationV3(inputs);
     assert.isTrue(res.isErr());
-    assert.isTrue(res._unsafeUnwrapErr().message.includes(new InvalidProjectError().message));
+    assert.isTrue(
+      res._unsafeUnwrapErr().message.includes(new InvalidProjectError(inputs.projectPath!).message)
+    );
   });
 
   it("phantomMigrationV3 return error for V5 project", async () => {
@@ -609,6 +622,500 @@ describe("Core basic APIs", () => {
     } finally {
       restore();
     }
+  });
+  it("uninstall with empty input", async () => {
+    const core = new FxCore(tools);
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+    };
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall with invalid mode", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      platform: Platform.CLI,
+      mode: "invalid",
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by manifest ID - success", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").resolves(true);
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: [
+        "m365-app",
+        "app-registration",
+        "bot-framework-registration",
+      ],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+  });
+  it("uninstall by manifest ID - missing manifest ID", async () => {
+    const core = new FxCore(tools);
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by manifest ID - empty options", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+  });
+  it("uninstall by manifest ID - failed to get token", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage")));
+    const inputs1 = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["m365-app"],
+      nonInteractive: true,
+    };
+    const res1 = await core.uninstall(inputs1 as UninstallInputs);
+    assert.isTrue(res1.isErr());
+
+    const inputs2 = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["app-registration"],
+      nonInteractive: true,
+    };
+    const res2 = await core.uninstall(inputs2 as UninstallInputs);
+    assert.isTrue(res2.isErr());
+
+    const inputs3 = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["bot-framework-registration"],
+      nonInteractive: true,
+    };
+    const res3 = await core.uninstall(inputs3 as UninstallInputs);
+    assert.isTrue(res3.isErr());
+  });
+  it("uninstall by manifest ID - failed to get title ID", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").throws("error");
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: [
+        "m365-app",
+        "app-registration",
+        "bot-framework-registration",
+      ],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by manifest ID - failed to get bot ID", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves(undefined);
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["bot-framework-registration"],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by manifest ID - M365 App user cancel", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(tools.ui, "confirm").resolves(ok({ result: false } as InputResult<boolean>));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").throws("error");
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").throws("error");
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["m365-app"],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserCancelError);
+    }
+  });
+  it("uninstall by manifest ID - TDP user cancel", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(tools.ui, "confirm").resolves(ok({ result: false } as InputResult<boolean>));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").throws("error");
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").throws("error");
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["app-registration"],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserCancelError);
+    }
+  });
+  it("uninstall by manifest ID - Bot user cancel", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(tools.ui, "confirm").resolves(ok({ result: false } as InputResult<boolean>));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").throws("error");
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").throws("error");
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeManifestId,
+      [QuestionNames.ManifestId]: "valid-manifest-id",
+      [QuestionNames.UninstallOptions]: ["bot-framework-registration"],
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserCancelError);
+    }
+  });
+  it("uninstall by env - success", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").resolves(true);
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const appName = await mockCliUninstallProject();
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      env: "dev",
+      [QuestionNames.UninstallOptions]: [
+        "m365-app",
+        "app-registration",
+        "bot-framework-registration",
+      ],
+      nonInteractive: true,
+    };
+
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+
+    const envRes = await envUtil.readEnv(path.join(os.tmpdir(), appName), "dev", false);
+    assert.isTrue(envRes.isOk());
+    if (envRes.isOk()) {
+      const envVars = envRes.value;
+      assert.isTrue(envVars["TEAMS_APP_ID"] === "");
+      assert.isTrue(envVars["M365_TITLE_ID"] === "");
+      assert.isTrue(envVars["BOT_ID"] === "");
+    }
+    await deleteTestProject(appName);
+  });
+  it("uninstall by env - missing env", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockCliUninstallProject();
+
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      nonInteractive: true,
+    };
+
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+    await deleteTestProject(appName);
+  });
+  it("uninstall by env - empty options", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockCliUninstallProject();
+
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      nonInteractive: true,
+      env: "dev",
+    };
+
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isOk());
+    await deleteTestProject(appName);
+  });
+  it("uninstall by env - invalid yaml", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockCliUninstallProject();
+    sandbox.stub(metadataUtil, "parse").resolves(err(new SystemError("", "", "")));
+    const inputs: UninstallInputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      nonInteractive: true,
+      env: "dev",
+    };
+    const res = await core.uninstall(inputs);
+    assert.isTrue(res.isErr());
+    await deleteTestProject(appName);
+  });
+  it("uninstall by env - empty provision actions", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockCliUninstallProject();
+    sandbox.stub(metadataUtil, "parse").resolves(ok({} as ProjectModel));
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage")));
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      nonInteractive: true,
+      env: "dev",
+      [QuestionNames.UninstallOptions]: [
+        "m365-app",
+        "app-registration",
+        "bot-framework-registration",
+      ],
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+    await deleteTestProject(appName);
+  });
+  it("uninstall by env - empty env key name", async () => {
+    const core = new FxCore(tools);
+    sandbox.stub(metadataUtil, "parse").resolves(
+      ok({
+        provision: {
+          name: "provision",
+          driverDefs: [
+            {
+              uses: "teamsApp/create",
+            },
+            {
+              uses: "botFramework/create",
+            },
+            {
+              uses: "teamsApp/extendToM365",
+            },
+          ],
+        },
+      } as ProjectModel)
+    );
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").resolves(true);
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const appName = await mockCliUninstallProject();
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      env: "dev",
+      [QuestionNames.UninstallOptions]: [
+        "m365-app",
+        "app-registration",
+        "bot-framework-registration",
+      ],
+      nonInteractive: true,
+    };
+
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+
+    const envRes = await envUtil.readEnv(path.join(os.tmpdir(), appName), "dev", false);
+    assert.isTrue(envRes.isOk());
+    if (envRes.isOk()) {
+      const envVars = envRes.value;
+      assert.isTrue(envVars["TEAMS_APP_ID"] === "");
+      assert.isTrue(envVars["M365_TITLE_ID"] === "");
+      assert.isTrue(envVars["BOT_ID"] === "");
+    }
+    await deleteTestProject(appName);
+  });
+  it("uninstall by env - failed to get token", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage")));
+    sandbox.stub(teamsDevPortalClient, "deleteApp").resolves(true);
+    sandbox.stub(teamsDevPortalClient, "getBotId").resolves("mocked-bot-id");
+    sandbox.stub(teamsDevPortalClient, "deleteBot").resolves();
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("mocked-title-id");
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const appName = await mockCliUninstallProject();
+    const inputs1 = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      env: "dev",
+      [QuestionNames.UninstallOptions]: ["m365-app"],
+      nonInteractive: true,
+    };
+
+    const res1 = await core.uninstall(inputs1 as UninstallInputs);
+    assert.isTrue(res1.isErr());
+
+    const inputs2 = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      env: "dev",
+      [QuestionNames.UninstallOptions]: ["app-registration"],
+      nonInteractive: true,
+    };
+
+    const res2 = await core.uninstall(inputs2 as UninstallInputs);
+    assert.isTrue(res2.isErr());
+
+    const inputs3 = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeEnv,
+      projectPath: path.join(os.tmpdir(), appName),
+      env: "dev",
+      [QuestionNames.UninstallOptions]: ["bot-framework-registration"],
+      nonInteractive: true,
+    };
+
+    const res3 = await core.uninstall(inputs3 as UninstallInputs);
+    assert.isTrue(res3.isErr());
+  });
+  it("uninstall by title ID - success", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeTitleId,
+      [QuestionNames.TitleId]: "mocked-title-id",
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isOk());
+  });
+  it("uninstall by title ID - missing title ID", async () => {
+    const core = new FxCore(tools);
+    sandbox
+      .stub(tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("mocked-token"));
+    sandbox.stub(PackageService.prototype, "unacquire").resolves();
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeTitleId,
+      nonInteractive: true,
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall by title ID - failed", async () => {
+    const core = new FxCore(tools);
+    sandbox.stub(core, "uninstallM365App").resolves(err(new SystemError("", "", "")));
+    const inputs = {
+      platform: Platform.CLI,
+      [QuestionNames.UninstallMode]: QuestionNames.UninstallModeTitleId,
+      nonInteractive: true,
+      [QuestionNames.TitleId]: "mocked-title-id",
+    };
+    const res = await core.uninstall(inputs as UninstallInputs);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall M365 App - invalid input", async () => {
+    const core = new FxCore(tools);
+    const res = await core.uninstallM365App(undefined, undefined);
+    assert.isTrue(res.isErr());
+  });
+  it("uninstall Bot Framework Registration - invalid input", async () => {
+    const core = new FxCore(tools);
+    const res = await core.uninstallBotFrameworRegistration(undefined, undefined);
+    assert.isTrue(res.isErr());
+  });
+  it("reset env var - happy path", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: { testKey: "oldValue" } };
+    core.resetEnvVar("testKey", ctx);
+    expect(ctx.envVars).to.deep.equal({ testKey: "" });
+  });
+  it("reset env var - undefine ctx", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext | undefined = undefined;
+    core.resetEnvVar("testKey", ctx);
+    assert.isUndefined(ctx);
+  });
+  it("reset env var - initialize envVars if it is undefined", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: undefined };
+    core.resetEnvVar("testKey", ctx, false);
+    expect(ctx.envVars).to.deep.equal({ testKey: "" });
+  });
+  it("reset env var - skipIfNotExist is true", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: { existingKey: "value" } };
+    core.resetEnvVar("testKey", ctx);
+    expect(ctx.envVars).to.deep.equal({ existingKey: "value" });
+  });
+  it("reset env var - skipIfNotExist is false", async () => {
+    const core = new FxCore(tools);
+    const ctx: CoreHookContext = { arguments: [], envVars: { existingKey: "value" } };
+    core.resetEnvVar("testKey", ctx, false);
+    expect(ctx.envVars).to.deep.equal({ existingKey: "value", testKey: "" });
   });
 });
 
@@ -884,6 +1391,13 @@ async function mockV2Project(): Promise<string> {
     path.join(__dirname, "../core/middleware/testAssets/v3Migration/happyPath"),
     path.join(projectPath)
   );
+  return appName;
+}
+
+async function mockCliUninstallProject(): Promise<string> {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  await fs.copy(path.join(__dirname, "../samples/uninstall/"), path.join(projectPath));
   return appName;
 }
 
@@ -4639,5 +5153,51 @@ describe("addPlugin", async () => {
     if (await fs.pathExists(inputs.projectPath!)) {
       await fs.remove(inputs.projectPath!);
     }
+  });
+
+  describe("projectVersionCheck", async () => {
+    it("invalid project", async () => {
+      sandbox.stub(projectHelper, "isValidProjectV3").returns(false);
+      sandbox.stub(projectHelper, "isValidProjectV2").returns(false);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Folder]: os.tmpdir(),
+        projectPath: "./",
+      };
+      const core = new FxCore(tools);
+      const result = await core.projectVersionCheck(inputs);
+      assert.isTrue(result.isErr());
+    });
+    it("version is undefined", async () => {
+      sandbox.stub(projectHelper, "isValidProjectV3").returns(true);
+      sandbox
+        .stub(migrationUtil, "getProjectVersionFromPath")
+        .resolves({ version: "", source: VersionSource.teamsapp });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Folder]: os.tmpdir(),
+        projectPath: "./",
+      };
+      const core = new FxCore(tools);
+      const result = await core.projectVersionCheck(inputs);
+      assert.isTrue(result.isErr());
+    });
+    it("no plugin", async () => {
+      sandbox.stub(projectHelper, "isValidProjectV3").returns(true);
+      sandbox
+        .stub(migrationUtil, "getProjectVersionFromPath")
+        .resolves({ version: "1.0", source: VersionSource.teamsapp });
+      sandbox.stub(migrationUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx");
+      sandbox.stub(migrationUtil, "getVersionState").returns(VersionState.upgradeable);
+      sandbox.stub(projMigrator, "checkActiveResourcePlugins").resolves(false);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.Folder]: os.tmpdir(),
+        projectPath: "./",
+      };
+      const core = new FxCore(tools);
+      const result = await core.projectVersionCheck(inputs);
+      assert.isTrue(result.isErr());
+    });
   });
 });

@@ -1,6 +1,6 @@
-# Overview of the Copilot Plugin template
+# Overview of the API Plugin template
 
-## Build a Copilot Plugin from a new API with Azure Functions
+## Build an API Plugin from a new API with Azure Functions
 
 With Copilot extensibility, you can augment Copilot for Microsoft 365 with custom skills and organizational knowledge specific to your enterprise and users to enable truly spectacular AI scenarios. For example:
 
@@ -48,7 +48,7 @@ The following files can be customized and demonstrate an example implementation 
 | `src/repairsData.json`                       | The data source for the repair API.                                                               |
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                               |
 | `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.          |
-| `appPackage/ai-plugin.json`                  | The manifest file for your Copilot Plugin that contains information for your API and used by LLM. |
+| `appPackage/ai-plugin.json`                  | The manifest file for your API Plugin that contains information for your API and used by LLM. |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

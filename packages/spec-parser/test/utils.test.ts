@@ -428,6 +428,35 @@ describe("utils", () => {
       expect(multipleMediaType).to.be.false;
     });
 
+    it("should return the JSON response for application/json; charset=utf-8;", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json; charset=utf-8": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      });
+      expect(multipleMediaType).to.be.false;
+    });
+
     it("should return empty JSON response for status code 200 with multiple media type", () => {
       const operationObject = {
         responses: {

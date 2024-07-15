@@ -171,8 +171,8 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
-  CopilotPluginFromExistingAPI = "copilot-plugin-existing-api",
-  CopilotPluginFromScratch = "copilot-plugin-new-api",
+  CopilotPluginFromExistingAPI = "api-plugin-existing-api",
+  CopilotPluginFromScratch = "api-plugin-new-api",
 }
 
 export enum Trigger {
@@ -362,6 +362,7 @@ export type AppType =
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"
+  | "msgmicroentra"
   | "importspfx";
 
 export class FeatureFlagName {
@@ -448,7 +449,7 @@ export class Notification {
 }
 
 export class CreateProjectQuestion {
-  static readonly CustomCopilot = "Custom Copilot";
+  static readonly CustomCopilot = "Custom Engine Copilot";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";

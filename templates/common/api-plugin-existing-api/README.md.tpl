@@ -1,6 +1,6 @@
-# Overview of the Copilot Plugin template
+# Overview of the API Plugin template
 
-## Build a Copilot Plugin from OpenAPI description document
+## Build an API Plugin from OpenAPI description document
 
 With Copilot extensibility, you can augment Copilot for Microsoft 365 with custom skills and organizational knowledge specific to your enterprise and users to enable truly spectacular AI scenarios. For example:
 

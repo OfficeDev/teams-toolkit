@@ -48,6 +48,14 @@ class LargeNotiTestCase extends CaseFactory {
     console.log(`update connect string to ${configFilePath} file`);
   }
 
+  override async onAfter(
+    sampledebugContext: SampledebugContext
+  ): Promise<void> {
+    await sampledebugContext.sampleAfter(
+      `${sampledebugContext.appName}-dev-rg}`
+    );
+  }
+
   override async onValidate(page: Page): Promise<void> {
     return await validateLargeNotificationBot(page);
   }

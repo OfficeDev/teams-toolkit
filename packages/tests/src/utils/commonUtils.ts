@@ -8,9 +8,65 @@ import { dotenvUtil } from "./envUtil";
 import { TestFilePath } from "./constants";
 import { exec, spawn, SpawnOptionsWithoutStdio } from "child_process";
 import { promisify } from "util";
-import { Executor } from "./executor";
 
 export const execAsync = promisify(exec);
+
+export async function execute(
+  command: string,
+  cwd: string,
+  processEnv?: NodeJS.ProcessEnv,
+  timeout?: number,
+  skipErrorMessage?: string | undefined
+) {
+  let retryCount = 0;
+  const maxRetries = 2;
+
+  while (retryCount < maxRetries) {
+    // if failed, retry. 2 times at most.
+    try {
+      console.log(`[Start] "${command}" in ${cwd}.`);
+      const options = {
+        cwd,
+        env: processEnv ?? process.env,
+        timeout: timeout ?? 0,
+      };
+      const result = await execAsync(command, options);
+
+      if (result.stderr) {
+        if (skipErrorMessage && result.stderr.includes(skipErrorMessage)) {
+          console.log(`[Skip Warning] ${result.stderr}`);
+          return { success: true, ...result };
+        }
+        // the command exit with 0
+        console.log(
+          `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+        );
+        return { success: false, ...result };
+      } else {
+        console.log(`[Success] "${command}" in ${cwd}.`);
+        return { success: true, ...result };
+      }
+    } catch (e: any) {
+      if (e.killed && e.signal == "SIGTERM") {
+        console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
+      } else {
+        console.error(
+          `[Failed] "${command}" in ${cwd} with error: ${e.message}`
+        );
+      }
+      retryCount++;
+      if (retryCount >= maxRetries) {
+        return { success: false, stdout: "", stderr: e.message as string };
+      }
+
+      console.log(
+        `Retrying "${command}" in ${cwd}. Attempt ${retryCount} of ${maxRetries}.`
+      );
+    }
+  }
+  console.log(`[Failed] Not executed command ${command}`);
+  return { success: false, stdout: "", stderr: "" };
+}
 
 export async function execAsyncWithRetry(
   command: string,
@@ -28,7 +84,7 @@ export async function execAsyncWithRetry(
   while (retries > 0) {
     retries--;
     try {
-      const result = await Executor.execute(
+      const result = await execute(
         command,
         options.cwd ? options.cwd : "",
         options.env
@@ -47,7 +103,7 @@ export async function execAsyncWithRetry(
       await sleep(10000);
     }
   }
-  return Executor.execute(command, options.cwd ? options.cwd : "", options.env);
+  return execute(command, options.cwd ? options.cwd : "", options.env);
 }
 
 export async function sleep(ms: number): Promise<void> {
@@ -261,7 +317,7 @@ export async function CLIVersionCheck(
   let command = "";
   if (version === "V2") command = `npx teamsfx --version`;
   else if (version === "V3") command = `npx teamsapp --version`;
-  const { success, stdout } = await Executor.execute(command, projectPath);
+  const { success, stdout } = await execute(command, projectPath);
   chai.expect(success).to.eq(true);
   const cliVersion = stdout.trim();
   const versionGeneralRegex = /(\d\.\d+\.\d+).*$/;
@@ -383,21 +439,39 @@ export async function configSpfxGlobalEnv() {
 }
 
 export async function generateYoSpfxProject(option: {
-  solutionName: string;
+  solutionName?: string;
   componentName: string;
   componentType?: string;
+  existingSolutionName?: string;
 }) {
-  const resourcePath = path.resolve(__dirname, "../../.test-resources/");
   try {
-    console.log(`Start to generate SPFx project:`);
-    const result = await execAsync(
-      `yo @microsoft/sharepoint --solution-name ${option.solutionName} --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
-      {
-        cwd: resourcePath,
-      }
-    );
-    console.log(`[Successfully] completed to generate SPFx project.`);
-    console.log(`${result.stdout}`);
+    if (option?.solutionName) {
+      console.log(`Start to generate SPFx project:`);
+      const resourcePath = path.resolve(__dirname, "../../.test-resources/");
+      const result = await execAsync(
+        `yo @microsoft/sharepoint --solution-name ${option.solutionName} --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
+        {
+          cwd: resourcePath,
+        }
+      );
+      console.log(`[Successfully] completed to generate SPFx project.`);
+      console.log(`${result.stdout}`);
+    } else if (option?.existingSolutionName) {
+      console.log(`Start to add web part to SPFx project:`);
+      const resourcePath = path.resolve(
+        __dirname,
+        "../../.test-resources/",
+        option.existingSolutionName
+      );
+      const result = await execAsync(
+        `yo @microsoft/sharepoint --component-type webpart --framework react --component-name ${option.componentName} --skip-install true`,
+        {
+          cwd: resourcePath,
+        }
+      );
+      console.log(`[Successfully] completed to add web part to SPFx project.`);
+      console.log(`${result.stdout}`);
+    }
   } catch (error) {
     console.log(error);
     throw new Error(`Failed to generate SPFx project: ${error}`);

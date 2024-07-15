@@ -54,7 +54,7 @@ import {
   MeArchitectureOptions,
   ProgrammingLanguage,
   QuestionNames,
-  copilotPluginApiSpecOptionId,
+  apiPluginApiSpecOptionId,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 
@@ -146,7 +146,7 @@ describe("OpenAPISpecGenerator", function () {
     assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
   });
 
-  it("success with api key auth", async function () {
+  it("success with API Key authentication", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
@@ -1000,7 +1000,7 @@ describe("formatValidationErrors", () => {
 
     const res = formatValidationErrors(errors, {
       platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: copilotPluginApiSpecOptionId,
+      [QuestionNames.Capabilities]: apiPluginApiSpecOptionId,
     });
 
     const errorMessage1 = [

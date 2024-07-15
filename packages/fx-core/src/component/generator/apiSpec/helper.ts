@@ -52,7 +52,7 @@ import {
   CustomCopilotRagOptions,
   ProgrammingLanguage,
   QuestionNames,
-  copilotPluginApiSpecOptionId,
+  apiPluginApiSpecOptionId,
 } from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -61,6 +61,7 @@ import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestU
 const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
+  specNotValidDetails = "spec-not-valid-details",
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
@@ -123,7 +124,9 @@ export async function listOperations(
   shouldLogWarning = true,
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isPlugin =
+    inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId ||
+    !!inputs[QuestionNames.PluginAvailability];
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
@@ -361,6 +364,12 @@ export function logValidationResults(
         .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
         .join(";"),
     };
+
+    const specNotValidError = errors.find((error) => error.type === ErrorType.SpecNotValid);
+    if (specNotValidError) {
+      properties[telemetryProperties.specNotValidDetails] = specNotValidError.content;
+    }
+
     if (existingCorrelationId) {
       properties["correlation-id"] = existingCorrelationId;
     }
@@ -676,7 +685,7 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
 }
 
 function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs): string {
-  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {

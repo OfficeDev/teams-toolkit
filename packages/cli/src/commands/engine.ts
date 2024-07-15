@@ -503,7 +503,7 @@ class CLIEngine {
     context.optionValues.platform = Platform.CLI;
     // set projectPath
     const projectFolderOption = context.command.options?.find(
-      (o) => o.questionName === "projectPath"
+      (o) => o.questionName === "projectPath" && o.required
     );
     if (projectFolderOption) {
       // resolve projectPath

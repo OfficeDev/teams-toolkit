@@ -326,6 +326,20 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
   });
 
+  describe("listDevTunnels using github token", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should return an error when the API call fails", async () => {
+      const token = "test-token";
+
+      const result = await listDevTunnels(token, true);
+      chai.assert.isTrue(result.isErr());
+    });
+  });
+
   describe("isUserCancelError()", () => {
     it("should return true if error is UserCancelError", () => {
       const error = new Error();

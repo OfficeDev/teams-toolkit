@@ -234,7 +234,7 @@ export function getResolvedManifest(
     [telemetryKey]: vars.join(";"),
   });
   let result = expandEnvironmentVariable(content);
-  result = expandVariableWithFunction(result);
+  result = expandVariableWithFunction(result, undefined, true);
   const notExpandedVars = getEnvironmentVariables(result);
   if (notExpandedVars.length > 0) {
     return err(new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), path));

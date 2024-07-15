@@ -26,7 +26,7 @@ export const AddPluginOptions: CLICommandOption[] = [
     type: "string",
     description: "Select plugin availability.",
     required: true,
-    choices: ["copilot-plugin", "action", "copilot-plugin-and-action"],
+    choices: ["api-plugin", "action", "api-plugin-and-action"],
   },
   {
     name: "openapi-spec-location",

@@ -10,13 +10,17 @@
 
 import { Inputs } from "@microsoft/teamsfx-api";
 
-export interface AddPluginInputs extends Inputs {
-  /** @description Select Teams manifest.json File */
-  "manifest-path"?: string;
-  /** @description Select Plugin Availability */
-  "plugin-availability"?: "api-plugin" | "action" | "api-plugin-and-action";
-  /** @description OpenAPI Description Document */
-  "openapi-spec-location"?: string;
-  /** @description Select Operation(s) Copilot Can Interact with */
-  "api-operation"?: string[];
+export interface UninstallInputs extends Inputs {
+  /** @description Choose a way to clean up resources */
+  mode?: "manifest-id" | "env" | "title-id";
+  /** @description Manifest ID */
+  "manifest-id"?: string;
+  /** @description Environment */
+  env?: string;
+  /** @description Project path */
+  projectPath?: string;
+  /** @description Choose resources to uninstall */
+  options?: "m365-app" | "app-registration" | "bot-framework-registration"[];
+  /** @description Title ID */
+  "title-id"?: string;
 }

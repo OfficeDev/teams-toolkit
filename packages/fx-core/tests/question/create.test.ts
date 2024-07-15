@@ -1546,7 +1546,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1598,7 +1598,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1652,7 +1652,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
+            return ok({ type: "success", result: "api-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);

@@ -1,4 +1,4 @@
-import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CLIContext, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import {
   CollaborationStateResult,
   FeatureFlags,
@@ -237,7 +237,7 @@ describe("CLI commands", () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "addPlugin").resolves(ok(undefined));
       const ctx: CLIContext = {
-        command: { ...addPluginCommand, fullName: "add copilot-plugin" },
+        command: { ...addPluginCommand, fullName: "add plugin" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -775,8 +775,20 @@ describe("CLI commands", () => {
     beforeEach(() => {
       sandbox.stub(logger, "warning");
     });
-    it("MissingRequiredOptionError", async () => {
-      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "uninstall").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365UnacquireCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("failed", async () => {
+      sandbox.stub(FxCore.prototype, "uninstall").resolves(err(new SystemError("", "", "")));
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -786,33 +798,6 @@ describe("CLI commands", () => {
       };
       const res = await m365UnacquireCommand.handler!(ctx);
       assert.isTrue(res.isErr());
-    });
-    it("success retrieveTitleId", async () => {
-      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
-      sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
-      sandbox.stub(PackageService.prototype, "unacquire").resolves();
-      const ctx: CLIContext = {
-        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-id": "aaa" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await m365UnacquireCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-    it("success", async () => {
-      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
-      sandbox.stub(PackageService.prototype, "unacquire").resolves();
-      const ctx: CLIContext = {
-        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
-        optionValues: { "title-id": "aaa" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await m365UnacquireCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
     });
   });
 
@@ -1148,7 +1133,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -1186,7 +1171,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
     });
   });
   describe("listSamplesCommand", async () => {

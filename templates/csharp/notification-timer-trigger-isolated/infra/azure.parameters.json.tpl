@@ -8,9 +8,6 @@
       "functionAppSKU": {
         "value": "B1"
       },
-      "storageSKU": {
-        "value": "Standard_LRS"
-      },
       "botDisplayName": {
         "value": "{{appName}}"
       }

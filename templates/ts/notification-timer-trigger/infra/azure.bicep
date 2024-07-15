@@ -4,7 +4,6 @@
 param resourceBaseName string
 
 param functionAppSKU string
-param storageSKU string
 
 @maxLength(42)
 param botDisplayName string
@@ -13,7 +12,6 @@ param serverfarmsName string = resourceBaseName
 param functionAppName string = resourceBaseName
 param identityName string = resourceBaseName
 param location string = resourceGroup().location
-param storageName string = resourceBaseName
 
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   location: location
@@ -31,15 +29,6 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   properties: {}
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  name: storageName
-  kind: 'StorageV2'
-  location: location
-  sku: {
-    name: storageSKU // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionStorageSku property to provisionParameters to override the default value "Standard_LRS".
-  }
-}
-
 // Azure Function that host your app
 resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'functionapp'
@@ -52,24 +41,12 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
       alwaysOn: true
       appSettings: [
         {
-          name: 'AzureWebJobsDashboard'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
-        }
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
-        }
-        {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4' // Use Azure Functions runtime v4
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'node' // Set runtime to NodeJS
-        }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
@@ -88,7 +65,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: identity.properties.tenantId
         }
         {
-          name: 'BOT_TYPE' 
+          name: 'BOT_TYPE'
           value: 'UserAssignedMsi'
         }
         {

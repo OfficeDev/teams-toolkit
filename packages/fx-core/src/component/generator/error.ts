@@ -33,12 +33,17 @@ export class TemplateNotFoundError extends BaseComponentInnerError {
 }
 
 export class ScaffoldLocalTemplateError extends BaseComponentInnerError {
-  constructor() {
+  constructor(error: Error) {
     super(
       errorSource,
       "SystemError",
       "ScaffoldLocalTemplateError",
-      "error.generator.ScaffoldLocalTemplateError"
+      "error.generator.ScaffoldLocalTemplateError",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      error
     );
   }
 }

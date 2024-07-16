@@ -2,14 +2,12 @@
 @minLength(4)
 param resourceBaseName string
 param functionAppSKU string
-param functionStorageSKU string
 param aadAppClientId string
 param aadAppTenantId string
 param aadAppOauthAuthorityHost string
 param location string = resourceGroup().location
 param serverfarmsName string = resourceBaseName
 param functionAppName string = resourceBaseName
-param functionStorageName string = '${resourceBaseName}api'
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var officeWebAppClientId1 = '4345a7b9-9a63-4910-a426-35363201d503'
@@ -20,16 +18,6 @@ var officeUwpPwaClientId = '0ec893e0-5785-4de6-99da-4ed124e5296c'
 var outlookOnlineAddInAppClientId = 'bc59ab01-8403-45c6-8796-ac3ef710b3e3'
 var outlookMobileAppClientId = '27922004-5251-4030-b22d-91ecd9a37ea4'
 var allowedClientApplications = '"${teamsMobileOrDesktopAppClientId}","${teamsWebAppClientId}","${officeWebAppClientId1}","${officeWebAppClientId2}","${outlookDesktopAppClientId}","${outlookWebAppClientId}","${officeUwpPwaClientId}","${outlookOnlineAddInAppClientId}","${outlookMobileAppClientId}"'
-
-// Azure Storage is required when creating Azure Functions instance
-resource functionStorage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  name: functionStorageName
-  kind: 'StorageV2'
-  location: location
-  sku: {
-    name: functionStorageSKU// You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionStorageSKUproperty to provisionParameters to override the default value "Standard_LRS".
-  }
-}
 
 // Compute resources for Azure Functions
 resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
@@ -52,24 +40,12 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
     siteConfig: {
       appSettings: [
         {
-          name: ' AzureWebJobsDashboard'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
-        }
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
-        }
-        {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4' // Use Azure Functions runtime v4
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'node' // Set runtime to NodeJS
-        }
-        {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
@@ -82,7 +58,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'M365_CLIENT_ID'
           value: aadAppClientId
-        }        
+        }
         {
           name: 'M365_TENANT_ID'
           value: aadAppTenantId
@@ -90,7 +66,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'M365_AUTHORITY_HOST'
           value: aadAppOauthAuthorityHost
-        }        
+        }
         {
           name: 'WEBSITE_AUTH_AAD_ACL'
           value: '{"allowed_client_applications": [${allowedClientApplications}]}'
@@ -140,7 +116,7 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
           }
         }
       }
-    }    
+    }
   }
 }
 

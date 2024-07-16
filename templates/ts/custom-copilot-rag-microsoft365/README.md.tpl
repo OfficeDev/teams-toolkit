@@ -39,8 +39,6 @@ This app template also demonstrates usage of techniques like:
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You can send any message to get a response from the bot.
 
-**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
-
 ![M365 RAG Bot](https://github.com/OfficeDev/TeamsFx/assets/13211513/c2fff68c-53ce-445a-a101-97f0c127b825)
 
 ## What's included in the template
@@ -73,7 +71,6 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | - | - |
 |`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
-|`teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
 ## Extend the template
 

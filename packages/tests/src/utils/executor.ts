@@ -594,6 +594,16 @@ export class Executor {
       tunnelName = tunnel.tunnelName;
       devtunnelProcess = tunnel.devtunnelProcess;
       await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+      {
+        const { success } = await Executor.provision(projectPath, "local");
+        expect(success).to.be.true;
+        console.log(`[Successfully] provision for ${projectPath}`);
+      }
+      {
+        const { success } = await Executor.deploy(projectPath, "local");
+        expect(success).to.be.true;
+        console.log(`[Successfully] deploy for ${projectPath}`);
+      }
     }
     const debugProcess = Executor.debugProject(
       projectPath,

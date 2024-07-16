@@ -196,6 +196,7 @@ import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/project
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { MySignatureHelpProvider } from "./signatureHelpProvider";
 import { isVSCodeInsiderVersion } from "./utils/versionUtil";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -1167,6 +1168,28 @@ function registerLanguageFeatures(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(diagnosticCollection);
+
+  const templateDocumentSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/manifest.json`,
+  };
+  // { language: armTemplateLanguageId, scheme: documentSchemes.untitled } // unsaved files
+
+  const signatureHelpProvider = new MySignatureHelpProvider();
+
+  //   const signatureHelpProvider: vscode.SignatureHelpProvider = {
+  //     provideSignatureHelp: async (document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.SignatureHelp | undefined> => {
+  //         return undefined;
+  //     }
+  // };
+  context.subscriptions.push(
+    vscode.languages.registerSignatureHelpProvider(
+      templateDocumentSelector,
+      signatureHelpProvider,
+      "("
+    )
+  );
 }
 
 function registerOfficeDevCodeLensProviders(context: vscode.ExtensionContext) {

@@ -81,7 +81,6 @@
                 "Start local tunnel",
                 "Provision",
                 "Deploy",
-                "Start application",
                 "Start desktop client"
             ],
             "dependsOrder": "sequence"

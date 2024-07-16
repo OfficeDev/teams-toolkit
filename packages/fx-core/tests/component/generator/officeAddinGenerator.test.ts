@@ -956,6 +956,7 @@ describe("OfficeAddinGeneratorNew", () => {
   setTools(gtools);
   const generator = new OfficeAddinGeneratorNew();
   const context = createContext();
+  const sandbox = sinon.createSandbox();
   describe("active()", () => {
     it(`should return true`, async () => {
       const inputs: Inputs = {
@@ -981,7 +982,11 @@ describe("OfficeAddinGeneratorNew", () => {
   });
 
   describe("getTemplateInfos()", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it(`should return office-json-addin template`, async () => {
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
@@ -1000,6 +1005,7 @@ describe("OfficeAddinGeneratorNew", () => {
     });
 
     it(`should return office-json-addin template`, async () => {
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
@@ -1017,6 +1023,15 @@ describe("OfficeAddinGeneratorNew", () => {
         chai.assert.isTrue(template.language === ProgrammingLanguage.JS);
       }
     });
+    it("should fail", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(err(new UserCancelError()));
+      const res = await generator.getTemplateInfos(context, inputs, "./");
+      chai.assert.isTrue(res.isErr());
+    });
   });
 
   describe("post()", () => {
@@ -1033,16 +1048,6 @@ describe("OfficeAddinGeneratorNew", () => {
       sandbox.stub(generator, "fixIconPath").resolves();
       const res = await generator.post(context, inputs, "./");
       chai.assert.isTrue(res.isOk());
-    });
-
-    it(`fail`, async () => {
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        projectPath: "./",
-      };
-      sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(err(new UserCancelError()));
-      const res = await generator.post(context, inputs, "./");
-      chai.assert.isTrue(res.isErr());
     });
   });
 });

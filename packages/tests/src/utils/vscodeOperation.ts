@@ -1208,7 +1208,7 @@ export async function addSpfxWebPart(webPartName = "helloworld") {
   await input.selectQuickPick("manifest.local.json");
   await driver.sleep(3 * 60 * 1000);
   await getNotification(
-    `Web part ${webPartName} was successfully added to project`,
+    `Web part ${webPartName} was successfully added to the project`,
     30 * 1000
   );
 }

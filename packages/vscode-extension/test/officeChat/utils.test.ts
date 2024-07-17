@@ -174,7 +174,7 @@ describe("File: officeChat/utils.ts", () => {
           shortDescription: "Using Shape related APIs to insert and format to work as a dashboard.",
           fullDescription:
             "The sample add-in demonstrates Excel add-in capablities to help users using shape API to work as a dashboard.",
-          tags: ["TS", "Shape", "Excel", "Office Add-in"],
+          tags: ["TS", "Shape", "Excel"],
           time: "5min to run",
           thumbnailPath: "assets/thumbnail.png",
           suggested: false,

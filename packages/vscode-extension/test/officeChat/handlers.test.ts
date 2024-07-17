@@ -281,7 +281,7 @@ Usage: @office Ask questions about Office Add-ins development.`);
       const showOpenDialogStub = sandbox
         .stub(vscode.window, "showOpenDialog")
         .resolves(customFolder);
-      sandbox.stub(fs, "pathExistsSync").resolves(false);
+      sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(localizeUtils, "localize").returns("Default folder");
       await handler.chatCreateOfficeProjectCommandHandler(
         "fakeFolder",

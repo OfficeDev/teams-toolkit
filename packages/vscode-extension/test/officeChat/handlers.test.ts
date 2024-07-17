@@ -283,6 +283,7 @@ Usage: @office Ask questions about Office Add-ins development.`);
         .resolves(customFolder);
       sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(localizeUtils, "localize").returns("Default folder");
+      sandbox.stub(fs, "ensureDirSync");
       await handler.chatCreateOfficeProjectCommandHandler(
         "fakeFolder",
         "fakeId",

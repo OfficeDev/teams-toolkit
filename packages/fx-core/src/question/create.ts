@@ -541,7 +541,7 @@ export function getOfficeAddinTemplateConfig(): IOfficeAddinHostConfig {
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
-  if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+  if (runtime === RuntimeOptions.DotNet().id) {
     return [{ id: ProgrammingLanguage.CSharp, label: "C#" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
@@ -1386,12 +1386,13 @@ export function capabilitySubTree(): IQTreeNode {
         data: programmingLanguageQuestion(),
         condition: (inputs: Inputs) => {
           return (
-            !!inputs[QuestionNames.Capabilities] &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
-            inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id
+            (!!inputs[QuestionNames.Capabilities] &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
+              inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id) ||
+            getRuntime(inputs) === RuntimeOptions.DotNet().id
           );
         },
       },

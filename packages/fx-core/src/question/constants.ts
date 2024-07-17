@@ -142,12 +142,10 @@ export class RuntimeOptions {
 
 export function getRuntime(inputs: Inputs): string {
   let runtime = RuntimeOptions.NodeJS().id;
-  if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
+  if (inputs?.platform === Platform.VS) {
+    runtime = RuntimeOptions.DotNet().id;
+  } else if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
-  } else {
-    if (inputs?.platform === Platform.VS) {
-      runtime = RuntimeOptions.DotNet().id;
-    }
   }
   return runtime;
 }

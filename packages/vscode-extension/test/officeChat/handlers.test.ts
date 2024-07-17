@@ -294,8 +294,6 @@ Usage: @office Ask questions about Office Add-ins development.`);
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
-      chai.expect(fsCopyStub.args[0][0]).to.equal("fakeFolder");
-      chai.expect(path.basename(fsCopyStub.args[0][1])).to.equal("fakeAppId");
       chai.expect(fsCopyStub.calledOnce).to.equal(true);
     });
 

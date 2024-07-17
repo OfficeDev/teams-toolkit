@@ -4,7 +4,7 @@
   "parameters": {
     "resourceBaseName": {
       "value": "plugin${{RESOURCE_SUFFIX}}"
-    },
+    },    
     "functionAppSKU": {
       "value": "Y1"
     }

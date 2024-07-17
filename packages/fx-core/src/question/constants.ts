@@ -475,7 +475,7 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    if (inputs?.runtime === RuntimeOptions.DotNet().id) {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [
         CapabilityOptions.basicBot(),
         CapabilityOptions.aiBot(),
@@ -647,6 +647,9 @@ export class CapabilityOptions {
    * dynamic capability list, which depends on feature flags
    */
   static all(inputs?: Inputs): OptionItem[] {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+      return CapabilityOptions.dotnetCaps(inputs);
+    }
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),

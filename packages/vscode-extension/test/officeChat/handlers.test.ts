@@ -272,17 +272,15 @@ Usage: @office Ask questions about Office Add-ins development.`);
     });
 
     it("choose to browse and select custom folder", async () => {
-      const showQuickPickStub = sandbox.stub(vscode.window, "showQuickPick").returns(
-        Promise.resolve({
-          label: "Browse...",
-        }) as unknown as Promise<vscode.QuickPickItem>
-      );
+      const showQuickPickStub = sandbox.stub(vscode.window, "showQuickPick").resolves({
+        label: "Browse...",
+      } as unknown as vscode.QuickPickItem);
       const fsCopyStub = sandbox.stub(fs, "copy");
       const customFolderPath = "customFolderPath";
       const customFolder: URI[] = [URI.file(customFolderPath)];
       const showOpenDialogStub = sandbox
         .stub(vscode.window, "showOpenDialog")
-        .returns(Promise.resolve(customFolder));
+        .resolves(customFolder);
       sandbox.stub(fs, "pathExistsSync").resolves(false);
       sandbox.stub(localizeUtils, "localize").returns("Default folder");
       await handler.chatCreateOfficeProjectCommandHandler(
@@ -294,9 +292,9 @@ Usage: @office Ask questions about Office Add-ins development.`);
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
+      chai.expect(fsCopyStub.calledOnce).to.equal(true);
       chai.expect(fsCopyStub.args[0][0]).to.equal("fakeFolder");
       chai.expect(path.basename(fsCopyStub.args[0][1])).to.equal("fakeAppId");
-      chai.expect(fsCopyStub.calledOnce).to.equal(true);
     });
 
     it("copy files error", async () => {

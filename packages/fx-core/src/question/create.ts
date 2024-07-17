@@ -94,8 +94,11 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
       }
 
+      if (inputs.runtime === RuntimeOptions.NodeJS().id) {
+        staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
+      }
+
       staticOptions.push(
-        ProjectTypeOptions.customCopilot(inputs.platform),
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
         ProjectTypeOptions.me(inputs.platform)
@@ -106,7 +109,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         if (projectType) {
           return [projectType];
         }
-      } else {
+      } else if (inputs.runtime === RuntimeOptions.NodeJS().id) {
         if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
           staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
         } else {
@@ -206,16 +209,20 @@ export function capabilityQuestion(): SingleSelectQuestion {
         }
       }
       // dotnet capabilities
-      if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+      if (inputs.platform === Platform.VS) {
         return CapabilityOptions.dotnetCaps(inputs);
       }
 
       if (inputs.nonInteractive && inputs.platform === Platform.CLI) {
-        //cli non-interactive mode the choice list is the same as staticOptions
-        return CapabilityOptions.all(inputs);
+        if (inputs.runtime === RuntimeOptions.DotNet().id) {
+          return CapabilityOptions.dotnetCaps(inputs);
+        } else {
+          //cli non-interactive mode the choice list is the same as staticOptions
+          return CapabilityOptions.all(inputs);
+        }
       }
 
-      // nodejs capabilities
+      // capabilities if VSC or CLI interactive mode
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {
         return CapabilityOptions.bots(inputs);
@@ -538,7 +545,7 @@ export function getOfficeAddinTemplateConfig(): IOfficeAddinHostConfig {
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
-  if (runtime === RuntimeOptions.DotNet().id) {
+  if (runtime === RuntimeOptions.DotNet().id || inputs.platform === Platform.VS) {
     return [{ id: ProgrammingLanguage.CSharp, label: "C#" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;

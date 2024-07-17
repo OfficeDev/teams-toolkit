@@ -475,7 +475,7 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    if (inputs?.platform === Platform.VS) {
+    if (inputs?.runtime === RuntimeOptions.DotNet().id) {
       return [
         CapabilityOptions.basicBot(),
         CapabilityOptions.aiBot(),

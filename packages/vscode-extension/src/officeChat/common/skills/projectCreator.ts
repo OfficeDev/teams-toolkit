@@ -35,10 +35,11 @@ export class projectCreator implements ISkill {
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const host = spec.appendix.host.toLowerCase();
+    const capabilities = spec.appendix.isCustomFunction
+      ? "excel-custom-functions-shared"
+      : `${host}-taskpane`;
     const createInputs = {
-      capabilities: spec.appendix.isCustomFunction
-        ? "excel-custom-functions-shared"
-        : `${host}-taskpane`,
+      capabilities: capabilities,
       "project-type": "office-xml-addin-type",
       "addin-host": host,
       "programming-language": "typescript",
@@ -49,10 +50,15 @@ export class projectCreator implements ISkill {
       response,
       spec.appendix.codeSnippet
     );
-    const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+    const sampleTitle = localize("teamstoolkit.chatParticipants.officeAddIn.create.project");
     response.button({
       command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-      arguments: [rootFolder, spec.appendix.telemetryData.requestId, "No Match Result Type"],
+      arguments: [
+        rootFolder,
+        spec.appendix.telemetryData.requestId,
+        "No Match Result Type",
+        capabilities,
+      ],
       title: sampleTitle,
     });
     return { result: ExecutionResultEnum.Success, spec: spec };

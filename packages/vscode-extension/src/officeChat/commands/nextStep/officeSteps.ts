@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as path from "path";
+import * as vscode from "vscode";
 import { NextStep } from "../../../chat/commands/nextstep/types";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { CommandKey } from "../../../constants";
@@ -8,8 +10,7 @@ import {
   canOfficeAddInPreviewInLocalEnv,
   isDebugSucceededAfterSourceCodeChanged,
   isDependenciesInstalled,
-  isDidNoActionAfterScaffolded,
-  isHaveReadMe,
+  isNodeInstalled,
   isProjectOpened,
 } from "./condition";
 import { OfficeWholeStatus } from "./types";
@@ -18,60 +19,39 @@ import { OfficeWholeStatus } from "./types";
 export const officeSteps: () => NextStep[] = () => [
   {
     title: "Create a New Project",
-    description: `Type in "@office /create" in the input box to create a new Office add-in project per your description.`,
+    description:
+      "To get started, you can create a new Office Add-in project by using `/create` to build your Office add-in as per your description.",
     docLink: "",
     commands: [],
     followUps: [
       {
-        label: "@office /create",
+        label: "@office /create an Excel hello world add-in",
         command: "create",
-        prompt: "",
+        prompt: "an Excel hello world add-in",
+      },
+      {
+        label: "@office /create a Word hello world add-in",
+        command: "create",
+        prompt: "a Word hello world add-in",
       },
     ],
     condition: (status: OfficeWholeStatus) => !isProjectOpened(status),
     priority: 0,
   },
   {
-    title: "View Samples",
-    description: `Learn how to use various features when developing Office Add-ins with the code samples.`,
+    title: "Check Prerequisites",
+    description: `To get ready for add-in development, you need to have [Node.js v16/v18](https://nodejs.org/) and [npm](https://www.npmjs.com/get-npm) installed. You can check your environment by clicking the button below.`,
     docLink:
-      "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/office-add-in-code-samples",
-    commands: [],
-    followUps: [],
-    condition: (status: OfficeWholeStatus) => !isProjectOpened(status),
-    priority: 0,
-  },
-  {
-    title: "Summary of README",
-    description: (status: OfficeWholeStatus) => {
-      // readme must exist because the condition has checked it
-      const readme = status.projectOpened!.readmeContent!;
-      let description = "";
-      let findFirstSharp = false;
-      for (const line of readme.split("\n")) {
-        if (line.trim().startsWith("#")) {
-          findFirstSharp = true;
-        }
-        if (!findFirstSharp) {
-          continue;
-        }
-        if (line.toLocaleLowerCase().includes("prerequisite")) {
-          break;
-        }
-        description += line.trim() + " ";
-      }
-      return description;
-    },
+      "https://learn.microsoft.com/en-us/office/dev/add-ins/concepts/requirements-for-running-office-add-ins",
     commands: [
       {
-        title: "Open README",
+        title: "Check prerequisites",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.OpenReadMe],
+        arguments: [CommandKey.ValidateGetStartedPrerequisites],
       },
     ],
     followUps: [],
-    condition: (status: OfficeWholeStatus) =>
-      isProjectOpened(status) && isDidNoActionAfterScaffolded(status) && isHaveReadMe(status),
+    condition: (status: OfficeWholeStatus) => isProjectOpened(status) && !isNodeInstalled(status),
     priority: 1,
   },
   {
@@ -87,14 +67,12 @@ export const officeSteps: () => NextStep[] = () => [
     ],
     followUps: [],
     condition: (status: OfficeWholeStatus) =>
-      isProjectOpened(status) &&
-      !isDidNoActionAfterScaffolded(status) &&
-      !isDependenciesInstalled(status),
+      isProjectOpened(status) && isNodeInstalled(status) && !isDependenciesInstalled(status),
     priority: 1,
   },
   {
     title: "Preview in Local Environment",
-    description: `Preview in Local Environment makes debugging Office Add-in effortless. It works like pressing F5 in Visual Studio Code and you can preview your Add-in in the desktop host application.`,
+    description: `To run and debug the add-in, you can preview the add-in in Office apps to understand how it works. Start debugging by clicking the button below or pressing \`F5\`.\n\nIf you meet problems, please check the \`README.md\` file for detailed guidance. `,
     docLink: "https://learn.microsoft.com/en-us/office/dev/add-ins/testing/debug-add-ins-overview",
     commands: [
       {
@@ -106,48 +84,41 @@ export const officeSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
-      !isDidNoActionAfterScaffolded(status) &&
+      isNodeInstalled(status) &&
       isDependenciesInstalled(status) &&
       canOfficeAddInPreviewInLocalEnv(status) &&
       !isDebugSucceededAfterSourceCodeChanged(status),
     priority: 1,
   },
   {
-    title: "Publish to App Source",
-    description: `Office Add-in can be published to App Source for internal or external users. You can publish your Add-in to App Source and share it with others.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/partner-center/marketplace/submit-to-appsource-via-partner-center",
-    commands: [
+    title: "Code Generation",
+    description:
+      "To customize the add-in project, you can generate code for Office add-ins by using `/generatecode` to describe the feature you would like to build.",
+    docLink: "",
+    commands: [],
+    followUps: [
       {
-        title: "Publish to App Source",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.publishToAppSource],
+        label: "@office /generatecode show a dialog when clicking a button",
+        command: "generatecode",
+        prompt: "show a dialog when clicking a button",
       },
     ],
-    followUps: [],
     condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
-      !isDidNoActionAfterScaffolded(status) &&
+      isNodeInstalled(status) &&
       isDependenciesInstalled(status) &&
       isDebugSucceededAfterSourceCodeChanged(status),
-    priority: 2,
+    priority: 1,
   },
   {
-    title: "Deploy",
-    description: `Office Add-in can be deployed to App Source for internal or external users. You can deploy your Add-in to App Source and share it with others.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/office/dev/add-ins/publish/publish#deployment-options-by-office-application-and-add-in-type",
-    commands: [
-      {
-        title: "Deploy",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.openDeployLink],
-      },
-    ],
+    title: "Deploy or Publish",
+    description: `To distribute your add-in to a wider audience, you can [deploy](https://learn.microsoft.com/en-us/office/dev/add-ins/publish/publish#deployment-options-by-office-application-and-add-in-type) or [publish](https://learn.microsoft.com/en-us/office/dev/add-ins/publish/publish-office-add-ins-to-appsource) it.`,
+    docLink: "",
+    commands: [],
     followUps: [],
     condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
-      !isDidNoActionAfterScaffolded(status) &&
+      isNodeInstalled(status) &&
       isDependenciesInstalled(status) &&
       isDebugSucceededAfterSourceCodeChanged(status),
     priority: 2,

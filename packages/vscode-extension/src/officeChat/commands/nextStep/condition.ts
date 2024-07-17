@@ -13,6 +13,10 @@ export function isProjectOpened(status: OfficeWholeStatus): boolean {
   return !!status.projectOpened;
 }
 
+export function isNodeInstalled(status: OfficeWholeStatus): boolean {
+  return !!status.projectOpened && !!status.projectOpened.isNodeInstalled;
+}
+
 /**
  * if did no action after the project is scaffolded
  * @param status

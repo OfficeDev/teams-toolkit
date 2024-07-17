@@ -85,21 +85,33 @@ export default async function officeCreateCommandHandler(
           );
           const folder = sampleInfos.path;
           const hostType = sampleInfos.host.toLowerCase();
-          const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+          const sampleTitle = localize("teamstoolkit.chatParticipants.officeAddIn.create.project");
           officeChatTelemetryData.setHostType(hostType);
           response.button({
             command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-            arguments: [folder, officeChatTelemetryData.requestId, matchedResult.type],
+            arguments: [
+              folder,
+              officeChatTelemetryData.requestId,
+              matchedResult.type,
+              matchedResult.id,
+            ],
             title: sampleTitle,
           });
         } else {
           const tmpHostType = (matchedResult.data as any)?.["addin-host"].toLowerCase();
           const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
-          const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
+          const templateTitle = localize(
+            "teamstoolkit.chatParticipants.officeAddIn.create.project"
+          );
           officeChatTelemetryData.setHostType(tmpHostType);
           response.button({
             command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-            arguments: [tmpFolder, officeChatTelemetryData.requestId, matchedResult.type],
+            arguments: [
+              tmpFolder,
+              officeChatTelemetryData.requestId,
+              matchedResult.type,
+              matchedResult.id,
+            ],
             title: templateTitle,
           });
         }

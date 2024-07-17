@@ -60,7 +60,7 @@ describe("File: officeSamples", () => {
     sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
       if (
         url ===
-        "https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/.config/samples-config-v1.json"
+        "https://raw.githubusercontent.com/OfficeDev/Office-Samples/agent/.config/samples-config-v1.json"
       ) {
         return { data: fakedOfficeSampleConfig, status: 200 };
       } else {
@@ -71,7 +71,7 @@ describe("File: officeSamples", () => {
     chai.expect(samples[0].downloadUrlInfo).deep.equal({
       owner: "OfficeDev",
       repository: "Office-Samples",
-      ref: "main",
+      ref: "agent",
       dir: "Excel-Add-in-ShapeAPI-Dashboard",
     });
     chai.expect(samples[0].gifUrl).equal(undefined);
@@ -81,7 +81,7 @@ describe("File: officeSamples", () => {
     sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
       if (
         url ===
-        "https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/.config/samples-config-v1.json"
+        "https://raw.githubusercontent.com/OfficeDev/Office-Samples/agent/.config/samples-config-v1.json"
       ) {
         return { data: fakedOfficeSampleConfigWithGif, status: 200 };
       } else {
@@ -92,13 +92,13 @@ describe("File: officeSamples", () => {
     chai.expect(samples[0].downloadUrlInfo).deep.equal({
       owner: "OfficeDev",
       repository: "Office-Samples",
-      ref: "main",
+      ref: "agent",
       dir: "Excel-Add-in-ShapeAPI-Dashboard",
     });
     chai
       .expect(samples[0].gifUrl)
       .equal(
-        `https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif`
+        `https://raw.githubusercontent.com/OfficeDev/Office-Samples/agent/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif`
       );
   });
 
@@ -106,7 +106,7 @@ describe("File: officeSamples", () => {
     sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
       if (
         url !==
-        "https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/.config/samples-config-v1.json"
+        "https://raw.githubusercontent.com/OfficeDev/Office-Samples/agent/.config/samples-config-v1.json"
       ) {
         throw new Error("test error");
       }

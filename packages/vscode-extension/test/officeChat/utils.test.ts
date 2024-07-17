@@ -166,7 +166,7 @@ describe("File: officeChat/utils.ts", () => {
           downloadUrlInfo: {
             owner: "OfficeDev",
             repository: "Office-Samples",
-            ref: "main",
+            ref: "agent",
             dir: "Excel-Add-in-ShapeAPI-Dashboard",
           },
           id: "Excel-Add-in-ShapeAPI-Dashboard",
@@ -179,7 +179,7 @@ describe("File: officeChat/utils.ts", () => {
           thumbnailPath: "assets/thumbnail.png",
           suggested: false,
           gifUrl:
-            "https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif",
+            "https://raw.githubusercontent.com/OfficeDev/Office-Samples/agent/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif",
           gifPath: "assets/sampleDemo.gif",
           onboardDate: date,
           shortId: "Shape API dashboard",

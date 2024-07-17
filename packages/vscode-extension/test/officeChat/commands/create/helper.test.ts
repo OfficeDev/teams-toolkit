@@ -58,7 +58,7 @@ describe("File: office chat create helper", () => {
     });
 
     it("has matched office sample project", async () => {
-      sandbox.stub(util, "getCopilotResponseAsString").resolves('{ "addin": "test" }');
+      sandbox.stub(util, "getCopilotResponseAsString").resolves('{ "id": "test", "score": 1.0 }');
       const token = new CancellationToken();
       const result = await officeChathelper.matchOfficeProject(
         { prompt: "test" } as vscode.ChatRequest,

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
-import * as vscode from "vscode";
 import { NextStep } from "../../../chat/commands/nextstep/types";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { CommandKey } from "../../../constants";

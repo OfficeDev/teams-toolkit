@@ -171,7 +171,7 @@ export class CreateApiKeyDriver implements StepDriver {
     }
 
     if (args.primaryClientSecret && !this.validateSecret(args.primaryClientSecret)) {
-      throw args.primaryClientSecret == " "
+      throw args.primaryClientSecret === " "
         ? new apiKeyFromScratchClientSecretInvalid(actionName)
         : new ApiKeyClientSecretInvalidError(actionName);
     }

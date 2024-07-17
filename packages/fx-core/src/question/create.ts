@@ -1013,7 +1013,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     },
     inputOptionItem: {
       id: "input",
-      label: getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
+      label: `$(cloud) ` + getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
     },
     filters: {
       files: ["json", "yml", "yaml"],

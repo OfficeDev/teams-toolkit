@@ -499,11 +499,9 @@ export class SampledebugContext extends TestContext {
       await createResourceGroup(appName, env, "westus");
     }
     const resourceGroupName = `${appName}-${env}-rg`;
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = resourceGroupName;
     await CliHelper.showVersion(projectPath, processEnv);
-    await CliHelper.provisionProject2(projectPath, option, env, {
-      ...process.env,
-      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
-    });
+    await Executor.provision(projectPath, env, true);
   }
 
   public async runCliDeploy(
@@ -514,13 +512,6 @@ export class SampledebugContext extends TestContext {
     retries?: number,
     newCommand?: string
   ) {
-    await CliHelper.deployAll(
-      projectPath,
-      option,
-      env,
-      processEnv,
-      retries,
-      newCommand
-    );
+    await Executor.deploy(projectPath, env);
   }
 }

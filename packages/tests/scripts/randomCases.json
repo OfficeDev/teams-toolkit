@@ -29,11 +29,6 @@
             "sample-remotedebug-spfx-productivity-dashboard",
             "sample-localdebug-npm-search",
             "sample-localdebug-proactive-message",
-            "localdebug-bot",
-            "localdebug-command-and-response",
-            "localdebug-notification-func",
-            "localdebug-notification-restify",
-            "treeview-collaboration-spfx",
             "sample-remotedebug-dice-roller"
         ]
     },
@@ -56,19 +51,6 @@
     },
     {
         "os": {
-            "windows-latest": {
-                "node-20": []
-            },
-            "ubuntu-latest": {
-                "node-20": []
-            }
-        },
-        "cases": [
-            "localdebug-obo-tab"
-        ]
-    },
-    {
-        "os": {
             "ubuntu-latest": {
                 "node-16": [],
                 "node-18": []
@@ -85,8 +67,7 @@
             "sample-localdebug-dice-roller",
             "sample-localdebug-contact-exporter",
             "sample-localdebug-hello-world-meeting",
-            "basic-tab-upgrade-debug",
-            "localdebug-tab-nosso" 
+            "basic-tab-upgrade-debug"
         ]
     },
     {

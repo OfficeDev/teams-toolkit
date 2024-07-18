@@ -3,7 +3,7 @@
 import { OfficeWholeStatus } from "./types";
 import * as Status from "../../../chat/commands/nextstep/status";
 import fs from "fs-extra";
-import { exec } from "child_process";
+import child_process from "child_process";
 
 export async function getWholeStatus(folder?: string): Promise<OfficeWholeStatus> {
   return Status.getWholeStatus(folder).then(async (status: OfficeWholeStatus) => {
@@ -19,7 +19,7 @@ export async function getWholeStatus(folder?: string): Promise<OfficeWholeStatus
 
 function checkNodeInstallation(): Promise<boolean> {
   return new Promise((resolve) => {
-    exec("node -v", (error) => {
+    child_process.exec("node -v", (error) => {
       if (error) {
         resolve(false);
         return;

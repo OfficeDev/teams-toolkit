@@ -47,7 +47,7 @@ export async function matchOfficeProject(
   if (response) {
     try {
       const responseJson = JSON.parse(response);
-      if (responseJson && responseJson.id && responseJson.score > 0.6) {
+      if (responseJson && responseJson.id && responseJson.score >= 0.5) {
         matchedProjectId = responseJson.id;
       }
     } catch (e) {}

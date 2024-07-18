@@ -28,9 +28,9 @@ export const officeSteps: () => NextStep[] = () => [
         prompt: "an Excel hello world add-in",
       },
       {
-        label: "@office /create a Word hello world add-in",
+        label: "@office /create a Word add-in that inserts comments",
         command: "create",
-        prompt: "a Word hello world add-in",
+        prompt: "a Word add-in that inserts comments",
       },
     ],
     condition: (status: OfficeWholeStatus) => !isProjectOpened(status),
@@ -96,9 +96,14 @@ export const officeSteps: () => NextStep[] = () => [
     commands: [],
     followUps: [
       {
-        label: "@office /generatecode show a dialog when clicking a button",
+        label: "@office /generatecode create a chart based on the selected range in Excel",
         command: "generatecode",
-        prompt: "show a dialog when clicking a button",
+        prompt: "create a chart based on the selected range in Excel",
+      },
+      {
+        label: "@office /generatecode insert a content control in a Word document",
+        command: "generatecode",
+        prompt: "insert a content control in a Word document",
       },
     ],
     condition: (status: OfficeWholeStatus) =>

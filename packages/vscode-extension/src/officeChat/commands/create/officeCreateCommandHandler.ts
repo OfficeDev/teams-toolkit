@@ -4,6 +4,7 @@
 import {
   CancellationToken,
   ChatContext,
+  ChatFollowup,
   ChatRequest,
   ChatResponseStream,
   LanguageModelChatMessage,
@@ -22,6 +23,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
 import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import followupProvider from "../../../chat/followupProvider";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -41,6 +43,19 @@ export default async function officeCreateCommandHandler(
   if (request.prompt.trim() === "") {
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.create.noPromptAnswer"));
+    const followUps: ChatFollowup[] = [
+      {
+        label: "@office /create an Excel hello world add-in",
+        command: "create",
+        prompt: "an Excel hello world add-in",
+      },
+      {
+        label: "@office /create a Word add-in that inserts comments",
+        command: "create",
+        prompt: "a Word add-in that inserts comments",
+      },
+    ];
+    followupProvider.addFollowups(followUps);
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
     officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(

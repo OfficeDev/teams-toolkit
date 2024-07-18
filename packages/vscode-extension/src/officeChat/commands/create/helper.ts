@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import * as tmp from "tmp";
-import * as officeTemplateMeatdata from "./officeTemplateMetadata.json";
-import * as fs from "fs-extra";
-import * as path from "path";
+import officeTemplateMeatdata from "./officeTemplateMetadata.json";
+import fs from "fs-extra";
+import path from "path";
 import {
   ChatRequest,
   CancellationToken,

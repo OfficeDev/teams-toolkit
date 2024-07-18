@@ -528,6 +528,58 @@ describe("SPFxGenerator", function () {
     }
   });
 
+  it("Web part with invalid manifeset will not be imported", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "import",
+      [QuestionNames.SPFxFolder]: "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts", "helloworld")) {
+        return ["HelloWorldWebPart.manifest.json"] as any;
+      } else {
+        return [] as any;
+      }
+    });
+    sinon.stub(fs, "statSync").returns({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+    const fakedManifest = {
+      name: { short: "thisisaverylongappnametotestifitwillbetruncated" },
+      staticTabs: [{ name: "default" }],
+    };
+    const readAppManifestStub = sinon
+      .stub(ManifestUtils.prototype, "_readAppManifest")
+      .resolves(ok(fakedManifest as any));
+    const writeAppManifestStub = sinon
+      .stub(ManifestUtils.prototype, "_writeAppManifest")
+      .resolves();
+    const writeEnvStub = sinon.stub(envUtil, "writeEnv");
+    sinon.stub(fs, "copy").resolves();
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+    chai.expect(fakedManifest.staticTabs.length).to.eq(1);
+    chai.expect(generateTemplateStub.calledOnce).to.eq(true);
+    chai.expect(writeEnvStub.calledOnce).to.eq(true);
+    chai.expect(readAppManifestStub.calledTwice).to.eq(true);
+    chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
+  });
+
   it("Generate template fail when import SPFx solution", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

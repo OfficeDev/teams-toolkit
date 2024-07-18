@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as extensionPackage from "./../../package.json";
+import * as vscode from "vscode";
 
 declare type VersionComparisonResult = -1 | 0 | 1;
 
@@ -72,4 +73,8 @@ export function isPrereleaseVersion(version: string | Version): boolean {
     return true;
   }
   return false;
+}
+
+export function isVSCodeInsiderVersion(): boolean {
+  return vscode.version.includes("insider");
 }

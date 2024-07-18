@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as vscode from "vscode";
 import * as util from "../../../../src/officeChat/utils";
 import * as helper from "../../../../src/officeChat/commands/create/helper";
@@ -11,7 +11,7 @@ import { CancellationToken } from "../../../mocks/vsc";
 import { Planner } from "../../../../src/officeChat/common/planner";
 import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: generatecodeCommandHandler", () => {
   const sandbox = sinon.createSandbox();

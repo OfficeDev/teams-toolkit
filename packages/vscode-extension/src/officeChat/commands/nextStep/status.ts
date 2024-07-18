@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { OfficeWholeStatus } from "./types";
 import * as Status from "../../../chat/commands/nextstep/status";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { exec } from "child_process";
 
 export async function getWholeStatus(folder?: string): Promise<OfficeWholeStatus> {

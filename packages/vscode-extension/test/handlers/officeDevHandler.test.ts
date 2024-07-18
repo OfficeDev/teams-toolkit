@@ -199,7 +199,6 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 
     await openOfficeDevFolder(folderPath, true, [{ type: "warnning", content: "test" }]);
 
-    console.log(globalStateUpdateStub.callCount);
     chai.assert(globalStateUpdateStub.callCount == 5);
     chai.assert(executeCommandStub.calledWithExactly("vscode.openFolder", folderPath, true));
   });

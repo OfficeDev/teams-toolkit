@@ -9,7 +9,7 @@
       "localdebug-notification-restify",
       "localdebug-tab-regen-appid",
       "treeview-newproject-spfx",
-      "treeview-collaboration-spfx", 
+      "treeview-collaboration-spfx",
       "remotedebug-spfxreact-globalpkg",
       "remotedebug-spfxnone-globalpkg-addwebpart",
       "remotedebug-spfxreact-addwebpart"
@@ -72,9 +72,7 @@
       "remotedebug-msg-newapi-microsoftentra-ts-win-only",
       "remotedebug-msg-newapi-microsoftentra-win-only"
     ],
-    "node-20": [
-      "localdebug-obo-tab"
-    ]
+    "node-20": ["localdebug-obo-tab"]
   },
   "ubuntu-latest": {
     "node-16": [
@@ -125,9 +123,7 @@
       "localdebug-msg-newapi-microsoftentra-ts",
       "localdebug-msg-newapi-microsoftentra"
     ],
-    "node-20": [
-      "localdebug-obo-tab"
-    ]
+    "node-20": ["localdebug-obo-tab"]
   },
   "macos-latest": {
     "node-16": [
@@ -136,8 +132,7 @@
       "localdebug-notification-func",
       "localdebug-notification-restify"
     ],
-    "node-18": [
-      "treeview-collaboration-spfx"
-    ]
+    "node-18": ["treeview-collaboration-spfx"]
   }
 }
+

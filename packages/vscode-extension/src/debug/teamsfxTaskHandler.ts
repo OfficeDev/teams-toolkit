@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import { performance } from "perf_hooks";
 import * as util from "util";
 import * as vscode from "vscode";

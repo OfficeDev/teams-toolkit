@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { MetadataV3, telemetryUtils } from "@microsoft/teamsfx-core";
 import { core, workspaceUri } from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";

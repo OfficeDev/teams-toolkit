@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as os from "os";
+import fs from "fs-extra";
+import path from "path";
+import os from "os";
 import {
   CancellationToken,
   ChatContext,

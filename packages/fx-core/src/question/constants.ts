@@ -142,12 +142,10 @@ export class RuntimeOptions {
 
 export function getRuntime(inputs: Inputs): string {
   let runtime = RuntimeOptions.NodeJS().id;
-  if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
+  if (inputs?.platform === Platform.VS) {
+    runtime = RuntimeOptions.DotNet().id;
+  } else if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
-  } else {
-    if (inputs?.platform === Platform.VS) {
-      runtime = RuntimeOptions.DotNet().id;
-    }
   }
   return runtime;
 }
@@ -475,7 +473,7 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    if (inputs?.platform === Platform.VS) {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [
         CapabilityOptions.basicBot(),
         CapabilityOptions.aiBot(),
@@ -647,6 +645,9 @@ export class CapabilityOptions {
    * dynamic capability list, which depends on feature flags
    */
   static all(inputs?: Inputs): OptionItem[] {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+      return CapabilityOptions.dotnetCaps(inputs);
+    }
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),

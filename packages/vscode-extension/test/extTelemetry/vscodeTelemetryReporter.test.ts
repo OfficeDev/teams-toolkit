@@ -4,8 +4,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+// eslint-disable-next-line import/default
+import TelemetryReporter from "@vscode/extension-telemetry";
 import * as sinon from "sinon";
-import * as chai from "chai";
 import { VSCodeTelemetryReporter } from "../../src/telemetry/vscodeTelemetryReporter";
 import { MockTelemetryReporter } from "../mocks/mockTools";
 import { featureFlagManager } from "@microsoft/teamsfx-core";
@@ -21,12 +22,16 @@ describe("vscodeTelemetryReporter", () => {
   const sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");
 
   before(() => {
-    tester = new VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
+    tester = new VSCodeTelemetryReporter(
+      "test",
+      "1.0.0-rc.1",
+      "test",
+      reporterStub as unknown as TelemetryReporter
+    );
     tester.addSharedProperty("project-id", "");
     tester.addSharedProperty("programming-language", "");
     tester.addSharedProperty("host-type", "");
     tester.addSharedProperty("is-from-sample", "");
-    chai.util.addProperty(tester, "reporter", () => reporterStub);
   });
 
   after(() => {

@@ -196,12 +196,13 @@ import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/project
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { isVSCodeInsiderVersion } from "./utils/versionUtil";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value =
     IsChatParticipantEnabled &&
     semver.gte(vscode.version, "1.90.0-insider") &&
-    vscode.version.includes("insider");
+    isVSCodeInsiderVersion();
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
   configMgr.registerConfigChangeCallback();

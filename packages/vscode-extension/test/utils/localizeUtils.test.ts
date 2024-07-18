@@ -1,5 +1,5 @@
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import sinon from "ts-sinon";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import * as globalVariables from "../../src/globalVariables";

@@ -77,8 +77,18 @@ export enum QuestionNames {
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",
-
+  ManifestId = "manifest-id",
+  TitleId = "title-id",
   UserEmail = "email",
+
+  UninstallMode = "mode",
+  UninstallModeManifestId = "manifest-id",
+  UninstallModeEnv = "env",
+  UninstallModeTitleId = "title-id",
+  UninstallOptions = "options",
+  UninstallOptionM365 = "m365-app",
+  UninstallOptionTDP = "app-registration",
+  UninstallOptionBot = "bot-framework-registration",
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
@@ -101,10 +111,10 @@ export enum ProgrammingLanguage {
   None = "none",
 }
 
-export const copilotPluginApiSpecOptionId = "copilot-plugin-existing-api";
-export const copilotPluginExistingApiOptionIds = [copilotPluginApiSpecOptionId];
-export const copilotPluginNewApiOptionId = "copilot-plugin-new-api";
-export const copilotPluginOptionIds = [copilotPluginNewApiOptionId, copilotPluginApiSpecOptionId];
+export const apiPluginApiSpecOptionId = "api-plugin-existing-api";
+export const apiPluginExistingApiOptionIds = [apiPluginApiSpecOptionId];
+export const apiPluginNewApiOptionId = "api-plugin-new-api";
+export const apiPluginOptionIds = [apiPluginNewApiOptionId, apiPluginApiSpecOptionId];
 export const capabilitiesHavePythonOption = [
   "custom-copilot-basic",
   "custom-copilot-rag-azureAISearch",
@@ -132,12 +142,10 @@ export class RuntimeOptions {
 
 export function getRuntime(inputs: Inputs): string {
   let runtime = RuntimeOptions.NodeJS().id;
-  if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
+  if (inputs?.platform === Platform.VS) {
+    runtime = RuntimeOptions.DotNet().id;
+  } else if (featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     runtime = inputs[QuestionNames.Runtime] || runtime;
-  } else {
-    if (inputs?.platform === Platform.VS) {
-      runtime = RuntimeOptions.DotNet().id;
-    }
   }
   return runtime;
 }
@@ -236,7 +244,7 @@ export class ProjectTypeOptions {
 
   static copilotPlugin(platform?: Platform): OptionItem {
     return {
-      id: "copilot-plugin-type",
+      id: "api-plugin-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
@@ -465,7 +473,7 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
-    if (inputs?.platform === Platform.VS) {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [
         CapabilityOptions.basicBot(),
         CapabilityOptions.aiBot(),
@@ -637,6 +645,9 @@ export class CapabilityOptions {
    * dynamic capability list, which depends on feature flags
    */
   static all(inputs?: Inputs): OptionItem[] {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+      return CapabilityOptions.dotnetCaps(inputs);
+    }
     const capabilityOptions = [
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
@@ -703,7 +714,7 @@ export class CapabilityOptions {
   // copilot plugin
   static copilotPluginNewApi(): OptionItem {
     return {
-      id: copilotPluginNewApiOptionId,
+      id: apiPluginNewApiOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
@@ -715,7 +726,7 @@ export class CapabilityOptions {
 
   static copilotPluginApiSpec(): OptionItem {
     return {
-      id: copilotPluginApiSpecOptionId,
+      id: apiPluginApiSpecOptionId,
       label: getLocalizedString(
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
@@ -1172,13 +1183,13 @@ export class PluginAvailabilityOptions {
   }
   static copilotPlugin(): OptionItem {
     return {
-      id: "copilot-plugin",
+      id: "api-plugin",
       label: getLocalizedString("core.pluginAvailability.copilotForM365"),
     };
   }
   static copilotPluginAndAction(): OptionItem {
     return {
-      id: "copilot-plugin-and-action",
+      id: "api-plugin-and-action",
       label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
     };
   }

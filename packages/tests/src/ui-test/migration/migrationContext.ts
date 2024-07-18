@@ -12,15 +12,16 @@ import {
 } from "../../utils/constants";
 import { TestContext } from "../testContext";
 import { CliHelper } from "../cliHelper";
-import { stopDebugging } from "../../utils/vscodeOperation";
-import { Env } from "../../utils/env";
-import { dotenvUtil } from "../../utils/envUtil";
 import {
-  cleanAppStudio,
+  cleanUpAadApp,
   cleanTeamsApp,
-  GraphApiCleanHelper,
+  cleanAppStudio,
+  cleanUpLocalProject,
+  cleanUpResourceGroup,
   createResourceGroup,
 } from "../../utils/cleanHelper";
+import { Env } from "../../utils/env";
+import { dotenvUtil } from "../../utils/envUtil";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
@@ -122,13 +123,39 @@ export class MigrationTestContext extends TestContext {
     hasBotPlugin = false,
     envName = "dev"
   ) {
-    await stopDebugging();
     await this.context!.close();
     await this.browser!.close();
-    if (envName != "local") {
-      await AzSqlHelper.deleteResourceGroup(this.rgName);
-    }
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    if (envName === "local")
+      await this.cleanResource(hasAadPlugin, hasBotPlugin);
+  }
+
+  public async cleanUp(
+    appName: string,
+    projectPath: string,
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasApimPlugin = false,
+    envName = "dev"
+  ) {
+    const cleanUpAadAppPromise = cleanUpAadApp(
+      projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      hasApimPlugin,
+      envName
+    );
+    return Promise.all([
+      // delete aad app
+      cleanUpAadAppPromise,
+      // uninstall Teams app
+      cleanTeamsApp(appName),
+      // delete Teams app in app studio
+      cleanAppStudio(appName),
+      // remove resouce group
+      cleanUpResourceGroup(appName, envName),
+      // remove project
+      cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
+    ]);
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {
@@ -208,38 +235,6 @@ export class MigrationTestContext extends TestContext {
 
   public async debugWithCLI(env: "local" | "dev", v3?: boolean): Promise<void> {
     await CliHelper.debugProject(this.projectPath, env, v3);
-  }
-
-  public async cleanResource(
-    hasAadPlugin = true,
-    hasBotPlugin = false
-  ): Promise<void> {
-    try {
-      const cleanService = await GraphApiCleanHelper.create(
-        Env.cleanTenantId,
-        Env.cleanClientId,
-        Env.username,
-        Env.password
-      );
-      if (hasAadPlugin) {
-        const aadObjectId = await this.getAadObjectId();
-        console.log(`delete AAD ${aadObjectId}`);
-        await cleanService.deleteAad(aadObjectId);
-      }
-
-      if (hasBotPlugin) {
-        const botAppId = await this.getBotAppId();
-        const botObjectId = await cleanService.getAadObjectId(botAppId);
-        if (botObjectId) {
-          console.log(`delete Bot AAD ${botObjectId}`);
-          await cleanService.deleteAad(botObjectId);
-        }
-      }
-    } catch (e: any) {
-      console.log(`Failed to clean resource, error message: ${e.message}`);
-    }
-    await cleanTeamsApp(this.appName);
-    await cleanAppStudio(this.appName);
   }
 
   public async provisionProject(

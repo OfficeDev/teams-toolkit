@@ -194,6 +194,9 @@ export enum TelemetryEvent {
   ShowProvisionNotification = "show-provision-notification",
   ClickProvision = "click-provision",
 
+  ShowManualStepRequiredNotification = "show-manual-step-required-notification",
+  ClickReadManualStep = "click-read-manual-step",
+
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
   ClickLocalDebug = "click-local-debug",

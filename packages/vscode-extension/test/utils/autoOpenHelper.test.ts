@@ -9,6 +9,7 @@ import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
 import { ok } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { showLocalDebugMessage } from "../../src/utils/autoOpenHelper";
+import * as readmeHandlers from "../../src/handlers/readmeHandlers";
 
 describe("autoOpenHelper", () => {
   const sandbox = sinon.createSandbox();
@@ -21,7 +22,7 @@ describe("autoOpenHelper", () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
-    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true);
     const runLocalDebug = sandbox.stub(runIconHandlers, "selectAndDebug").resolves(ok(null));
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
@@ -55,7 +56,7 @@ describe("autoOpenHelper", () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("linux");
-    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true);
     const runLocalDebug = sandbox.stub(runIconHandlers, "selectAndDebug").resolves(ok(null));
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
@@ -89,7 +90,7 @@ describe("autoOpenHelper", () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
-    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true);
     const runLocalDebug = sandbox.stub(runIconHandlers, "selectAndDebug").resolves(ok(null));
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
@@ -120,7 +121,7 @@ describe("autoOpenHelper", () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
-    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "ShowLocalDebugMessage") {
@@ -155,7 +156,7 @@ describe("autoOpenHelper", () => {
     sandbox.stub(appDefinitionUtils, "getAppName").resolves("");
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("linux");
-    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "ShowLocalDebugMessage") {
@@ -189,7 +190,7 @@ describe("autoOpenHelper", () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
     sandbox.stub(process, "platform").value("win32");
-    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "ShowLocalDebugMessage") {
@@ -214,5 +215,217 @@ describe("autoOpenHelper", () => {
 
     chai.assert.isTrue(showMessageStub.called);
     chai.assert.isFalse(executeCommandStub.called);
+  });
+
+  it("showLocalDebugMessage() - generate an API key manually (TS - windows)", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(true)
+      .onThirdCall()
+      .resolves(false);
+    const openReadMeHandlerStub = sandbox
+      .stub(readmeHandlers, "openReadMeHandler")
+      .resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Open README",
+            run: (options as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+
+    await showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isTrue(openReadMeHandlerStub.called);
+  });
+
+  it("showLocalDebugMessage() - generate an API key manually (TS - windows) not clicked", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(true)
+      .onThirdCall()
+      .resolves(false);
+    const openReadMeHandlerStub = sandbox
+      .stub(readmeHandlers, "openReadMeHandler")
+      .resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Not Open README",
+            run: (options as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+
+    await showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isFalse(openReadMeHandlerStub.called);
+  });
+
+  it("showLocalDebugMessage() - generate an API key manually (TS - windows - non selection)", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(true)
+      .onThirdCall()
+      .resolves(false);
+    const openReadMeHandlerStub = sandbox
+      .stub(readmeHandlers, "openReadMeHandler")
+      .resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve(undefined);
+        }
+      );
+
+    await showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isFalse(openReadMeHandlerStub.called);
+  });
+
+  it("showLocalDebugMessage() - generate an API key manually (JS - windows)", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
+    sandbox
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(false)
+      .onThirdCall()
+      .resolves(true);
+    const openReadMeHandlerStub = sandbox
+      .stub(readmeHandlers, "openReadMeHandler")
+      .resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Open README",
+            run: (options as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+
+    await showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isTrue(openReadMeHandlerStub.called);
+  });
+
+  it("showLocalDebugMessage() - generate an API key manually (JS - non windows)", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("linux");
+    sandbox
+      .stub(fs, "pathExists")
+      .onFirstCall()
+      .resolves(true)
+      .onSecondCall()
+      .resolves(false)
+      .onThirdCall()
+      .resolves(true);
+    const openReadMeHandlerStub = sandbox
+      .stub(readmeHandlers, "openReadMeHandler")
+      .resolves(ok(null));
+
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "ShowLocalDebugMessage") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake(
+        (title: string, options: vscode.MessageOptions, ...items: vscode.MessageItem[]) => {
+          return Promise.resolve({
+            title: "Open README",
+            run: (options as any).run,
+          } as vscode.MessageItem);
+        }
+      );
+
+    await showLocalDebugMessage();
+
+    chai.assert.isTrue(showMessageStub.called);
+    chai.assert.isTrue(openReadMeHandlerStub.called);
   });
 });

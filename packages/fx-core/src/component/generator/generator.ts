@@ -213,7 +213,7 @@ export function templateDefaultOnActionError(
         return Promise.reject(error.toFxError());
       } else {
         context.logProvider.error(error.message);
-        return Promise.reject(new ScaffoldLocalTemplateError().toFxError());
+        return Promise.reject(new ScaffoldLocalTemplateError(error).toFxError());
       }
     default:
       return Promise.reject(new Error(error.message));

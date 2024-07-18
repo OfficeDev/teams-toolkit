@@ -535,7 +535,7 @@ describe("Generator error", async () => {
         ? await new DefaultTemplateGenerator().run(ctx, inputs, tmpDir)
         : await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
       if (result.isErr()) {
-        assert.equal(result.error.innerError.name, "ScaffoldLocalTemplateError");
+        assert.equal(result.error.name, "ScaffoldLocalTemplateError");
       } else {
         assert.fail("template fallback error should be thrown.");
       }

@@ -27,7 +27,7 @@ import { getProjectTypeAndCapability } from "../question/create";
 import { CoordinatorSource } from "./constants";
 import * as appStudio from "./driver/teamsApp/appStudio";
 import {
-  BOTS_TPL_V3,
+  getBotsTplBasedOnVersion,
   COMPOSE_EXTENSIONS_TPL_V3,
   DEFAULT_DESCRIPTION,
   DEFAULT_DEVELOPER,
@@ -172,7 +172,7 @@ async function updateManifest(
       if (existingManifestTemplate.bots && existingManifestTemplate.bots.length > 0) {
         manifest.bots = existingManifestTemplate.bots;
       } else {
-        manifest.bots = BOTS_TPL_V3;
+        manifest.bots = getBotsTplBasedOnVersion(manifest.version);
         manifest.bots[0].botId = "${{BOT_ID}}";
       }
     }

@@ -46,7 +46,7 @@ export class FeatureFlags {
   };
   static readonly AsyncAppValidation = {
     name: FeatureFlagName.AsyncAppValidation,
-    defaultValue: "false",
+    defaultValue: "true",
   };
   static readonly NewProjectType = { name: FeatureFlagName.NewProjectType, defaultValue: "true" };
   static readonly ChatParticipant = {

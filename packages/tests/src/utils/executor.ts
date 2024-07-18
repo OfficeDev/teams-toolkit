@@ -74,7 +74,7 @@ export class Executor {
   }
 
   static async login() {
-    const command = `az login --username ${Env["azureAccountName"]} --password '${Env["azureAccountPassword"]}' --tenant ${Env["azureTenantId"]}`;
+    const command = `az login --username ${Env["azureAccountName"]} --password '${Env["azureAccountPassword"]}' --tenant ${Env["azureTenantId"]} 2>&1`;
     const { success } = await Executor.execute(command, process.cwd());
     expect(success).to.be.true;
 

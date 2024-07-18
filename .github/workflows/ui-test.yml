@@ -532,6 +532,8 @@ jobs:
       id-token: write
       contents: read
     runs-on: ubuntu-latest
+    env:
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3

@@ -507,11 +507,11 @@ export abstract class CaseFactory {
 
             // ttk debug
             await debugEnvMap[env]();
-            const teamsAppId = await sampledebugContext.getTeamsAppId(env);
-            expect(teamsAppId).to.not.be.empty;
 
             // if no skip init step
             if (!options?.skipInit) {
+              const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+              expect(teamsAppId).to.not.be.empty;
               // use 2nd middleware to process typical sample
               await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
               // init

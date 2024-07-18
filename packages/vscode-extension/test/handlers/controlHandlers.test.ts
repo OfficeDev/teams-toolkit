@@ -98,7 +98,7 @@ describe("Control Handlers", () => {
       const result = await openFolderHandler("file://path/to/folder");
 
       chai.assert.isTrue(sendTelemetryStub.called);
-      chai.assert.isTrue(openFolderInExplorerStub.calledOnceWith("\\path\\to\\folder"));
+      chai.assert.isTrue(openFolderInExplorerStub.calledOnceWith("/path/to/folder"));
       chai.assert.isTrue(result.isOk());
     });
   });
@@ -180,7 +180,7 @@ describe("Control Handlers", () => {
       chai.assert.isTrue(isValidProjectStub.calledThrice);
       chai.assert.equal(isValidProjectStub.getCall(0).args[0], "/path/to/workspace");
       chai.assert.equal(isValidProjectStub.getCall(1).args[0], "/dirname");
-      chai.assert.equal(isValidProjectStub.getCall(2).args[0], "\\");
+      chai.assert.equal(isValidProjectStub.getCall(2).args[0], "/");
       chai.assert.equal(sendTelemetryEventStub.getCall(0).args[0], TelemetryEvent.UpdateTeamsApp);
       chai.assert.deepEqual(sendTelemetryEventStub.getCall(0).args[1], {
         [TelemetryProperty.UpdateTeamsAppReason]: TelemetryUpdateAppReason.FocusOut,

@@ -436,7 +436,7 @@ class ADOTestPlanClient {
         },
         {
           params: {
-            deepClone: true,
+            deepClone: false,
           },
         }
       );

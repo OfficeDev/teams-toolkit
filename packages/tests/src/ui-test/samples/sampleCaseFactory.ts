@@ -79,7 +79,10 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   },
   [LocalDebugTaskLabel.StartBot]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.StartWebhook]: async () => {
-    await waitForTerminal(LocalDebugTaskLabel.StartWebhook);
+    await waitForTerminal(
+      LocalDebugTaskLabel.StartWebhook,
+      LocalDebugTaskResult.DebuggerAttached
+    );
   },
   [LocalDebugTaskLabel.InstallNpmPackages]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.ApiNpmInstall]: async () => Promise.resolve(),

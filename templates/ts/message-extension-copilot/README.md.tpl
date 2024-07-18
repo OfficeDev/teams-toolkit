@@ -81,5 +81,5 @@ Following documentation will help you to extend the template.
 - [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
 - [Develop with Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli/debug)
-- [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)
+- [Preview the app on mobile clients](https://aka.ms/teamsfx-mobile)
 - [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)

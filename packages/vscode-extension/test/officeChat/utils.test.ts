@@ -6,9 +6,10 @@ import * as utils from "../../src/officeChat/utils";
 import * as chatUtils from "../../src/chat/utils";
 import * as dynamicPrompt from "../../src/officeChat/dynamicPrompt";
 import { CancellationToken } from "../mocks/vsc";
-import { officeSampleProvider } from "../../src/officeChat/commands/create/officeSamples";
+import { AxiosResponse } from "axios";
 import { Spec } from "../../src/officeChat/common/skills/spec";
 import { OfficeChatTelemetryData } from "../../src/officeChat/telemetry";
+import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
 
 chai.use(chaipromised);
 
@@ -174,7 +175,7 @@ describe("File: officeChat/utils.ts", () => {
           shortDescription: "Using Shape related APIs to insert and format to work as a dashboard.",
           fullDescription:
             "The sample add-in demonstrates Excel add-in capablities to help users using shape API to work as a dashboard.",
-          tags: ["TS", "Shape", "Excel", "Office Add-in"],
+          tags: ["TEST tag"],
           time: "5min to run",
           thumbnailPath: "assets/thumbnail.png",
           suggested: false,
@@ -189,12 +190,11 @@ describe("File: officeChat/utils.ts", () => {
     };
     beforeEach(() => {
       sandbox
-        .stub(officeSampleProvider, "OfficeSampleCollection")
-        .resolves(fakedOfficeSampleConfig);
+        .stub(requestUtils, "sendRequestWithTimeout")
+        .resolves({ data: fakedOfficeSampleConfig } as AxiosResponse);
     });
     afterEach(() => {
       sandbox.restore();
-      officeSampleProvider["officeSampleCollection"] = undefined;
     });
 
     it("get office sample info", async () => {

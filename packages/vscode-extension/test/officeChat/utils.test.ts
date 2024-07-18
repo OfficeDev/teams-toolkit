@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as vscode from "vscode";
 import * as utils from "../../src/officeChat/utils";
 import * as chatUtils from "../../src/chat/utils";
@@ -11,7 +11,7 @@ import { Spec } from "../../src/officeChat/common/skills/spec";
 import { OfficeChatTelemetryData } from "../../src/officeChat/telemetry";
 import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: officeChat/utils.ts", () => {
   const sandbox = sinon.createSandbox();

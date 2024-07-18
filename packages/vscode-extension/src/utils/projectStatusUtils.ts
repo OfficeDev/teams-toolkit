@@ -3,7 +3,7 @@
 
 import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
 import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { glob } from "glob";
 import * as os from "os";
 import { getProjectMetadata } from "../chat/commands/nextstep/helper";

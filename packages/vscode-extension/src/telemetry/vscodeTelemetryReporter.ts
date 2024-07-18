@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import * as os from "os";
-import * as path from "path";
+import path from "path";
 // eslint-disable-next-line import/default
 import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
@@ -37,9 +37,9 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
   private sharedProperties: { [key: string]: string } = {};
 
-  constructor(key: string, extensionVersion: string, extensionId: string) {
+  constructor(key: string, extensionVersion: string, extensionId: string, reporter?: Reporter) {
     super(async () => await this.reporter.dispose());
-    this.reporter = new Reporter(extensionId, extensionVersion, key, true);
+    this.reporter = reporter ?? new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
     this.testFeatureFlag = featureFlagManager.getBooleanValue(FeatureFlags.TelemetryTest);
     if (this.testFeatureFlag) {

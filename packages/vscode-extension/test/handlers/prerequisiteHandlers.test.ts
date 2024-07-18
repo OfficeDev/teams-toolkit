@@ -4,7 +4,7 @@
 import { Inputs, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
-import * as path from "path";
+import path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as getStartedChecker from "../../src/debug/depsChecker/getStartedChecker";

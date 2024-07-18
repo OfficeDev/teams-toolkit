@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { workspaceUri, isTeamsFxProject } from "../globalVariables";
 
 export function anonymizeFilePaths(stack?: string): string {

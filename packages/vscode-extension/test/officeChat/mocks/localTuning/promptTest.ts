@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { promises } from "fs";
-import * as path from "path";
+import path from "path";
 import { loadConfig } from "./loadConfig";
 import { LocalTuningScenarioHandler } from "./types";
 import { isHarmful_new, isHarmful_old } from "./utilFunctions";

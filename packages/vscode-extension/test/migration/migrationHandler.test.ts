@@ -5,7 +5,7 @@ import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 import vsCodeLogProvider from "../../src/commonlib/log";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import * as replaceTsSDK from "../../src/migration/migrationTool/ts/replaceTsSDK";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import * as chai from "chai";
 import {

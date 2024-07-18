@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {
   Warning,
   AppPackageFolderName,

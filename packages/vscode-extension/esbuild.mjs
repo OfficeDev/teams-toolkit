@@ -2,10 +2,9 @@ import * as esbuild from "esbuild";
 import copyStaticFiles from "esbuild-copy-static-files";
 import path from "node:path";
 
-
 const outputDirectory = "out";
-const production = process.argv.includes('--production');
-const watch = process.argv.includes('--watch');
+const production = process.argv.includes("--production");
+const watch = process.argv.includes("--watch");
 
 let toolkitResolvePlugin = {
   name: "toolkit dependency resolve",
@@ -29,17 +28,17 @@ let toolkitResolvePlugin = {
 
 async function main() {
   const ctx = await esbuild.context({
-    entryPoints: ['./src/extension.ts'],
+    entryPoints: ["./src/extension.ts"],
     outdir: path.join(outputDirectory, "src"),
     bundle: true,
-    format: 'cjs',
+    format: "cjs",
     minify: production,
     sourcemap: !production,
     sourcesContent: false,
-    platform: 'node',
-    external: ['vscode'],
+    platform: "node",
+    external: ["vscode"],
     mainFields: ["module", "main"], // https://github.com/microsoft/node-jsonc-parser/issues/57
-    logLevel: production? 'silent': 'info',
+    logLevel: production ? "silent" : "info",
     plugins: [
       toolkitResolvePlugin,
       copyStaticFiles({
@@ -83,8 +82,8 @@ async function main() {
         dest: path.join(outputDirectory, "resource", "mermaid.min.js"),
       }),
       /* add to the end of plugins array */
-      esbuildProblemMatcherPlugin
-    ]
+      esbuildProblemMatcherPlugin,
+    ],
   });
   if (watch) {
     await ctx.watch();
@@ -98,23 +97,23 @@ async function main() {
  * @type {import('esbuild').Plugin}
  */
 const esbuildProblemMatcherPlugin = {
-  name: 'esbuild-problem-matcher',
+  name: "esbuild-problem-matcher",
 
   setup(build) {
     build.onStart(() => {
-      console.log('[watch] build started');
+      console.log("[watch] build started");
     });
-    build.onEnd(result => {
+    build.onEnd((result) => {
       result.errors.forEach(({ text, location }) => {
         console.error(`✘ [ERROR] ${text}`);
         console.error(`    ${location.file}:${location.line}:${location.column}:`);
       });
-      console.log('[watch] build finished');
+      console.log("[watch] build finished");
     });
-  }
+  },
 };
 
-main().catch(e => {
+main().catch((e) => {
   console.error(e);
   process.exit(1);
 });

@@ -48,7 +48,7 @@ export async function openDevelopmentLinkHandler(args: any[]): Promise<Result<un
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "development",
   });
-  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-treeview-development");
+  return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-provision");
 }
 
 export async function openLifecycleLinkHandler(args: any[]): Promise<Result<unknown, FxError>> {

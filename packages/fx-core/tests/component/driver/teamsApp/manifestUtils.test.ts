@@ -6,11 +6,8 @@ import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/M
 import fs from "fs-extra";
 import {
   TeamsAppManifest,
-  FxError,
   InputsWithProjectPath,
-  Result,
   ok,
-  err,
   Platform,
   ManifestCapability,
 } from "@microsoft/teamsfx-api";

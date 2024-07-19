@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Anne Fu <v-annefu@microsoft.com>
+ * @author Long Hao <haolong@microsoft.com>
  */
 
 import { TeamsFxProject, Timeout } from "../../utils/constants";
@@ -39,7 +39,10 @@ describe("telemetry", function () {
 
   it(
     "[auto] Auto send telemetry",
-    { testPlanCaseId: 11967511, author: "haolong@microsoft.com" },
+    {
+      testPlanCaseId: 11967511,
+      author: "haolong@microsoft.com",
+    },
     async () => {
       const content = await fs.readFile(
         TeamsFxProject.TelemetryLoggerFilePath,

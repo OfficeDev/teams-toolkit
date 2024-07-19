@@ -137,14 +137,15 @@ export class FrontendValidator {
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
     chai.assert.exists(token);
 
-    console.log("Validating Storage Container.");
-    const response = await this.getContainer(
-      this.subscriptionId,
-      this.resourceGroupName,
-      frontendObject,
-      token as string
-    );
-    chai.assert.exists(response);
+    // use web app instead
+    // console.log("Validating Storage Container.");
+    // const response = await this.getContainer(
+    //   this.subscriptionId,
+    //   this.resourceGroupName,
+    //   frontendObject,
+    //   token as string
+    // );
+    // chai.assert.exists(response);
 
     console.log("Successfully validate Frontend Provision.");
   }

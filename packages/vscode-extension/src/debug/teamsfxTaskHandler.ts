@@ -27,6 +27,7 @@ import {
 import { localize } from "../utils/localizeUtils";
 import { getNpmInstallLogInfo, getTestToolLogInfo } from "../utils/localEnvManagerUtils";
 import {
+  clearAADAfterLocalDebugHelpLink,
   DebugNoSessionId,
   errorDetail,
   issueChooseLink,
@@ -44,6 +45,7 @@ import {
   getLocalDebugSessionId,
 } from "./common/localDebugSession";
 import { allRunningDebugSessions } from "./officeTaskHandler";
+import { deleteAAD } from "./deleteAADHelper";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -295,6 +297,22 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         );
         endLocalDebugSession();
       }
+    } else {
+      vscode.window
+        .showInformationMessage(
+          localize("teamstoolkit.localDebug.deleteAADNotification"),
+          localize("teamstoolkit.localDebug.learnMore")
+        )
+        .then(
+          async (result) => {
+            if (result === localize("teamstoolkit.localDebug.learnMore")) {
+              await VS_CODE_UI.openUrl(clearAADAfterLocalDebugHelpLink);
+            }
+          },
+          () => {
+            // Do nothing on reject
+          }
+        );
     }
   } else if (
     task.scope !== undefined &&
@@ -519,6 +537,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
   }
   allRunningTeamsfxTasks.clear();
   BaseTunnelTaskTerminal.stopAll();
+  void deleteAAD();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {

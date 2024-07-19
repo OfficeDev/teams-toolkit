@@ -10,9 +10,29 @@ import { GraphScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import { ConvertTokenToJson } from "../commonlib/codeFlowLogin";
 import VsCodeLogInstance from "../commonlib/log";
+import * as util from "util";
+import { localize } from "../utils/localizeUtils";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import { FxError } from "@microsoft/teamsfx-api";
 
 export async function deleteAAD() {
   try {
+    if (globalVariables.deleteAADInProgress) {
+      return;
+    }
+    globalVariables.setDeleteAADInProgress(true);
+    const projectPath = globalVariables.workspaceUri!.fsPath;
+    const envFile = path.resolve(projectPath, "env", ".env.local");
+    const userFile = path.resolve(projectPath, "env", ".env.local.user");
+    if (!fs.existsSync(envFile) || !fs.existsSync(userFile)) {
+      return;
+    }
+    const envData = dotenvUtil.deserialize(fs.readFileSync(envFile, "utf-8"));
+    const userEnvData = dotenvUtil.deserialize(fs.readFileSync(userFile, "utf-8"));
+    if (!envData.obj["BOT_ID"] && !envData.obj["AAD_APP_CLIENT_ID"]) {
+      return;
+    }
     const accountInfo = M365TokenInstance.getCachedAccountInfo();
     if (accountInfo !== undefined) {
       const tokenRes = await M365TokenInstance.getAccessToken({ scopes: GraphScopes });
@@ -24,7 +44,8 @@ export async function deleteAAD() {
       if (!uniqueName || !uniqueName.includes("@microsoft.com")) {
         return;
       }
-      VsCodeLogInstance.info("Start deleting AAD secret.");
+      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.startDeletingAADProcess"));
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.StartDeleteAADAfterDebug);
 
       const aadClient = axios.create({
         baseURL: "https://graph.microsoft.com/v1.0",
@@ -33,98 +54,58 @@ export async function deleteAAD() {
         config.headers["Authorization"] = `Bearer ${tokenRes.value}`;
         return config;
       });
-      const projectPath = globalVariables.workspaceUri!.fsPath;
-      const envFile = path.resolve(projectPath, "env", ".env.local");
-      const userFile = path.resolve(projectPath, "env", ".env.local.user");
-      if (!fs.existsSync(envFile) || !fs.existsSync(userFile)) {
-        return;
-      }
-      const envData = dotenvUtil.deserialize(fs.readFileSync(envFile, "utf-8"));
-      const userEnvData = dotenvUtil.deserialize(fs.readFileSync(userFile, "utf-8"));
-      const deleteMap: Record<string, string> = {};
+      const list: string[] = [];
       if (envData.obj["BOT_ID"] != undefined) {
-        try {
-          const res = await aadClient.get(
-            `applications(appId='${envData.obj["BOT_ID"]}')/passwordCredentials`
-          );
-          if (res.data.value.length > 1) {
-            VsCodeLogInstance.warning(
-              'There are more than 1 secrets for the AAD ${envData.obj["BOT_ID"]}, you need to delete them manually.'
-            );
-          } else {
-            deleteMap[envData.obj["BOT_ID"]] = res.data.value[0].keyId;
-            userEnvData.obj["SECRET_BOT_PASSWORD"] = "";
-          }
-        } catch (error) {
-          VsCodeLogInstance.warning(
-            "Failed to lists secrets for AAD app: " +
-              envData.obj["BOT_ID"] +
-              " " +
-              (error as Error).toString()
-          );
-        }
+        list.push(envData.obj["BOT_ID"]);
+        envData.obj["BOT_ID"] = "";
+        userEnvData.obj["SECRET_BOT_PWORD"] = "";
       }
-
       if (envData.obj["AAD_APP_CLIENT_ID"] != undefined) {
-        try {
-          const res = await aadClient.get(
-            `applications(appId='${envData.obj["AAD_APP_CLIENT_ID"]}')/passwordCredentials`
-          );
-          if (res.data.value.length > 1) {
-            VsCodeLogInstance.warning(
-              `There are more than 1 secrets for the AAD ${envData.obj["AAD_APP_CLIENT_ID"]}, you need to delete them manually.`
-            );
-          } else {
-            deleteMap[envData.obj["AAD_APP_CLIENT_ID"]] = res.data.value[0].keyId;
-            userEnvData.obj["SECRET_AAD_APP_CLIENT_SECRET"] = "";
-          }
-        } catch (error) {
-          VsCodeLogInstance.warning(
-            "Failed to lists secrets for AAD app: " +
-              envData.obj["AAD_APP_CLIENT_ID"] +
-              " " +
-              (error as Error).toString()
-          );
-        }
+        list.push(envData.obj["AAD_APP_CLIENT_ID"]);
+        envData.obj["AAD_APP_CLIENT_ID"] = "";
+        envData.obj["AAD_APP_OBJECT_ID"] = "";
+        envData.obj["AAD_APP_TENANT_ID"] = "";
+        envData.obj["AAD_APP_OAUTH_AUTHORITY"] = "";
+        envData.obj["AAD_APP_OAUTH_AUTHORITY_HOST"] = "";
+        envData.obj["AAD_APP_ACCESS_AS_USER_PERMISSION_ID"] = "";
+        userEnvData.obj["SECRET_AAD_APP_CLIENT_SECRET"] = "";
       }
-
-      if (Object.keys(deleteMap).length == 0) {
-        return;
-      }
-      VsCodeLogInstance.info("Updating local user file.");
+      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.updatingLocalEnvFile"));
+      fs.writeFileSync(envFile, dotenvUtil.serialize(envData));
       fs.writeFileSync(userFile, dotenvUtil.serialize(userEnvData));
-      VsCodeLogInstance.info("Successfully updated local user file.");
-      for (const key in deleteMap) {
+      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.successUpdateLocalEnvFile"));
+      for (const id of list) {
         try {
-          const requestBody = {
-            keyId: deleteMap[key],
-          };
-          const res = await aadClient.post(
-            `applications(appId='${key}')/removePassword`,
-            requestBody
+          VsCodeLogInstance.info(
+            util.format(localize("teamstoolkit.localDebug.startDeletingAADApp"), id)
           );
-          VsCodeLogInstance.info("Try to delete secret for AAD app: " + key);
-          if (res.status != 204) {
-            VsCodeLogInstance.warning(
-              "Failed to delete secret for AAD app: " +
-                key +
-                ", status code: " +
-                res.status.toString() +
-                ", error message: " +
-                res.statusText
-            );
-          } else {
-            VsCodeLogInstance.info("Successfully deleted secret for AAD app: " + key);
-          }
+          await aadClient.delete(`applications(appId='${id}')`);
+          VsCodeLogInstance.info(
+            util.format(localize("teamstoolkit.localDebug.successDeleteAADApp"), id)
+          );
         } catch (error) {
           VsCodeLogInstance.warning(
-            "Failed to delete secret for AAD app: " + key + (error as Error).toString()
+            util.format(
+              localize("teamstoolkit.localDebug.failDeleteAADApp"),
+              id,
+              (error as Error).toString()
+            )
           );
         }
       }
-      VsCodeLogInstance.info("Successfully deleted AAD secret.");
+      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.successDeleteAADProcess"));
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SuccessDeleteAADAfterDebug);
     }
   } catch (error) {
-    VsCodeLogInstance.warning("Failed to delete AAD secret: " + (error as Error).toString());
+    VsCodeLogInstance.warning("Failed to delete AAD: " + (error as Error).toString());
+    VsCodeLogInstance.warning(
+      util.format(
+        localize("teamstoolkit.localDebug.failDeleteAADProcess"),
+        (error as Error).toString()
+      )
+    );
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.FailDeleteAADAfterDebug, error as FxError);
+  } finally {
+    globalVariables.setDeleteAADInProgress(false);
   }
 }

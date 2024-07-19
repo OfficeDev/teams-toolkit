@@ -31,7 +31,7 @@ import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
-import { initDebugPort } from "../../utils/commonUtils";
+import { initDebugPort, updateWebAppSku } from "../../utils/commonUtils";
 import { CliHelper } from "../cliHelper";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
@@ -382,6 +382,14 @@ export abstract class CaseFactory {
                 }
               },
               dev: async () => {
+                // update webapp sku from "Free" to "Standard"
+                const filePath = path.join(
+                  sampledebugContext.projectPath,
+                  "infra",
+                  "azure.parameters.json"
+                );
+                updateWebAppSku(filePath, "Standard");
+
                 await sampledebugContext.provisionProject(
                   sampledebugContext.appName,
                   sampledebugContext.projectPath

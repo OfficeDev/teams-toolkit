@@ -477,3 +477,19 @@ export async function generateYoSpfxProject(option: {
     throw new Error(`Failed to generate SPFx project: ${error}`);
   }
 }
+
+export function updateWebAppSku(
+  filePath: string,
+  sku: "Standard" | "Free"
+): void {
+  const parameterFile = fs.readJsonSync(filePath, { encoding: "utf-8" });
+  const webAppSku = parameterFile?.parameters?.staticWebAppSku?.value;
+  if (!webAppSku) {
+    console.log("Can not find WebApp Sku !!!");
+    return;
+  }
+  console.log("Change webAppSku to", sku);
+  parameterFile.parameters.staticWebAppSku.value = sku;
+  fs.writeJsonSync(filePath, parameterFile, { encoding: "utf-8" });
+  return;
+}

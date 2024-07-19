@@ -30,6 +30,7 @@ import {
   FunctionValidator,
 } from "../commonlib";
 import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
+import { updateWebAppSku } from "../utils/commonUtils";
 
 export abstract class CaseFactory {
   public capability: Capability;
@@ -158,6 +159,14 @@ export abstract class CaseFactory {
         expect(fs.pathExistsSync(projectPath)).to.be.true;
 
         await onAfterCreate(projectPath);
+
+        // update webapp sku from "Free" to "Standard"
+        const filePath = path.join(
+          projectPath,
+          "infra",
+          "azure.parameters.json"
+        );
+        updateWebAppSku(filePath, "Standard");
 
         // provision
         {

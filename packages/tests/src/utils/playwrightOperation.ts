@@ -2048,7 +2048,9 @@ export async function validateSpfx(
 
 export async function switchToTab(page: Page, tabName = "Personal Tab") {
   try {
-    await page.click(`a:has-text("${tabName}")`);
+    await page.click(
+      `button[role="tab"][type="button"]:has-text("${tabName}")`
+    );
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

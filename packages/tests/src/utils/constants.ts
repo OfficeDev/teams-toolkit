@@ -363,7 +363,8 @@ export type AppType =
   | "msgopenapi"
   | "msgapikey"
   | "msgmicroentra"
-  | "importspfx";
+  | "importspfx"
+  | "msgmulparams";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

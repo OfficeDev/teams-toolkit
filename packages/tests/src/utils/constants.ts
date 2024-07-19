@@ -108,7 +108,7 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.TodoListBackend]: TemplateProjectFolder.TodoListBackend,
     [TemplateProject.TodoListSpfx]: TemplateProjectFolder.TodoListSpfx,
     [TemplateProject.ShareNow]: TemplateProjectFolder.ShareNow,
-    [TemplateProject.MyFirstMetting]: TemplateProjectFolder.MyFirstMetting,
+    [TemplateProject.MyFirstMeeting]: TemplateProjectFolder.MyFirstMeeting,
     [TemplateProject.TodoListM365]: TemplateProjectFolder.TodoListM365,
     [TemplateProject.NpmSearch]: TemplateProjectFolder.NpmSearch,
     [TemplateProject.ProactiveMessaging]:

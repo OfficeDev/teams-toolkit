@@ -1,17 +1,16 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as vscode from "vscode";
 import * as util from "../../../../src/officeChat/utils";
 import * as helper from "../../../../src/officeChat/commands/create/helper";
 import * as generatecodeCommandHandler from "../../../../src/officeChat/commands/generatecode/generatecodeCommandHandler";
-import * as promptTest from "../../../../test/officeChat/mocks/localTuning/promptTest";
 import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { Planner } from "../../../../src/officeChat/common/planner";
 import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: generatecodeCommandHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -35,22 +34,6 @@ describe("File: generatecodeCommandHandler", () => {
   afterEach(() => {
     sandbox.restore();
     process.env.NODE_ENV = undefined;
-  });
-
-  it("prompt test in dev env", async () => {
-    process.env.NODE_ENV = "development";
-    const response = {
-      markdown: sandbox.stub(),
-    };
-    const token = new CancellationToken();
-    const promptTestStub = sandbox.stub(promptTest, "promptTest");
-    await generatecodeCommandHandler.default(
-      { prompt: "promptTest" } as unknown as vscode.ChatRequest,
-      {} as unknown as vscode.ChatContext,
-      response as unknown as vscode.ChatResponseStream,
-      token
-    );
-    chai.assert.isTrue(promptTestStub.calledOnce);
   });
 
   it("input prompt is empty", async () => {

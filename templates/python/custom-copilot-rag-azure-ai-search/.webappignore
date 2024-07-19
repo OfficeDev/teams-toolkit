@@ -9,7 +9,6 @@ __pycache__/
 README.md
 teamsapp.yml
 teamsapp.local.yml
-teamsapp.testtool.yml
 .gitignore
 
 indexers/

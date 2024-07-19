@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {
   Warning,
   AppPackageFolderName,
@@ -30,6 +30,7 @@ import { getAppName } from "./appDefinitionUtils";
 import { getLocalDebugMessageTemplate } from "./commonUtils";
 import { localize } from "./localizeUtils";
 import { VS_CODE_UI } from "../qm/vsc_ui";
+import { openReadMeHandler } from "../handlers/readmeHandlers";
 
 export async function showLocalDebugMessage() {
   const shouldShowLocalDebugMessage = (await globalStateGet(
@@ -44,13 +45,40 @@ export async function showLocalDebugMessage() {
   }
 
   const hasLocalEnv = await fs.pathExists(path.join(workspaceUri!.fsPath, "teamsapp.local.yml"));
+  const hasKeyGenJsFile = await fs.pathExists(path.join(workspaceUri!.fsPath, "/src/keyGen.js"));
+  const hasKeyGenTsFile = await fs.pathExists(path.join(workspaceUri!.fsPath, "/src/keyGen.ts"));
 
   const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
   const folderLink = encodeURI(workspaceUri!.toString());
   const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
 
-  if (hasLocalEnv) {
+  if (hasKeyGenJsFile || hasKeyGenTsFile) {
+    const openReadMe = {
+      title: localize("teamstoolkit.handlers.manualStepRequiredTitle"),
+      run: async (): Promise<void> => {
+        await openReadMeHandler([TelemetryTriggerFrom.Notification]);
+      },
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowManualStepRequiredNotification);
+    const message = isWindows
+      ? util.format(
+          localize("teamstoolkit.handlers.manualStepRequired"),
+          appName,
+          openFolderCommand
+        )
+      : util.format(
+          localize("teamstoolkit.handlers.manualStepRequired.fallback"),
+          appName,
+          workspaceUri?.fsPath
+        );
+    void vscode.window.showInformationMessage(message, openReadMe).then((selection) => {
+      if (selection?.title === localize("teamstoolkit.handlers.manualStepRequiredTitle")) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickReadManualStep);
+        void selection.run();
+      }
+    });
+  } else if (hasLocalEnv) {
     const localDebug = {
       title: localize("teamstoolkit.handlers.localDebugTitle"),
       run: async (): Promise<void> => {

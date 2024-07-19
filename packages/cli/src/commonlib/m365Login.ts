@@ -151,7 +151,11 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
  */
 class MM365TokenProviderWrapper implements M365TokenProvider {
   getProvider(): M365TokenProvider {
-    const m365Login = !ui.interactive ? M365TokenProviderUserPassword : M365Login.getInstance();
+    // if interactive is false and system environment variables (M365_ACCOUNT_NAME, M365_ACCOUNT_PASSWORD) are set, then use M365TokenProviderUserPassword
+    const m365Login =
+      !ui.interactive && process.env.M365_ACCOUNT_NAME && process.env.M365_ACCOUNT_PASSWORD
+        ? M365TokenProviderUserPassword
+        : M365Login.getInstance();
     return m365Login;
   }
   getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {

@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as fileSystemUtils from "../../src/utils/fileSystemUtils";
 import * as mockfs from "mock-fs";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import { Uri } from "vscode";
 

@@ -5,7 +5,7 @@
 
 import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { defaultExtensionLogPath } from "../globalVariables";
 import { SummaryConstant } from "@microsoft/teamsfx-core";
 

@@ -362,6 +362,7 @@ export type AppType =
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"
+  | "msgmicroentra"
   | "importspfx";
 
 export class FeatureFlagName {

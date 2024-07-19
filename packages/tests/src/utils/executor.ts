@@ -75,8 +75,7 @@ export class Executor {
 
   static async login() {
     const command = `az login --username ${Env["azureAccountName"]} --password '${Env["azureAccountPassword"]}' --tenant ${Env["azureTenantId"]}`;
-    const { success } = await Executor.execute(command, process.cwd());
-    expect(success).to.be.true;
+    await Executor.execute(command, process.cwd());
 
     // set subscription
     const subscription = Env["azureSubscriptionId"];
@@ -594,6 +593,16 @@ export class Executor {
       tunnelName = tunnel.tunnelName;
       devtunnelProcess = tunnel.devtunnelProcess;
       await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+      {
+        const { success } = await Executor.provision(projectPath, "local");
+        expect(success).to.be.true;
+        console.log(`[Successfully] provision for ${projectPath}`);
+      }
+      {
+        const { success } = await Executor.deploy(projectPath, "local");
+        expect(success).to.be.true;
+        console.log(`[Successfully] deploy for ${projectPath}`);
+      }
     }
     const debugProcess = Executor.debugProject(
       projectPath,

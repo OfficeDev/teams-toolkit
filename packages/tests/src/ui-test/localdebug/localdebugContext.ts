@@ -35,7 +35,8 @@ export type LocalDebugTestName =
   | "aichat"
   | "aiassist"
   | "msgnewapi"
-  | "msgapikey";
+  | "msgapikey"
+  | "msgmicroentra";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
@@ -277,6 +278,12 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth api-key --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "msgmicroentra":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth microsoft-entra --programming-language ${this.lang} --telemetry false`
         );
         break;
     }

@@ -4,7 +4,7 @@
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
-import * as path from "path";
+import path from "path";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
 import { Correlator, TaskDefaultValue } from "@microsoft/teamsfx-core";

@@ -7,9 +7,6 @@
     },    
     "functionAppSKU": {
       "value": "Y1"
-    },
-    "functionStorageSKU": {
-      "value": "Standard_LRS"
     }
   }
 }

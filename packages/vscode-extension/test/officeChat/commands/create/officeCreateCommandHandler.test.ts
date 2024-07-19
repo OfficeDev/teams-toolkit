@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as vscode from "vscode";
 import * as officeCreateCommandHandler from "../../../../src/officeChat/commands/create/officeCreateCommandHandler";
 import * as officeChatUtil from "../../../../src/officeChat/utils";
@@ -13,7 +13,7 @@ import { Planner } from "../../../../src/officeChat/common/planner";
 import { OfficeChatTelemetryData } from "../../../../src/officeChat/telemetry";
 import { OfficeProjectInfo } from "../../../../src/officeChat/types";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: officeCreateCommandHandler", () => {
   const sandbox = sinon.createSandbox();

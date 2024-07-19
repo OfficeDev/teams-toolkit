@@ -108,8 +108,8 @@ dependencies:
     specifier: ^2.5.2
     version: 2.5.2
   mustache:
-    specifier: ^4.2.0
-    version: 4.2.0
+    specifier: ^4.1.0
+    version: 4.1.0
   node-fetch:
     specifier: 2.7.0
     version: 2.7.0
@@ -4317,8 +4317,8 @@ packages:
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  /mustache@4.2.0:
-    resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
+  /mustache@4.1.0:
+    resolution: {integrity: sha512-0FsgP/WVq4mKyjolIyX+Z9Bd+3WS8GOwoUTyKXT5cTYMGeauNTi2HPCwERqseC1IHAy0Z7MDZnJBfjabd4O8GQ==}
     hasBin: true
     dev: false
 

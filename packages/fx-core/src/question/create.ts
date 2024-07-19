@@ -94,8 +94,11 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
       }
 
+      if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
+        staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
+      }
+
       staticOptions.push(
-        ProjectTypeOptions.customCopilot(inputs.platform),
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
         ProjectTypeOptions.me(inputs.platform)
@@ -106,7 +109,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
         if (projectType) {
           return [projectType];
         }
-      } else {
+      } else if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
         if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
           staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
         } else {
@@ -206,7 +209,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         }
       }
       // dotnet capabilities
-      if (getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+      if (inputs.platform === Platform.VS) {
         return CapabilityOptions.dotnetCaps(inputs);
       }
 
@@ -215,7 +218,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         return CapabilityOptions.all(inputs);
       }
 
-      // nodejs capabilities
+      // capabilities if VSC or CLI interactive mode
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {
         return CapabilityOptions.bots(inputs);
@@ -1010,7 +1013,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     },
     inputOptionItem: {
       id: "input",
-      label: getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
+      label: `$(cloud) ` + getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
     },
     filters: {
       files: ["json", "yml", "yaml"],
@@ -1383,12 +1386,13 @@ export function capabilitySubTree(): IQTreeNode {
         data: programmingLanguageQuestion(),
         condition: (inputs: Inputs) => {
           return (
-            !!inputs[QuestionNames.Capabilities] &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
-            inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id
+            (!!inputs[QuestionNames.Capabilities] &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
+              inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
+              inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id) ||
+            getRuntime(inputs) === RuntimeOptions.DotNet().id
           );
         },
       },

@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import * as globalVariables from "../../src/globalVariables";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as vscode from "vscode";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import {

@@ -1,6 +1,6 @@
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as utils from "../../src/chat/utils";

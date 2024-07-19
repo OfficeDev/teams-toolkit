@@ -2048,7 +2048,9 @@ export async function validateSpfx(
 
 export async function switchToTab(page: Page, tabName = "Personal Tab") {
   try {
-    await page.click(`a:has-text("${tabName}")`);
+    await page.click(
+      `button[role="tab"][type="button"]:has-text("${tabName}")`
+    );
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -2720,6 +2722,41 @@ export async function validateApiMeResult(page: Page, appName: string) {
       "div.ui-box input.ui-box"
     );
     await searchcmdInput?.fill("Karin");
+    try {
+      await page?.waitForSelector('ul[datatid="app-picker-list"]');
+      console.log("verify search successfully!!!");
+    } catch (error) {
+      await page?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateMultiParamsApiMeResult(
+  page: Page,
+  appName: string
+) {
+  try {
+    await messageExtensionActivate(page, appName);
+    console.log("start to validate search command");
+    const petIdInput = await page?.waitForSelector(
+      "div.ac-input-container span.fui-SpinButton input[type='text']"
+    );
+    await petIdInput?.fill("4");
+    const testInput = await page?.waitForSelector(
+      "div.ac-input-container span.fui-Input input[type='text']"
+    );
+    await testInput?.fill("5");
+    await page.click("button[type='submit']");
+    await page.waitForTimeout(Timeout.shortTimeWait);
     try {
       await page?.waitForSelector('ul[datatid="app-picker-list"]');
       console.log("verify search successfully!!!");

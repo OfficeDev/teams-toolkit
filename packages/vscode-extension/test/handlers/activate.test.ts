@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import * as vscode from "vscode";
-import * as path from "path";
+import path from "path";
 import * as fileSystemWatcher from "../../src/utils/fileSystemWatcher";
 import * as globalVariables from "../../src/globalVariables";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";

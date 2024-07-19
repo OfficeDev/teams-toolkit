@@ -18,6 +18,7 @@ import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { showOutputChannelHandler } from "./showOutputChannel";
 import { InstallCopilotChatLink } from "../constants";
+import { isVSCodeInsiderVersion } from "../utils/versionUtil";
 
 const githubCopilotChatExtensionId = "github.copilot-chat";
 
@@ -64,7 +65,6 @@ export async function installGithubCopilotChatExtension(
   };
   ExtTelemetry.sendTelemetryEvent(eventName, telemetryProperties);
   try {
-    const vscodeVersion = vscode.version;
     const confirmRes = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.askInstallCopilot"),
       localize("teamstoolkit.handlers.askInstallCopilot.install"),
@@ -80,7 +80,7 @@ export async function installGithubCopilotChatExtension(
         "workbench.extensions.installExtension",
         githubCopilotChatExtensionId,
         {
-          installPreReleaseVersion: vscodeVersion.includes("insider"), // VSCode insider need to install Github Copilot Chat of pre-release version
+          installPreReleaseVersion: isVSCodeInsiderVersion(), // VSCode insider need to install Github Copilot Chat of pre-release version
           enable: true,
         }
       );

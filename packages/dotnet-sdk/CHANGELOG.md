@@ -1,7 +1,14 @@
+# 2.5.0-rc
+
+- Update dependencies `Microsoft.Bot.Builder` and `Microsoft.Bot.Builder.Dialogs`.
+- Update dependencies `Microsoft.Identity.Client`.
+
 # 2.4.1
+
 - Update `@microsoft/teams-js` version to 2.22.0.
 
 # 2.4.0
+
 - Support to set notification local store file name using environment variable `TEAMSFX_NOTIFICATION_STORE_FILENAME`.
 
 # 2.3.0

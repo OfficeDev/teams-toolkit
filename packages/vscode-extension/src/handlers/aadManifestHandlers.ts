@@ -3,7 +3,7 @@
 
 import * as vscode from "vscode";
 import * as util from "util";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {
   Result,
   FxError,

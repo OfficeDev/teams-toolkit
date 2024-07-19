@@ -20,7 +20,10 @@ import {
 } from "../../utils/vscodeOperation";
 import { cleanUpLocalProject, cleanTeamsApp } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
-import { initPage, validateApiMeResult } from "../../utils/playwrightOperation";
+import {
+  initPage,
+  validateMultiParamsApiMeResult,
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -35,7 +38,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("msgopenapi");
+    remoteDebugTestContext = new RemoteDebugTestContext("msgmulparams");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -54,14 +57,14 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Remote debug for new API message extension from a OpenAPI spec file project",
+    "[auto] Remote debug for new API message extension with multiple parameters",
     {
-      testPlanCaseId: 25270433,
+      testPlanCaseId: 25860087,
       author: "v-annefu@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("msgopenapi", appName);
+      await createNewProject("msgmulparams", appName);
       await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
       await driver.sleep(Timeout.openAPIProvision);
@@ -80,7 +83,10 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateApiMeResult(page, remoteDebugTestContext.appName);
+      await validateMultiParamsApiMeResult(
+        page,
+        remoteDebugTestContext.appName
+      );
     }
   );
 });

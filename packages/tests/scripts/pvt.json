@@ -70,7 +70,8 @@
       "remotedebug-spfx-minimal",
       "remotedebug-spfx-react",
       "remotedebug-msg-newapi-microsoftentra-ts-win-only",
-      "remotedebug-msg-newapi-microsoftentra-win-only"
+      "remotedebug-msg-newapi-microsoftentra-win-only",
+      "remotedebug-msg-multiple-params-win-only"
     ],
     "node-20": ["localdebug-obo-tab"]
   },

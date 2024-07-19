@@ -873,22 +873,9 @@ export async function createNewProject(
       break;
     }
     case "msgopenapi": {
-      const openapiSpecFilePath =
+      const apiSpecFilePath =
         "https://piercerepairsapi.azurewebsites.net/openapi.yml";
-      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
-      await input.selectQuickPick("Custom Search Results");
-      await input.setText("Start with an OpenAPI Description Document");
-      await input.confirm();
-      await input.selectQuickPick(
-        "Enter OpenAPI Description Document Location"
-      );
-      await inputFolderPath(driver, input, openapiSpecFilePath);
-      await input.confirm();
-      await driver.sleep(Timeout.shortTimeWait);
-      const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
-      await ckAll?.click();
-      await driver.sleep(Timeout.input);
-      await input.confirm();
+      await createNewProjectByApispec(apiSpecFilePath, driver, input);
       break;
     }
     case "msgapikey": {
@@ -907,6 +894,12 @@ export async function createNewProject(
       await input.selectQuickPick("Microsoft Entra");
       // Choose programming language
       await input.selectQuickPick(lang);
+      break;
+    }
+    case "msgmulparams": {
+      const apiSpecFilePath =
+        "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/multiparam.yml";
+      await createNewProjectByApispec(apiSpecFilePath, driver, input);
       break;
     }
     default:
@@ -1260,4 +1253,23 @@ export async function createEnvironmentWithPython() {
     "The following environment is selected",
     Timeout.shortTimeWait
   );
+}
+
+export async function createNewProjectByApispec(
+  apispec: string,
+  driver: WebDriver,
+  input: InputBox
+): Promise<void> {
+  await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+  await input.selectQuickPick("Custom Search Results");
+  await input.setText("Start with an OpenAPI Description Document");
+  await input.confirm();
+  await input.selectQuickPick("Enter OpenAPI Description Document Location");
+  await inputFolderPath(driver, input, apispec);
+  await input.confirm();
+  await driver.sleep(Timeout.shortTimeWait);
+  const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
+  await ckAll?.click();
+  await driver.sleep(Timeout.input);
+  await input.confirm();
 }

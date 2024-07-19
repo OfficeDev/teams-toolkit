@@ -493,3 +493,42 @@ export function updateWebAppSku(
   fs.writeJsonSync(filePath, parameterFile, { encoding: "utf-8" });
   return;
 }
+
+export function getResourceGroupNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /\/resourceGroups\/([^\/]*)\//i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error(
+      failedToParseResourceIdErrorMessage("resource group name", resourceId)
+    );
+  }
+  return result;
+}
+
+export function parseFromResourceId(
+  pattern: RegExp,
+  resourceId: string
+): string {
+  const result = resourceId.match(pattern);
+  return result ? result[1].trim() : "";
+}
+
+const failedToParseResourceIdErrorMessage = (
+  name: string,
+  resourceId: string
+) => `Failed to parse ${name} from resource id ${resourceId}`;
+
+export function getSubscriptionIdFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /\/subscriptions\/([^\/]*)\//i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error(
+      failedToParseResourceIdErrorMessage("subscription id", resourceId)
+    );
+  }
+  return result;
+}

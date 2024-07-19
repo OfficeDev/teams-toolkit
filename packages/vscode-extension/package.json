@@ -1584,6 +1584,7 @@
   "scripts": {
     "lint:staged": "lint-staged",
     "vscode:prepublish": "rimraf out && npm run package",
+    "package": "npm run check-types && npm run vite && node esbuild.mjs --production",
     "build": "npm run check-types && npm run vite && node esbuild.mjs",
     "check-types": "tsc --noEmit",
     "vite": "vite build --config vite.config.mts",

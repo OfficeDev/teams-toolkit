@@ -59,7 +59,7 @@ jobs:
       M365_TENANT_ID: ${{ secrets.TEST_M365_TENANT_ID }}
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME_2 }}
-      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-name }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3

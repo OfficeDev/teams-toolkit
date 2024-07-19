@@ -67,21 +67,6 @@ export default async function generatecodeCommandHandler(
     };
   }
 
-  if (process.env.NODE_ENV === "development") {
-    const localScenarioHandlers = await import("../../../../test/officeChat/mocks/localTuning");
-    if (request.prompt in localScenarioHandlers) {
-      const scenarioName = request.prompt as keyof typeof localScenarioHandlers;
-      await localScenarioHandlers[scenarioName](request, context, response, token);
-
-      return {
-        metadata: {
-          command: OfficeChatCommand.GenerateCode,
-          requestId: officeChatTelemetryData.requestId,
-        },
-      };
-    }
-  }
-
   const isHarmful = await isInputHarmful(request, token, officeChatTelemetryData);
   if (!isHarmful) {
     let chatResult: ICopilotChatOfficeResult = {};

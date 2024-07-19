@@ -11,7 +11,7 @@ import { CaseFactory } from "./sampleCaseFactory";
 class MyFirstMettingTestCase extends CaseFactory {}
 
 new MyFirstMettingTestCase(
-  TemplateProjectFolder.MyFirstMetting,
+  TemplateProjectFolder.MyFirstMeeting,
   15277468,
   "kaiyan@microsoft.com",
   ["tab"]

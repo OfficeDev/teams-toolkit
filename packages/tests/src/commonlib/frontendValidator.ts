@@ -70,8 +70,6 @@ export class FrontendValidator {
   private static subscriptionId: string;
   private static resourceGroupName: string;
 
-  private static storageResourceIdKeyName = "storageResourceId";
-
   public static init(ctx: any): IFrontendObject {
     console.log("Start to init validator for Frontend.");
 
@@ -180,14 +178,14 @@ export class FrontendValidator {
     console.log("Successfully validate Frontend Deploy.");
   }
 
-  private static getStorageAccountName(storageResourceId: string): string {
+  private static getStorageAccountName(webAppId: string): string {
     const result = parseFromResourceId(
-      /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
-      storageResourceId
+      /providers\/Microsoft.Web\/staticSites\/([^\/]*)/i,
+      webAppId
     );
     if (!result) {
       throw new Error(
-        `Cannot parse storage accounts name from resource id ${storageResourceId}`
+        `Cannot parse storage accounts name from resource id ${webAppId}`
       );
     }
     return result;

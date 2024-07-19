@@ -389,54 +389,12 @@ jobs:
       - name: Get VSCode
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type insider --code_version 1.90.0-insider
+          npx extest get-vscode --storage .test-resources --type stable
 
-      - name: Get chromedriver (linux)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: packages/tests/.test-resources
-        run: |
-          curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/linux64/chromedriver-linux64.zip
-          ls
-
-      - name: Get chromedriver (mac)
-        if: matrix.os == 'macos-latest'
-        working-directory: packages/tests/.test-resources
-        run: |
-          if [[ $(uname -m) == "x86_64" ]]; then
-            curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-x64/chromedriver-mac-x64.zip
-          elif [[ $(uname -m) == "arm64" ]]; then
-            curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-arm64/chromedriver-mac-arm64.zip
-          fi
-          ls
-
-      - name: Get chromedriver (windows)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests/.test-resources
-        run: |
-            powershell Invoke-WebRequest -Uri https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win64/chromedriver-win64.zip -OutFile chromedriver-win64.zip
-            ls
-  
-      - name: Extract VSCode & chromedriver(unix)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Get chromedriver
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver-linux64.zip" -o".test-resources" -y
-
-      - name: Extract VSCode & chromedriver(mac)
-        if: matrix.os == 'macos-latest' 
-        working-directory: packages/tests
-        run: |
-          if [[ $(uname -m) == "x86_64" ]]; then
-            7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
-          elif [[ $(uname -m) == "arm64" ]]; then
-            7z x ".test-resources/chromedriver-mac-arm64.zip" -o".test-resources" -y
-          fi
-
-      - name: Extract VSCode & chromedriver(win)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
-        run: |
-          7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
+          npx extest get-chromedriver --storage .test-resources --type stable
 
       - name: M365 Login
         working-directory: packages/tests
@@ -451,33 +409,28 @@ jobs:
       - name: Install python extension
         working-directory: packages/tests
         run: |
-          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-python.python
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-python.python
 
       - name: Install docker extension
         if: contains(matrix.test-case,  'docker')
         working-directory: packages/tests
         run: |
-          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-azuretools.vscode-docker
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker
 
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
         working-directory: packages/tests
         run: |
           vsix=`find . -type f -name "*.vsix" | sed 's|.*/\(.*\)|\1|'`
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file $vsix
+          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
       - name: Install vsix(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
           $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file $vsix
+          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
-      - name: proposal api support
-        run: |
-          mkdir -p $HOME/.vscode-insiders
-          echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode-insiders/argv.json
-          
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests
@@ -485,13 +438,13 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.90.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
      
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.90.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
       
       - name: Upload test result json file
         uses: actions/upload-artifact@v3

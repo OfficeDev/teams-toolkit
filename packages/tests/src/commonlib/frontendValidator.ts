@@ -6,8 +6,8 @@ import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
-import path from "path";
-import { EnvConstants } from "../commonlib/constants";
+import * as path from "path";
+import { EnvConstants } from "./constants";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
@@ -244,7 +244,7 @@ export class FrontendValidator {
 
   private static getResourceIdFromCtx(ctx: any): string {
     return (
-      ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID] ??
+      ctx[EnvConstants.AZURE_STATIC_WEB_APPS_RESOURCE_ID] ??
       ctx[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID]
     );
   }

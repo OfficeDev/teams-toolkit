@@ -5,8 +5,8 @@ import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azur
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
-import glob from "glob";
-import path from "path";
+import * as glob from "glob";
+import * as path from "path";
 import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 import {
   getResourceGroupNameFromResourceId,

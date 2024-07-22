@@ -35,7 +35,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.HelloWorldTabBackEnd]: async () => {
     await startDebugging();
   },
-  [TemplateProject.MyFirstMetting]: async () => {
+  [TemplateProject.MyFirstMeeting]: async () => {
     await startDebugging();
   },
   [TemplateProject.HelloWorldBotSSO]: async () => {

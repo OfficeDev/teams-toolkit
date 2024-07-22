@@ -45,7 +45,7 @@ import {
   getLocalDebugSessionId,
 } from "./common/localDebugSession";
 import { allRunningDebugSessions } from "./officeTaskHandler";
-import { deleteAAD } from "./deleteAADHelper";
+import { deleteAad } from "./deleteAadHelper";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -537,7 +537,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
   }
   allRunningTeamsfxTasks.clear();
   BaseTunnelTaskTerminal.stopAll();
-  void deleteAAD();
+  void deleteAad();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {

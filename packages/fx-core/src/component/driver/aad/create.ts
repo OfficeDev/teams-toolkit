@@ -92,7 +92,15 @@ export class CreateAadAppDriver implements StepDriver {
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
         outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
 
-        const summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
+        let summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
+        const tokenJson = await context.m365TokenProvider.getJsonObject({ scopes: GraphScopes });
+        if (
+          tokenJson.isOk() &&
+          tokenJson.value.unique_name &&
+          (tokenJson.value.unique_name as string).includes("@microsoft.com")
+        ) {
+          summary += getLocalizedString(logMessageKeys.deleteAadAfterDebugging);
+        }
         context.logProvider?.info(summary);
         summaries.push(summary);
       } else {

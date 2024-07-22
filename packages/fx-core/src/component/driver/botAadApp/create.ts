@@ -26,6 +26,7 @@ import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPassw
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { logMessageKeys, progressBarKeys } from "./utility/constants";
+import { GraphScopes } from "../../../common/constants";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -113,10 +114,18 @@ export class CreateBotAadAppDriver implements StepDriver {
 
       const outputs = mapStateToEnv(botAadAppState, outputEnvVarNames);
 
-      const successCreateBotAadLog = getLocalizedString(
+      let successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
         botAadAppState.botId
       );
+      const tokenJson = await context.m365TokenProvider.getJsonObject({ scopes: GraphScopes });
+      if (
+        tokenJson.isOk() &&
+        tokenJson.value.unique_name &&
+        (tokenJson.value.unique_name as string).includes("@microsoft.com")
+      ) {
+        successCreateBotAadLog += getLocalizedString(logMessageKeys.deleteAadAfterDebugging);
+      }
       const useExistingBotAadLog = getLocalizedString(
         logMessageKeys.useExistingBotAad,
         botAadAppState.botId

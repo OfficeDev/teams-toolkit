@@ -10,6 +10,7 @@ export const logMessageKeys = {
   startCreateBotAadApp: "botRegistration.log.startCreateBotAadApp",
   successCreateBotAadApp: "botRegistration.log.successCreateBotAadApp",
   skipCreateBotAadApp: "botRegistration.log.skipCreateBotAadApp",
+  deleteAadAfterDebugging: "driver.aadApp.log.deleteAadAfterDebugging",
 };
 
 export const progressBarKeys = {

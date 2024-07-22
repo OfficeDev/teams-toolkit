@@ -16,12 +16,13 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { FxError } from "@microsoft/teamsfx-api";
 
-export async function deleteAAD() {
+const defaultNotificationLocalFile = ".notification.localstore.json";
+export async function deleteAad() {
   try {
-    if (globalVariables.deleteAADInProgress) {
+    if (globalVariables.deleteAadInProgress) {
       return;
     }
-    globalVariables.setDeleteAADInProgress(true);
+    globalVariables.setDeleteAadInProgress(true);
     const projectPath = globalVariables.workspaceUri!.fsPath;
     const envFile = path.resolve(projectPath, "env", ".env.local");
     const userFile = path.resolve(projectPath, "env", ".env.local.user");
@@ -44,8 +45,8 @@ export async function deleteAAD() {
       if (!uniqueName || !uniqueName.includes("@microsoft.com")) {
         return;
       }
-      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.startDeletingAADProcess"));
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.StartDeleteAADAfterDebug);
+      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.startDeletingAadProcess"));
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.StartDeleteAadAfterDebug);
 
       const aadClient = axios.create({
         baseURL: "https://graph.microsoft.com/v1.0",
@@ -58,7 +59,7 @@ export async function deleteAAD() {
       if (envData.obj["BOT_ID"] != undefined) {
         list.push(envData.obj["BOT_ID"]);
         envData.obj["BOT_ID"] = "";
-        userEnvData.obj["SECRET_BOT_PWORD"] = "";
+        userEnvData.obj["SECRET_BOT_PASSWORD"] = "";
       }
       if (envData.obj["AAD_APP_CLIENT_ID"] != undefined) {
         list.push(envData.obj["AAD_APP_CLIENT_ID"]);
@@ -74,38 +75,46 @@ export async function deleteAAD() {
       fs.writeFileSync(envFile, dotenvUtil.serialize(envData));
       fs.writeFileSync(userFile, dotenvUtil.serialize(userEnvData));
       VsCodeLogInstance.info(localize("teamstoolkit.localDebug.successUpdateLocalEnvFile"));
+      if (fs.existsSync(path.resolve(projectPath, defaultNotificationLocalFile))) {
+        VsCodeLogInstance.info(
+          localize("teamstoolkit.localDebug.startDeletingNotificationLocalStoreFile")
+        );
+        fs.writeFileSync(defaultNotificationLocalFile, "{}");
+        VsCodeLogInstance.info(
+          localize("teamstoolkit.localDebug.successDeleteNotificationLocalStoreFile")
+        );
+      }
       for (const id of list) {
         try {
           VsCodeLogInstance.info(
-            util.format(localize("teamstoolkit.localDebug.startDeletingAADApp"), id)
+            util.format(localize("teamstoolkit.localDebug.startDeletingAadApp"), id)
           );
           await aadClient.delete(`applications(appId='${id}')`);
           VsCodeLogInstance.info(
-            util.format(localize("teamstoolkit.localDebug.successDeleteAADApp"), id)
+            util.format(localize("teamstoolkit.localDebug.successDeleteAadApp"), id)
           );
         } catch (error) {
           VsCodeLogInstance.warning(
             util.format(
-              localize("teamstoolkit.localDebug.failDeleteAADApp"),
+              localize("teamstoolkit.localDebug.failDeleteAadApp"),
               id,
               (error as Error).toString()
             )
           );
         }
       }
-      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.successDeleteAADProcess"));
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SuccessDeleteAADAfterDebug);
+      VsCodeLogInstance.info(localize("teamstoolkit.localDebug.successDeleteAadProcess"));
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SuccessDeleteAadAfterDebug);
     }
   } catch (error) {
-    VsCodeLogInstance.warning("Failed to delete AAD: " + (error as Error).toString());
     VsCodeLogInstance.warning(
       util.format(
-        localize("teamstoolkit.localDebug.failDeleteAADProcess"),
+        localize("teamstoolkit.localDebug.failDeleteAadProcess"),
         (error as Error).toString()
       )
     );
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.FailDeleteAADAfterDebug, error as FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.FailDeleteAadAfterDebug, error as FxError);
   } finally {
-    globalVariables.setDeleteAADInProgress(false);
+    globalVariables.setDeleteAadInProgress(false);
   }
 }

@@ -642,6 +642,7 @@
   "driver.aadApp.log.skipGenerateClientSecret": "Environment variable %s already exist, skipping Microsoft Entra app client secret generation step.",
   "driver.aadApp.log.outputAadAppManifest": "Build Microsoft Entra app manifest completed, and app manifest content is written to %s",
   "driver.aadApp.log.successUpdateAadAppManifest": "Applied manifest %s to Microsoft Entra application with object id %s",
+  "driver.aadApp.log.deleteAadAfterDebugging": " (Teams toolkit will delete the Microsoft Entra application after debugging)",
   "botRegistration.ProgressBar.creatingBotAadApp": "Creating bot Microsoft Entra app...",
   "botRegistration.log.startCreateBotAadApp": "Creating bot Microsoft Entra app.",
   "botRegistration.log.successCreateBotAadApp": "Bot Microsoft Entra app created successfully.",

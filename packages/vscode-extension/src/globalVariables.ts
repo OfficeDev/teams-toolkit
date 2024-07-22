@@ -29,7 +29,7 @@ export let commandIsRunning = false;
 export let core: FxCore;
 export let tools: Tools;
 export let diagnosticCollection: vscode.DiagnosticCollection; // Collection of diagnositcs after running app validation.
-export let deleteAADInProgress = false;
+export let deleteAadInProgress = false;
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {
@@ -94,6 +94,6 @@ export function setDiagnosticCollection(collection: vscode.DiagnosticCollection)
   diagnosticCollection = collection;
 }
 
-export function setDeleteAADInProgress(inProgress: boolean) {
-  deleteAADInProgress = inProgress;
+export function setDeleteAadInProgress(inProgress: boolean) {
+  deleteAadInProgress = inProgress;
 }

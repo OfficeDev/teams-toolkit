@@ -79,7 +79,7 @@ export async function deleteAad() {
         VsCodeLogInstance.info(
           localize("teamstoolkit.localDebug.startDeletingNotificationLocalStoreFile")
         );
-        fs.writeFileSync(defaultNotificationLocalFile, "{}");
+        fs.writeFileSync(path.resolve(projectPath, defaultNotificationLocalFile), "{}");
         VsCodeLogInstance.info(
           localize("teamstoolkit.localDebug.successDeleteNotificationLocalStoreFile")
         );

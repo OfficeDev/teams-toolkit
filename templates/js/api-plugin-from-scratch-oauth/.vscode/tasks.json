@@ -110,6 +110,34 @@
             "presentation": {
                 "reveal": "silent"
             }
+        },
+        {
+            "label": "Start Teams App in Desktop Client",
+            "dependsOn": [
+                "Validate prerequisites",
+                "Start local tunnel",
+                "Create resources",
+                "Build project",
+                "Start application",
+                "Start desktop client"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Start desktop client",
+            "type": "teamsfx",
+            "command": "launch-desktop-client",
+            "args": {
+                "url": "teams.microsoft.com"
+            }
+        },
+        {
+            "label": "Start Teams App in Desktop Client (Remote)",
+            "type": "teamsfx",
+            "command": "launch-desktop-client",
+            "args": {
+                "url": "teams.microsoft.com"
+            }
         }
     ]
 }

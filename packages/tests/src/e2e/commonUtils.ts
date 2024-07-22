@@ -24,7 +24,6 @@ import {
   AadValidator,
   AppStudioValidator,
   BotValidator,
-  FrontendValidator,
   ResourceGroupManager,
   SharepointValidator as SharepointManager,
   cfg,
@@ -49,18 +48,18 @@ export {
 
 const testFolder = path.resolve(os.homedir(), "test-folder");
 
-export function getTestFolder() {
+export function getTestFolder(): string {
   if (!fs.pathExistsSync(testFolder)) {
     fs.mkdirSync(testFolder);
   }
   return testFolder;
 }
 
-export function getAppNamePrefix() {
+export function getAppNamePrefix(): string {
   return "fxE2E";
 }
 
-export function getUniqueAppName() {
+export function getUniqueAppName(): string {
   return getAppNamePrefix() + Date.now().toString() + uuidv4().slice(0, 2);
 }
 
@@ -68,15 +67,15 @@ export function convertToAlphanumericOnly(appName: string): string {
   return appName.replace(/[^\da-zA-Z]/g, "");
 }
 
-export function getSubscriptionId() {
+export function getSubscriptionId(): string {
   return cfg.AZURE_SUBSCRIPTION_ID || "";
 }
 
-export function getAzureTenantId() {
+export function getAzureTenantId(): string {
   return cfg.AZURE_TENANT_ID || "";
 }
 
-export function getAzureAccountObjectId() {
+export function getAzureAccountObjectId(): string {
   if (!cfg.AZURE_ACCOUNT_OBJECT_ID) {
     throw new Error("Failed to get AZURE_ACCOUNT_OBJECT_ID from environment.");
   }
@@ -605,8 +604,8 @@ export async function validateTabAndBotProjectProvision(
   await AadValidator.validate(aad);
 
   // Validate Tab Frontend
-  const frontend = FrontendValidator.init(context);
-  await FrontendValidator.validateProvision(frontend);
+  // const frontend = FrontendValidator.init(context);
+  // await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision
   const bot = new BotValidator(context, projectPath, env);

@@ -5,11 +5,7 @@
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
-import {
-  createEnvironmentWithPython,
-  startDebugging,
-  waitForTerminal,
-} from "../../utils/vscodeOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
   initPage,
   validateWelcomeAndReplyBot,
@@ -20,7 +16,6 @@ import {
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
-  LocalDebugTaskLabel2,
 } from "../../utils/constants";
 import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -33,8 +28,8 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aichat", {
-      lang: "python",
+    localDebugTestContext = new LocalDebugTestContext("chatdata", {
+      customCopilotRagType: "custom-copilot-rag-customize",
     });
     await localDebugTestContext.before();
   });
@@ -45,9 +40,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [Python] Local debug AI chat bot",
+    "[auto][JS][Azure OpenAI] Local debug for basic rag bot using customize data",
     {
-      testPlanCaseId: 27178071,
+      testPlanCaseId: 27569146,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -55,7 +50,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/app.py");
+      validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
@@ -72,19 +67,14 @@ describe("Local Debug Tests", function () {
       editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", azureOpenAiEndpoint);
       editDotEnvFile(
         envPath,
-        "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
+        "AZURE_OPENAI_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
-
-      await createEnvironmentWithPython();
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(
-        LocalDebugTaskLabel2.PythonDebugConsole,
-        "Running on http://localhost:3978"
-      );
+      await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(
@@ -98,9 +88,9 @@ describe("Local Debug Tests", function () {
         await validateWelcomeAndReplyBot(page, {
           hasWelcomeMessage: false,
           hasCommandReplyValidation: true,
-          botCommand: "500+500=?",
+          botCommand: "Tell me about Contoso Electronics history",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
-          expectedReplyMessage: "1000",
+          expectedReplyMessage: "1985",
         });
       } else {
         await validateWelcomeAndReplyBot(page, {

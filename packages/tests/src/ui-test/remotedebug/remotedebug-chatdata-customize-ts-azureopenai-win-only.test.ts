@@ -36,7 +36,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("aichat");
+    remoteDebugTestContext = new RemoteDebugTestContext("chatdata");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -61,15 +61,19 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][JS] Remote debug for ai chat bot project Tests",
+    "[auto][TS][Azure OpenAI] Remote debug for basic rag bot using customize data",
     {
-      testPlanCaseId: 24808528,
+      testPlanCaseId: 27569142,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aichat", appName, { aiType: "Azure OpenAI" });
-      validateFileExist(projectPath, "src/index.js");
+      await createNewProject("chatdata", appName, {
+        aiType: "Azure OpenAI",
+        lang: "TypeScript",
+        dataOption: "Customize",
+      });
+      validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
@@ -105,9 +109,9 @@ describe("Remote debug Tests", function () {
         await validateWelcomeAndReplyBot(page, {
           hasWelcomeMessage: false,
           hasCommandReplyValidation: true,
-          botCommand: "500+500=?",
+          botCommand: "Tell me about Contoso Electronics history",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
-          expectedReplyMessage: "1000",
+          expectedReplyMessage: "1985",
         });
       } else {
         await validateWelcomeAndReplyBot(page, {

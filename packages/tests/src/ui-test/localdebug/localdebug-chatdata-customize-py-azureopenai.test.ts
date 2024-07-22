@@ -33,8 +33,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aichat", {
+    localDebugTestContext = new LocalDebugTestContext("chatdata", {
       lang: "python",
+      customCopilotRagType: "custom-copilot-rag-customize",
     });
     await localDebugTestContext.before();
   });
@@ -45,9 +46,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [Python] Local debug AI chat bot",
+    "[auto][Python][Azure OpenAI] Local debug for basic rag bot using customize data",
     {
-      testPlanCaseId: 27178071,
+      testPlanCaseId: 27551381,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -98,9 +99,9 @@ describe("Local Debug Tests", function () {
         await validateWelcomeAndReplyBot(page, {
           hasWelcomeMessage: false,
           hasCommandReplyValidation: true,
-          botCommand: "500+500=?",
+          botCommand: "Tell me about Contoso Electronics PerksPlus Program",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
-          expectedReplyMessage: "1000",
+          expectedReplyMessage: "$1000",
         });
       } else {
         await validateWelcomeAndReplyBot(page, {

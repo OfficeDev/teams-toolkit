@@ -359,6 +359,7 @@ export type AppType =
   | "linkunfurl"
   | "aichat"
   | "aiassist"
+  | "chatdata"
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"

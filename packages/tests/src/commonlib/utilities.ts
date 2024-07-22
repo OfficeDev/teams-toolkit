@@ -2,16 +2,114 @@
 // Licensed under the MIT license.
 import * as uuid from "uuid";
 import axios from "axios";
-import { PluginId, provisionParametersKey, StateConfigKey } from "./constants";
 import {
-  getKeyVaultSecretReference,
-  getProvisionParameterValueByKey,
-} from "../e2e/commonUtils";
-import { CliHelper } from "./cliHelper";
+  PluginId,
+  ProjectSettingKey,
+  provisionParametersKey,
+  StateConfigKey,
+  TestFilePath,
+} from "./constants";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { promisify } from "util";
+import { exec } from "child_process";
+
+export async function execAsyncWithRetry(
+  command: string,
+  options: {
+    cwd?: string;
+    env?: NodeJS.ProcessEnv;
+    timeout?: number;
+  },
+  retries = 3,
+  newCommand?: string
+): Promise<{
+  stdout: string;
+  stderr: string;
+}> {
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+  while (retries > 0) {
+    retries--;
+    try {
+      const result = await execAsync(command, options);
+      return result;
+    } catch (e: any) {
+      console.log(
+        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
+      );
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout`);
+      }
+      if (newCommand) {
+        command = newCommand;
+      }
+      await sleep(10000);
+    }
+  }
+  return execAsync(command, options);
+}
+
+export function editDotEnvFile(
+  filePath: string,
+  key: string,
+  value: string
+): void {
+  try {
+    const envFileContent: string = fs.readFileSync(filePath, "utf-8");
+    const envVars: { [key: string]: string } = envFileContent
+      .split("\n")
+      .reduce((acc: { [key: string]: string }, line: string) => {
+        const [key, value] = line.split("=");
+        if (key && value) {
+          acc[key.trim()] = value.trim();
+        }
+        return acc;
+      }, {});
+    envVars[key] = value;
+    const newEnvFileContent: string = Object.entries(envVars)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n");
+    fs.writeFileSync(filePath, newEnvFileContent);
+  } catch (error) {
+    console.log('Failed to edit ".env" file.');
+  }
+}
+
 const failedToParseResourceIdErrorMessage = (
   name: string,
   resourceId: string
 ) => `Failed to parse ${name} from resource id ${resourceId}`;
+
+export function getKeyVaultSecretReference(
+  vaultName: string,
+  secretName: string
+): string {
+  return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
+}
+
+export async function getProvisionParameterValueByKey(
+  projectPath: string,
+  envName: string,
+  key: string
+): Promise<string | undefined> {
+  const parameters = await fs.readJSON(
+    path.join(
+      projectPath,
+      TestFilePath.configFolder,
+      `azure.parameters.${envName}.json`
+    )
+  );
+  if (
+    parameters.parameters &&
+    parameters.parameters.provisionParameters &&
+    parameters.parameters.provisionParameters.value &&
+    parameters.parameters.provisionParameters.value[key]
+  ) {
+    return parameters.parameters.provisionParameters.value[key];
+  }
+  return undefined;
+}
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(
@@ -220,62 +318,6 @@ export function getExpectedM365ApplicationIdUri(
   return expectedM365ApplicationIdUri;
 }
 
-export async function getExpectedM365ClientSecret(
-  ctx: any,
-  projectPath: string,
-  env: string,
-  activeResourcePlugins: string[]
-): Promise<string> {
-  let m365ClientSecret: string;
-  if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-    const vaultName = getKeyVaultNameFromResourceId(
-      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
-    );
-    const secretName =
-      (await getProvisionParameterValueByKey(
-        projectPath,
-        env,
-        provisionParametersKey.m365ClientSecretName
-      )) ?? "m365ClientSecret";
-    m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
-  } else {
-    m365ClientSecret = await CliHelper.getUserSettings(
-      `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-      projectPath,
-      env
-    );
-  }
-  return m365ClientSecret;
-}
-
-export async function getExpectedBotClientSecret(
-  ctx: any,
-  projectPath: string,
-  env: string,
-  activeResourcePlugins: string[]
-): Promise<string> {
-  let botClientSecret: string;
-  if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-    const vaultName = getKeyVaultNameFromResourceId(
-      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
-    );
-    const secretName =
-      (await getProvisionParameterValueByKey(
-        projectPath,
-        env,
-        provisionParametersKey.botClientSecretName
-      )) ?? "botClientSecret";
-    botClientSecret = getKeyVaultSecretReference(vaultName, secretName);
-  } else {
-    botClientSecret = await CliHelper.getUserSettings(
-      `${PluginId.Bot}.${StateConfigKey.botPassword}`,
-      projectPath,
-      env
-    );
-  }
-  return botClientSecret;
-}
-
 export async function getContainerAppProperties(
   subscriptionId: string,
   rg: string,
@@ -303,3 +345,20 @@ export async function getContainerAppProperties(
 
   return undefined;
 }
+
+export async function getActivePluginsFromProjectSetting(
+  projectPath: string
+): Promise<any> {
+  const projectSettings = await fs.readJSON(
+    path.join(
+      projectPath,
+      TestFilePath.configFolder,
+      TestFilePath.projectSettingsFileName
+    )
+  );
+  return projectSettings[ProjectSettingKey.solutionSettings][
+    ProjectSettingKey.activeResourcePlugins
+  ];
+}
+
+export const execAsync = promisify(exec);

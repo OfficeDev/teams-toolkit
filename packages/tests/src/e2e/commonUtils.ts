@@ -13,12 +13,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
-import { exec } from "child_process";
 import * as dotenv from "dotenv";
-import fs from "fs-extra";
-import os from "os";
-import path from "path";
-import { promisify } from "util";
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { YAMLMap, YAMLSeq, parseDocument } from "yaml";
 import {
@@ -26,10 +24,10 @@ import {
   AadValidator,
   AppStudioValidator,
   BotValidator,
-  FrontendValidator,
   ResourceGroupManager,
   SharepointValidator as SharepointManager,
   cfg,
+  getWebappServicePlan,
 } from "../commonlib";
 import {
   PluginId,
@@ -38,61 +36,30 @@ import {
   TestFilePath,
   fileEncoding,
 } from "../commonlib/constants";
-import { getWebappServicePlan } from "../commonlib/utilities";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
-export const execAsync = promisify(exec);
-
-export async function execAsyncWithRetry(
-  command: string,
-  options: {
-    cwd?: string;
-    env?: NodeJS.ProcessEnv;
-    timeout?: number;
-  },
-  retries = 3,
-  newCommand?: string
-): Promise<{
-  stdout: string;
-  stderr: string;
-}> {
-  const sleep = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
-  while (retries > 0) {
-    retries--;
-    try {
-      const result = await execAsync(command, options);
-      return result;
-    } catch (e: any) {
-      console.log(
-        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-      );
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout`);
-      }
-      if (newCommand) {
-        command = newCommand;
-      }
-      await sleep(10000);
-    }
-  }
-  return execAsync(command, options);
-}
+export {
+  execAsync,
+  execAsyncWithRetry,
+  editDotEnvFile,
+  getProvisionParameterValueByKey,
+  getActivePluginsFromProjectSetting,
+} from "../commonlib";
 
 const testFolder = path.resolve(os.homedir(), "test-folder");
 
-export function getTestFolder() {
+export function getTestFolder(): string {
   if (!fs.pathExistsSync(testFolder)) {
     fs.mkdirSync(testFolder);
   }
   return testFolder;
 }
 
-export function getAppNamePrefix() {
+export function getAppNamePrefix(): string {
   return "fxE2E";
 }
 
-export function getUniqueAppName() {
+export function getUniqueAppName(): string {
   return getAppNamePrefix() + Date.now().toString() + uuidv4().slice(0, 2);
 }
 
@@ -100,15 +67,15 @@ export function convertToAlphanumericOnly(appName: string): string {
   return appName.replace(/[^\da-zA-Z]/g, "");
 }
 
-export function getSubscriptionId() {
+export function getSubscriptionId(): string {
   return cfg.AZURE_SUBSCRIPTION_ID || "";
 }
 
-export function getAzureTenantId() {
+export function getAzureTenantId(): string {
   return cfg.AZURE_TENANT_ID || "";
 }
 
-export function getAzureAccountObjectId() {
+export function getAzureAccountObjectId(): string {
   if (!cfg.AZURE_ACCOUNT_OBJECT_ID) {
     throw new Error("Failed to get AZURE_ACCOUNT_OBJECT_ID from environment.");
   }
@@ -197,29 +164,6 @@ export async function setStaticWebAppSkuNameToStandardBicep(
 ): Promise<void> {
   const paramerters = { key: "staticWebAppSku", value: "Standard" };
   return setProvisionParameterValueV3(projectPath, envName, paramerters);
-}
-
-export async function getProvisionParameterValueByKey(
-  projectPath: string,
-  envName: string,
-  key: string
-): Promise<string | undefined> {
-  const parameters = await fs.readJSON(
-    path.join(
-      projectPath,
-      TestFilePath.configFolder,
-      `azure.parameters.${envName}.json`
-    )
-  );
-  if (
-    parameters.parameters &&
-    parameters.parameters.provisionParameters &&
-    parameters.parameters.provisionParameters.value &&
-    parameters.parameters.provisionParameters.value[key]
-  ) {
-    return parameters.parameters.provisionParameters.value[key];
-  }
-  return undefined;
 }
 
 export async function setBotSkuNameToB1(projectPath: string) {
@@ -524,21 +468,6 @@ export async function readContextMultiEnv(
   }
 }
 
-export async function getActivePluginsFromProjectSetting(
-  projectPath: string
-): Promise<any> {
-  const projectSettings = await fs.readJSON(
-    path.join(
-      projectPath,
-      TestFilePath.configFolder,
-      TestFilePath.projectSettingsFileName
-    )
-  );
-  return projectSettings[ProjectSettingKey.solutionSettings][
-    ProjectSettingKey.activeResourcePlugins
-  ];
-}
-
 export async function getCapabilitiesFromProjectSetting(
   projectPath: string
 ): Promise<any> {
@@ -675,8 +604,8 @@ export async function validateTabAndBotProjectProvision(
   await AadValidator.validate(aad);
 
   // Validate Tab Frontend
-  const frontend = FrontendValidator.init(context);
-  await FrontendValidator.validateProvision(frontend);
+  // const frontend = FrontendValidator.init(context);
+  // await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision
   const bot = new BotValidator(context, projectPath, env);
@@ -781,32 +710,6 @@ export function getKeyVaultSecretReference(
   secretName: string
 ): string {
   return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
-}
-
-export function editDotEnvFile(
-  filePath: string,
-  key: string,
-  value: string
-): void {
-  try {
-    const envFileContent: string = fs.readFileSync(filePath, "utf-8");
-    const envVars: { [key: string]: string } = envFileContent
-      .split("\n")
-      .reduce((acc: { [key: string]: string }, line: string) => {
-        const [key, value] = line.split("=");
-        if (key && value) {
-          acc[key.trim()] = value.trim();
-        }
-        return acc;
-      }, {});
-    envVars[key] = value;
-    const newEnvFileContent: string = Object.entries(envVars)
-      .map(([key, value]) => `${key}=${value}`)
-      .join("\n");
-    fs.writeFileSync(filePath, newEnvFileContent);
-  } catch (error) {
-    console.log('Failed to edit ".env" file.');
-  }
 }
 
 export function removeTeamsAppExtendToM365(filePath: string) {

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { execAsync, editDotEnvFile } from "./commonUtils";
+import { execAsync, editDotEnvFile, editSWASku } from "./commonUtils";
 import {
   TemplateProjectFolder,
   Capability,
@@ -398,8 +398,15 @@ export class Executor {
     }
     const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
     const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+    const azureParameter = path.resolve(
+      testFolder,
+      appName,
+      "infra",
+      "azure.parameters.json"
+    );
     editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
     editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    editSWASku(azureParameter);
     console.log(`successfully open project: ${newPath}`);
   }
 

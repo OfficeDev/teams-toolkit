@@ -5,8 +5,6 @@ import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azur
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
-import glob from "glob";
-import path from "path";
 import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 import {
   getResourceGroupNameFromResourceId,
@@ -41,11 +39,6 @@ enum BaseConfig {
   IDENTITY_ID = "IDENTITY_ID",
 }
 
-enum SQLConfig {
-  SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
-  SQL_ENDPOINT = "SQL_ENDPOINT",
-}
-
 export class FunctionValidator {
   private ctx: any;
   private projectPath: string;
@@ -75,23 +68,6 @@ export class FunctionValidator {
     chai.assert.exists(this.functionAppName);
 
     console.log("Successfully init validator for function.");
-  }
-
-  public static async validateScaffold(
-    projectPath: string,
-    programmingLanguage: string
-  ): Promise<void> {
-    const indexFile: { [key: string]: string } = {
-      typescript: "index.ts",
-      javascript: "index.js",
-    };
-    glob(
-      `**/${indexFile[programmingLanguage]}`,
-      { cwd: path.resolve(projectPath, "api") },
-      (err, files) => {
-        chai.assert.isAtLeast(files.length, 1);
-      }
-    );
   }
 
   public async validateProvision(): Promise<void> {

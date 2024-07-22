@@ -19,7 +19,7 @@ import {
 } from "../../../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 
-const defaultManifestVersion = "1.17";
+const latestManifestVersion = "1.17";
 const oldManifestVersion = "1.16";
 
 describe("ManifestUtils", () => {
@@ -34,7 +34,7 @@ describe("ManifestUtils", () => {
   });
 
   it("should add a staticTab capability", async () => {
-    mockInputManifestFile(manifestUtils, defaultManifestVersion);
+    mockInputManifestFile(manifestUtils, latestManifestVersion);
     sinon.stub(fs, "writeFile").callsFake((path: any, data: string) => {
       const writtenManifest = JSON.parse(data) as TeamsAppManifest;
       assert.isArray(writtenManifest.staticTabs);
@@ -51,7 +51,7 @@ describe("ManifestUtils", () => {
     assert.isTrue(result.isOk());
   });
   it("should add a configurable tabs capability", async () => {
-    mockInputManifestFile(manifestUtils, defaultManifestVersion);
+    mockInputManifestFile(manifestUtils, latestManifestVersion);
     sinon.stub(fs, "writeFile").callsFake((path: any, data: string) => {
       const writtenManifest = JSON.parse(data) as TeamsAppManifest;
       assert.isArray(writtenManifest.configurableTabs);
@@ -72,7 +72,7 @@ describe("ManifestUtils", () => {
     assert.isTrue(result.isOk());
   });
   it("should add a configurable tabs capability - exceed limit", async () => {
-    mockInputManifestFileExceedLimit(manifestUtils, defaultManifestVersion);
+    mockInputManifestFileExceedLimit(manifestUtils, latestManifestVersion);
     const inputs: InputsWithProjectPath = {
       projectPath: "path/to/project",
       addManifestPath: "path/to/manifest.json",
@@ -86,7 +86,7 @@ describe("ManifestUtils", () => {
     }
   });
   it("should add a configurable tabs capability - existing app", async () => {
-    mockInputManifestFile(manifestUtils, defaultManifestVersion);
+    mockInputManifestFile(manifestUtils, latestManifestVersion);
     sinon.stub(fs, "writeFile").callsFake((path: any, data: string) => {
       const writtenManifest = JSON.parse(data) as TeamsAppManifest;
       assert.isArray(writtenManifest.configurableTabs);
@@ -128,7 +128,7 @@ describe("ManifestUtils", () => {
     assert.isTrue(result.isOk());
   });
   it("should add a bot capability", async () => {
-    mockInputManifestFile(manifestUtils, defaultManifestVersion);
+    mockInputManifestFile(manifestUtils, latestManifestVersion);
     sinon.stub(fs, "writeFile").callsFake((path: any, data: string) => {
       const writtenManifest = JSON.parse(data) as TeamsAppManifest;
       assert.isArray(writtenManifest.bots);
@@ -149,7 +149,7 @@ describe("ManifestUtils", () => {
     assert.isTrue(result.isOk());
   });
   it("should add a bot capability - snippet", async () => {
-    mockInputManifestFile(manifestUtils, defaultManifestVersion);
+    mockInputManifestFile(manifestUtils, latestManifestVersion);
     const snippet: IBot = {
       botId: "test",
       scopes: ["personal"],

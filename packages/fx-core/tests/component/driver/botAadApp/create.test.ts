@@ -12,7 +12,7 @@ import {
 } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { UserError } from "@microsoft/teamsfx-api";
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import {
   HttpClientError,
   HttpServerError,
@@ -315,5 +315,89 @@ describe("botAadAppCreate", async () => {
     } catch (e) {
       expect(e instanceof UnhandledError).to.be.true;
     }
+  });
+
+  it("should output delete aad information when using microsoft tenant", async () => {
+    sinon
+      .stub(mockedDriverContext, "getJsonObject")
+      .resolves(ok({ unique_name: "test@microsoft.com" }));
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const result = await createBotAadAppDriver.handler(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
+
+    console.log(JSON.stringify(result));
+
+    expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
+    expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
+  });
+
+  it("should not output delete aad information when using non microsoft tenant", async () => {
+    sinon
+      .stub(mockedDriverContext.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ unique_name: "test@test.com" }));
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const result = await createBotAadAppDriver.handler(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
+
+    console.log(JSON.stringify(result));
+
+    expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
+    expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
+  });
+
+  it("should not output delete aad information when using non login information", async () => {
+    sinon
+      .stub(mockedDriverContext.m365TokenProvider, "getJsonObject")
+      .resolves(err(new Error("Test error")));
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const result = await createBotAadAppDriver.handler(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
+
+    console.log(JSON.stringify(result));
+
+    expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
+    expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
   });
 });

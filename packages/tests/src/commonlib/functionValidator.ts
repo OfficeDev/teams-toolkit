@@ -77,23 +77,6 @@ export class FunctionValidator {
     console.log("Successfully init validator for function.");
   }
 
-  public static async validateScaffold(
-    projectPath: string,
-    programmingLanguage: string
-  ): Promise<void> {
-    const indexFile: { [key: string]: string } = {
-      typescript: "index.ts",
-      javascript: "index.js",
-    };
-    glob(
-      `**/${indexFile[programmingLanguage]}`,
-      { cwd: path.resolve(projectPath, "api") },
-      (err: Error, files: string[]) => {
-        chai.assert.isAtLeast(files.length, 1);
-      }
-    );
-  }
-
   public async validateProvision(): Promise<void> {
     console.log("Start to validate Function Provision.");
 

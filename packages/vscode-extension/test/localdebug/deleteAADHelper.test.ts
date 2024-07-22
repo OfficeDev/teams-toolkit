@@ -4,7 +4,7 @@
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import fs from "fs-extra";
-import { deleteAAD } from "../../src/debug/deleteAADHelper";
+import { deleteAad } from "../../src/debug/deleteAadHelper";
 import * as globalVariables from "../../src/globalVariables";
 import M365TokenInstance from "../../src/commonlib/m365Login";
 import { ok } from "@microsoft/teamsfx-api";
@@ -21,14 +21,14 @@ describe("delete aad helper", () => {
   describe("delete aad", () => {
     it("file does not exist", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
-      await deleteAAD();
+      await deleteAad();
     });
 
     it("no aad id", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(fs, "existsSync").returns(true);
       sandbox.stub(fs, "readFileSync").returns("{}");
-      await deleteAAD();
+      await deleteAad();
     });
 
     it("normal test account", async () => {
@@ -49,7 +49,7 @@ describe("delete aad helper", () => {
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidW5pcXVlX25hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.Y7_rghuQEaTILkMN_421Cut4myfHIhk3hpvHVbpOvnQ"
           )
         );
-      await deleteAAD();
+      await deleteAad();
     });
 
     it("no telemetry handler", async () => {
@@ -65,7 +65,7 @@ describe("delete aad helper", () => {
               "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidW5pcXVlX25hbWUiOiJ0ZXN0QG1pY3Jvc29mdC5jb20iLCJpYXQiOjE1MTYyMzkwMjJ9.Rejz-cPndtObAYVa3k3Q7BaltQGXY8KRDxRYKyUoHDw"
             )
           );
-        await deleteAAD();
+        await deleteAad();
       } catch (error) {}
     });
 
@@ -87,7 +87,7 @@ describe("delete aad helper", () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "delete").resolves({ data: { status: 204 } });
-      await deleteAAD();
+      await deleteAad();
     });
 
     it("happy path for sso id", async () => {
@@ -108,7 +108,7 @@ describe("delete aad helper", () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "delete").resolves({ data: { status: 204 } });
-      await deleteAAD();
+      await deleteAad();
     });
 
     it("happy path for bot id and sso id", async () => {
@@ -129,7 +129,7 @@ describe("delete aad helper", () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "delete").resolves({ data: { status: 204 } });
-      await deleteAAD();
+      await deleteAad();
     });
 
     it("axios handler error", async () => {
@@ -150,7 +150,7 @@ describe("delete aad helper", () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
       sandbox.stub(fakeAxiosInstance, "delete").rejects(new Error("error"));
-      await deleteAAD();
+      await deleteAad();
     });
   });
 });

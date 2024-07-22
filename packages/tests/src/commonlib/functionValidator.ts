@@ -5,8 +5,6 @@ import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azur
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
-import * as glob from "glob";
-import * as path from "path";
 import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 import {
   getResourceGroupNameFromResourceId,
@@ -39,11 +37,6 @@ enum BaseConfig {
   API_ENDPOINT = "API_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
   IDENTITY_ID = "IDENTITY_ID",
-}
-
-enum SQLConfig {
-  SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
-  SQL_ENDPOINT = "SQL_ENDPOINT",
 }
 
 export class FunctionValidator {

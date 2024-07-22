@@ -81,7 +81,9 @@ class CLIEngine {
 
     this.debugLogs.push(`matched command: ${colorize(foundCommand.fullName, TextType.Commands)}`);
 
+    const correlationId = uuid.v4();
     const context: CLIContext = {
+      correlationId: correlationId,
       command: foundCommand,
       optionValues: {},
       globalOptionValues: {},
@@ -91,6 +93,7 @@ class CLIEngine {
         [TelemetryProperty.Component]: TelemetryComponentType,
         [TelemetryProperty.RunFrom]: tryDetectCICDPlatform(),
         [TelemetryProperty.BinName]: rootCmd.name,
+        [TelemetryProperty.CorrelationId]: correlationId,
       },
     };
 
@@ -235,7 +238,11 @@ class CLIEngine {
     try {
       // 7. run handler
       if (context.command.handler) {
-        const handleRes = await Correlator.run(context.command.handler, context);
+        const handleRes = await Correlator.runWithId(
+          context.correlationId,
+          context.command.handler,
+          context
+        );
         if (handleRes.isErr()) {
           return err(handleRes.error);
         }
@@ -528,8 +535,6 @@ class CLIEngine {
       context.globalOptionValues.interactive + "";
     context.telemetryProperties[TelemetryProperty.CommandVersion] =
       context.globalOptionValues.version + "";
-    context.telemetryProperties[TelemetryProperty.CorrelationId] =
-      context.optionValues.correlationId;
 
     return ok(undefined);
   }

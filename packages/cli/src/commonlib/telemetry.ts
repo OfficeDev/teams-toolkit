@@ -58,7 +58,8 @@ export class CliTelemetryReporter implements TelemetryReporter {
     }
 
     this.checkAndOverwriteSharedProperty(properties);
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    properties[TelemetryProperty.CorrelationId] =
+      properties[TelemetryProperty.CorrelationId] || Correlator.getId();
 
     properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
@@ -82,7 +83,8 @@ export class CliTelemetryReporter implements TelemetryReporter {
     }
 
     this.checkAndOverwriteSharedProperty(properties);
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    properties[TelemetryProperty.CorrelationId] =
+      properties[TelemetryProperty.CorrelationId] || Correlator.getId();
 
     properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
@@ -106,7 +108,8 @@ export class CliTelemetryReporter implements TelemetryReporter {
     }
 
     this.checkAndOverwriteSharedProperty(properties);
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    properties[TelemetryProperty.CorrelationId] =
+      properties[TelemetryProperty.CorrelationId] || Correlator.getId();
 
     properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 

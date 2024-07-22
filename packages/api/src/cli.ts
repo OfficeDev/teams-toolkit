@@ -99,6 +99,7 @@ export interface CLIFoundCommand extends CLICommand {
 }
 
 export interface CLIContext {
+  correlationId: string;
   /**
    * @description the command matched
    */

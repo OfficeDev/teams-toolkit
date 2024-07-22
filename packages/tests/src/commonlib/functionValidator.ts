@@ -88,7 +88,7 @@ export class FunctionValidator {
     glob(
       `**/${indexFile[programmingLanguage]}`,
       { cwd: path.resolve(projectPath, "api") },
-      (err, files) => {
+      (err: Error, files: string[]) => {
         chai.assert.isAtLeast(files.length, 1);
       }
     );

@@ -197,6 +197,7 @@ import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { MySignatureHelpProvider } from "./signatureHelpProvider";
+import { MyCompletionItemProvider } from "./completionItemProvider";
 import { isVSCodeInsiderVersion } from "./utils/versionUtil";
 
 export async function activate(context: vscode.ExtensionContext) {
@@ -1189,6 +1190,11 @@ function registerLanguageFeatures(context: vscode.ExtensionContext) {
       signatureHelpProvider,
       "("
     )
+  );
+
+  const completeProvider = new MyCompletionItemProvider();
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider(templateDocumentSelector, completeProvider, "$")
   );
 }
 

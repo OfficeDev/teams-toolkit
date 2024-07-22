@@ -15,6 +15,7 @@ import path from "path";
 import { ExecutionResult } from "../driver/interface/stepDriver";
 import { getLocalizedString } from "../../common/localizeUtils";
 import fs from "fs-extra";
+import stripBom from "strip-bom";
 
 const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
 
@@ -249,9 +250,10 @@ export function processFunction(
       );
       if (filePath) {
         if (fs.existsSync(filePath)) {
-          const fileContent = fs.readFileSync(filePath, "utf8");
+          let fileContent = fs.readFileSync(filePath, "utf8");
           console.log("fileContent:");
-          console.log(fileContent);
+          //console.log(JSON.stringify("You are a declarative copilot and were created with 'Team Toolkit'. \\"));
+          fileContent = stripBom(fileContent);
           return funcName === "file" ? fileContent : JSON.stringify(fileContent).slice(1, -1);
         }
       }

@@ -12,7 +12,11 @@ import {
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
-import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import {
+  spawn,
+  ChildProcessWithoutNullStreams,
+  ChildProcess,
+} from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
 import { on } from "events";
@@ -492,22 +496,29 @@ export class Executor {
     onData?: (data: string) => void,
     onError?: (data: string) => void
   ) {
-    const childProcess = spawn(command, args, {
-      cwd: projectPath,
-      env: process.env,
-    });
-    childProcess.stdout.on("data", (data) => {
-      const dataString = data.toString();
-      if (onData) {
-        onData(dataString);
+    const childProcess = spawn(
+      os.type() === "Windows_NT" ? command + ".cmd" : command,
+      args,
+      {
+        cwd: projectPath,
+        env: process.env,
+        detached: true,
+        stdio: "ignore",
       }
-    });
-    childProcess.stderr.on("data", (data) => {
-      const dataString = data.toString();
-      if (onError) {
-        onError(dataString);
-      }
-    });
+    );
+    childProcess.unref();
+    // childProcess.stdout.on("data", (data) => {
+    //   const dataString = data.toString();
+    //   if (onData) {
+    //     onData(dataString);
+    //   }
+    // });
+    // childProcess.stderr.on("data", (data) => {
+    //   const dataString = data.toString();
+    //   if (onError) {
+    //     onError(dataString);
+    //   }
+    // });
     return childProcess;
   }
 
@@ -632,19 +643,18 @@ export class Executor {
     }
   }
 
-  static async closeProcess(
-    childProcess: ChildProcessWithoutNullStreams | null
-  ) {
+  static async closeProcess(childProcess: ChildProcess | null) {
     if (childProcess) {
       try {
-        if (os.type() === "Windows_NT") {
-          console.log(`taskkill /F /PID "${childProcess.pid}"`);
-          await execAsync(`taskkill /F /PID "${childProcess.pid}"`);
-          childProcess.kill("SIGKILL");
-        } else {
-          console.log("kill process", childProcess.spawnargs.join(" "));
-          childProcess.kill("SIGKILL");
-        }
+        process.kill(-childProcess.pid);
+        // if (os.type() === "Windows_NT") {
+        //   console.log(`taskkill /F /PID "${childProcess.pid}"`);
+        //   await execAsync(`taskkill /F /PID "${childProcess.pid}"`);
+        //   childProcess.kill("SIGKILL");
+        // } else {
+        //   console.log("kill process", childProcess.spawnargs.join(" "));
+        //   childProcess.kill("SIGKILL");
+        // }
       } catch (error) {
         console.log(error);
       }

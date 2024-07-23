@@ -239,7 +239,7 @@ class CLIEngine {
       // 7. run handler
       if (context.command.handler) {
         const handleRes = await Correlator.runWithId(
-          context.correlationId,
+          context.correlationId!,
           context.command.handler,
           context
         );

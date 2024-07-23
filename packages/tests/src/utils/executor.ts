@@ -499,25 +499,15 @@ export class Executor {
   ) {
     const childProcess = spawn(
       os.type() === "Windows_NT" ? command + ".cmd" : command,
-      args,
-      {
-        cwd: projectPath,
-        env: process.env,
-        detached: true,
-      }
+      args
     );
-    childProcess.unref();
     childProcess.stdout.on("data", (data) => {
       const dataString = data.toString();
-      if (onData) {
-        onData(dataString);
-      }
+      onData && onData(dataString);
     });
     childProcess.stderr.on("data", (data) => {
       const dataString = data.toString();
-      if (onError) {
-        onError(dataString);
-      }
+      onError && onError(dataString);
     });
     return childProcess;
   }

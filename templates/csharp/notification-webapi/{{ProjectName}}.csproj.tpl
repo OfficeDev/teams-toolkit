@@ -25,8 +25,8 @@
 
   <ItemGroup>
     <PackageReference Include="AdaptiveCards.Templating" Version="1.3.1" />
-    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.21.1" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="2.4.*">
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="2.5.*">
       <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
       <ExcludeAssets>contentFiles</ExcludeAssets>
     </PackageReference>

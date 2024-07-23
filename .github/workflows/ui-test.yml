@@ -435,7 +435,7 @@ jobs:
           npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
       - name: Setup OpenAI key
-        if: ${{github.event_name != 'schedule'}}
+        if: ${{ github.event_name != 'schedule' }}
         uses: alsosee/envset@v1
         with:
           name: SECRET_AZURE_OPENAI_API_KEY

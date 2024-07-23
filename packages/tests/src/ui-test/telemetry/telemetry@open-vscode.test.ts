@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
- * @author Anne Fu <v-annefu@microsoft.com>
+ * @author Long Hao <haolong@microsoft.com>
  */
+
 import { TeamsFxProject, Timeout } from "../../utils/constants";
 import { TestContext } from "../testContext";
 import * as fs from "fs-extra";
@@ -33,18 +37,27 @@ describe("telemetry", function () {
     await testContext.after();
   });
 
-  it("[auto] Auto send telemetry", { testPlanCaseId: 11967511 }, async () => {
-    const content = await fs.readFile(
-      TeamsFxProject.TelemetryLoggerFilePath,
-      "utf-8"
-    );
-    const regexPatternWithGlobal = RegExp(TelemetryLogRegex);
-    let match: RegExpExecArray | null;
-    const telemetryNameSet: Set<string> = new Set<string>();
-    while ((match = regexPatternWithGlobal.exec(content))) {
-      telemetryNameSet.add(match[1]);
-    }
+  it(
+    "[auto] Auto send telemetry",
+    {
+      testPlanCaseId: 11967511,
+      author: "haolong@microsoft.com",
+    },
+    async () => {
+      const content = await fs.readFile(
+        TeamsFxProject.TelemetryLoggerFilePath,
+        "utf-8"
+      );
+      const regexPatternWithGlobal = RegExp(TelemetryLogRegex);
+      let match: RegExpExecArray | null;
+      const telemetryNameSet: Set<string> = new Set<string>();
+      while ((match = regexPatternWithGlobal.exec(content))) {
+        telemetryNameSet.add(match[1]);
+      }
 
-    chai.assert.includeMembers(TelemetryNames, [...telemetryNameSet.values()]);
-  });
+      chai.assert.includeMembers(TelemetryNames, [
+        ...telemetryNameSet.values(),
+      ]);
+    }
+  );
 });

@@ -30,7 +30,7 @@ import { initDebugPort } from "../../utils/commonUtils";
 import os from "os";
 
 describe("Local Debug Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.testAzureCase);
   let localDebugTestContext: LocalDebugTestContext;
   let debugProcess: ChildProcess | null;
   let successFlag = true;

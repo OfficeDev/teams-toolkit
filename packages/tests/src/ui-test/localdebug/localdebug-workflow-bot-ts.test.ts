@@ -37,7 +37,7 @@ import os from "os";
 
 // TODO: Change preview test to normal test before rc release
 describe("Workflow Bot Local Debug Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.testAzureCase);
   let localDebugTestContext: LocalDebugTestContext;
   let devtunnelProcess: ChildProcessWithoutNullStreams | null;
   let debugProcess: ChildProcess | null;

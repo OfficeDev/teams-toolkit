@@ -7,6 +7,7 @@ import {
   TemplateProjectFolder,
   Capability,
   LocalDebugError,
+  Project,
 } from "./constants";
 import path from "path";
 import fs from "fs-extra";
@@ -14,6 +15,7 @@ import * as os from "os";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
+import { on } from "events";
 
 export class Executor {
   static async execute(
@@ -258,37 +260,18 @@ export class Executor {
     openOnly?: boolean
   ) {
     console.log(`[start] ${env} debug ... `);
-    const childProcess = spawn(
-      os.type() === "Windows_NT"
-        ? v3
-          ? "teamsapp.cmd"
-          : "teamsfx.cmd"
-        : v3
-        ? "teamsapp"
-        : "teamsfx",
+    const childProcess = Executor.spawnCommand(
+      projectPath,
+      v3 ? "teamsapp" : "teamsfx",
       [
         "preview",
         v3 ? "--env" : "",
         v3 ? `${env}` : `--${env}`,
         openOnly ? "--open-only" : "",
       ],
-      {
-        cwd: projectPath,
-        env: processEnv ? processEnv : process.env,
-      }
+      onData,
+      onError
     );
-    childProcess.stdout.on("data", (data) => {
-      const dataString = data.toString();
-      if (onData) {
-        onData(dataString);
-      }
-    });
-    childProcess.stderr.on("data", (data) => {
-      const dataString = data.toString();
-      if (onError) {
-        onError(dataString);
-      }
-    });
     return childProcess;
   }
 

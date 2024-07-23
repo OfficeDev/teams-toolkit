@@ -8,8 +8,13 @@ import * as uuid from "uuid";
 const asyncLocalStorage = new AsyncLocalStorage<string>();
 
 export class Correlator {
-  static run<T extends unknown[], R>(work: (...args: [...T]) => R, ...args: [...T]): R {
+  static setId(): string {
     const id = uuid.v4();
+    asyncLocalStorage.enterWith(id);
+    return id;
+  }
+  static run<T extends unknown[], R>(work: (...args: [...T]) => R, ...args: [...T]): R {
+    const id = asyncLocalStorage.getStore() || uuid.v4();
     return asyncLocalStorage.run<R>(id, () => work(...args));
   }
 

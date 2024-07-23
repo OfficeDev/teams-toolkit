@@ -39,6 +39,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { isValidHttpUrl } from "../../../common/stringUtils";
 import { assembleError } from "../../../error";
 import {
+  ApiPluginStartOptions,
   CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
@@ -285,7 +286,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     const capability = inputs.capabilities as string;
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     return (
-      capability === CapabilityOptions.copilotPluginApiSpec().id ||
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
       meArchitecture === MeArchitectureOptions.apiSpec().id ||
       (capability === CapabilityOptions.customCopilotRag().id &&
         inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
@@ -296,7 +297,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     const capability = inputs.capabilities as string;
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     let templateName = "";
-    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+    if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id) {
       templateName = apiPluginFromApiSpecTemplateName;
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
       templateName = fromApiSpecTemplateName;
@@ -321,7 +322,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     getTemplateInfosState.templateName = this.getTemplateName(inputs);
     getTemplateInfosState.isPlugin = false;
     let authData = undefined;
-    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+    if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id) {
       getTemplateInfosState.isPlugin = true;
       authData = inputs.apiAuthData;
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {

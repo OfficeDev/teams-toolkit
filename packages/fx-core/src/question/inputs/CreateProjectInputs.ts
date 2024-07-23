@@ -30,16 +30,14 @@ export interface CreateProjectInputs extends Inputs {
     | "collect-form-message-extension"
     | "search-message-extension"
     | "link-unfurling"
-    | "api-plugin-new-api"
-    | "api-plugin-existing-api"
+    | "api-plugin"
+    | "declarative-copilot"
     | "custom-copilot-basic"
     | "custom-copilot-rag"
     | "custom-copilot-agent"
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
-    | "basic-declarative-copilot"
-    | "declarative-copilot-with-plugin-from-scratch"
     | "json-taskpane"
     | "office-content-addin";
   /** @description Select triggers */
@@ -61,6 +59,8 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
+  /** @description Create Declarative Copilot */
+  "with-plugin"?: "no" | "yes";
   /** @description Authentication Type */
   "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
   /** @description Chat With Your Data */

@@ -434,12 +434,22 @@ jobs:
           $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
           npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
-      - name: Setup OpenAI key
-        if: ${{ github.event_name != 'schedule' }}
+      - name: Setup OpenAI key(unix)
+        if: ${{ matrix.os == 'ubuntu-latest' && github.event_name != 'schedule' }}
         uses: alsosee/envset@v1
         with:
           name: SECRET_AZURE_OPENAI_API_KEY
           value: ${{ secrets.SECRET_AZURE_OPENAI_API_KEY }}
+
+      - name: Setup OpenAI key(macos)
+        if: ${{ matrix.os == 'macos-latest' && github.event_name != 'schedule' }}
+        run: |
+          echo "SECRET_AZURE_OPENAI_API_KEY=${{ secrets.SECRET_AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Setup OpenAI key(win)
+        if: ${{ matrix.os == 'windows-latest' && github.event_name != 'schedule' }}
+        run: |
+          echo "SECRET_AZURE_OPENAI_API_KEY=${{ secrets.SECRET_AZURE_OPENAI_API_KEY }}" >> $env:GITHUB_ENV
 
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'

@@ -852,7 +852,7 @@
   "driver.apiKey.error.clientSecretInvalid": "Invalid client secret. It should be 10 to 128 characters long.",
   "driver.apiKey.error.domainInvalid": "Invalid domain. Please follow these rules: 1. Max %d domain(s) per API key. 2. Use comma to separate domains.",
   "driver.apiKey.error.failedToGetDomain": "Unable to get domain from API specification. Make sure your API specification is valid.",
-  "driver.apiKey.error.clientSecretFromScratchInvalid": "Invalid client secret. If you are working on an new Open API spec, refer the ReadMe file for details.",
+  "driver.apiKey.error.clientSecretFromScratchInvalid": "Invalid client secret. If you start with a new API, refer to the README file for details.",
   "driver.apiKey.log.successCreateApiKey": "Created API key with id %s",
   "driver.apiKey.log.failedExecuteDriver": "Unable to execute action %s. Error message: %s",
   "driver.oauth.description.create": "Create an OAuth registration on Developer Portal for authentication in Open API spec.",

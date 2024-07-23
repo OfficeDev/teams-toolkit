@@ -64,6 +64,17 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Preview in Teams (Desktop)",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "Start Teams App in Desktop Client (Remote)",
+            "presentation": {
+                "group": "remote",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
         }
     ],
     "compounds": [
@@ -90,6 +101,18 @@
             "presentation": {
                 "group": "all",
                 "order": 2
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Teams (Desktop)",
+            "configurations": [
+                "Attach to Backend"
+            ],
+            "preLaunchTask": "Start Teams App in Desktop Client",
+            "presentation": {
+                "group": "all",
+                "order": 3
             },
             "stopAll": true
         }

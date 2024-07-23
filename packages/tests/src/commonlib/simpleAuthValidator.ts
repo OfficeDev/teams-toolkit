@@ -4,19 +4,17 @@
 import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
-import {
-  getActivePluginsFromProjectSetting,
-  getProvisionParameterValueByKey,
-} from "../e2e/commonUtils";
 import { PluginId, StateConfigKey, provisionParametersKey } from "./constants";
 import {
   getExpectedM365ApplicationIdUri,
-  getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getWebappServicePlan,
   getWebappSettings,
+  getActivePluginsFromProjectSetting,
+  getProvisionParameterValueByKey,
 } from "./utilities";
+import { getExpectedM365ClientSecret } from "./cliHelper";
 
 export class PropertiesKeys {
   static clientId = "CLIENT_ID";

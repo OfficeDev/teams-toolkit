@@ -1,7 +1,7 @@
-# 2.5.0-rc
+# 2.5.0
 
 - Update dependencies `Microsoft.Bot.Builder` and `Microsoft.Bot.Builder.Dialogs`.
-- Update dependencies `Microsoft.Identity.Client`.
+- Update dependency `Microsoft.Identity.Client`.
 
 # 2.4.1
 

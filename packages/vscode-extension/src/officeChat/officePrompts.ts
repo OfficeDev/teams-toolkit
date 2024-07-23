@@ -6,35 +6,67 @@ import { ProjectMetadata } from "../chat/commands/create/types";
 import * as vscode from "vscode";
 import { SampleData } from "./common/samples/sampleData";
 
-export function getOfficeProjectMatchSystemPrompt(projectMetadata: ProjectMetadata[]) {
+export function getOfficeProjectMatchSystemPrompt(
+  projectMetadata: ProjectMetadata[],
+  userPrompt: string
+) {
   const addinDescription = projectMetadata
     .map((config) => `'${config.id}' : ${config.description}`)
     .join("\n");
 
-  const addinMatchPrompt = `
-    **Instructions:**
-    Given a user's input, compare it against the following predefined list of Office JavaScript add-in with {id : description} format. If the input aligns closely with one of the descriptions, return the most aligned id. If there is no close alignment, return empty string.
+  const examples = [
+    {
+      input: "A Word hello world add-in",
+      output: `{"id": "word-taskpane", "score": 1.0}`,
+    },
+    {
+      input: "An Excel add-in for data analysis",
+      output: `{"id": "Excel-Add-in-ChartAPI-Anylysis-Data", "score": 1.0}`,
+    },
+    {
+      input: "A Word add-in to insert a table into the document",
+      output: `{}`,
+    },
+  ];
 
-    **Predefined add-in:**
-    ${addinDescription}
+  const messages = [
+    new vscode.LanguageModelChatMessage(
+      vscode.LanguageModelChatMessageRole.System,
+      `
+You're an assistant designed to find matched Office Add-in projects based on user's input and a list of existing application descriptions. Follow the instructions and think step by step. You'll respond a JSON object containing the addin ID you choose with a float number between 0-1.0 representing confidence. Here's an example of your output format:
+{ "id": "", "score": 1.0 }
 
-    **User Input:**
-    "a word addin that can help me manage my team's tasks and deadlines within my documents."
+<Instruction>
+- Try to extract the keywords in each project description.
+- Try to match the user's input based on the keywords.
+- If the input is vague or does not contain specific keywords of scenarios that match the descriptions, return an empty object.
+- Only return ONE JSON object with the highest confidence score.
+</Instruction>
 
-    **Response Logic:**
-    - If the input contains keywords or phrases that match closely with the descriptions (e.g., "manage tasks," "deadlines"), identify the most relevant add-in id.
-    - If the input is vague or does not contain specific keywords of scenarios that match the descriptions, return empty string.
-    - Only return "word-taskpane", "powerpoint-taskpane", "excel-taskpane" if user just want a simple hello world addin.
+<Existing Application Description>
+${addinDescription}
+</Existing Application Description>
+`
+    ),
+  ];
 
-    **Response:**
-    - the response must strictly follow the JSON format below
-    { "addin": id }
-  `;
+  for (const example of examples) {
+    messages.push(
+      new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.User, example.input)
+    );
+    messages.push(
+      new vscode.LanguageModelChatMessage(
+        vscode.LanguageModelChatMessageRole.Assistant,
+        example.output
+      )
+    );
+  }
 
-  return new vscode.LanguageModelChatMessage(
-    vscode.LanguageModelChatMessageRole.System,
-    addinMatchPrompt
+  messages.push(
+    new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.User, userPrompt)
   );
+
+  return messages;
 }
 
 export const defaultOfficeSystemPrompt = () => {

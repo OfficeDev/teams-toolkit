@@ -49,7 +49,7 @@ describe("File: generatecodeCommandHandler", () => {
     );
     chai.assert.isTrue(
       response.markdown.calledOnceWith(
-        "Use this command to provide description and other details about the code snippets you want to try.\n\nE.g. @office /generatecode I want to insert a content control in a Word document.\n\n@office /generatecode I want to insert a chart for the selected cells in Excel."
+        "Use this command to provide description and other details about the code snippets you want to try.\n\nE.g. @office /generatecode @office /generatecode create a chart based on the selected range in Excel.\n\n@office /generatecode @office /generatecode insert a content control in a Word document."
       )
     );
     chai.assert.isTrue(sendTelemetryEventStub.calledTwice);
@@ -69,7 +69,7 @@ describe("File: generatecodeCommandHandler", () => {
     );
     chai.assert.isTrue(
       response.markdown.calledOnceWith(
-        "Use this command to provide description and other details about the code snippets you want to try.\n\nE.g. @office /generatecode I want to insert a content control in a Word document.\n\n@office /generatecode I want to insert a chart for the selected cells in Excel."
+        "Use this command to provide description and other details about the code snippets you want to try.\n\nE.g. @office /generatecode @office /generatecode create a chart based on the selected range in Excel.\n\n@office /generatecode @office /generatecode insert a content control in a Word document."
       )
     );
     chai.assert.isTrue(sendTelemetryEventStub.calledTwice);

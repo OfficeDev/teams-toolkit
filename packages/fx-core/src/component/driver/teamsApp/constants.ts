@@ -6,6 +6,7 @@
  */
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../migrate";
+import semver from "semver";
 
 const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
@@ -32,13 +33,49 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   {
     configurationUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/config`,
     canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
+  },
+];
+
+export const CONFIGURABLE_TABS_TPL_V4: IConfigurableTab[] = [
+  {
+    configurationUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/config`,
+    canUpdateConfiguration: true,
     scopes: ["team", "groupChat"],
   },
 ];
 
+export function getConfigurableTabsTplBasedOnVersion(version: string): IConfigurableTab[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return CONFIGURABLE_TABS_TPL_V4;
+  }
+  return CONFIGURABLE_TABS_TPL_V3;
+}
+
 const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
 
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [
+          {
+            title: "helloWorld",
+            description: "A helloworld command to send a welcome message",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V4: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
     scopes: ["personal", "team", "groupChat"],
@@ -58,7 +95,24 @@ export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   },
 ];
 
+export function getBotsTplForCommandAndResponseBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V4;
+  }
+  return BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3;
+}
+
 export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+  },
+];
+
+export const BOTS_TPL_FOR_NOTIFICATION_V4: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
     scopes: ["personal", "team", "groupChat"],
@@ -67,7 +121,39 @@ export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
   },
 ];
 
+export function getBotsTplForNotificationBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_FOR_NOTIFICATION_V4;
+  }
+  return BOTS_TPL_FOR_NOTIFICATION_V3;
+}
+
 export const BOTS_TPL_V3: IBot[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [
+          {
+            title: "welcome",
+            description: "Resend welcome card of this Bot",
+          },
+          {
+            title: "learn",
+            description: "Learn about Adaptive Card and Bot Command",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export const BOTS_TPL_V4: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
     scopes: ["personal", "team", "groupChat"],
@@ -90,6 +176,15 @@ export const BOTS_TPL_V3: IBot[] = [
     ],
   },
 ];
+
+export function getBotsTplBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_V4;
+  }
+  return BOTS_TPL_V3;
+}
+
 export const COMPOSE_EXTENSIONS_TPL_M365_V3: IComposeExtension[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
@@ -278,6 +373,21 @@ export const DEFAULT_DESCRIPTION = {
 export const BOTS_TPL_EXISTING_APP: IBot[] = [
   {
     botId: "{{config.manifest.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [],
+      },
+    ],
+  },
+];
+
+export const BOTS_TPL_EXISTING_APP_V2: IBot[] = [
+  {
+    botId: "{{config.manifest.botId}}",
     scopes: ["personal", "team", "groupChat"],
     supportsFiles: false,
     isNotificationOnly: false,
@@ -289,6 +399,14 @@ export const BOTS_TPL_EXISTING_APP: IBot[] = [
     ],
   },
 ];
+
+export function getBotsTplExistingAppBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_EXISTING_APP_V2;
+  }
+  return BOTS_TPL_EXISTING_APP;
+}
 
 export const COMPOSE_EXTENSIONS_TPL_EXISTING_APP: IComposeExtension[] = [
   {
@@ -309,9 +427,27 @@ export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
   {
     configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
     canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
+  },
+];
+
+export const CONFIGURABLE_TABS_TPL_EXISTING_APP_V2: IConfigurableTab[] = [
+  {
+    configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
+    canUpdateConfiguration: true,
     scopes: ["team", "groupChat"],
   },
 ];
+
+export function getConfigurableTabsTplExistingAppBasedOnVersion(
+  version: string
+): IConfigurableTab[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return CONFIGURABLE_TABS_TPL_EXISTING_APP_V2;
+  }
+  return CONFIGURABLE_TABS_TPL_EXISTING_APP;
+}
 
 export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
   {

@@ -51,7 +51,7 @@ describe("File: officeCreateCommandHandler", () => {
     );
     chai.assert.isTrue(
       response.markdown.calledOnceWith(
-        "Use this command to provide description and other details about the Office Add-ins that you want to build.\n\nE.g. @office /create an Excel Add-in supporting Custom Functions.\n\n@office /create I want to create a Word Hello World Add-in."
+        "Use this command to provide description and other details about the Office Add-ins that you want to build.\n\nE.g. @office /create an Excel hello world Add-in.\n\n@office /create a Word Add-in that inserts comments."
       )
     );
     chai.assert.isTrue(sendTelemetryEventStub.calledTwice);

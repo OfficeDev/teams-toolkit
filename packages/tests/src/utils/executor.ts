@@ -496,19 +496,28 @@ export class Executor {
     args: string[],
     onData?: (data: string) => void,
     onError?: (data: string) => void
-  ) {
-    const childProcess = spawn(
-      os.type() === "Windows_NT" ? command + ".cmd" : command,
-      args
-    );
+  ): ChildProcessWithoutNullStreams {
+    const isWindows = os.type() === "Windows_NT";
+
+    const childProcess = spawn(command, args, {
+      cwd: projectPath,
+      shell: isWindows,
+    });
+
     childProcess.stdout.on("data", (data) => {
       const dataString = data.toString();
       onData && onData(dataString);
     });
+
     childProcess.stderr.on("data", (data) => {
       const dataString = data.toString();
       onError && onError(dataString);
     });
+
+    childProcess.on("error", (error) => {
+      onError && onError(`Failed to start process: ${error.message}`);
+    });
+
     return childProcess;
   }
 

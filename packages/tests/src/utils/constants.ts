@@ -243,7 +243,7 @@ export class Timeout {
   // mocha
   public static readonly prepareTestCase: number = 10 * 60 * 1000;
   public static readonly finishTestCase: number = 10 * 60 * 1000;
-  public static readonly testCase: number = 20 * 60 * 1000;
+  public static readonly testCase: number = 30 * 60 * 1000;
   public static readonly finishAzureTestCase: number = 15 * 60 * 1000;
   public static readonly testAzureCase: number = 45 * 60 * 1000;
   public static readonly migrationTestCase: number = 40 * 60 * 1000;
@@ -359,6 +359,7 @@ export type AppType =
   | "linkunfurl"
   | "aichat"
   | "aiassist"
+  | "chatdata"
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"

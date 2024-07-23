@@ -549,6 +549,7 @@ export async function createNewProject(
     aiType?: "Azure OpenAI" | "OpenAI";
     testRootFolder?: string;
     appNameCopySuffix?: string;
+    dataOption?: "Customize" | "Azure AI Search" | "Microsoft 365";
   }
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
@@ -565,6 +566,7 @@ export async function createNewProject(
     ? option.spfxFrameworkType
     : "React";
   const lang = option?.lang ? option.lang : "JavaScript";
+  const dataOption = option?.dataOption ? option.dataOption : "Customize";
   await execCommandIfExist(
     CommandPaletteCommands.CreateProjectCommand,
     Timeout.webView
@@ -857,6 +859,22 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       // input fake OpenAI Key
       await input.setText("fake");
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      break;
+    }
+    case "chatdata": {
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Chat With Your Data");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(dataOption);
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(aiType);
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);

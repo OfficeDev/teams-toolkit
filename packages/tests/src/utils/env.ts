@@ -95,6 +95,21 @@ export class Env {
   }
 }
 
+export class OpenAiKey {
+  static get azureOpenAiKey(): string | undefined {
+    return process.env["SECRET_AZURE_OPENAI_API_KEY"];
+  }
+  static get azureOpenAiModelDeploymentName(): string | undefined {
+    return process.env["AZURE_OPENAI_DEPLOYMENT_NAME"];
+  }
+  static get azureOpenAiEndpoint(): string | undefined {
+    return process.env["AZURE_OPENAI_ENDPOINT"];
+  }
+  static get azureOpenAiEmbeddingDeploymentName(): string | undefined {
+    return process.env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"];
+  }
+}
+
 export class FeatureFlags {
   static addMultiEnv() {
     FeatureFlags.addFeatureFlag("TEAMSFX_MULTI_ENV");

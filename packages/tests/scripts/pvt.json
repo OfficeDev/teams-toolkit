@@ -71,7 +71,10 @@
       "remotedebug-spfx-react",
       "remotedebug-msg-newapi-microsoftentra-ts-win-only",
       "remotedebug-msg-newapi-microsoftentra-win-only",
-      "remotedebug-msg-multiple-params-win-only"
+      "remotedebug-msg-multiple-params-win-only",
+      "remotedebug-chatdata-customize-js-azureopenai-win-only",
+      "remotedebug-chatdata-customize-ts-azureopenai-win-only",
+      "remotedebug-chatdata-customize-py-azureopenai-win-only"
     ],
     "node-20": ["localdebug-obo-tab"]
   },
@@ -123,7 +126,10 @@
       "localdebug-msg-newapi-apikey-ts",
       "localdebug-msg-newapi-apikey",
       "localdebug-msg-newapi-microsoftentra-ts",
-      "localdebug-msg-newapi-microsoftentra"
+      "localdebug-msg-newapi-microsoftentra",
+      "localdebug-chatdata-customize-js-azureopenai",
+      "localdebug-chatdata-customize-ts-azureopenai",
+      "localdebug-chatdata-customize-py-azureopenai"
     ],
     "node-20": ["localdebug-obo-tab"]
   },

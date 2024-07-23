@@ -1242,6 +1242,7 @@ export async function validateWelcomeAndReplyBot(
     botCommand?: string;
     expectedWelcomeMessage?: string;
     expectedReplyMessage?: string;
+    timeout?: number;
   } = {
     hasWelcomeMessage: true,
     hasCommandReplyValidation: true,
@@ -1250,6 +1251,7 @@ export async function validateWelcomeAndReplyBot(
     expectedReplyMessage: ValidationContent.AiBotErrorMessage,
   }
 ) {
+  const timeout = options?.timeout ? options.timeout : 30 * 60 * 1000;
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1292,7 +1294,8 @@ export async function validateWelcomeAndReplyBot(
         const sendButton = await frame?.waitForSelector('button[name="send"]');
         await sendButton?.click();
         await frame?.waitForSelector(
-          `p:has-text("${options?.expectedReplyMessage}")`
+          `p:has-text("${options?.expectedReplyMessage}")`,
+          { timeout: timeout }
         );
         console.log(
           `verify bot successfully with content ${options?.expectedReplyMessage}!!!`

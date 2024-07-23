@@ -34,6 +34,7 @@ export type LocalDebugTestName =
   | "linkunfurl"
   | "aichat"
   | "aiassist"
+  | "chatdata"
   | "msgnewapi"
   | "msgapikey"
   | "msgmicroentra";
@@ -44,6 +45,7 @@ export class LocalDebugTestContext extends TestContext {
   public framework: "react" | "minimal" | "none";
   public needMigrate: boolean | undefined;
   public existingSpfxFolder: string;
+  public customCopilotRagType: string;
 
   constructor(
     testName: LocalDebugTestName,
@@ -52,6 +54,10 @@ export class LocalDebugTestContext extends TestContext {
       framework?: "react" | "minimal" | "none";
       needMigrate?: boolean;
       existingSpfxFolder?: string;
+      customCopilotRagType?:
+        | "custom-copilot-rag-customize"
+        | "custom-copilot-rag-azureAISearch"
+        | "custom-copilot-rag-customApi";
     }
   ) {
     super(testName);
@@ -62,6 +68,9 @@ export class LocalDebugTestContext extends TestContext {
     this.existingSpfxFolder = option?.existingSpfxFolder
       ? option.existingSpfxFolder
       : "existingspfx";
+    this.customCopilotRagType = option?.customCopilotRagType
+      ? option.customCopilotRagType
+      : "custom-copilot-rag-customize";
   }
 
   public async before() {
@@ -266,6 +275,12 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "chatdata":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msgnewapi":

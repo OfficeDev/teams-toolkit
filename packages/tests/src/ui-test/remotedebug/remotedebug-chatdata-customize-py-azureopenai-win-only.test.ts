@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  deployProject,
   provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -37,7 +37,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("aichat");
+    remoteDebugTestContext = new RemoteDebugTestContext("chatdata");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -62,16 +62,17 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][Python] Remote debug for ai chat bot project Tests",
+    "[auto][Python][Azure OpenAI] Remote debug for basic rag bot using customize data",
     {
-      testPlanCaseId: 27178027,
+      testPlanCaseId: 27178092,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aichat", appName, {
-        lang: "Python",
+      await createNewProject("chatdata", appName, {
         aiType: "Azure OpenAI",
+        lang: "Python",
+        dataOption: "Customize",
       });
       validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
@@ -110,10 +111,10 @@ describe("Remote debug Tests", function () {
           await validateWelcomeAndReplyBot(page, {
             hasWelcomeMessage: false,
             hasCommandReplyValidation: true,
-            botCommand: "500+500=?",
+            botCommand: "Tell me about Contoso Electronics history",
             expectedWelcomeMessage:
               ValidationContent.AiChatBotWelcomeInstruction,
-            expectedReplyMessage: "1000",
+            expectedReplyMessage: "1985",
             timeout: Timeout.longTimeWait,
           });
         } else {
@@ -135,10 +136,10 @@ describe("Remote debug Tests", function () {
             await validateWelcomeAndReplyBot(page, {
               hasWelcomeMessage: false,
               hasCommandReplyValidation: true,
-              botCommand: "500+500=?",
+              botCommand: "Tell me about Contoso Electronics PerksPlus Program",
               expectedWelcomeMessage:
                 ValidationContent.AiChatBotWelcomeInstruction,
-              expectedReplyMessage: "1000",
+              expectedReplyMessage: "$1000",
               timeout: Timeout.longTimeWait,
             });
           } else {

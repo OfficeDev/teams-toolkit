@@ -506,6 +506,7 @@ export class Executor {
         detached: true,
       }
     );
+    childProcess.unref();
     childProcess.stdout.on("data", (data) => {
       const dataString = data.toString();
       if (onData) {
@@ -578,7 +579,7 @@ export class Executor {
     console.log("======= debug with cli ========");
     console.log("botFlag: ", includeBot);
     let tunnelName = "";
-    let devtunnelProcess: ChildProcess | null = null;
+    let devtunnelProcess: ChildProcessWithoutNullStreams | null = null;
     let debugProcess: ChildProcess | null = null;
     if (includeBot) {
       const tunnel = Executor.debugBotFunctionPreparation(projectPath);

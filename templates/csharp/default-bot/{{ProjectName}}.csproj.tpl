@@ -20,8 +20,8 @@
 {{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Bot.Builder" Version="4.21.1" />
-    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.21.1" />
+    <PackageReference Include="Microsoft.Bot.Builder" Version="4.22.7" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
   </ItemGroup>
 
 </Project>

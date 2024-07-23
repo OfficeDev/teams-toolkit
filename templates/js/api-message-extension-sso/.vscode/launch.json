@@ -74,7 +74,7 @@
                 "group": "remote",
                 "order": 3
             },
-            "internalConsoleOptions": "neverOpen",
+            "internalConsoleOptions": "neverOpen"
         }
     ],
     "compounds": [

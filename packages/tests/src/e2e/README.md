@@ -324,7 +324,7 @@ enum TemplateProject {
   TodoListBackend = "todo-list-with-Azure-backend",
   TodoListSpfx = "todo-list-spfx",
   ShareNow = "share-now",
-  MyFirstMetting = "hello-world-in-meeting",
+  MyFirstMeeting = "hello-world-in-meeting",
   queryOrg = "query-org-user-with-message-extension-sso",
   TodoListM365 = "todo-list-with-azure-backend-m365",
   NpmSearch = "npm-search-connector-m365",

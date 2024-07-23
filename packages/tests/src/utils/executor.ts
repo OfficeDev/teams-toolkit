@@ -618,7 +618,7 @@ export class Executor {
         }
       }
     );
-    await new Promise((resolve) => setTimeout(resolve, 5 * 60 * 1000));
+    await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000));
     return {
       tunnelName,
       devtunnelProcess,

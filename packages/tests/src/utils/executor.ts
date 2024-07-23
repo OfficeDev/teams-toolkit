@@ -263,8 +263,9 @@ export class Executor {
     onError?: (data: string) => void,
     openOnly?: boolean
   ) {
+    let childProcess: ChildProcess | null = null;
     console.log(`[start] ${env} debug ... `);
-    const childProcess = Executor.spawnCommand(
+    childProcess = Executor.spawnCommand(
       projectPath,
       v3 ? "teamsapp" : "teamsfx",
       ["preview", v3 ? "--env" : "", v3 ? env : `--${env}`],
@@ -503,22 +504,20 @@ export class Executor {
         cwd: projectPath,
         env: process.env,
         detached: true,
-        stdio: "ignore",
       }
     );
-    childProcess.unref();
-    // childProcess.stdout.on("data", (data) => {
-    //   const dataString = data.toString();
-    //   if (onData) {
-    //     onData(dataString);
-    //   }
-    // });
-    // childProcess.stderr.on("data", (data) => {
-    //   const dataString = data.toString();
-    //   if (onError) {
-    //     onError(dataString);
-    //   }
-    // });
+    childProcess.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    childProcess.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
     return childProcess;
   }
 
@@ -579,7 +578,8 @@ export class Executor {
     console.log("======= debug with cli ========");
     console.log("botFlag: ", includeBot);
     let tunnelName = "";
-    let devtunnelProcess = null;
+    let devtunnelProcess: ChildProcess | null = null;
+    let debugProcess: ChildProcess | null = null;
     if (includeBot) {
       const tunnel = Executor.debugBotFunctionPreparation(projectPath);
       tunnelName = tunnel.tunnelName;
@@ -596,7 +596,7 @@ export class Executor {
         console.log(`[Successfully] deploy for ${projectPath}`);
       }
     }
-    const debugProcess = Executor.debugProject(
+    debugProcess = Executor.debugProject(
       projectPath,
       "local",
       true,

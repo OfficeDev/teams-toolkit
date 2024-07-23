@@ -10,6 +10,7 @@ import {
   Stage,
 } from "@microsoft/teamsfx-api";
 import {
+  ApiPluginStartOptions,
   AppStudioScopes,
   assembleError,
   AuthSvcScopes,
@@ -205,7 +206,7 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
       // Codelens for API ME. Trigger from manifest.json
       inputs[QuestionNames.ManifestPath] = filePath;
     } else {
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
       inputs[QuestionNames.DestinationApiSpecFilePath] = filePath;
       inputs[QuestionNames.ManifestPath] = args[0].manifestPath;
     }

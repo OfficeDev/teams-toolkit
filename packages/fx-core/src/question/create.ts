@@ -84,7 +84,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
 
-      if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
+      if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
         staticOptions.push(ProjectTypeOptions.copilotExtension(inputs.platform));
       }
 
@@ -1273,7 +1273,7 @@ function declarativeCopilotPluginQuestion(): SingleSelectQuestion {
     name: QuestionNames.WithPlugin,
     title: getLocalizedString("core.createProjectQuestion.declarativeCopilot.title"),
     placeholder: getLocalizedString("core.createProjectQuestion.declarativeCopilot.placeholder"),
-    cliDescription: "Whether to add API plugin for your declarative Copilot",
+    cliDescription: "Whether to add API plugin for your declarative Copilot.",
     staticOptions: DeclarativeCopilotTypeOptions.all(),
     default: DeclarativeCopilotTypeOptions.noPlugin().id,
   };
@@ -1293,7 +1293,7 @@ function apiPluginStartQuestion(): SingleSelectQuestion {
         ? getLocalizedString("core.createProjectQuestion.addApiPlugin.placeholder")
         : getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.placeholder");
     },
-    cliDescription: "Api plugin type.",
+    cliDescription: "API plugin type.",
     staticOptions: ApiPluginStartOptions.all(),
     default: ApiPluginStartOptions.newApi().id,
   };
@@ -1366,6 +1366,15 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
+            inputs[QuestionNames.Capabilities] == CapabilityOptions.apiPlugin().id ||
+            inputs[QuestionNames.WithPlugin] == DeclarativeCopilotTypeOptions.withPlugin().id
+          );
+        },
+        data: apiPluginStartQuestion(),
+      },
+      {
+        condition: (inputs: Inputs) => {
+          return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
             inputs[QuestionNames.ApiPluginType] == ApiPluginStartOptions.newApi().id
           );
@@ -1382,7 +1391,7 @@ export function capabilitySubTree(): IQTreeNode {
         // from API spec
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id ||
+            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
             inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
             inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
           );

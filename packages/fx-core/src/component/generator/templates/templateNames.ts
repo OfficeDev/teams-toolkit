@@ -7,6 +7,7 @@ import {
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
+  DeclarativeCopilotTypeOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
@@ -60,89 +61,80 @@ export enum TemplateNames {
 }
 
 // TODO: remove this mapping after all generators are migrated to new generator pattern
-// export const Feature2TemplateName = {
-//   [`${CapabilityOptions.empty().id}:undefined`]: TemplateNames.Empty,
-//   [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
-//   [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
-//   [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
-//   [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
-//   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
-//   [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
-//   [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
-//     TemplateNames.NotificationRestify,
-//   [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
-//     TemplateNames.NotificationWebApi,
-//   [`${CapabilityOptions.notificationBot().id}:${
-//     NotificationTriggerOptions.functionsHttpTrigger().id
-//   }`]: TemplateNames.NotificationHttpTrigger,
-//   [`${CapabilityOptions.notificationBot().id}:${
-//     NotificationTriggerOptions.functionsHttpTriggerIsolated().id
-//   }`]: TemplateNames.NotificationHttpTriggerIsolated,
-//   [`${CapabilityOptions.notificationBot().id}:${
-//     NotificationTriggerOptions.functionsTimerTrigger().id
-//   }`]: TemplateNames.NotificationTimerTrigger,
-//   [`${CapabilityOptions.notificationBot().id}:${
-//     NotificationTriggerOptions.functionsTimerTriggerIsolated().id
-//   }`]: TemplateNames.NotificationTimerTriggerIsolated,
-//   [`${CapabilityOptions.notificationBot().id}:${
-//     NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
-//   }`]: TemplateNames.NotificationHttpTimerTrigger,
-//   [`${CapabilityOptions.notificationBot().id}:${
-//     NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
-//   }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
-//   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
-//   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
-//   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
-//   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
-//   [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
-//   [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
-//   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botPlugin().id}`]:
-//     TemplateNames.MessageExtensionCopilot,
-//   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botMe().id}`]:
-//     TemplateNames.M365MessageExtension,
-//   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
-//   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
-//   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-//   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
-//   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-//   [`${CapabilityOptions.apiPlugin().id}:undefined:${ApiAuthOptions.none().id}`]:
-//     TemplateNames.ApiPluginFromScratch,
-//   [`${CapabilityOptions.apiPlugin().id}:undefined:${ApiAuthOptions.apiKey().id}`]:
-//     TemplateNames.ApiPluginFromScratchBearer,
-//   [`${CapabilityOptions.apiPlugin().id}:undefined:${ApiAuthOptions.oauth().id}`]:
-//     TemplateNames.ApiPluginFromScratchOAuth,
-//   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-//     ApiAuthOptions.none().id
-//   }`]: TemplateNames.CopilotPluginFromScratch,
-//   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-//     ApiAuthOptions.apiKey().id
-//   }`]: TemplateNames.CopilotPluginFromScratchApiKey,
-//   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-//     ApiAuthOptions.microsoftEntra().id
-//   }`]: TemplateNames.ApiMessageExtensionSso,
-//   [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
-//   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-//     CustomCopilotRagOptions.customize().id
-//   }`]: TemplateNames.CustomCopilotRagCustomize,
-//   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-//     CustomCopilotRagOptions.azureAISearch().id
-//   }`]: TemplateNames.CustomCopilotRagAzureAISearch,
-//   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-//     CustomCopilotRagOptions.customApi().id
-//   }`]: TemplateNames.CustomCopilotRagCustomApi,
-//   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
-//     CustomCopilotRagOptions.microsoft365().id
-//   }`]: TemplateNames.CustomCopilotRagMicrosoft365,
-//   [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
-//     CustomCopilotAssistantOptions.new().id
-//   }`]: TemplateNames.CustomCopilotAssistantNew,
-//   [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
-//     CustomCopilotAssistantOptions.assistantsApi().id
-//   }`]: TemplateNames.CustomCopilotAssistantAssistantsApi,
-//   [`${CapabilityOptions.declarativeCopilot().id}:undefined`]: TemplateNames.BasicGpt,
-//   // [`${CapabilityOptions.declarativeCopilot().id}:undefined`]:
-//   //   TemplateNames.GptWithPluginFromScratch,
-// };
+export const Feature2TemplateName = {
+  [`${CapabilityOptions.empty().id}:undefined`]: TemplateNames.Empty,
+  [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
+  [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
+  [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
+  [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
+  [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
+  [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
+  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
+    TemplateNames.NotificationRestify,
+  [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
+    TemplateNames.NotificationWebApi,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTrigger().id
+  }`]: TemplateNames.NotificationHttpTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTrigger().id
+  }`]: TemplateNames.NotificationTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationTimerTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
+  }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
+  [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
+  [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
+  [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
+  [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
+  [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
+  [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botPlugin().id}`]:
+    TemplateNames.MessageExtensionCopilot,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botMe().id}`]:
+    TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
+  [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
+  [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
+  [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiAuthOptions.microsoftEntra().id
+  }`]: TemplateNames.ApiMessageExtensionSso,
+  [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.customize().id
+  }`]: TemplateNames.CustomCopilotRagCustomize,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.azureAISearch().id
+  }`]: TemplateNames.CustomCopilotRagAzureAISearch,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.customApi().id
+  }`]: TemplateNames.CustomCopilotRagCustomApi,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.microsoft365().id
+  }`]: TemplateNames.CustomCopilotRagMicrosoft365,
+  [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
+    CustomCopilotAssistantOptions.new().id
+  }`]: TemplateNames.CustomCopilotAssistantNew,
+  [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
+    CustomCopilotAssistantOptions.assistantsApi().id
+  }`]: TemplateNames.CustomCopilotAssistantAssistantsApi,
+};
 
 export function tryGetTemplateName(inputs: Inputs): TemplateNames | undefined {
   for (const [key, value] of inputsToTemplateName) {
@@ -378,11 +370,18 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     TemplateNames.ApiPluginFromScratchOAuth,
   ],
   [
-    { [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id },
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+      [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.noPlugin().id,
+    },
     TemplateNames.BasicGpt,
   ],
-  // [
-  //   { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptWithPlugin().id },
-  //   TemplateNames.GptWithPluginFromScratch,
-  // ],
+  [
+    {
+      [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+      [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.withPlugin().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
+    },
+    TemplateNames.GptWithPluginFromScratch,
+  ],
 ]);

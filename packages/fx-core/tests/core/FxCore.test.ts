@@ -95,7 +95,7 @@ import {
 import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { UninstallInputs } from "../../build";
+import { ApiPluginStartOptions, UninstallInputs } from "../../build";
 import { CoreHookContext } from "../../src/core/types";
 import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
@@ -1982,7 +1982,7 @@ describe("getQuestions", async () => {
   it("happy path", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.CopilotPlugin]: "false",
+      [FeatureFlagName.CopilotExtension]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2020,7 +2020,7 @@ describe("getQuestions", async () => {
   it("happy path with runtime", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "true",
-      [FeatureFlagName.CopilotPlugin]: "false",
+      [FeatureFlagName.CopilotExtension]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2059,7 +2059,7 @@ describe("getQuestions", async () => {
 
   it("happy path: API Copilot plugin enabled", async () => {
     const restore = mockedEnv({
-      [FeatureFlagName.CopilotPlugin]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2077,6 +2077,8 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
+        "with-plugin",
+        "api-plugin-type",
         "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -2226,7 +2228,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       [QuestionNames.DestinationApiSpecFilePath]: "destination.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -2287,7 +2289,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
@@ -2345,7 +2347,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       [QuestionNames.DestinationApiSpecFilePath]: "destination.json",
       projectPath: path.join(os.tmpdir(), appName),
     };

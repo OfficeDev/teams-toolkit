@@ -69,6 +69,7 @@ import {
   specParserGenerateResultWarningsTelemetryProperty,
   updateForCustomApi,
 } from "./helper";
+import { TemplateNames } from "../templates/templateNames";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -297,8 +298,16 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     const capability = inputs.capabilities as string;
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     let templateName = "";
-    if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id) {
+    if (
+      capability === CapabilityOptions.apiPlugin().id &&
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
+    ) {
       templateName = apiPluginFromApiSpecTemplateName;
+    } else if (
+      capability === CapabilityOptions.declarativeCopilot().id &&
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
+    ) {
+      templateName = TemplateNames.BasicGpt;
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
       templateName = fromApiSpecTemplateName;
     } else if (
@@ -316,7 +325,6 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
-    const capability = inputs.capabilities as string;
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     const getTemplateInfosState: any = {};
     getTemplateInfosState.templateName = this.getTemplateName(inputs);
@@ -425,7 +433,10 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       const specParser = new SpecParser(
         getTemplateInfosState.url,
         getTemplateInfosState.isPlugin
-          ? copilotPluginParserOptions
+          ? {
+              ...copilotPluginParserOptions,
+              isGptPlugin: getTemplateInfosState.templateName === TemplateNames.BasicGpt,
+            }
           : {
               allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
               allowMultipleParameters: true,
@@ -535,7 +546,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         warnings.push(...generateResult.warnings);
       }
 
-      // update manifest based on openAI plugin manifest
+      // TODO: update GPT manifest
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);
 
       if (manifestRes.isErr()) {

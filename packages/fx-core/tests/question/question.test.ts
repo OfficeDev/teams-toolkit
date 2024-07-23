@@ -1206,7 +1206,7 @@ describe("addPluginQuestionNode", async () => {
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CustomizeGpt]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
     });
   });
 
@@ -1266,7 +1266,7 @@ describe("addPluginQuestionNode", async () => {
 
   it("success: can add an action only", async () => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CustomizeGpt]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
     });
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(ManifestUtil, "parseCommonProperties").returns({

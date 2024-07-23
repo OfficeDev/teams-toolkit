@@ -112,9 +112,16 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "with-plugin",
     type: "string",
-    description: "Whether to add API plugin for your declarative Copilot",
+    description: "Whether to add API plugin for your declarative Copilot.",
     default: "no",
     choices: ["no", "yes"],
+  },
+  {
+    name: "api-plugin-type",
+    type: "string",
+    description: "API plugin type.",
+    default: "new-api",
+    choices: ["new-api", "api-spec"],
   },
   {
     name: "api-auth",

@@ -263,12 +263,7 @@ export class Executor {
     const childProcess = Executor.spawnCommand(
       projectPath,
       v3 ? "teamsapp" : "teamsfx",
-      [
-        "preview",
-        v3 ? "--env" : "",
-        v3 ? `${env}` : `--${env}`,
-        openOnly ? "--open-only" : "",
-      ],
+      ["preview", v3 ? "--env" : "", v3 ? env : `--${env}`],
       onData,
       onError
     );
@@ -497,14 +492,10 @@ export class Executor {
     onData?: (data: string) => void,
     onError?: (data: string) => void
   ) {
-    const childProcess = spawn(
-      os.type() === "Windows_NT" ? command + ".cmd" : command,
-      args,
-      {
-        cwd: projectPath,
-        env: process.env,
-      }
-    );
+    const childProcess = spawn(command, args, {
+      cwd: projectPath,
+      env: process.env,
+    });
     childProcess.stdout.on("data", (data) => {
       const dataString = data.toString();
       if (onData) {

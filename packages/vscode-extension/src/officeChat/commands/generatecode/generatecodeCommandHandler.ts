@@ -3,6 +3,7 @@
 import {
   CancellationToken,
   ChatContext,
+  ChatFollowup,
   ChatRequest,
   ChatResponseStream,
   LanguageModelChatMessage,
@@ -16,6 +17,7 @@ import { Planner } from "../../common/planner";
 import { isInputHarmful } from "../../utils";
 import { ICopilotChatOfficeResult } from "../../types";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import followupProvider from "../../../chat/followupProvider";
 
 export default async function generatecodeCommandHandler(
   request: ChatRequest,
@@ -37,6 +39,19 @@ export default async function generatecodeCommandHandler(
     response.markdown(
       localize("teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer")
     );
+    const followUps: ChatFollowup[] = [
+      {
+        label: "@office /generatecode create a chart based on the selected range in Excel",
+        command: "generatecode",
+        prompt: "create a chart based on the selected range in Excel",
+      },
+      {
+        label: "@office /generatecode insert a content control in a Word document",
+        command: "generatecode",
+        prompt: "insert a content control in a Word document",
+      },
+    ];
+    followupProvider.addFollowups(followUps);
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
     officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(

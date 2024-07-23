@@ -319,7 +319,7 @@ describe("botAadAppCreate", async () => {
 
   it("should output delete aad information when using microsoft tenant", async () => {
     sinon
-      .stub(mockedDriverContext, "getJsonObject")
+      .stub(mockedDriverContext.m365TokenProvider, "getJsonObject")
       .resolves(ok({ unique_name: "test@microsoft.com" }));
     const args: any = {
       name: expectedDisplayName,

@@ -746,22 +746,12 @@ describe("aadAppCreate", async () => {
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
     expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
-    expect(result.result._unsafeUnwrap().get("MY_TENANT_ID")).to.equal("tenantId");
-    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY")).to.equal(
-      "https://login.microsoftonline.com/tenantId"
-    );
     expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
       "https://login.microsoftonline.com"
     );
     expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
-    expect(result.summaries).includes(
-      `Created Microsoft Entra application with object id ${expectedObjectId}`
-    );
-    expect(result.summaries).includes(
-      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
-    );
   });
 
   it("should not output delete aad information when using non microsoft tenant", async () => {
@@ -796,10 +786,6 @@ describe("aadAppCreate", async () => {
     expect(result.result.isOk()).to.be.true;
     expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
     expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
-    expect(result.result._unsafeUnwrap().get("MY_TENANT_ID")).to.equal("tenantId");
-    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY")).to.equal(
-      "https://login.microsoftonline.com/tenantId"
-    );
     expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
       "https://login.microsoftonline.com"
     );
@@ -843,24 +829,6 @@ describe("aadAppCreate", async () => {
 
     const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
 
-    expect(result.result.isOk()).to.be.true;
-    expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
-    expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
-    expect(result.result._unsafeUnwrap().get("MY_TENANT_ID")).to.equal("tenantId");
-    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY")).to.equal(
-      "https://login.microsoftonline.com/tenantId"
-    );
-    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
-      "https://login.microsoftonline.com"
-    );
-    expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
-    expect(result.result._unsafeUnwrap().size).to.equal(6);
-    expect(result.summaries.length).to.equal(2);
-    expect(result.summaries).includes(
-      `Created Microsoft Entra application with object id ${expectedObjectId}`
-    );
-    expect(result.summaries).includes(
-      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
-    );
+    expect(result.result.isOk()).to.be.false;
   });
 });

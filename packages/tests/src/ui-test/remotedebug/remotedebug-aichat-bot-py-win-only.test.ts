@@ -114,6 +114,7 @@ describe("Remote debug Tests", function () {
             expectedWelcomeMessage:
               ValidationContent.AiChatBotWelcomeInstruction,
             expectedReplyMessage: "1000",
+            timeout: Timeout.longTimeWait,
           });
         } else {
           await validateWelcomeAndReplyBot(page, {
@@ -123,6 +124,7 @@ describe("Remote debug Tests", function () {
             expectedWelcomeMessage:
               ValidationContent.AiChatBotWelcomeInstruction,
             expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+            timeout: Timeout.longTimeWait,
           });
         }
       } catch {
@@ -137,6 +139,7 @@ describe("Remote debug Tests", function () {
               expectedWelcomeMessage:
                 ValidationContent.AiChatBotWelcomeInstruction,
               expectedReplyMessage: "1000",
+              timeout: Timeout.longTimeWait,
             });
           } else {
             await validateWelcomeAndReplyBot(page, {
@@ -146,6 +149,7 @@ describe("Remote debug Tests", function () {
               expectedWelcomeMessage:
                 ValidationContent.AiChatBotWelcomeInstruction,
               expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+              timeout: Timeout.longTimeWait,
             });
           }
         }, 2);

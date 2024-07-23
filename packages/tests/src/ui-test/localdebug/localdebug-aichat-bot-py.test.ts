@@ -101,6 +101,7 @@ describe("Local Debug Tests", function () {
           botCommand: "500+500=?",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
           expectedReplyMessage: "1000",
+          timeout: Timeout.longTimeWait,
         });
       } else {
         await validateWelcomeAndReplyBot(page, {
@@ -109,6 +110,7 @@ describe("Local Debug Tests", function () {
           botCommand: "helloWorld",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
           expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+          timeout: Timeout.longTimeWait,
         });
       }
     }

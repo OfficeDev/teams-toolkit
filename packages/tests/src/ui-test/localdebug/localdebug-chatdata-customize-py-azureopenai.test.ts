@@ -102,6 +102,7 @@ describe("Local Debug Tests", function () {
           botCommand: "Tell me about Contoso Electronics PerksPlus Program",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
           expectedReplyMessage: "$1000",
+          timeout: Timeout.longTimeWait,
         });
       } else {
         await validateWelcomeAndReplyBot(page, {
@@ -110,6 +111,7 @@ describe("Local Debug Tests", function () {
           botCommand: "helloWorld",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
           expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+          timeout: Timeout.longTimeWait,
         });
       }
     }

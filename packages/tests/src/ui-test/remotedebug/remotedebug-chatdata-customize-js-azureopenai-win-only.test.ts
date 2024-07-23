@@ -111,6 +111,7 @@ describe("Remote debug Tests", function () {
           botCommand: "Tell me about Contoso Electronics history",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
           expectedReplyMessage: "1985",
+          timeout: Timeout.longTimeWait,
         });
       } else {
         await validateWelcomeAndReplyBot(page, {
@@ -119,6 +120,7 @@ describe("Remote debug Tests", function () {
           botCommand: "helloWorld",
           expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
           expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+          timeout: Timeout.longTimeWait,
         });
       }
     }

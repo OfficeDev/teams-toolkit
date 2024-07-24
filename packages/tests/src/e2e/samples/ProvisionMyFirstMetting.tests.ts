@@ -8,10 +8,10 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class MyFirstMettingTestCase extends CaseFactory {}
+class MyFirstMeetingTestCase extends CaseFactory {}
 
-new MyFirstMettingTestCase(
-  TemplateProjectFolder.MyFirstMetting,
+new MyFirstMeetingTestCase(
+  TemplateProjectFolder.MyFirstMeeting,
   15277468,
   "kaiyan@microsoft.com",
   ["tab"]

@@ -1567,6 +1567,10 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     deleteNames.push(QuestionNames.Runtime);
   }
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+    deleteNames.push(QuestionNames.ApiPluginType);
+    deleteNames.push(QuestionNames.WithPlugin);
+  }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;
 }

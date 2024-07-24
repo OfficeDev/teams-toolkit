@@ -13,7 +13,9 @@ export let uriEventHandler: UriHandler;
 enum Referrer {
   DeveloperPortal = "developerportal",
   OfficeDoc = "officedoc",
+  SyncManifest = "syncmanifset",
 }
+
 interface QueryParams {
   appId?: string;
   referrer?: string;
@@ -68,7 +70,10 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
             isRunning = false;
           }
         );
-    } else if (queryParamas.referrer === Referrer.OfficeDoc) {
+      return;
+    }
+
+    if (queryParamas.referrer === Referrer.OfficeDoc) {
       if (!queryParamas.sampleId) {
         void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.invalidLink")
@@ -80,6 +85,18 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
         TelemetryTriggerFrom.ExternalUrl,
         queryParamas.sampleId
       );
+      return;
+    }
+
+    if (queryParamas.referrer === Referrer.SyncManifest) {
+      if (!queryParamas.appId) {
+        void vscode.window.showErrorMessage(
+          localize("teamstoolkit.devPortalIntegration.invalidLink")
+        );
+        return;
+      }
+      void vscode.commands.executeCommand("fx-extension.syncManifest", queryParamas.appId);
+      return;
     }
   }
 }

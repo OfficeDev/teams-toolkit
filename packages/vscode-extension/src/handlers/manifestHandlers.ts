@@ -33,6 +33,12 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   return await runCommand(Stage.validateApplication, inputs);
 }
 
+export async function syncManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SyncManifest, getTriggerFromProperty(args));
+  // todo: check this
+  return await runCommand(Stage.syncManifest, args);
+}
+
 export async function buildPackageHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
   return await runCommand(Stage.createAppPackage);

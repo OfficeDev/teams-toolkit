@@ -156,10 +156,12 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { UninstallInputs } from "../question";
+import { SyncManifestInputs, UninstallInputs } from "../question";
 import { PackageService } from "../component/m365/packageService";
 import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceConstant";
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
+import { SyncManifestArgs } from "../component/driver/teamsApp/interfaces/SyncManifest";
+import { SyncManifestDriver } from "../component/driver/teamsApp/syncManifest";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -967,6 +969,29 @@ export class FxCore {
     const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
     return (await driver.execute(args, context)).result;
   }
+
+  /**
+   * v3 only none lifecycle command
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "syncManifest", reset: true }),
+    ErrorHandlerMW,
+    QuestionMW("syncManifest"),
+  ])
+  async syncManifest(inputs: SyncManifestInputs): Promise<Result<any, FxError>> {
+    const context: DriverContext = createDriverContext(inputs);
+    const projectPath = inputs[QuestionNames.ProjectPath] as string;
+    const env = inputs[QuestionNames.Env] as string;
+    const teamsAppId = inputs[QuestionNames.TeamsAppId] as string;
+    const args: SyncManifestArgs = {
+      projectPath: projectPath,
+      env: env,
+      teamsAppId: teamsAppId,
+    };
+    const driver: SyncManifestDriver = Container.get("teamsApp/syncManifest");
+    return (await driver.execute(args, context)).result;
+  }
+
   /**
    * v3 only none lifecycle command
    */

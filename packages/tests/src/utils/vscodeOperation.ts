@@ -926,7 +926,7 @@ export async function createNewProject(
       await input.setText("Start with an OpenAPI Description Document");
       await input.confirm();
       const apiSpecFilePath =
-        testRootFolder + "\\..\\src\\ui-test\\case-resource\\repair.yaml";
+        testRootFolder + "\\..\\src\\ui-test\\case-resources\\repair.yaml";
       console.log("choose yaml file path: ", apiSpecFilePath);
       await input.selectQuickPick("Browse...");
       await inputFolderPath(driver, input, apiSpecFilePath);

@@ -30,7 +30,7 @@ import { Page } from "playwright";
 import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
-import { ChildProcessWithoutNullStreams } from "child_process";
+import { ChildProcess, ChildProcessWithoutNullStreams } from "child_process";
 import { initDebugPort } from "../../utils/commonUtils";
 import { CliHelper } from "../cliHelper";
 
@@ -296,7 +296,7 @@ export abstract class CaseFactory {
       let sampledebugContext: SampledebugContext;
       let azSqlHelper: AzSqlHelper | undefined;
       let devtunnelProcess: ChildProcessWithoutNullStreams;
-      let debugProcess: ChildProcessWithoutNullStreams;
+      let debugProcess: ChildProcess;
       let dockerProcess: ChildProcessWithoutNullStreams;
       let successFlag = true;
       let envContent = "";

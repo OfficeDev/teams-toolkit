@@ -1,7 +1,7 @@
 {
     "instanceUrl": "https://msazure.visualstudio.com",
     "projectName": "Microsoft Teams Extensibility",
-    "areaPath": "Microsoft Teams Extensibility\\TeamsToolkit",
+    "areaPath": "Microsoft Teams Extensibility",
     "notificationAliases": [
         "vsciotadt@microsoft.com"
     ],

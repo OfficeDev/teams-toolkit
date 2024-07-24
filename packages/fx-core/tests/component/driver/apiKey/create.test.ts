@@ -374,6 +374,20 @@ describe("CreateApiKeyDriver", () => {
     }
   });
 
+  it("should throw error if clientSecret equals space when from scratch", async () => {
+    const args: any = {
+      name: "test",
+      appId: "",
+      primaryClientSecret: " ",
+      apiSpecPath: "mockedPath",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("apiKeyFromScratchClientSecretInvalid");
+    }
+  });
+
   it("should throw error if invalid secondaryClientSecret", async () => {
     const args: any = {
       name: "test",

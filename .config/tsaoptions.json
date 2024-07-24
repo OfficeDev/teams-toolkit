@@ -1,0 +1,11 @@
+{
+    "instanceUrl": "https://msazure.visualstudio.com",
+    "projectName": "Microsoft Teams Extensibility",
+    "areaPath": "Microsoft Teams Extensibility\\TeamsToolkit",
+    "notificationAliases": [
+        "vsciotadt@microsoft.com"
+    ],
+    "ppe": false,
+    "template": "TFSMSAzureOneAgile",
+    "codebaseName": "Teams-Toolkit"
+}

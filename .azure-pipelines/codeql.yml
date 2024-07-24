@@ -1,0 +1,58 @@
+trigger: none
+
+schedules:
+- cron: '0 0 * * Mon'
+  displayName: Weekly Monday build
+  branches:
+    include:
+      - main
+  always: true
+  batch: true
+
+variables:
+  buildConfiguration: 'Release'
+  WindowsContainerImage: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest # for Windows jobs
+
+resources:
+  repositories: 
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+
+extends:
+  template: v2/OneBranch.Official.CrossPlat.yml@templates
+  parameters:
+    globalSdl: # https://aka.ms/obpipelines/sdl
+      tsa:
+        enabled: true # SDL results of non-official builds aren't uploaded to TSA by default.
+      binskim:
+        break: true # always break the build on binskim issues. You can disable it by setting to 'false'
+      policheck:
+        break: true # always break the build on policheck issues. You can disable it by setting to 'false'
+      codeql: # https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/codeql/configuring-codeql3000-ado-pipelines
+        tsaEnabled: true
+        compiled: 
+          enabled: true
+  
+    stages:
+#############################################################################################################
+# build stage
+    - stage: build
+      jobs:
+        - job:
+          pool:
+            vmImage: $(WindowsContainerImage)
+          steps:
+            - task: UseDotNet@2
+              displayName: 'Use .NET 6.0'
+              inputs:
+                version: 6.0.x
+
+            - task: DotNetCoreCLI@2
+              displayName: 'dotnet build'
+              inputs:
+                projects: |
+                  packages/function-extension
+                  packages/dotnet-sdk
+                arguments: '/p:Configuration=Release'

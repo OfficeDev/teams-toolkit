@@ -1555,7 +1555,7 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: CapabilityOptions.apiPlugin().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
+            const options = select.staticOptions;
             assert.isTrue(options.length === 2);
             return ok({ type: "success", result: ApiPluginStartOptions.newApi().id });
           } else if (question.name === QuestionNames.ApiAuth) {
@@ -2935,6 +2935,7 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.WithPlugin,
+          QuestionNames.ApiPluginType,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,

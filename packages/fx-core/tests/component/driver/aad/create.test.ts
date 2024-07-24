@@ -752,6 +752,9 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
+    expect(result.summaries[0]).includes(
+      `Teams toolkit will delete the Microsoft Entra application after debugging`
+    );
   });
 
   it("should not output delete aad information when using non microsoft tenant", async () => {
@@ -797,6 +800,9 @@ describe("aadAppCreate", async () => {
     );
     expect(result.summaries).includes(
       `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
+    );
+    expect(result.summaries).not.includes(
+      "Teams toolkit will delete the Microsoft Entra application after debugging"
     );
   });
 

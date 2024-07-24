@@ -339,10 +339,11 @@ describe("botAadAppCreate", async () => {
       outputEnvVarNames
     );
 
-    console.log(JSON.stringify(result));
-
     expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
     expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
+    expect(result.summaries[0]).includes(
+      "Teams toolkit will delete the Microsoft Entra application after debugging"
+    );
   });
 
   it("should not output delete aad information when using non microsoft tenant", async () => {
@@ -366,8 +367,6 @@ describe("botAadAppCreate", async () => {
       mockedDriverContext,
       outputEnvVarNames
     );
-
-    console.log(JSON.stringify(result));
 
     expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
     expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
@@ -394,8 +393,6 @@ describe("botAadAppCreate", async () => {
       mockedDriverContext,
       outputEnvVarNames
     );
-
-    console.log(JSON.stringify(result));
 
     expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
     expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);

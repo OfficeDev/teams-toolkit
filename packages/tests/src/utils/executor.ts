@@ -647,14 +647,6 @@ export class Executor {
     if (childProcess) {
       try {
         process.kill(-childProcess.pid);
-        // if (os.type() === "Windows_NT") {
-        //   console.log(`taskkill /F /PID "${childProcess.pid}"`);
-        //   await execAsync(`taskkill /F /PID "${childProcess.pid}"`);
-        //   childProcess.kill("SIGKILL");
-        // } else {
-        //   console.log("kill process", childProcess.spawnargs.join(" "));
-        //   childProcess.kill("SIGKILL");
-        // }
       } catch (error) {
         console.log(error);
       }

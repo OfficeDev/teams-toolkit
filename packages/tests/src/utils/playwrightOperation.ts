@@ -2790,7 +2790,7 @@ export async function validateExisingApiMeResult(page: Page, appName: string) {
     await input?.fill("1");
     try {
       const targetItem = await page?.waitForSelector(
-        `div:has-text("engineer")`
+        `span.fui-StyledText div:has-text("engineer")`
       );
       await targetItem?.click();
       console.log("targetItem.click");

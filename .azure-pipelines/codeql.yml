@@ -42,7 +42,7 @@ extends:
       jobs:
         - job:
           pool:
-            vmImage: $(WindowsContainerImage)
+            type: windows
           steps:
             - task: UseDotNet@2
               displayName: 'Use .NET 6.0'

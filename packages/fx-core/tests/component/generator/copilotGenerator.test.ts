@@ -1003,7 +1003,7 @@ describe("formatValidationErrors", () => {
 
     const res = formatValidationErrors(errors, {
       platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: apiPluginApiSpecOptionId,
+      [QuestionNames.ApiPluginType]: apiPluginApiSpecOptionId,
     });
 
     const errorMessage1 = [

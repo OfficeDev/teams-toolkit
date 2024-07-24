@@ -66,7 +66,7 @@ export class NotificationMiddleware implements Middleware {
     const activityType = activity.type;
     if (activityType === "installationUpdate") {
       const action = activity.action?.toLowerCase();
-      if (action === "add") {
+      if (action === "add" || action === "add-upgrade") {
         return ActivityType.CurrentBotInstalled;
       } else {
         return ActivityType.CurrentBotUninstalled;

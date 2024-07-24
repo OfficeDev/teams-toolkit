@@ -20,7 +20,7 @@ import {
   HttpServerError,
   InvalidActionInputError,
 } from "../../../../src/error/common";
-import { UserError } from "@microsoft/teamsfx-api";
+import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
 import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
@@ -712,5 +712,123 @@ describe("aadAppCreate", async () => {
       .is.instanceOf(UserError)
       .and.has.property("message")
       .and.contains("action cannot be completed as the following parameter(s):");
+  });
+
+  it("should output delete aad information when using microsoft tenant", async () => {
+    sinon
+      .stub(mockedDriverContext.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ unique_name: "test@microsoft.com" }));
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const outputEnvVarNames = new Map<string, string>(
+      Object.entries({
+        clientId: "MY_CLIENT_ID",
+        objectId: "MY_OBJECT_ID",
+        tenantId: "MY_TENANT_ID",
+        authorityHost: "MY_AUTHORITY_HOST",
+        authority: "MY_AUTHORITY",
+        clientSecret: "MY_CLIENT_SECRET",
+      })
+    );
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
+    expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
+    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+  });
+
+  it("should not output delete aad information when using non microsoft tenant", async () => {
+    sinon
+      .stub(mockedDriverContext.m365TokenProvider, "getJsonObject")
+      .resolves(ok({ unique_name: "test@test.com" }));
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const outputEnvVarNames = new Map<string, string>(
+      Object.entries({
+        clientId: "MY_CLIENT_ID",
+        objectId: "MY_OBJECT_ID",
+        tenantId: "MY_TENANT_ID",
+        authorityHost: "MY_AUTHORITY_HOST",
+        authority: "MY_AUTHORITY",
+        clientSecret: "MY_CLIENT_SECRET",
+      })
+    );
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_ID")).to.equal(expectedClientId);
+    expect(result.result._unsafeUnwrap().get("MY_OBJECT_ID")).to.equal(expectedObjectId);
+    expect(result.result._unsafeUnwrap().get("MY_AUTHORITY_HOST")).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get("MY_CLIENT_SECRET")).to.equal(expectedSecretText);
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+    expect(result.summaries).includes(
+      `Created Microsoft Entra application with object id ${expectedObjectId}`
+    );
+    expect(result.summaries).includes(
+      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
+    );
+  });
+
+  it("should not output delete aad information when return non login information", async () => {
+    sinon
+      .stub(mockedDriverContext.m365TokenProvider, "getJsonObject")
+      .resolves(err(new Error("Test error")));
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const outputEnvVarNames = new Map<string, string>(
+      Object.entries({
+        clientId: "MY_CLIENT_ID",
+        objectId: "MY_OBJECT_ID",
+        tenantId: "MY_TENANT_ID",
+        authorityHost: "MY_AUTHORITY_HOST",
+        authority: "MY_AUTHORITY",
+        clientSecret: "MY_CLIENT_SECRET",
+      })
+    );
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.false;
   });
 });

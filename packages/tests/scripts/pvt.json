@@ -72,6 +72,7 @@
       "remotedebug-msg-newapi-microsoftentra-ts-win-only",
       "remotedebug-msg-newapi-microsoftentra-win-only",
       "remotedebug-msg-multiple-params-win-only",
+      "remotedebug-msg-apikey-existing-spec-win-only",
       "remotedebug-chatdata-customize-js-azureopenai-win-only",
       "remotedebug-chatdata-customize-ts-azureopenai-win-only",
       "remotedebug-chatdata-customize-py-azureopenai-win-only"

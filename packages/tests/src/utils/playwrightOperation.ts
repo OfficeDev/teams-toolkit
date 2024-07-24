@@ -2777,3 +2777,42 @@ export async function validateMultiParamsApiMeResult(
     throw error;
   }
 }
+
+export async function validateExisingApiMeResult(page: Page, appName: string) {
+  try {
+    const searchKeyword = "1";
+    console.log("start to verify apime search");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+    await messageExtensionActivate(page, appName);
+    console.log("search keyword ", searchKeyword);
+    const input = await page?.waitForSelector("div.ui-box input.ui-box");
+    await input?.fill("1");
+    try {
+      const targetItem = await page?.waitForSelector(
+        `div:has-text("engineer")`
+      );
+      await targetItem?.click();
+      console.log("targetItem.click");
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page?.waitForSelector("div.fui-Primitive p:has-text('validated')");
+      console.log("verify search keyword successfully!!!");
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+    } catch (error) {
+      await page?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("verify_error"),
+        fullPage: true,
+      });
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

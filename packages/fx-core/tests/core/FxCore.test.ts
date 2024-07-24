@@ -92,10 +92,14 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
+import {
+  ApiPluginStartOptions,
+  HubOptions,
+  PluginAvailabilityOptions,
+} from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { ApiPluginStartOptions, UninstallInputs } from "../../build";
+import { UninstallInputs } from "../../build";
 import { CoreHookContext } from "../../src/core/types";
 import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";

@@ -47,7 +47,7 @@ function adjustOptions(options: CLICommandOption[]) {
   }
 
   if (!featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
-    //skip customize GPT questions if customize GPT is not enabled.
+    //skip Copilot extension questions if the feature flag is not enabled.
     const questionsToDelete = [QuestionNames.ApiPluginType, QuestionNames.WithPlugin];
     options = options.filter((option) => !questionsToDelete.includes(option.name as QuestionNames));
   }

@@ -643,9 +643,7 @@ export class Executor {
     }
   }
 
-  static async closeProcess(
-    childProcess: ChildProcessWithoutNullStreams | null
-  ) {
+  static async closeProcess(childProcess: ChildProcess | null) {
     if (childProcess) {
       try {
         if (os.type() === "Windows_NT") {

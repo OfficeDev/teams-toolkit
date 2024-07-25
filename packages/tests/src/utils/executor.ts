@@ -646,7 +646,12 @@ export class Executor {
   static async closeProcess(childProcess: ChildProcess | null) {
     if (childProcess) {
       try {
-        process.kill(-childProcess.pid);
+        if (os.type() === "Windows_NT") {
+          process.kill(-childProcess.pid);
+        } else {
+          console.log("kill process", childProcess.spawnargs.join(" "));
+          childProcess.kill("SIGKILL");
+        }
       } catch (error) {
         console.log(error);
       }

@@ -23,6 +23,7 @@ export {
   GraphScopes,
   SPFxScopes,
   getAllowedAppMaps,
+  AadSet,
 } from "./common/constants";
 export { Correlator } from "./common/correlator";
 export {

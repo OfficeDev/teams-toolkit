@@ -6,7 +6,7 @@ import M365TokenInstance from "../commonlib/m365Login";
 import * as globalVariables from "../globalVariables";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { GraphScopes } from "@microsoft/teamsfx-core";
+import { AadSet, GraphScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import { ConvertTokenToJson } from "../commonlib/codeFlowLogin";
 import VsCodeLogInstance from "../commonlib/log";
@@ -56,12 +56,18 @@ export async function deleteAad() {
         return config;
       });
       const list: string[] = [];
-      if (envData.obj["BOT_ID"] != undefined) {
+      if (envData.obj["BOT_ID"] != undefined && AadSet.has(envData.obj["BOT_ID"])) {
+        AadSet.delete(envData.obj["BOT_ID"]);
         list.push(envData.obj["BOT_ID"]);
         envData.obj["BOT_ID"] = "";
+        envData.obj["BOT_OBJECT_ID"] = "";
         userEnvData.obj["SECRET_BOT_PASSWORD"] = "";
       }
-      if (envData.obj["AAD_APP_CLIENT_ID"] != undefined) {
+      if (
+        envData.obj["AAD_APP_CLIENT_ID"] != undefined &&
+        AadSet.has(envData.obj["AAD_APP_CLIENT_ID"])
+      ) {
+        AadSet.delete(envData.obj["AAD_APP_CLIENT_ID"]);
         list.push(envData.obj["AAD_APP_CLIENT_ID"]);
         envData.obj["AAD_APP_CLIENT_ID"] = "";
         envData.obj["AAD_APP_OBJECT_ID"] = "";

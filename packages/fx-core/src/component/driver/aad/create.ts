@@ -5,7 +5,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { Service } from "typedi";
-import { GraphScopes } from "../../../common/constants";
+import { AadSet, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import {
   HttpClientError,
@@ -89,6 +89,7 @@ export class CreateAadAppDriver implements StepDriver {
         );
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
+        AadSet.add(aadApp.appId!);
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
         outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
 

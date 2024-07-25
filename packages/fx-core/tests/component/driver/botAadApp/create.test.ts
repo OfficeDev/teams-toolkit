@@ -399,5 +399,8 @@ describe("botAadAppCreate", async () => {
 
     expect(result.output.get(outputKeys.botId)).to.be.equal(expectedClientId);
     expect(result.output.get(outputKeys.botPassword)).to.be.equal(expectedSecretText);
+    expect(result.summaries[0]).not.includes(
+      "Teams toolkit will delete the Microsoft Entra application after debugging"
+    );
   });
 });

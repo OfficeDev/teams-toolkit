@@ -367,7 +367,7 @@
   "core.createProjectQuestion.OauthClientSecretConfirm": "Teams Toolkit uploads the client id/secret for OAuth Registration to Teams Developer Portal. It is used by Teams client to securely access your API at runtime. Teams Toolkit doesn't store your client id/secret.",
   "core.createProjectQuestion.apiMessageExtensionAuth.title": "Authentication Type",
   "core.createProjectQuestion.apiMessageExtensionAuth.placeholder": "Select an authentication type",
-  "core.createProjectQuestion.invalidApiKey.message": "Client secret is invalid. The length of secret should be >= 10 and <= 128",
+  "core.createProjectQuestion.invalidApiKey.message": "Invalid client secret. It should be 10 to 512 characters long.",
   "core.createProjectQuestion.invalidUrl.message": "Enter a valid HTTP URL without authentication to access your OpenAPI description document.",
   "core.createProjectQuestion.apiSpec.operation.title": "Select Operation(s) Teams Can Interact with",
   "core.createProjectQuestion.apiSpec.copilotOperation.title": "Select Operation(s) Copilot Can Interact with",

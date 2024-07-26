@@ -1816,7 +1816,10 @@ describe("scaffold question", () => {
           assert.isTrue(options.length === 2);
           assert.isTrue(options[0].id === "operation1");
           assert.isTrue(options[1].id === "operation2");
-          assert.equal(placeholder, "");
+          assert.equal(
+            placeholder,
+            getLocalizedString("core.createProjectQuestion.apiSpec.operation.plugin.placeholder")
+          );
           assert.equal(
             title,
             getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")

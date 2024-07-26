@@ -26,7 +26,8 @@ import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPassw
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { logMessageKeys, progressBarKeys } from "./utility/constants";
-import { AadSet, GraphScopes } from "../../../common/constants";
+import { GraphScopes } from "../../../common/constants";
+import { AadSet } from "../../../common/globalVars";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";

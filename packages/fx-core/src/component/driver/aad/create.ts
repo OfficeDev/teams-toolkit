@@ -5,7 +5,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { Service } from "typedi";
-import { AadSet, GraphScopes } from "../../../common/constants";
+import { GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import {
   HttpClientError,
@@ -31,6 +31,7 @@ import {
   logMessageKeys,
   telemetryKeys,
 } from "./utility/constants";
+import { AadSet } from "../../../common/globalVars";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";

@@ -23,7 +23,6 @@ export {
   GraphScopes,
   SPFxScopes,
   getAllowedAppMaps,
-  AadSet,
 } from "./common/constants";
 export { Correlator } from "./common/correlator";
 export {
@@ -106,3 +105,4 @@ export * from "./question/inputs";
 export * from "./question/options";
 export * from "./component/middleware/actionExecutionMW";
 export { TemplateInfo } from "./component/generator/templates/templateInfo";
+export { AadSet } from "./common/globalVars";

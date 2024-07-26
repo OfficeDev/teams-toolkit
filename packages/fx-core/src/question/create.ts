@@ -997,7 +997,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
           const result = isValidHttpUrl(input.trim())
             ? undefined
             : inputs?.platform === Platform.CLI
-            ? "Please enter a valid HTTP URL without authentication to access your OpenAPI description document or enter a file path of your local OpenAPI description document."
+            ? "Please enter a valid HTTP URL to access your OpenAPI description document or enter a file path of your local OpenAPI description document."
             : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
           return Promise.resolve(result);
         },

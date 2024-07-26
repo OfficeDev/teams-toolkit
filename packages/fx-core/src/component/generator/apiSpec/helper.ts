@@ -162,6 +162,15 @@ export async function listOperations(
 
     const listResult: ListAPIResult = await specParser.list();
 
+    const invalidAPIs = listResult.APIs.filter((value) => !value.isValid);
+    for (const invalidAPI of invalidAPIs) {
+      context.logProvider.warning(
+        `${invalidAPI.api} ${getLocalizedString(
+          "core.copilotPlugin.list.unsupportedBecause"
+        )} ${invalidAPI.reason.map(mapInvalidReasonToMessage).join(", ")}`
+      );
+    }
+
     const bearerTokenAuthAPIs = listResult.APIs.filter(
       (api) => api.auth && Utils.isBearerTokenAuth(api.auth.authScheme)
     );

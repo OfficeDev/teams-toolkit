@@ -1090,7 +1090,9 @@ export function apiOperationQuestion(
           "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
         );
       } else if (isPlugin) {
-        placeholder = ""; // TODO: add placeholder for api plugin
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.plugin.placeholder"
+        );
       } else {
         placeholder = getLocalizedString(
           "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"

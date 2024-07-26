@@ -27,6 +27,7 @@ import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { logMessageKeys, progressBarKeys } from "./utility/constants";
 import { GraphScopes } from "../../../common/constants";
+import { AadSet } from "../../../common/globalVars";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -105,6 +106,7 @@ export class CreateBotAadAppDriver implements StepDriver {
           SignInAudience.AzureADMultipleOrgs
         );
         botAadAppState.botId = aadApp.appId!;
+        AadSet.add(aadApp.appId!);
         botAadAppState.botPassword = await aadAppClient.generateClientSecret(aadApp.id!);
         context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateBotAadApp));
       } else {

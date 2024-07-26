@@ -31,6 +31,7 @@ import {
   logMessageKeys,
   telemetryKeys,
 } from "./utility/constants";
+import { AadSet } from "../../../common/globalVars";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -89,6 +90,7 @@ export class CreateAadAppDriver implements StepDriver {
         );
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
+        AadSet.add(aadApp.appId!);
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
         outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
 

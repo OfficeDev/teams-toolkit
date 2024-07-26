@@ -6,7 +6,7 @@ import M365TokenInstance from "../commonlib/m365Login";
 import * as globalVariables from "../globalVariables";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { GraphScopes } from "@microsoft/teamsfx-core";
+import { AadSet, GraphScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import { ConvertTokenToJson } from "../commonlib/codeFlowLogin";
 import VsCodeLogInstance from "../commonlib/log";
@@ -17,33 +17,33 @@ import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { FxError } from "@microsoft/teamsfx-api";
 
 const defaultNotificationLocalFile = ".notification.localstore.json";
-export async function deleteAad() {
+export async function deleteAad(): Promise<boolean> {
   try {
     if (globalVariables.deleteAadInProgress) {
-      return;
+      return true;
     }
     globalVariables.setDeleteAadInProgress(true);
     const projectPath = globalVariables.workspaceUri!.fsPath;
     const envFile = path.resolve(projectPath, "env", ".env.local");
     const userFile = path.resolve(projectPath, "env", ".env.local.user");
     if (!fs.existsSync(envFile) || !fs.existsSync(userFile)) {
-      return;
+      return true;
     }
     const envData = dotenvUtil.deserialize(fs.readFileSync(envFile, "utf-8"));
     const userEnvData = dotenvUtil.deserialize(fs.readFileSync(userFile, "utf-8"));
     if (!envData.obj["BOT_ID"] && !envData.obj["AAD_APP_CLIENT_ID"]) {
-      return;
+      return true;
     }
     const accountInfo = M365TokenInstance.getCachedAccountInfo();
     if (accountInfo !== undefined) {
       const tokenRes = await M365TokenInstance.getAccessToken({ scopes: GraphScopes });
       if (tokenRes.isErr()) {
-        return;
+        return true;
       }
       const accountJson = ConvertTokenToJson(tokenRes.value);
       const uniqueName = (accountJson as Record<string, string>)["unique_name"];
       if (!uniqueName || !uniqueName.includes("@microsoft.com")) {
-        return;
+        return true;
       }
       VsCodeLogInstance.info(localize("teamstoolkit.localDebug.startDeletingAadProcess"));
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.StartDeleteAadAfterDebug);
@@ -56,12 +56,18 @@ export async function deleteAad() {
         return config;
       });
       const list: string[] = [];
-      if (envData.obj["BOT_ID"] != undefined) {
+      if (envData.obj["BOT_ID"] != undefined && AadSet.has(envData.obj["BOT_ID"])) {
+        AadSet.delete(envData.obj["BOT_ID"]);
         list.push(envData.obj["BOT_ID"]);
         envData.obj["BOT_ID"] = "";
+        envData.obj["BOT_OBJECT_ID"] = "";
         userEnvData.obj["SECRET_BOT_PASSWORD"] = "";
       }
-      if (envData.obj["AAD_APP_CLIENT_ID"] != undefined) {
+      if (
+        envData.obj["AAD_APP_CLIENT_ID"] != undefined &&
+        AadSet.has(envData.obj["AAD_APP_CLIENT_ID"])
+      ) {
+        AadSet.delete(envData.obj["AAD_APP_CLIENT_ID"]);
         list.push(envData.obj["AAD_APP_CLIENT_ID"]);
         envData.obj["AAD_APP_CLIENT_ID"] = "";
         envData.obj["AAD_APP_OBJECT_ID"] = "";
@@ -106,6 +112,7 @@ export async function deleteAad() {
       VsCodeLogInstance.info(localize("teamstoolkit.localDebug.successDeleteAadProcess"));
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SuccessDeleteAadAfterDebug);
     }
+    return true;
   } catch (error) {
     VsCodeLogInstance.warning(
       util.format(
@@ -114,6 +121,7 @@ export async function deleteAad() {
       )
     );
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.FailDeleteAadAfterDebug, error as FxError);
+    return false;
   } finally {
     globalVariables.setDeleteAadInProgress(false);
   }

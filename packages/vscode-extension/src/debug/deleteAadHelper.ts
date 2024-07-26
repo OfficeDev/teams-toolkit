@@ -90,6 +90,7 @@ export async function deleteAad() {
           localize("teamstoolkit.localDebug.successDeleteNotificationLocalStoreFile")
         );
       }
+      AadSet.clear();
       for (const id of list) {
         try {
           VsCodeLogInstance.info(

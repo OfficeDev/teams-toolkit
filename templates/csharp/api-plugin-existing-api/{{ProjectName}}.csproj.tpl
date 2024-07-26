@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
-    <ProjectCapability Include="CopilotPlugin" />
+    <ProjectCapability Include="ApiPlugin" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +20,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" Sdk="Microsoft.TeamsFx.Sdk">
   <ItemGroup>
-    <ProjectCapability Include="CopilotPlugin" />
+    <ProjectCapability Include="ApiPlugin" />
   </ItemGroup>
   <ItemGroup>
     <ProjectCapability Include="ProjectConfigurationsDeclaredDimensions" />

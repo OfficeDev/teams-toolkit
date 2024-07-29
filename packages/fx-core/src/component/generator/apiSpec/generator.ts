@@ -69,24 +69,27 @@ import {
   specParserGenerateResultWarningsTelemetryProperty,
   updateForCustomApi,
 } from "./helper";
-import { TemplateNames } from "../templates/templateNames";
+import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 
-const fromApiSpecComponentName = "copilot-plugin-existing-api";
-const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
+const defaultDeclarativeCopilotActionId = "action_1";
+// const fromApiSpecComponentName = "copilot-plugin-existing-api";
+// const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
-const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
+// const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
 
 const failedToUpdateCustomApiTemplateErrorName = "failed-to-update-custom-api-template";
+const defaultDeclarativeCopilotManifestFileName = "declarativeCopilot.json";
 
 const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
   authType = "auth-type",
+  isDeclarativeCopilot = "is-declarative-copilot",
 }
 
 function normalizePath(path: string): string {
@@ -97,181 +100,192 @@ export interface OpenAPISpecGeneratorResult {
   warnings?: Warning[];
 }
 
-export class OpenAPISpecGenerator {
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: fromApiSpecComponentName,
-      telemetryEventName: TelemetryEvents.Generate,
-      errorSource: fromApiSpecComponentName,
-    }),
-  ])
-  public static async generateMe(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    actionContext?: ActionContext
-  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
-    const templateName = fromApiSpecTemplateName;
-    const componentName = fromApiSpecComponentName;
+// TODO: delete class for old generator
+// export class OpenAPISpecGenerator {
+//   @hooks([
+//     ActionExecutionMW({
+//       enableTelemetry: true,
+//       telemetryComponentName: fromApiSpecComponentName,
+//       telemetryEventName: TelemetryEvents.Generate,
+//       errorSource: fromApiSpecComponentName,
+//     }),
+//   ])
+//   public static async generateMe(
+//     context: Context,
+//     inputs: Inputs,
+//     destinationPath: string,
+//     actionContext?: ActionContext
+//   ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
+//     const templateName = fromApiSpecTemplateName;
+//     const componentName = fromApiSpecComponentName;
 
-    merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
+//     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
 
-    return await this.generate(
-      context,
-      inputs,
-      destinationPath,
-      templateName,
-      componentName,
-      false,
-      inputs.apiAuthData
-    );
-  }
+//     return await this.generate(
+//       context,
+//       inputs,
+//       destinationPath,
+//       templateName,
+//       componentName,
+//       false,
+//       inputs.apiAuthData
+//     );
+//   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: pluginFromApiSpecComponentName,
-      telemetryEventName: TelemetryEvents.Generate,
-      errorSource: pluginFromApiSpecComponentName,
-    }),
-  ])
-  public static async generateCopilotPlugin(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    actionContext?: ActionContext
-  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
-    const templateName = apiPluginFromApiSpecTemplateName;
-    const componentName = fromApiSpecComponentName;
+//   @hooks([
+//     ActionExecutionMW({
+//       enableTelemetry: true,
+//       telemetryComponentName: pluginFromApiSpecComponentName,
+//       telemetryEventName: TelemetryEvents.Generate,
+//       errorSource: pluginFromApiSpecComponentName,
+//     }),
+//   ])
+//   public static async generateCopilotPlugin(
+//     context: Context,
+//     inputs: Inputs,
+//     destinationPath: string,
+//     actionContext?: ActionContext
+//   ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
+//     const templateName = apiPluginFromApiSpecTemplateName;
+//     const componentName = fromApiSpecComponentName;
 
-    merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
+//     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
 
-    return await this.generate(
-      context,
-      inputs,
-      destinationPath,
-      templateName,
-      componentName,
-      true,
-      inputs.apiAuthData
-    );
-  }
+//     return await this.generate(
+//       context,
+//       inputs,
+//       destinationPath,
+//       templateName,
+//       componentName,
+//       true,
+//       inputs.apiAuthData
+//     );
+//   }
 
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: fromOpenAIPlugincomponentName,
-      telemetryEventName: TelemetryEvents.Generate,
-      errorSource: fromOpenAIPlugincomponentName,
-    }),
-  ])
-  public static async generateCustomCopilot(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string
-  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
-    return await this.generate(
-      context,
-      inputs,
-      destinationPath,
-      forCustomCopilotRagCustomApi,
-      forCustomCopilotRagCustomApi,
-      false
-    );
-  }
+//   @hooks([
+//     ActionExecutionMW({
+//       enableTelemetry: true,
+//       telemetryComponentName: fromOpenAIPlugincomponentName,
+//       telemetryEventName: TelemetryEvents.Generate,
+//       errorSource: fromOpenAIPlugincomponentName,
+//     }),
+//   ])
+//   public static async generateCustomCopilot(
+//     context: Context,
+//     inputs: Inputs,
+//     destinationPath: string
+//   ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
+//     return await this.generate(
+//       context,
+//       inputs,
+//       destinationPath,
+//       forCustomCopilotRagCustomApi,
+//       forCustomCopilotRagCustomApi,
+//       false
+//     );
+//   }
 
-  private static async generate(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    templateName: string,
-    componentName: string,
-    isPlugin: boolean,
-    authData?: AuthInfo
-  ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
-    try {
-      const appName = inputs[QuestionNames.AppName];
-      const language = inputs[QuestionNames.ProgrammingLanguage];
-      const safeProjectNameFromVS =
-        language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-      const type =
-        templateName === forCustomCopilotRagCustomApi
-          ? ProjectType.TeamsAi
-          : isPlugin
-          ? ProjectType.Copilot
-          : ProjectType.SME;
-      let url = inputs[QuestionNames.ApiSpecLocation];
-      url = url.trim();
-      let isYaml: boolean;
-      try {
-        isYaml = await isYamlSpecFile(url);
-      } catch (e) {
-        isYaml = false;
-      }
-      const openapiSpecFileName = isYaml ? defaultApiSpecYamlFileName : defaultApiSpecJsonFileName;
-      if (authData?.authName) {
-        const envName = getEnvName(authData.authName, authData.authType);
-        context.templateVariables = Generator.getDefaultVariables(
-          appName,
-          safeProjectNameFromVS,
-          inputs.targetFramework,
-          inputs.placeProjectFileInSolutionDir === "true",
-          {
-            authName: authData.authName,
-            openapiSpecPath: normalizePath(
-              path.join(AppPackageFolderName, defaultApiSpecFolderName, openapiSpecFileName)
-            ),
-            registrationIdEnvName: envName,
-            authType: authData.authType,
-          }
-        );
-      } else {
-        context.templateVariables = Generator.getDefaultVariables(
-          appName,
-          safeProjectNameFromVS,
-          inputs.targetFramework,
-          inputs.placeProjectFileInSolutionDir === "true"
-        );
-      }
+//   private static async generate(
+//     context: Context,
+//     inputs: Inputs,
+//     destinationPath: string,
+//     templateName: string,
+//     componentName: string,
+//     isPlugin: boolean,
+//     authData?: AuthInfo
+//   ): Promise<Result<OpenAPISpecGeneratorResult, FxError>> {
+//     try {
+//       const appName = inputs[QuestionNames.AppName];
+//       const language = inputs[QuestionNames.ProgrammingLanguage];
+//       const safeProjectNameFromVS =
+//         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+//       const type =
+//         templateName === forCustomCopilotRagCustomApi
+//           ? ProjectType.TeamsAi
+//           : isPlugin
+//           ? ProjectType.Copilot
+//           : ProjectType.SME;
+//       let url = inputs[QuestionNames.ApiSpecLocation];
+//       url = url.trim();
+//       let isYaml: boolean;
+//       try {
+//         isYaml = await isYamlSpecFile(url);
+//       } catch (e) {
+//         isYaml = false;
+//       }
+//       const openapiSpecFileName = isYaml ? defaultApiSpecYamlFileName : defaultApiSpecJsonFileName;
+//       if (authData?.authName) {
+//         const envName = getEnvName(authData.authName, authData.authType);
+//         context.templateVariables = Generator.getDefaultVariables(
+//           appName,
+//           safeProjectNameFromVS,
+//           inputs.targetFramework,
+//           inputs.placeProjectFileInSolutionDir === "true",
+//           {
+//             authName: authData.authName,
+//             openapiSpecPath: normalizePath(
+//               path.join(AppPackageFolderName, defaultApiSpecFolderName, openapiSpecFileName)
+//             ),
+//             registrationIdEnvName: envName,
+//             authType: authData.authType,
+//             withPlugin: inputs[QuestionNames.WithPlugin],
+//           }
+//         );
+//       } else {
+//         context.templateVariables = Generator.getDefaultVariables(
+//           appName,
+//           safeProjectNameFromVS,
+//           inputs.targetFramework,
+//           inputs.placeProjectFileInSolutionDir === "true",
+//           withPlugin: inputs[QuestionNames.WithPlugin],
+//         );
+//       }
 
-      if (templateName != forCustomCopilotRagCustomApi) {
-        // download template
-        const templateRes = await Generator.generateTemplate(
-          context,
-          destinationPath,
-          templateName,
-          language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
-        );
-        if (templateRes.isErr()) return err(templateRes.error);
-      }
+//       if (templateName != forCustomCopilotRagCustomApi) {
+//         // download template
+//         const templateRes = await Generator.generateTemplate(
+//           context,
+//           destinationPath,
+//           templateName,
+//           language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
+//         );
+//         if (templateRes.isErr()) return err(templateRes.error);
+//       }
 
-      context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
-        [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
-        [telemetryProperties.generateType]: type.toString(),
-        [telemetryProperties.authType]: authData?.authType ?? "None",
-      });
+//       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
+//         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+//         [telemetryProperties.generateType]: type.toString(),
+//         [telemetryProperties.authType]: authData?.authType ?? "None",
+//       });
 
-      const newGenerator = new SpecGenerator();
-      const getTemplateInfosState: any = {};
-      inputs.getTemplateInfosState = getTemplateInfosState;
-      getTemplateInfosState.isYaml = isYaml;
-      getTemplateInfosState.isPlugin = isPlugin;
-      getTemplateInfosState.templateName = templateName;
-      getTemplateInfosState.url = url;
-      getTemplateInfosState.type = type;
-      const res = await newGenerator.post(context, inputs, destinationPath);
-      return res;
-    } catch (e) {
-      let error: FxError;
-      if (e instanceof SpecParserError) {
-        error = convertSpecParserErrorToFxError(e);
-      } else {
-        error = assembleError(e);
-      }
-      return err(error);
-    }
-  }
+//       const newGenerator = new SpecGenerator();
+//       const getTemplateInfosState: any = {};
+//       inputs.getTemplateInfosState = getTemplateInfosState;
+//       getTemplateInfosState.isYaml = isYaml;
+//       getTemplateInfosState.isPlugin = isPlugin;
+//       getTemplateInfosState.templateName = templateName;
+//       getTemplateInfosState.url = url;
+//       getTemplateInfosState.type = type;
+//       const res = await newGenerator.post(context, inputs, destinationPath);
+//       return res;
+//     } catch (e) {
+//       let error: FxError;
+//       if (e instanceof SpecParserError) {
+//         error = convertSpecParserErrorToFxError(e);
+//       } else {
+//         error = assembleError(e);
+//       }
+//       return err(error);
+//     }
+//   }
+// }
+
+interface TemplateInfosState {
+  isYaml: boolean;
+  templateName: string;
+  url: string;
+  isPlugin: boolean;
+  type: ProjectType;
 }
 
 export class SpecGenerator extends DefaultTemplateGenerator {
@@ -299,15 +313,11 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
     let templateName = "";
     if (
-      capability === CapabilityOptions.apiPlugin().id &&
+      (capability === CapabilityOptions.apiPlugin().id ||
+        capability === CapabilityOptions.declarativeCopilot().id) &&
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
     ) {
       templateName = apiPluginFromApiSpecTemplateName;
-    } else if (
-      capability === CapabilityOptions.declarativeCopilot().id &&
-      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
-    ) {
-      templateName = TemplateNames.BasicGpt;
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
       templateName = fromApiSpecTemplateName;
     } else if (
@@ -326,9 +336,13 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
     const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-    const getTemplateInfosState: any = {};
-    getTemplateInfosState.templateName = this.getTemplateName(inputs);
-    getTemplateInfosState.isPlugin = false;
+    const getTemplateInfosState: TemplateInfosState = {
+      isYaml: false,
+      templateName: this.getTemplateName(inputs),
+      url: inputs[QuestionNames.ApiSpecLocation].trim(),
+      isPlugin: false,
+      type: ProjectType.SME,
+    };
     let authData = undefined;
     if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id) {
       getTemplateInfosState.isPlugin = true;
@@ -336,8 +350,11 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
       authData = inputs.apiAuthData;
     }
+    const isDeclarativeCopilot =
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
     merge(actionContext?.telemetryProps, {
       [telemetryProperties.templateName]: getTemplateInfosState.templateName,
+      [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
     });
     const appName = inputs[QuestionNames.AppName];
     let language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
@@ -355,12 +372,9 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         : getTemplateInfosState.isPlugin
         ? ProjectType.Copilot
         : ProjectType.SME;
-    const url = inputs[QuestionNames.ApiSpecLocation];
-    getTemplateInfosState.url = url.trim();
 
-    getTemplateInfosState.isYaml = false;
     try {
-      getTemplateInfosState.isYaml = await isYamlSpecFile(url);
+      getTemplateInfosState.isYaml = await isYamlSpecFile(getTemplateInfosState.url);
     } catch (e) {}
 
     const openapiSpecFileName = getTemplateInfosState.isYaml
@@ -407,7 +421,9 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       );
     }
     context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
-      [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+      [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(
+        getTemplateInfosState.url
+      ).toString(),
       [telemetryProperties.generateType]: getTemplateInfosState.type.toString(),
       [telemetryProperties.authType]: authData?.authName ?? "None",
     });
@@ -416,7 +432,17 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       {
         templateName: getTemplateInfosState.templateName,
         language: language,
-        replaceMap: context.templateVariables,
+        replaceMap: {
+          ...context.templateVariables,
+          DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
+        },
+        filterFn: (fileName: string) => {
+          if (fileName.includes(`${defaultDeclarativeCopilotManifestFileName}.tpl`)) {
+            return isDeclarativeCopilot;
+          } else {
+            return true;
+          }
+        },
       },
     ]);
   }
@@ -428,14 +454,16 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     actionContext?: ActionContext
   ): Promise<Result<GeneratorResult, FxError>> {
     try {
-      const getTemplateInfosState = inputs.getTemplateInfosState;
+      const getTemplateInfosState = inputs.getTemplateInfosState as TemplateInfosState;
+      const isDeclarativeCopilot =
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
       // validate API spec
       const specParser = new SpecParser(
         getTemplateInfosState.url,
         getTemplateInfosState.isPlugin
           ? {
               ...copilotPluginParserOptions,
-              isGptPlugin: getTemplateInfosState.templateName === TemplateNames.BasicGpt,
+              isGptPlugin: isDeclarativeCopilot,
             }
           : {
               allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
@@ -546,7 +574,6 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         warnings.push(...generateResult.warnings);
       }
 
-      // TODO: update GPT manifest
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);
 
       if (manifestRes.isErr()) {
@@ -568,6 +595,21 @@ export class SpecGenerator extends DefaultTemplateGenerator {
             error.message,
             error.message
           );
+        }
+      }
+
+      if (isDeclarativeCopilot) {
+        const gptManifestPath = path.join(
+          path.dirname(manifestPath),
+          defaultDeclarativeCopilotManifestFileName
+        );
+        const addAcionResult = await copilotGptManifestUtils.addAction(
+          gptManifestPath,
+          defaultDeclarativeCopilotActionId,
+          defaultPluginManifestFileName
+        );
+        if (addAcionResult.isErr()) {
+          return err(addAcionResult.error);
         }
       }
 

@@ -54,6 +54,7 @@ class CheckAssignedIssueForAppStudio extends Action {
 			safeLog(`There is template for ${key} in package.nls.json, ignore`);
 			return false;
 		}
+		safeLog(`matching-reg is ${reg}`);
 		const regExp = new RegExp(reg);
 		if (regExp.test(this.issue.body)) {
 			safeLog(`Issue ${this.issue.number} matched regExp ${reg}`);

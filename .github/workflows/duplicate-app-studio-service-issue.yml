@@ -37,8 +37,6 @@ jobs:
           token: ${{secrets.GITHUB_TOKEN}}
           reply: Based on the status code and API name in error message, this issue is duplicated with {{first}}. You can refer to it for more information.
           adding-tags: close-wait,*duplicate
-          matching-reg: 'API call to Developer Portal failed. Error, Request failed with status code (.*), API name. (.*), X-Correlation-ID'
-          status-codes-ignore-api: 503
         env:
           ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}
           

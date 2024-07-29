@@ -34,6 +34,7 @@
     "@types/node": "^14.14.21",
     "@types/sinon": "^9.0.9",
     "@types/vscode": "^1.66.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
@@ -68,6 +69,9 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
+    ],
+    "*.json": [
+      "npx prettier --cache --write --ignore-unknown"
     ]
   }
 }

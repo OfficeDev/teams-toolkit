@@ -86,6 +86,9 @@ describe("Local Debug Tests", function () {
         LocalDebugTaskLabel2.PythonDebugConsole,
         "Running on http://localhost:3978"
       );
+      editDotEnvFile(envPath, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME", "fake");
+      editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", "fake");
+      editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", "https://test.com");
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(

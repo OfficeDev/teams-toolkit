@@ -91,10 +91,7 @@ export interface MaskSecretOptions {
   replace?: string;
 }
 
-export function maskSecret(
-  inputText?: string,
-  option = { threshold: MIN_ENTROPY, whiteList: WHITE_LIST, replace: SECRET_REPLACE }
-): string {
+export function maskSecret(inputText?: string, option?: MaskSecretOptions): string {
   if (!inputText) return "";
   option = option || {};
   option.threshold = option.threshold || MIN_ENTROPY;
@@ -112,7 +109,7 @@ export function maskSecret(
     if (
       option.whiteList?.includes(token.value) ||
       token.splitter ||
-      (token.entropy || 0) <= option.threshold
+      (token.entropy || 0) <= option.threshold!
     ) {
       output += token.value;
     } else {

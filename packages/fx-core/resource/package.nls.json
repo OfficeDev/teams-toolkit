@@ -308,7 +308,7 @@
   "core.createProjectQuestion.projectType.copilotGroup.title": "Use Copilot",
   "core.createProjectQuestion.projectType.createGroup.title": "Create",
   "core.createProjectQuestion.projectType.declarativeCopilot.label": "Declarative Copilot",
-  "core.createProjectQuestion.projectType.declarativeCopilot.detail": "Craft your own copilot by declaring instructions, actions, and knowledge to customize Copilot for Microsoft 365.",
+  "core.createProjectQuestion.projectType.declarativeCopilot.detail": "Craft your own Copilot by declaring instructions, actions, and knowledge to customize Copilot for Microsoft 365.",
   "core.createProjectQuestion.title": "New Project",
   "core.createProjectQuestion.capability.botMessageExtension.label": "Start with a Bot",
   "core.createProjectQuestion.capability.botMessageExtension.detail": "Create a message extension using Bot Framework",

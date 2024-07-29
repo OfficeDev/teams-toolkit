@@ -93,7 +93,7 @@ describe("ApiKeyProvider Tests - Node", () => {
 
     // Assert
     assert.equal(res.data.url, "/foo");
-    assert.equal(res.data.requestHeader![keyName], keyVaule);
+    assert.equal(res.data.requestHeader![keyName], escape(keyVaule));
   });
 
   it("should throw error when connect to existing API with duplicate api key in header", async function () {

@@ -34,7 +34,7 @@ describe("teamsApp/createAppPackage", async () => {
   const openapiServerPlaceholder = "TEAMSFX_TEST_API_URL";
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CopilotPlugin]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
       ["CONFIG_TEAMS_APP_NAME"]: "fakeName",
       [openapiServerPlaceholder]: fakeUrl,
       ["APP_NAME_SUFFIX"]: "test",

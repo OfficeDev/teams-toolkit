@@ -93,6 +93,8 @@ export enum QuestionNames {
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
   PluginAvailability = "plugin-availability",
+  ApiPluginType = "api-plugin-type",
+  WithPlugin = "with-plugin",
 }
 
 export const AppNamePattern =
@@ -111,10 +113,7 @@ export enum ProgrammingLanguage {
   None = "none",
 }
 
-export const apiPluginApiSpecOptionId = "api-plugin-existing-api";
-export const apiPluginExistingApiOptionIds = [apiPluginApiSpecOptionId];
-export const apiPluginNewApiOptionId = "api-plugin-new-api";
-export const apiPluginOptionIds = [apiPluginNewApiOptionId, apiPluginApiSpecOptionId];
+export const apiPluginApiSpecOptionId = "api-spec";
 export const capabilitiesHavePythonOption = [
   "custom-copilot-basic",
   "custom-copilot-rag-azureAISearch",
@@ -204,7 +203,7 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
         ? getLocalizedString(
             "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
           )
@@ -242,13 +241,13 @@ export class ProjectTypeOptions {
     ];
   }
 
-  static copilotPlugin(platform?: Platform): OptionItem {
+  static copilotExtension(platform?: Platform): OptionItem {
     return {
-      id: "api-plugin-type",
+      id: "copilot-extension-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
-      }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+      }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.detail"),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
@@ -272,15 +271,6 @@ export class ProjectTypeOptions {
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotHelp.detail"),
       groupName: getLocalizedString("core.createProjectQuestion.projectType.copilotGroup.title"),
-    };
-  }
-
-  static customizeGpt(): OptionItem {
-    return {
-      id: "customize-gpt-type",
-      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
-      detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.title"),
-      groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
 }
@@ -443,7 +433,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
         ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
         : getLocalizedString("core.M365SearchAppOptionItem.detail"),
     };
@@ -503,7 +493,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
       CapabilityOptions.empty(),
-      ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.copilotExtensions(inputs),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
@@ -598,8 +588,12 @@ export class CapabilityOptions {
     return items;
   }
 
-  static copilotPlugins(): OptionItem[] {
-    return [CapabilityOptions.copilotPluginNewApi(), CapabilityOptions.copilotPluginApiSpec()];
+  static copilotExtensions(inputs?: Inputs): OptionItem[] {
+    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
+      return [CapabilityOptions.apiPlugin()];
+    } else {
+      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    }
   }
 
   static customCopilots(): OptionItem[] {
@@ -619,10 +613,6 @@ export class CapabilityOptions {
     ];
   }
 
-  static customizeGptOptions(): OptionItem[] {
-    return [CapabilityOptions.customizeGptBasic(), CapabilityOptions.customizeGptWithPlugin()];
-  }
-
   /**
    * static capability list, which does not depend on any feature flags
    */
@@ -632,10 +622,9 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.copilotExtensions(inputs),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
-      ...CapabilityOptions.customizeGptOptions(),
     ];
     capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities());
     return capabilityOptions;
@@ -653,11 +642,8 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
-      capabilityOptions.push(...CapabilityOptions.copilotPlugins());
-    }
-    if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
-      capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+      capabilityOptions.push(...CapabilityOptions.copilotExtensions());
     }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
@@ -711,27 +697,22 @@ export class CapabilityOptions {
     };
   }
 
-  // copilot plugin
-  static copilotPluginNewApi(): OptionItem {
+  // copilot extension - api plugin
+  static apiPlugin(): OptionItem {
     return {
-      id: apiPluginNewApiOptionId,
-      label: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
-      ),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
-      ),
+      id: "api-plugin",
+      label: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
     };
   }
 
-  static copilotPluginApiSpec(): OptionItem {
+  // copilot extension - declarative copilot
+  static declarativeCopilot(): OptionItem {
     return {
-      id: apiPluginApiSpecOptionId,
-      label: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
-      ),
+      id: "declarative-copilot",
+      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
       detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+        "core.createProjectQuestion.projectType.declarativeCopilot.detail"
       ),
     };
   }
@@ -786,31 +767,6 @@ export class CapabilityOptions {
       ),
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantOption.detail"
-      ),
-    };
-  }
-
-  // customize GPT
-  static customizeGptBasic(): OptionItem {
-    return {
-      id: "basic-declarative-copilot",
-      label: getLocalizedString(
-        "core.createProjectQuestion.capability.declarativeCopilotBasic.title"
-      ),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.capability.declarativeCopilotBasic.detail"
-      ),
-    };
-  }
-
-  static customizeGptWithPlugin(): OptionItem {
-    return {
-      id: "declarative-copilot-with-plugin-from-scratch",
-      label: getLocalizedString(
-        "core.createProjectQuestion.capability.declarativeCopilotWithPlugin.title"
-      ),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.capability.declarativeCopilotWithPlugin.detail"
       ),
     };
   }
@@ -909,7 +865,7 @@ export class MeArchitectureOptions {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
-      featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
+      featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
         ? MeArchitectureOptions.botPlugin()
         : MeArchitectureOptions.botMe(),
     ];
@@ -1254,5 +1210,56 @@ export class HubOptions {
   }
   static all(): OptionItem[] {
     return [this.teams(), this.outlook(), this.office()];
+  }
+}
+
+export class DeclarativeCopilotTypeOptions {
+  static noPlugin(): OptionItem {
+    return {
+      id: "no",
+      label: getLocalizedString("core.createProjectQuestion.noPlugin.label"),
+      detail: getLocalizedString("core.createProjectQuestion.noPlugin.detail"),
+    };
+  }
+  static withPlugin(): OptionItem {
+    return {
+      id: "yes",
+      label: getLocalizedString("core.createProjectQuestion.addPlugin.label"),
+      detail: getLocalizedString("core.createProjectQuestion.addPlugin.detail"),
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [DeclarativeCopilotTypeOptions.noPlugin(), DeclarativeCopilotTypeOptions.withPlugin()];
+  }
+}
+
+export class ApiPluginStartOptions {
+  static newApi(): OptionItem {
+    return {
+      id: "new-api",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
+      ),
+    };
+  }
+
+  static apiSpec(): OptionItem {
+    return {
+      id: "api-spec",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+      ),
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
   }
 }

@@ -49,6 +49,7 @@ import {
 } from "../../../src/component/generator/apiSpec/helper";
 import { Generator } from "../../../src/component/generator/generator";
 import {
+  ApiPluginStartOptions,
   CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
@@ -183,7 +184,8 @@ describe("OpenAPISpecGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       [QuestionNames.ApiSpecLocation]: "https://test.com",
       [QuestionNames.ApiOperation]: ["operation1"],
       supportedApisFromApiSpec: apiOperations,
@@ -546,7 +548,8 @@ describe("OpenAPISpecGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
       [QuestionNames.ApiSpecLocation]: "test.yaml",
       [QuestionNames.ApiOperation]: ["operation1"],
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       supportedApisFromApiSpec: [
         {
           id: "operation1",
@@ -1000,7 +1003,7 @@ describe("formatValidationErrors", () => {
 
     const res = formatValidationErrors(errors, {
       platform: Platform.VSCode,
-      [QuestionNames.Capabilities]: apiPluginApiSpecOptionId,
+      [QuestionNames.ApiPluginType]: apiPluginApiSpecOptionId,
     });
 
     const errorMessage1 = [
@@ -1706,7 +1709,8 @@ describe("SpecGenerator", async () => {
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       };
       let res = await generator.activate(context, inputs);
       let templateName = generator.getTemplateName(inputs);
@@ -1737,7 +1741,8 @@ describe("SpecGenerator", async () => {
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.AppName]: "testapp",
       };
       inputs[QuestionNames.ApiSpecLocation] = "test.yaml";

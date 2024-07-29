@@ -1621,6 +1621,45 @@ describe("listOperations", async () => {
     expect(res.isOk()).to.be.true;
   });
 
+  it("will show invalid api reasons", async () => {
+    const inputs = {
+      "custom-copilot-rag": "custom-copilot-rag-customApi",
+      platform: Platform.VSCode,
+    };
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "1",
+          server: "https://test",
+          operationId: "id1",
+          isValid: false,
+          reason: [ErrorType.NoParameter],
+        },
+        {
+          api: "2",
+          server: "https://test",
+          operationId: "id2",
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 2,
+      validAPICount: 1,
+    });
+    const warningSpy = sandbox.spy(context.logProvider, "warning");
+
+    const res = await CopilotPluginHelper.listOperations(context, "", inputs, true, false, "");
+    expect(res.isOk()).to.be.true;
+    expect(warningSpy.calledOnce).to.be.true;
+  });
+
   it("should throw error if list api not from original OpenAPI spec", async () => {
     const inputs = {
       platform: Platform.VSCode,

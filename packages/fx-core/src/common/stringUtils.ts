@@ -122,7 +122,7 @@ export function maskSecret(
 
 function maskByPattern(command: string): string {
   const regexU = /(-u|--username|--user) (\S+)/;
-  const regexP = /(-p|--password|--pwd) (\S+)/;
+  const regexP = /(-p|--password|--pwd|--secret|--credential) (\S+)/;
   let output = command.replace(regexU, `$1 ${USER_REPLACE}`);
   output = output.replace(regexP, `$1 ${SECRET_REPLACE}`);
   return output;

@@ -20,7 +20,7 @@ import { DotenvOutput } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { maskSecretValues } from "../../../common/stringUtils";
+import { maskSecret, maskSecretValues } from "../../../common/stringUtils";
 
 const ACTION_NAME = "script";
 
@@ -64,7 +64,7 @@ export class ScriptDriver implements StepDriver {
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     await context.progressBar?.next(
-      ProgressMessages.runCommand(typedArgs.run, typedArgs.workingDirectory ?? "./")
+      ProgressMessages.runCommand(maskSecret(typedArgs.run), typedArgs.workingDirectory ?? "./")
     );
     const res = await executeCommand(
       typedArgs.run,

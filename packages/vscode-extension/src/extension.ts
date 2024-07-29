@@ -125,6 +125,7 @@ import {
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  syncManifestHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
@@ -680,10 +681,10 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(checkCopilotCallbackCmd);
   // todo
-  //const syncManifestCmd = vscode.commands.registerCommand("fx-extension.syncManifest",
-  //  (...args) => Correlator.run(syncManifestHandler, args)
-  //);
-  //);
+  const syncManifestCmd = vscode.commands.registerCommand("fx-extension.syncManifest", (...args) =>
+    Correlator.run(syncManifestHandler, args)
+  );
+  context.subscriptions.push(syncManifestCmd);
 }
 
 /**

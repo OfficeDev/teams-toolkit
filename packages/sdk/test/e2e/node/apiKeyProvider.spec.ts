@@ -7,6 +7,7 @@ import { ApiKeyLocation, ApiKeyProvider, createApiClient } from "../../../src";
 import * as http from "http";
 import { formatString } from "../../../src/util/utils";
 import { ErrorMessage, ErrorCode, ErrorWithCode } from "../../../src/core/errors";
+const escape = require("escape-html");
 chaiUse(chaiPromises);
 
 describe("ApiKeyProvider Tests - Node", () => {
@@ -16,7 +17,7 @@ describe("ApiKeyProvider Tests - Node", () => {
   const server = http.createServer((req, res) => {
     res.writeHead(200);
     const data = {
-      requestHeader: req.headers,
+      requestHeader: escape(req.headers),
       url: req.url,
     };
     res.end(JSON.stringify(data));

@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { BearerTokenAuthProvider, createApiClient } from "../../../src";
 import * as http from "http";
+const escape = require("escape-html");
 
 describe("BearerTokenAuthProvider Tests - Node", () => {
   const host = "localhost";
@@ -12,7 +13,7 @@ describe("BearerTokenAuthProvider Tests - Node", () => {
   const server = http.createServer((req, res) => {
     res.writeHead(200);
     const data = {
-      requestHeader: req.headers,
+      requestHeader: escape(req.headers),
       url: req.url,
     };
     res.end(JSON.stringify(data));

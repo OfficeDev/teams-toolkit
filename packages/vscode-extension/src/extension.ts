@@ -680,11 +680,8 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(checkCopilotCallback, args)
   );
   context.subscriptions.push(checkCopilotCallbackCmd);
-  // todo
-  const syncManifestCmd = vscode.commands.registerCommand("fx-extension.syncManifest", (...args) =>
-    Correlator.run(syncManifestHandler, args)
-  );
-  context.subscriptions.push(syncManifestCmd);
+
+  registerInCommandController(context, "fx-extension.syncManifest", syncManifestHandler);
 }
 
 /**

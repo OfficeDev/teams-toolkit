@@ -930,6 +930,11 @@
         "title": "%teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle%",
         "category": "Teams",
         "enablement": "fx-extension.isChatParticipantEnabled"
+      },
+      {
+        "command": "fx-extension.syncManifest",
+        "title": "%teamstoolkit.commandsTreeViewProvider.syncManifest%",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [

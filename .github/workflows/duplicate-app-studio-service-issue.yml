@@ -24,7 +24,10 @@ jobs:
          path: ./action-base
 
       - name: Copy action
-        run: cp -r .github/actions/duplicate-handler-for-app-studio ./action-base/duplicate-handler-for-app-studio
+        run: |
+          cp -r .github/actions/duplicate-handler-for-app-studio ./action-base/duplicate-handler-for-app-studio
+          cp -r .github/actions/teamsfx-utils ./action-base/teamsfx-utils
+
       - name: Npm install
         run: npm install --production --prefix ./action-base
       - name: Build action

@@ -19,6 +19,7 @@ export class DeveloperPortalAPIFailedError extends SystemError {
       source: Constants.PLUGIN_NAME,
       error: e,
       message: getDefaultString(
+        // github issue workflow uses this template for matching. Please send a heads-up to the owner of workflows if you want to change it.
         "error.appstudio.apiFailed.telemetry",
         e.name,
         e.message,

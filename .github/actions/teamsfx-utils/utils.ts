@@ -26,9 +26,19 @@ export function getEmail(githubUser?: string): string {
 
 export function sendAlert(subject: string, message: string, email?: string) {
     if (!email) {
-        email = "zhaofengxu@microsoft.com"
+        email = "zhaofengxu@microsoft.com";
     }
     setOutput('alert_to', email);
     setOutput('alert_subject', subject);
     setOutput('alert_body', message);
+}
+
+export function getTemplateFromPackageAndConvertToReg(key: string): string {
+    const res = fs.readFileSync(path.join(__dirname, '..', '..', 'packages', 'fx-core', 'resource', 'package.nls.json'), 'utf8');
+    const obj = JSON.parse(res);
+    if (obj[key] === undefined) {
+        return "";
+    } else {
+        return obj[key].replace(/%s/g, '(.*)');
+    }
 }

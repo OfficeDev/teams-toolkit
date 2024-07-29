@@ -94,31 +94,24 @@ export interface MaskSecretOptions {
 export function maskSecret(inputText?: string, option?: MaskSecretOptions): string {
   if (!inputText) return "";
   option = option || {};
-  option.threshold = option.threshold || MIN_ENTROPY;
-  option.whiteList = option.whiteList || WHITE_LIST;
-  option.replace = option.replace || SECRET_REPLACE;
+  const threshold = option.threshold || MIN_ENTROPY;
+  const whiteList = option.whiteList || WHITE_LIST;
+  const replace = option.replace || SECRET_REPLACE;
   // mask by secret pattern
   inputText = maskByPattern(inputText);
   // mask by .env.xxx.user
-  inputText = maskSecretFromEnv(inputText, option.replace);
+  inputText = maskSecretFromEnv(inputText, replace);
   // mask by entropy
   let output = "";
   const tokens = tokenize(inputText);
   tokens.forEach((token) => {
     computeShannonEntropy(token);
-    if (
-      option.whiteList?.includes(token.value) ||
-      token.splitter ||
-      (token.entropy || 0) <= option.threshold!
-    ) {
+    if (whiteList.includes(token.value) || token.splitter || (token.entropy || 0) <= threshold) {
       output += token.value;
     } else {
-      output += option.replace;
+      output += replace;
     }
   });
-  // for (const token of tokens) {
-  //   console.log(token);
-  // }
   return output;
 }
 

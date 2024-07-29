@@ -1256,7 +1256,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "");
 
-        let filterResult = res.value[0].filterFn!("declarativeCopilot.json");
+        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
         assert.isFalse(filterResult);
         filterResult = res.value[0].filterFn!("test.json");
         assert.isTrue(filterResult);
@@ -1270,7 +1270,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "true");
 
-        const filterResult = res.value[0].filterFn!("declarativeCopilot.json");
+        const filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
         assert.isTrue(filterResult);
       }
 

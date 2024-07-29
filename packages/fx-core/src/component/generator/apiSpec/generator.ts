@@ -437,7 +437,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
           DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
         },
         filterFn: (fileName: string) => {
-          if (fileName.startsWith(defaultDeclarativeCopilotManifestFileName)) {
+          if (fileName.includes(`${defaultDeclarativeCopilotManifestFileName}.tpl`)) {
             return isDeclarativeCopilot;
           } else {
             return true;

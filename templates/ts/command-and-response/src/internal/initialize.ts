@@ -1,4 +1,5 @@
 import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
+import { GenericCommandHandler } from "../genericCommandHandler";
 import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
 import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
 import config from "./config";
@@ -12,6 +13,6 @@ export const commandApp = new ConversationBot({
   adapterConfig: config,
   command: {
     enabled: true,
-    commands: [new HelloWorldCommandHandler()],
+    commands: [new HelloWorldCommandHandler(), new GenericCommandHandler()],
   },
 });

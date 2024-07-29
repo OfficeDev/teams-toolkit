@@ -88,17 +88,22 @@ function computeShannonEntropy(token: Token) {
 export interface MaskSecretOptions {
   threshold?: number;
   whiteList?: string[];
+  replace?: string;
 }
 
 export function maskSecret(
   inputText?: string,
-  option = { threshold: MIN_ENTROPY, whiteList: WHITE_LIST }
+  option = { threshold: MIN_ENTROPY, whiteList: WHITE_LIST, replace: SECRET_REPLACE }
 ): string {
   if (!inputText) return "";
+  option = option || {};
+  option.threshold = option.threshold || MIN_ENTROPY;
+  option.whiteList = option.whiteList || WHITE_LIST;
+  option.replace = option.replace || SECRET_REPLACE;
   // mask by secret pattern
   inputText = maskByPattern(inputText);
   // mask by .env.xxx.user
-  inputText = maskSecretValues(inputText, SECRET_REPLACE);
+  inputText = maskSecretFromEnv(inputText, option.replace);
   // mask by entropy
   let output = "";
   const tokens = tokenize(inputText);
@@ -111,7 +116,7 @@ export function maskSecret(
     ) {
       output += token.value;
     } else {
-      output += SECRET_REPLACE;
+      output += option.replace;
     }
   });
   // for (const token of tokens) {
@@ -128,7 +133,7 @@ function maskByPattern(command: string): string {
   return output;
 }
 
-export function maskSecretValues(stdout: string, replace = "***"): string {
+export function maskSecretFromEnv(stdout: string, replace = SECRET_REPLACE): string {
   for (const key of Object.keys(process.env)) {
     if (key.startsWith("SECRET_")) {
       const value = process.env[key];

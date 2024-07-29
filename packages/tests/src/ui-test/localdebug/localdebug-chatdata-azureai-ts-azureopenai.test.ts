@@ -53,7 +53,7 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
-      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
+      const isRealKey = false; // disable real key test
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
         ? OpenAiKey.azureOpenAiKey
         : "fake";

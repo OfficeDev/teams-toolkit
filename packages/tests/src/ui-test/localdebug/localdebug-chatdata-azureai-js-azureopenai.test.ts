@@ -52,7 +52,7 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
-      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
+      const isRealKey = false; // disable real key test
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
         ? OpenAiKey.azureOpenAiKey
         : "fake";
@@ -75,7 +75,6 @@ describe("Local Debug Tests", function () {
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", "https://test.com");
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
 

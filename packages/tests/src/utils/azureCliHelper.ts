@@ -192,7 +192,6 @@ export class AzSqlHelper {
     return { success: true, stdout: resourceGroups };
   }
 }
-
 export class AzServiceBusHelper {
   public resourceGroupName: string;
   public namespaceName: string;
@@ -279,6 +278,38 @@ export class AzServiceBusHelper {
   }
 }
 
+export class AzSearchHelper {
+  public resourceGroupName: string;
+  public searchName: string;
+  public location: string;
+
+  constructor(resourceGroupName: string, location?: string) {
+    this.resourceGroupName = resourceGroupName;
+    this.searchName = `mysearch-${Math.floor(Math.random() * 100000)}`;
+    this.location = location || "westus";
+  }
+
+  public async createSearch() {
+    // login
+    await AzSqlHelper.login();
+
+    // create resource group
+    console.log("Creating resource group: ", this.resourceGroupName, "...");
+    const { success: resourceGroupSuccess } = await this.createResourceGroup();
+    expect(resourceGroupSuccess).to.be.true;
+
+    // create azure ai search
+    const command = `az search service create --name ${this.searchName} --resource-group ${this.resourceGroupName} --location ${this.location} --sku Standard`;
+
+    await Executor.execute(command, process.cwd());
+  }
+
+  public async createResourceGroup() {
+    const command = `az group create -n ${this.resourceGroupName} -l ${this.location}`;
+    return await Executor.execute(command, process.cwd());
+  }
+}
+
 export async function cleanRG() {
   const { stdout } = await AzSqlHelper.listResourceGroup("fxui");
   for (const rg of stdout) {
@@ -288,32 +319,8 @@ export async function cleanRG() {
 
 // for local test
 async function main() {
-  const sqlCommands = [
-    `CREATE TABLE [TeamPostEntity](
-        [PostID] [int] PRIMARY KEY IDENTITY,
-        [ContentUrl] [nvarchar](400) NOT NULL,
-        [CreatedByName] [nvarchar](50) NOT NULL,
-        [CreatedDate] [datetime] NOT NULL,
-        [Description] [nvarchar](500) NOT NULL,
-        [IsRemoved] [bit] NOT NULL,
-        [Tags] [nvarchar](100) NULL,
-        [Title] [nvarchar](100) NOT NULL,
-        [TotalVotes] [int] NOT NULL,
-        [Type] [int] NOT NULL,
-        [UpdatedDate] [datetime] NOT NULL,
-        [UserID] [uniqueidentifier] NOT NULL
-     );`,
-    `CREATE TABLE [UserVoteEntity](
-      [VoteID] [int] PRIMARY KEY IDENTITY,
-      [PostID] [int] NOT NULL,
-      [UserID] [uniqueidentifier] NOT NULL
-    );`,
-  ];
-  const sqlHelper = new AzSqlHelper("fxui-rg", sqlCommands);
-  await sqlHelper.createSql();
-
-  console.log(`Sql admin: ${sqlHelper.sqlAdmin}`);
-  console.log(`Sql password: ${sqlHelper.sqlPassword}`);
-  console.log(`Sql endpoint: ${sqlHelper.sqlEndpoint}`);
-  console.log(`Sql database name: ${sqlHelper.sqlDatabaseName}`);
+  const sqlHelper = new AzSearchHelper("fxui-rg");
+  await sqlHelper.createSearch();
 }
+
+void main();

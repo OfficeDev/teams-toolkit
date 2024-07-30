@@ -218,4 +218,4 @@
         }
     ]
 }
-{{^DeclarativeCopilot}}
+{{/DeclarativeCopilot}}

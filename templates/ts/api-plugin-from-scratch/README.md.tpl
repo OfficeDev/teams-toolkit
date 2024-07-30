@@ -47,7 +47,7 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 {{#DeclarativeCopilot}}
 4. Select your declarative Copilot from the `Copilot` app.
 5. Send a message to Copilot to find a repair record.
-{{/DeclarativeCopilot}}4. Send a message to Copilot to find a repair record.
+{{/DeclarativeCopilot}}
 
 ## What's included in the template
 

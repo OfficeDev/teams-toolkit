@@ -15,11 +15,11 @@ import {
   CapabilityOptions,
   QuestionNames,
 } from "../../../src/question";
-import { ApiPluginFromScratchGenerator } from "../../../src/component/generator/apiPluginFromScratch/generator";
+import { CopilotExtensionFromScratchGenerator } from "../../../src/component/generator/copilotExtensionFromScratch/generator";
 describe("apiPluginFromScratch", async () => {
   describe("activate and get template name", async () => {
     it("api plugin", async () => {
-      const generator = new ApiPluginFromScratchGenerator();
+      const generator = new CopilotExtensionFromScratchGenerator();
       const context = createContext();
       const inputs: Inputs = {
         platform: Platform.CLI,
@@ -53,7 +53,7 @@ describe("apiPluginFromScratch", async () => {
     });
 
     it("declarative Copilot", async () => {
-      const generator = new ApiPluginFromScratchGenerator();
+      const generator = new CopilotExtensionFromScratchGenerator();
       const context = createContext();
       const inputs: Inputs = {
         platform: Platform.CLI,

@@ -2777,3 +2777,70 @@ export async function validateMultiParamsApiMeResult(
     throw error;
   }
 }
+
+export async function validateExisingApiMeResult(page: Page, appName: string) {
+  try {
+    console.log("start to verify existingapime search");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+    await messageExtensionActivate(page, appName);
+    const onmoreStr = await page?.waitForSelector(
+      `div.fui-TabList button:has-text("1 More")`
+    );
+    await onmoreStr?.click();
+    const assignStr = await page?.waitForSelector(
+      `div.fui-MenuItem span:has-text("Assign repair to technician for")`
+    );
+    await assignStr?.click();
+    console.log("fill in card Type");
+    const carTypeInput = await page?.waitForSelector(
+      'input[placeholder="Car type to repair"]'
+    );
+    await carTypeInput?.fill("1");
+    console.log("fill in repair Type");
+    const repairTypeInput = await page?.waitForSelector(
+      'input[placeholder="Repair type for the car"]'
+    );
+    await repairTypeInput?.fill("1");
+    console.log("fill in Customer Name");
+    const customerNameInput = await page?.waitForSelector(
+      'input[placeholder="Customer name"]'
+    );
+    await customerNameInput?.fill("1");
+    console.log("fill in Customer Phone Number");
+    const custPhoneNumberInput = await page?.waitForSelector(
+      'input[placeholder="Customer phone number"]'
+    );
+    await custPhoneNumberInput?.fill("1");
+    const searchBtn = await page?.waitForSelector(
+      `div.fui-Flex button:has-text("Search")`
+    );
+    await searchBtn?.click();
+    try {
+      const targetItem = await page?.waitForSelector(
+        `span.fui-StyledText div:has-text("engineer")`
+      );
+      await targetItem?.click();
+      console.log("targetItem.click");
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page?.waitForSelector("div.fui-Primitive p:has-text('validated')");
+      console.log("verify search keyword successfully!!!");
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+    } catch (error) {
+      await page?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("verify_error"),
+        fullPage: true,
+      });
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

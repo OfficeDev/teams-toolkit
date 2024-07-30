@@ -171,8 +171,7 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
-  CopilotPluginFromExistingAPI = "api-plugin-existing-api",
-  CopilotPluginFromScratch = "api-plugin-new-api",
+  ApiPlugin = "api-plugin",
 }
 
 export enum Trigger {
@@ -365,7 +364,8 @@ export type AppType =
   | "msgapikey"
   | "msgmicroentra"
   | "importspfx"
-  | "msgmulparams";
+  | "msgmulparams"
+  | "msgapikeyspec";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

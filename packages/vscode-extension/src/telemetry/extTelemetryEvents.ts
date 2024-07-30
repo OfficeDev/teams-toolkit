@@ -148,6 +148,10 @@ export enum TelemetryEvent {
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
   LaunchDesktopClientTask = "launch-desktop-client",
 
+  StartDeleteAadAfterDebug = "start-delete-aad-after-debug",
+  SuccessDeleteAadAfterDebug = "success-delete-aad-after-debug",
+  FailDeleteAadAfterDebug = "fail-delete-aad-after-debug",
+
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
 

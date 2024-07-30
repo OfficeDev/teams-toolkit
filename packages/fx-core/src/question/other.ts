@@ -812,7 +812,7 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          if (input.length < 10 || input.length > 128) {
+          if (input.length < 10 || input.length > 512) {
             return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
           }
 
@@ -1040,7 +1040,7 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): string | undefined => {
-        if (input.length < 10 || input.length > 128) {
+        if (input.length < 10 || input.length > 512) {
           return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
         }
 

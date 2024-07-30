@@ -1,3 +1,4 @@
+{{^DeclarativeCopilot}}
 # Overview of the API Plugin template
 
 ## Build an API Plugin from OpenAPI description document
@@ -12,6 +13,16 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 - Enriching the data estate of your enterprise with industry-leading AI.
 - Keeping your users in the flow of their work, start to finish.
 - Inheriting world-class security, compliance, and privacy policies.
+{{/DeclarativeCopilot}}
+{{#DeclarativeCopilot}}
+# Overview of the basic declarative copilot with API plugin template
+
+## Build a basic declarative copilot with API plugin
+
+With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
+
+You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A Declarative copilot can utilize multiple plugins at the same time.
+{{/DeclarativeCopilot}}
 
 ## Get started with the template
 
@@ -48,6 +59,15 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 | `.vscode`    | VSCode files for debugging                   |
 | `appPackage` | Templates for the Teams application manifest, the plugin manifest and the API specification |
 | `env`        | Environment files                            |
+{{#DeclarativeCopilot}}
+
+The following files can be customized and demonstrate an example implementation to get you started.
+
+| File                                 | Contents                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------ |
+| `appPackage/declarativeCopilot.json` | Define the behaviour and configurations of the declarative copilot.            |
+| `appPackage/manifest.json`           | Teams application manifest that defines metadata for your declarative copilot. |
+{{/DeclarativeCopilot}}
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -57,6 +77,9 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Addition information and references
 
+{{#DeclarativeCopilot}}
+- [Declarative copilots for Microsoft 365](https://aka.ms/teams-toolkit-declarative-copilot)
+{{/DeclarativeCopilot}}
 - [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
 - [Message extensions for Microsoft Copilot for Microsoft 365](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-message-extension-bot)
 - [Microsoft Graph Connectors for Microsoft Copilot for Microsoft 365](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector)

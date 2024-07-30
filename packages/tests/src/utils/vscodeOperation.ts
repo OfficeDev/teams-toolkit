@@ -920,6 +920,43 @@ export async function createNewProject(
       await createNewProjectByApispec(apiSpecFilePath, driver, input);
       break;
     }
+    case "msgapikeyspec": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.setText("Start with an OpenAPI Description Document");
+      await input.confirm();
+      const apiSpecFilePath =
+        testRootFolder + "\\..\\src\\ui-test\\case-resources\\repair.yaml";
+      console.log("choose yaml file path: ", apiSpecFilePath);
+      await input.selectQuickPick("Browse...");
+      await inputFolderPath(driver, input, apiSpecFilePath);
+      await driver.sleep(Timeout.shortTimeWait);
+      const okBtn = await driver.findElement(By.css(".quick-input-action"));
+      await okBtn?.click();
+      await driver.sleep(Timeout.input);
+      try {
+        const ckAll = await driver.findElement(
+          By.css(".quick-input-check-all")
+        );
+        await ckAll?.click();
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+      } catch {
+        await RetryHandler.retry(async () => {
+          console.log("retry to click ok button");
+          const okBtn = await driver.findElement(By.css(".quick-input-action"));
+          await okBtn?.click();
+          await driver.sleep(Timeout.input);
+          const ckAll = await driver.findElement(
+            By.css(".quick-input-check-all")
+          );
+          await ckAll?.click();
+          await driver.sleep(Timeout.input);
+          await input.confirm();
+        }, 2);
+      }
+      break;
+    }
     default:
       break;
   }

@@ -448,7 +448,7 @@ describe("CreateOauthDriver", () => {
 
   it("should throw error if name is too long", async () => {
     const args: any = {
-      name: "a".repeat(129),
+      name: "a".repeat(513),
       appId: "mockedAppId",
       apiSpecPath: "mockedPath",
       clientId: "mockedClientId",

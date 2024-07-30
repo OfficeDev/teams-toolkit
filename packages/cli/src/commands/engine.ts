@@ -66,6 +66,8 @@ class CLIEngine {
    * entry point of the CLI engine
    */
   async start(rootCmd: CLICommand): Promise<void> {
+    Correlator.setId();
+
     this.debugLogs = [];
 
     const root = cloneDeep(rootCmd);
@@ -499,7 +501,7 @@ class CLIEngine {
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
-    context.optionValues.correlationId = uuid.v4();
+    context.optionValues.correlationId = Correlator.getId(); //no need to initialize a correlationId, which is initialized by Correlator.setId()
     context.optionValues.platform = Platform.CLI;
     // set projectPath
     const projectFolderOption = context.command.options?.find(
@@ -528,8 +530,8 @@ class CLIEngine {
       context.globalOptionValues.interactive + "";
     context.telemetryProperties[TelemetryProperty.CommandVersion] =
       context.globalOptionValues.version + "";
-    context.telemetryProperties[TelemetryProperty.CorrelationId] =
-      context.optionValues.correlationId;
+    // context.telemetryProperties[TelemetryProperty.CorrelationId] =
+    //   context.optionValues.correlationId;
 
     return ok(undefined);
   }

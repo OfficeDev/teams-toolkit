@@ -13,6 +13,7 @@ export const logMessageKeys = {
   skipGenerateClientSecret: "driver.aadApp.log.skipGenerateClientSecret",
   outputAadAppManifest: "driver.aadApp.log.outputAadAppManifest",
   successUpdateAadAppManifest: "driver.aadApp.log.successUpdateAadAppManifest",
+  deleteAadAfterDebugging: "driver.aadApp.log.deleteAadAfterDebugging",
 };
 
 export const descriptionMessageKeys = {

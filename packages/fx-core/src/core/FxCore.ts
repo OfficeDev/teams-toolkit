@@ -1599,7 +1599,7 @@ export class FxCore {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation];
     const manifestPath = inputs[QuestionNames.ManifestPath];
-    const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
+    const isPlugin = inputs[QuestionNames.ApiPluginType] === apiPluginApiSpecOptionId;
     const context = createContext();
 
     // Get API spec file path from manifest

@@ -1301,7 +1301,9 @@ export async function createEnvironmentWithPython() {
   await driver.sleep(Timeout.input);
   await input.selectQuickPick("Python 3.11");
   await driver.sleep(Timeout.input);
-  await driver.findElement(By.className("quick-input-check-all")).click();
+  await input.selectQuickPick("src/requirements.txt");
+  await driver.sleep(Timeout.input);
+  await VSBrowser.instance.takeScreenshot("selected requirements.txt");
   await input.confirm();
   await driver.sleep(Timeout.longTimeWait);
   await getNotification(

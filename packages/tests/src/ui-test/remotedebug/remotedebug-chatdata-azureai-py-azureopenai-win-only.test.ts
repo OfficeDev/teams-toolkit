@@ -15,6 +15,7 @@ import {
 import {
   execCommandIfExist,
   createNewProject,
+  createEnvironmentWithPython,
 } from "../../utils/vscodeOperation";
 import {
   initPage,
@@ -25,6 +26,7 @@ import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 import { RetryHandler } from "../../utils/retryHandler";
 import { AzSearchHelper } from "../../utils/azureCliHelper";
+import { Executor } from "../../utils/executor";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -108,7 +110,7 @@ describe("Remote debug Tests", function () {
         OpenAiKey.azureOpenAiEmbeddingDeploymentName ?? "fake";
       editDotEnvFile(
         envPath,
-        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
         embeddingDeploymentName
       );
       const searchKey = isRealKey ? azSearchHelper.apiKey : "fake";
@@ -117,6 +119,20 @@ describe("Remote debug Tests", function () {
         : "https://test.com";
       editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
+
+      await createEnvironmentWithPython();
+      // create azure search data
+      if (isRealKey) {
+        console.log("Start to create azure search data");
+        const installCmd = `python src/indexers/setup.py`;
+        const { success } = await Executor.execute(
+          installCmd,
+          remoteDebugTestContext.testRootFolder
+        );
+        if (!success) {
+          throw new Error("Failed to install packages");
+        }
+      }
 
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);

@@ -24,6 +24,7 @@ import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 import { AzSearchHelper } from "../../utils/azureCliHelper";
+import { Executor } from "../../utils/executor";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -115,6 +116,28 @@ describe("Remote debug Tests", function () {
         : "https://test.com";
       editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
+
+      // create azure search data
+      if (isRealKey) {
+        console.log("Start to create azure search data");
+        const installCmd = `npm install`;
+        const { success } = await Executor.execute(
+          installCmd,
+          remoteDebugTestContext.testRootFolder
+        );
+        if (!success) {
+          throw new Error("Failed to install packages");
+        }
+
+        const insertDataCmd = "npm run indexer:create";
+        const { success: insertDataSuccess } = await Executor.execute(
+          insertDataCmd,
+          remoteDebugTestContext.testRootFolder
+        );
+        if (!insertDataSuccess) {
+          throw new Error("Failed to insert data");
+        }
+      }
 
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);

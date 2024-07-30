@@ -26,6 +26,7 @@ import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 import { AzSearchHelper } from "../../utils/azureCliHelper";
+import { Executor } from "../../utils/executor";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -90,7 +91,7 @@ describe("Local Debug Tests", function () {
         OpenAiKey.azureOpenAiEmbeddingDeploymentName ?? "fake";
       editDotEnvFile(
         envPath,
-        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
         embeddingDeploymentName
       );
       const searchKey = isRealKey ? azSearchHelper.apiKey : "fake";
@@ -101,6 +102,18 @@ describe("Local Debug Tests", function () {
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
       await createEnvironmentWithPython();
+      // create azure search data
+      if (isRealKey) {
+        console.log("Start to create azure search data");
+        const installCmd = `python src/indexers/setup.py`;
+        const { success } = await Executor.execute(
+          installCmd,
+          localDebugTestContext.testRootFolder
+        );
+        if (!success) {
+          throw new Error("Failed to install packages");
+        }
+      }
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 

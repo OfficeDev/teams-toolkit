@@ -124,7 +124,10 @@ describe("Remote debug Tests", function () {
         const installCmd = `npm install`;
         const { success } = await Executor.execute(
           installCmd,
-          remoteDebugTestContext.testRootFolder
+          remoteDebugTestContext.testRootFolder,
+          process.env,
+          undefined,
+          "npm warn"
         );
         if (!success) {
           throw new Error("Failed to install packages");

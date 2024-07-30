@@ -101,7 +101,10 @@ describe("Local Debug Tests", function () {
         const installCmd = `npm install`;
         const { success } = await Executor.execute(
           installCmd,
-          localDebugTestContext.testRootFolder
+          localDebugTestContext.testRootFolder,
+          process.env,
+          undefined,
+          "npm warn"
         );
         if (!success) {
           throw new Error("Failed to install packages");

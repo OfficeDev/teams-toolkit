@@ -4,15 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - dev
-      - hotfix/**/*
-      - release/**
-  push:
-    branches:
-      - main
-      - dev
-      - hotfix/**/*
-      - release/**
 
 jobs:
   unit-test:

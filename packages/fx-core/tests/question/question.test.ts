@@ -1030,10 +1030,7 @@ describe("apiKeyQuestion", async () => {
     const question = apiSpecApiKeyQuestion();
     const validation = (question.data as TextInputQuestion).validation;
     const result = (validation as FuncValidation<string>).validFunc("abc");
-    assert.equal(
-      result,
-      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
-    );
+    assert.equal(result, "Invalid client secret. It should be 10 to 512 characters long.");
   });
 });
 
@@ -1167,10 +1164,7 @@ describe("oauthQuestion", async () => {
     const question = oauthQuestion().children![1];
     const validation = (question.data as TextInputQuestion).validation;
     const result = (validation as FuncValidation<string>).validFunc("abc");
-    assert.equal(
-      result,
-      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
-    );
+    assert.equal(result, "Invalid client secret. It should be 10 to 512 characters long.");
   });
 
   it("client id additionalValidationOnAccept passed", async () => {
@@ -1206,7 +1200,7 @@ describe("addPluginQuestionNode", async () => {
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CustomizeGpt]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
     });
   });
 
@@ -1266,7 +1260,7 @@ describe("addPluginQuestionNode", async () => {
 
   it("success: can add an action only", async () => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CustomizeGpt]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
     });
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(ManifestUtil, "parseCommonProperties").returns({

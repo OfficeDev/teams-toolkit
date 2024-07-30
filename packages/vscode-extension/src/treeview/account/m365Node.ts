@@ -72,7 +72,7 @@ export class M365AccountNode extends DynamicNode {
       refreshSideloading = true;
     }
     if (
-      featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin) &&
+      featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotExtension) &&
       copilot &&
       this.copilotNode !== undefined
     ) {
@@ -91,7 +91,7 @@ export class M365AccountNode extends DynamicNode {
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
-    return featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotPlugin) &&
+    return featureFlagManager.getBooleanValue(FxCoreFeatureFlags.CopilotExtension) &&
       this.copilotNode !== undefined
       ? [this.sideloadingNode, this.copilotNode]
       : [this.sideloadingNode];

@@ -48,8 +48,9 @@ describe("Create Copilot plugin", () => {
       await CliHelper.createProjectWithCapability(
         appName,
         testFolder,
-        Capability.CopilotPluginFromScratch,
-        env
+        Capability.ApiPlugin,
+        env,
+        "--api-plugin-type  new-api"
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

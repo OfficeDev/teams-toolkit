@@ -130,7 +130,10 @@
       "localdebug-msg-newapi-microsoftentra",
       "localdebug-chatdata-customize-js-azureopenai",
       "localdebug-chatdata-customize-ts-azureopenai",
-      "localdebug-chatdata-customize-py-azureopenai"
+      "localdebug-chatdata-customize-py-azureopenai",
+      "localdebug-chatdata-customize-js-openai",
+      "localdebug-chatdata-customize-ts-openai",
+      "localdebug-chatdata-customize-py-openai"
     ],
     "node-20": ["localdebug-obo-tab"]
   },

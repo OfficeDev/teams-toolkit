@@ -2780,14 +2780,42 @@ export async function validateMultiParamsApiMeResult(
 
 export async function validateExisingApiMeResult(page: Page, appName: string) {
   try {
-    const searchKeyword = "1";
-    console.log("start to verify apime search");
+    console.log("start to verify existingapime search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const frame = await page.waitForSelector("div#app");
     await messageExtensionActivate(page, appName);
-    console.log("search keyword ", searchKeyword);
-    const input = await page?.waitForSelector("div.ui-box input.ui-box");
-    await input?.fill("1");
+    const onmoreStr = await page?.waitForSelector(
+      `div.fui-TabList button:has-text("1 More")`
+    );
+    await onmoreStr?.click();
+    const assignStr = await page?.waitForSelector(
+      `div.fui-MenuItem span:has-text("Assign repair to technician for")`
+    );
+    await assignStr?.click();
+    console.log("fill in card Type");
+    const carTypeInput = await page?.waitForSelector(
+      'input[placeholder="Car type to repair"]'
+    );
+    await carTypeInput?.fill("1");
+    console.log("fill in repair Type");
+    const repairTypeInput = await page?.waitForSelector(
+      'input[placeholder="Repair type for the car"]'
+    );
+    await repairTypeInput?.fill("1");
+    console.log("fill in Customer Name");
+    const customerNameInput = await page?.waitForSelector(
+      'input[placeholder="Customer name"]'
+    );
+    await customerNameInput?.fill("1");
+    console.log("fill in Customer Phone Number");
+    const custPhoneNumberInput = await page?.waitForSelector(
+      'input[placeholder="Customer phone number"]'
+    );
+    await custPhoneNumberInput?.fill("1");
+    const searchBtn = await page?.waitForSelector(
+      `div.fui-Flex button:has-text("Search")`
+    );
+    await searchBtn?.click();
     try {
       const targetItem = await page?.waitForSelector(
         `span.fui-StyledText div:has-text("engineer")`

@@ -13,7 +13,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
-  static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
+  static readonly CopilotExtension = "DEVELOP_COPILOT_PLUGIN"; // TODO: rename feature flag
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
@@ -23,7 +23,6 @@ export class FeatureFlagName {
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
   static readonly SMEOAuth = "SME_OAUTH";
-  static readonly CustomizeGpt = "TEAMSFX_DECLARATIVE_COPILOT";
   static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
@@ -36,7 +35,10 @@ export interface FeatureFlag {
 
 export class FeatureFlags {
   static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
-  static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
+  static readonly CopilotExtension = {
+    name: FeatureFlagName.CopilotExtension,
+    defaultValue: "false",
+  };
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
@@ -54,7 +56,6 @@ export class FeatureFlags {
     defaultValue: "false",
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
-  static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
   static readonly ShowDiagnostics = {
     name: FeatureFlagName.ShowDiagnostics,
     defaultValue: "false",

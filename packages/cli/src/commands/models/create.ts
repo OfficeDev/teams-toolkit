@@ -14,6 +14,8 @@ import {
   CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
+  featureFlagManager,
+  FeatureFlags,
   MeArchitectureOptions,
   QuestionNames,
 } from "@microsoft/teamsfx-core";
@@ -42,6 +44,12 @@ function adjustOptions(options: CLICommandOption[]) {
       option.choices = MeArchitectureOptions.all().map((o: OptionItem) => o.id);
       break;
     }
+  }
+
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+    //skip Copilot extension questions if the feature flag is not enabled.
+    const questionsToDelete = [QuestionNames.ApiPluginType, QuestionNames.WithPlugin];
+    options = options.filter((option) => !questionsToDelete.includes(option.name as QuestionNames));
   }
 
   return options;

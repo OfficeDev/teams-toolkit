@@ -20,6 +20,7 @@ import { InputValidationError, MissingRequiredInputError } from "../../../src/er
 import { CreateSampleProjectInputs } from "../../../src/question";
 import {
   ApiAuthOptions,
+  ApiPluginStartOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
@@ -677,8 +678,9 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
         [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
         [QuestionNames.ProgrammingLanguage]: "javascript",
         [QuestionNames.AppName]: randomAppName(),
@@ -695,8 +697,9 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
         [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
         [QuestionNames.ProgrammingLanguage]: "javascript",
         [QuestionNames.AppName]: randomAppName(),
@@ -713,8 +716,9 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
         [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
         [QuestionNames.ProgrammingLanguage]: "javascript",
         [QuestionNames.AppName]: randomAppName(),
@@ -751,8 +755,9 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };
@@ -770,8 +775,9 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.AppName]: randomAppName(),
         [QuestionNames.Scratch]: ScratchOptions.yes().id,
       };

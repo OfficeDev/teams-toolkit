@@ -46,13 +46,12 @@ import { EOL } from "os";
 import path from "path";
 import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { sendRequestWithRetry } from "../../../common/requestUtils";
 import { MissingRequiredInputError } from "../../../error";
 import {
+  apiPluginApiSpecOptionId,
   CustomCopilotRagOptions,
   ProgrammingLanguage,
   QuestionNames,
-  apiPluginApiSpecOptionId,
 } from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -125,7 +124,7 @@ export async function listOperations(
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
   const isPlugin =
-    inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId ||
+    inputs[QuestionNames.ApiPluginType] === apiPluginApiSpecOptionId ||
     !!inputs[QuestionNames.PluginAvailability];
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
@@ -161,6 +160,15 @@ export async function listOperations(
     }
 
     const listResult: ListAPIResult = await specParser.list();
+
+    const invalidAPIs = listResult.APIs.filter((value) => !value.isValid);
+    for (const invalidAPI of invalidAPIs) {
+      context.logProvider.warning(
+        `${invalidAPI.api} ${getLocalizedString(
+          "core.copilotPlugin.list.unsupportedBecause"
+        )} ${invalidAPI.reason.map(mapInvalidReasonToMessage).join(", ")}`
+      );
+    }
 
     const bearerTokenAuthAPIs = listResult.APIs.filter(
       (api) => api.auth && Utils.isBearerTokenAuth(api.auth.authScheme)
@@ -685,7 +693,7 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
 }
 
 function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs): string {
-  const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
+  const isPlugin = inputs[QuestionNames.ApiPluginType] === apiPluginApiSpecOptionId;
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {

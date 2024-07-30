@@ -134,7 +134,7 @@ new TodoListBackendTestCase(
   [],
   {
     teamsAppName: "toDoList-dev",
-    skipValidation: true,
+    skipValidation: false,
     testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
   }
 ).test();

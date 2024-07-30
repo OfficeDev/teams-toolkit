@@ -828,7 +828,9 @@ export async function createNewProject(
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick(aiType);
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
       await driver.sleep(Timeout.input);
       // input fake Azure OpenAI Key
       await input.setText("fake");
@@ -847,7 +849,7 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
-    case "aiassist": {
+    case "aiagentassist": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
       await input.selectQuickPick("AI Agent");
@@ -864,6 +866,24 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
+    case "aiagentnew": {
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("AI Agent");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Build New");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      await driver.sleep(Timeout.input);
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      break;
+    }
     case "chatdata": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
@@ -874,7 +894,9 @@ export async function createNewProject(
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick(aiType);
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);

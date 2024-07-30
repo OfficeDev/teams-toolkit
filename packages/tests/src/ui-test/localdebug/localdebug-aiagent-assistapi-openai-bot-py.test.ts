@@ -5,7 +5,11 @@
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  createEnvironmentWithPython,
+  startDebugging,
+  waitForTerminal,
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateWelcomeAndReplyBot,
@@ -16,8 +20,9 @@ import {
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
+  LocalDebugTaskLabel2,
 } from "../../utils/constants";
-import { Env } from "../../utils/env";
+import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 
@@ -28,7 +33,11 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aiassist");
+    localDebugTestContext = new LocalDebugTestContext("aiagent", {
+      lang: "python",
+      customCeopilotAgent: "custom-copilot-agent-assistants-api",
+      llmServiceType: "llm-service-openai",
+    });
     await localDebugTestContext.before();
   });
 
@@ -38,9 +47,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [JavaScript] Local debug AI assistant bot",
+    "[auto][Python][OpenAI] Local debug for AI Agent - Build with Assistants API",
     {
-      testPlanCaseId: 26004832,
+      testPlanCaseId: 28165244,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -48,16 +57,20 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.js");
+      validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
-      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
-      editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
+      editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
+      editDotEnvFile(envPath, "OPENAI_ASSISTANT_ID", "fake");
+
+      await createEnvironmentWithPython();
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
+      await waitForTerminal(
+        LocalDebugTaskLabel2.PythonDebugConsole,
+        "Running on http://localhost:3978"
+      );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(
@@ -74,6 +87,7 @@ describe("Local Debug Tests", function () {
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
         expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+        timeout: Timeout.longTimeWait,
       });
     }
   );

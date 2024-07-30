@@ -34,8 +34,8 @@
     {{#DeclarativeCopilot}} 
     "declarativeCopilots": [            
       {
-        "id": "declarativeCopilot",
-        "file": "declarativeCopilot.json"
+        "id": "repairDeclarativeCopilot",
+        "file": "repairDeclarativeCopilot.json"
       }
     ]
     {{/DeclarativeCopilot}} 

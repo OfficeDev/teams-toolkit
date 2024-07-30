@@ -143,6 +143,6 @@
         {{/DeclarativeCopilot}}
         {{#DeclarativeCopilot}}
         }
-        {{/DeclareCopilot}}
+        {{/DeclarativeCopilot}}
     ]
 }

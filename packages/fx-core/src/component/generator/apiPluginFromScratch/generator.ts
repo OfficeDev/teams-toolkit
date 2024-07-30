@@ -67,11 +67,11 @@ export class ApiPluginFromScratchGenerator extends DefaultTemplateGenerator {
     };
 
     const templateName =
-      auth === ApiAuthOptions.none()
+      auth === ApiAuthOptions.none().id
         ? TemplateNames.ApiPluginFromScratch
-        : auth === ApiAuthOptions.apiKey()
+        : auth === ApiAuthOptions.apiKey().id
         ? TemplateNames.ApiPluginFromScratchBearer
-        : auth === ApiAuthOptions.oauth()
+        : auth === ApiAuthOptions.oauth().id
         ? TemplateNames.ApiPluginFromScratchOAuth
         : undefined;
 

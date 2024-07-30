@@ -62,34 +62,40 @@ export class DeclarativeCopilotActionGenerator extends DefaultTemplateGenerator 
     };
 
     if (auth === ApiAuthOptions.none()) {
-      return ok([
-        {
-          templateName: TemplateNames.ApiPluginFromScratch,
-          language: language,
-          replaceMap,
-          filterFn,
-        },
-      ]);
+      return Promise.resolve(
+        ok([
+          {
+            templateName: TemplateNames.ApiPluginFromScratch,
+            language: language,
+            replaceMap,
+            filterFn,
+          },
+        ])
+      );
     } else if (auth === ApiAuthOptions.apiKey()) {
-      return ok([
-        {
-          templateName: TemplateNames.ApiPluginFromScratchBearer,
-          language: language,
-          replaceMap,
-          filterFn,
-        },
-      ]);
+      return Promise.resolve(
+        ok([
+          {
+            templateName: TemplateNames.ApiPluginFromScratchBearer,
+            language: language,
+            replaceMap,
+            filterFn,
+          },
+        ])
+      );
     } else if (auth === ApiAuthOptions.oauth()) {
-      return ok([
-        {
-          templateName: TemplateNames.ApiPluginFromScratchOAuth,
-          language: language,
-          replaceMap,
-          filterFn,
-        },
-      ]);
+      return Promise.resolve(
+        ok([
+          {
+            templateName: TemplateNames.ApiPluginFromScratchOAuth,
+            language: language,
+            replaceMap,
+            filterFn,
+          },
+        ])
+      );
     } else {
-      return ok([]);
+      return Promise.resolve(ok([]));
     }
   }
 }

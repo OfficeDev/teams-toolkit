@@ -25,7 +25,7 @@ const enum telemetryProperties {
   isDeclarativeCopilot = "is-declarative-copilot",
 }
 
-export class DeclarativeCopilotActionGenerator extends DefaultTemplateGenerator {
+export class ApiPluginFromScratchGenerator extends DefaultTemplateGenerator {
   public activate(context: Context, inputs: Inputs): boolean {
     return (
       (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||

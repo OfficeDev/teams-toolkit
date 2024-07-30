@@ -977,6 +977,7 @@ export class FxCore {
     ErrorContextMW({ component: "FxCore", stage: "syncManifest", reset: true }),
     ErrorHandlerMW,
     QuestionMW("syncManifest"),
+    ConcurrentLockerMW,
   ])
   async syncManifest(inputs: SyncManifestInputs): Promise<Result<any, FxError>> {
     const context: DriverContext = createDriverContext(inputs);

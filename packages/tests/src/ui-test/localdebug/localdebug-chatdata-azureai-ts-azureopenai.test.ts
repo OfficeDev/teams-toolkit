@@ -102,7 +102,7 @@ describe("Local Debug Tests", function () {
         const installCmd = `npm install`;
         const { success } = await Executor.execute(
           installCmd,
-          localDebugTestContext.testRootFolder,
+          projectPath,
           process.env,
           undefined,
           "npm warn"
@@ -114,7 +114,7 @@ describe("Local Debug Tests", function () {
         const insertDataCmd = "npm run indexer:create";
         const { success: insertDataSuccess } = await Executor.execute(
           insertDataCmd,
-          localDebugTestContext.testRootFolder
+          projectPath
         );
         if (!insertDataSuccess) {
           throw new Error("Failed to insert data");

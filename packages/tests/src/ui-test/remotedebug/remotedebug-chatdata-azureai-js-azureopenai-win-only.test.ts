@@ -123,7 +123,7 @@ describe("Remote debug Tests", function () {
         const installCmd = `npm install`;
         const { success } = await Executor.execute(
           installCmd,
-          remoteDebugTestContext.testRootFolder,
+          projectPath,
           process.env,
           undefined,
           "npm warn"
@@ -135,7 +135,7 @@ describe("Remote debug Tests", function () {
         const insertDataCmd = "npm run indexer:create";
         const { success: insertDataSuccess } = await Executor.execute(
           insertDataCmd,
-          remoteDebugTestContext.testRootFolder
+          projectPath
         );
         if (!insertDataSuccess) {
           throw new Error("Failed to insert data");

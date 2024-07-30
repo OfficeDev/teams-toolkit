@@ -106,10 +106,7 @@ describe("Local Debug Tests", function () {
       if (isRealKey) {
         console.log("Start to create azure search data");
         const installCmd = `python ${projectPath}/src/indexers/setup.py`;
-        const { success } = await Executor.execute(
-          installCmd,
-          localDebugTestContext.testRootFolder
-        );
+        const { success } = await Executor.execute(installCmd, projectPath);
         if (!success) {
           throw new Error("Failed to install packages");
         }

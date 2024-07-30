@@ -1301,7 +1301,10 @@ export async function createEnvironmentWithPython() {
   await driver.sleep(Timeout.input);
   await input.selectQuickPick("Python 3.11");
   await driver.sleep(Timeout.input);
-  await input.selectQuickPick("src/requirements.txt");
+  console.log("select requirements.txt");
+  await driver
+    .findElement(By.css("dev.monaco-list-row[role='checkbox']"))
+    .click();
   await driver.sleep(Timeout.input);
   await VSBrowser.instance.takeScreenshot("selected requirements.txt");
   await input.confirm();

@@ -282,11 +282,15 @@ export class AzSearchHelper {
   public resourceGroupName: string;
   public searchName: string;
   public location: string;
+  public endpoint: string;
+  public apiKey: string;
 
   constructor(resourceGroupName: string, location?: string) {
     this.resourceGroupName = resourceGroupName;
     this.searchName = `mysearch-${Math.floor(Math.random() * 100000)}`;
+    this.endpoint = "https://" + this.searchName + ".search.windows.net";
     this.location = location || "westus";
+    this.apiKey = "";
   }
 
   public async createSearch() {
@@ -302,6 +306,14 @@ export class AzSearchHelper {
     const command = `az search service create --name ${this.searchName} --resource-group ${this.resourceGroupName} --location ${this.location} --sku Standard`;
 
     await Executor.execute(command, process.cwd());
+
+    const showKeyCmd = `az search admin-key show --resource-group ${this.resourceGroupName} --service-name ${this.searchName} --query primaryKey`;
+    const { success, stdout } = await Executor.execute(
+      showKeyCmd,
+      process.cwd()
+    );
+    expect(success).to.be.true;
+    this.apiKey = stdout.trim();
   }
 
   public async createResourceGroup() {
@@ -319,8 +331,8 @@ export async function cleanRG() {
 
 // for local test
 async function main() {
-  const sqlHelper = new AzSearchHelper("fxui-rg");
-  await sqlHelper.createSearch();
+  const searchHelper = new AzSearchHelper("fxui-rg");
+  await searchHelper.createSearch();
+  console.log("endpoint: ", searchHelper.endpoint);
+  console.log("apiKey: ", searchHelper.apiKey);
 }
-
-void main();

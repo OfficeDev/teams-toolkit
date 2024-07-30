@@ -24,6 +24,7 @@ import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 import { RetryHandler } from "../../utils/retryHandler";
+import { AzSearchHelper } from "../../utils/azureCliHelper";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -33,6 +34,7 @@ describe("Remote debug Tests", function () {
   const appNameCopySuffix = "copy";
   let newAppFolderName: string;
   let projectPath: string;
+  let azSearchHelper: AzSearchHelper;
 
   beforeEach(async function () {
     // ensure workbench is ready
@@ -76,7 +78,15 @@ describe("Remote debug Tests", function () {
       });
       validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
-      const isRealKey = false; // disable real key test
+
+      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
+      // create azure search
+      if (isRealKey) {
+        const rgName = `${remoteDebugTestContext.appName}-dev-rg`;
+
+        azSearchHelper = new AzSearchHelper(rgName);
+        await azSearchHelper.createSearch();
+      }
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
         ? OpenAiKey.azureOpenAiKey
         : "fake";
@@ -94,9 +104,19 @@ describe("Remote debug Tests", function () {
         "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
-      editDotEnvFile(envPath, "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "fake");
-      editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", "fake");
-      editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", "https://test.com");
+      const embeddingDeploymentName =
+        OpenAiKey.azureOpenAiEmbeddingDeploymentName ?? "fake";
+      editDotEnvFile(
+        envPath,
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
+        embeddingDeploymentName
+      );
+      const searchKey = isRealKey ? azSearchHelper.apiKey : "fake";
+      const searchEndpoint = isRealKey
+        ? azSearchHelper.endpoint
+        : "https://test.com";
+      editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+      editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);

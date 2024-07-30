@@ -39,6 +39,7 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
+import { quote } from "shell-quote";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -144,9 +145,9 @@ export class OfficeAddinGenerator {
           }
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
+            cmdLine = `npm run convert-to-single-host --if-present -- ${quote([host])} json`;
           } else {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
+            cmdLine = `npm run convert-to-single-host --if-present -- ${quote([host])}`;
           }
           await OfficeAddinGenerator.childProcessExec(cmdLine);
           const manifestPath = templateConfig[capability].manifestPath as string;

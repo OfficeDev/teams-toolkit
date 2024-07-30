@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author yuqzho@microsoft.com
+ */
+
 import { Context, FxError, Inputs, ok, Result } from "@microsoft/teamsfx-api";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import {
@@ -15,10 +19,6 @@ import { Generator } from "../generator";
 import { merge } from "lodash";
 import { TemplateNames } from "../templates/templateNames";
 import { TemplateInfo } from "../templates/templateInfo";
-
-/**
- * @author yuqzho@microsoft.com
- */
 
 const enum telemetryProperties {
   templateName = "template-name",

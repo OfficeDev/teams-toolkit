@@ -199,7 +199,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       "app-name": "outlook-addin-test",
       [QuestionNames.OfficeAddinHost]: "invalid",
     };
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+    // inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
     inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";

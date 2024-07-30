@@ -114,7 +114,13 @@ export class AzSqlHelper {
     } else {
       command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
     }
-    await Executor.execute(command, process.cwd());
+    await Executor.execute(
+      command,
+      process.cwd(),
+      undefined,
+      undefined,
+      "WARNING"
+    );
     // set subscription
     const subscription = Env["azureSubscriptionId"];
     const setSubscriptionCommand = `az account set --subscription ${subscription}`;

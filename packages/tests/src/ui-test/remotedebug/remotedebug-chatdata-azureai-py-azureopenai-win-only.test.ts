@@ -5,6 +5,7 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 import * as path from "path";
+import * as fs from "fs";
 import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
@@ -128,6 +129,15 @@ describe("Remote debug Tests", function () {
         SECRET_AZURE_SEARCH_KEY=${searchKey}
         AZURE_SEARCH_ENDPOINT=${searchEndpoint}
       `);
+
+      // add azure-identity azure-core to requirement.txt
+      const requirementsPath = path.resolve(
+        projectPath,
+        "src/requirements.txt"
+      );
+      let requirements = fs.readFileSync(requirementsPath, "utf-8");
+      requirements += "\nazure-identity\nazure-core";
+      fs.writeFileSync(requirementsPath, requirements);
 
       await createEnvironmentWithPython();
       // create azure search data

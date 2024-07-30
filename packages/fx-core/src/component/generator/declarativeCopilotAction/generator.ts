@@ -20,6 +20,11 @@ import { TemplateInfo } from "../templates/templateInfo";
  * @author yuqzho@microsoft.com
  */
 
+const enum telemetryProperties {
+  templateName = "template-name",
+  isDeclarativeCopilot = "is-declarative-copilot",
+}
+
 export class DeclarativeCopilotActionGenerator extends DefaultTemplateGenerator {
   public activate(context: Context, inputs: Inputs): boolean {
     return (
@@ -61,33 +66,24 @@ export class DeclarativeCopilotActionGenerator extends DefaultTemplateGenerator 
       }
     };
 
-    if (auth === ApiAuthOptions.none()) {
+    const templateName =
+      auth === ApiAuthOptions.none()
+        ? TemplateNames.ApiPluginFromScratch
+        : auth === ApiAuthOptions.apiKey()
+        ? TemplateNames.ApiPluginFromScratchBearer
+        : auth === ApiAuthOptions.oauth()
+        ? TemplateNames.ApiPluginFromScratchOAuth
+        : undefined;
+
+    merge(actionContext?.telemetryProps, {
+      [telemetryProperties.templateName]: templateName,
+      [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
+    });
+    if (templateName) {
       return Promise.resolve(
         ok([
           {
             templateName: TemplateNames.ApiPluginFromScratch,
-            language: language,
-            replaceMap,
-            filterFn,
-          },
-        ])
-      );
-    } else if (auth === ApiAuthOptions.apiKey()) {
-      return Promise.resolve(
-        ok([
-          {
-            templateName: TemplateNames.ApiPluginFromScratchBearer,
-            language: language,
-            replaceMap,
-            filterFn,
-          },
-        ])
-      );
-    } else if (auth === ApiAuthOptions.oauth()) {
-      return Promise.resolve(
-        ok([
-          {
-            templateName: TemplateNames.ApiPluginFromScratchOAuth,
             language: language,
             replaceMap,
             filterFn,

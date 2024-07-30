@@ -192,22 +192,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
 
     chai.expect(result.isOk()).to.eq(true);
   });
-  it("should failed because of invalid addin-host", async () => {
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      projectPath: testFolder,
-      "app-name": "outlook-addin-test",
-      [QuestionNames.OfficeAddinHost]: "invalid",
-    };
-    // inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
-    inputs[QuestionNames.Capabilities] = "json-taskpane";
-    inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
-    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
-
-    chai.expect(result.isErr()).to.eq(true);
-  });
   it("should scaffold taskpane failed, throw error", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
@@ -1232,5 +1217,22 @@ describe("fixIconPath()", () => {
       chai.assert.isTrue(move.notCalled);
       chai.assert.isTrue(writeJson.notCalled);
     });
+  });
+});
+
+describe("doScaffolding()", () => {
+  it("doScaffolding: should failed because of invalid addin-host", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: ".",
+      "app-name": "outlook-addin-test",
+      [QuestionNames.OfficeAddinHost]: "invalid",
+    };
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
+    inputs[QuestionNames.OfficeAddinFolder] = undefined;
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
+    const context = createContext();
+    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, ".");
+    chai.expect(result.isErr()).to.eq(true);
   });
 });

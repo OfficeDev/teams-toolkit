@@ -22,13 +22,23 @@
     "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze."
   },
   "accentColor": "#FFFFFF",
-  "copilotExtensions": {    
+  "copilotExtensions": { 
+    {{^DeclarativeCopilot}}   
     "plugins": [
       {
         "id": "plugin_1",
         "file": "ai-plugin.json"
       }
     ]
+    {{/DeclarativeCopilot}}
+    {{#DeclarativeCopilot}} 
+    "declarativeCopilots": [            
+      {
+        "id": "repairDeclarativeCopilot",
+        "file": "repairDeclarativeCopilot.json"
+      }
+    ]
+    {{/DeclarativeCopilot}} 
   },
   "permissions": [
     "identity",

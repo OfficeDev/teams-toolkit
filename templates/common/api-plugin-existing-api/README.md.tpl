@@ -21,7 +21,7 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 
 With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
 
-You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A Declarative copilot can utilize multiple plugins at the same time.
+You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A declarative copilot can utilize multiple plugins at the same time.
 {{/DeclarativeCopilot}}
 
 ## Get started with the template
@@ -39,8 +39,15 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
-5. Open the `Copilot` app and send a prompt to trigger your plugin.
+{{^DeclarativeCopilot}}
+5. Open the `Copilot` app.
    > Note: Please make sure to switch to New Teams when Teams web client has launched
+6. In the message compose area, select the `Plugins` icon, then enable the plugin.
+7. Send a prompt to trigger the plugin.
+{{/DeclarativeCopilot}}
+{{#DeclarativeCopilot}}
+5. Select your declarative Copilot from the `Copilot` app and send a prompt.
+{{/DeclarativeCopilot}}
 
 {{#ApiKey}}
 > [!NOTE]

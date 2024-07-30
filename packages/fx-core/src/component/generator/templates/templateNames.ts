@@ -349,14 +349,6 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     {
       [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
       [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
-    },
-    TemplateNames.ApiPluginFromScratch,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
-      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
       [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
     },
     TemplateNames.ApiPluginFromScratchBearer,
@@ -375,13 +367,5 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
       [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.noPlugin().id,
     },
     TemplateNames.BasicGpt,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
-      [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.withPlugin().id,
-      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
-    },
-    TemplateNames.GptWithPluginFromScratch,
   ],
 ]);

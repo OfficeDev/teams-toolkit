@@ -25,7 +25,7 @@
                     "m365Account",
                     "portOccupancy"
                 ],
-                "portOccupancy": [                    
+                "portOccupancy": [
                     7071,
                     9229
                 ]
@@ -109,7 +109,22 @@
             },
             "presentation": {
                 "reveal": "silent"
+            },
+            "dependsOn": "Watch backend"
+        },
+        {
+            "label": "Watch backend",
+            "type": "shell",
+            "command": "npm run watch:teamsfx",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
             }
+        {{^DeclarativeCopilot}}
         },
         {
             "label": "Start Teams App in Desktop Client",
@@ -139,5 +154,9 @@
                 "url": "teams.microsoft.com"
             }
         }
+        {{/DeclarativeCopilot}}
+        {{#DeclarativeCopilot}}
+        }
+        {{/DeclarativeCopilot}}
     ]
 }

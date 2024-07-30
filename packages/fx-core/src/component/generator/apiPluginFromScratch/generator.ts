@@ -59,7 +59,7 @@ export class ApiPluginFromScratchGenerator extends DefaultTemplateGenerator {
     };
 
     const filterFn = (fileName: string) => {
-      if (fileName.startsWith("repairDeclarativeCopilot.json")) {
+      if (fileName.includes("repairDeclarativeCopilot.json")) {
         return isDeclarativeCopilot;
       } else {
         return true;
@@ -67,31 +67,26 @@ export class ApiPluginFromScratchGenerator extends DefaultTemplateGenerator {
     };
 
     const templateName =
-      auth === ApiAuthOptions.none().id
-        ? TemplateNames.ApiPluginFromScratch
-        : auth === ApiAuthOptions.apiKey().id
+      auth === ApiAuthOptions.apiKey().id
         ? TemplateNames.ApiPluginFromScratchBearer
         : auth === ApiAuthOptions.oauth().id
         ? TemplateNames.ApiPluginFromScratchOAuth
-        : undefined;
+        : TemplateNames.ApiPluginFromScratch;
 
     merge(actionContext?.telemetryProps, {
       [telemetryProperties.templateName]: templateName,
       [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
     });
-    if (templateName) {
-      return Promise.resolve(
-        ok([
-          {
-            templateName: TemplateNames.ApiPluginFromScratch,
-            language: language,
-            replaceMap,
-            filterFn,
-          },
-        ])
-      );
-    } else {
-      return Promise.resolve(ok([]));
-    }
+
+    return Promise.resolve(
+      ok([
+        {
+          templateName,
+          language: language,
+          replaceMap,
+          filterFn,
+        },
+      ])
+    );
   }
 }

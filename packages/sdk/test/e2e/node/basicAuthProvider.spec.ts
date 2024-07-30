@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { BasicAuthProvider, createApiClient } from "../../../src";
 import * as http from "http";
+const escape = require("escape-html");
 
 describe("BasicAuthProvider Tests - Node", () => {
   const host = "localhost";
@@ -11,10 +12,13 @@ describe("BasicAuthProvider Tests - Node", () => {
   const apiBaseUrl = `http://${host}:${port}`;
   const server = http.createServer((req, res) => {
     res.writeHead(200);
-    const data = {
-      requestHeader: req.headers,
-      url: req.url,
+    const data: { requestHeader: { [key: string]: string }; url: string } = {
+      requestHeader: {},
+      url: req.url!,
     };
+    for (const [key, value] of Object.entries(req.headers)) {
+      data.requestHeader[key] = escape(value);
+    }
     res.end(JSON.stringify(data));
   });
 

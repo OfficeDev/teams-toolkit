@@ -108,6 +108,9 @@ export class OpenAiKey {
   static get azureOpenAiEmbeddingDeploymentName(): string | undefined {
     return process.env["AZURE_OPENAI_EMBEDDING_DEPLOYMENT"];
   }
+  static get openAiKey(): string | undefined {
+    return process.env["SECRET_OPENAI_API_KEY"];
+  }
 }
 
 export class FeatureFlags {

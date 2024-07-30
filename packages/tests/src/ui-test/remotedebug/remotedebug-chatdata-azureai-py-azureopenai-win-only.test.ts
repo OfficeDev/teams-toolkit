@@ -131,6 +131,7 @@ describe("Remote debug Tests", function () {
       `);
 
       // add azure-identity azure-core to requirement.txt
+      console.log("Add azure-identity azure-core to requirements.txt");
       const requirementsPath = path.resolve(
         projectPath,
         "src/requirements.txt"
@@ -138,11 +139,34 @@ describe("Remote debug Tests", function () {
       let requirements = fs.readFileSync(requirementsPath, "utf-8");
       requirements += "\nazure-identity\nazure-core";
       fs.writeFileSync(requirementsPath, requirements);
+      console.log(requirements);
 
       await createEnvironmentWithPython();
       // create azure search data
       if (isRealKey) {
         console.log("Start to create azure search data");
+        const localEnvPath = path.resolve(
+          projectPath,
+          "env",
+          ".env.local.user"
+        );
+        editDotEnvFile(
+          localEnvPath,
+          "SECRET_AZURE_OPENAI_API_KEY",
+          azureOpenAiKey
+        );
+        editDotEnvFile(
+          localEnvPath,
+          "AZURE_OPENAI_ENDPOINT",
+          azureOpenAiEndpoint
+        );
+        editDotEnvFile(
+          localEnvPath,
+          "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
+          azureOpenAiModelDeploymentName
+        );
+        editDotEnvFile(localEnvPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+        editDotEnvFile(localEnvPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
         const installCmd = `python ${projectPath}/src/indexers/setup.py`;
         const { success } = await Executor.execute(installCmd, projectPath);
         if (!success) {

@@ -112,6 +112,7 @@ describe("Local Debug Tests", function () {
       `);
 
       // add azure-identity azure-core to requirement.txt
+      console.log("Add azure-identity azure-core to requirements.txt");
       const requirementsPath = path.resolve(
         projectPath,
         "src/requirements.txt"
@@ -119,6 +120,7 @@ describe("Local Debug Tests", function () {
       let requirements = fs.readFileSync(requirementsPath, "utf-8");
       requirements += "\nazure-identity\nazure-core";
       fs.writeFileSync(requirementsPath, requirements);
+      console.log(requirements);
 
       await createEnvironmentWithPython();
       // create azure search data

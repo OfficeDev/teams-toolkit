@@ -118,6 +118,34 @@ describe("Remote debug Tests", function () {
       editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
+      // prepare for the npm run indexer:create
+      const testToolEnvPath = path.resolve(
+        projectPath,
+        "env",
+        ".env.testtool.user"
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "SECRET_AZURE_OPENAI_API_KEY",
+        azureOpenAiKey
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "AZURE_OPENAI_ENDPOINT",
+        azureOpenAiEndpoint
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "AZURE_OPENAI_DEPLOYMENT_NAME",
+        azureOpenAiModelDeploymentName
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
+        embeddingDeploymentName
+      );
+      editDotEnvFile(testToolEnvPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+      editDotEnvFile(testToolEnvPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
       // create azure search data
       if (isRealKey) {
         console.log("Start to create azure search data");

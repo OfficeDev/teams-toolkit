@@ -74,6 +74,14 @@ describe("Local Debug Tests", function () {
         OpenAiKey.azureOpenAiModelDeploymentName
           ? OpenAiKey.azureOpenAiModelDeploymentName
           : "fake";
+
+      const embeddingDeploymentName =
+        OpenAiKey.azureOpenAiEmbeddingDeploymentName ?? "fake";
+
+      const searchKey = isRealKey ? azSearchHelper.apiKey : "fake";
+      const searchEndpoint = isRealKey
+        ? azSearchHelper.endpoint
+        : "https://test.com";
       editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", azureOpenAiKey);
       editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", azureOpenAiEndpoint);
       editDotEnvFile(
@@ -81,19 +89,42 @@ describe("Local Debug Tests", function () {
         "AZURE_OPENAI_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
-      const embeddingDeploymentName =
-        OpenAiKey.azureOpenAiEmbeddingDeploymentName ?? "fake";
       editDotEnvFile(
         envPath,
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
         embeddingDeploymentName
       );
-      const searchKey = isRealKey ? azSearchHelper.apiKey : "fake";
-      const searchEndpoint = isRealKey
-        ? azSearchHelper.endpoint
-        : "https://test.com";
       editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
+
+      // prepare for the npm run indexer:create
+      const testToolEnvPath = path.resolve(
+        projectPath,
+        "env",
+        ".env.testtool.user"
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "SECRET_AZURE_OPENAI_API_KEY",
+        azureOpenAiKey
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "AZURE_OPENAI_ENDPOINT",
+        azureOpenAiEndpoint
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "AZURE_OPENAI_DEPLOYMENT_NAME",
+        azureOpenAiModelDeploymentName
+      );
+      editDotEnvFile(
+        testToolEnvPath,
+        "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME",
+        embeddingDeploymentName
+      );
+      editDotEnvFile(testToolEnvPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+      editDotEnvFile(testToolEnvPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
       // create azure search data
       if (isRealKey) {

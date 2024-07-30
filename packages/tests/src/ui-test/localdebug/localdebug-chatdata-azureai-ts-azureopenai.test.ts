@@ -98,6 +98,15 @@ describe("Local Debug Tests", function () {
       editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
       editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
+      console.log(`
+        SECRET_AZURE_OPENAI_API_KEY=${azureOpenAiKey}
+        AZURE_OPENAI_ENDPOINT=${azureOpenAiEndpoint}
+        AZURE_OPENAI_DEPLOYMENT_NAME=${azureOpenAiModelDeploymentName}
+        AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=${embeddingDeploymentName}
+        SECRET_AZURE_SEARCH_KEY=${searchKey}
+        AZURE_SEARCH_ENDPOINT=${searchEndpoint}
+      `);
+
       // prepare for the npm run indexer:create
       const testToolEnvPath = path.resolve(
         projectPath,

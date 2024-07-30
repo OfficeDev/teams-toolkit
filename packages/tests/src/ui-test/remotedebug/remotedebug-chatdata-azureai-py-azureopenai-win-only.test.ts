@@ -124,7 +124,7 @@ describe("Remote debug Tests", function () {
       // create azure search data
       if (isRealKey) {
         console.log("Start to create azure search data");
-        const installCmd = `python src/indexers/setup.py`;
+        const installCmd = `python ${projectPath}/src/indexers/setup.py`;
         const { success } = await Executor.execute(
           installCmd,
           remoteDebugTestContext.testRootFolder

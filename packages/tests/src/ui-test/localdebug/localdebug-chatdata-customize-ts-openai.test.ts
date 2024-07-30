@@ -44,7 +44,7 @@ describe("Local Debug Tests", function () {
   it(
     "[auto][TS][OpenAI] Local debug for basic rag bot using customize data",
     {
-      testPlanCaseId: 27569137,
+      testPlanCaseId: 28869466,
       author: "v-qinmeng@microsoft.com",
     },
     async function () {

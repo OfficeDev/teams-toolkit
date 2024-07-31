@@ -874,7 +874,7 @@ export async function createNewProject(
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick(aiType);
+      await input.selectQuickPick(1);
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);

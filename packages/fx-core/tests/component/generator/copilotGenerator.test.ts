@@ -734,9 +734,23 @@ describe("updateForCustomApi", async () => {
 
   it("happy path: python", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    const mockWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file == path.join("path", "src", "bot.py")) {
+        expect(data).to.contains(`@bot_app.ai.action("getHello")`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("# Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code # Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "python", "path", "openapi.yaml");
-    expect(mockWriteFile.notCalled).to.be.true;
   });
 
   it("happy path with spec without path", async () => {

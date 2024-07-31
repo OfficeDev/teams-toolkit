@@ -25,7 +25,7 @@ import { convertProject } from "office-addin-project";
 import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { assembleError } from "../../../error";
+import { assembleError, InputValidationError } from "../../../error";
 import {
   CapabilityOptions,
   ProgrammingLanguage,
@@ -107,16 +107,6 @@ export class OfficeAddinGenerator {
     const projectType = inputs[QuestionNames.ProjectType];
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
-    let host: string = inputHost;
-    if (projectType === ProjectTypeOptions.outlookAddin().id) {
-      host = "outlook";
-    } else if (projectType === ProjectTypeOptions.officeAddin().id) {
-      if (capability === "json-taskpane") {
-        host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
-      } else if (capability === CapabilityOptions.officeContentAddin().id) {
-        host = "xp"; // content add-in support excel, powerpoint
-      }
-    }
     const workingDir = process.cwd();
     const importProgressStr =
       projectType === ProjectTypeOptions.officeAddin().id
@@ -127,6 +117,25 @@ export class OfficeAddinGenerator {
     process.chdir(addinRoot);
     try {
       if (!fromFolder) {
+        let host: string = inputHost;
+        if (projectType === ProjectTypeOptions.outlookAddin().id) {
+          host = "outlook";
+        } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+          if (capability === "json-taskpane") {
+            host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
+          } else if (capability === CapabilityOptions.officeContentAddin().id) {
+            host = "xp"; // content add-in support excel, powerpoint
+          }
+        }
+        if (!["outlook", "wxpo", "xp"].includes(host)) {
+          return err(
+            new InputValidationError(
+              QuestionNames.OfficeAddinHost,
+              `Invalid host: ${host}`,
+              "office-addin-generator"
+            )
+          );
+        }
         // from template
         const framework = getOfficeAddinFramework(inputs);
         const templateConfig = getOfficeAddinTemplateConfig();

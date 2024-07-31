@@ -15,9 +15,9 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 - Inheriting world-class security, compliance, and privacy policies.
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
-# Overview of the declarative Copilot with API plugin template
+# Overview of the declarative copilot with API plugin template
 
-## Build a declarative Copilot with an API Plugin from a new API with Azure Functions
+## Build a declarative copilot with an API Plugin from a new API with Azure Functions
 
 With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
 
@@ -44,7 +44,7 @@ You can extend declarative copilots using plugins to retrieve data and execute t
    > Note: Please make sure to switch to New Teams when Teams web client has launched
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
-4. Select your declarative Copilot from the `Copilot` app.
+4. Select your declarative copilot from the `Copilot` app.
 5. Send a message to Copilot to find a repair record.
 {{/DeclarativeCopilot}}
 

@@ -46,7 +46,7 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 7. Send a prompt to trigger the plugin.
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
-5. Select your declarative Copilot from the `Copilot` app and send a prompt.
+5. Select your declarative copilot from the `Copilot` app and send a prompt.
 {{/DeclarativeCopilot}}
 
 {{#ApiKey}}

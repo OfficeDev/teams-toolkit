@@ -84,7 +84,7 @@ export class SyncManifestDriver implements StepDriver {
       );
     }
     const manifest = JSON.parse(appPackage.manifest.toString("utf8"));
-    console.log(manifest);
+    const manifestTemplatePath = path.join(args.projectPath, "appPackage/manifest.json");
 
     return ok(new Map<string, string>());
   }

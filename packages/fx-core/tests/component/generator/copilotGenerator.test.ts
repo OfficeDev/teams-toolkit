@@ -753,6 +753,13 @@ describe("updateForCustomApi", async () => {
     await CopilotPluginHelper.updateForCustomApi(spec, "python", "path", "openapi.yaml");
   });
 
+  it("happy path: csharp", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const mockWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
+    expect(mockWriteFile.notCalled).to.be.true;
+  });
+
   it("happy path with spec without path", async () => {
     const limitedSpec = {
       openapi: "3.0.0",

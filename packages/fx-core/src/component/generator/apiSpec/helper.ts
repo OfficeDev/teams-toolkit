@@ -1008,7 +1008,7 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
-  } else {
+  } else if (language === ProgrammingLanguage.PY) {
     // Update code in bot.py
     const actionsCode = [];
     const codeTemplate = ActionCode["python"];

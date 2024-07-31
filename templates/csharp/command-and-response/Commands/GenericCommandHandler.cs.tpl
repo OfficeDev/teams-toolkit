@@ -13,7 +13,7 @@ namespace {{SafeProjectName}}.Commands
     
         public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
         {
-            // Used to trigger the command handler if the command text contains 'helloWorld'
+            // Used to trigger the command handler when the user enters a generic or unknown command
             new RegExpTrigger("^.+$")
         };
     

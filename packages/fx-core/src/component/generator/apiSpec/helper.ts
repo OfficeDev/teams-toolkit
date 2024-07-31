@@ -796,16 +796,14 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
+const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (
-    language === ProgrammingLanguage.JS ||
-    language === ProgrammingLanguage.TS ||
-    language === ProgrammingLanguage.PY
-  ) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
@@ -819,11 +817,7 @@ async function updateAdaptiveCardForCustomApi(
   language: string,
   destinationPath: string
 ): Promise<void> {
-  if (
-    language === ProgrammingLanguage.JS ||
-    language === ProgrammingLanguage.TS ||
-    language === ProgrammingLanguage.PY
-  ) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
     await fs.ensureDir(adaptiveCardsFolderPath);
 
@@ -841,11 +835,7 @@ async function updateActionForCustomApi(
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (
-    language === ProgrammingLanguage.JS ||
-    language === ProgrammingLanguage.TS ||
-    language === ProgrammingLanguage.PY
-  ) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const actionsFilePath = path.join(chatFolder, "actions.json");
     const actions = [];
 

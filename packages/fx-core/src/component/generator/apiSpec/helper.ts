@@ -822,7 +822,7 @@ async function updateAdaptiveCardForCustomApi(
   if (
     language === ProgrammingLanguage.JS ||
     language === ProgrammingLanguage.TS ||
-    language == ProgrammingLanguage.PY
+    language === ProgrammingLanguage.PY
   ) {
     const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
     await fs.ensureDir(adaptiveCardsFolderPath);
@@ -844,7 +844,7 @@ async function updateActionForCustomApi(
   if (
     language === ProgrammingLanguage.JS ||
     language === ProgrammingLanguage.TS ||
-    language == ProgrammingLanguage.PY
+    language === ProgrammingLanguage.PY
   ) {
     const actionsFilePath = path.join(chatFolder, "actions.json");
     const actions = [];
@@ -1008,7 +1008,7 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
-  } else if (language === ProgrammingLanguage.PY) {
+  } else {
     // Update code in bot.py
     const actionsCode = [];
     const codeTemplate = ActionCode["python"];

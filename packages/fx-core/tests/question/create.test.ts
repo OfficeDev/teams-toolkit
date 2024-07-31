@@ -1287,7 +1287,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;

@@ -796,12 +796,14 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
+const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
@@ -815,7 +817,7 @@ async function updateAdaptiveCardForCustomApi(
   language: string,
   destinationPath: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
     await fs.ensureDir(adaptiveCardsFolderPath);
 
@@ -833,7 +835,7 @@ async function updateActionForCustomApi(
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const actionsFilePath = path.join(chatFolder, "actions.json");
     const actions = [];
 
@@ -918,6 +920,36 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
   return "result";
 });
   `,
+  python: `
+@bot_app.ai.action("{{operationId}}")
+async def {{operationId}}(
+  context: ActionTurnContext[Dict[str, Any]],
+  state: AppTurnState,
+):
+  parameters = context.data
+  path = parameters.get("path", {})
+  body = parameters.get("body", {})
+  query = parameters.get("query", {})
+  resp = client.{{operationId}}(**path, json=body, _headers={}, _params=query, _cookies={})
+
+  if resp.status_code != 200:
+    await context.send_activity(resp.reason)
+  else:
+    card_template_path = os.path.join(current_dir, 'adaptiveCards/{{operationId}}.json')
+    with open(card_template_path) as card_template_file:
+        adaptive_card_template = card_template_file.read()
+
+    renderer = AdaptiveCardRenderer(adaptive_card_template)
+
+    json_resoponse_str = resp.text
+    rendered_card_str = renderer.render(json_resoponse_str)
+    rendered_card_json = json.loads(rendered_card_str)
+    card = CardFactory.adaptive_card(rendered_card_json)
+    message = MessageFactory.attachment(card)
+    
+    await context.send_activity(message)
+  return "success"
+  `,
 };
 
 const AuthCode = {
@@ -966,6 +998,24 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
+  } else if (language === ProgrammingLanguage.PY) {
+    // Update code in bot.py
+    const actionsCode = [];
+    const codeTemplate = ActionCode["python"];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace(/{{pathUrl}}/g, item.pathUrl)
+        .replace(/{{method}}/g, item.method);
+      actionsCode.push(code);
+    }
+
+    const botFilePath = path.join(destinationPath, "src", "bot.py");
+    const botFileContent = (await fs.readFile(botFilePath)).toString();
+    const updateBotFileContent = botFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("# Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(botFilePath, updateBotFileContent);
   }
 }
 

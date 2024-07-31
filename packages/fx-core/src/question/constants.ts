@@ -120,6 +120,7 @@ export const capabilitiesHavePythonOption = [
   "custom-copilot-rag-customize",
   "custom-copilot-agent-new",
   "custom-copilot-agent-assistants-api",
+  "custom-copilot-rag-customApi",
 ];
 
 export class RuntimeOptions {

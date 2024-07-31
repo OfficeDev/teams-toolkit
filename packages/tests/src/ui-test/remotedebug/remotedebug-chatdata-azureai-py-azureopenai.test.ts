@@ -82,7 +82,7 @@ describe("Remote debug Tests", function () {
       validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
 
-      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
+      const isRealKey = false; // TODO: currently disable real key
       // create azure search
       if (isRealKey) {
         const rgName = `${remoteDebugTestContext.appName}-dev-rg`;

@@ -23,12 +23,22 @@
   },
   "accentColor": "#FFFFFF",
   "copilotExtensions": {
+    {{^DeclarativeCopilot}}
     "plugins": [
       {
         "id": "plugin_1",
         "file": "ai-plugin.${{TEAMSFX_ENV}}.json"
       }
     ]
+    {{/DeclarativeCopilot}}
+    {{#DeclarativeCopilot}} 
+    "declarativeCopilots": [            
+      {
+        "id": "repairDeclarativeCopilot",
+        "file": "repairDeclarativeCopilot.json"
+      }
+    ]
+    {{/DeclarativeCopilot}}
   },
   "permissions": [
     "identity",

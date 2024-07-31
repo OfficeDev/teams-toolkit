@@ -204,6 +204,7 @@ jobs:
 
       AZURE_OPENAI_DEPLOYMENT_NAME: "gpt-35-turbo"
       AZURE_OPENAI_ENDPOINT: "https://aoai-jasozdr.openai.azure.com/"
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT: "text-embedding-ada-002"
 
       TEAMSFX_DEV_TUNNEL_TEST: true
       TEAMSFX_TELEMETRY_TEST: true
@@ -247,9 +248,15 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Setup Python
+        if: contains(matrix.test-case,  'py')
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Install Python environment
+        if: contains(matrix.test-case,  'py')
+        run: |
+          pip install python-dotenv aiohttp azure-search azure-search-documents teams-ai~=1.2.0
 
       - name: Install function core tool (ubuntu)
         if: matrix.os == 'ubuntu-latest'

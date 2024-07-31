@@ -39,10 +39,9 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
 {{^DeclarativeCopilot}}
-4. Open the `Copilot` app.
+4. When Teams launches in the browser, open the `Copilot` app.
+5. Select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
    > Note: Please make sure to switch to New Teams when Teams web client has launched
-5. In the message compose area, select the `Plugins` icon, then enable the plugin.
-6. Send a message to Copilot to find a repair record.
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
 4. Select your declarative copilot from the `Copilot` app.

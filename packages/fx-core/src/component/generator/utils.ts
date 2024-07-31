@@ -171,7 +171,7 @@ function updateTokens(
       token[0] = "text";
       token[1] = tags[0] + value + tags[1];
       accShift += shift;
-    } else if (token[0] === "#") {
+    } else if (token[0] === "#" || token[0] === "^") {
       token[2] += accShift;
       token[3] += accShift;
       accShift += updateTokens(token[4] as any, view, tags, accShift);

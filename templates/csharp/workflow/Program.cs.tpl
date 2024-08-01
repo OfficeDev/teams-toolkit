@@ -31,6 +31,7 @@ builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 // Create command handlers and the Conversation with command-response feature enabled.
 builder.Services.AddSingleton<HelloWorldCommandHandler>();
+builder.Services.AddSingleton<GenericCommandHandler>();
 builder.Services.AddSingleton<DoStuffActionHandler>();
 builder.Services.AddSingleton(sp =>
 {
@@ -39,7 +40,10 @@ builder.Services.AddSingleton(sp =>
         Adapter = sp.GetService<CloudAdapter>(),
         Command = new CommandOptions()
         {
-            Commands = new List<ITeamsCommandHandler> { sp.GetService<HelloWorldCommandHandler>() }
+            Commands = new List<ITeamsCommandHandler> { 
+                sp.GetService<HelloWorldCommandHandler>(), 
+                sp.GetService<GenericCommandHandler>() 
+            }
         },
         CardAction = new CardActionOptions()
         {

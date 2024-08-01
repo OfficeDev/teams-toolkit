@@ -87,11 +87,20 @@ export class LocalDebugTestContext extends TestContext {
     await openExistingProject(testFolder);
   }
 
-  public async after(hasAadPlugin = true, hasBotPlugin = false) {
+  public async after(
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasResourceGroup = false
+  ) {
     await stopDebugging();
     await this.context!.close();
     await this.browser!.close();
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.cleanResource(
+      hasAadPlugin,
+      hasBotPlugin,
+      "local",
+      hasResourceGroup
+    );
   }
 
   public async getTeamsAppId(): Promise<string> {

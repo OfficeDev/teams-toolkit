@@ -4,6 +4,8 @@
 
 import * as cp from "child_process";
 
+const shellQuote = require("shell-quote");
+
 /**
  * Run PowerShell command and return stdout content.
  * Note: the return value may contains EOL.
@@ -11,7 +13,8 @@ import * as cp from "child_process";
 export function execPowerShell(command: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     try {
-      const psCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "${command}"`;
+      const quotedCommand: string = shellQuote.quote([command]);
+      const psCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "${quotedCommand}"`;
       cp.exec(
         psCommand,
         { cwd: process.cwd(), maxBuffer: 500 * 1024, timeout: 100000, killSignal: "SIGKILL" },

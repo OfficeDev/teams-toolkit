@@ -1,6 +1,6 @@
 {
     "$id": "https://copilotstudio.microsoft.com/schemas/plugin-manifest-v2.1.json",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$schema": "https://json-schema.org/draft-07/schema",
     "type": "object",
     "properties": {
         "schema_version": {
@@ -206,7 +206,7 @@
                         "url": {
                             "type": "string"
                         },
-                        "information_protection_url": {
+                        "information_protection_label": {
                             "type": "string"
                         },
                         "template_selector": {
@@ -218,7 +218,8 @@
                             "title",
                             "subtitle",
                             "url",
-                            "information_protection_url",
+                            "information_protection_label",
+                            "thumbnail_url",
                             "template_selector"
                         ]
                     }
@@ -384,7 +385,7 @@
         "localization-object": {
             "type": "object",
             "patternProperties": {
-                "/^[a-z]{2,3}(-[a-z]{2})?$/ui": {
+                "^(?i)[a-z]{2,3}(-[a-z]{2})?(?-i)$": {
                     "type": "object",
                     "patternProperties": {
                         "^[A-Za-z_][A-Za-z0-9_]*$": {

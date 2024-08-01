@@ -13,7 +13,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
-  static readonly CopilotExtension = "DEVELOP_COPILOT_PLUGIN"; // TODO: rename feature flag
+  static readonly CopilotExtension = "DEVELOP_COPILOT_EXTENSION";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";

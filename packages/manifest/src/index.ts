@@ -3,8 +3,8 @@
 
 import { TeamsAppManifest, IComposeExtension } from "./manifest";
 import fs from "fs-extra";
-import Ajv from "ajv-draft-04";
-import { JSONSchemaType } from "ajv";
+import Ajv04 from "ajv-draft-04";
+import Ajv, { JSONSchemaType } from "ajv";
 import addFormats from "ajv-formats";
 import Ajv2020 from "ajv/dist/2020";
 import { DevPreviewSchema } from "./devPreviewManifest";
@@ -67,14 +67,18 @@ export class ManifestUtil {
     let validate;
     if (schema.$schema?.includes("2020-12")) {
       const ajv = new Ajv2020({
-        //formats: { uri: true, email: true },
         allErrors: true,
         strictTypes: false,
       });
       addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
+    } else if (schema.$schema?.includes("draft-04")) {
+      const ajv = new Ajv04({ formats: { uri: true }, allErrors: true, strictTypes: false });
+      validate = ajv.compile(schema);
     } else {
-      const ajv = new Ajv({ formats: { uri: true }, allErrors: true, strictTypes: false });
+      // fallback to default: draft-07
+      const ajv = new Ajv({ allErrors: true, strictTypes: false });
+      addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
     }
 

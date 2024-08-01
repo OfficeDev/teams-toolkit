@@ -87,7 +87,7 @@ export class CreateOauthDriver implements StepDriver {
         }
 
         const clientSecret = process.env[QuestionNames.OauthClientSecret];
-        if (clientSecret) {
+        if (clientSecret && !args.isPKCEEnabled) {
           args.clientSecret = clientSecret;
         }
 
@@ -243,7 +243,7 @@ export class CreateOauthDriver implements StepDriver {
       m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
       clientId: args.clientId,
-      clientSecret: args.isPKCEEnabled ? "" : args.clientSecret || "",
+      clientSecret: args.clientSecret ?? "",
       isPKCEEnabled: !!args.isPKCEEnabled,
       authorizationEndpoint: authInfo.authorizationEndpoint,
       tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,

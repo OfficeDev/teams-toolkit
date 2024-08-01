@@ -516,6 +516,24 @@ describe("CreateOauthDriver", () => {
     }
   });
 
+  it("should throw error if isPKCEEnabled is not boolean", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      clientId: "mockedClientId",
+      flow: "authorizationCode",
+      refreshUrl: "mockedRefreshUrl",
+      isPKCEEnabled: "invalid",
+    };
+    const result = await updateOauthDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("InvalidActionInputError");
+      expect(result.result.error.message).to.include("isPKCEEnabled");
+    }
+  });
+
   it("should throw error if name is too long", async () => {
     const args: any = {
       name: "a".repeat(129),

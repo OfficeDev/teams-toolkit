@@ -139,7 +139,7 @@ describe("CreateOauthDriver", () => {
         expect(oauthRegistration.scopes[0]).to.equals("mockedScope");
         expect(oauthRegistration.targetUrlsShouldStartWith[0]).to.equals("https://test");
         expect(oauthRegistration.tokenExchangeEndpoint).to.equals("mockedTokenUrl");
-        expect(oauthRegistration.tokenRefreshEndpoint).to.equal("mockedRefreshUrl");
+        expect(oauthRegistration.tokenRefreshEndpoint).to.equal("refreshUrlInSpec");
         expect(oauthRegistration.applicableToApps).to.equals(OauthRegistrationAppType.AnyApp);
         expect(oauthRegistration.isPKCEEnabled).to.be.true;
         expect(oauthRegistration.targetAudience).to.equals(
@@ -166,6 +166,7 @@ describe("CreateOauthDriver", () => {
                 authorizationCode: {
                   authorizationUrl: "mockedAuthorizationUrl",
                   tokenUrl: "mockedTokenUrl",
+                  refreshUrl: "refreshUrlInSpec",
                   scopes: {
                     mockedScope: "description for mocked scope",
                   },
@@ -187,7 +188,6 @@ describe("CreateOauthDriver", () => {
       apiSpecPath: "mockedPath",
       clientId: "mockedClientId",
       flow: "authorizationCode",
-      refreshUrl: "mockedRefreshUrl",
       isPKCEEnabled: true,
     };
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);

@@ -878,6 +878,8 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
       break;
     }
     case "msgnewapi": {

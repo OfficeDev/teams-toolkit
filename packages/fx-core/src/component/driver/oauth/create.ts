@@ -186,8 +186,14 @@ export class CreateOauthDriver implements StepDriver {
       invalidParameters.push("clientId");
     }
 
-    if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
-      invalidParameters.push("clientSecret");
+    if (args.isPKCEEnabled && typeof args.isPKCEEnabled !== "boolean") {
+      invalidParameters.push("isPKCEEnabled");
+    }
+
+    if (!args.isPKCEEnabled) {
+      if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
+        invalidParameters.push("clientSecret");
+      }
     }
 
     if (args.refreshUrl && typeof args.refreshUrl !== "string") {
@@ -237,7 +243,8 @@ export class CreateOauthDriver implements StepDriver {
       m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
       clientId: args.clientId,
-      clientSecret: args.clientSecret ?? "",
+      clientSecret: args.isPKCEEnabled ? "" : args.clientSecret || "",
+      isPKCEEnabled: !!args.isPKCEEnabled,
       authorizationEndpoint: authInfo.authorizationEndpoint,
       tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,
       tokenRefreshEndpoint: args.refreshUrl ?? authInfo.tokenRefreshEndpoint,

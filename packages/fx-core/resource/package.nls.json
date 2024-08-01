@@ -869,6 +869,7 @@
   "driver.oauth.log.skipCreateOauth": "Environment variable %s exists. Skip creating API key.",
   "driver.oauth.log.oauthNotFound": "Environment variable %s exists but unable to retrieve OAuth registration from Developer Portal. Check manually if it exists.",
   "driver.oauth.error.nameTooLong": "The OAuth name is too long. The maximum character length is 128.",
+  "driver.oauth.error.oauthDisablePKCEError": "Disabling PKCE for OAuth2 is not supported in the oauth/update action.",
   "driver.oauth.log.successCreateOauth": "OAuth registration created successfully with id %s!",
   "driver.oauth.error.domainInvalid": "Maximum %d domains allowed per OAuth registration.",
   "driver.apiKey.error.oauthAuthInfoInvalid": "Unable to parse OAuth2 authScheme from spec. Make sure your API specification is valid.",

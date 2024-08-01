@@ -863,13 +863,13 @@ export function oauthQuestion(): IQTreeNode {
       {
         data: oauthClientSecretQuestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret;
+          return !inputs.isPKCEEnabled && !inputs.clientSecret;
         },
       },
       {
         data: oauthConfirmQestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret || !inputs.clientId;
+          return !inputs.isPKCEEnabled && (!inputs.clientSecret || !inputs.clientId);
         },
       },
     ],

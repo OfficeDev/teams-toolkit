@@ -66,6 +66,7 @@ describe("CreateOauthDriver", () => {
       authorizationEndpoint: "mockedAuthorizationEndpoint",
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
+      isPKCEEnabled: true,
     });
     sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
@@ -78,6 +79,7 @@ describe("CreateOauthDriver", () => {
       authorizationEndpoint: "mockedAuthorizationEndpoint",
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
+      isPKCEEnabled: false,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -134,6 +136,7 @@ describe("CreateOauthDriver", () => {
       expect((config as ConfirmConfig).title.includes("applicableToApps")).to.be.true;
       expect((config as ConfirmConfig).title.includes("m365AppId")).to.be.true;
       expect((config as ConfirmConfig).title.includes("targetAudience")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("isPKCEEnabled")).to.be.true;
       return ok({ type: "success", value: true });
     });
 
@@ -144,6 +147,7 @@ describe("CreateOauthDriver", () => {
       targetAudience: "HomeTenant",
       applicableToApps: "SpecificApp",
       configurationId: "mockedRegistrationId",
+      isPKCEEnabled: true,
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
@@ -151,6 +155,88 @@ describe("CreateOauthDriver", () => {
     if (result.result.isOk()) {
       expect(result.result.value.size).to.equal(0);
       expect(result.summaries.length).to.equal(1);
+    }
+  });
+
+  it("should throw error if try to disable PKCE", async () => {
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
+      oAuthConfigId: "mockedRegistrationId",
+      description: "mockedDescription",
+      targetUrlsShouldStartWith: ["https://test"],
+      applicableToApps: OauthRegistrationAppType.AnyApp,
+      targetAudience: OauthRegistrationTargetAudience.AnyTenant,
+      clientId: "mockedClientId",
+      clientSecret: "mockedClientSecret",
+      authorizationEndpoint: "mockedAuthorizationEndpoint",
+      tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
+      scopes: ["mockedScope"],
+      isPKCEEnabled: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "https://test",
+                  tokenUrl: "https://test",
+                  scopes: {
+                    mockedScopes: "mockedScopes",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+        {
+          api: "api2",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test2",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "https://test",
+                  tokenUrl: "https://test",
+                  scopes: {
+                    mockedScopes: "mockedScopes",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: UpdateOauthArgs = {
+      name: "test2",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      targetAudience: "HomeTenant",
+      applicableToApps: "SpecificApp",
+      configurationId: "mockedRegistrationId",
+      isPKCEEnabled: false,
+    };
+
+    const result = await updateOauthDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("OauthDisablePKCEError");
     }
   });
 

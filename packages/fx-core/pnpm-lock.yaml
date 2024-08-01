@@ -65,6 +65,9 @@ dependencies:
   cryptr:
     specifier: ^6.0.2
     version: 6.0.2
+  deep-diff:
+    specifier: ^1.0.2
+    version: 1.0.2
   detect-port:
     specifier: ^1.3.0
     version: 1.3.0
@@ -178,6 +181,9 @@ devDependencies:
   '@types/cryptr':
     specifier: ^4.0.1
     version: 4.0.1
+  '@types/deep-diff':
+    specifier: ^1.0.5
+    version: 1.0.5
   '@types/detect-port':
     specifier: ^1.3.2
     version: 1.3.2
@@ -1143,6 +1149,10 @@ packages:
 
   /@types/cryptr@4.0.1:
     resolution: {integrity: sha512-Nn8fvr+8XYWK5h422lj4xQACfOg6vdhKI+Rh9ERa5Mg0cZvPL9Vn3845vSY07dNZnEs5cqkSNVMdhmf70lAYkA==}
+    dev: true
+
+  /@types/deep-diff@1.0.5:
+    resolution: {integrity: sha512-PQyNSy1YMZU1hgZA5tTYfHPpUAo9Dorn1PZho2/budQLfqLu3JIP37JAavnwYpR1S2yFZTXa3hxaE4ifGW5jaA==}
     dev: true
 
   /@types/detect-port@1.3.2:
@@ -2337,6 +2347,10 @@ packages:
   /dedent@0.7.0:
     resolution: {integrity: sha512-Q6fKUPqnAHAyhiUgFU7BUzLiv0kd8saH9al7tnu5Q/okj6dnupxyTgFIBjVzJATdfIAm9NAsvXNzjaKa+bxVyA==}
     dev: true
+
+  /deep-diff@1.0.2:
+    resolution: {integrity: sha512-aWS3UIVH+NPGCD1kki+DCU9Dua032iSsO43LqQpcs4R3+dVv7tX0qBGjiVHJHjplsoUM2XRO/KB92glqc68awg==}
+    dev: false
 
   /deep-eql@3.0.1:
     resolution: {integrity: sha512-+QeIQyN5ZuO+3Uk5DYh6/1eKO0m0YmJFGNmFHGACpf1ClL1nmlV/p4gNgbl2pJGxgXb4faqo6UE+M5ACEMyVcw==}

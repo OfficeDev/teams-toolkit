@@ -116,17 +116,19 @@ class AdaptiveCardRenderer:
     def __evaluate_if_expression(self, input_str, data):
         # Only support expression like ${if(data,data,'value')} in TextBlock element
         pattern = r"\$\{if\(([^,]+),([^,]+),([^)]+)\)\}"
-        
+
         def eval_match(match):
             condition_var, true_var, false_var = match.groups()
             condition_result = self.__evaluate_variable_value(condition_var, data)
             if condition_result:
-                return self.__evaluate_variable_value(true_var, data)
+                true_value = self.__evaluate_variable_value(true_var, data)
+                return str(true_value)
             else:
-                return self.__evaluate_variable_value(false_var, data)
-        
+                false_value = self.__evaluate_variable_value(false_var, data)
+                return str(false_value)
+
         result_str = re.sub(pattern, eval_match, input_str)
-        
+
         return result_str
 
     def __evaluate_jsonStringify_expression(self, expression, data):

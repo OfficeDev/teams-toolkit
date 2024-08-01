@@ -75,7 +75,10 @@
       "remotedebug-msg-apikey-existing-spec-win-only",
       "remotedebug-chatdata-customize-js-azureopenai-win-only",
       "remotedebug-chatdata-customize-ts-azureopenai-win-only",
-      "remotedebug-chatdata-customize-py-azureopenai-win-only"
+      "remotedebug-chatdata-customize-py-azureopenai-win-only",
+      "remotedebug-chatdata-customize-js-openai-win-only",
+      "remotedebug-chatdata-customize-ts-openai-win-only",
+      "remotedebug-chatdata-customize-py-openai-win-only"
     ],
     "node-20": ["localdebug-obo-tab"]
   },

@@ -5,6 +5,8 @@
 import * as cp from "child_process";
 import * as os from "os";
 
+const shellQuote = require("shell-quote");
+
 export interface DebugLogger {
   debug(message: string): void;
 }
@@ -56,7 +58,8 @@ export namespace cpUtils {
         };
         Object.assign(options, additionalOptions);
 
-        const childProc: cp.ChildProcess = cp.spawn(command, args, options);
+        const quotedCommand = shellQuote.quote([command]);
+        const childProc: cp.ChildProcess = cp.spawn(quotedCommand, args, options);
         let timer: NodeJS.Timeout;
         if (options.timeout && options.timeout > 0) {
           // timeout only exists for exec not spawn

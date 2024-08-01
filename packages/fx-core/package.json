@@ -128,6 +128,7 @@
     "read-package-json-fast": "^2.0.3",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
+    "shell-quote": "^1.8.1",
     "strip-bom": "^4.0.0",
     "swagger2openapi": "^7.0.8",
     "typedi": "^0.10.0",

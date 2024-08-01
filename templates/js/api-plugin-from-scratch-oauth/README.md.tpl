@@ -1,3 +1,4 @@
+{{^DeclarativeCopilot}}
 # Overview of the API Plugin template
 
 ## Build an API Plugin from a new API with Azure Functions
@@ -12,6 +13,16 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 - Enriching the data estate of your enterprise with industry-leading AI.
 - Keeping your users in the flow of their work, start to finish.
 - Inheriting world-class security, compliance, and privacy policies.
+{{/DeclarativeCopilot}}
+{{#DeclarativeCopilot}}
+# Overview of the declarative copilot with API plugin template
+
+## Build a declarative copilot with an API Plugin from a new API with Azure Functions
+
+With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
+
+You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A declarative copilot can utilize multiple plugins at the same time.
+{{/DeclarativeCopilot}}
 
 ## Get started with the template
 
@@ -27,7 +38,15 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
-4. Send a message to Copilot to find a repair record.
+{{^DeclarativeCopilot}}
+4. When Teams launches in the browser, open the `Copilot` app.
+5. Select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
+{{/DeclarativeCopilot}}
+{{#DeclarativeCopilot}}
+4. Select your declarative copilot from the `Copilot` app.
+5. Send a message to Copilot to find a repair record.
+{{/DeclarativeCopilot}}
 
 ## What's included in the template
 
@@ -43,13 +62,16 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                               | Contents                                                                                              |
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `src/functions/repairs.ts`                         | The main file of a function in Azure Functions.                                                       |
+| `src/functions/repairs.js`                         | The main file of a function in Azure Functions.                                                       |
 | `src/repairsData.json`                             | The data source for the repair API.                                                                   |
 | `appPackage/apiSpecificationFile/repair.dev.yml`   | A file that describes the structure and behavior of the repair API.                                   |
 | `appPackage/apiSpecificationFile/repair.local.yml` | A file that describes the structure and behavior of the repair API for local execution and debugging. |
 | `appPackage/manifest.json`                         | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.              |
-| `appPackage/ai-plugin.dev.json`                    | The manifest file for your API plugin that contains information for your API and used by LLM.     |
-| `appPackage/ai-plugin.local.json`                  | The manifest file for your API plugin for local execution and debugging.                          |
+| `appPackage/ai-plugin.dev.json`                    | The manifest file for your API Plugin that contains information for your API and used by LLM.     |
+| `appPackage/ai-plugin.local.json`                  | The manifest file for your API Plugin for local execution and debugging.                          |
+{{#DeclarativeCopilot}}
+| `appPackage/repairDeclarativeCopilot.json` | Define the behaviour and configurations of the declarative copilot. |
+{{/DeclarativeCopilot}}
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -67,6 +89,9 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Addition information and references
 
+{{#DeclarativeCopilot}}
+- [Declarative copilots for Microsoft 365](https://aka.ms/teams-toolkit-declarative-copilot)
+{{/DeclarativeCopilot}}
 - [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
 - [Message extensions for Microsoft Copilot for Microsoft 365](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-message-extension-bot)
 - [Microsoft Graph Connectors for Microsoft Copilot for Microsoft 365](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector)

@@ -40,13 +40,13 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 {{^DeclarativeCopilot}}
-5. Open the `Copilot` app.
+4. When Teams launches in the browser, open the `Copilot` app.
+5. Select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
    > Note: Please make sure to switch to New Teams when Teams web client has launched
-6. In the message compose area, select the `Plugins` icon, then enable the plugin.
-7. Send a prompt to trigger the plugin.
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
-5. Select your declarative Copilot from the `Copilot` app and send a prompt.
+4. Select your declarative Copilot from the `Copilot` app.
+5. Send a prompt.
 {{/DeclarativeCopilot}}
 
 {{#ApiKey}}

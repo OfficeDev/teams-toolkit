@@ -124,6 +124,7 @@
             "presentation": {
                 "reveal": "silent"
             }
+        {{^DeclarativeCopilot}}
         },
         {
             "label": "Start Teams App in Desktop Client",
@@ -153,5 +154,9 @@
                 "url": "teams.microsoft.com"
             }
         }
+        {{/DeclarativeCopilot}}
+        {{#DeclarativeCopilot}}
+        }
+        {{/DeclarativeCopilot}}
     ]
 }

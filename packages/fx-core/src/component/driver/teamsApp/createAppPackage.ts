@@ -251,9 +251,7 @@ export class CreateAppPackageDriver implements StepDriver {
         return err(addFileWithVariableRes.error);
       }
 
-      const getCopilotGptRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
-        copilotGptManifestFile
-      );
+      const getCopilotGptRes = await copilotGptManifestUtils.getManifest(copilotGptManifestFile);
 
       if (getCopilotGptRes.isOk()) {
         if (getCopilotGptRes.value.actions) {

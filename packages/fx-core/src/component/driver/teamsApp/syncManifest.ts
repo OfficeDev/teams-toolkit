@@ -94,6 +94,7 @@ export class SyncManifestDriver implements StepDriver {
     const currentManifest = currentManifestRes.value as any;
     const newManifest = JSON.parse(appPackage.manifest.toString("utf8"));
     const differences = deepDiff.diff(currentManifest, newManifest);
+    // todo: add logic here.
     console.log(differences);
     return ok(new Map<string, string>());
   }

@@ -17,9 +17,8 @@ This template showcases a bot app that responds to user questions like an AI ass
 > - An account with [OpenAI](https://platform.openai.com/)
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-> - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
+> - An account with [Azure OpenAI](https://aka.ms/oai/access).
 {{/useAzureOpenAI}}
-> - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
 
 ### Configurations
 1. Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
@@ -32,14 +31,16 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
+1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
-![ai chat bot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
+![custom api template](https://github.com/OfficeDev/TeamsFx/assets/63089166/19f4c825-c296-4d29-a957-bedb88b6aa5b)
 
 ## What's included in the template
 

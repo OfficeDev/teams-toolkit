@@ -51,8 +51,8 @@ on:
           description: "For example: CY230919. Sync test result to this test plan."
           required: false
           type: string
-  # schedule:
-  # - cron: "0 18 * * *"
+  schedule:
+    - cron: "0 18 * * *"
 
 permissions:
   actions: read

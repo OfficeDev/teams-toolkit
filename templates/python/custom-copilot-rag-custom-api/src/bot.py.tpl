@@ -78,10 +78,10 @@ async def on_error(context: TurnContext, error: Exception):
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-spec_path = os.path.join(current_dir, '../appPackage/apiSpecificationFile/openapi.yaml')
+spec_path = os.path.join(current_dir, '../appPackage/apiSpecificationFile/{{OPENAPI_SPEC_PATH}}')
 client = OpenAPIClient().load_spec_from_file(spec_path)
 
-@prompts.function("get_actions")
+@prompts.function("getAction")
 async def get_actions(
     _context: TurnContext,
     state: MemoryBase,

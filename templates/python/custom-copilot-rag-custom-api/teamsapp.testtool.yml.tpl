@@ -14,7 +14,7 @@ deploy:
   # Generate runtime environment variables
   - uses: file/createOrUpdateEnvironmentFile
     with:
-      target: ./.localConfigs.testTool
+      target: ./.env
       envs:
         {{#useOpenAI}}
         OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}

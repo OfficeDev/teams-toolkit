@@ -1,4 +1,4 @@
-﻿using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder;
 using Microsoft.TeamsFx.Conversation;
 
 namespace {{SafeProjectName}}.Commands
@@ -16,12 +16,12 @@ namespace {{SafeProjectName}}.Commands
             // Used to trigger the command handler when the user enters a generic or unknown command
             new RegExpTrigger("^.+$")
         };
-    
+
         public GenericCommandHandler(ILogger<GenericCommandHandler> logger)
         {
             _logger = logger;
         }
-    
+
         public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
         {
             _logger?.LogInformation($"App received message: {message.Text}");
@@ -31,26 +31,26 @@ namespace {{SafeProjectName}}.Commands
             switch (message.Text)
             {
                 case "hi":
-                    responseText = "Hi there! I'm your Command Bot, here to assist you with your tasks. Type 'help' for a list of available commands.";
+                    responseText = "Hi there! I'm your Workflow Bot, here to assist you with your tasks. Type 'help' for a list of available commands.";
                     break;
                 case "hello":
-                    responseText = "Hello! I'm your Command Bot, always ready to help you out. If you need assistance, just type 'help' to see the available commands.";
+                    responseText = "Hello! I'm your Workflow Bot, always ready to help you out. If you need assistance, just type 'help' to see the available commands.";
                     break;
                 case "help":
                     responseText = "Here's a list of commands I can help you with:\n" +
                                    "- 'hi' or 'hello': Say hi or hello to me, and I'll greet you back.\n" +
                                    "- 'help': Get a list of available commands.\n" +
-                                   "- 'helloworld': See a sample response from me.\n" +
+                                   "- 'helloworld': See a sample workflow from me.\n" +
                                    "\nFeel free to ask for help anytime you need it!";
                     break;
                 default:
                     responseText = "Sorry, command unknown. Please type 'help' to see the list of available commands.";
                     break;
             }
-    
+
             // Build the response activity  
             var activity = MessageFactory.Text(responseText);
-    
+
             // Send response  
             return new ActivityCommandResponse(activity);
         }

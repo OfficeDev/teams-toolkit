@@ -1,5 +1,6 @@
 import { DoStuffActionHandler } from "../cardActions/doStuffActionHandler";
 import { HelloWorldCommandHandler } from "../commands/helloworldCommandHandler";
+import { GenericCommandHandler } from "../commands/genericCommandHandler";
 import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
 import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
 import config from "./config";
@@ -11,7 +12,7 @@ export const workflowApp = new ConversationBot({
   adapterConfig: config,
   command: {
     enabled: true,
-    commands: [new HelloWorldCommandHandler()],
+    commands: [new HelloWorldCommandHandler(), new GenericCommandHandler()],
   },
   cardAction: {
     enabled: true,

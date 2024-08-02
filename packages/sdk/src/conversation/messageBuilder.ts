@@ -12,7 +12,7 @@ import {
   ReceiptCard,
   ThumbnailCard,
 } from "botbuilder";
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import * as ACData from "adaptivecards-templating";
 
 /**
  * Provides utility method to build bot message with cards that supported in Teams.
@@ -58,8 +58,11 @@ export class MessageBuilder {
     cardTemplate: unknown,
     data: TData
   ): Partial<Activity> {
+    const context = {
+      $root: data,
+    };
     return {
-      attachments: [CardFactory.adaptiveCard(AdaptiveCards.declare(cardTemplate).render(data))],
+      attachments: [CardFactory.adaptiveCard(new ACData.Template(cardTemplate).expand(context))],
     };
   }
 
@@ -71,7 +74,7 @@ export class MessageBuilder {
    */
   public static attachAdaptiveCardWithoutData(card: unknown): Partial<Activity> {
     return {
-      attachments: [CardFactory.adaptiveCard(AdaptiveCards.declareWithoutData(card).render())],
+      attachments: [CardFactory.adaptiveCard(card)],
     };
   }
 

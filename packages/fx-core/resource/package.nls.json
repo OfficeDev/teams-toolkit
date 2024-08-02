@@ -304,8 +304,8 @@
   "core.createProjectQuestion.projectType.customCopilot.label": "Custom Engine Copilot",
   "core.createProjectQuestion.projectType.customCopilot.title": "App Features Using Teams AI Library",
   "core.createProjectQuestion.projectType.customCopilot.placeholder": "Select an option",
-  "core.createProjectQuestion.projectType.copilotHelp.label": "Don't know how to start? Use Github Copilot Chat",
-  "core.createProjectQuestion.projectType.copilotHelp.detail": "Chat with Github Copilot and get step-by-step instructions to develop your Teams app",
+  "core.createProjectQuestion.projectType.copilotHelp.label": "Don't know how to start? Use GitHub Copilot Chat",
+  "core.createProjectQuestion.projectType.copilotHelp.detail": "Chat with GitHub Copilot and get step-by-step instructions to develop your Teams app",
   "core.createProjectQuestion.projectType.copilotGroup.title": "Use Copilot",
   "core.createProjectQuestion.projectType.createGroup.title": "Create",
   "core.createProjectQuestion.projectType.declarativeCopilot.label": "Declarative Copilot",
@@ -599,7 +599,7 @@
   "plugins.bot.ProvisionBotRegistrationSuccess": "Bot registration provisioned successfully.",
   "plugins.bot.CheckLogAndFix": "Please check log-in Output panel and try to fix this issue.",
   "plugins.bot.AppStudioBotRegistration": "Developer Portal bot registration",
-  "plugins.function.getTemplateFromLocal": "Unable to get latest template from github, trying to use the local template.",
+  "plugins.function.getTemplateFromLocal": "Unable to get latest template from gitHub, trying to use the local template.",
   "error.depChecker.DefaultErrorMessage": "Install required dependencies manually.",
   "depChecker.learnMoreButtonText": "Get more info",
   "depChecker.needInstallNpm": "You must have NPM installed to debug your local functions.",
@@ -877,3 +877,4 @@
   "driver.oauth.log.successUpdateOauth": "OAuth registration updated successfully!",
   "driver.oauth.info.update": "OAuth registration updated successfully! The following parameters have been updated:\n%s"
 }
+

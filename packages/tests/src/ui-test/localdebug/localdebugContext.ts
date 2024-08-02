@@ -33,7 +33,7 @@ export type LocalDebugTestName =
   | "ftNoti" // http and timer trigger notification bot
   | "linkunfurl"
   | "aichat"
-  | "aiassist"
+  | "aiagent"
   | "chatdata"
   | "msgnewapi"
   | "msgapikey"
@@ -46,6 +46,7 @@ export class LocalDebugTestContext extends TestContext {
   public needMigrate: boolean | undefined;
   public existingSpfxFolder: string;
   public customCopilotRagType: string;
+  public customCeopilotAgent: string;
   public llmServiceType: string;
 
   constructor(
@@ -59,6 +60,9 @@ export class LocalDebugTestContext extends TestContext {
         | "custom-copilot-rag-customize"
         | "custom-copilot-rag-azureAISearch"
         | "custom-copilot-rag-customApi";
+      customCeopilotAgent?:
+        | "custom-copilot-agent-new"
+        | "custom-copilot-agent-assistants-api";
       llmServiceType?: "llm-service-azure-openai" | "llm-service-openai";
     }
   ) {
@@ -73,6 +77,9 @@ export class LocalDebugTestContext extends TestContext {
     this.customCopilotRagType = option?.customCopilotRagType
       ? option.customCopilotRagType
       : "custom-copilot-rag-customize";
+    this.customCeopilotAgent = option?.customCeopilotAgent
+      ? option.customCeopilotAgent
+      : "custom-copilot-agent-new";
     this.llmServiceType = option?.llmServiceType
       ? option.llmServiceType
       : "llm-service-azure-openai";
@@ -285,10 +292,10 @@ export class LocalDebugTestContext extends TestContext {
           `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang} --telemetry false`
         );
         break;
-      case "aiassist":
+      case "aiagent":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --custom-copilot-agent ${this.customCeopilotAgent} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "chatdata":

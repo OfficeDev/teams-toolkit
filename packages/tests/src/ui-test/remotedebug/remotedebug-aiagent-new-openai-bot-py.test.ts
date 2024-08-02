@@ -23,6 +23,7 @@ import {
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
+import { RetryHandler } from "../../utils/retryHandler";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -36,7 +37,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("aiassist");
+    remoteDebugTestContext = new RemoteDebugTestContext("aiagent");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -61,21 +62,20 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][TS] Remote debug for ai assistant bot project Tests",
+    "[auto][Python][OpenAI] Remote debug for AI Agent - Build New",
     {
-      testPlanCaseId: 26004835,
+      testPlanCaseId: 27689385,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aiassist", appName, {
-        lang: "TypeScript",
+      await createNewProject("aiagentnew", appName, {
+        lang: "Python",
         aiType: "OpenAI",
       });
-      validateFileExist(projectPath, "src/index.ts");
+      validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "OPENAI_ASSISTANT_ID", "fake");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
@@ -88,14 +88,30 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateWelcomeAndReplyBot(page, {
-        hasWelcomeMessage: false,
-        hasCommandReplyValidation: true,
-        botCommand: "helloWorld",
-        expectedWelcomeMessage:
-          ValidationContent.AiAssistantBotWelcomeInstruction,
-        expectedReplyMessage: ValidationContent.AiBotErrorMessage2,
-      });
+      try {
+        await validateWelcomeAndReplyBot(page, {
+          hasWelcomeMessage: false,
+          hasCommandReplyValidation: true,
+          botCommand: "helloWorld",
+          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+          expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+          timeout: Timeout.longTimeWait,
+        });
+      } catch {
+        await RetryHandler.retry(async () => {
+          await deployProject(projectPath, Timeout.botDeploy);
+          await driver.sleep(Timeout.longTimeWait);
+          await validateWelcomeAndReplyBot(page, {
+            hasWelcomeMessage: false,
+            hasCommandReplyValidation: true,
+            botCommand: "helloWorld",
+            expectedWelcomeMessage:
+              ValidationContent.AiChatBotWelcomeInstruction,
+            expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+            timeout: Timeout.longTimeWait,
+          });
+        }, 2);
+      }
     }
   );
 });

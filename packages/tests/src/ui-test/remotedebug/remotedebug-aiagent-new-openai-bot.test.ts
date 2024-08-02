@@ -36,7 +36,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("aiassist");
+    remoteDebugTestContext = new RemoteDebugTestContext("aiagent");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -61,18 +61,17 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][JS] Remote debug for ai assistant bot project Tests",
+    "[auto][Javascript][OpenAI] Remote debug for AI Agent - Build New",
     {
-      testPlanCaseId: 26004834,
+      testPlanCaseId: 27042865,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aiassist", appName, { aiType: "OpenAI" });
+      await createNewProject("aiagentnew", appName, { aiType: "OpenAI" });
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "OPENAI_ASSISTANT_ID", "fake");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
@@ -91,7 +90,8 @@ describe("Remote debug Tests", function () {
         botCommand: "helloWorld",
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
-        expectedReplyMessage: ValidationContent.AiBotErrorMessage2,
+        expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+        timeout: Timeout.longTimeWait,
       });
     }
   );

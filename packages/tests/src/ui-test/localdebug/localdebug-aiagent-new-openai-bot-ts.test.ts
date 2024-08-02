@@ -28,8 +28,10 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aiassist", {
+    localDebugTestContext = new LocalDebugTestContext("aiagent", {
       lang: "typescript",
+      customCeopilotAgent: "custom-copilot-agent-new",
+      llmServiceType: "llm-service-openai",
     });
     await localDebugTestContext.before();
   });
@@ -40,9 +42,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [TypeScript] Local debug AI assistant bot",
+    "[auto] [TypeScript] [Typescript][OpenAI] Local debug for AI Agent - Build New",
     {
-      testPlanCaseId: 26004833,
+      testPlanCaseId: 27042863,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -52,9 +54,7 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
-      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
-      editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
+      editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
@@ -76,6 +76,7 @@ describe("Local Debug Tests", function () {
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
         expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+        timeout: Timeout.longTimeWait,
       });
     }
   );

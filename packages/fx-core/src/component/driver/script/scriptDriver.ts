@@ -212,15 +212,13 @@ export function convertScriptErrorToFxError(
 }
 
 export function parseSetOutputCommand(stdout: string): DotenvOutput {
-  const regex = /(::set-teamsfx-env|::set-output)\s+([^"'\s]+)=([^"'\s]+)/g;
+  const regex = /::(set-teamsfx-env|set-output)\s+(\w+)=((["'])(.*?)\4|[^"'\s]+)/g;
   const output: DotenvOutput = {};
   let match;
   while ((match = regex.exec(stdout))) {
-    if (match && match.length === 4) {
-      const key = match[2].trim();
-      const value = match[3].trim();
-      output[key] = value;
-    }
+    const key = match[2];
+    const value = match[5] !== undefined ? match[5] : match[3];
+    output[key] = value;
   }
   return output;
 }
@@ -228,3 +226,9 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
 export function capitalizeFirstLetter(raw: string): string {
   return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
+
+console.log(
+  parseSetOutputCommand(`Write-Host ::set-teamsfx-env Test0="multi word variable"
+Write-Host ::set-teamsfx-env Test1=' multi word variable'
+Write-Host ::set-teamsfx-env Test2=multi+word+variable`)
+);

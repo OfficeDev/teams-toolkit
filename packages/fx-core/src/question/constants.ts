@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
+import {
+  FeatureFlags,
+  featureFlagManager,
+  isCopilotExtensionEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 
@@ -204,7 +208,7 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
+      detail: isCopilotExtensionEnabled()
         ? getLocalizedString(
             "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
           )
@@ -434,7 +438,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
+      detail: isCopilotExtensionEnabled()
         ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
         : getLocalizedString("core.M365SearchAppOptionItem.detail"),
     };
@@ -643,7 +647,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+    if (isCopilotExtensionEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotExtensions());
     }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
@@ -866,7 +870,7 @@ export class MeArchitectureOptions {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
-      featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
+      isCopilotExtensionEnabled()
         ? MeArchitectureOptions.botPlugin()
         : MeArchitectureOptions.botMe(),
     ];

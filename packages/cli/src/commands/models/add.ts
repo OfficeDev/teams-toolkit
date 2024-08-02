@@ -7,7 +7,10 @@ import { addPluginCommand } from "./addPlugin";
 import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
 
 const adjustCommands = (): CLICommand[] => {
-  if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+  if (
+    featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension) ||
+    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
+  ) {
     return [addSPFxWebpartCommand, addPluginCommand];
   } else {
     return [addSPFxWebpartCommand];

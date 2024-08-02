@@ -46,7 +46,10 @@ function adjustOptions(options: CLICommandOption[]) {
     }
   }
 
-  if (!featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+  if (
+    !featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension) &&
+    !featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)
+  ) {
     //skip Copilot extension questions if the feature flag is not enabled.
     const questionsToDelete = [QuestionNames.ApiPluginType, QuestionNames.WithPlugin];
     options = options.filter((option) => !questionsToDelete.includes(option.name as QuestionNames));

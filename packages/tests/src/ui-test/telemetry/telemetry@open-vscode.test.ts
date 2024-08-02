@@ -19,6 +19,7 @@ const TelemetryNames = [
   "check-sideloading",
   "quick-start",
   "survey",
+  "walkthrough-build-intelligent-apps",
 ];
 
 describe("telemetry", function () {

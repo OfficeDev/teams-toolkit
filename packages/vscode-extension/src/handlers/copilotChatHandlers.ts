@@ -130,7 +130,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     VsCodeLogInstance.info(
       util.format(
         localize("teamstoolkit.handlers.installExtension.output"),
-        "Github Copilot Chat",
+        "GitHub Copilot Chat",
         InstallCopilotChatLink
       )
     );

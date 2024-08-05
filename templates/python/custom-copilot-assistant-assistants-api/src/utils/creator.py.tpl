@@ -63,7 +63,7 @@ async def main():
         model="gpt-3.5-turbo",
         {{/useOpenAI}}
         {{#useAzureOpenAI}}
-        model="gpt-4o",
+        model=os.getenv("AZURE_OPENAI_MODEL_DEPLOYMENT_NAME"),
         {{/useAzureOpenAI}}
     )
 

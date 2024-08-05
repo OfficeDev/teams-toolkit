@@ -197,14 +197,14 @@ export function expandVariableWithFunction(
   envs?: { [key in string]: string },
   isJson?: boolean
 ): string {
-  const regex = /\${{ *[a-zA-Z_][a-zA-Z0-9_() ]*\) *}}/g;
+  const regex = /\$[ *[a-zA-Z_][a-zA-Z0-9_() ]*\) *]/g;
   const matches = content.match(regex);
 
   if (!matches) {
     return content;
   }
   for (const placeholder of matches) {
-    let value = processFunction(placeholder.slice(3, -2).trim(), envs);
+    let value = processFunction(placeholder.slice(2, -1).trim(), envs);
     if (isJson && value) {
       value = JSON.stringify(value).slice(1, -1);
     }
@@ -243,7 +243,7 @@ export function processFunction(
       return undefined;
     }
 
-    if (funcName === "file" || funcName === "escapeFile") {
+    if (funcName === "file") {
       const filePath = processFunction(
         content.substring(beginingBracket + 1, content.length - 1),
         envs

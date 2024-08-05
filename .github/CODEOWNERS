@@ -149,7 +149,8 @@
 /packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587
 /packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
-/packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish
+/packages/fx-core/src/component/generator/apiSpec @yuqizhou77 @nliu-ms @Alive-Fish
+/packages/fx-core/src/component/generator/copilotExtensionFromScratch @yuqizhou77 @huimiu
 /packages/fx-core/src/component/generator/officeAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/officeXMLAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms

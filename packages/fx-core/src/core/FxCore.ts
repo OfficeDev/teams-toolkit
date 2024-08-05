@@ -1948,7 +1948,7 @@ export class FxCore {
           path.relative(inputs.projectPath, pluginManifestFilePath),
           inputs.projectPath
         );
-        context.logProvider.info(warnSummary);
+        context.logProvider.info(warnSummary + "\n");
       }
     } catch (e) {
       let error: FxError;

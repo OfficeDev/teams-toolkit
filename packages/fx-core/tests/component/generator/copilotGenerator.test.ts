@@ -36,10 +36,7 @@ import { format } from "util";
 import { createContext, setTools } from "../../../src/common/globalVars";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import {
-  pluginManifestUtils,
-  PluginManifestUtils,
-} from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { SpecGenerator } from "../../../src/component/generator/apiSpec/generator";
 import * as CopilotPluginHelper from "../../../src/component/generator/apiSpec/helper";
 import {
@@ -287,7 +284,7 @@ describe("generateScaffoldingSummary", async () => {
   });
 
   it("warnings about plugin manifest description", async () => {
-    sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
+    sandbox.stub(PluginManifestUtils.prototype, "readPluginManifestFile").resolves(
       ok({
         functions: [
           { name: "getAll", description: "test" },
@@ -311,7 +308,7 @@ describe("generateScaffoldingSummary", async () => {
 
   it("warnings about plugin manifest description: get plugin file error", async () => {
     sandbox
-      .stub(pluginManifestUtils, "readPluginManifestFile")
+      .stub(PluginManifestUtils.prototype, "readPluginManifestFile")
       .resolves(err(new SystemError("test", "test", "test", "test")));
     const res = await generateScaffoldingSummary(
       [{ type: WarningType.FuncDescriptionTooLong, content: "", data: "getAll" }],

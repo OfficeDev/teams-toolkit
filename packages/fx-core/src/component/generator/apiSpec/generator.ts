@@ -530,9 +530,10 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       await fs.ensureDir(apiSpecFolderPath);
 
       let generateResult;
+      let pluginManifestPath;
 
       if (getTemplateInfosState.isPlugin) {
-        const pluginManifestPath = path.join(
+        pluginManifestPath = path.join(
           destinationPath,
           AppPackageFolderName,
           defaultPluginManifestFileName
@@ -615,10 +616,12 @@ export class SpecGenerator extends DefaultTemplateGenerator {
 
       // log warnings
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
-        const warnSummary = generateScaffoldingSummary(
+        const warnSummary = await generateScaffoldingSummary(
           warnings,
           teamsManifest,
-          path.relative(destinationPath, openapiSpecPath)
+          path.relative(destinationPath, openapiSpecPath),
+          pluginManifestPath,
+          destinationPath
         );
 
         if (warnSummary) {

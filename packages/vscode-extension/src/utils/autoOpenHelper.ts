@@ -165,18 +165,28 @@ export async function ShowScaffoldingWarningSummary(
             apiSpecFilePathRes.error
           );
         } else {
-          message = generateScaffoldingSummary(
+          message = await generateScaffoldingSummary(
             createWarnings,
             teamsManifest,
-            path.relative(workspacePath, apiSpecFilePathRes.value[0])
+            path.relative(workspacePath, apiSpecFilePathRes.value[0]),
+            path.join(
+              AppPackageFolderName,
+              teamsManifest.copilotExtensions?.plugins?.[0].file ?? ""
+            ),
+            workspacePath
           );
         }
       }
       if (commonProperties.isApiME) {
-        message = generateScaffoldingSummary(
+        message = await generateScaffoldingSummary(
           createWarnings,
-          manifestRes.value,
-          teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
+          teamsManifest,
+          path.join(
+            AppPackageFolderName,
+            teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
+          ),
+          undefined,
+          workspacePath
         );
       }
 

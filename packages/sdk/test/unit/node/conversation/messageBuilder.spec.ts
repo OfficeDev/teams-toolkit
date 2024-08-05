@@ -18,11 +18,18 @@ describe("attachAdaptiveCard", () => {
     };
 
     const expectedCard = {
-      type: "AdaptiveCard",
-      body: [
+      attachments: [
         {
-          type: "TextBlock",
-          text: "Hello, test!",
+          content: {
+            type: "AdaptiveCard",
+            body: [
+              {
+                type: "TextBlock",
+                text: "Hello, test!",
+              },
+            ],
+          },
+          contentType: "application/vnd.microsoft.card.adaptive",
         },
       ],
     };

@@ -137,6 +137,7 @@ export enum WarningType {
   GenerateCardFailed = "generate-card-failed",
   OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
   ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
+  FuncDescriptionTooLong = "function-description-too-long",
   Unknown = "unknown",
 }
 

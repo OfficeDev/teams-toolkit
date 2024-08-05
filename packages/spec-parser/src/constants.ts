@@ -38,6 +38,8 @@ export class ConstantString {
     "Multiple authentication methods are unsupported. Ensure all selected APIs use identical authentication.";
 
   static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
+  static readonly FuncDescriptionTooLong =
+    "The description of the function '%s' is too long. The current length is %s characters, while the maximum allowed length is %s characters.";
 
   static readonly WrappedCardVersion = "devPreview";
   static readonly WrappedCardSchema =
@@ -122,6 +124,7 @@ export class ConstantString {
   static readonly CommandTitleMaxLens = 32;
   static readonly ParameterTitleMaxLens = 32;
   static readonly SMERequiredParamsMaxNum = 5;
+  static readonly FunctionDescriptionMaxLens = 100;
   static readonly DefaultPluginId = "plugin_1";
   static readonly PluginManifestSchema =
     "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json";

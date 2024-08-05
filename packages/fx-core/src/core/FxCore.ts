@@ -1692,7 +1692,7 @@ export class FxCore {
       }
 
       let generateResult;
-      let pluginPath;
+      let pluginPath: string | undefined;
       if (!isPlugin) {
         generateResult = await specParser.generate(
           manifestPath,
@@ -1731,7 +1731,7 @@ export class FxCore {
           generateResult.warnings,
           manifestRes.value,
           path.relative(inputs.projectPath!, outputApiSpecPath),
-          !pluginPath ? undefined : path.relative(inputs.projectPath!, pluginPath),
+          pluginPath === undefined ? undefined : path.relative(inputs.projectPath!, pluginPath),
           inputs.projectPath!
         );
 
@@ -1945,7 +1945,7 @@ export class FxCore {
           generateResult.warnings,
           manifestRes.value,
           path.relative(inputs.projectPath, openApiSpecFilePath),
-          pluginManifestFilePath,
+          path.relative(inputs.projectPath, pluginManifestFilePath),
           inputs.projectPath
         );
         context.logProvider.info(warnSummary);

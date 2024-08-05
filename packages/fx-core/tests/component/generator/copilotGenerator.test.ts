@@ -36,7 +36,10 @@ import { format } from "util";
 import { createContext, setTools } from "../../../src/common/globalVars";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import {
+  pluginManifestUtils,
+  PluginManifestUtils,
+} from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { SpecGenerator } from "../../../src/component/generator/apiSpec/generator";
 import * as CopilotPluginHelper from "../../../src/component/generator/apiSpec/helper";
 import {
@@ -57,6 +60,7 @@ import {
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
+import * as pluginGeneratorHelper from "../../../src/component/generator/apiSpec/helper";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -83,13 +87,13 @@ const teamsManifest: TeamsAppManifest = {
   accentColor: "#FFFFFF",
 };
 
-describe("generateScaffoldingSummary", () => {
+describe("generateScaffoldingSummary", async () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
     sandbox.restore();
   });
-  it("no warnings", () => {
+  it("no warnings", async () => {
     sandbox.stub(fs, "existsSync").returns(true);
     const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
@@ -98,26 +102,30 @@ describe("generateScaffoldingSummary", () => {
         { id: "command1", type: "action", title: "" },
       ],
     };
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
     assert.equal(res.length, 0);
   });
 
-  it("warnings about missing property", () => {
-    const res = generateScaffoldingSummary(
+  it("warnings about missing property", async () => {
+    const res = await generateScaffoldingSummary(
       [],
       {
         ...teamsManifest,
         name: { short: "", full: "" },
         description: { short: "", full: "" },
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
 
     assert.isTrue(
@@ -129,65 +137,73 @@ describe("generateScaffoldingSummary", () => {
     );
   });
 
-  it("warnings if exceeding length", () => {
+  it("warnings if exceeding length", async () => {
     const invalidShortName = "a".repeat(65);
     const invalidFullName = "a".repeat(101);
     const invalidShortDescription = "a".repeat(101);
     const invalidFullDescription = "a".repeat(4001);
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [],
       {
         ...teamsManifest,
         name: { short: invalidShortName, full: invalidFullName },
         description: { short: invalidShortDescription, full: invalidFullDescription },
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
     assert.isTrue(res.includes("name/short"));
   });
 
-  it("no warnings if exceeding length with placeholder in short name", () => {
+  it("no warnings if exceeding length with placeholder in short name", async () => {
     const shortName = "testdebug09051${{APP_NAME_SUFFIX}}";
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [],
       {
         ...teamsManifest,
         name: { short: shortName, full: "full" },
         description: { short: "short", full: "full" },
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
     assert.equal(res.length, 0);
   });
 
-  it("warnings about API spec", () => {
-    const res = generateScaffoldingSummary(
+  it("warnings about API spec", async () => {
+    const res = await generateScaffoldingSummary(
       [{ type: WarningType.OperationIdMissing, content: "content" }],
       teamsManifest,
-      "path"
+      "path",
+      undefined,
+      ""
     );
 
     assert.isTrue(res.includes("content"));
   });
 
-  it("warnings about adaptive card template in manifest", () => {
+  it("warnings about adaptive card template in manifest", async () => {
     const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       commands: [{ id: "command1", type: "query", title: "" }],
     };
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
 
     assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
   });
 
-  it("warnings about missing adaptive card template", () => {
+  it("warnings about missing adaptive card template", async () => {
     const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       commands: [
@@ -195,20 +211,22 @@ describe("generateScaffoldingSummary", () => {
       ],
     };
     sandbox.stub(fs, "existsSync").returns(false);
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [{ type: WarningType.GenerateCardFailed, content: "test", data: "command1" }],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
 
     assert.isTrue(res.includes("apiResponseRenderingTemplateFile"));
     assert.isTrue(res.includes("test"));
   });
 
-  it("warnings about command parameters", () => {
+  it("warnings about command parameters", async () => {
     const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       apiSpecificationFile: "testApiFile",
@@ -227,19 +245,21 @@ describe("generateScaffoldingSummary", () => {
         },
       ],
     };
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
 
     assert.isTrue(res.includes("testApiFile"));
   });
 
-  it("warnings about command parameters with some properties missing", () => {
+  it("warnings about command parameters with some properties missing", async () => {
     const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       commands: [
@@ -252,16 +272,59 @@ describe("generateScaffoldingSummary", () => {
         },
       ],
     };
-    const res = generateScaffoldingSummary(
+    const res = await generateScaffoldingSummary(
       [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "", data: "getAll" }],
       {
         ...teamsManifest,
         composeExtensions: [composeExtension],
       },
-      "path"
+      "path",
+      undefined,
+      ""
     );
 
     assert.isFalse(res.includes("testApiFile"));
+  });
+
+  it("warnings about plugin manifest description", async () => {
+    sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
+      ok({
+        functions: [
+          { name: "getAll", description: "test" },
+          { name: "createNew", description: "" },
+        ],
+      } as any)
+    );
+    const res = await generateScaffoldingSummary(
+      [{ type: WarningType.FuncDescriptionTooLong, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        copilotExtensions: { plugins: [{ file: "test", id: "1" }] },
+      },
+      "path",
+      "pluginPath",
+      ""
+    );
+    assert.isTrue(res.includes("getAll"));
+    assert.isTrue(res.includes("createNew"));
+  });
+
+  it("warnings about plugin manifest description: get plugin file error", async () => {
+    sandbox
+      .stub(pluginManifestUtils, "readPluginManifestFile")
+      .resolves(err(new SystemError("test", "test", "test", "test")));
+    const res = await generateScaffoldingSummary(
+      [{ type: WarningType.FuncDescriptionTooLong, content: "", data: "getAll" }],
+      {
+        ...teamsManifest,
+        copilotExtensions: { plugins: [{ file: "test", id: "1" }] },
+      },
+      "path",
+      "pluginPath",
+      ""
+    );
+
+    assert.equal(res.length, 0);
   });
 });
 
@@ -1393,6 +1456,7 @@ describe("SpecGenerator", async () => {
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generate")
         .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath", {
@@ -1434,6 +1498,7 @@ describe("SpecGenerator", async () => {
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generate")
         .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");
@@ -1468,6 +1533,7 @@ describe("SpecGenerator", async () => {
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
         .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");
@@ -1521,6 +1587,7 @@ describe("SpecGenerator", async () => {
           },
         ],
       });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("warning message");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");
@@ -1605,6 +1672,7 @@ describe("SpecGenerator", async () => {
         .stub(manifestUtils, "_readAppManifest")
         .resolves(ok({ ...teamsManifest, name: { short: "", full: "" } }));
       sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("warn message");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");
@@ -1778,6 +1846,59 @@ describe("SpecGenerator", async () => {
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generate")
         .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
+    });
+
+    it("generateCustomCopilot: CLI with warning", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "path",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        getTemplateInfosState: {
+          templateName: "custom-copilot-rag-custom-api",
+          isPlugin: false,
+          uri: "https://test.com",
+          isYaml: false,
+          type: ProjectType.TeamsAi,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "getFilteredSpecs").resolves([
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+      ]);
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generate")
+        .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("warning message");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");
@@ -1874,6 +1995,7 @@ describe("SpecGenerator", async () => {
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
         .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");
@@ -1909,6 +2031,7 @@ describe("SpecGenerator", async () => {
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
         .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();
       const result = await generator.post(context, inputs, "projectPath");

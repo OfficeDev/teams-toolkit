@@ -672,7 +672,7 @@ async function validatePluginManifestLength(
               pluginManifestPath
             )
         );
-      } else if (func.name in functionDescriptionWarnings) {
+      } else if (functionDescriptionWarnings.includes(func.name)) {
         resultWarnings.push(
           getLocalizedString(
             "core.copilotPlugin.scaffold.summary.warning.pluginManifest.functionDescription.lengthExceeding",

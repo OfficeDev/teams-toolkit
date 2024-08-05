@@ -169,22 +169,16 @@ export async function ShowScaffoldingWarningSummary(
             createWarnings,
             teamsManifest,
             path.relative(workspacePath, apiSpecFilePathRes.value[0]),
-            path.join(
-              AppPackageFolderName,
-              teamsManifest.copilotExtensions?.plugins?.[0].file ?? ""
-            ),
+            path.join(AppPackageFolderName, teamsManifest.copilotExtensions!.plugins![0].file),
             workspacePath
           );
         }
       }
-      if (commonProperties.isApiME) {
+      if (commonProperties.isApiME && teamsManifest.composeExtensions![0].apiSpecificationFile) {
         message = await generateScaffoldingSummary(
           createWarnings,
           teamsManifest,
-          path.join(
-            AppPackageFolderName,
-            teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
-          ),
+          path.join(AppPackageFolderName, teamsManifest.composeExtensions![0].apiSpecificationFile),
           undefined,
           workspacePath
         );

@@ -530,7 +530,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       await fs.ensureDir(apiSpecFolderPath);
 
       let generateResult;
-      let pluginManifestPath;
+      let pluginManifestPath: string | undefined;
 
       if (getTemplateInfosState.isPlugin) {
         pluginManifestPath = path.join(
@@ -620,12 +620,14 @@ export class SpecGenerator extends DefaultTemplateGenerator {
           warnings,
           teamsManifest,
           path.relative(destinationPath, openapiSpecPath),
-          pluginManifestPath,
+          pluginManifestPath === undefined
+            ? undefined
+            : path.relative(destinationPath, pluginManifestPath),
           destinationPath
         );
 
         if (warnSummary) {
-          void context.logProvider.info(warnSummary);
+          context.logProvider.info(warnSummary);
         }
       }
 

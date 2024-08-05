@@ -1511,7 +1511,7 @@ describe("scaffold question", () => {
           QuestionNames.AppName,
         ]);
       });
-    
+
       it("AI Assistant - Assistants API Python", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,

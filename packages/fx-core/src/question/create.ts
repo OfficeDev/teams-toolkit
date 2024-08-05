@@ -1206,8 +1206,8 @@ function llmServiceQuestion(): SingleSelectQuestion {
       const options: OptionItem[] = [];
       // python tpl supports az oai assistant now. if other languages support az oai assistant, change the condition here.
       if (
-        inputs[QuestionNames.CustomCopilotAssistant] === "custom-copilot-agent-assistants-api" &&
-        inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.PY ||
+        (inputs[QuestionNames.CustomCopilotAssistant] === "custom-copilot-agent-assistants-api" &&
+          inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.PY) ||
         inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api"
       ) {
         options.push({

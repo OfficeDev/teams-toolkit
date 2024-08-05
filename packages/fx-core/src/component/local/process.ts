@@ -3,7 +3,6 @@
 "use strict";
 
 import * as cp from "child_process";
-import * as shellQuote from "shell-quote";
 
 /**
  * Run PowerShell command and return stdout content.
@@ -12,8 +11,7 @@ import * as shellQuote from "shell-quote";
 export function execPowerShell(command: string): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     try {
-      const quotedCommand: string = shellQuote.quote([command]);
-      const psCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "${quotedCommand}"`;
+      const psCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "${command}"`;
       cp.exec(
         psCommand,
         { cwd: process.cwd(), maxBuffer: 500 * 1024, timeout: 100000, killSignal: "SIGKILL" },

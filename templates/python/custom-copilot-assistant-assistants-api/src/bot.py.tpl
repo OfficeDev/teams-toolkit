@@ -6,16 +6,27 @@ from typing import Any, Dict, Optional
 from botbuilder.core import MemoryStorage, TurnContext
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.ai import AIOptions
-from teams.ai.planners import AssistantsPlanner, OpenAIAssistantsOptions
+from teams.ai.planners import AssistantsPlanner, OpenAIAssistantsOptions, AzureOpenAIAssistantsOptions
 from teams.state import TurnState
 
 from config import Config
 
 config = Config()
 
+{{#useOpenAI}}
 planner = AssistantsPlanner[TurnState](
     OpenAIAssistantsOptions(api_key=config.OPENAI_API_KEY, assistant_id=config.OPENAI_ASSISTANT_ID)
 )
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+planner = AssistantsPlanner[TurnState](
+    AzureOpenAIAssistantsOptions(
+        api_key=config.AZURE_OPENAI_API_KEY,
+        endpoint=config.AZURE_OPENAI_ENDPOINT,
+        default_model=config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
+        assistant_id=config.AZURE_OPENAI_ASSISTANT_ID)
+)
+{{/useAzureOpenAI}}
 
 # Define storage and application
 storage = MemoryStorage()

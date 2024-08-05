@@ -12,24 +12,49 @@ It showcases how to build an AI agent in Teams capable of helping users accompli
 > - [Python](https://www.python.org/), version 3.8 or higher
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
+{{#useAzureOpenAI}}
+> - An account with [Azure OpenAI](https://aka.ms/oai/access).
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
 > - An account with [OpenAI](https://platform.openai.com/).
+{{/useOpenAI}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
+
+{{#useAzureOpenAI}}
+> Please make sure you are using model version 0613 or newer (0613, 1106, 0125) or gpt-4 turbo or gpt-35 turbo. Lower versions do NOT support assistants.
+{{/useAzureOpenAI}}
 
 ### Configurations
 1. Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
+{{#useAzureOpenAI}}
+1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `AZURE_OPENAI_ENDPOINT`.
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
 1. In this template, default model name is `gpt-3.5-turbo`. If you want to use a different model from OpenAI, fill in your model name in [src/config.py](./src/config.py).
+{{/useOpenAI}}
 
 ### Create your own OpenAI Assistant
 
+{{#useOpenAI}}
 Before running or debugging your bot, please follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+Before running or debugging your bot, please follow these steps to setup your own [Azure OpenAI Assistant](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/assistant).
+{{/useAzureOpenAI}}
 
 **If you haven't setup any Assistant yet**
 
 > This app template provides script `src/utils/creator.py` to help create assistant. You can change the instructions and settings in the script to customize the assistant.
 > 
+{{#useOpenAI}}
 > After creation, you can change and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+> After creation, you can change and manage your assistants on [Azure OpenAI Studio](https://oai.azure.com/).
+{{/useAzureOpenAI}}
 
+{{#useOpenAI}}
 1. Run command `python src/utils/creator.py`. Remember to fill in your **OpenAI key** in *env/.env.local.user* first.
    ```
    > python src/utils/creator.py
@@ -48,6 +73,31 @@ Before running or debugging your bot, please follow these steps to setup your ow
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
    OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+1. Run command `python src/utils/creator.py`. Remember to fill in your **Azure OpenAI key** in *env/.env.local.user* first.
+   ```
+   > python src/utils/creator.py
+   ```
+1. The above command will output something like "*Created a new assistant with an ID of: **asst_xxx...***".
+1. Fill in both Azure OpenAI API Key, endpoint, deployment name and the created Assistant ID into `env/.env.local.user`.
+   ```
+   SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
+   AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
+   AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-azure-openai-model-delopyment-name>
+   AZURE_OPENAI_ASSISTANT_ID=<your-azure-openai-assistant-id>
+   ```
+
+**If you already have an Assistant created**
+
+1. Fill in both Azure OpenAI API Key, endpoint, deployment name and the created Assistant ID into `env/.env.local.user`.
+   ```
+   SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
+   AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
+   AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-azure-openai-model-delopyment-name>
+   AZURE_OPENAI_ASSISTANT_ID=<your-azure-openai-assistant-id>
+   ```
+{{/useAzureOpenAI}}
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.

@@ -28,6 +28,7 @@ import { metadataUtil } from "../../utils/metadataUtil";
 import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes, getAppStudioEndpoint } from "../../../common/constants";
 import { manifestUtils } from "./utils/ManifestUtils";
+import { get } from "lodash";
 
 const actionName = "teamsApp/syncManifest";
 
@@ -87,15 +88,51 @@ export class SyncManifestDriver implements StepDriver {
         )
       );
     }
+    const newManifest = JSON.parse(appPackage.manifest.toString("utf8"));
+    // todo: save the new manifest file
     const currentManifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
     if (currentManifestRes.isErr()) {
       return err(currentManifestRes.error);
     }
     const currentManifest = currentManifestRes.value as any;
-    const newManifest = JSON.parse(appPackage.manifest.toString("utf8"));
     const differences = deepDiff.diff(currentManifest, newManifest);
-    // todo: add logic here.
-    console.log(differences);
+    // If there are add or delete differences, print warnings and return.
+    // If there are edit differences, check if the differenet value is like a variable placeholder like: ${{Teams_APP_ID}}.
+    const diffVariablesMap = new Map<string, string>();
+    for (const diff of differences ?? []) {
+      if (diff.kind === "N" || diff.kind === "D") {
+        context.logProvider.warning(
+          getLocalizedString("core.syncManifest.addOrDeleteWarning", differences)
+        );
+        return ok(new Map<string, string>());
+      } else if (diff.kind === "E") {
+        const leftValue = diff.lhs;
+        const rightValue = diff.rhs;
+        const res = this.matchPlaceholders(leftValue, rightValue);
+        if (res.isErr()) {
+          context.logProvider.warning(res.error.message);
+          return ok(new Map<string, string>());
+        }
+        for (const [key, value] of res.value) {
+          if (diffVariablesMap.has(key)) {
+            if (diffVariablesMap.get(key) !== value) {
+              context.logProvider.warning(
+                getLocalizedString(
+                  "core.syncManifest.editKeyConflict",
+                  key,
+                  diffVariablesMap.get(key),
+                  value
+                )
+              );
+              return ok(new Map<string, string>());
+            }
+          } else {
+            diffVariablesMap.set(key, value);
+          }
+        }
+      }
+    }
+    console.log(diffVariablesMap);
     return ok(new Map<string, string>());
   }
 
@@ -154,30 +191,65 @@ export class SyncManifestDriver implements StepDriver {
     );
   }
 
-  async getManifestTemplatePath(
-    projectPath: string,
-    env?: string
-  ): Promise<Result<string, FxError>> {
-    const deafultManifestTemplatePath = path.join(projectPath, "appPackage", "manifest.json");
-    const teamsappYamlPath = pathUtils.getYmlFilePath(projectPath, env);
-    const yamlProjectModel = await metadataUtil.parse(teamsappYamlPath, env);
-    if (yamlProjectModel.isErr()) {
-      return err(yamlProjectModel.error);
+  // Check if the value matches the template with placeholders and return the placeholder map.
+  private matchPlaceholders(template: string, value: string): Result<Map<string, string>, FxError> {
+    const placeholderPattern = /\${{(.*?)}}/g;
+    const placeholders: string[] = [];
+    let match;
+    while ((match = placeholderPattern.exec(template)) !== null) {
+      placeholders.push(match[1]);
     }
-    const projectModel = yamlProjectModel.value;
-    let manifestTemplatePath = "";
-    for (const action of projectModel.provision?.driverDefs ?? []) {
-      if (action.uses === "teamsApp/zipAppPackage") {
-        const parameters = action.with as { [key: string]: string };
-        manifestTemplatePath = parameters["manifestPath"];
+    if (placeholders.length === 0) {
+      if (template === value) {
+        return ok(new Map());
+      } else {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.SyncManifestFailedError.name,
+            AppStudioError.SyncManifestFailedError.message([
+              getLocalizedString("core.syncManifest.editNonVarPlaceholder", template, value),
+            ])
+          )
+        );
       }
     }
-    if (!manifestTemplatePath) {
-      return ok(deafultManifestTemplatePath);
+    const regexPattern = template.replace(placeholderPattern, "(.*?)");
+    const regex = new RegExp(`^${regexPattern}$`);
+    const matchValues = value.match(regex);
+    if (!matchValues) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.SyncManifestFailedError.name,
+          AppStudioError.SyncManifestFailedError.message([
+            getLocalizedString("core.syncManifest.editNotMatch", template, value),
+          ])
+        )
+      );
     }
-    if (path.isAbsolute(manifestTemplatePath)) {
-      return ok(manifestTemplatePath);
+    const result = new Map<string, string>();
+    for (let i = 0; i < placeholders.length; i++) {
+      const key = placeholders[i];
+      const matchValue = matchValues[i + 1];
+      if (result.has(key)) {
+        if (result.get(key) !== matchValue) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.SyncManifestFailedError.name,
+              AppStudioError.SyncManifestFailedError.message([
+                getLocalizedString(
+                  "core.syncManifest.editKeyConflict",
+                  key,
+                  result.get(key),
+                  matchValue
+                ),
+              ])
+            )
+          );
+        }
+      } else {
+        result.set(key, matchValue);
+      }
     }
-    return ok(path.join(projectPath, manifestTemplatePath));
+    return ok(result);
   }
 }

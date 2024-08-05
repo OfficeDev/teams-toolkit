@@ -4,8 +4,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as cp from "child_process";
 import * as os from "os";
-
-const shellQuote = require("shell-quote");
+import * as shellQuote from "shell-quote";
 
 export interface DebugLogger {
   debug(message: string): void;

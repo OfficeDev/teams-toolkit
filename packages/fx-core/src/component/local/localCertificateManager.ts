@@ -19,8 +19,7 @@ import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
 import { CoreSource } from "../../error";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-
-const shellQuote = require("shell-quote");
+import * as shellQuote from "shell-quote";
 
 const installText = () => getLocalizedString("debug.install");
 const learnMoreText = () => getLocalizedString("core.provision.learnMore");

@@ -238,6 +238,9 @@ devDependencies:
   '@types/semver':
     specifier: ^7.3.4
     version: 7.3.4
+  '@types/shell-quote':
+    specifier: ^1.7.5
+    version: 1.7.5
   '@types/sinon':
     specifier: ^9.0.10
     version: 9.0.10
@@ -1289,6 +1292,10 @@ packages:
 
   /@types/semver@7.3.4:
     resolution: {integrity: sha512-+nVsLKlcUCeMzD2ufHEYuJ9a2ovstb6Dp52A5VsoKxDXgvE051XgHI/33I1EymwkRGQkwnA0LkhnUzituGs4EQ==}
+    dev: true
+
+  /@types/shell-quote@1.7.5:
+    resolution: {integrity: sha512-+UE8GAGRPbJVQDdxi16dgadcBfQ+KG2vgZhV1+3A1XmHbmwcdwhCUwIdy+d3pAGrbvgRoVSjeI9vOWyq376Yzw==}
     dev: true
 
   /@types/sinon@9.0.10:

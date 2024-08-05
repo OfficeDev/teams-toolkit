@@ -3,8 +3,7 @@
 "use strict";
 
 import * as cp from "child_process";
-
-const shellQuote = require("shell-quote");
+import * as shellQuote from "shell-quote";
 
 /**
  * Run PowerShell command and return stdout content.

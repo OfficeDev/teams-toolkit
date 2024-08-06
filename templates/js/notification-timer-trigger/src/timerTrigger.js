@@ -17,11 +17,13 @@ module.exports = async function (context, myTimer) {
 
     for (const target of installations) {
       await target.sendAdaptiveCard(
-        AdaptiveCards.declare(notificationTemplate).render({
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample time-triggered notification (${timeStamp}).`,
-          notificationUrl: "https://aka.ms/teamsfx-notification-new",
+        new ACData.Template(notificationTemplate).expand({
+          $root: {
+            title: "New Event Occurred!",
+            appName: "Contoso App Notification",
+            description: `This is a sample time-triggered notification (${timeStamp}).`,
+            notificationUrl: "https://aka.ms/teamsfx-notification-new",
+          },
         })
       );
 

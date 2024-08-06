@@ -1,5 +1,5 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 const { notificationApp } = require("./internal/initialize");
 
 // HTTP trigger to send notification. You need to add authentication / authorization for this API. Refer https://aka.ms/teamsfx-notification for more details.
@@ -16,11 +16,13 @@ module.exports = async function (context, req) {
 
     for (const target of installations) {
       await target.sendAdaptiveCard(
-        AdaptiveCards.declare(notificationTemplate).render({
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample http-triggered notification to ${target.type}`,
-          notificationUrl: "https://aka.ms/teamsfx-notification-new",
+        new ACData.Template(notificationTemplate).expand({
+          $root: {
+            title: "New Event Occurred!",
+            appName: "Contoso App Notification",
+            description: `This is a sample http-triggered notification to ${target.type}`,
+            notificationUrl: "https://aka.ms/teamsfx-notification-new",
+          },
         })
       );
 

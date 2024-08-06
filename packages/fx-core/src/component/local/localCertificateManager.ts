@@ -19,6 +19,7 @@ import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
 import { CoreSource } from "../../error";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import * as shellQuote from "shell-quote";
 
 const installText = () => getLocalizedString("debug.install");
 const learnMoreText = () => getLocalizedString("core.provision.learnMore");
@@ -381,14 +382,15 @@ export class LocalCertificateManager {
   }
 
   private async checkCertificateWindows(thumbprint: string): Promise<boolean> {
+    const quotedThumbprint: string = shellQuote.quote([thumbprint]);
     try {
       // try powershell first
-      const getCertCommand = `Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }`;
+      const getCertCommand = `Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${quotedThumbprint}' }`;
       const getCertRes = await ps.execPowerShell(getCertCommand);
       return getCertRes.toUpperCase().includes(thumbprint.toUpperCase());
     } catch (error: any) {
       // if any error, try certutil
-      const getCertCommand = `certutil -user -verifystore root ${thumbprint}`;
+      const getCertCommand = `certutil -user -verifystore root ${quotedThumbprint}`;
       const getCertRes = (await ps.execShell(getCertCommand)).trim();
       return getCertRes.toUpperCase().includes(thumbprint.toUpperCase());
     }

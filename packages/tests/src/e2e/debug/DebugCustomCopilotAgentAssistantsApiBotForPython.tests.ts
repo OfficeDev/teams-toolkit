@@ -138,10 +138,10 @@ describe("Debug V3 command-and-response template", () => {
       myRecordAzOpenAI["programming-language"] = "python ";
       myRecordAzOpenAI["custom-copilot-agent"] =
         "custom-copilot-agent-assistants-api";
-        myRecordAzOpenAI["llm-service"] = "llm-service-azure-openai";
-        myRecordAzOpenAI["azure-openai-key"] = "fake";
-        myRecordAzOpenAI["azure-openai-deployment-name"] = "fake";
-        myRecordAzOpenAI["azure-openai-endpoint"] = "https://test.com";
+      myRecordAzOpenAI["llm-service"] = "llm-service-azure-openai";
+      myRecordAzOpenAI["azure-openai-key"] = "fake";
+      myRecordAzOpenAI["azure-openai-deployment-name"] = "fake";
+      myRecordAzOpenAI["azure-openai-endpoint"] = "https://test.com";
       const options = Object.entries(myRecordAzOpenAI)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");

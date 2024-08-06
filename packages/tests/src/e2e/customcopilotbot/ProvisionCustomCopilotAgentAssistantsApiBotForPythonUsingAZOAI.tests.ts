@@ -25,7 +25,8 @@ class AgentAssitantApiAzureOpenAITestCase extends CaseFactory {
 
 // OpenAI
 const myRecordAzOpenAI: Record<string, string> = {};
-myRecordAzOpenAI["custom-copilot-agent"] = "custom-copilot-agent-assistants-api";
+myRecordAzOpenAI["custom-copilot-agent"] =
+  "custom-copilot-agent-assistants-api";
 myRecordAzOpenAI["llm-service"] = "llm-service-azure-openai";
 myRecordAzOpenAI["azure-openai-key"] = "fake";
 myRecordAzOpenAI["azure-openai-deployment-name"] = "fake";

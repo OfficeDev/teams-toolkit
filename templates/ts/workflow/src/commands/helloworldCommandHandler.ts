@@ -1,6 +1,6 @@
 import { Activity, CardFactory, MessageFactory, TurnContext } from "botbuilder";
 import { CommandMessage, TeamsFxBotCommandHandler, TriggerPatterns } from "@microsoft/teamsfx";
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import * as ACData from "adaptivecards-templating";
 import helloWorldCard from "../adaptiveCards/helloworldCommandResponse.json";
 import { CardData } from "../cardModels";
 
@@ -23,7 +23,7 @@ export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
       body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
     };
 
-    const cardJson = AdaptiveCards.declare(helloWorldCard).render(cardData);
+    const cardJson = new ACData.Template(helloWorldCard).expand({ $root: cardData });
     return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }

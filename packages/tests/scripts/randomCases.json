@@ -149,7 +149,8 @@
             "localdebug-chatdata-azureai-py-openai",
             "localdebug-chatdata-azureai-ts-openai",
             "remotedebug-chatdata-azureai-js-openai",
-            "remotedebug-chatdata-azureai-py-openai","remotedebug-chatdata-azureai-ts-openai"
+            "remotedebug-chatdata-azureai-py-openai",
+            "remotedebug-chatdata-azureai-ts-openai"
         ]
     }
 ]

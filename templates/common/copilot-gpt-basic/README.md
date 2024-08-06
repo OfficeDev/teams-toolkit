@@ -21,7 +21,10 @@ With the declarative copilot, you can build a custom version of Copilot that can
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. Once the Copilot app is loaded in the browser, click on the "…" menu and select "Copilot chats". You will see your declarative copilot on the right rail. Clicking on it will change the experience to showcase the logo and name of your declarative copilot.
 6. Ask a question to your declarative copilot and it should respond based on the instructions provided.
-   > Note: Please make sure to switch to New Teams when Teams web client has launched
+
+![image](https://github.com/user-attachments/assets/1fce973a-21e2-4620-b3d7-1cae15bfa214)
+
+
 
 ## What's included in the template
 

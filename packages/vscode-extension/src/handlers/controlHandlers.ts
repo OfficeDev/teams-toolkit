@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isValidProject, manifestUtils } from "@microsoft/teamsfx-core";
+import fs from "fs-extra";
 import path from "path";
 import * as vscode from "vscode";
 import { PanelType } from "../controls/PanelType";
@@ -33,10 +34,43 @@ export async function openLifecycleTreeview(args?: any[]) {
 
 export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
-  const data = await vscode.commands.executeCommand(
-    "workbench.action.openWalkthrough",
-    getWalkThroughId()
-  );
+  // Open different walkthrough depending on the project type
+  const manifestRes = await manifestUtils.readAppManifest(workspaceUri?.fsPath || "");
+  let isCopilotApp = false;
+  if (manifestRes.isOk()) {
+    const capabilities = manifestUtils.getCapabilities(manifestRes.value);
+    // API plugin can be detected in manifest
+    isCopilotApp = capabilities.includes("extension") || capabilities.includes("plugin");
+  }
+  if (!isCopilotApp && workspaceUri?.fsPath) {
+    // Use dependency to determine if it is a copilot app for now.
+    // TODO: use getCapabilities after manifest supports custom engine copilot.
+    const packageJsonPath = path.join(workspaceUri.fsPath, "package.json");
+    const requirementsPath = path.join(workspaceUri.fsPath, "src", "requirements.txt");
+    if (await fs.pathExists(packageJsonPath)) {
+      const packageJson = await fs.readFile(packageJsonPath);
+      if (packageJson.toString().includes('"@microsoft/teams-ai"')) {
+        isCopilotApp = true;
+      }
+    } else if (await fs.pathExists(requirementsPath)) {
+      const requirements = await fs.readFile(requirementsPath);
+      if (requirements.toString().includes("teams-ai")) {
+        isCopilotApp = true;
+      }
+    }
+  }
+  let data: unknown;
+  if (isCopilotApp) {
+    data = await vscode.commands.executeCommand(
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+    );
+  } else {
+    data = await vscode.commands.executeCommand(
+      "workbench.action.openWalkthrough",
+      getWalkThroughId()
+    );
+  }
   return Promise.resolve(ok(data));
 }
 

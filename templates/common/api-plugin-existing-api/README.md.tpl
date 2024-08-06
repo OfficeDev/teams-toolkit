@@ -24,6 +24,9 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
 
 You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A declarative copilot can utilize multiple plugins at the same time.
+
+![image](https://github.com/user-attachments/assets/7f697414-8d99-40d5-ae55-c8fbfd3031ec)
+
 {{/DeclarativeCopilot}}
 
 ## Get started with the template

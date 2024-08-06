@@ -206,7 +206,7 @@
                         "url": {
                             "type": "string"
                         },
-                        "information_protection_url": {
+                        "information_protection_label": {
                             "type": "string"
                         },
                         "template_selector": {
@@ -218,7 +218,7 @@
                             "title",
                             "subtitle",
                             "url",
-                            "information_protection_url",
+                            "information_protection_label",
                             "template_selector"
                         ]
                     }

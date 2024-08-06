@@ -223,8 +223,7 @@
                     }
                 },
                 "required": [
-                    "name",
-                    "connections"
+                    "name"
                 ],
                 "propertyNames": {
                     "enum": [

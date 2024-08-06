@@ -11,6 +11,7 @@
             "type": "string"
         },
         "namespace": {
+            "deprecated": true,
             "type": "string"
         },
         "description_for_model": {
@@ -206,7 +207,7 @@
                         "url": {
                             "type": "string"
                         },
-                        "information_protection_url": {
+                        "information_protection_label": {
                             "type": "string"
                         },
                         "template_selector": {
@@ -218,7 +219,7 @@
                             "title",
                             "subtitle",
                             "url",
-                            "information_protection_url",
+                            "information_protection_label",
                             "template_selector"
                         ]
                     }
@@ -384,7 +385,7 @@
         "localization-object": {
             "type": "object",
             "patternProperties": {
-                "/^[a-z]{2,3}(-[a-z]{2})?$/ui": {
+                "/^(?i)[a-z]{2,3}(-[a-z]{2})?(?-i)$": {
                     "type": "object",
                     "patternProperties": {
                         "^[A-Za-z_][A-Za-z0-9_]*$": {

@@ -11,7 +11,6 @@
 trigger: none  # https://aka.ms/obpipelines/triggers
 
 # global parameteres are configured here and show up in AzDO UI in build queue time. Required for MSBuild and .NET.
-# learn more at https://aka.ms/obpipelines/parameters
 # parameters:
 # - name: 'debug'
 #  displayName: 'Enable debug output'
@@ -23,7 +22,6 @@ variables:
   WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2019/vse2019:latest' # Docker image which is used to build the project https://aka.ms/obpipelines/containers
 
   ### Specify container image and other global variables in this section! ###
-  # https://aka.ms/obpipelines/variables
 
 resources:
   repositories:

@@ -1070,14 +1070,17 @@ describe("updateForCustomApi", async () => {
                 content: {
                   "application/json": {
                     schema: {
-                      type: "string",
+                      type: "object",
                       properties: {
                         results: {
-                          type: "object",
-                          properties: {
-                            id: {
-                              type: "string",
-                              description: "id",
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              id: {
+                                type: "string",
+                                description: "id",
+                              },
                             },
                           },
                         },

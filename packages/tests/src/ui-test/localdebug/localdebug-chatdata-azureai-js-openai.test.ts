@@ -43,7 +43,7 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto][JS][Azure OpenAI] Local debug for basic rag bot using azure ai data",
+    "[auto][JS][OpenAI] Local debug for basic rag bot using azure ai data",
     {
       testPlanCaseId: 27569090,
       author: "v-ivanchen@microsoft.com",

@@ -22,7 +22,8 @@ With the declarative copilot, you can build a custom version of Copilot that can
 5. Once the Copilot app is loaded in the browser, click on the "…" menu and select "Copilot chats". You will see your declarative copilot on the right rail. Clicking on it will change the experience to showcase the logo and name of your declarative copilot.
 6. Ask a question to your declarative copilot and it should respond based on the instructions provided.
 
-![image](https://github.com/user-attachments/assets/1fce973a-21e2-4620-b3d7-1cae15bfa214)
+![image](https://github.com/user-attachments/assets/1ae813a8-9926-4c02-8546-4811d82ee454)
+
 
 
 

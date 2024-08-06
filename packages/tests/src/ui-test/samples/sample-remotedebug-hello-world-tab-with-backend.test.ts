@@ -21,6 +21,7 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {
     env: "local" | "dev",
     azSqlHelper?: AzSqlHelper
   ): Promise<void> {
+    console.log("changing swa sku...");
     const bicepJsonFile = path.join(
       sampledebugContext.projectPath,
       "infra",
@@ -28,6 +29,7 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {
     );
     const bicepJson = fs.readJsonSync(bicepJsonFile);
     bicepJson["parameters"]["functionAppSKU"]["value"] = "Standard";
+    fs.writeJsonSync(bicepJsonFile, bicepJson);
   }
 
   override async onValidate(

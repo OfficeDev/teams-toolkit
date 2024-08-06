@@ -22,7 +22,7 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioResultFactory } from "./results";
 import { AppStudioError } from "./errors";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { envUtil } from "../../utils/envUtil";
+import { envUtil, DotenvOutput } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
@@ -59,16 +59,16 @@ export class SyncManifestDriver implements StepDriver {
         )
       );
     }
-    let teamsAppId = args.teamsAppId;
+    let teamsAppId = "";
     let manifestTemplatePath = "";
-    if (!args.teamsAppId) {
-      const res = await this.getTeamsAppIdAndManifestTemplatePath(args.projectPath, args.env);
-      if (res.isErr()) {
-        return err(res.error);
-      }
-      teamsAppId = res.value.get("teamsAppId");
-      manifestTemplatePath = res.value.get("manifestTemplatePath") ?? "";
+
+    const res = await this.getTeamsAppIdAndManifestTemplatePath(args);
+    if (res.isErr()) {
+      return err(res.error);
     }
+    teamsAppId = res.value.get("teamsAppId") ?? "";
+    manifestTemplatePath = res.value.get("manifestTemplatePath") ?? "";
+
     const appPackageRes = await appStudio.getAppPackage(
       teamsAppId ?? "",
       context.m365TokenProvider,
@@ -100,12 +100,19 @@ export class SyncManifestDriver implements StepDriver {
     // If there are edit differences, check if the differenet value is like a variable placeholder like: ${{Teams_APP_ID}}.
     const diffVariablesMap = new Map<string, string>();
     for (const diff of differences ?? []) {
-      if (diff.kind === "N" || diff.kind === "D") {
+      if (diff.kind == "N") {
         context.logProvider.warning(
-          getLocalizedString("core.syncManifest.addOrDeleteWarning", differences)
+          getLocalizedString("core.syncManifest.addWarning", diff.path, diff.rhs)
         );
         return ok(new Map<string, string>());
-      } else if (diff.kind === "E") {
+      }
+      if (diff.kind === "D") {
+        context.logProvider.warning(
+          getLocalizedString("core.syncManifest.deleteWarning", diff.path, diff.lhs)
+        );
+        return ok(new Map<string, string>());
+      }
+      if (diff.kind === "E") {
         const leftValue = diff.lhs;
         const rightValue = diff.rhs;
         const res = this.matchPlaceholders(leftValue, rightValue);
@@ -132,56 +139,79 @@ export class SyncManifestDriver implements StepDriver {
         }
       }
     }
-    console.log(diffVariablesMap);
+    const currentEnvRes = await envUtil.readEnv(args.projectPath, args.env);
+    if (currentEnvRes.isErr()) {
+      return err(currentEnvRes.error);
+    }
+
+    const envToUpdate: DotenvOutput = {};
+    for (const [key, value] of diffVariablesMap) {
+      if (currentEnvRes.value[key] != value) {
+        envToUpdate[key] = value;
+      }
+    }
+    if (Object.keys(envToUpdate).length > 0) {
+      const res = await envUtil.writeEnv(args.projectPath, args.env, envToUpdate);
+      if (res.isErr()) {
+        return err(res.error);
+      }
+      context.logProvider.info(
+        getLocalizedString("core.syncManifest.updateEnvSuccess", args.env, envToUpdate)
+      );
+    }
+    context.logProvider.info(getLocalizedString("core.syncManifest.success", args.env));
     return ok(new Map<string, string>());
   }
 
   // Returns the teams app id and manifest template path.
   // Map key: "teamsAppId", "manifestTemplatePath".
   private async getTeamsAppIdAndManifestTemplatePath(
-    projectPath: string,
-    env: string
+    args: SyncManifestArgs
   ): Promise<Result<Map<string, string>, FxError>> {
-    const envRes = await envUtil.readEnv(projectPath, env);
+    const envRes = await envUtil.readEnv(args.projectPath, args.env);
     if (envRes.isErr()) {
       return err(envRes.error);
     }
-    const teamsappYamlPath = pathUtils.getYmlFilePath(projectPath, env);
-    const yamlProjectModel = await metadataUtil.parse(teamsappYamlPath, env);
+    const teamsappYamlPath = pathUtils.getYmlFilePath(args.projectPath, args.env);
+    const yamlProjectModel = await metadataUtil.parse(teamsappYamlPath, args.env);
     if (yamlProjectModel.isErr()) {
       return err(yamlProjectModel.error);
     }
     const projectModel = yamlProjectModel.value;
-    let teamsAppId = "";
+    let teamsAppId = args.teamsAppId;
+    if (!teamsAppId) {
+      for (const action of projectModel.provision?.driverDefs ?? []) {
+        if (action.uses === "teamsApp/create") {
+          const teamsAppIdKeyName = action.writeToEnvironmentFile?.teamsAppId || "TEAMS_APP_ID";
+          teamsAppId = envRes.value[teamsAppIdKeyName];
+        }
+      }
+      if (!teamsAppId) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.SyncManifestFailedError.name,
+            AppStudioError.SyncManifestFailedError.message([
+              getLocalizedString("error.appstudio.syncManifestNoTeamsAppId"),
+            ])
+          )
+        );
+      }
+    }
     let yamlManifestPath = "";
     for (const action of projectModel.provision?.driverDefs ?? []) {
-      if (action.uses === "teamsApp/create") {
-        const teamsAppIdKeyName = action.writeToEnvironmentFile?.teamsAppId || "TEAMS_APP_ID";
-        teamsAppId = envRes.value[teamsAppIdKeyName];
-      }
       if (action.uses === "teamsApp/zipAppPackage") {
         const parameters = action.with as { [key: string]: string };
         yamlManifestPath = parameters["manifestPath"];
       }
     }
-    if (!teamsAppId) {
-      return err(
-        AppStudioResultFactory.UserError(
-          AppStudioError.SyncManifestFailedError.name,
-          AppStudioError.SyncManifestFailedError.message([
-            getLocalizedString("error.appstudio.syncManifestNoTeamsAppId"),
-          ])
-        )
-      );
-    }
-    const deafultManifestTemplatePath = path.join(projectPath, "appPackage", "manifest.json");
+    const deafultManifestTemplatePath = path.join(args.projectPath, "appPackage", "manifest.json");
     let manifestTemplatePath = "";
     if (!yamlManifestPath) {
       manifestTemplatePath = deafultManifestTemplatePath;
     } else if (path.isAbsolute(yamlManifestPath)) {
       manifestTemplatePath = yamlManifestPath;
     } else {
-      manifestTemplatePath = path.join(projectPath, yamlManifestPath);
+      manifestTemplatePath = path.join(args.projectPath, yamlManifestPath);
     }
     return ok(
       new Map([

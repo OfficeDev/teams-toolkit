@@ -62,8 +62,12 @@ describe("Local Debug Tests", function () {
       validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
 
+      const searchKey = "fake";
+      const searchEndpoint = "https://test.com";
       const openAiKey = "fake";
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
+      editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+      editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
       await createEnvironmentWithPython();
       // create azure search data

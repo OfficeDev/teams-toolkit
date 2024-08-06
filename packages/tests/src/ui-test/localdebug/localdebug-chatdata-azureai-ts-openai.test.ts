@@ -57,8 +57,12 @@ describe("Local Debug Tests", function () {
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
 
+      const searchKey = "fake";
+      const searchEndpoint = "https://test.com";
       const openAiKey = "fake";
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
+      editDotEnvFile(envPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+      editDotEnvFile(envPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
       // prepare for the npm run indexer:create
       const testToolEnvPath = path.resolve(
@@ -67,6 +71,8 @@ describe("Local Debug Tests", function () {
         ".env.testtool.user"
       );
       editDotEnvFile(testToolEnvPath, "SECRET_OPENAI_API_KEY", openAiKey);
+      editDotEnvFile(testToolEnvPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
+      editDotEnvFile(testToolEnvPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);

@@ -59,10 +59,26 @@ async def main():
                 )
             )            
         ],
+        {{#useOpenAI}}
         model="gpt-3.5-turbo",
+        {{/useOpenAI}}
+        {{#useAzureOpenAI}}
+        model=os.getenv("AZURE_OPENAI_MODEL_DEPLOYMENT_NAME"),
+        {{/useAzureOpenAI}}
     )
 
+    {{#useOpenAI}}
     assistant = await AssistantsPlanner.create_assistant(api_key=os.getenv("SECRET_OPENAI_API_KEY"), api_version="", organization="", endpoint="", request=options)
+    {{/useOpenAI}}
+    {{#useAzureOpenAI}}
+    assistant = await AssistantsPlanner.create_assistant(
+        api_key=os.getenv("SECRET_AZURE_OPENAI_API_KEY"), 
+        api_version="", 
+        organization="", 
+        endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), 
+        request=options
+    )
+    {{/useAzureOpenAI}}
     print(assistant.tools)
     print(f"Created a new assistant with an ID of: {assistant.id}")
 

@@ -824,11 +824,9 @@ async function updateAdaptiveCardForCustomApi(
     for (const item of specItems) {
       const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
       const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
-      card.body.forEach((value) => {
-        if ((value as any).$data) {
-          (value as any).$data = `\${${jsonPath}}`;
-        }
-      });
+      if (card.body && card.body[0] && (card.body[0] as any).$data) {
+        (card.body as any).$data = `\${${jsonPath}}`;
+      }
       const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }

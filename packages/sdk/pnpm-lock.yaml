@@ -14,9 +14,6 @@ dependencies:
   '@azure/msal-node':
     specifier: ^1.14.6
     version: 1.14.6
-  '@microsoft/adaptivecards-tools':
-    specifier: workspace:*
-    version: link:../adaptivecards-tools-sdk
   '@microsoft/microsoft-graph-client':
     specifier: ^3.0.7
     version: 3.0.7(@azure/identity@2.0.1)(@azure/msal-browser@3.0.2)

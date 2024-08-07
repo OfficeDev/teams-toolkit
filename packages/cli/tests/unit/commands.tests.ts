@@ -85,36 +85,6 @@ describe("CLI commands", () => {
 
   describe("getCreateCommand", async () => {
     it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "false",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-
-      const filteredQuestionNames = [
-        QuestionNames.WithPlugin.toString(),
-        QuestionNames.ApiPluginType.toString(),
-      ];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => filteredQuestionNames.includes(o.name)).length === 0
-      );
-
-      const res = await getCreateCommand().handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("createProjectOptions - need to adjust options when feature flag is enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "true",
-      });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
 
@@ -133,6 +103,7 @@ describe("CLI commands", () => {
       assert.isTrue(
         ctx.command.options?.filter((o) => filteredQuestionNames.includes(o.name)).length === 2
       );
+
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });
@@ -283,10 +254,6 @@ describe("CLI commands", () => {
 
   describe("getAddCommand", async () => {
     it("customize GPT is enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "true",
-      });
-
       const commands = addCommand();
       assert.isTrue(commands.commands?.length === 2);
     });
@@ -1146,9 +1113,6 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
     });
     it("json", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "false",
-      });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },
         optionValues: { format: "json" },
@@ -1158,7 +1122,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -1181,22 +1145,6 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-    });
-
-    it("json: Copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "true",
-      });
-      const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "..." },
-        optionValues: { format: "json" },
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await listTemplatesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin")));
     });
   });
   describe("listSamplesCommand", async () => {

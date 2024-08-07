@@ -1571,9 +1571,6 @@ export function createProjectCliHelpNode(): IQTreeNode {
     deleteNames.push(QuestionNames.Runtime);
   }
 
-  deleteNames.push(QuestionNames.ApiPluginType);
-  deleteNames.push(QuestionNames.WithPlugin);
-
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;
 }

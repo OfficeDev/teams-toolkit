@@ -66,7 +66,7 @@ builder.Services.AddTransient<IBot>(sp =>
     // Register AI actions
     app.AI.ImportActions(new ActionHandlers());
 
-    // Listen for user to say "/reset".
+    // Listen for user to say "reset".
     app.OnMessage("reset", ActivityHandlers.ResetMessageHandler);
 
     return app;

@@ -67,6 +67,7 @@ describe("Control Handlers", () => {
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
       sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
       sandbox.stub(manifestUtils, "getCapabilities").returns(["plugin"]);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
       const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 

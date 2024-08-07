@@ -316,6 +316,7 @@ export class TeamsUserCredential implements TokenCredential {
     };
 
     this.msalInstance = new PublicClientApplication(msalConfig);
+    await this.msalInstance.initialize();
     this.initialized = true;
   }
 

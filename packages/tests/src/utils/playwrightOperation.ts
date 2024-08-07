@@ -35,7 +35,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.HelloWorldTabBackEnd]: async () => {
     await startDebugging();
   },
-  [TemplateProject.MyFirstMetting]: async () => {
+  [TemplateProject.MyFirstMeeting]: async () => {
     await startDebugging();
   },
   [TemplateProject.HelloWorldBotSSO]: async () => {
@@ -735,22 +735,8 @@ export async function initNoAddappPage(
     page.waitForNavigation(),
   ]);
   await page.waitForTimeout(Timeout.shortTimeLoading);
-  const chatTab = await page?.waitForSelector(
-    ".app-bar-items span:has-text('Chat')"
-  );
+  const chatTab = await page?.waitForSelector("button span:has-text('Chat')");
   await chatTab?.click();
-  try {
-    console.log("close dialog");
-    await page?.click("button[data-tid='closeModelDialogBtn']");
-  } catch (error) {
-    console.log("no dialog to close");
-  }
-  try {
-    console.log("dismiss message");
-    await page.click('button:has-text("Dismiss")');
-  } catch (error) {
-    console.log("no message to dismiss");
-  }
   return page;
 }
 
@@ -1256,6 +1242,7 @@ export async function validateWelcomeAndReplyBot(
     botCommand?: string;
     expectedWelcomeMessage?: string;
     expectedReplyMessage?: string;
+    timeout?: number;
   } = {
     hasWelcomeMessage: true,
     hasCommandReplyValidation: true,
@@ -1264,6 +1251,7 @@ export async function validateWelcomeAndReplyBot(
     expectedReplyMessage: ValidationContent.AiBotErrorMessage,
   }
 ) {
+  const timeout = options?.timeout ? options.timeout : 30 * 60 * 1000;
   try {
     console.log("start to verify bot");
     await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -1306,7 +1294,8 @@ export async function validateWelcomeAndReplyBot(
         const sendButton = await frame?.waitForSelector('button[name="send"]');
         await sendButton?.click();
         await frame?.waitForSelector(
-          `p:has-text("${options?.expectedReplyMessage}")`
+          `p:has-text("${options?.expectedReplyMessage}")`,
+          { timeout: timeout }
         );
         console.log(
           `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
@@ -2062,7 +2051,9 @@ export async function validateSpfx(
 
 export async function switchToTab(page: Page, tabName = "Personal Tab") {
   try {
-    await page.click(`a:has-text("${tabName}")`);
+    await page.click(
+      `button[role="tab"][type="button"]:has-text("${tabName}")`
+    );
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -2741,6 +2732,108 @@ export async function validateApiMeResult(page: Page, appName: string) {
       await page?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateMultiParamsApiMeResult(
+  page: Page,
+  appName: string
+) {
+  try {
+    await messageExtensionActivate(page, appName);
+    console.log("start to validate search command");
+    const petIdInput = await page?.waitForSelector(
+      "div.ac-input-container span.fui-SpinButton input[type='text']"
+    );
+    await petIdInput?.fill("4");
+    const testInput = await page?.waitForSelector(
+      "div.ac-input-container span.fui-Input input[type='text']"
+    );
+    await testInput?.fill("5");
+    await page.click("button[type='submit']");
+    await page.waitForTimeout(Timeout.shortTimeWait);
+    try {
+      await page?.waitForSelector('ul[datatid="app-picker-list"]');
+      console.log("verify search successfully!!!");
+    } catch (error) {
+      await page?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      assert.fail("Unable to reach app. Please try again.");
+    }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateExisingApiMeResult(page: Page, appName: string) {
+  try {
+    console.log("start to verify existingapime search");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+    await messageExtensionActivate(page, appName);
+    const onmoreStr = await page?.waitForSelector(
+      `div.fui-TabList button:has-text("1 More")`
+    );
+    await onmoreStr?.click();
+    const assignStr = await page?.waitForSelector(
+      `div.fui-MenuItem span:has-text("Assign repair to technician for")`
+    );
+    await assignStr?.click();
+    console.log("fill in card Type");
+    const carTypeInput = await page?.waitForSelector(
+      'input[placeholder="Car type to repair"]'
+    );
+    await carTypeInput?.fill("1");
+    console.log("fill in repair Type");
+    const repairTypeInput = await page?.waitForSelector(
+      'input[placeholder="Repair type for the car"]'
+    );
+    await repairTypeInput?.fill("1");
+    console.log("fill in Customer Name");
+    const customerNameInput = await page?.waitForSelector(
+      'input[placeholder="Customer name"]'
+    );
+    await customerNameInput?.fill("1");
+    console.log("fill in Customer Phone Number");
+    const custPhoneNumberInput = await page?.waitForSelector(
+      'input[placeholder="Customer phone number"]'
+    );
+    await custPhoneNumberInput?.fill("1");
+    const searchBtn = await page?.waitForSelector(
+      `div.fui-Flex button:has-text("Search")`
+    );
+    await searchBtn?.click();
+    try {
+      const targetItem = await page?.waitForSelector(
+        `span.fui-StyledText div:has-text("engineer")`
+      );
+      await targetItem?.click();
+      console.log("targetItem.click");
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await page?.waitForSelector("div.fui-Primitive p:has-text('validated')");
+      console.log("verify search keyword successfully!!!");
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+    } catch (error) {
+      await page?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("verify_error"),
+        fullPage: true,
+      });
       assert.fail("Unable to reach app. Please try again.");
     }
   } catch (error) {

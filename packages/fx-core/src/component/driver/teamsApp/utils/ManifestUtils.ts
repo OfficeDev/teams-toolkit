@@ -29,15 +29,15 @@ import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../
 import { expandEnvironmentVariable } from "../../../utils/common";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import {
-  BOTS_TPL_EXISTING_APP,
-  BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
-  BOTS_TPL_FOR_NOTIFICATION_V3,
-  BOTS_TPL_V3,
+  getBotsTplExistingAppBasedOnVersion,
+  getBotsTplForCommandAndResponseBasedOnVersion,
+  getBotsTplForNotificationBasedOnVersion,
+  getBotsTplBasedOnVersion,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_M365_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
-  CONFIGURABLE_TABS_TPL_EXISTING_APP,
-  CONFIGURABLE_TABS_TPL_V3,
+  getConfigurableTabsTplExistingAppBasedOnVersion,
+  getConfigurableTabsTplBasedOnVersion,
   Constants,
   STATIC_TABS_MAX_ITEMS,
   STATIC_TABS_TPL_EXISTING_APP,
@@ -95,6 +95,7 @@ export class ManifestUtils {
     const appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
+    const manifestVersion = appManifest.manifestVersion;
     for (const capability of capabilities) {
       const exceedLimit = this._capabilityExceedLimit(appManifest, capability.name);
       if (exceedLimit) {
@@ -137,11 +138,12 @@ export class ManifestUtils {
           } else {
             if (capability.existingApp) {
               appManifest.configurableTabs = appManifest.configurableTabs.concat(
-                CONFIGURABLE_TABS_TPL_EXISTING_APP
+                getConfigurableTabsTplExistingAppBasedOnVersion(manifestVersion)
               );
             } else {
-              appManifest.configurableTabs =
-                appManifest.configurableTabs.concat(CONFIGURABLE_TABS_TPL_V3);
+              appManifest.configurableTabs = appManifest.configurableTabs.concat(
+                getConfigurableTabsTplBasedOnVersion(manifestVersion)
+              );
             }
           }
           break;
@@ -151,7 +153,9 @@ export class ManifestUtils {
             appManifest.bots.push(capability.snippet);
           } else {
             if (capability.existingApp) {
-              appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
+              appManifest.bots = appManifest.bots.concat(
+                getBotsTplExistingAppBasedOnVersion(manifestVersion)
+              );
             } else {
               // import QuestionNames introduces dependency cycle and breaks the whole program
               // inputs[QuestionNames.Features]
@@ -162,13 +166,19 @@ export class ManifestUtils {
                   feature == CapabilityOptions.workflowBot().id
                 ) {
                   // command and response bot or workflow bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForCommandAndResponseBasedOnVersion(manifestVersion)
+                  );
                 } else if (feature === CapabilityOptions.notificationBot().id) {
                   // notification
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForNotificationBasedOnVersion(manifestVersion)
+                  );
                 } else {
                   // legacy bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplBasedOnVersion(manifestVersion)
+                  );
                 }
               } else if (inputs.scenarios) {
                 const scenariosRaw = inputs.scenarios;
@@ -178,16 +188,24 @@ export class ManifestUtils {
                   scenarios.includes(BotScenario.WorkflowBot)
                 ) {
                   // command and response bot or workflow bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForCommandAndResponseBasedOnVersion(manifestVersion)
+                  );
                 } else if (scenarios.includes(BotScenario.NotificationBot)) {
                   // notification
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForNotificationBasedOnVersion(manifestVersion)
+                  );
                 } else {
                   // legacy bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplBasedOnVersion(manifestVersion)
+                  );
                 }
               } else {
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+                appManifest.bots = appManifest.bots.concat(
+                  getBotsTplBasedOnVersion(manifestVersion)
+                );
               }
             }
           }

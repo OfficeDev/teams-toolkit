@@ -11,8 +11,8 @@ import {
   SingleSelectConfig,
   Stage,
 } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { window, workspace } from "vscode";
 import { core, workspaceUri } from "../globalVariables";
 import { VS_CODE_UI } from "../qm/vsc_ui";

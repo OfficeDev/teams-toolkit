@@ -4,16 +4,16 @@ import { context } from '@actions/github';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { Octokit } from '@octokit/rest';
 import { Issue } from '../api/api';
+import { getTemplateFromPackageAndConvertToReg } from '../teamsfx-utils/utils';
+
 
 const githubToken = getRequiredInput('token');
 
 class DuplicateHandler extends Action {
 	id = 'DuplicateHandlerForAppStudio';
-	matchingReg = getRequiredInput('matching-reg');
 	reply = getRequiredInput('reply');
 	tags: string[];
 	issue!: Issue;
-	statusCodeIgnoreApiName: string[];
 
 	owner = context.repo.owner;
 	repo = context.repo.repo;
@@ -25,8 +25,6 @@ class DuplicateHandler extends Action {
 		super();
 		const addingTags = getRequiredInput('adding-tags');
 		this.tags = addingTags ? addingTags.split(',') : [];
-		const codeString = getRequiredInput('status-codes-ignore-api');
-		this.statusCodeIgnoreApiName = codeString ? codeString.split(',') : [];
 	}
 
 	async onOpened(issueHandler: OctoKitIssue) {
@@ -56,7 +54,7 @@ class DuplicateHandler extends Action {
 
 		safeLog(`Executed duplicate progress for Issue ${firstIssueNumber}`);
 	}
-	
+
 	async onTriggered(_: OctoKit) {
 		const issueNumber = process.env.ISSUE_NUMBER;
 		safeLog(`start manually trigger issue ${issueNumber}`);
@@ -65,13 +63,19 @@ class DuplicateHandler extends Action {
 	}
 
 	matchAppStudioIssueError(): ErrorInfo | undefined {
-		safeLog(`matching-reg is ${this.matchingReg}`);
-		const reg = new RegExp(this.matchingReg, 'g');
+		const key = "error.appstudio.apiFailed.telemetry";
+		const regStr = getTemplateFromPackageAndConvertToReg(key);
+		if (!regStr) {
+			safeLog(`There is template for ${key} in package.nls.json, ignore`);
+			return undefined;
+		}
+		safeLog(`matching-reg is ${regStr}`);
+		const reg = new RegExp(regStr, 'g');
 		const res = reg.exec(this.issue.body);
 		if (res) {
 			return {
-				statusCode: res[1],
-				apiName: res[2],
+				statusCode: res[2],
+				apiName: res[3],
 				message: res[0],
 			};
 		}
@@ -85,11 +89,9 @@ class DuplicateHandler extends Action {
 	}
 
 	getSearchMessage(errorInfo: ErrorInfo): string {
-		if (this.statusCodeIgnoreApiName.includes(errorInfo.statusCode)) {
-			const indexOfstatusCode = errorInfo.message.indexOf(errorInfo.statusCode);
-			return errorInfo.message.substring(0, indexOfstatusCode + errorInfo.statusCode.length);
-		}
-		return errorInfo.message;
+		const indexOfstatusCode = errorInfo.message.indexOf(errorInfo.statusCode);
+		const indexOfApiName = errorInfo.message.indexOf(errorInfo.apiName);
+		return errorInfo.message.substring(indexOfstatusCode, indexOfApiName + errorInfo.apiName.length);
 	}
 
 	async getFirstRelatedIssueNumber(message: string): Promise<number> {
@@ -113,4 +115,4 @@ interface ErrorInfo {
 	message: string;
 }
 
-new DuplicateHandler().run() // eslint-disable-line
+new DuplicateHandler().run(); // eslint-disable-line

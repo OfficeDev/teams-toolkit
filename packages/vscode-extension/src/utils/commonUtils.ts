@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import { exec } from "child_process";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as os from "os";
-import * as path from "path";
+import path from "path";
 import * as vscode from "vscode";
 import { format } from "util";
 import { Result, SystemError, err, ok } from "@microsoft/teamsfx-api";

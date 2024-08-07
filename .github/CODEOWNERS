@@ -149,7 +149,8 @@
 /packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587
 /packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
-/packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish
+/packages/fx-core/src/component/generator/apiSpec @yuqizhou77 @nliu-ms @Alive-Fish
+/packages/fx-core/src/component/generator/copilotExtensionFromScratch @yuqizhou77 @huimiu
 /packages/fx-core/src/component/generator/officeAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/officeXMLAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms
@@ -202,8 +203,9 @@
 /packages/fx-core/tests/component/envUtil.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/error @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/feature @KennethBWSong @xzf0587
-/packages/fx-core/tests/component/generator/copilotPluginGenerator.test.ts @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
+/packages/fx-core/tests/component/generator/copilotExtensionFromScratch.test.ts @yuqizhou77 @huimiu
+/packages/fx-core/tests/component/generator/copilotGenerator.test.ts @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @tecton
 /packages/fx-core/tests/component/generator/officeXMLAddinGenerator.test.ts @jayzhang @tecton
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang

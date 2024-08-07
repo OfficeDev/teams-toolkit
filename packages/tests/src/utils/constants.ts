@@ -36,7 +36,7 @@ export enum TemplateProject {
   TodoListBackend = "Todo List with backend on Azure",
   TodoListSpfx = "Todo List with SPFx",
   ShareNow = "Share Now",
-  MyFirstMetting = "My First Meeting App",
+  MyFirstMeeting = "My First Meeting App",
   TodoListM365 = "Todo List (Works in Teams, Outlook and Office)",
   NpmSearch = "NPM Search Connector",
   ProactiveMessaging = "Proactive Messaging",
@@ -68,7 +68,7 @@ export enum TemplateProjectFolder {
   BotSSODocker = "bot-sso-docker",
   TabDocker = "hello-world-tab-docker",
   TodoListSpfx = "todo-list-SPFx",
-  MyFirstMetting = "hello-world-in-meeting",
+  MyFirstMeeting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",
   NpmSearch = "NPM-search-connector-M365",
   ProactiveMessaging = "bot-proactive-messaging-teamsfx",
@@ -108,7 +108,7 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.TodoListBackend]: TemplateProjectFolder.TodoListBackend,
     [TemplateProject.TodoListSpfx]: TemplateProjectFolder.TodoListSpfx,
     [TemplateProject.ShareNow]: TemplateProjectFolder.ShareNow,
-    [TemplateProject.MyFirstMetting]: TemplateProjectFolder.MyFirstMetting,
+    [TemplateProject.MyFirstMeeting]: TemplateProjectFolder.MyFirstMeeting,
     [TemplateProject.TodoListM365]: TemplateProjectFolder.TodoListM365,
     [TemplateProject.NpmSearch]: TemplateProjectFolder.NpmSearch,
     [TemplateProject.ProactiveMessaging]:
@@ -171,8 +171,7 @@ export enum Capability {
   RAG = "custom-copilot-rag",
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
-  CopilotPluginFromExistingAPI = "api-plugin-existing-api",
-  CopilotPluginFromScratch = "api-plugin-new-api",
+  ApiPlugin = "api-plugin",
 }
 
 export enum Trigger {
@@ -243,7 +242,7 @@ export class Timeout {
   // mocha
   public static readonly prepareTestCase: number = 10 * 60 * 1000;
   public static readonly finishTestCase: number = 10 * 60 * 1000;
-  public static readonly testCase: number = 20 * 60 * 1000;
+  public static readonly testCase: number = 30 * 60 * 1000;
   public static readonly finishAzureTestCase: number = 15 * 60 * 1000;
   public static readonly testAzureCase: number = 45 * 60 * 1000;
   public static readonly migrationTestCase: number = 40 * 60 * 1000;
@@ -358,11 +357,16 @@ export type AppType =
   | "importaddin"
   | "linkunfurl"
   | "aichat"
-  | "aiassist"
+  | "aiagentassist"
+  | "aiagentnew"
+  | "chatdata"
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"
-  | "importspfx";
+  | "msgmicroentra"
+  | "importspfx"
+  | "msgmulparams"
+  | "msgapikeyspec";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

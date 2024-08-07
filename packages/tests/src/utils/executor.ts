@@ -2,18 +2,24 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { execAsync, editDotEnvFile } from "./commonUtils";
+import { execAsync, editDotEnvFile, editSWASku } from "./commonUtils";
 import {
   TemplateProjectFolder,
   Capability,
   LocalDebugError,
+  Project,
 } from "./constants";
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
-import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import {
+  spawn,
+  ChildProcessWithoutNullStreams,
+  ChildProcess,
+} from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
+import { on } from "events";
 
 export class Executor {
   static async execute(
@@ -75,8 +81,7 @@ export class Executor {
 
   static async login() {
     const command = `az login --username ${Env["azureAccountName"]} --password '${Env["azureAccountPassword"]}' --tenant ${Env["azureTenantId"]}`;
-    const { success } = await Executor.execute(command, process.cwd());
-    expect(success).to.be.true;
+    await Executor.execute(command, process.cwd());
 
     // set subscription
     const subscription = Env["azureSubscriptionId"];
@@ -258,38 +263,15 @@ export class Executor {
     onError?: (data: string) => void,
     openOnly?: boolean
   ) {
+    let childProcess: ChildProcess | null = null;
     console.log(`[start] ${env} debug ... `);
-    const childProcess = spawn(
-      os.type() === "Windows_NT"
-        ? v3
-          ? "teamsapp.cmd"
-          : "teamsfx.cmd"
-        : v3
-        ? "teamsapp"
-        : "teamsfx",
-      [
-        "preview",
-        v3 ? "--env" : "",
-        v3 ? `${env}` : `--${env}`,
-        openOnly ? "--open-only" : "",
-      ],
-      {
-        cwd: projectPath,
-        env: processEnv ? processEnv : process.env,
-      }
+    childProcess = Executor.spawnCommand(
+      projectPath,
+      v3 ? "teamsapp" : "teamsfx",
+      ["preview", v3 ? "--env" : "", v3 ? env : `--${env}`],
+      onData,
+      onError
     );
-    childProcess.stdout.on("data", (data) => {
-      const dataString = data.toString();
-      if (onData) {
-        onData(dataString);
-      }
-    });
-    childProcess.stderr.on("data", (data) => {
-      const dataString = data.toString();
-      if (onError) {
-        onError(dataString);
-      }
-    });
     return childProcess;
   }
 
@@ -399,8 +381,15 @@ export class Executor {
     }
     const localEnvPath = path.resolve(testFolder, appName, "env", ".env.local");
     const remoteEnvPath = path.resolve(testFolder, appName, "env", ".env.dev");
+    const azureParameter = path.resolve(
+      testFolder,
+      appName,
+      "infra",
+      "azure.parameters.json"
+    );
     editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
     editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
+    editSWASku(azureParameter);
     console.log(`successfully open project: ${newPath}`);
   }
 
@@ -507,27 +496,28 @@ export class Executor {
     args: string[],
     onData?: (data: string) => void,
     onError?: (data: string) => void
-  ) {
-    const childProcess = spawn(
-      os.type() === "Windows_NT" ? command + ".cmd" : command,
-      args,
-      {
-        cwd: projectPath,
-        env: process.env,
-      }
-    );
+  ): ChildProcessWithoutNullStreams {
+    const isWindows = os.type() === "Windows_NT";
+
+    const childProcess = spawn(command, args, {
+      cwd: projectPath,
+      shell: isWindows,
+    });
+
     childProcess.stdout.on("data", (data) => {
       const dataString = data.toString();
-      if (onData) {
-        onData(dataString);
-      }
+      onData && onData(dataString);
     });
+
     childProcess.stderr.on("data", (data) => {
       const dataString = data.toString();
-      if (onError) {
-        onError(dataString);
-      }
+      onError && onError(dataString);
     });
+
+    childProcess.on("error", (error) => {
+      onError && onError(`Failed to start process: ${error.message}`);
+    });
+
     return childProcess;
   }
 
@@ -588,14 +578,25 @@ export class Executor {
     console.log("======= debug with cli ========");
     console.log("botFlag: ", includeBot);
     let tunnelName = "";
-    let devtunnelProcess = null;
+    let devtunnelProcess: ChildProcessWithoutNullStreams | null = null;
+    let debugProcess: ChildProcess | null = null;
     if (includeBot) {
       const tunnel = Executor.debugBotFunctionPreparation(projectPath);
       tunnelName = tunnel.tunnelName;
       devtunnelProcess = tunnel.devtunnelProcess;
       await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+      {
+        const { success } = await Executor.provision(projectPath, "local");
+        expect(success).to.be.true;
+        console.log(`[Successfully] provision for ${projectPath}`);
+      }
+      {
+        const { success } = await Executor.deploy(projectPath, "local");
+        expect(success).to.be.true;
+        console.log(`[Successfully] deploy for ${projectPath}`);
+      }
     }
-    const debugProcess = Executor.debugProject(
+    debugProcess = Executor.debugProject(
       projectPath,
       "local",
       true,
@@ -617,7 +618,7 @@ export class Executor {
         }
       }
     );
-    await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+    await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000));
     return {
       tunnelName,
       devtunnelProcess,
@@ -642,15 +643,11 @@ export class Executor {
     }
   }
 
-  static async closeProcess(
-    childProcess: ChildProcessWithoutNullStreams | null
-  ) {
+  static async closeProcess(childProcess: ChildProcess | null) {
     if (childProcess) {
       try {
         if (os.type() === "Windows_NT") {
-          console.log(`taskkill /F /PID "${childProcess.pid}"`);
-          await execAsync(`taskkill /F /PID "${childProcess.pid}"`);
-          childProcess.kill("SIGKILL");
+          process.kill(-childProcess.pid);
         } else {
           console.log("kill process", childProcess.spawnargs.join(" "));
           childProcess.kill("SIGKILL");

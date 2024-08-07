@@ -3,9 +3,11 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 import {
   ApiAuthOptions,
+  ApiPluginStartOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
+  DeclarativeCopilotTypeOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
@@ -104,12 +106,6 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.none().id}`]:
-    TemplateNames.ApiPluginFromScratch,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.apiKey().id}`]:
-    TemplateNames.ApiPluginFromScratchBearer,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${ApiAuthOptions.oauth().id}`]:
-    TemplateNames.ApiPluginFromScratchOAuth,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiAuthOptions.none().id
   }`]: TemplateNames.CopilotPluginFromScratch,
@@ -138,9 +134,6 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
     CustomCopilotAssistantOptions.assistantsApi().id
   }`]: TemplateNames.CustomCopilotAssistantAssistantsApi,
-  [`${CapabilityOptions.customizeGptBasic().id}:undefined`]: TemplateNames.BasicGpt,
-  [`${CapabilityOptions.customizeGptWithPlugin().id}:undefined`]:
-    TemplateNames.GptWithPluginFromScratch,
 };
 
 export function tryGetTemplateName(inputs: Inputs): TemplateNames | undefined {
@@ -351,34 +344,11 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
   ],
-  // Copilot Plugin
   [
     {
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+      [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.noPlugin().id,
     },
-    TemplateNames.ApiPluginFromScratch,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
-    },
-    TemplateNames.ApiPluginFromScratchBearer,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
-    },
-    TemplateNames.ApiPluginFromScratchOAuth,
-  ],
-  [
-    { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptBasic().id },
     TemplateNames.BasicGpt,
-  ],
-  [
-    { [QuestionNames.Capabilities]: CapabilityOptions.customizeGptWithPlugin().id },
-    TemplateNames.GptWithPluginFromScratch,
   ],
 ]);

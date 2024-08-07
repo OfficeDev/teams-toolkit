@@ -22,7 +22,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.38.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.5.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="2.4.*" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="2.5.*" />
   </ItemGroup>
 
 </Project>

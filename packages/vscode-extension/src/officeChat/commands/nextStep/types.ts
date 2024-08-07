@@ -16,5 +16,6 @@ export interface OfficeWholeStatus {
     readmeContent?: string; // the content of the readme file
     launchJSONContent?: string; // the content of the .vscode/launch.json
     nodeModulesExist?: boolean; // if the node_modules folder exists
+    isNodeInstalled?: boolean; // if node.js is installed
   };
 }

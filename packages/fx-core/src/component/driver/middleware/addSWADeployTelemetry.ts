@@ -3,7 +3,7 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import { performance } from "perf_hooks";
-import { maskSecretValues } from "../../../common/stringUtils";
+import { maskSecret } from "../../../common/stringUtils";
 import { TelemetryProperty } from "../../../common/telemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import {
@@ -20,7 +20,7 @@ import { isExecutionResult } from "./addStartAndEndTelemetry";
 export function addSWADeployTelemetry(eventName: string): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const name = ctx.arguments[4] as string | undefined;
-    const command = maskSecretValues(ctx.arguments[0].args as string);
+    const command = maskSecret(ctx.arguments[0].args as string);
     // only add telemetry for script
     if (!name?.includes("deploy to Azure Static Web Apps")) {
       await next();

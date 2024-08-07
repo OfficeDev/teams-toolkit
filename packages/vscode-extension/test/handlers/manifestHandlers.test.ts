@@ -1,7 +1,7 @@
 import { err, ok } from "@microsoft/teamsfx-api";
 import { UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";

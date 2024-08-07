@@ -811,7 +811,7 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          if (input.length < 10 || input.length > 128) {
+          if (input.length < 10 || input.length > 512) {
             return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
           }
 
@@ -863,13 +863,13 @@ export function oauthQuestion(): IQTreeNode {
       {
         data: oauthClientSecretQuestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret;
+          return !inputs.isPKCEEnabled && !inputs.clientSecret;
         },
       },
       {
         data: oauthConfirmQestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret || !inputs.clientId;
+          return !inputs.isPKCEEnabled && (!inputs.clientSecret || !inputs.clientId);
         },
       },
     ],
@@ -1039,7 +1039,7 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): string | undefined => {
-        if (input.length < 10 || input.length > 128) {
+        if (input.length < 10 || input.length > 512) {
           return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
         }
 

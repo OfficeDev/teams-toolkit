@@ -108,8 +108,8 @@ dependencies:
     specifier: ^2.5.2
     version: 2.5.2
   mustache:
-    specifier: ^4.2.0
-    version: 4.2.0
+    specifier: ^4.1.0
+    version: 4.1.0
   node-fetch:
     specifier: 2.7.0
     version: 2.7.0
@@ -137,6 +137,9 @@ dependencies:
   semver:
     specifier: ^7.5.2
     version: 7.5.2
+  shell-quote:
+    specifier: ^1.8.1
+    version: 1.8.1
   strip-bom:
     specifier: ^4.0.0
     version: 4.0.0
@@ -235,6 +238,9 @@ devDependencies:
   '@types/semver':
     specifier: ^7.3.4
     version: 7.3.4
+  '@types/shell-quote':
+    specifier: ^1.7.5
+    version: 1.7.5
   '@types/sinon':
     specifier: ^9.0.10
     version: 9.0.10
@@ -1286,6 +1292,10 @@ packages:
 
   /@types/semver@7.3.4:
     resolution: {integrity: sha512-+nVsLKlcUCeMzD2ufHEYuJ9a2ovstb6Dp52A5VsoKxDXgvE051XgHI/33I1EymwkRGQkwnA0LkhnUzituGs4EQ==}
+    dev: true
+
+  /@types/shell-quote@1.7.5:
+    resolution: {integrity: sha512-+UE8GAGRPbJVQDdxi16dgadcBfQ+KG2vgZhV1+3A1XmHbmwcdwhCUwIdy+d3pAGrbvgRoVSjeI9vOWyq376Yzw==}
     dev: true
 
   /@types/sinon@9.0.10:
@@ -4317,8 +4327,8 @@ packages:
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
-  /mustache@4.2.0:
-    resolution: {integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==}
+  /mustache@4.1.0:
+    resolution: {integrity: sha512-0FsgP/WVq4mKyjolIyX+Z9Bd+3WS8GOwoUTyKXT5cTYMGeauNTi2HPCwERqseC1IHAy0Z7MDZnJBfjabd4O8GQ==}
     hasBin: true
     dev: false
 
@@ -5161,6 +5171,10 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
     dev: true
+
+  /shell-quote@1.8.1:
+    resolution: {integrity: sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==}
+    dev: false
 
   /shimmer@1.2.1:
     resolution: {integrity: sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw==}

@@ -33,9 +33,11 @@ export type LocalDebugTestName =
   | "ftNoti" // http and timer trigger notification bot
   | "linkunfurl"
   | "aichat"
-  | "aiassist"
+  | "aiagent"
+  | "chatdata"
   | "msgnewapi"
-  | "msgapikey";
+  | "msgapikey"
+  | "msgmicroentra";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
@@ -43,6 +45,9 @@ export class LocalDebugTestContext extends TestContext {
   public framework: "react" | "minimal" | "none";
   public needMigrate: boolean | undefined;
   public existingSpfxFolder: string;
+  public customCopilotRagType: string;
+  public customCeopilotAgent: string;
+  public llmServiceType: string;
 
   constructor(
     testName: LocalDebugTestName,
@@ -51,6 +56,14 @@ export class LocalDebugTestContext extends TestContext {
       framework?: "react" | "minimal" | "none";
       needMigrate?: boolean;
       existingSpfxFolder?: string;
+      customCopilotRagType?:
+        | "custom-copilot-rag-customize"
+        | "custom-copilot-rag-azureAISearch"
+        | "custom-copilot-rag-customApi";
+      customCeopilotAgent?:
+        | "custom-copilot-agent-new"
+        | "custom-copilot-agent-assistants-api";
+      llmServiceType?: "llm-service-azure-openai" | "llm-service-openai";
     }
   ) {
     super(testName);
@@ -61,6 +74,15 @@ export class LocalDebugTestContext extends TestContext {
     this.existingSpfxFolder = option?.existingSpfxFolder
       ? option.existingSpfxFolder
       : "existingspfx";
+    this.customCopilotRagType = option?.customCopilotRagType
+      ? option.customCopilotRagType
+      : "custom-copilot-rag-customize";
+    this.customCeopilotAgent = option?.customCeopilotAgent
+      ? option.customCeopilotAgent
+      : "custom-copilot-agent-new";
+    this.llmServiceType = option?.llmServiceType
+      ? option.llmServiceType
+      : "llm-service-azure-openai";
   }
 
   public async before() {
@@ -72,11 +94,20 @@ export class LocalDebugTestContext extends TestContext {
     await openExistingProject(testFolder);
   }
 
-  public async after(hasAadPlugin = true, hasBotPlugin = false) {
+  public async after(
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasResourceGroup = false
+  ) {
     await stopDebugging();
     await this.context!.close();
     await this.browser!.close();
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.cleanResource(
+      hasAadPlugin,
+      hasBotPlugin,
+      "local",
+      hasResourceGroup
+    );
   }
 
   public async getTeamsAppId(): Promise<string> {
@@ -261,10 +292,16 @@ export class LocalDebugTestContext extends TestContext {
           `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang} --telemetry false`
         );
         break;
-      case "aiassist":
+      case "aiagent":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --custom-copilot-agent ${this.customCeopilotAgent} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "chatdata":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msgnewapi":
@@ -277,6 +314,12 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth api-key --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "msgmicroentra":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth microsoft-entra --programming-language ${this.lang} --telemetry false`
         );
         break;
     }

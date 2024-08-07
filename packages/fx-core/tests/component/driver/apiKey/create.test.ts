@@ -334,7 +334,7 @@ describe("CreateApiKeyDriver", () => {
 
   it("should throw error if name is too long", async () => {
     const args: any = {
-      name: "a".repeat(129),
+      name: "a".repeat(513),
       appId: "mockedAppId",
       primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
@@ -371,6 +371,20 @@ describe("CreateApiKeyDriver", () => {
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");
+    }
+  });
+
+  it("should throw error if clientSecret equals space when from scratch", async () => {
+    const args: any = {
+      name: "test",
+      appId: "",
+      primaryClientSecret: " ",
+      apiSpecPath: "mockedPath",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("apiKeyFromScratchClientSecretInvalid");
     }
   });
 

@@ -87,7 +87,7 @@ export class CreateOauthDriver implements StepDriver {
         }
 
         const clientSecret = process.env[QuestionNames.OauthClientSecret];
-        if (clientSecret) {
+        if (clientSecret && !args.isPKCEEnabled) {
           args.clientSecret = clientSecret;
         }
 
@@ -186,8 +186,14 @@ export class CreateOauthDriver implements StepDriver {
       invalidParameters.push("clientId");
     }
 
-    if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
-      invalidParameters.push("clientSecret");
+    if (args.isPKCEEnabled && typeof args.isPKCEEnabled !== "boolean") {
+      invalidParameters.push("isPKCEEnabled");
+    }
+
+    if (!args.isPKCEEnabled) {
+      if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
+        invalidParameters.push("clientSecret");
+      }
     }
 
     if (args.refreshUrl && typeof args.refreshUrl !== "string") {
@@ -238,6 +244,7 @@ export class CreateOauthDriver implements StepDriver {
       targetAudience: targetAudience,
       clientId: args.clientId,
       clientSecret: args.clientSecret ?? "",
+      isPKCEEnabled: !!args.isPKCEEnabled,
       authorizationEndpoint: authInfo.authorizationEndpoint,
       tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,
       tokenRefreshEndpoint: args.refreshUrl ?? authInfo.tokenRefreshEndpoint,

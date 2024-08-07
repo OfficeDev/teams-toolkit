@@ -31,6 +31,9 @@ export interface OauthRegistration {
    * Currently max length 1
    */
   targetUrlsShouldStartWith: string[];
+
+  // indicating whether PKCE is enabled
+  isPKCEEnabled?: boolean;
 }
 
 export enum OauthRegistrationAppType {

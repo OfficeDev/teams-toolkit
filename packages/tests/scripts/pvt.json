@@ -9,7 +9,7 @@
       "localdebug-notification-restify",
       "localdebug-tab-regen-appid",
       "treeview-newproject-spfx",
-      "treeview-collaboration-spfx", 
+      "treeview-collaboration-spfx",
       "remotedebug-spfxreact-globalpkg",
       "remotedebug-spfxnone-globalpkg-addwebpart",
       "remotedebug-spfxreact-addwebpart"
@@ -51,16 +51,30 @@
       "remotedebug-link-unfurling-ts-win-only",
       "remotedebug-aichat-bot-win-only",
       "remotedebug-aichat-bot-ts-win-only",
-      "remotedebug-aiassistant-bot-win-only",
-      "remotedebug-aiassistant-bot-ts-win-only",
+      "remotedebug-aiagent-assistapi-openai-bot-win-only",
+      "remotedebug-aiagent-assistapi-openai-bot-ts-win-only",
+      "remotedebug-aiagent-assistapi-openai-bot-py-win-only",
+      "remotedebug-aiagent-new-azureopenai-bot-py",
+      "remotedebug-aiagent-new-azureopenai-bot-ts",
+      "remotedebug-aiagent-new-azureopenai-bot",
+      "remotedebug-aiagent-new-openai-bot-py",
+      "remotedebug-aiagent-new-openai-bot-ts",
+      "remotedebug-aiagent-new-openai-bot",
       "remotedebug-msg-newapi-win-only",
       "remotedebug-msg-newapi-ts-win-only",
       "remotedebug-msg-openapi-win-only",
       "localdebug-command-and-response-ts",
       "localdebug-aichat-bot",
       "localdebug-aichat-bot-ts",
-      "localdebug-aiassistant-bot",
-      "localdebug-aiassistant-bot-ts",
+      "localdebug-aiagent-new-azureopenai-bot",
+      "localdebug-aiagent-new-azureopenai-bot-ts",
+      "localdebug-aiagent-new-azureopenai-bot-py",
+      "localdebug-aiagent-assistapi-openai-bot-py",
+      "localdebug-aiagent-assistapi-openai-bot-ts",
+      "localdebug-aiagent-assistapi-openai-bot",
+      "localdebug-aiagent-new-openai-bot-py",
+      "localdebug-aiagent-new-openai-bot-ts",
+      "localdebug-aiagent-new-openai-bot",
       "remotedebug-aichat-bot-py-win-only",
       "remotedebug-msg-newapi-apikey-ts-win-only",
       "remotedebug-msg-newapi-apikey-win-only",
@@ -68,11 +82,19 @@
       "remotedebug-spfxreact-import-multiple",
       "remotedebug-spfx-none",
       "remotedebug-spfx-minimal",
-      "remotedebug-spfx-react"
+      "remotedebug-spfx-react",
+      "remotedebug-msg-newapi-microsoftentra-ts-win-only",
+      "remotedebug-msg-newapi-microsoftentra-win-only",
+      "remotedebug-msg-multiple-params-win-only",
+      "remotedebug-msg-apikey-existing-spec-win-only",
+      "remotedebug-chatdata-customize-js-azureopenai-win-only",
+      "remotedebug-chatdata-customize-ts-azureopenai-win-only",
+      "remotedebug-chatdata-customize-py-azureopenai-win-only",
+      "remotedebug-chatdata-customize-js-openai-win-only",
+      "remotedebug-chatdata-customize-ts-openai-win-only",
+      "remotedebug-chatdata-customize-py-openai-win-only"
     ],
-    "node-20": [
-      "localdebug-obo-tab"
-    ]
+    "node-20": ["localdebug-obo-tab"]
   },
   "ubuntu-latest": {
     "node-16": [
@@ -118,12 +140,19 @@
       "localdebug-spfx-minimal",
       "localdebug-spfx-none",
       "localdebug-spfx",
+      "localdebug-spfx-import-multiple",
       "localdebug-msg-newapi-apikey-ts",
-      "localdebug-msg-newapi-apikey"
+      "localdebug-msg-newapi-apikey",
+      "localdebug-msg-newapi-microsoftentra-ts",
+      "localdebug-msg-newapi-microsoftentra",
+      "localdebug-chatdata-customize-js-azureopenai",
+      "localdebug-chatdata-customize-ts-azureopenai",
+      "localdebug-chatdata-customize-py-azureopenai",
+      "localdebug-chatdata-customize-js-openai",
+      "localdebug-chatdata-customize-ts-openai",
+      "localdebug-chatdata-customize-py-openai"
     ],
-    "node-20": [
-      "localdebug-obo-tab"
-    ]
+    "node-20": ["localdebug-obo-tab"]
   },
   "macos-latest": {
     "node-16": [
@@ -132,8 +161,7 @@
       "localdebug-notification-func",
       "localdebug-notification-restify"
     ],
-    "node-18": [
-      "treeview-collaboration-spfx"
-    ]
+    "node-18": ["treeview-collaboration-spfx"]
   }
 }
+

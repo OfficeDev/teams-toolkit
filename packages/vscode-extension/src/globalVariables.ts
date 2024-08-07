@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import * as vscode from "vscode";
 
 import { UserState } from "./constants";
@@ -29,6 +29,7 @@ export let commandIsRunning = false;
 export let core: FxCore;
 export let tools: Tools;
 export let diagnosticCollection: vscode.DiagnosticCollection; // Collection of diagnositcs after running app validation.
+export let deleteAadInProgress = false;
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {
   if (vscode.workspace.workspaceFolders.length > 0) {
@@ -91,4 +92,8 @@ export function setCore(coreInstance: FxCore) {
 
 export function setDiagnosticCollection(collection: vscode.DiagnosticCollection) {
   diagnosticCollection = collection;
+}
+
+export function setDeleteAadInProgress(inProgress: boolean) {
+  deleteAadInProgress = inProgress;
 }

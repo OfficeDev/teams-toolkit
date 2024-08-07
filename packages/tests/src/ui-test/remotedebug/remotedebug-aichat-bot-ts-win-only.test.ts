@@ -20,7 +20,7 @@ import {
   initPage,
   validateWelcomeAndReplyBot,
 } from "../../utils/playwrightOperation";
-import { Env } from "../../utils/env";
+import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 
@@ -74,9 +74,24 @@ describe("Remote debug Tests", function () {
       });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
-      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
-      editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
+      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
+      const azureOpenAiKey = OpenAiKey.azureOpenAiKey
+        ? OpenAiKey.azureOpenAiKey
+        : "fake";
+      const azureOpenAiEndpoint = OpenAiKey.azureOpenAiEndpoint
+        ? OpenAiKey.azureOpenAiEndpoint
+        : "https://test.com";
+      const azureOpenAiModelDeploymentName =
+        OpenAiKey.azureOpenAiModelDeploymentName
+          ? OpenAiKey.azureOpenAiModelDeploymentName
+          : "fake";
+      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", azureOpenAiKey);
+      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", azureOpenAiEndpoint);
+      editDotEnvFile(
+        envPath,
+        "AZURE_OPENAI_DEPLOYMENT_NAME",
+        azureOpenAiModelDeploymentName
+      );
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
@@ -89,13 +104,25 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateWelcomeAndReplyBot(page, {
-        hasWelcomeMessage: false,
-        hasCommandReplyValidation: true,
-        botCommand: "helloWorld",
-        expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
-        expectedReplyMessage: ValidationContent.AiBotErrorMessage,
-      });
+      if (isRealKey) {
+        await validateWelcomeAndReplyBot(page, {
+          hasWelcomeMessage: false,
+          hasCommandReplyValidation: true,
+          botCommand: "500+500=?",
+          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+          expectedReplyMessage: "1000",
+          timeout: Timeout.longTimeWait,
+        });
+      } else {
+        await validateWelcomeAndReplyBot(page, {
+          hasWelcomeMessage: false,
+          hasCommandReplyValidation: true,
+          botCommand: "helloWorld",
+          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+          expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+          timeout: Timeout.longTimeWait,
+        });
+      }
     }
   );
 });

@@ -20,7 +20,7 @@ import {
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
-import { ChildProcessWithoutNullStreams } from "child_process";
+import { ChildProcess, ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
@@ -29,10 +29,10 @@ import os from "os";
 import { initDebugPort } from "../../utils/commonUtils";
 
 describe("Local Debug Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.testAzureCase);
   let localDebugTestContext: LocalDebugTestContext;
   let devtunnelProcess: ChildProcessWithoutNullStreams | null;
-  let debugProcess: ChildProcessWithoutNullStreams | null;
+  let debugProcess: ChildProcess | null;
   let successFlag = true;
   let errorMessage = "";
 

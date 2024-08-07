@@ -549,6 +549,7 @@ export async function createNewProject(
     aiType?: "Azure OpenAI" | "OpenAI";
     testRootFolder?: string;
     appNameCopySuffix?: string;
+    dataOption?: "Customize" | "Azure AI Search" | "Microsoft 365";
   }
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
@@ -565,6 +566,7 @@ export async function createNewProject(
     ? option.spfxFrameworkType
     : "React";
   const lang = option?.lang ? option.lang : "JavaScript";
+  const dataOption = option?.dataOption ? option.dataOption : "Customize";
   await execCommandIfExist(
     CommandPaletteCommands.CreateProjectCommand,
     Timeout.webView
@@ -826,7 +828,9 @@ export async function createNewProject(
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick(aiType);
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
       await driver.sleep(Timeout.input);
       // input fake Azure OpenAI Key
       await input.setText("fake");
@@ -845,7 +849,7 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
-    case "aiassist": {
+    case "aiagentassist": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
       await input.selectQuickPick("AI Agent");
@@ -862,6 +866,42 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
+    case "aiagentnew": {
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("AI Agent");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Build New");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      await driver.sleep(Timeout.input);
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      break;
+    }
+    case "chatdata": {
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Chat With Your Data");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(dataOption);
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      await driver.sleep(Timeout.input);
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      break;
+    }
     case "msgnewapi": {
       await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
       await input.selectQuickPick("Custom Search Results");
@@ -873,22 +913,9 @@ export async function createNewProject(
       break;
     }
     case "msgopenapi": {
-      const openapiSpecFilePath =
+      const apiSpecFilePath =
         "https://piercerepairsapi.azurewebsites.net/openapi.yml";
-      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
-      await input.selectQuickPick("Custom Search Results");
-      await input.setText("Start with an OpenAPI Description Document");
-      await input.confirm();
-      await input.selectQuickPick(
-        "Enter OpenAPI Description Document Location"
-      );
-      await inputFolderPath(driver, input, openapiSpecFilePath);
-      await input.confirm();
-      await driver.sleep(Timeout.shortTimeWait);
-      const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
-      await ckAll?.click();
-      await driver.sleep(Timeout.input);
-      await input.confirm();
+      await createNewProjectByApispec(apiSpecFilePath, driver, input);
       break;
     }
     case "msgapikey": {
@@ -898,6 +925,58 @@ export async function createNewProject(
       await input.selectQuickPick("API Key");
       // Choose programming language
       await input.selectQuickPick(lang);
+      break;
+    }
+    case "msgmicroentra": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a new API");
+      await input.selectQuickPick("Microsoft Entra");
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      break;
+    }
+    case "msgmulparams": {
+      const apiSpecFilePath =
+        "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/multiparam.yml";
+      await createNewProjectByApispec(apiSpecFilePath, driver, input);
+      break;
+    }
+    case "msgapikeyspec": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.setText("Start with an OpenAPI Description Document");
+      await input.confirm();
+      const apiSpecFilePath =
+        testRootFolder + "\\..\\src\\ui-test\\case-resources\\repair.yaml";
+      console.log("choose yaml file path: ", apiSpecFilePath);
+      await input.selectQuickPick("Browse...");
+      await inputFolderPath(driver, input, apiSpecFilePath);
+      await driver.sleep(Timeout.shortTimeWait);
+      const okBtn = await driver.findElement(By.css(".quick-input-action"));
+      await okBtn?.click();
+      await driver.sleep(Timeout.input);
+      try {
+        const ckAll = await driver.findElement(
+          By.css(".quick-input-check-all")
+        );
+        await ckAll?.click();
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+      } catch {
+        await RetryHandler.retry(async () => {
+          console.log("retry to click ok button");
+          const okBtn = await driver.findElement(By.css(".quick-input-action"));
+          await okBtn?.click();
+          await driver.sleep(Timeout.input);
+          const ckAll = await driver.findElement(
+            By.css(".quick-input-check-all")
+          );
+          await ckAll?.click();
+          await driver.sleep(Timeout.input);
+          await input.confirm();
+        }, 2);
+      }
       break;
     }
     default:
@@ -1199,7 +1278,7 @@ export async function addSpfxWebPart(webPartName = "helloworld") {
   await input.selectQuickPick("manifest.local.json");
   await driver.sleep(3 * 60 * 1000);
   await getNotification(
-    `Web part ${webPartName} was successfully added to project`,
+    `Web part ${webPartName} was successfully added to the project`,
     30 * 1000
   );
 }
@@ -1251,4 +1330,23 @@ export async function createEnvironmentWithPython() {
     "The following environment is selected",
     Timeout.shortTimeWait
   );
+}
+
+export async function createNewProjectByApispec(
+  apispec: string,
+  driver: WebDriver,
+  input: InputBox
+): Promise<void> {
+  await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+  await input.selectQuickPick("Custom Search Results");
+  await input.setText("Start with an OpenAPI Description Document");
+  await input.confirm();
+  await input.selectQuickPick("Enter OpenAPI Description Document Location");
+  await inputFolderPath(driver, input, apispec);
+  await input.confirm();
+  await driver.sleep(Timeout.shortTimeWait);
+  const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
+  await ckAll?.click();
+  await driver.sleep(Timeout.input);
+  await input.confirm();
 }

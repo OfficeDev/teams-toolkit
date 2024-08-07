@@ -27,6 +27,7 @@ import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
 import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
 import { getDomain, loadStateFromEnv, validateDomain } from "./utility/utility";
+import { apiKeyFromScratchClientSecretInvalid } from "./error/apiKeyFromScratchClientSecretInvalid";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -170,7 +171,9 @@ export class CreateApiKeyDriver implements StepDriver {
     }
 
     if (args.primaryClientSecret && !this.validateSecret(args.primaryClientSecret)) {
-      throw new ApiKeyClientSecretInvalidError(actionName);
+      throw args.primaryClientSecret === " "
+        ? new apiKeyFromScratchClientSecretInvalid(actionName)
+        : new ApiKeyClientSecretInvalidError(actionName);
     }
 
     if (args.secondaryClientSecret && !this.validateSecret(args.secondaryClientSecret)) {

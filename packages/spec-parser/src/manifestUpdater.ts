@@ -174,9 +174,27 @@ export class ManifestUpdater {
                 }
               }
 
+              let funcDescription = operationItem.description || operationItem.summary || "";
+              if (funcDescription.length > ConstantString.FunctionDescriptionMaxLens) {
+                warnings.push({
+                  type: WarningType.FuncDescriptionTooLong,
+                  content: Utils.format(
+                    ConstantString.FuncDescriptionTooLong,
+                    safeFunctionName,
+                    funcDescription.length.toString(),
+                    ConstantString.FunctionDescriptionMaxLens.toString()
+                  ),
+                  data: safeFunctionName,
+                });
+                funcDescription = funcDescription.slice(
+                  0,
+                  ConstantString.FunctionDescriptionMaxLens
+                );
+              }
+
               const funcObj: FunctionObject = {
                 name: safeFunctionName,
-                description: description,
+                description: funcDescription,
               };
 
               if (options.allowResponseSemantics) {

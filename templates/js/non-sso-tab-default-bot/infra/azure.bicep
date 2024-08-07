@@ -10,7 +10,6 @@ param staticWebAppSku string
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 param identityName string = resourceBaseName
-param storageName string = resourceBaseName
 param location string = resourceGroup().location
 
 param staticWebAppName string = resourceBaseName
@@ -74,8 +73,8 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'BOT_TENANT_ID'
           value: identity.properties.tenantId
         }
-        { 
-          name: 'BOT_TYPE' 
+        {
+          name: 'BOT_TYPE'
           value: 'UserAssignedMsi'
         }
       ]

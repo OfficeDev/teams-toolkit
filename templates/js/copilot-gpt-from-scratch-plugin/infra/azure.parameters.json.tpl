@@ -4,12 +4,9 @@
   "parameters": {
     "resourceBaseName": {
       "value": "sme${{RESOURCE_SUFFIX}}"
-    },    
+    },
     "functionAppSKU": {
       "value": "Y1"
-    },
-    "functionStorageSKU": {
-      "value": "Standard_LRS"
     }
   }
 }

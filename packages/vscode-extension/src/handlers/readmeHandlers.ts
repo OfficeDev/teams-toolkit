@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as vscode from "vscode";
 import { ok, FxError } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";

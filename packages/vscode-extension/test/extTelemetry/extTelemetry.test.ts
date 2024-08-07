@@ -2,7 +2,7 @@ import { Stage, UserError } from "@microsoft/teamsfx-api";
 import { maskSecret, telemetryUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import { Uri } from "vscode";
 import * as globalVariables from "../../src/globalVariables";

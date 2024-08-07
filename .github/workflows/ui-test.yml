@@ -202,6 +202,10 @@ jobs:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
+      AZURE_OPENAI_DEPLOYMENT_NAME: "gpt-35-turbo"
+      AZURE_OPENAI_ENDPOINT: "https://aoai-jasozdr.openai.azure.com/"
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT: "text-embedding-ada-002"
+
       TEAMSFX_DEV_TUNNEL_TEST: true
       TEAMSFX_TELEMETRY_TEST: true
     strategy:
@@ -244,9 +248,15 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Setup Python
+        if: contains(matrix.test-case,  'py')
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: Install Python environment
+        if: contains(matrix.test-case,  'py')
+        run: |
+          pip install python-dotenv aiohttp azure-search azure-search-documents teams-ai~=1.2.0
 
       - name: Install function core tool (ubuntu)
         if: matrix.os == 'ubuntu-latest'
@@ -389,54 +399,12 @@ jobs:
       - name: Get VSCode
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type insider --code_version 1.90.0-insider
+          npx extest get-vscode --storage .test-resources --type stable
 
-      - name: Get chromedriver (linux)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: packages/tests/.test-resources
-        run: |
-          curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/linux64/chromedriver-linux64.zip
-          ls
-
-      - name: Get chromedriver (mac)
-        if: matrix.os == 'macos-latest'
-        working-directory: packages/tests/.test-resources
-        run: |
-          if [[ $(uname -m) == "x86_64" ]]; then
-            curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-x64/chromedriver-mac-x64.zip
-          elif [[ $(uname -m) == "arm64" ]]; then
-            curl -sLO https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/mac-arm64/chromedriver-mac-arm64.zip
-          fi
-          ls
-
-      - name: Get chromedriver (windows)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests/.test-resources
-        run: |
-            powershell Invoke-WebRequest -Uri https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/win64/chromedriver-win64.zip -OutFile chromedriver-win64.zip
-            ls
-  
-      - name: Extract VSCode & chromedriver(unix)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Get chromedriver
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver-linux64.zip" -o".test-resources" -y
-
-      - name: Extract VSCode & chromedriver(mac)
-        if: matrix.os == 'macos-latest' 
-        working-directory: packages/tests
-        run: |
-          if [[ $(uname -m) == "x86_64" ]]; then
-            7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
-          elif [[ $(uname -m) == "arm64" ]]; then
-            7z x ".test-resources/chromedriver-mac-arm64.zip" -o".test-resources" -y
-          fi
-
-      - name: Extract VSCode & chromedriver(win)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
-        run: |
-          7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
+          npx extest get-chromedriver --storage .test-resources --type stable
 
       - name: M365 Login
         working-directory: packages/tests
@@ -451,33 +419,45 @@ jobs:
       - name: Install python extension
         working-directory: packages/tests
         run: |
-          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-python.python
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-python.python
 
       - name: Install docker extension
         if: contains(matrix.test-case,  'docker')
         working-directory: packages/tests
         run: |
-          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type insider ms-azuretools.vscode-docker
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable ms-azuretools.vscode-docker
 
       - name: Install vsix(unix)
         if: matrix.os != 'windows-latest'
         working-directory: packages/tests
         run: |
           vsix=`find . -type f -name "*.vsix" | sed 's|.*/\(.*\)|\1|'`
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file $vsix
+          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
       - name: Install vsix(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
           $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type insider --vsix_file $vsix
+          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
 
-      - name: proposal api support
+      - name: Setup OpenAI key(unix)
+        if: ${{ matrix.os == 'ubuntu-latest' && github.event_name != 'schedule' }}
+        uses: alsosee/envset@v1
+        with:
+          name: SECRET_AZURE_OPENAI_API_KEY
+          value: ${{ secrets.SECRET_AZURE_OPENAI_API_KEY }}
+
+      - name: Setup OpenAI key(macos)
+        if: ${{ matrix.os == 'macos-latest' && github.event_name != 'schedule' }}
         run: |
-          mkdir -p $HOME/.vscode-insiders
-          echo '{"enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"]}' > $HOME/.vscode-insiders/argv.json
-          
+          echo "SECRET_AZURE_OPENAI_API_KEY=${{ secrets.SECRET_AZURE_OPENAI_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Setup OpenAI key(win)
+        if: ${{ matrix.os == 'windows-latest' && github.event_name != 'schedule' }}
+        run: |
+          echo "SECRET_AZURE_OPENAI_API_KEY=${{ secrets.SECRET_AZURE_OPENAI_API_KEY }}" >> $env:GITHUB_ENV
+
       - name: Run UI Test(ubuntu)
         if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests
@@ -485,13 +465,13 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.90.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
      
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type insider --code_version 1.90.0-insider --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
       
       - name: Upload test result json file
         uses: actions/upload-artifact@v3
@@ -532,6 +512,8 @@ jobs:
       id-token: write
       contents: read
     runs-on: ubuntu-latest
+    env:
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3

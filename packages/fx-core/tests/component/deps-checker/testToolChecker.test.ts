@@ -33,7 +33,7 @@ function pathSplit(p: string) {
 }
 
 function trimQuotes(s: string) {
-  return s.replace(/^"|'/, "").replace(/"|'$/, "");
+  return s.replace(/^"|'/g, "").replace(/"|'$/g, "");
 }
 
 function mockInstallInfoFile(projectPath: string) {
@@ -275,7 +275,7 @@ describe("Test Tool Checker Test (npm version)", () => {
       sandbox
         .stub(cpUtils, "executeCommand")
         .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          command = command.replace(/^"|'/, "").replace(/"|'$/, ""); // trim quotes
+          command = command.replace(/^"|'/g, "").replace(/"|'$/g, ""); // trim quotes
           if (args.includes("--version")) {
             if (command.includes(projectPath)) {
               throw new Error("not installed");
@@ -333,7 +333,7 @@ describe("Test Tool Checker Test (npm version)", () => {
       sandbox
         .stub(cpUtils, "executeCommand")
         .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          command = command.replace(/^"|'/, "").replace(/"|'$/, ""); // trim quotes
+          command = command.replace(/^"|'/g, "").replace(/"|'$/g, ""); // trim quotes
           if (args.includes("--version")) {
             if (command.includes(projectPath)) {
               throw new Error("not installed");
@@ -373,7 +373,7 @@ describe("Test Tool Checker Test (npm version)", () => {
       sandbox
         .stub(cpUtils, "executeCommand")
         .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          command = command.replace(/^"|'/, "").replace(/"|'$/, ""); // trim quotes
+          command = command.replace(/^"|'/g, "").replace(/"|'$/g, ""); // trim quotes
           if (args.includes("--version")) {
             if (command.includes(projectPath)) {
               throw new Error("not installed");
@@ -1033,7 +1033,7 @@ describe("Test Tool Checker Test (binary version)", () => {
       sandbox
         .stub(cpUtils, "executeCommand")
         .callsFake(async (_cwd, _logger, _options, command, ...args) => {
-          command = command.replace(/^"|'/, "").replace(/"|'$/, ""); // trim quotes
+          command = command.replace(/^"|'/g, "").replace(/"|'$/g, ""); // trim quotes
           if (args.includes("--version")) {
             if (command.startsWith("teamsapptester")) {
               // global check

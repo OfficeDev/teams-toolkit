@@ -9,7 +9,7 @@
 import { TokenCacheContext } from "@azure/msal-node";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import * as crypto from "crypto";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import VsCodeLogInstance from "./log";
 import * as os from "os";
 import { localize } from "../utils/localizeUtils";

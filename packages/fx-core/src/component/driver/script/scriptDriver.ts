@@ -20,7 +20,7 @@ import { DotenvOutput } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { maskSecretValues } from "../../../common/stringUtils";
+import { maskSecret } from "../../../common/stringUtils";
 
 const ACTION_NAME = "script";
 
@@ -64,7 +64,7 @@ export class ScriptDriver implements StepDriver {
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     await context.progressBar?.next(
-      ProgressMessages.runCommand(typedArgs.run, typedArgs.workingDirectory ?? "./")
+      ProgressMessages.runCommand(maskSecret(typedArgs.run), typedArgs.workingDirectory ?? "./")
     );
     const res = await executeCommand(
       typedArgs.run,
@@ -88,7 +88,7 @@ export class ScriptDriver implements StepDriver {
     const typedArgs = args as ScriptDriverArgs;
     const res = await this._run(typedArgs, ctx);
     const summaries: string[] = res.isOk()
-      ? [`Successfully executed command ${maskSecretValues((args as any).run)}`]
+      ? [`Successfully executed command ${maskSecret((args as any).run)}`]
       : [];
     return { result: res, summaries: summaries };
   }
@@ -126,7 +126,7 @@ export async function executeCommand(
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
     }
     logProvider.verbose(
-      `Start to run command: "${maskSecretValues(finalCmd)}" with args: ${JSON.stringify({
+      `Start to run command: "${maskSecret(finalCmd)}" with args: ${JSON.stringify({
         shell: finalShell,
         cwd: workingDir,
         encoding: systemEncoding,
@@ -156,7 +156,7 @@ export async function executeCommand(
           const outputObject = parseSetOutputCommand(outputString);
           if (Object.keys(outputObject).length > 0)
             logProvider.verbose(
-              `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
+              `script output env variables: ${maskSecret(JSON.stringify(outputObject))}`
             );
           resolve(ok([outputString, outputObject]));
         }
@@ -170,7 +170,7 @@ export async function executeCommand(
     };
     cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      logProvider.info(` [script stdout] ${maskSecretValues(str)}`);
+      logProvider.info(` [script stdout] ${maskSecret(str)}`);
       dataHandler(str);
     });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
@@ -186,7 +186,7 @@ export function getStderrHandler(
 ): (data: Buffer) => void {
   return (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);
-    logProvider.warning(` [script stderr] ${maskSecretValues(str)}`);
+    logProvider.warning(` [script stderr] ${maskSecret(str)}`);
     dataHandler(str);
     stderrStrings.push(str);
   };
@@ -212,15 +212,13 @@ export function convertScriptErrorToFxError(
 }
 
 export function parseSetOutputCommand(stdout: string): DotenvOutput {
-  const regex = /(::set-teamsfx-env|::set-output)\s+([^"'\s]+)=([^"'\s]+)/g;
+  const regex = /::(set-teamsfx-env|set-output)\s+(\w+)=((["'])(.*?)\4|[^"'\s]+)/g;
   const output: DotenvOutput = {};
   let match;
   while ((match = regex.exec(stdout))) {
-    if (match && match.length === 4) {
-      const key = match[2].trim();
-      const value = match[3].trim();
-      output[key] = value;
-    }
+    const key = match[2];
+    const value = match[5] !== undefined ? match[5] : match[3];
+    output[key] = value;
   }
   return output;
 }

@@ -27,6 +27,11 @@ class IncomingWebhookTestCase extends CaseFactory {
     fs.writeFileSync(targetFile, data);
     console.log("replace webhook url finish!");
   }
+
+  public override async onBeforeBrowerStart(): Promise<void> {
+    console.log("no need to verify in browser");
+    return;
+  }
 }
 
 new IncomingWebhookTestCase(
@@ -35,5 +40,5 @@ new IncomingWebhookTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartWebhook],
-  { skipDebug: true }
+  { skipInit: true }
 ).test();

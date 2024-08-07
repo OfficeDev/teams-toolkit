@@ -77,14 +77,12 @@ mockedVSCode.StatusBarAlignment = vscodeMocks.vscMockExtHostedTypes.StatusBarAli
 mockedVSCode.SignatureHelp = vscodeMocks.vscMockExtHostedTypes.SignatureHelp;
 mockedVSCode.DocumentLink = vscodeMocks.vscMockExtHostedTypes.DocumentLink;
 mockedVSCode.TextEdit = vscodeMocks.vscMockExtHostedTypes.TextEdit;
-mockedVSCode.WorkspaceEdit = vscodeMocks.vscMockExtHostedTypes.WorkspaceEdit;
 mockedVSCode.RelativePattern = vscodeMocks.vscMockExtHostedTypes.RelativePattern;
 mockedVSCode.ProgressLocation = vscodeMocks.vscMockExtHostedTypes.ProgressLocation;
 mockedVSCode.ViewColumn = vscodeMocks.vscMockExtHostedTypes.ViewColumn;
 mockedVSCode.TextEditorRevealType = vscodeMocks.vscMockExtHostedTypes.TextEditorRevealType;
 mockedVSCode.TreeItem = vscodeMocks.vscMockExtHostedTypes.TreeItem;
 mockedVSCode.TreeItemCollapsibleState = vscodeMocks.vscMockExtHostedTypes.TreeItemCollapsibleState;
-mockedVSCode.CodeActionKind = vscodeMocks.CodeActionKind;
 mockedVSCode.CompletionItemKind = vscodeMocks.CompletionItemKind;
 mockedVSCode.CompletionTriggerKind = vscodeMocks.CompletionTriggerKind;
 mockedVSCode.DebugAdapterExecutable = vscodeMocks.DebugAdapterExecutable;
@@ -240,6 +238,11 @@ mockedVSCode.commands = {
   openExternal: () => {},
   clipboard: new MockClipboard(),
   appName: "Insider",
+};
+
+(mockedVSCode as any).authentication = {
+  getSession: () => {},
+  onDidChangeSessions: () => {},
 };
 
 function generateNotebookMocks() {

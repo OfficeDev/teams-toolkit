@@ -147,6 +147,10 @@ export enum TelemetryEvent {
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
   LaunchDesktopClientTask = "launch-desktop-client",
 
+  StartDeleteAadAfterDebug = "start-delete-aad-after-debug",
+  SuccessDeleteAadAfterDebug = "success-delete-aad-after-debug",
+  FailDeleteAadAfterDebug = "fail-delete-aad-after-debug",
+
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
 
@@ -193,6 +197,9 @@ export enum TelemetryEvent {
 
   ShowProvisionNotification = "show-provision-notification",
   ClickProvision = "click-provision",
+
+  ShowManualStepRequiredNotification = "show-manual-step-required-notification",
+  ClickReadManualStep = "click-read-manual-step",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",

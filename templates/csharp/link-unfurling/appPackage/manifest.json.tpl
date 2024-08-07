@@ -33,7 +33,7 @@
                         "compose",
                         "commandBox"
                     ],
-                    "description": "Test command to run query",
+                    "description": "Test command to run query, need to implement in the code",
                     "title": "Search",
                     "type": "query",
                     "parameters": [

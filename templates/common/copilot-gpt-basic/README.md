@@ -15,13 +15,14 @@ With the declarative copilot, you can build a custom version of Copilot that can
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - [Copilot for Microsoft 365 license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
 
+![image](https://github.com/user-attachments/assets/1ae813a8-9926-4c02-8546-4811d82ee454)
+
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. Once the Copilot app is loaded in the browser, click on the "…" menu and select "Copilot chats". You will see your declarative copilot on the right rail. Clicking on it will change the experience to showcase the logo and name of your declarative copilot.
 6. Ask a question to your declarative copilot and it should respond based on the instructions provided.
-   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 

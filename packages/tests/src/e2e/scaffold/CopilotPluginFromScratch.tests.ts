@@ -42,14 +42,15 @@ describe("Create Copilot plugin", () => {
     async function () {
       const env = Object.assign({}, process.env);
 
-      env["DEVELOP_COPILOT_PLUGIN"] = "true";
+      env["DEVELOP_COPILOT_EXTENSION"] = "true";
 
       // create
       await CliHelper.createProjectWithCapability(
         appName,
         testFolder,
-        Capability.CopilotPluginFromScratch,
-        env
+        Capability.ApiPlugin,
+        env,
+        "--api-plugin-type  new-api"
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

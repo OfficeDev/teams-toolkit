@@ -92,7 +92,11 @@ import {
   ScratchOptions,
   questionNodes,
 } from "../../src/question";
-import { HubOptions, PluginAvailabilityOptions } from "../../src/question/constants";
+import {
+  ApiPluginStartOptions,
+  HubOptions,
+  PluginAvailabilityOptions,
+} from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
 import { UninstallInputs } from "../../build";
@@ -101,6 +105,7 @@ import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
 import * as projMigrator from "../../src/core/middleware/projectMigratorV3";
 import { VersionSource, VersionState } from "../../src/common/versionMetadata";
+import * as pluginGeneratorHelper from "../../src/component/generator/apiSpec/helper";
 
 const tools = new MockTools();
 
@@ -1982,7 +1987,7 @@ describe("getQuestions", async () => {
   it("happy path", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.CopilotPlugin]: "false",
+      [FeatureFlagName.CopilotExtension]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2020,7 +2025,7 @@ describe("getQuestions", async () => {
   it("happy path with runtime", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "true",
-      [FeatureFlagName.CopilotPlugin]: "false",
+      [FeatureFlagName.CopilotExtension]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2059,7 +2064,7 @@ describe("getQuestions", async () => {
 
   it("happy path: API Copilot plugin enabled", async () => {
     const restore = mockedEnv({
-      [FeatureFlagName.CopilotPlugin]: "true",
+      [FeatureFlagName.CopilotExtension]: "true",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2077,6 +2082,8 @@ describe("getQuestions", async () => {
         "spfx-webpart-name",
         "spfx-folder",
         "me-architecture",
+        "with-plugin",
+        "api-plugin-type",
         "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -2212,6 +2219,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
     const showMessage = sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
@@ -2226,7 +2234,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       [QuestionNames.DestinationApiSpecFilePath]: "destination.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -2272,6 +2280,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    sinon.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
     const result = await core.copilotPluginAddAPI(inputs);
     if (result.isErr()) {
       console.log(result.error);
@@ -2287,7 +2296,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
@@ -2345,7 +2354,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       [QuestionNames.DestinationApiSpecFilePath]: "destination.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -4202,6 +4211,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("warning message");
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const logSpy = sinon.spy(tools.logProvider, "info");
     const result = await core.copilotPluginAddAPI(inputs);
@@ -4316,7 +4326,7 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
-    sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
+    sinon.stub(SpecParser.prototype, "list").throws(new Error("fakeError"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -4635,6 +4645,7 @@ describe("addPlugin", async () => {
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
+    sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith("openapi_1.json")) {
         return true;
@@ -4697,6 +4708,7 @@ describe("addPlugin", async () => {
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
+    sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("warning message");
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith("openapi_1.yaml")) {
         return true;
@@ -4759,6 +4771,7 @@ describe("addPlugin", async () => {
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sandbox.stub(manifestUtils, "_writeAppManifest").resolves(ok(undefined));
+    sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
     sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
       if (path.endsWith("openapi_1.json")) {
         return true;

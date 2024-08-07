@@ -550,180 +550,6 @@ export class TextEdit {
   }
 }
 
-export class WorkspaceEdit implements vscode.WorkspaceEdit {
-  // eslint-disable-next-line class-methods-use-this
-  appendNotebookCellOutput(
-    _uri: vscode.Uri,
-    _index: number,
-    _outputs: vscode.NotebookCellOutput[],
-    _metadata?: vscode.WorkspaceEditEntryMetadata
-  ): void {
-    // Noop.
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  replaceNotebookCellOutputItems(
-    _uri: vscode.Uri,
-    _index: number,
-    _outputId: string,
-    _items: vscode.NotebookCellOutputItem[],
-    _metadata?: vscode.WorkspaceEditEntryMetadata
-  ): void {
-    // Noop.
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  appendNotebookCellOutputItems(
-    _uri: vscode.Uri,
-    _index: number,
-    _outputId: string,
-    _items: vscode.NotebookCellOutputItem[],
-    _metadata?: vscode.WorkspaceEditEntryMetadata
-  ): void {
-    // Noop.
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  replaceNotebookCells(
-    _uri: vscode.Uri,
-    _start: number,
-    _end: number,
-    _cells: vscode.NotebookCellData[],
-    _metadata?: vscode.WorkspaceEditEntryMetadata
-  ): void {
-    // Noop.
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  replaceNotebookCellOutput(
-    _uri: vscode.Uri,
-    _index: number,
-    _outputs: vscode.NotebookCellOutput[],
-    _metadata?: vscode.WorkspaceEditEntryMetadata
-  ): void {
-    // Noop.
-  }
-
-  private _seqPool = 0;
-
-  private _resourceEdits: { seq: number; from: vscUri.URI; to: vscUri.URI }[] = [];
-
-  private _textEdits = new Map<string, { seq: number; uri: vscUri.URI; edits: TextEdit[] }>();
-
-  // createResource(uri: vscode.Uri): void {
-  // 	this.renameResource(undefined, uri);
-  // }
-
-  // deleteResource(uri: vscode.Uri): void {
-  // 	this.renameResource(uri, undefined);
-  // }
-
-  // renameResource(from: vscode.Uri, to: vscode.Uri): void {
-  // 	this._resourceEdits.push({ seq: this._seqPool+= 1, from, to });
-  // }
-
-  // resourceEdits(): [vscode.Uri, vscode.Uri][] {
-  // 	return this._resourceEdits.map(({ from, to }) => (<[vscode.Uri, vscode.Uri]>[from, to]));
-  // }
-
-  // eslint-disable-next-line class-methods-use-this
-  createFile(_uri: vscode.Uri, _options?: { overwrite?: boolean; ignoreIfExists?: boolean }): void {
-    throw new Error("Method not implemented.");
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  deleteFile(
-    _uri: vscode.Uri,
-    _options?: { recursive?: boolean; ignoreIfNotExists?: boolean }
-  ): void {
-    throw new Error("Method not implemented.");
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renameFile(
-    _oldUri: vscode.Uri,
-    _newUri: vscode.Uri,
-    _options?: { overwrite?: boolean; ignoreIfExists?: boolean }
-  ): void {
-    throw new Error("Method not implemented.");
-  }
-
-  replace(uri: vscUri.URI, range: Range, newText: string): void {
-    const edit = new TextEdit(range, newText);
-    let array = this.get(uri);
-    if (array) {
-      array.push(edit);
-    } else {
-      array = [edit];
-    }
-    this.set(uri, array);
-  }
-
-  insert(resource: vscUri.URI, position: Position, newText: string): void {
-    this.replace(resource, new Range(position, position), newText);
-  }
-
-  delete(resource: vscUri.URI, range: Range): void {
-    this.replace(resource, range, "");
-  }
-
-  has(uri: vscUri.URI): boolean {
-    return this._textEdits.has(uri.toString());
-  }
-
-  set(uri: vscUri.URI, edits: TextEdit[]): void {
-    let data = this._textEdits.get(uri.toString());
-    if (!data) {
-      data = { seq: (this._seqPool += 1), uri, edits: [] };
-      this._textEdits.set(uri.toString(), data);
-    }
-    if (!edits) {
-      data.edits = [];
-    } else {
-      data.edits = edits.slice(0);
-    }
-  }
-
-  get(uri: vscUri.URI): TextEdit[] {
-    if (!this._textEdits.has(uri.toString())) {
-      return [];
-    }
-    const { edits } = this._textEdits.get(uri.toString()) || {};
-    return edits ? edits.slice() : [];
-  }
-
-  entries(): [vscUri.URI, TextEdit[]][] {
-    const res: [vscUri.URI, TextEdit[]][] = [];
-    this._textEdits.forEach((value) => res.push([value.uri, value.edits]));
-    return res.slice();
-  }
-
-  allEntries(): ([vscUri.URI, TextEdit[]] | [vscUri.URI, vscUri.URI])[] {
-    return this.entries();
-    // 	// use the 'seq' the we have assigned when inserting
-    // 	// the operation and use that order in the resulting
-    // 	// array
-    // 	const res: ([vscUri.URI, TextEdit[]] | [vscUri.URI,vscUri.URI])[] = [];
-    // 	this._textEdits.forEach(value => {
-    // 		const { seq, uri, edits } = value;
-    // 		res[seq] = [uri, edits];
-    // 	});
-    // 	this._resourceEdits.forEach(value => {
-    // 		const { seq, from, to } = value;
-    // 		res[seq] = [from, to];
-    // 	});
-    // 	return res;
-  }
-
-  get size(): number {
-    return this._textEdits.size + this._resourceEdits.length;
-  }
-
-  toJSON(): [vscUri.URI, TextEdit[]][] {
-    return this.entries();
-  }
-}
-
 export class SnippetString {
   static isSnippetString(thing: unknown): thing is SnippetString {
     if (thing instanceof SnippetString) {
@@ -797,24 +623,6 @@ export class SnippetString {
     name: string,
     defaultValue?: string | ((snippet: SnippetString) => void)
   ): SnippetString {
-    if (typeof defaultValue === "function") {
-      const nested = new SnippetString();
-      nested._tabstop = this._tabstop;
-      defaultValue(nested);
-      this._tabstop = nested._tabstop;
-      defaultValue = nested.value;
-    } else if (typeof defaultValue === "string") {
-      defaultValue = defaultValue.replace(/\$|}/g, "\\$&");
-    }
-
-    this.value += "${";
-    this.value += name;
-    if (defaultValue) {
-      this.value += ":";
-      this.value += defaultValue;
-    }
-    this.value += "}";
-
     return this;
   }
 }
@@ -933,8 +741,6 @@ export class Diagnostic {
 }
 
 export class Hover {
-  public contents: vscode.MarkdownString[] | vscode.MarkedString[];
-
   public range: Range;
 
   constructor(
@@ -945,17 +751,6 @@ export class Hover {
       | vscode.MarkedString[],
     range?: Range
   ) {
-    if (!contents) {
-      throw new Error("Illegal argument, contents must be defined");
-    }
-    if (Array.isArray(contents)) {
-      this.contents = <vscode.MarkdownString[] | vscode.MarkedString[]>contents;
-    } else if (vscMockHtmlContent.isMarkdownString(contents)) {
-      this.contents = [contents];
-    } else {
-      this.contents = [contents];
-    }
-
     this.range = range || new Range(new Position(0, 0), new Position(0, 0));
   }
 }
@@ -1089,8 +884,6 @@ export class CodeAction {
   title: string;
 
   command?: vscode.Command;
-
-  edit?: WorkspaceEdit;
 
   dianostics?: Diagnostic[];
 

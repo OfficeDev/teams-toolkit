@@ -14,7 +14,6 @@ import * as path from "path";
 import { Service } from "typedi";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
 import { TelemetryConstant } from "../../constant/commonConstant";
-import { ProgressMessages } from "../../messages";
 import { getSystemEncoding } from "../../utils/charsetUtils";
 import { DotenvOutput } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";

@@ -5,7 +5,11 @@
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  createEnvironmentWithPython,
+  startDebugging,
+  waitForTerminal,
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateWelcomeAndReplyBot,
@@ -16,6 +20,7 @@ import {
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
+  LocalDebugTaskLabel2,
 } from "../../utils/constants";
 import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -29,7 +34,8 @@ describe("Local Debug Tests", function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
     localDebugTestContext = new LocalDebugTestContext("aichat", {
-      lang: "typescript",
+      lang: "python",
+      llmServiceType: "llm-service-openai",
     });
     await localDebugTestContext.before();
   });
@@ -40,9 +46,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [TypeScript] Local debug AI chat bot",
+    "[auto] [Python][OpenAI] Local debug for Basic AI Chatbot",
     {
-      testPlanCaseId: 24808529,
+      testPlanCaseId: 27178071,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -50,31 +56,21 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.ts");
+      validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
-      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
-      const azureOpenAiKey = OpenAiKey.azureOpenAiKey
-        ? OpenAiKey.azureOpenAiKey
-        : "fake";
-      const azureOpenAiEndpoint = OpenAiKey.azureOpenAiEndpoint
-        ? OpenAiKey.azureOpenAiEndpoint
-        : "https://test.com";
-      const azureOpenAiModelDeploymentName =
-        OpenAiKey.azureOpenAiModelDeploymentName
-          ? OpenAiKey.azureOpenAiModelDeploymentName
-          : "fake";
-      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", azureOpenAiKey);
-      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", azureOpenAiEndpoint);
-      editDotEnvFile(
-        envPath,
-        "AZURE_OPENAI_DEPLOYMENT_NAME",
-        azureOpenAiModelDeploymentName
-      );
+      const isRealKey = OpenAiKey.openAiKey ? true : false;
+      const openAiKey = OpenAiKey.openAiKey ? OpenAiKey.openAiKey : "fake";
+      editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
+
+      await createEnvironmentWithPython();
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
+      await waitForTerminal(
+        LocalDebugTaskLabel2.PythonDebugConsole,
+        "Running on http://localhost:3978"
+      );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
       const page = await initPage(

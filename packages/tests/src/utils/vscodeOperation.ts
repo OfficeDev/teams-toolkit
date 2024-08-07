@@ -832,21 +832,26 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
-      // input fake Azure OpenAI Key
-      await input.setText("fake");
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      // input fake Azure OpenAI Endpoint
-      await input.setText("https://test.com");
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      // input deployment name
-      await input.setText("dev");
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      await driver.sleep(Timeout.input);
+      if (aiType === "Azure OpenAI") {
+        // input fake Azure OpenAI Key
+        await input.setText("fake");
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+        // input fake Azure OpenAI Endpoint
+        await input.setText("https://test.com");
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+        // input deployment name
+        await input.setText("dev");
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+      } else {
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+      }
       break;
     }
     case "aiagentassist": {

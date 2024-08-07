@@ -49,8 +49,6 @@
       "remotedebug-notification-func-timertrigger-win-only",
       "remotedebug-link-unfurling-win-only",
       "remotedebug-link-unfurling-ts-win-only",
-      "remotedebug-aichat-bot-win-only",
-      "remotedebug-aichat-bot-ts-win-only",
       "remotedebug-aiagent-assistapi-openai-bot-win-only",
       "remotedebug-aiagent-assistapi-openai-bot-ts-win-only",
       "remotedebug-aiagent-assistapi-openai-bot-py-win-only",
@@ -64,8 +62,6 @@
       "remotedebug-msg-newapi-ts-win-only",
       "remotedebug-msg-openapi-win-only",
       "localdebug-command-and-response-ts",
-      "localdebug-aichat-bot",
-      "localdebug-aichat-bot-ts",
       "localdebug-aiagent-new-azureopenai-bot",
       "localdebug-aiagent-new-azureopenai-bot-ts",
       "localdebug-aiagent-new-azureopenai-bot-py",
@@ -75,7 +71,6 @@
       "localdebug-aiagent-new-openai-bot-py",
       "localdebug-aiagent-new-openai-bot-ts",
       "localdebug-aiagent-new-openai-bot",
-      "remotedebug-aichat-bot-py-win-only",
       "remotedebug-msg-newapi-apikey-ts-win-only",
       "remotedebug-msg-newapi-apikey-win-only",
       "remotedebug-spfxreact-import-single",
@@ -92,7 +87,13 @@
       "remotedebug-chatdata-customize-py-azureopenai-win-only",
       "remotedebug-chatdata-customize-js-openai-win-only",
       "remotedebug-chatdata-customize-ts-openai-win-only",
-      "remotedebug-chatdata-customize-py-openai-win-only"
+      "remotedebug-chatdata-customize-py-openai-win-only",
+      "remotedebug-aichat-bot-azureopenai-win-only",
+      "remotedebug-aichat-bot-openai-win-only",
+      "remotedebug-aichat-bot-py-azureopenai-win-only",
+      "remotedebug-aichat-bot-py-openai-win-only",
+      "remotedebug-aichat-bot-ts-azureopenai-win-only",
+      "remotedebug-aichat-bot-ts-openai-win-only"
     ],
     "node-20": ["localdebug-obo-tab"]
   },
@@ -134,7 +135,6 @@
       "localdebug-link-unfurling-ts",
       "localdebug-msg-newapi",
       "localdebug-msg-newapi-ts",
-      "localdebug-aichat-bot-py",
       "remotedebug-spfx-publish",
       "treeview-spfx-manifest",
       "localdebug-spfx-minimal",
@@ -150,7 +150,13 @@
       "localdebug-chatdata-customize-py-azureopenai",
       "localdebug-chatdata-customize-js-openai",
       "localdebug-chatdata-customize-ts-openai",
-      "localdebug-chatdata-customize-py-openai"
+      "localdebug-chatdata-customize-py-openai",
+      "localdebug-aichat-bot-azureopenai",
+      "localdebug-aichat-bot-openai",
+      "localdebug-aichat-bot-py-azureopenai",
+      "localdebug-aichat-bot-py-openai",
+      "localdebug-aichat-bot-ts-azureopenai",
+      "localdebug-aichat-bot-ts-openai"
     ],
     "node-20": ["localdebug-obo-tab"]
   },

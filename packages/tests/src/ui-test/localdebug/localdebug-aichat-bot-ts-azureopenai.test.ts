@@ -28,7 +28,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("aichat");
+    localDebugTestContext = new LocalDebugTestContext("aichat", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 
@@ -38,9 +40,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [JavaScript] Local debug AI chat bot",
+    "[auto] [Typescript][Azure OpenAI] Local debug for Basic AI Chatbot",
     {
-      testPlanCaseId: 24808522,
+      testPlanCaseId: 27042450,
       author: "v-helzha@microsoft.com",
     },
     async function () {
@@ -48,7 +50,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.js");
+      validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey

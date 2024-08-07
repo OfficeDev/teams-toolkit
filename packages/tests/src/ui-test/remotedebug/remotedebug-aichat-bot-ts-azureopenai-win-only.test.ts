@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  provisionProject,
   deployProject,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -61,15 +61,18 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][JS] Remote debug for ai chat bot project Tests",
+    "[auto][Typescript][Azure OpenAI] Remote debug for Basic AI Chatbot",
     {
-      testPlanCaseId: 24808528,
+      testPlanCaseId: 27042830,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aichat", appName, { aiType: "Azure OpenAI" });
-      validateFileExist(projectPath, "src/index.js");
+      await createNewProject("aichat", appName, {
+        lang: "TypeScript",
+        aiType: "Azure OpenAI",
+      });
+      validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey

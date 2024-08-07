@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  deployProject,
   provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -23,7 +23,6 @@ import {
 import { Env, OpenAiKey } from "../../utils/env";
 import { it } from "../../utils/it";
 import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
-import { RetryHandler } from "../../utils/retryHandler";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -62,18 +61,15 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][Python] Remote debug for ai chat bot project Tests",
+    "[auto][Javascript][Azure OpenAI] Remote debug for Basic AI Chatbot",
     {
-      testPlanCaseId: 27178027,
+      testPlanCaseId: 27042828,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aichat", appName, {
-        lang: "Python",
-        aiType: "Azure OpenAI",
-      });
-      validateFileExist(projectPath, "src/app.py");
+      await createNewProject("aichat", appName, { aiType: "Azure OpenAI" });
+      validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       const azureOpenAiKey = OpenAiKey.azureOpenAiKey
@@ -90,7 +86,7 @@ describe("Remote debug Tests", function () {
       editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", azureOpenAiEndpoint);
       editDotEnvFile(
         envPath,
-        "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME",
+        "AZURE_OPENAI_DEPLOYMENT_NAME",
         azureOpenAiModelDeploymentName
       );
       await provisionProject(appName, projectPath);
@@ -105,54 +101,24 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      try {
-        if (isRealKey) {
-          await validateWelcomeAndReplyBot(page, {
-            hasWelcomeMessage: false,
-            hasCommandReplyValidation: true,
-            botCommand: "500+500=?",
-            expectedWelcomeMessage:
-              ValidationContent.AiChatBotWelcomeInstruction,
-            expectedReplyMessage: "1000",
-            timeout: Timeout.longTimeWait,
-          });
-        } else {
-          await validateWelcomeAndReplyBot(page, {
-            hasWelcomeMessage: false,
-            hasCommandReplyValidation: true,
-            botCommand: "helloWorld",
-            expectedWelcomeMessage:
-              ValidationContent.AiChatBotWelcomeInstruction,
-            expectedReplyMessage: ValidationContent.AiBotErrorMessage,
-            timeout: Timeout.longTimeWait,
-          });
-        }
-      } catch {
-        await RetryHandler.retry(async () => {
-          await deployProject(projectPath, Timeout.botDeploy);
-          await driver.sleep(Timeout.longTimeWait);
-          if (isRealKey) {
-            await validateWelcomeAndReplyBot(page, {
-              hasWelcomeMessage: false,
-              hasCommandReplyValidation: true,
-              botCommand: "500+500=?",
-              expectedWelcomeMessage:
-                ValidationContent.AiChatBotWelcomeInstruction,
-              expectedReplyMessage: "1000",
-              timeout: Timeout.longTimeWait,
-            });
-          } else {
-            await validateWelcomeAndReplyBot(page, {
-              hasWelcomeMessage: false,
-              hasCommandReplyValidation: true,
-              botCommand: "helloWorld",
-              expectedWelcomeMessage:
-                ValidationContent.AiChatBotWelcomeInstruction,
-              expectedReplyMessage: ValidationContent.AiBotErrorMessage,
-              timeout: Timeout.longTimeWait,
-            });
-          }
-        }, 2);
+      if (isRealKey) {
+        await validateWelcomeAndReplyBot(page, {
+          hasWelcomeMessage: false,
+          hasCommandReplyValidation: true,
+          botCommand: "500+500=?",
+          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+          expectedReplyMessage: "1000",
+          timeout: Timeout.longTimeWait,
+        });
+      } else {
+        await validateWelcomeAndReplyBot(page, {
+          hasWelcomeMessage: false,
+          hasCommandReplyValidation: true,
+          botCommand: "helloWorld",
+          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+          expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+          timeout: Timeout.longTimeWait,
+        });
       }
     }
   );

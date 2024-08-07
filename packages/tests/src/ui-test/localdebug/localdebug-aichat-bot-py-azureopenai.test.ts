@@ -45,9 +45,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [Python] Local debug AI chat bot",
+    "[auto] [Python][Azure OpenAI] Local debug for Basic AI Chatbot",
     {
-      testPlanCaseId: 27178071,
+      testPlanCaseId: 27178027,
       author: "v-helzha@microsoft.com",
     },
     async function () {

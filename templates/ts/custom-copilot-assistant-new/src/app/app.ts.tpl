@@ -1,4 +1,4 @@
-import { MemoryStorage } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
 
@@ -41,7 +41,16 @@ const app = new Application<ApplicationTurnState>({
   },
 });
 
-app.message("/reset", resetMessage);
+app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
+  const welcomeText = "How can I help you today?";
+  for (const member of turnContext.activity.membersAdded) {
+    if (member.id !== turnContext.activity.recipient.id) {
+      await turnContext.sendActivity(MessageFactory.text(welcomeText));
+    }
+  }
+});
+
+app.message("reset", resetMessage);
 
 app.ai.action("createTask", createTask);
 app.ai.action("deleteTask", deleteTask);

@@ -247,6 +247,7 @@ export class ProjectTypeOptions {
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.detail"),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }

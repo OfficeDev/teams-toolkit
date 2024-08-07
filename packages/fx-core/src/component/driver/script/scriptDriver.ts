@@ -63,12 +63,7 @@ export class ScriptDriver implements StepDriver {
     typedArgs: ScriptDriverArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    await context.progressBar?.next(
-      ProgressMessages.runCommand(
-        maskSecret(typedArgs.run, { replace: "***" }),
-        typedArgs.workingDirectory ?? "./"
-      )
-    );
+    await context.progressBar?.next("Running script");
     const res = await executeCommand(
       typedArgs.run,
       context.projectPath,

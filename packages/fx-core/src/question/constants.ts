@@ -2,11 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isCopilotExtensionEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 
@@ -208,11 +204,9 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: isCopilotExtensionEnabled()
-        ? getLocalizedString(
-            "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
-          )
-        : getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
+      ),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
@@ -438,9 +432,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: isCopilotExtensionEnabled()
-        ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
-        : getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      detail: getLocalizedString("core.M365SearchAppOptionItem.copilot.detail"),
     };
   }
 
@@ -647,9 +639,9 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isCopilotExtensionEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotExtensions());
-    }
+
+    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
+
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
@@ -870,9 +862,7 @@ export class MeArchitectureOptions {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
-      isCopilotExtensionEnabled()
-        ? MeArchitectureOptions.botPlugin()
-        : MeArchitectureOptions.botMe(),
+      MeArchitectureOptions.botPlugin(),
     ];
   }
 

@@ -1192,16 +1192,10 @@ describe("oauthQuestion", async () => {
 
 describe("addPluginQuestionNode", async () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   afterEach(() => {
     sandbox.restore();
     mockedEnvRestore();
-  });
-
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CopilotExtension]: "true",
-    });
   });
 
   it("success: can add a plugin or an action", async () => {
@@ -1259,9 +1253,6 @@ describe("addPluginQuestionNode", async () => {
   });
 
   it("success: can add an action only", async () => {
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CopilotExtension]: "true",
-    });
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
       capabilities: ["copilotGpt", "plugin"],

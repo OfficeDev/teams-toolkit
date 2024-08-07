@@ -23,11 +23,7 @@ import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isCopilotExtensionEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -88,9 +84,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
 
-      if (isCopilotExtensionEnabled()) {
-        staticOptions.push(ProjectTypeOptions.copilotExtension(inputs.platform));
-      }
+      staticOptions.push(ProjectTypeOptions.copilotExtension(inputs.platform));
 
       if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
         staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
@@ -1576,10 +1570,10 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     deleteNames.push(QuestionNames.Runtime);
   }
-  if (!isCopilotExtensionEnabled()) {
-    deleteNames.push(QuestionNames.ApiPluginType);
-    deleteNames.push(QuestionNames.WithPlugin);
-  }
+
+  deleteNames.push(QuestionNames.ApiPluginType);
+  deleteNames.push(QuestionNames.WithPlugin);
+
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;
 }

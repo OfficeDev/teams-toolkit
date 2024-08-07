@@ -14,7 +14,6 @@ import * as path from "path";
 import { Service } from "typedi";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
 import { TelemetryConstant } from "../../constant/commonConstant";
-import { ProgressMessages } from "../../messages";
 import { getSystemEncoding } from "../../utils/charsetUtils";
 import { DotenvOutput } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
@@ -63,9 +62,7 @@ export class ScriptDriver implements StepDriver {
     typedArgs: ScriptDriverArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    await context.progressBar?.next(
-      ProgressMessages.runCommand(maskSecret(typedArgs.run), typedArgs.workingDirectory ?? "./")
-    );
+    await context.progressBar?.next("Running script");
     const res = await executeCommand(
       typedArgs.run,
       context.projectPath,
@@ -87,9 +84,7 @@ export class ScriptDriver implements StepDriver {
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     const typedArgs = args as ScriptDriverArgs;
     const res = await this._run(typedArgs, ctx);
-    const summaries: string[] = res.isOk()
-      ? [`Successfully executed command ${maskSecret((args as any).run)}`]
-      : [];
+    const summaries: string[] = res.isOk() ? [`Successfully executed command`] : [];
     return { result: res, summaries: summaries };
   }
 }
@@ -126,7 +121,9 @@ export async function executeCommand(
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
     }
     logProvider.verbose(
-      `Start to run command: "${maskSecret(finalCmd)}" with args: ${JSON.stringify({
+      `Start to run command: "${maskSecret(finalCmd, {
+        replace: "***",
+      })}" with args: ${JSON.stringify({
         shell: finalShell,
         cwd: workingDir,
         encoding: systemEncoding,
@@ -156,7 +153,9 @@ export async function executeCommand(
           const outputObject = parseSetOutputCommand(outputString);
           if (Object.keys(outputObject).length > 0)
             logProvider.verbose(
-              `script output env variables: ${maskSecret(JSON.stringify(outputObject))}`
+              `script output env variables: ${maskSecret(JSON.stringify(outputObject), {
+                replace: "***",
+              })}`
             );
           resolve(ok([outputString, outputObject]));
         }
@@ -170,7 +169,7 @@ export async function executeCommand(
     };
     cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      logProvider.info(` [script stdout] ${maskSecret(str)}`);
+      logProvider.info(` [script stdout] ${maskSecret(str, { replace: "***" })}`);
       dataHandler(str);
     });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
@@ -186,7 +185,7 @@ export function getStderrHandler(
 ): (data: Buffer) => void {
   return (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);
-    logProvider.warning(` [script stderr] ${maskSecret(str)}`);
+    logProvider.warning(` [script stderr] ${maskSecret(str, { replace: "***" })}`);
     dataHandler(str);
     stderrStrings.push(str);
   };

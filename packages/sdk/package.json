@@ -48,7 +48,6 @@
     "@azure/identity": "^2.0.1",
     "@azure/msal-browser": "^3.0.2",
     "@azure/msal-node": "^1.14.6",
-    "@microsoft/adaptivecards-tools": "workspace:*",
     "adaptivecards-templating": "^2.3.1",
     "adaptive-expressions": "^4.22.3",
     "@microsoft/microsoft-graph-client": "^3.0.7",

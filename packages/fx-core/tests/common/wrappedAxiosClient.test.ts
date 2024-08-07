@@ -407,6 +407,9 @@ describe("Wrapped Axios Client Test", () => {
     );
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
 
+    apiName = WrappedAxiosClient.convertUrlToApiName(getAppStudioEndpoint() + `unknown`, "GET");
+    chai.assert.equal(apiName, (getAppStudioEndpoint() + `unknown`).replace(/\//g, `-`));
+
     apiName = WrappedAxiosClient.convertUrlToApiName(
       "https://authsvc.teams.microsoft.com/v1.0/users/region",
       "POST"

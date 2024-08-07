@@ -13,7 +13,7 @@ import { SideloadingNode } from "./sideloadingNode";
 export class M365AccountNode extends DynamicNode {
   public status: AccountItemStatus;
   private sideloadingNode: SideloadingNode;
-  private copilotNode: CopilotNode | undefined;
+  private copilotNode: CopilotNode;
 
   constructor(private eventEmitter: vscode.EventEmitter<DynamicNode | undefined | void>) {
     super("", vscode.TreeItemCollapsibleState.None);
@@ -87,9 +87,7 @@ export class M365AccountNode extends DynamicNode {
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
-    return this.copilotNode !== undefined
-      ? [this.sideloadingNode, this.copilotNode]
-      : [this.sideloadingNode];
+    return [this.sideloadingNode, this.copilotNode];
   }
 
   public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {

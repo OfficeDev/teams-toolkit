@@ -27,10 +27,7 @@ export class WrappedAxiosClient {
     instance.interceptors.request.use((request) => this.onRequest(request));
 
     // eslint-disable-next-line prettier/prettier
-    instance.interceptors.response.use(
-      (response) => this.onResponse(response),
-      (error) => this.onRejected(error)
-    );
+    instance.interceptors.response.use((response) => this.onResponse(response), (error) => this.onRejected(error));
 
     return instance;
   }

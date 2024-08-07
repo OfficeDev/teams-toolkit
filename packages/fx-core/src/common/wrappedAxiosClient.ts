@@ -27,7 +27,10 @@ export class WrappedAxiosClient {
     instance.interceptors.request.use((request) => this.onRequest(request));
 
     // eslint-disable-next-line prettier/prettier
-    instance.interceptors.response.use((response) => this.onResponse(response), (error) => this.onRejected(error));
+    instance.interceptors.response.use(
+      (response) => this.onResponse(response),
+      (error) => this.onRejected(error)
+    );
 
     return instance;
   }
@@ -226,6 +229,27 @@ export class WrappedAxiosClient {
         if (method.toUpperCase() === HttpMethod.POST) {
           return APP_STUDIO_API_NAMES.CREATE_BOT;
         }
+      }
+      if (fullPath.match(new RegExp("/api/v1.0/appvalidations/appdefinition/validate"))) {
+        return APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION;
+      }
+      if (
+        fullPath.match(
+          new RegExp(
+            "/api/v1.0/appvalidations/appdefinitions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+          )
+        )
+      ) {
+        return APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS;
+      }
+      if (
+        fullPath.match(
+          new RegExp(
+            "/api/v1.0/appvalidations/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+          )
+        )
+      ) {
+        return APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT;
       }
     }
     if (

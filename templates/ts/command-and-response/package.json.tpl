@@ -31,6 +31,7 @@
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
+        "@types/json-schema": "^7.0.15",
         "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "nodemon": "^2.0.7",

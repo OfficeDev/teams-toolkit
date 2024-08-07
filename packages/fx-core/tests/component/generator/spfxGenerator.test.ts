@@ -21,7 +21,7 @@ import {
   SPFxGeneratorImport,
   SPFxGeneratorNew,
 } from "../../../src/component/generator/spfx/spfxGenerator";
-import { Utils } from "../../../src/component/generator/spfx/utils/utils";
+import { getShellOptionValue, Utils } from "../../../src/component/generator/spfx/utils/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
 import { FileNotFoundError, UserCancelError } from "../../../src/error";
 import {
@@ -31,6 +31,7 @@ import {
   SPFxVersionOptionIds,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
+import os from "os";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -1196,6 +1197,27 @@ describe("Utils", () => {
     const appName = "appNameWithoutSuffix";
     const res = Utils.truncateAppShortName(appName);
     chai.expect(res).equals("appNameWithoutSuffix");
+  });
+
+  describe("getShellOptionValue", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("windows", () => {
+      sandbox.stub(os, "type").returns("Windows_NT");
+      const res = getShellOptionValue();
+
+      chai.expect(res).equal("cmd.exe");
+    });
+
+    it("non windowns", () => {
+      sandbox.stub(os, "type").returns("Linux");
+      const res = getShellOptionValue();
+
+      chai.expect(res).true;
+    });
   });
 });
 

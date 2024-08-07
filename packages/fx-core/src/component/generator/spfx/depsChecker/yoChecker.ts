@@ -20,7 +20,7 @@ import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError } from "../error";
 import { cpUtils } from "../../../deps-checker/util/cpUtils";
-import { getExecCommand, Utils } from "../utils/utils";
+import { getExecCommand, getShellOptionValue, Utils } from "../utils/utils";
 import { Constants } from "../utils/constants";
 import { NpmInstallError } from "../../../../error";
 
@@ -181,7 +181,7 @@ export class YoChecker implements DependencyChecker {
       await cpUtils.executeCommand(
         undefined,
         this._logger,
-        { timeout: timeout, shell: false },
+        { timeout: timeout, shell: getShellOptionValue() },
         getExecCommand("npm"),
         "install",
         `${name}@${version}`,

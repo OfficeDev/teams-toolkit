@@ -7,7 +7,7 @@ import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 import { cpUtils, DebugLogger } from "../../../deps-checker/util/cpUtils";
-import * as os from "os";
+import os from "os";
 import { Constants } from "./constants";
 
 export class Utils {
@@ -103,7 +103,7 @@ export class Utils {
       const output = await cpUtils.executeCommand(
         undefined,
         logger,
-        { shell: true },
+        { shell: getShellOptionValue() },
         "npm",
         "--version"
       );
@@ -125,7 +125,7 @@ export class Utils {
       const output = await cpUtils.executeCommand(
         undefined,
         undefined,
-        undefined,
+        { shell: getShellOptionValue() },
         "node",
         "--version"
       );
@@ -153,7 +153,7 @@ export class Utils {
       const output = await cpUtils.executeCommand(
         undefined,
         logger,
-        { timeout: timeout, shell: false },
+        { timeout: timeout, shell: getShellOptionValue() },
         getExecCommand("npm"),
         "ls",
         `${packageName}`,
@@ -186,7 +186,7 @@ export class Utils {
       const output = await cpUtils.executeCommand(
         undefined,
         logger,
-        { timeout: timeout, shell: false },
+        { timeout: timeout, shell: getShellOptionValue() },
         getExecCommand("npm"),
         "view",
         `${packageName}`,
@@ -233,6 +233,10 @@ export class Utils {
 
 export function getExecCommand(command: string): string {
   return isWindows() ? `${command}.cmd` : command;
+}
+
+export function getShellOptionValue(): boolean | string {
+  return isWindows() ? "cmd.exe" : true;
 }
 
 function isWindows(): boolean {

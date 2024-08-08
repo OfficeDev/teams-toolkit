@@ -50,7 +50,7 @@ describe("Local Debug Tests", function () {
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
 
-      const isRealKey = OpenAiKey.openAiKey ? true : false;
+      const isRealKey = false;
       const openAiKey = OpenAiKey.openAiKey ? OpenAiKey.openAiKey : "fake";
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
 

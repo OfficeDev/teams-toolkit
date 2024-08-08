@@ -72,7 +72,7 @@ describe("Remote debug Tests", function () {
       });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
-      const isRealKey = OpenAiKey.openAiKey ? true : false;
+      const isRealKey = false;
       const openAiKey = OpenAiKey.openAiKey ? OpenAiKey.openAiKey : "fake";
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
       await provisionProject(appName, projectPath);

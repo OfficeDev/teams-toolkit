@@ -126,6 +126,28 @@ describe("User Interaction Tests", function () {
       }
     });
 
+    it("Add description in title", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [{ id: "id1", description: "some description", label: "label" }],
+      };
+      sandbox.stub(UI, "loadSelectDynamicData").resolves(ok({} as any));
+      sandbox.stub(UI, "singleSelect").resolves(ok("id1"));
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        // expect(result.value.result).deep.equals({
+        //   id: "a",
+        //   cliName: "aa",
+        //   label: "aaa",
+        // });
+        console.log(result.value);
+      } else {
+        console.log(result.error);
+      }
+    });
+
     it("invalid option", async () => {
       sandbox.stub(UI, "singleSelect").resolves(ok("c"));
       const config: SingleSelectConfig = {

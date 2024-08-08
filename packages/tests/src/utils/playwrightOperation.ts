@@ -1358,7 +1358,7 @@ export async function validateBot(
             `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
           );
         }
-        if (options.consentPrompt) {
+        if (options?.consentPrompt) {
           try {
             // wait for alert message to show
             console.log("click Continue");

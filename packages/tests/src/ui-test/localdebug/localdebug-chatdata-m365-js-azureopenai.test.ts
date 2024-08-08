@@ -92,6 +92,7 @@ describe("Local Debug Tests", function () {
       await validateBot(page, {
         botCommand: "show",
         expected: "You are successfully logged in.",
+        consentPrompt: true,
       });
       console.log("validate bot message");
       if (isRealKey) {

@@ -7,6 +7,7 @@ import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
 import {
   expandEnvironmentVariable,
   expandVariableWithFunction,
+  expandVariableWithFunctionV2,
   getEnvironmentVariables,
 } from "../../../utils/common";
 import { WrapDriverContext } from "../../util/wrapUtil";
@@ -233,8 +234,11 @@ export function getResolvedManifest(
   ctx?.addTelemetryProperties({
     [telemetryKey]: vars.join(";"),
   });
-  let result = expandEnvironmentVariable(content);
-  result = expandVariableWithFunction(result, undefined, true);
+
+  let result = expandVariableWithFunctionV2(content, undefined, true);
+  console.log("result after processing function: " + result);
+  result = expandEnvironmentVariable(result);
+  console.log("final result " + result);
   const notExpandedVars = getEnvironmentVariables(result);
   if (notExpandedVars.length > 0) {
     return err(new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), path));

@@ -191,6 +191,95 @@ export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: str
 
 //   return variables;
 // }
+// function can only be used in root file, manifest.json
+export function expandVariableWithFunctionV2(
+  content: string, // content has been replaced with values in   // const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g; ENV
+  envs?: { [key in string]: string },
+  isJson?: boolean
+): string {
+  const regex = /\$\[ *[a-zA-Z][a-zA-Z]*\(.*\) *\]/g;
+  const matches = content.match(regex);
+
+  if (!matches) {
+    return content;
+  }
+  for (const placeholder of matches) {
+    let value = processFunctionV2(placeholder.slice(2, -1).trim(), envs);
+    if (isJson && value) {
+      value = JSON.stringify(value).slice(1, -1);
+    }
+    if (value) {
+      console.log("value");
+      console.log(value);
+      content = content.replace(placeholder, value);
+    }
+  }
+  return content;
+}
+
+export function processFunctionV2(
+  content: string | undefined,
+  envs?: { [key in string]: string }
+): string | undefined {
+  // undefined means it is invalid.
+  if (!content) {
+    return undefined;
+  }
+
+  const firstTrimmedContent = content.trim();
+  if (!firstTrimmedContent.startsWith("file(") || !firstTrimmedContent.endsWith(")")) {
+    console.log("Only file() function is supported.");
+  }
+
+  // file()
+  const trimmedContent = content.slice(5, -1).trim(); // content inside () and trimmed.
+  console.log("trimmed content inside function: " + trimmedContent);
+  if (
+    (trimmedContent[0] === "'" && trimmedContent[trimmedContent.length - 1] === "'") ||
+    (trimmedContent[0] === '"' && trimmedContent[trimmedContent.length - 1] === '"')
+  ) {
+    // static string as function parameter
+    const res = readFileContent(trimmedContent.substring(1, trimmedContent.length - 1));
+    console.log(res);
+    return res;
+  } else if (trimmedContent.startsWith("${{") && trimmedContent.endsWith("}}")) {
+    // env variable inside
+    const content = expandEnvironmentVariable(trimmedContent, envs);
+    console.log("env processed content: " + content);
+
+    const res = readFileContent(content);
+    console.log(res);
+  } else if (trimmedContent.startsWith("file(") && trimmedContent.endsWith(")")) {
+    // nested function inside
+    const content = processFunctionV2(trimmedContent, envs);
+    console.log("nested processed content: " + (!content ? "undefined" : content));
+
+    if (content) {
+      const res = readFileContent(content);
+      console.log(res);
+    } else {
+      console.log("nested function is invalid");
+      return undefined;
+    }
+  } else {
+    // invalid content inside function
+    console.log("the parameters is invalid. It can be '', \"\", ${{}} or a nested function");
+  }
+}
+
+function readFileContent(filePath: string) {
+  if (filePath) {
+    if (fs.existsSync(filePath)) {
+      let fileContent = fs.readFileSync(filePath, "utf8");
+      console.log("fileContent:");
+      //console.log(JSON.stringify("You are a declarative copilot and were created with 'Team Toolkit'. \\"));
+      fileContent = stripBom(fileContent);
+
+      const processedFileContent = expandEnvironmentVariable(fileContent);
+      return processedFileContent;
+    }
+  }
+}
 
 export function expandVariableWithFunction(
   content: string,

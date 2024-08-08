@@ -137,14 +137,7 @@ describe("User Interaction Tests", function () {
       const result = await UI.selectOption(config);
       expect(result.isOk());
       if (result.isOk()) {
-        // expect(result.value.result).deep.equals({
-        //   id: "a",
-        //   cliName: "aa",
-        //   label: "aaa",
-        // });
-        console.log(result.value);
-      } else {
-        console.log(result.error);
+        expect(result.value.result).equal("id1");
       }
     });
 

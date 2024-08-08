@@ -206,7 +206,9 @@ class CLIUserInteraction implements UserInteraction {
       const choices = (option as OptionItem[]).map((op) => {
         return {
           id: op.id,
-          title: labelClean(op.label),
+          title: !op.description
+            ? labelClean(op.label)
+            : labelClean(op.label) + ` (${op.description})`,
           detail: op.detail,
         };
       });

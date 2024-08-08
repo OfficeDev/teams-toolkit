@@ -4,7 +4,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as cp from "child_process";
 import * as os from "os";
-import * as shellQuote from "shell-quote";
 
 export interface DebugLogger {
   debug(message: string): void;
@@ -57,8 +56,7 @@ export namespace cpUtils {
         };
         Object.assign(options, additionalOptions);
 
-        const quotedCommand = shellQuote.quote([command]);
-        const childProc: cp.ChildProcess = cp.spawn(quotedCommand, args, options);
+        const childProc: cp.ChildProcess = cp.spawn(command, args, options);
         let timer: NodeJS.Timeout;
         if (options.timeout && options.timeout > 0) {
           // timeout only exists for exec not spawn

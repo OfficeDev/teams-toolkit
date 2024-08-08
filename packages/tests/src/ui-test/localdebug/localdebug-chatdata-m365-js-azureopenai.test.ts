@@ -90,7 +90,7 @@ describe("Local Debug Tests", function () {
       await localDebugTestContext.validateLocalStateForBot();
       console.log("consent login");
       await validateBot(page, {
-        botCommand: "helloworld",
+        botCommand: "show",
         expected: "You are successfully logged in.",
       });
       console.log("validate bot message");

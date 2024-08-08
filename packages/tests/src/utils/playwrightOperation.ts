@@ -1362,14 +1362,14 @@ export async function validateBot(
           try {
             // wait for alert message to show
             console.log("click Continue");
-            const btn = await frame?.waitForSelector(
-              `div.ui-box button:has-text("Continue")`
-            );
             await page.waitForTimeout(Timeout.shortTimeLoading);
             await page.screenshot({
               path: getPlaywrightScreenshotPath("consent_login"),
               fullPage: true,
             });
+            const btn = await frame?.waitForSelector(
+              `div.ui-box button:has-text("Continue")`
+            );
             await btn?.click();
             // wait for new tab to show
             const popup = await page

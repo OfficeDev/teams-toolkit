@@ -1,5 +1,5 @@
+import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import * as ACData from "adaptivecards-templating";
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { CardData } from "./cardModels";
 import { notificationApp } from "./internal/initialize";

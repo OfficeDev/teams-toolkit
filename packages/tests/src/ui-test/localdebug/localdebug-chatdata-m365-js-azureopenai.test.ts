@@ -98,11 +98,13 @@ describe("Local Debug Tests", function () {
         await validateBot(page, {
           botCommand: "Tell me about Contoso Electronics history",
           expected: "fictional company",
+          consentPrompt: false,
         });
       } else {
         await validateBot(page, {
           botCommand: "Tell me about Contoso Electronics history",
           expected: ValidationContent.AiBotErrorMessage,
+          consentPrompt: false,
         });
       }
     }

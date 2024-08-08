@@ -1361,9 +1361,15 @@ export async function validateBot(
         if (options.consentPrompt) {
           try {
             // wait for alert message to show
+            console.log("click Continue");
             const btn = await frame?.waitForSelector(
               `div.ui-box button:has-text("Continue")`
             );
+            await page.waitForTimeout(Timeout.shortTimeLoading);
+            await page.screenshot({
+              path: getPlaywrightScreenshotPath("consent_login"),
+              fullPage: true,
+            });
             await btn?.click();
             // wait for new tab to show
             const popup = await page
@@ -1404,21 +1410,17 @@ export async function validateBot(
         console.log("verify bot successfully!!!");
         console.log(`${options?.expected}`);
       } else {
-        await RetryHandler.retry(async () => {
-          console.log("sending message ", options?.botCommand);
-          const textbox = await frame?.waitForSelector(
-            'div.ck-content[role="textbox"]'
-          );
-          await textbox?.fill(options?.botCommand || "helloWorld");
-          const sendButton = await frame?.waitForSelector(
-            'button[name="send"]'
-          );
-          await sendButton?.click();
-          await frame?.waitForSelector(
-            `p:has-text("${options?.expected || ValidationContent.Bot}")`
-          );
-          console.log("verify bot successfully!!!");
-        }, 2);
+        console.log("sending message ", options?.botCommand);
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
+        );
+        await textbox?.fill(options?.botCommand || "helloWorld");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
+        await frame?.waitForSelector(
+          `p:has-text("${options?.expected || ValidationContent.Bot}")`
+        );
+        console.log("verify bot successfully!!!");
         console.log(`${options?.expected}`);
       }
     }, 2);

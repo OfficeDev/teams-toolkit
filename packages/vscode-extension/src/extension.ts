@@ -256,7 +256,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotExtension)
+    true
   );
 
   await vscode.commands.executeCommand(

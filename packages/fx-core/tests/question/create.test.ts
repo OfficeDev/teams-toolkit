@@ -101,7 +101,6 @@ describe("scaffold question", () => {
 
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
         [FeatureFlagName.ChatParticipant]: "false",
       });
@@ -157,7 +156,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 6);
           assert.isUndefined((options as OptionItem[])[0].groupName);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
@@ -212,7 +211,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 6);
           assert.isFalse((options[2] as OptionItem).detail?.includes("Copilot"));
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
@@ -1583,15 +1582,10 @@ describe("scaffold question", () => {
       });
     });
 
-    describe("copilot plugin enabled", () => {
+    describe("copilot plugin", () => {
       let mockedEnvRestore: RestoreFn;
       const tools = new MockTools();
       setTools(tools);
-      beforeEach(() => {
-        mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.CopilotExtension]: "true",
-        });
-      });
 
       afterEach(() => {
         if (mockedEnvRestore) {
@@ -2899,11 +2893,6 @@ describe("scaffold question", () => {
       let mockedEnvRestore: RestoreFn;
       const tools = new MockTools();
       setTools(tools);
-      beforeEach(() => {
-        mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.CopilotExtension]: "true",
-        });
-      });
 
       afterEach(() => {
         if (mockedEnvRestore) {
@@ -3023,7 +3012,6 @@ describe("scaffold question", () => {
 
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
         [FeatureFlagName.ChatParticipant]: "true",
       });
@@ -3051,7 +3039,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 7);
           assert.equal(
             getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
             (options as OptionItem[])[0].groupName
@@ -3102,7 +3090,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 7);
           return ok({ type: "success", result: ProjectTypeOptions.startWithGithubCopilot().id });
         }
         return ok({ type: "success", result: undefined });
@@ -3333,11 +3321,7 @@ describe("scaffold question", () => {
 
   describe("CapabilityOptions", () => {
     let mockedEnvRestore: RestoreFn = () => {};
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "false",
-      });
-    });
+
     afterEach(() => {
       mockedEnvRestore();
     });
@@ -3367,9 +3351,7 @@ describe("scaffold question", () => {
     });
 
     it("templates for TDP integration", () => {
-      mockedEnvRestore();
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "false",
         [FeatureFlagName.TdpTemplateCliTest]: "true",
       });
       const question = capabilityQuestion();
@@ -3387,9 +3369,7 @@ describe("scaffold question", () => {
     });
 
     it("templates for TDP integration dotnet", () => {
-      mockedEnvRestore();
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "false",
         [FeatureFlagName.TdpTemplateCliTest]: "true",
         [FeatureFlagName.CLIDotNet]: "true",
       });
@@ -3438,7 +3418,6 @@ describe("scaffold question", () => {
     setTools(tools);
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "true",
         [FeatureFlagName.ChatParticipant]: "false",
       });
     });
@@ -3721,11 +3700,6 @@ describe("scaffold question", () => {
     let mockedEnvRestore: RestoreFn;
     const tools = new MockTools();
     setTools(tools);
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.CopilotExtension]: "true",
-      });
-    });
 
     afterEach(() => {
       if (mockedEnvRestore) {

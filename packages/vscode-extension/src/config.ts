@@ -19,10 +19,6 @@ export class ConfigManager {
       ConfigurationKey.BicepEnvCheckerEnable,
       false
     ).toString();
-    process.env["DEVELOP_COPILOT_EXTENSION"] = this.getConfiguration(
-      ConfigurationKey.CopilotExtensionEnable,
-      false
-    ).toString();
   }
   loadLogLevel() {
     const logLevel = this.getConfiguration(ConfigurationKey.LogLevel, "Info") as string;

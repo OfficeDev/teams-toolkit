@@ -59,7 +59,8 @@ export class LocalDebugTestContext extends TestContext {
       customCopilotRagType?:
         | "custom-copilot-rag-customize"
         | "custom-copilot-rag-azureAISearch"
-        | "custom-copilot-rag-customApi";
+        | "custom-copilot-rag-customApi"
+        | "custom-copilot-rag-microsoft365";
       customCeopilotAgent?:
         | "custom-copilot-agent-new"
         | "custom-copilot-agent-assistants-api";

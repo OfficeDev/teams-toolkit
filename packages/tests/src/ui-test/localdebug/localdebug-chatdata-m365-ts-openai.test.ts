@@ -52,7 +52,7 @@ describe("Local Debug Tests", function () {
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
 
       const isRealKey = false;
-      const openAiKey = OpenAiKey.openAiKey ? OpenAiKey.openAiKey : "fake";
+      const openAiKey = "fake";
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
 
       console.log(`

@@ -1,6 +1,6 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { notificationApp } = require("./internal/initialize");
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 const { TeamsBot } = require("./teamsBot");
 const restify = require("restify");
 

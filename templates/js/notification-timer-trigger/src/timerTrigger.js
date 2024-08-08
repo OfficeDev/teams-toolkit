@@ -1,5 +1,5 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 const { notificationApp } = require("./internal/initialize");
 
 // Time trigger to send notification. You can change the schedule in ../timerNotifyTrigger/function.json

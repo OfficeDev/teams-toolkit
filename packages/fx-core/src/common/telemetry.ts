@@ -6,6 +6,8 @@ import { assign } from "lodash";
 import { TOOLS, globalVars } from "./globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { maskSecret } from "./stringUtils";
+import { TelemetryProperties } from "../component/driver/arm/constant";
+import { ScriptExecutionError } from "../error/script";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -30,6 +32,7 @@ export enum TelemetryProperty {
   ErrorSource = "error-source",
   ErrorStack = "err-stack",
   ErrorStage = "error-stage",
+  ErrorData = "error-data",
   SampleAppName = "sample-app-name",
   ProjectId = "project-id",
   NewProjectId = "new-project-id",
@@ -273,6 +276,9 @@ class TelemetryUtils {
     props[TelemetryProperty.ErrorMessage] = error.skipProcessInTelemetry
       ? error.message
       : maskSecret(error.message);
+    if (error instanceof ScriptExecutionError) {
+      props[TelemetryProperty.ErrorData] = error.userData as string; // collect error details for script execution error
+    }
     props[TelemetryProperty.ErrorStack] = this.extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
     props[TelemetryProperty.ErrorName] = error.name;
 

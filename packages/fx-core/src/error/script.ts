@@ -36,6 +36,7 @@ export class ScriptExecutionError extends UserError {
       displayMessage: getLocalizedString(key),
       error: error,
       categories: [ErrorCategory.External],
+      userData: JSON.stringify(error, Object.getOwnPropertyNames(error)),
     };
     super(errorOptions);
   }

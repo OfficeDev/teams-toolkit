@@ -29,6 +29,7 @@ export enum TelemetryProperty {
   ErrorName = "error-name",
   ErrorSource = "error-source",
   ErrorStack = "err-stack",
+  ErrorData = "err-data",
   ErrorStage = "error-stage",
   SampleAppName = "sample-app-name",
   ProjectId = "project-id",
@@ -275,7 +276,9 @@ class TelemetryUtils {
       : maskSecret(error.message);
     props[TelemetryProperty.ErrorStack] = this.extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
     props[TelemetryProperty.ErrorName] = error.name;
-
+    if (error.name === "ScriptExecutionError") {
+      props[TelemetryProperty.ErrorData] = error.userData as string; // collect error details for script execution error
+    }
     // append global context properties
     props[TelemetryProperty.ErrorComponent] = globalVars.component;
     props[TelemetryProperty.ErrorStage] = globalVars.stage;

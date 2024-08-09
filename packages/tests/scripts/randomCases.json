@@ -29,7 +29,15 @@
             "sample-remotedebug-spfx-productivity-dashboard",
             "sample-localdebug-npm-search",
             "sample-localdebug-proactive-message",
-            "sample-remotedebug-dice-roller"
+            "sample-remotedebug-dice-roller",
+            "localdebug-chatdata-m365-js-azureopenai",
+            "localdebug-chatdata-m365-js-openai",
+            "localdebug-chatdata-m365-ts-azureopenai",
+            "localdebug-chatdata-m365-ts-openai",
+            "remotedebug-chatdata-m365-js-azureopenai",
+            "remotedebug-chatdata-m365-js-openai",
+            "remotedebug-chatdata-m365-ts-azureopenai",
+            "remotedebug-chatdata-m365-ts-openai"
         ]
     },
     {

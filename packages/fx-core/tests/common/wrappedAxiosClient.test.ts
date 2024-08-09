@@ -389,6 +389,28 @@ describe("Wrapped Axios Client Test", () => {
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.CREATE_BOT);
 
     apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/appvalidations/appdefinition/validate`,
+      "POST"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() +
+        `/api/v1.0/appvalidations/appdefinitions/efe81961-44bc-49ae-99f8-1476caef994c`,
+      "GET"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/appvalidations/2512d616-8aac-461f-8af0-23e9b09ec650`,
+      "GET"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(getAppStudioEndpoint() + `unknown`, "GET");
+    chai.assert.equal(apiName, (getAppStudioEndpoint() + `unknown`).replace(/\//g, `-`));
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
       "https://authsvc.teams.microsoft.com/v1.0/users/region",
       "POST"
     );

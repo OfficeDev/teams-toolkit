@@ -645,7 +645,7 @@ export namespace AppStudioClient {
       );
       return <AsyncAppValidationResponse>response?.data;
     } catch (e) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.SUMIT_APP_VALIDATION);
+      const error = wrapException(e, APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION);
       throw error;
     }
   }

@@ -44,7 +44,10 @@ export class Executor {
         const result = await execAsync(command, options);
 
         if (result.stderr) {
-          if (skipErrorMessage && result.stderr.includes(skipErrorMessage)) {
+          if (
+            skipErrorMessage &&
+            result.stderr.toLowerCase().includes(skipErrorMessage)
+          ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };
           }

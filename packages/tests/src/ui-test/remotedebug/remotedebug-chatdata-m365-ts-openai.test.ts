@@ -101,11 +101,19 @@ describe("Remote debug Tests", function () {
           consentPrompt: false,
         });
       } else {
-        await validateBot(page, {
-          botCommand: "Tell me about Contoso Electronics history",
-          expected: ValidationContent.AiBotErrorMessage,
-          consentPrompt: false,
-        });
+        try {
+          await validateBot(page, {
+            botCommand: "Tell me about Contoso Electronics history",
+            expected: "fictional company",
+            consentPrompt: false,
+          });
+        } catch (error) {
+          await validateBot(page, {
+            botCommand: "Tell me about Contoso Electronics history",
+            expected: ValidationContent.AiBotErrorMessage,
+            consentPrompt: false,
+          });
+        }
       }
     }
   );

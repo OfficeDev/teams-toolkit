@@ -4,6 +4,39 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### August 14, 2024
+
+#### New Features
+- **Enhanced App Validation**: As a developer, now you can evaluate your app package based on the test cases that Microsoft uses to review your app, app manifest, basic information of your app, and bot capability. The Enhanced App Validation features in Teams Toolkit identifies any errors or warnings in your app package and provides guidelines for resolution. For more information on Microsoft test cases, see [Teams Store validation guidelines](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines) and [Commercial marketplace certification policies](https://learn.microsoft.com/en-us/legal/marketplace/certification-policies). 
+![App Validation](https://github.com/user-attachments/assets/4c2b8c49-6a0a-4ea7-8796-a94464714463)
+
+- **Generate an Intelligent Chatbot with Python**: During Build 2024, Teams Toolkit has delivered a set of support for building [Custom Engine Copilot](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-custom-engine-copilot), including "chat with" your own API. Now we are excited to extend this support to the Python programming language.
+![App Generator](https://github.com/user-attachments/assets/21efa344-aea5-4d44-bb78-aa8e26dc68a1)
+
+- **Create Declarative Copilot**:You can now use Teams Toolkit to build a declarative copilot that allows you to craft your own copilot by declaring instructions, actions, and knowledge to customize Copilot for Microsoft 365. Declarative copilots run on the same orchestrator, foundation models, and trusted AI services that power Microsoft Copilot. You can learn more [Declarative copilot here](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-declarative-copilot). Teams Toolkit enables you to build a basic declarative copilot or a declarative copilot with an API plugin.
+![Declarative Copilot](https://github.com/user-attachments/assets/37412cdd-c7e8-4e38-bd45-794997b050ec)
+
+- **Using Assistant API on Azure OpenAI Service**: Teams Toolkit has updated the `AI Agent` (Python) app template to bring support for Assistant API on Azure OpenAI Service. Now you can build your own AI Agents on Microsoft 365 using Python and choose from Azure OpenAI Service or directly using OpenAI. The TypeScript and JavaScript version will soon be updated.
+
+#### Enhancements
+
+- Teams Toolkit will continuously update the scaffold app templates to ensure it meets the [Teams Store validation guidelines](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines). The first wave of updates are targeting all bot templates, checking the following to understand what has been changed: 
+  - [PR#12063](https://github.com/OfficeDev/teams-toolkit/pull/12063): Updated `Basic Bot` and `Message Extension`
+  - [PR#12096](https://github.com/OfficeDev/teams-toolkit/pull/12096): Updated `Chat Command`
+  - [PR#12123](https://github.com/OfficeDev/teams-toolkit/pull/12123): Updated `Chat Notification Messages` 
+  - [PR#12119](https://github.com/OfficeDev/teams-toolkit/pull/12119): Updated `Sequential Workflow in Chat`
+  - [PR#12181](https://github.com/OfficeDev/teams-toolkit/pull/12181) & [PR#12182](https://github.com/OfficeDev/teams-toolkit/pull/12182): Updated `Custom Engine Copilot`
+-  Teams Toolkit will inform user to generate an API key before debugging the API ME or API Plugin with API Key auth templates.
+- Redacted secret values from Visual Studio Code output channel.
+
+#### Bug Fixes
+
+- Fixed vulnerability issues in TeamsFx SDK. [#11973](https://github.com/OfficeDev/teams-toolkit/pull/11937)
+- Fixed an issue with `groupchat` and `groupChat` compatibility in Teams app manifest. [12028](https://github.com/OfficeDev/teams-toolkit/pull/12028)
+- Fixed an issue where the link redirection for Life cycle button `Provision` is incorrect. (#12120)[https://github.com/OfficeDev/teams-toolkit/pull/12120]
+- Fixed an issue with `publicClientApplication` initialization failure in TeamsFx SDK. [#12159](https://github.com/OfficeDev/teams-toolkit/pull/12159)
+- Fixed an issue when creating the SharePoint Framework based tab apps. [#12173](https://github.com/OfficeDev/teams-toolkit/pull/12173)
+
 ### July 17, 2024
 
 #### New Features

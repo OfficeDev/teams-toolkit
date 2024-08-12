@@ -94,7 +94,7 @@
                 <key>begin</key>
                 <string>(\(×\) Error\: .*)</string>
                 <key>end</key>
-                <string>^(.*?)(?=((\(√\) Done:)|(\(!\) Warning\:))|(\[[\d\-TZ:.]*\])(.)*$)</string>
+                <string>^(.*?)(?=(((\(√\) Done:)|(\(!\) Warning\:))|(\[[\d\-TZ:.]*\]))(.)*$)</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.errorMessage</string>
                 <key>contentName</key>

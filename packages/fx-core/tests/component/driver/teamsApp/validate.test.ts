@@ -457,6 +457,14 @@ describe("teamsApp/validateAppPackage", async () => {
           validationCategory: "tab",
           title: "tab name",
         },
+        {
+          id: GeneralValidationErrorId,
+          content: "content with code missing",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
       ],
       status: "Rejected",
       warnings: [
@@ -516,7 +524,11 @@ describe("teamsApp/validateAppPackage", async () => {
     chai.assert(result.isErr());
 
     const msg = (mockedDriverContext.logProvider as MockedLogProvider).msg;
-    chai.assert(msg.includes("Invalid API Plugin document") && msg.includes("Invalid DC document"));
+    chai.assert(
+      msg.includes("Invalid API Plugin document") &&
+        msg.includes("Invalid DC document") &&
+        msg.includes("content with code missing")
+    );
   });
 
   it("validate app package - no error", async () => {

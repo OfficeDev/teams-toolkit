@@ -33,14 +33,13 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { Constants } from "./constants";
+import { Constants, GeneralValidationErrorId } from "./constants";
 import { AppStudioError } from "./errors";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { AppStudioResultFactory } from "./results";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 
 const actionName = "teamsApp/validateAppPackage";
-const generalErrorId = "693c7aa7-4d76-40ec-8282-06410f5d1f76";
 
 @Service(actionName)
 export class ValidateAppPackageDriver implements StepDriver {
@@ -157,7 +156,7 @@ export class ValidateAppPackageDriver implements StepDriver {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
             content:
-              error.id === generalErrorId && error.code
+              error.id === GeneralValidationErrorId && error.code
                 ? `${this.processErrorCode(error.code)}`
                 : `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
             color: Colors.BRIGHT_WHITE,
@@ -217,7 +216,7 @@ export class ValidateAppPackageDriver implements StepDriver {
         const errors = validationResult.errors
           .map((error) => {
             const errorContent =
-              error.id === generalErrorId && error.code
+              error.id === GeneralValidationErrorId && error.code
                 ? this.processErrorCode(error.code)
                 : `${error.content} \n${getLocalizedString(
                     "error.teamsApp.validate.details",

@@ -7,7 +7,7 @@ import * as React from "react";
 
 import { Image } from "@fluentui/react";
 
-import Turtle from "../../../img/webview/sample/turtle.svg";
+import Turtle from "../../../img/webview/sample/turtle.svg?react";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { SampleProps } from "./ISamples";
 

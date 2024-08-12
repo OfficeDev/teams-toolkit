@@ -1765,6 +1765,11 @@
             "isPKCEEnabled": {
               "type": "boolean",
               "description": "Whether PKCE is enabled for OAuth registration. Default is false."
+            },
+            "identityProvider": {
+              "type": "string",
+              "description": "The identity provider of OAuth registration.",
+              "enum": ["MicrosoftEntra", "Custom"]
             }
           }
         },

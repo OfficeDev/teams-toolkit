@@ -245,7 +245,7 @@ export class Executor {
 
   static async preview(workspace: string, env = "dev") {
     const skipErrorMessage =
-      "Warning: If you changed the manifest file, please run";
+      "Warning: If you changed the manifest file, please run".toLowerCase();
     return this.executeCmd(
       workspace,
       "preview",

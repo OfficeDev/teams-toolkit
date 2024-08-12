@@ -91,10 +91,14 @@
                         <string>token.error-token</string>
                     </dict>
                 </dict>
-                <key>match</key>
+                <key>begin</key>
                 <string>(\(×\) Error\: .*)</string>
+                <key>end</key>
+                <string>^\[[\d\-TZ:.]*\]</string>
                 <key>name</key>
-                <string>teamsfx-toolkit.error</string>
+                <string>teamsfx-toolkit.errorMessage</string>
+                <key>contentName</key>
+                <string>token.error-token</string>
             </dict>
             <dict>
                 <key>captures</key>

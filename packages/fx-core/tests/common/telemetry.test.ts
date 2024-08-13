@@ -54,7 +54,7 @@ describe("telemetry", () => {
 
   describe("fillInErrorProperties", () => {
     it("happy path", async () => {
-      const props = {};
+      const props: any = {};
       const error = new Error("error message");
       telemetryUtils.fillInErrorProperties(props, new ScriptExecutionError(error));
       assert.equal(

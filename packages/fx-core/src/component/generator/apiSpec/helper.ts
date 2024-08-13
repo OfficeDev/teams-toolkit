@@ -1022,7 +1022,7 @@ async def {{operationId}}(
 ):
   parameters = context.data
   path = parameters.get("path", {})
-  body = parameters.get("body", {})
+  body = parameters.get("body", None)
   query = parameters.get("query", {})
   resp = client.{{operationId}}(**path, json=body, _headers={}, _params=query, _cookies={})
 

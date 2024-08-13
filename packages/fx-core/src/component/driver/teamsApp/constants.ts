@@ -606,3 +606,5 @@ export const supportedLanguageCodes = [
   "sr",
   "lv",
 ];
+
+export const GeneralValidationErrorId = "693c7aa7-4d76-40ec-8282-06410f5d1f76";

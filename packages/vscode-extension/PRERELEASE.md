@@ -25,7 +25,6 @@
   - [PR#12096](https://github.com/OfficeDev/teams-toolkit/pull/12096): Updated `Chat Command`
   - [PR#12123](https://github.com/OfficeDev/teams-toolkit/pull/12123): Updated `Chat Notification Messages` 
   - [PR#12119](https://github.com/OfficeDev/teams-toolkit/pull/12119): Updated `Sequential Workflow in Chat`
-  - [PR#12181](https://github.com/OfficeDev/teams-toolkit/pull/12181) & [PR#12182](https://github.com/OfficeDev/teams-toolkit/pull/12182): Updated `Custom Engine Copilot`
 - Teams Toolkit now prompts users to generate an API key before debugging API ME or API Plugin with API Key authentication templates.
 - Secret values have been redacted from the Visual Studio Code output channel.
 

@@ -4,7 +4,9 @@
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { telemetryUtils } from "../../src/common/telemetry";
+import { TelemetryProperty, telemetryUtils } from "../../src/common/telemetry";
+import { ScriptExecutionError } from "../../src/error/script";
+import { maskSecret } from "../../src/common/stringUtils";
 
 describe("telemetry", () => {
   const sandbox = sinon.createSandbox();
@@ -47,6 +49,18 @@ describe("telemetry", () => {
     it("input undefined", async () => {
       const output = telemetryUtils.extractMethodNamesFromErrorStack();
       assert.equal(output, "");
+    });
+  });
+
+  describe("fillInErrorProperties", () => {
+    it("happy path", async () => {
+      const props = {};
+      const error = new Error("error message");
+      telemetryUtils.fillInErrorProperties(props, new ScriptExecutionError(error));
+      assert.equal(
+        props[TelemetryProperty.ErrorData],
+        maskSecret(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+      );
     });
   });
 });

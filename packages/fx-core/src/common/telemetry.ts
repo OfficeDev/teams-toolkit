@@ -277,7 +277,7 @@ class TelemetryUtils {
     props[TelemetryProperty.ErrorStack] = this.extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
     props[TelemetryProperty.ErrorName] = error.name;
     if (error.name === "ScriptExecutionError") {
-      props[TelemetryProperty.ErrorData] = error.userData as string; // collect error details for script execution error
+      props[TelemetryProperty.ErrorData] = maskSecret(error.userData as string); // collect error details for script execution error
     }
     // append global context properties
     props[TelemetryProperty.ErrorComponent] = globalVars.component;

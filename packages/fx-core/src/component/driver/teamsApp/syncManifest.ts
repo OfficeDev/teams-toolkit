@@ -29,6 +29,7 @@ import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
 import { AppStudioScopes, getAppStudioEndpoint } from "../../../common/constants";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { get } from "lodash";
+import fs from "fs-extra";
 
 const actionName = "teamsApp/syncManifest";
 
@@ -89,7 +90,15 @@ export class SyncManifestDriver implements StepDriver {
       );
     }
     const newManifest = JSON.parse(appPackage.manifest.toString("utf8"));
-    // todo: save the new manifest file
+    // save the new manifest file.
+    const timeStamp = new Date().toISOString().replace(/[-:T]/g, "").replace(/\..+/, "");
+    const manifestFileName = `manifest.${args.env}.${teamsAppId}.json`;
+    const dirPath = path.join(args.projectPath, "appPackage", "syncHistory", timeStamp);
+    const filePath = path.join(dirPath, manifestFileName);
+    await fs.mkdir(dirPath, { recursive: true });
+    await fs.writeFile(filePath, JSON.stringify(newManifest, null, "\t"));
+    context.logProvider.info(getLocalizedString("core.syncManifest.saveManifestSuccess", filePath));
+
     const currentManifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
     if (currentManifestRes.isErr()) {
       return err(currentManifestRes.error);

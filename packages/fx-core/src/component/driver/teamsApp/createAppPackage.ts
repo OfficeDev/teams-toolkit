@@ -17,10 +17,10 @@ import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants } from "./constants";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
 import { getResolvedManifest, normalizePath } from "./utils/utils";
 import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
+import { ManifestType } from "../../utils/envFunctionUtils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -184,7 +184,7 @@ export class CreateAppPackageDriver implements StepDriver {
         zip,
         manifest.composeExtensions[0].apiSpecificationFile,
         apiSpecificationFile,
-        TelemetryPropertyKey.customizedOpenAPIKeys,
+        ManifestType.ApiSpec,
         context
       );
       if (addFileWithVariableRes.isErr()) {
@@ -238,14 +238,17 @@ export class CreateAppPackageDriver implements StepDriver {
         zip,
         declarativeCopilots[0].file,
         copilotGptManifestFile,
-        TelemetryPropertyKey.customizedAIPluginKeys,
+        ManifestType.PluginManifest,
         context
       );
       if (addFileWithVariableRes.isErr()) {
         return err(addFileWithVariableRes.error);
       }
 
-      const getCopilotGptRes = await copilotGptManifestUtils.getManifest(copilotGptManifestFile);
+      const getCopilotGptRes = await copilotGptManifestUtils.getManifest(
+        copilotGptManifestFile,
+        context
+      );
 
       if (getCopilotGptRes.isOk()) {
         if (getCopilotGptRes.value.actions) {
@@ -298,10 +301,10 @@ export class CreateAppPackageDriver implements StepDriver {
   private static async expandEnvVars(
     filePath: string,
     ctx: WrapDriverContext,
-    telemetryKey: TelemetryPropertyKey
+    manifestType: ManifestType
   ): Promise<Result<string, FxError>> {
     const content = await fs.readFile(filePath, "utf8");
-    return getResolvedManifest(content, filePath, telemetryKey, ctx);
+    return getResolvedManifest(content, filePath, manifestType, ctx);
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {
@@ -374,7 +377,7 @@ export class CreateAppPackageDriver implements StepDriver {
       zip,
       pluginRelativePath,
       pluginFile,
-      TelemetryPropertyKey.customizedAIPluginKeys,
+      ManifestType.PluginManifest,
       context
     );
     if (addFileWithVariableRes.isErr()) {
@@ -433,7 +436,7 @@ export class CreateAppPackageDriver implements StepDriver {
             zip,
             normalizePath(entryName, useForwardSlash),
             specFile,
-            TelemetryPropertyKey.customizedOpenAPIKeys,
+            ManifestType.ApiSpec,
             context
           );
           if (addFileWithVariableRes.isErr()) {
@@ -450,13 +453,13 @@ export class CreateAppPackageDriver implements StepDriver {
     zip: AdmZip,
     entryName: string,
     filePath: string,
-    telemetryKey: TelemetryPropertyKey,
+    manifestType: ManifestType,
     context: WrapDriverContext
   ): Promise<Result<undefined, FxError>> {
     const expandedEnvVarResult = await CreateAppPackageDriver.expandEnvVars(
       filePath,
       context,
-      telemetryKey
+      manifestType
     );
     if (expandedEnvVarResult.isErr()) {
       return err(expandedEnvVarResult.error);

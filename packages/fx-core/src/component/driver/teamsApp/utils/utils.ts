@@ -4,16 +4,12 @@ import { includes } from "lodash";
 import Mustache from "mustache";
 import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
 import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
-import {
-  expandEnvironmentVariable,
-  expandVariableWithFunction,
-  expandVariableWithFunctionV2,
-  getEnvironmentVariables,
-} from "../../../utils/common";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { MissingEnvironmentVariablesError } from "../../../../error";
 import { TelemetryPropertyKey } from "./telemetry";
+import { expandVariableWithFunction, ManifestType } from "../../../utils/envFunctionUtils";
 
 export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   let keys: string[] = [];
@@ -224,24 +220,45 @@ export function normalizePath(path: string, useForwardSlash: boolean): string {
   return useForwardSlash ? path.replace(/\\/g, "/") : path;
 }
 
-export function getResolvedManifest(
+export async function getResolvedManifest(
   content: string,
   path: string,
-  telemetryKey: TelemetryPropertyKey,
+  manifestType: ManifestType,
   ctx?: WrapDriverContext
-): Result<string, FxError> {
+): Promise<Result<string, FxError>> {
   const vars = getEnvironmentVariables(content);
+  let telemetryKey;
+  switch (manifestType) {
+    case ManifestType.ApiSpec:
+      telemetryKey = TelemetryPropertyKey.customizedOpenAPIKeys;
+      break;
+    case ManifestType.PluginManifest:
+      telemetryKey = TelemetryPropertyKey.customizedAIPluginKeys;
+      break;
+    case ManifestType.DeclarativeCopilotManifest:
+      telemetryKey = TelemetryPropertyKey.customizedCopilotGptKeys;
+      break;
+    default:
+      telemetryKey = TelemetryPropertyKey.customizedKeys;
+  }
   ctx?.addTelemetryProperties({
     [telemetryKey]: vars.join(";"),
   });
 
-  let result = expandVariableWithFunctionV2(content, undefined, true);
-  console.log("result after processing function: " + result);
-  result = expandEnvironmentVariable(result);
-  console.log("final result " + result);
-  const notExpandedVars = getEnvironmentVariables(result);
+  let value = content;
+  if (manifestType !== ManifestType.ApiSpec) {
+    const processedFunctionRes = await expandVariableWithFunction(content, ctx, undefined, true);
+    if (processedFunctionRes.isErr()) {
+      return processedFunctionRes;
+    }
+
+    value = expandEnvironmentVariable(processedFunctionRes.value);
+    console.log("final result " + value);
+  }
+
+  const notExpandedVars = getEnvironmentVariables(value);
   if (notExpandedVars.length > 0) {
     return err(new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), path));
   }
-  return ok(result);
+  return ok(value);
 }

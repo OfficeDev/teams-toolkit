@@ -239,13 +239,13 @@ export function processFunctionV2(
     (trimmedContent[0] === '"' && trimmedContent[trimmedContent.length - 1] === '"')
   ) {
     // static string as function parameter
-    const res = readFileContent(trimmedContent.substring(1, trimmedContent.length - 1));
+    const res = readFileContent(trimmedContent.substring(1, trimmedContent.length - 1)); // TODO: check it is a txt file
     console.log(res);
     return res;
   } else if (trimmedContent.startsWith("${{") && trimmedContent.endsWith("}}")) {
     // env variable inside
     const content = expandEnvironmentVariable(trimmedContent, envs);
-    console.log("env processed content: " + content);
+    console.log("env processed content: " + content); // TODO: check it is a txt file
 
     const res = readFileContent(content);
     console.log(res);
@@ -269,8 +269,13 @@ export function processFunctionV2(
   }
 }
 
-function readFileContent(filePath: string) {
+function readFileContent(filePath: string): string | undefined {
   if (filePath) {
+    const ext = path.extname(filePath);
+    if (ext !== "txt") {
+      console.log("not txt file. We do not support");
+      return undefined;
+    }
     if (fs.existsSync(filePath)) {
       let fileContent = fs.readFileSync(filePath, "utf8");
       //console.log(JSON.stringify("You are a declarative copilot and were created with 'Team Toolkit'. \\"));

@@ -91,7 +91,7 @@ export class SyncManifestDriver implements StepDriver {
     }
     const newManifest = JSON.parse(appPackage.manifest.toString("utf8"));
     // save the new manifest file.
-    const timeStamp = new Date().toISOString().replace(/[-:T]/g, "").replace(/\..+/, "");
+    const timeStamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "");
     const manifestFileName = `manifest.${args.env}.${teamsAppId}.json`;
     const dirPath = path.join(args.projectPath, "appPackage", "syncHistory", timeStamp);
     const filePath = path.join(dirPath, manifestFileName);

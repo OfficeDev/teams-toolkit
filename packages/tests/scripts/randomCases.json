@@ -2,15 +2,12 @@
     {
         "os": {
             "windows-latest": {
-                "node-16": [],
                 "node-18": []
             },
             "ubuntu-latest": {
-                "node-16": [],
                 "node-18": []
             },
             "macos-latest": {
-                "node-16": [],
                 "node-18": []
             }
         },
@@ -60,11 +57,9 @@
     {
         "os": {
             "ubuntu-latest": {
-                "node-16": [],
                 "node-18": []
             },
             "windows-latest": {
-                "node-16": [],
                 "node-18": []
             }
         },
@@ -81,7 +76,6 @@
     {
         "os": {
             "windows-latest": {
-                "node-16": [],
                 "node-18": []
             }
         },
@@ -108,7 +102,6 @@
     {
         "os": {
             "ubuntu-latest": {
-                "node-16": [],
                 "node-18": []
             }
         },
@@ -138,11 +131,9 @@
     {
         "os": {
             "ubuntu-latest": {
-                "node-16": [],
                 "node-18": []
             },
             "macos-latest": {
-                "node-16": [],
                 "node-18": []
             }
         },

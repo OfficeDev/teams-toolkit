@@ -23,15 +23,11 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
     const cryptoProvider = new LocalCrypto(inputs.projectId);
     if (openAIKey !== undefined) {
       const result = cryptoProvider.encrypt(openAIKey);
-      if (result.isOk()) {
-        openAIKey = result.value;
-      }
+      openAIKey = (result as any).value;
     }
     if (azureOpenAIKey !== undefined) {
       const result = cryptoProvider.encrypt(azureOpenAIKey);
-      if (result.isOk()) {
-        azureOpenAIKey = result.value;
-      }
+      azureOpenAIKey = (result as any).value;
     }
   }
 

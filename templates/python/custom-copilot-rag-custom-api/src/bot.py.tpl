@@ -44,7 +44,8 @@ model = OpenAIModel(
 )
 {{/useOpenAI}}
     
-prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))
+prompts_folder_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts")
+prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{prompts_folder_path}"))
 
 planner = ActionPlanner(
     ActionPlannerOptions(model=model, prompts=prompts, default_prompt="chat")

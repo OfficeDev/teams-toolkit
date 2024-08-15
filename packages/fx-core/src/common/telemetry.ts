@@ -87,6 +87,7 @@ export enum TelemetryProperty {
 
   TDPTraceId = "tdp-trace-id",
   MOSTraceId = "mos-trace-id",
+  MOSPATH = "mos-api-path",
 }
 
 export const TelemetryConstants = {

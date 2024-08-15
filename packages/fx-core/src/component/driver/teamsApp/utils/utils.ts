@@ -240,6 +240,7 @@ export async function getResolvedManifest(
       break;
     default:
       telemetryKey = TelemetryPropertyKey.customizedKeys;
+      break;
   }
   ctx?.addTelemetryProperties({
     [telemetryKey]: vars.join(";"),
@@ -259,7 +260,6 @@ export async function getResolvedManifest(
     }
 
     value = expandEnvironmentVariable(processedFunctionRes.value);
-    console.log("final result " + value);
   }
 
   const notExpandedVars = getEnvironmentVariables(value);

@@ -55,7 +55,7 @@ export class PluginManifestUtils {
    */
   public async getManifest(
     path: string,
-    context?: WrapDriverContext
+    context: WrapDriverContext
   ): Promise<Result<PluginManifestSchema, FxError>> {
     const manifestRes = await this.readPluginManifestFile(path);
     if (manifestRes.isErr()) {

@@ -45,6 +45,8 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { AppPackage } from "./interfaces/appdefinitions/appPackage";
 import { AppStudioResultFactory } from "./results";
 import { manifestUtils } from "./utils/ManifestUtils";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { generateDriverContext } from "../../../common/utils";
 
 export async function checkIfAppInDifferentAcountSameTenant(
   teamsAppId: string,
@@ -103,7 +105,7 @@ export async function updateManifestV3(
 
   // render manifest
   let manifest: any;
-  const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath);
+  const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath, driverContext);
   if (manifestResult.isErr()) {
     return err(manifestResult.error);
   } else {
@@ -347,19 +349,6 @@ export async function getAppPackage(
   } catch (e: any) {
     return err(e);
   }
-}
-
-function generateDriverContext(ctx: Context, inputs: InputsWithProjectPath): DriverContext {
-  return {
-    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
-    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
-    ui: ctx.userInteraction,
-    progressBar: undefined,
-    logProvider: ctx.logProvider,
-    telemetryReporter: ctx.telemetryReporter,
-    projectPath: ctx.projectPath!,
-    platform: inputs.platform,
-  };
 }
 
 function generateCreateAppPackageArgs(

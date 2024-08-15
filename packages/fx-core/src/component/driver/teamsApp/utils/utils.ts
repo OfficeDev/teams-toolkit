@@ -6,10 +6,11 @@ import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
 import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { WrapDriverContext } from "../../util/wrapUtil";
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { MissingEnvironmentVariablesError } from "../../../../error";
 import { TelemetryPropertyKey } from "./telemetry";
 import { expandVariableWithFunction, ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
 
 export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   let keys: string[] = [];
@@ -224,7 +225,7 @@ export async function getResolvedManifest(
   content: string,
   path: string,
   manifestType: ManifestType,
-  ctx?: WrapDriverContext
+  ctx: DriverContext
 ): Promise<Result<string, FxError>> {
   const vars = getEnvironmentVariables(content);
   let telemetryKey;
@@ -242,9 +243,12 @@ export async function getResolvedManifest(
       telemetryKey = TelemetryPropertyKey.customizedKeys;
       break;
   }
-  ctx?.addTelemetryProperties({
-    [telemetryKey]: vars.join(";"),
-  });
+
+  if (ctx instanceof WrapDriverContext) {
+    ctx.addTelemetryProperties({
+      [telemetryKey]: vars.join(";"),
+    });
+  }
 
   let value = content;
   if (manifestType !== ManifestType.ApiSpec) {

@@ -55,7 +55,7 @@ export class CopilotGptManifestUtils {
    */
   public async getManifest(
     path: string,
-    context?: WrapDriverContext
+    context: WrapDriverContext
   ): Promise<Result<DeclarativeCopilotManifestSchema, FxError>> {
     const manifestRes = await this.readCopilotGptManifestFile(path);
     if (manifestRes.isErr()) {

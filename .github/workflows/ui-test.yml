@@ -368,7 +368,7 @@ jobs:
         if: contains(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
         uses: actions/checkout@v3
         with:
-          repository: OfficeDev/TeamsFx-Samples
+          repository: OfficeDev/teams-toolkit-samples
           ref: v1.1.0
           path: ./packages/tests/resource
 
@@ -376,7 +376,7 @@ jobs:
         if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false
         uses: actions/checkout@v3
         with:
-          repository: OfficeDev/TeamsFx-Samples
+          repository: OfficeDev/teams-toolkit-samples
           ref: ${{ needs.setup.outputs.sample-ref }}
           path: ./packages/tests/resource
 

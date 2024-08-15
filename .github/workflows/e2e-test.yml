@@ -226,7 +226,7 @@ jobs:
         if: github.event_name == 'schedule' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false
         uses: actions/checkout@v3
         with:
-          repository: OfficeDev/TeamsFx-Samples
+          repository: OfficeDev/teams-toolkit-samples
           ref: dev
           path: packages/tests/src/e2e/resource
 
@@ -234,7 +234,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false && contains(matrix.cases, 'ChefBot') == false
         uses: actions/checkout@v3
         with:
-          repository: OfficeDev/TeamsFx-Samples
+          repository: OfficeDev/teams-toolkit-samples
           ref: ${{ github.event.inputs.sample-branch }}
           path: packages/tests/src/e2e/resource
 
@@ -539,7 +539,7 @@ jobs:
         working-directory: packages/tests/src/e2e
         run: |
           mkdir resource && cd resource
-          wget https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip
+          wget https://github.com/OfficeDev/teams-toolkit-samples/archive/refs/heads/dev.zip
           unzip dev.zip -d .
           mv TeamsFx-Samples-dev/* .
           rm -rf dev.zip TeamsFx-Samples-dev

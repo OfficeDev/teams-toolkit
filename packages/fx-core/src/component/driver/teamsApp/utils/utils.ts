@@ -9,6 +9,7 @@ import { WrapDriverContext } from "../../util/wrapUtil";
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { MissingEnvironmentVariablesError } from "../../../../error";
 import { TelemetryPropertyKey } from "./telemetry";
+import { expandVariableWithFunction, ManifestType } from "../../../utils/envFunctionUtils";
 
 export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   let keys: string[] = [];
@@ -219,20 +220,53 @@ export function normalizePath(path: string, useForwardSlash: boolean): string {
   return useForwardSlash ? path.replace(/\\/g, "/") : path;
 }
 
-export function getResolvedManifest(
+export async function getResolvedManifest(
   content: string,
   path: string,
-  telemetryKey: TelemetryPropertyKey,
+  manifestType: ManifestType,
   ctx?: WrapDriverContext
-): Result<string, FxError> {
+): Promise<Result<string, FxError>> {
   const vars = getEnvironmentVariables(content);
+  let telemetryKey;
+  switch (manifestType) {
+    case ManifestType.ApiSpec:
+      telemetryKey = TelemetryPropertyKey.customizedOpenAPIKeys;
+      break;
+    case ManifestType.PluginManifest:
+      telemetryKey = TelemetryPropertyKey.customizedAIPluginKeys;
+      break;
+    case ManifestType.DeclarativeCopilotManifest:
+      telemetryKey = TelemetryPropertyKey.customizedCopilotGptKeys;
+      break;
+    default:
+      telemetryKey = TelemetryPropertyKey.customizedKeys;
+      break;
+  }
   ctx?.addTelemetryProperties({
     [telemetryKey]: vars.join(";"),
   });
-  const result = expandEnvironmentVariable(content);
-  const notExpandedVars = getEnvironmentVariables(result);
+
+  let value = content;
+  if (manifestType !== ManifestType.ApiSpec) {
+    const processedFunctionRes = await expandVariableWithFunction(
+      content,
+      ctx,
+      undefined,
+      true,
+      manifestType
+    );
+    if (processedFunctionRes.isErr()) {
+      return processedFunctionRes;
+    }
+
+    value = expandEnvironmentVariable(processedFunctionRes.value);
+  } else {
+    value = expandEnvironmentVariable(value);
+  }
+
+  const notExpandedVars = getEnvironmentVariables(value);
   if (notExpandedVars.length > 0) {
     return err(new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), path));
   }
-  return ok(result);
+  return ok(value);
 }

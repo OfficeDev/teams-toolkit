@@ -266,6 +266,73 @@ describe("CreateOauthDriver", () => {
     }
   });
 
+  it("happy path: secret is needed when identityProvider is Custom", async () => {
+    sinon
+      .stub(teamsDevPortalClient, "createOauthRegistration")
+      .callsFake(async (token, oauthRegistration) => {
+        expect(oauthRegistration.clientId).to.equals("mockedClientId");
+        expect(oauthRegistration.description).to.equals("test");
+        expect(oauthRegistration.targetUrlsShouldStartWith[0]).to.equals("https://test");
+        expect(oauthRegistration.applicableToApps).to.equals(OauthRegistrationAppType.AnyApp);
+        expect(oauthRegistration.targetAudience).to.equals(
+          OauthRegistrationTargetAudience.AnyTenant
+        );
+        expect(oauthRegistration.m365AppId).to.equal("");
+        expect(oauthRegistration.identityProvider).to.equal("Custom");
+        return {
+          configurationRegistrationId: {
+            oAuthConfigId: "mockedRegistrationId",
+          },
+        };
+      });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl:
+                    "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+                  tokenUrl: "mockedTokenUrl",
+                  refreshUrl: "refreshUrlInSpec",
+                  scopes: {
+                    mockedScope: "description for mocked scope",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      clientId: "mockedClientId",
+      clientSecret: "mockedClientSecret",
+      flow: "authorizationCode",
+      identityProvider: "Custom",
+    };
+    const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.get(outputKeys.configurationId)).to.equal("mockedRegistrationId");
+      expect(result.summaries.length).to.equal(1);
+    }
+  });
+
   it("should throw error is identityProvider is Custom but the authorization url is not Microsoft Entra endpoint", async () => {
     sinon
       .stub(teamsDevPortalClient, "createOauthRegistration")
@@ -618,6 +685,23 @@ describe("CreateOauthDriver", () => {
       clientId: "mockedClientId",
       flow: "authorizationCode",
       identityProvider: 123,
+    };
+    const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("InvalidActionInputError");
+      expect(result.result.error.message).to.include("identityProvider");
+    }
+  });
+
+  it("should throw error if invalid identityProvider", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      clientId: "mockedClientId",
+      flow: "authorizationCode",
+      identityProvider: "abc",
     };
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;

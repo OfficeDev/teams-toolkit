@@ -199,8 +199,8 @@ export class CreateOauthDriver implements StepDriver {
 
     if (
       args.identityProvider &&
-      typeof args.identityProvider !== "string" &&
-      (args.identityProvider !== "Custom" || args.identityProvider !== "MicrosoftEntra")
+      (typeof args.identityProvider !== "string" ||
+        (args.identityProvider !== "Custom" && args.identityProvider !== "MicrosoftEntra"))
     ) {
       invalidParameters.push("identityProvider");
     }

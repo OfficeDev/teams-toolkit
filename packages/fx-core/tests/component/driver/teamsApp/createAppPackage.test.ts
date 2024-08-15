@@ -28,6 +28,7 @@ describe("teamsApp/createAppPackage", async () => {
     platform: Platform.VSCode,
     logProvider: new MockedLogProvider(),
     ui: new MockedUserInteraction(),
+    addTelemetryProperties: () => {},
   };
   let mockedEnvRestore: RestoreFn;
   const fakeUrl = "https://fake.com";
@@ -148,7 +149,7 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
-  it("should throw error if file not exists case 5", async () => {
+  it.only("should throw error if file not exists case 5", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",

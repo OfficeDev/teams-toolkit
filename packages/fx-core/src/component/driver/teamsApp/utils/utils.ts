@@ -260,6 +260,8 @@ export async function getResolvedManifest(
     }
 
     value = expandEnvironmentVariable(processedFunctionRes.value);
+  } else {
+    value = expandEnvironmentVariable(value);
   }
 
   const notExpandedVars = getEnvironmentVariables(value);

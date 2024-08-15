@@ -373,6 +373,7 @@ describe("pluginManifestUtils", () => {
       logProvider: new MockedLogProvider(),
       telemetryReporter: new MockedTelemetryReporter(),
       projectPath: "test",
+      addTelemetryProperties: () => {},
     };
     it("validate success", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);

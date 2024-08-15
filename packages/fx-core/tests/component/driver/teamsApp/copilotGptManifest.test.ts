@@ -124,6 +124,7 @@ describe("copilotGptManifestUtils", () => {
       logProvider: new MockedLogProvider(),
       telemetryReporter: new MockedTelemetryReporter(),
       projectPath: "test",
+      addTelemetryProperties: () => {},
     };
     it("validate success", async () => {
       const manifest: DeclarativeCopilotManifestSchema = {

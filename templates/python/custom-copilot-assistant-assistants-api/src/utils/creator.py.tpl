@@ -6,7 +6,7 @@ from openai.types.shared_params import FunctionDefinition
 
 from dotenv import load_dotenv
 
-load_dotenv(f'{os.getcwd()}/env/.env.local.user')
+load_dotenv(f'{os.getcwd()}/env/.env.local.user', override=True)
 
 async def main():
     options = AssistantCreateParams(

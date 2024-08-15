@@ -149,7 +149,7 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
-  it.only("should throw error if file not exists case 5", async () => {
+  it("should throw error if file not exists case 5", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",

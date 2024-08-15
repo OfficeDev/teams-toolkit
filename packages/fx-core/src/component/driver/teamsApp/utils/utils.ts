@@ -247,7 +247,13 @@ export async function getResolvedManifest(
 
   let value = content;
   if (manifestType !== ManifestType.ApiSpec) {
-    const processedFunctionRes = await expandVariableWithFunction(content, ctx, undefined, true);
+    const processedFunctionRes = await expandVariableWithFunction(
+      content,
+      ctx,
+      undefined,
+      true,
+      manifestType
+    );
     if (processedFunctionRes.isErr()) {
       return processedFunctionRes;
     }

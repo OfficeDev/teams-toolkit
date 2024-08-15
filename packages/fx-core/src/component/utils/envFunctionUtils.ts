@@ -9,11 +9,26 @@ import { expandEnvironmentVariable, getAbsolutePath } from "./common";
 import { WrapDriverContext } from "../driver/util/wrapUtil";
 
 const source = "ResolveManifestFunction";
+const telemetryEvent = "manifest-with-function";
+
+enum TelemetryPropertyKey {
+  manifestType = "manifest-type",
+  functionCount = "function-count",
+}
+
+export enum ManifestType {
+  TeamsManifest = "teams-manifest",
+  PluginManifest = "plugin-manifest",
+  DeclarativeCopilotManifest = "declarative-copilot-manifest",
+  ApiSpec = "api-spec",
+}
+
 export async function expandVariableWithFunction(
   content: string,
   ctx: WrapDriverContext | undefined,
   envs: { [key in string]: string } | undefined,
-  isJson: boolean
+  isJson: boolean,
+  manifestType: ManifestType
 ): Promise<Result<string, FxError>> {
   const regex = /\$\[ *[a-zA-Z][a-zA-Z]*\([^\]]*\) *\]/g;
   const matches = content.match(regex);
@@ -21,6 +36,7 @@ export async function expandVariableWithFunction(
   if (!matches) {
     return ok(content); // no function
   }
+  let count = 0;
   for (const placeholder of matches) {
     const processedRes = await processFunction(placeholder.slice(2, -1).trim(), ctx, envs);
     if (processedRes.isErr()) {
@@ -31,23 +47,28 @@ export async function expandVariableWithFunction(
       value = JSON.stringify(value).slice(1, -1);
     }
     if (value) {
-      // count +1  to check the count of file function for telemetry purpose
-      console.log("value");
-      console.log(value);
+      count += 1;
       content = content.replace(placeholder, value);
     }
+  }
+
+  if (count > 0) {
+    ctx?.telemetryReporter.sendTelemetryEvent(telemetryEvent, {
+      [TelemetryPropertyKey.manifestType]: manifestType.toString(),
+      [TelemetryPropertyKey.functionCount]: count.toString(),
+    });
   }
   return ok(content);
 }
 
-export async function processFunction(
+async function processFunction(
   content: string,
   ctx: WrapDriverContext | undefined,
   envs: { [key in string]: string } | undefined
 ): Promise<Result<string, FxError>> {
   const firstTrimmedContent = content.trim();
   if (!firstTrimmedContent.startsWith("file(") || !firstTrimmedContent.endsWith(")")) {
-    return err(new InvalidFunction());
+    return err(new InvalidFunctionError());
   }
 
   // file()
@@ -78,10 +99,6 @@ export async function processFunction(
     return readFileRes;
   } else {
     // invalid content inside function
-    ctx?.logProvider.error(
-      "the parameter is invalid. It can be '', \"\", ${{}} or a nested function"
-    );
-
     return err(new InvalidFunctionParameter());
   }
 }
@@ -93,7 +110,7 @@ async function readFileContent(
 ): Promise<Result<string, FxError>> {
   const ext = path.extname(filePath);
   if (ext.toLowerCase() !== ".txt") {
-    return err(new UnsupportedFileFormat());
+    return err(new UnsupportedFileFormatError());
   }
 
   const absolutePath = !ctx?.projectPath ? filePath : getAbsolutePath(filePath, ctx.projectPath);
@@ -104,6 +121,7 @@ async function readFileContent(
       const processedFileContent = expandEnvironmentVariable(fileContent, envs);
       return ok(processedFileContent);
     } catch (e) {
+      console.log(e);
       return err(new ReadFileError());
     }
   } else {
@@ -111,15 +129,8 @@ async function readFileContent(
   }
 }
 
-export enum ManifestType {
-  TeamsManifest = "teams-manifest",
-  PluginManifest = "plugin-manifest",
-  DeclarativeCopilotManifest = "declarative-copilot-manifest",
-  ApiSpec = "api-spec",
-}
-
 // TODO: better error message and localize.
-export class UnsupportedFileFormat extends UserError {
+class UnsupportedFileFormatError extends UserError {
   constructor() {
     const errorOptions: UserErrorOptions = {
       source,
@@ -131,7 +142,7 @@ export class UnsupportedFileFormat extends UserError {
   }
 }
 
-export class InvalidFunction extends UserError {
+class InvalidFunctionError extends UserError {
   constructor() {
     const errorOptions: UserErrorOptions = {
       source,
@@ -143,7 +154,7 @@ export class InvalidFunction extends UserError {
   }
 }
 
-export class InvalidFunctionParameter extends UserError {
+class InvalidFunctionParameter extends UserError {
   constructor() {
     const errorOptions: UserErrorOptions = {
       source,
@@ -155,7 +166,7 @@ export class InvalidFunctionParameter extends UserError {
   }
 }
 
-export class ReadFileError extends UserError {
+class ReadFileError extends UserError {
   constructor() {
     const errorOptions: UserErrorOptions = {
       source,

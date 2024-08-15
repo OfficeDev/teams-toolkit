@@ -121,7 +121,6 @@ async function readFileContent(
       const processedFileContent = expandEnvironmentVariable(fileContent, envs);
       return ok(processedFileContent);
     } catch (e) {
-      console.log(e);
       return err(new ReadFileError());
     }
   } else {

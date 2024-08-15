@@ -33,9 +33,9 @@ function getProbMap(str: string) {
 }
 
 // Measure the entropy of a string in bits per symbol.
-function shannonEntropy(str: string, probMap: Map<string, number>) {
+function shannonEntropy(probMap: Map<string, number>) {
   let sum = 0;
-  for (const char of str) {
+  for (const char of probMap.keys()) {
     const prob = probMap.get(char) || 0;
     const delta = (prob * Math.log(prob)) / Math.log(2);
     sum += delta;
@@ -81,7 +81,7 @@ function tokenize(text: string): Token[] {
 function computeShannonEntropy(token: Token) {
   if (!token.splitter) {
     const probMap = getProbMap(token.value);
-    token.entropy = shannonEntropy(token.value, probMap);
+    token.entropy = shannonEntropy(probMap);
   }
 }
 

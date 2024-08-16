@@ -20,7 +20,7 @@ import { DriverContext } from "../driver/interface/commonArgs";
 
 const source = "ResolveManifestFunction";
 const telemetryEvent = "manifest-with-function";
-const helpLink = "https://aka.ms";
+const helpLink = undefined; // TODO: update link
 
 enum TelemetryPropertyKey {
   manifestType = "manifest-type",

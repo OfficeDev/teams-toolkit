@@ -5,7 +5,7 @@
  * @author yuqzho@microsoft.com
  */
 
-import { Context, FxError, Inputs, ok, Result } from "@microsoft/teamsfx-api";
+import { Context, FxError, GeneratorResult, Inputs, ok, Result } from "@microsoft/teamsfx-api";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import {
   ApiAuthOptions,
@@ -19,19 +19,27 @@ import { Generator } from "../generator";
 import { merge } from "lodash";
 import { TemplateNames } from "../templates/templateNames";
 import { TemplateInfo } from "../templates/templateInfo";
+import { featureFlagManager, FeatureFlags } from "../../../common/featureFlags";
+import { declarativeCopilotInstructionFileName } from "../constant";
 
 const enum telemetryProperties {
   templateName = "template-name",
   isDeclarativeCopilot = "is-declarative-copilot",
 }
 
-export class CopilotExtensionFromScratchGenerator extends DefaultTemplateGenerator {
+/**
+ * Generator for copilot extensions including declarative copilot with no plugin,
+ * declarative copilot with API plugin from scratch, declarative copilot with existing plugin (to be add later),
+ * and API plugin from scratch.
+ */
+export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
   componentName = "copilot-extension-from-scratch-generator";
   public activate(context: Context, inputs: Inputs): boolean {
     return (
-      (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id) &&
-      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id
+      (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id &&
+        inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.apiSpec().id) ||
+      (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id &&
+        inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id)
     );
   }
 
@@ -46,8 +54,7 @@ export class CopilotExtensionFromScratchGenerator extends DefaultTemplateGenerat
     const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
     const safeProjectNameFromVS =
       language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-    const isDeclarativeCopilot =
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+    const isDeclarativeCopilot = checkDeclarativeCopilot(inputs);
 
     const replaceMap = {
       ...Generator.getDefaultVariables(
@@ -57,22 +64,30 @@ export class CopilotExtensionFromScratchGenerator extends DefaultTemplateGenerat
         inputs.placeProjectFileInSolutionDir === "true"
       ),
       DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
+      FileFunction: featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc) ? "true" : "",
     };
 
     const filterFn = (fileName: string) => {
-      if (fileName.includes("repairDeclarativeCopilot.json")) {
+      if (fileName.toLowerCase().includes("declarativecopilot.json")) {
         return isDeclarativeCopilot;
+      } else if (fileName.includes(declarativeCopilotInstructionFileName)) {
+        return isDeclarativeCopilot && featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc);
       } else {
         return true;
       }
     };
 
-    const templateName =
-      auth === ApiAuthOptions.apiKey().id
-        ? TemplateNames.ApiPluginFromScratchBearer
-        : auth === ApiAuthOptions.oauth().id
-        ? TemplateNames.ApiPluginFromScratchOAuth
-        : TemplateNames.ApiPluginFromScratch;
+    let templateName;
+    if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id) {
+      templateName =
+        auth === ApiAuthOptions.apiKey().id
+          ? TemplateNames.ApiPluginFromScratchBearer
+          : auth === ApiAuthOptions.oauth().id
+          ? TemplateNames.ApiPluginFromScratchOAuth
+          : TemplateNames.ApiPluginFromScratch;
+    } else {
+      templateName = TemplateNames.BasicGpt;
+    }
 
     merge(actionContext?.telemetryProps, {
       [telemetryProperties.templateName]: templateName,
@@ -90,4 +105,17 @@ export class CopilotExtensionFromScratchGenerator extends DefaultTemplateGenerat
       ])
     );
   }
+
+  public post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    return Promise.resolve(ok({}));
+  }
+}
+
+function checkDeclarativeCopilot(inputs: Inputs) {
+  return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
 }

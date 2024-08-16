@@ -344,11 +344,4 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
   ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
-      [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.noPlugin().id,
-    },
-    TemplateNames.BasicGpt,
-  ],
 ]);

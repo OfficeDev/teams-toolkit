@@ -35,13 +35,14 @@ describe("expandVariableWithFunction", async () => {
 
   it("return if feature is disabled", async () => {
     mockedEnvRestore = mockedEnv({ [FeatureFlagName.EnvFileFunc]: "false" });
-    const content = "description:\"$[file('testfile1.txt')]\"";
+    const content = "description:\"$[file('testfile1.txt')]\"C://test";
     const res = await expandVariableWithFunction(
       content,
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
 
     assert.isTrue(res.isOk() && res.value === content);
@@ -55,7 +56,8 @@ describe("expandVariableWithFunction", async () => {
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
 
     assert.isTrue(res.isOk() && res.value === content);
@@ -68,12 +70,12 @@ describe("expandVariableWithFunction", async () => {
       [FeatureFlagName.EnvFileFunc]: "true",
     });
     const content =
-      "description:\"$[file('testfile1.txt')]\",description2:\"$[file( file( 'testfile2.txt' ))] $[file(${{FILE_PATH}})]\"";
+      "description:\"$[file('testfile1.txt')]\",description2:\"$[file( file( 'C://testfile2.txt' ))] $[file(${{FILE_PATH}})]\"";
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
       if (file.toString().endsWith("testfile1.txt")) {
         return Promise.resolve("description in ${{TEST_ENV}}" as any);
-      } else if (file.toString().endsWith("testfile2.txt")) {
+      } else if (file.toString() === "C://testfile2.txt") {
         return Promise.resolve("test/testfile1.txt" as any);
       } else {
         throw new Error("not support " + file);
@@ -85,7 +87,8 @@ describe("expandVariableWithFunction", async () => {
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test.json"
     );
     assert.isTrue(
       res.isOk() &&
@@ -100,13 +103,14 @@ describe("expandVariableWithFunction", async () => {
       FILE_PATH: "testfile1.txt",
       [FeatureFlagName.EnvFileFunc]: "true",
     });
-    const content = "description:\"$[ unknown('testfile1.txt')]\"";
+    const content = "description:\"$[ unknown('testfile1.txt')]\"C://test";
     const res = await expandVariableWithFunction(
       content,
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(res.isErr() && res.error.name === "InvalidFunction");
   });
@@ -117,13 +121,14 @@ describe("expandVariableWithFunction", async () => {
       FILE_PATH: "testfile1.txt",
       [FeatureFlagName.EnvFileFunc]: "true",
     });
-    const content = "description:\"$[ file('testfile1.md')]\"";
+    const content = "description:\"$[ file('testfile1.md')]\"C://test";
     const res = await expandVariableWithFunction(
       content,
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(res.isErr() && res.error.name === "UnsupportedFileFormat");
   });
@@ -141,7 +146,8 @@ describe("expandVariableWithFunction", async () => {
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(
       res.isErr() &&
@@ -154,7 +160,8 @@ describe("expandVariableWithFunction", async () => {
       { ...context, platform: Platform.CLI } as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(res.isErr() && res.error.name === "InvalidFunctionParameter");
   });
@@ -165,7 +172,7 @@ describe("expandVariableWithFunction", async () => {
       FILE_PATH: "testfile1.txt",
       [FeatureFlagName.EnvFileFunc]: "true",
     });
-    const content = "description:\"$[ file('testfile1.txt')]\"";
+    const content = "description:\"$[ file('testfile1.txt')]\"C://test";
 
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
@@ -177,7 +184,8 @@ describe("expandVariableWithFunction", async () => {
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(
       res.isErr() &&
@@ -190,14 +198,15 @@ describe("expandVariableWithFunction", async () => {
       { ...context, platform: Platform.CLI } as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(res.isErr() && res.error.name === "ReadFileError");
   });
 
   it("Read file content error - nested error", async () => {
     mockedEnvRestore = mockedEnv({ TEST_ENV: "test", FILE_PATH: "testfile1.txt" });
-    const content = "description:\"$[ file(file('testfile1.txt'))]\"";
+    const content = "description:\"$[ file(file('testfile1.txt'))]\"C://test";
 
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
@@ -209,7 +218,8 @@ describe("expandVariableWithFunction", async () => {
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
 
     assert.isTrue(
@@ -223,14 +233,15 @@ describe("expandVariableWithFunction", async () => {
       { ...context, platform: Platform.CLI } as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(res.isErr() && res.error.name === "ReadFileError");
   });
 
   it("file not found error", async () => {
     mockedEnvRestore = mockedEnv({ TEST_ENV: "test", FILE_PATH: "testfile1.txt" });
-    const content = "description:\"$[ file('testfile1.txt')]\"";
+    const content = "description:\"$[ file('testfile1.txt')]\"C://test";
 
     sandbox.stub(fs, "pathExists").resolves(false);
 
@@ -239,7 +250,8 @@ describe("expandVariableWithFunction", async () => {
       context as any,
       undefined,
       true,
-      ManifestType.DeclarativeCopilotManifest
+      ManifestType.DeclarativeCopilotManifest,
+      "C://test"
     );
     assert.isTrue(res.isErr() && res.error instanceof FileNotFoundError);
   });

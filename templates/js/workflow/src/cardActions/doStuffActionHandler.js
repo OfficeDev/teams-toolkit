@@ -1,4 +1,4 @@
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 const { InvokeResponseFactory } = require("@microsoft/teamsfx");
 const responseCard = require("../adaptiveCards/doStuffActionResponse.json");
 
@@ -17,8 +17,7 @@ class DoStuffActionHandler {
       title: "Hello World Bot",
       body: "Congratulations! Your task is processed successfully.",
     };
-
-    const cardJson = AdaptiveCards.declare(responseCard).render(cardData);
+    const cardJson = new ACData.Template(responseCard).expand({ $root: cardData });
     return InvokeResponseFactory.adaptiveCard(cardJson);
 
     /**

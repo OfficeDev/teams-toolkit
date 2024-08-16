@@ -1,4 +1,4 @@
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import * as ACData from "adaptivecards-templating";
 import * as restify from "restify";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { notificationApp } from "./internal/initialize";
@@ -42,11 +42,13 @@ server.post(
 
       for (const target of installations) {
         await target.sendAdaptiveCard(
-          AdaptiveCards.declare<CardData>(notificationTemplate).render({
-            title: "New Event Occurred!",
-            appName: "Contoso App Notification",
-            description: `This is a sample http-triggered notification to ${target.type}`,
-            notificationUrl: "https://aka.ms/teamsfx-notification-new",
+          new ACData.Template(notificationTemplate).expand({
+            $root: {
+              title: "New Event Occurred!",
+              appName: "Contoso App Notification",
+              description: `This is a sample http-triggered notification to ${target.type}`,
+              notificationUrl: "https://aka.ms/teamsfx-notification-new",
+            },
           })
         );
 

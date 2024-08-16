@@ -1,6 +1,6 @@
 {
   "windows-latest": {
-    "node-16": [
+    "node-18": [
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-bot-twice",
@@ -12,9 +12,7 @@
       "treeview-collaboration-spfx",
       "remotedebug-spfxreact-globalpkg",
       "remotedebug-spfxnone-globalpkg-addwebpart",
-      "remotedebug-spfxreact-addwebpart"
-    ],
-    "node-18": [
+      "remotedebug-spfxreact-addwebpart",
       "treeview-newproject-outlook-add-in",
       "treeview-newproject-tab",
       "treeview-collaboration-win-only",
@@ -98,15 +96,12 @@
     "node-20": ["localdebug-obo-tab"]
   },
   "ubuntu-latest": {
-    "node-16": [
+    "node-18": [
       "treeview-invalidname",
-      "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-command-and-response",
       "localdebug-notification-func",
-      "localdebug-notification-restify"
-    ],
-    "node-18": [
+      "localdebug-notification-restify",
       "treeview-content",
       "treeview-tab-manifest",
       "treeview-quickstart",
@@ -161,13 +156,13 @@
     "node-20": ["localdebug-obo-tab"]
   },
   "macos-latest": {
-    "node-16": [
+    "node-18": [
       "localdebug-bot",
       "localdebug-command-and-response",
       "localdebug-notification-func",
-      "localdebug-notification-restify"
-    ],
-    "node-18": ["treeview-collaboration-spfx"]
+      "localdebug-notification-restify",
+      "treeview-collaboration-spfx"
+    ]
   }
 }
 

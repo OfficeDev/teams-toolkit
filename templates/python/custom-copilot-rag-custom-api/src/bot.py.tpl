@@ -7,7 +7,7 @@ from botbuilder.core import MemoryStorage, TurnContext, CardFactory, MessageFact
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.ai import AIOptions
 from teams.ai.actions import ActionTurnContext
-from teams.ai.models import AzureOpenAIModelOptions, OpenAIModel
+from teams.ai.models import AzureOpenAIModelOptions, OpenAIModel, OpenAIModelOptions
 from teams.ai.planners import ActionPlanner, ActionPlannerOptions
 from teams.ai.prompts import PromptManager, PromptManagerOptions
 from teams.state import TurnState
@@ -44,7 +44,8 @@ model = OpenAIModel(
 )
 {{/useOpenAI}}
     
-prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))
+prompts_folder_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts")
+prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{prompts_folder_path}"))
 
 planner = ActionPlanner(
     ActionPlannerOptions(model=model, prompts=prompts, default_prompt="chat")

@@ -1,4 +1,4 @@
-import { MemoryStorage } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
 import { Application, AI, preview } from "@microsoft/teams-ai";
@@ -28,7 +28,16 @@ const app = new Application({
   },
 });
 
-app.message("/reset", async (context, state) => {
+app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
+  const welcomeText = "How can I help you today?";
+  for (const member of turnContext.activity.membersAdded) {
+    if (member.id !== turnContext.activity.recipient.id) {
+      await turnContext.sendActivity(MessageFactory.text(welcomeText));
+    }
+  }
+});
+
+app.message("reset", async (context, state) => {
   state.deleteConversationState();
   await context.sendActivity("Ok lets start this over.");
 });

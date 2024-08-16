@@ -895,6 +895,7 @@ describe("render template", () => {
     });
 
     it("template variables with custom copilot - OpenAI", async () => {
+      inputs.projectId = "test-id";
       inputs[QuestionNames.LLMService] = "llm-service-openai";
       inputs[QuestionNames.OpenAIKey] = "test-key";
       const vars = newGeneratorFlag
@@ -905,12 +906,17 @@ describe("render template", () => {
           });
       assert.equal(vars.useOpenAI, "true");
       assert.equal(vars.useAzureOpenAI, "");
-      assert.equal(vars.openAIKey, "test-key");
+      if (newGeneratorFlag) {
+        assert.isTrue(vars.openAIKey.startsWith("crypto_"));
+      } else {
+        assert.equal(vars.openAIKey, "test-key");
+      }
       assert.equal(vars.azureOpenAIKey, "");
       assert.equal(vars.azureOpenAIEndpoint, "");
     });
 
     it("template variables with custom copilot - Azure OpenAI", async () => {
+      inputs.projectId = "test-id";
       inputs[QuestionNames.LLMService] = "llm-service-azure-openai";
       inputs[QuestionNames.AzureOpenAIKey] = "test-key";
       inputs[QuestionNames.AzureOpenAIEndpoint] = "test-endpoint";
@@ -926,7 +932,11 @@ describe("render template", () => {
       assert.equal(vars.useOpenAI, "");
       assert.equal(vars.useAzureOpenAI, "true");
       assert.equal(vars.openAIKey, "");
-      assert.equal(vars.azureOpenAIKey, "test-key");
+      if (newGeneratorFlag) {
+        assert.isTrue(vars.azureOpenAIKey.startsWith("crypto_"));
+      } else {
+        assert.equal(vars.azureOpenAIKey, "test-key");
+      }
       assert.equal(vars.azureOpenAIEndpoint, "test-endpoint");
       assert.equal(vars.azureOpenAIDeploymentName, "test-deployment");
     });

@@ -40,7 +40,7 @@
   "core.projectVersionChecker.incompatibleProject": "The current project is incompatible with the installed version of Teams Toolkit.",
   "core.projectVersionChecker.vs.incompatibleProject": "The project in the solution is created with Teams Toolkit preview feature - Teams App Configuration Improvements. You can turn on the preview feature to continue.",
   "core.deployArmTemplates.ActionSuccess": "ARM templates are deployed successfully. Resource group name: %s. Deployment name: %s",
-  "core.collaboration.ListCollaboratorsSuccess": "'List of Microsoft 365 App owners is successful, you can view it in [Output panel](%s).",
+  "core.collaboration.ListCollaboratorsSuccess": "List of Microsoft 365 App owners is successful, you can view it in [Output panel](%s).",
   "core.collaboration.GrantingPermission": "Granting permission",
   "core.collaboration.EmailCannotBeEmptyOrSame": "Provide collaborator's email and make sure it's not the current user's email.",
   "core.collaboration.CannotFindUserInCurrentTenant": "User not found in current tenant. Provide correct email address",

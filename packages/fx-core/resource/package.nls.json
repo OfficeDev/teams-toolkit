@@ -528,7 +528,7 @@
   "core.envFunc.unsupportedFunction.errorLog": "\"%s\" is not a valid function. Supported function: %s.",
   "core.envFunc.unsupportedFunction.errorMessage": "Invalid function. Check output for details.",
   "core.envFunc.unsupportedFunction.errorMessage.vsc": "Invalid function. Check [Output panel](command:fx-extension.showOutputChannel) for details.",
-  "core.envFunc.invalidFunctionParameter.errorLog": "The parameter of function \"%s\" is invalid. Please provide a valid file path wrapped by '' or an environment variable name in \"${{}}\" format.",
+  "core.envFunc.invalidFunctionParameter.errorLog": "The parameter \"%s\" of function \"%s\" is invalid. Please provide a valid file path wrapped by '' or an environment variable name in \"${{}}\" format.",
   "core.envFunc.invalidFunctionParameter.errorMessage": "Invalid parameter of function \"%s\". Check output for details.",
   "core.envFunc.invalidFunctionParameter.errorMessage.vsc": "Invalid parameter of function \"%s\". Check [Output panel](command:fx-extension.showOutputChannel) for details.",
   "core.envFunc.readFile.errorLog": "Failed to read from \"%s\" due to \"%s\".",

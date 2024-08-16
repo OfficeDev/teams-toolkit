@@ -238,7 +238,7 @@ export class CreateAppPackageDriver implements StepDriver {
         zip,
         declarativeCopilots[0].file,
         copilotGptManifestFile,
-        ManifestType.PluginManifest,
+        ManifestType.DeclarativeCopilotManifest,
         context
       );
       if (addFileWithVariableRes.isErr()) {

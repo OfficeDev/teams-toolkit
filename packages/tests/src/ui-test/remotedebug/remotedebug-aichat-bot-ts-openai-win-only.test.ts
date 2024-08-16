@@ -61,37 +61,22 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][TS] Remote debug for ai chat bot project Tests",
+    "[auto][Typescript][OpenAI] Remote debug for Basic AI Chatbot",
     {
-      testPlanCaseId: 24808530,
+      testPlanCaseId: 27042831,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("aichat", appName, {
         lang: "TypeScript",
-        aiType: "Azure OpenAI",
+        aiType: "OpenAI",
       });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
-      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
-      const azureOpenAiKey = OpenAiKey.azureOpenAiKey
-        ? OpenAiKey.azureOpenAiKey
-        : "fake";
-      const azureOpenAiEndpoint = OpenAiKey.azureOpenAiEndpoint
-        ? OpenAiKey.azureOpenAiEndpoint
-        : "https://test.com";
-      const azureOpenAiModelDeploymentName =
-        OpenAiKey.azureOpenAiModelDeploymentName
-          ? OpenAiKey.azureOpenAiModelDeploymentName
-          : "fake";
-      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", azureOpenAiKey);
-      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", azureOpenAiEndpoint);
-      editDotEnvFile(
-        envPath,
-        "AZURE_OPENAI_DEPLOYMENT_NAME",
-        azureOpenAiModelDeploymentName
-      );
+      const isRealKey = OpenAiKey.openAiKey ? true : false;
+      const openAiKey = OpenAiKey.openAiKey ? OpenAiKey.openAiKey : "fake";
+      editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(

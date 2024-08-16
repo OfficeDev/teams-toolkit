@@ -117,7 +117,7 @@ async function processFunction(
   } else {
     // invalid content inside function
     ctx.logProvider.error(
-      getLocalizedString("core.envFunc.invalidFunctionParameter.errorLog", trimmedParameter)
+      getLocalizedString("core.envFunc.invalidFunctionParameter.errorLog", trimmedParameter, "file")
     );
     return err(new InvalidFunctionParameter(ctx.platform));
   }

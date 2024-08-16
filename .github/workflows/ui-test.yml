@@ -202,7 +202,7 @@ jobs:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
 
-      AZURE_OPENAI_DEPLOYMENT_NAME: "gpt-35-turbo"
+      AZURE_OPENAI_DEPLOYMENT_NAME: "gpt-4-32k"
       AZURE_OPENAI_ENDPOINT: "https://aoai-jasozdr.openai.azure.com/"
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT: "text-embedding-ada-002"
 

@@ -29,7 +29,7 @@ from get_data import get_doc_data
 
 from dotenv import load_dotenv
 
-load_dotenv(f'{os.getcwd()}/env/.env.local.user')
+load_dotenv(f'{os.getcwd()}/env/.env.local.user', override=True)
 
 @dataclass
 class Doc:

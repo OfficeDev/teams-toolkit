@@ -27,6 +27,7 @@ import { pluginManifestUtils } from "./PluginManifestUtils";
 import { SummaryConstant } from "../../../configManager/constant";
 import { EOL } from "os";
 import { ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
 
 export class CopilotGptManifestUtils {
   public async readCopilotGptManifestFile(
@@ -55,7 +56,7 @@ export class CopilotGptManifestUtils {
    */
   public async getManifest(
     path: string,
-    context: WrapDriverContext
+    context: DriverContext
   ): Promise<Result<DeclarativeCopilotManifestSchema, FxError>> {
     const manifestRes = await this.readCopilotGptManifestFile(path);
     if (manifestRes.isErr()) {
@@ -92,7 +93,7 @@ export class CopilotGptManifestUtils {
   public async validateAgainstSchema(
     declaraitveCopilot: IDeclarativeCopilot,
     manifestPath: string,
-    context: WrapDriverContext
+    context: DriverContext
   ): Promise<Result<DeclarativeCopilotManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(manifestPath, context);
     if (manifestRes.isErr()) {

@@ -6,7 +6,7 @@ import { AppDefinition } from "../interfaces/appdefinitions/appDefinition";
 import { ConfigurableTab } from "../interfaces/appdefinitions/configurableTab";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 import { WrapDriverContext } from "../../util/wrapUtil";
-import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import { MissingEnvironmentVariablesError } from "../../../../error";
 import { TelemetryPropertyKey } from "./telemetry";
 import { expandVariableWithFunction, ManifestType } from "../../../utils/envFunctionUtils";

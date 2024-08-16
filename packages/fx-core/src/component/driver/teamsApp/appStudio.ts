@@ -45,7 +45,6 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { AppPackage } from "./interfaces/appdefinitions/appPackage";
 import { AppStudioResultFactory } from "./results";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { WrapDriverContext } from "../util/wrapUtil";
 import { generateDriverContext } from "../../../common/utils";
 
 export async function checkIfAppInDifferentAcountSameTenant(

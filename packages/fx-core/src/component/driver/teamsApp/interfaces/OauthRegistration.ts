@@ -34,6 +34,9 @@ export interface OauthRegistration {
 
   // indicating whether PKCE is enabled
   isPKCEEnabled?: boolean;
+
+  // Identity provider, can be Custom or MicrosoftEntra
+  identityProvider?: string;
 }
 
 export enum OauthRegistrationAppType {

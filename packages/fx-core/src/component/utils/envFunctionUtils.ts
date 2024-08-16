@@ -14,9 +14,8 @@ import fs from "fs-extra";
 import stripBom from "strip-bom";
 import { FileNotFoundError } from "../../error";
 import { expandEnvironmentVariable, getAbsolutePath } from "./common";
-import { WrapDriverContext } from "../driver/util/wrapUtil";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { featureFlagManager, FeatureFlagName, FeatureFlags } from "../../common/featureFlags";
+import { featureFlagManager, FeatureFlags } from "../../common/featureFlags";
 import { DriverContext } from "../driver/interface/commonArgs";
 
 const source = "ResolveManifestFunction";
@@ -86,7 +85,7 @@ async function processFunction(
     ctx.logProvider.error(
       getLocalizedString("core.envFunc.unsupportedFunction.errorLog", firstTrimmedContent, "file")
     );
-    return err(new InvalidFunctionError(ctx?.platform));
+    return err(new InvalidFunctionError(ctx.platform));
   }
 
   // file()
@@ -117,10 +116,10 @@ async function processFunction(
     return readFileRes;
   } else {
     // invalid content inside function
-    ctx?.logProvider.error(
+    ctx.logProvider.error(
       getLocalizedString("core.envFunc.invalidFunctionParameter.errorLog", trimmedParameter)
     );
-    return err(new InvalidFunctionParameter(ctx?.platform));
+    return err(new InvalidFunctionParameter(ctx.platform));
   }
 }
 
@@ -134,10 +133,10 @@ async function readFileContent(
     ctx.logProvider.error(
       getLocalizedString("core.envFunc.unsupportedFile.errorLog", filePath, "txt")
     );
-    return err(new UnsupportedFileFormatError(ctx?.platform));
+    return err(new UnsupportedFileFormatError(ctx.platform));
   }
 
-  const absolutePath = !ctx?.projectPath ? filePath : getAbsolutePath(filePath, ctx.projectPath);
+  const absolutePath = getAbsolutePath(filePath, ctx.projectPath);
   if (await fs.pathExists(absolutePath)) {
     try {
       let fileContent = await fs.readFile(absolutePath, "utf8");
@@ -145,10 +144,10 @@ async function readFileContent(
       const processedFileContent = expandEnvironmentVariable(fileContent, envs);
       return ok(processedFileContent);
     } catch (e) {
-      ctx?.logProvider.error(
+      ctx.logProvider.error(
         getLocalizedString("core.envFunc.readFile.errorLog", absolutePath, e?.toString())
       );
-      return err(new ReadFileError(ctx?.platform));
+      return err(new ReadFileError(ctx.platform, absolutePath));
     }
   } else {
     return err(new FileNotFoundError(source, filePath));
@@ -173,7 +172,7 @@ class UnsupportedFileFormatError extends UserError {
 }
 
 class InvalidFunctionError extends UserError {
-  constructor(platform: Platform | undefined) {
+  constructor(platform: Platform) {
     const message =
       platform === Platform.VSCode
         ? getLocalizedString("core.envFunc.unsupportedFunction.errorMessage.vsc")
@@ -190,11 +189,11 @@ class InvalidFunctionError extends UserError {
 }
 
 class InvalidFunctionParameter extends UserError {
-  constructor(platform: Platform | undefined) {
+  constructor(platform: Platform) {
     const message =
       platform === Platform.VSCode
-        ? getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage.vsc")
-        : getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage");
+        ? getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage.vsc", "file")
+        : getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage", "file");
     const errorOptions: UserErrorOptions = {
       source,
       name: "InvalidFunctionParameter",
@@ -207,11 +206,11 @@ class InvalidFunctionParameter extends UserError {
 }
 
 class ReadFileError extends UserError {
-  constructor(platform: Platform | undefined) {
+  constructor(platform: Platform, filePath: string) {
     const message =
       platform === Platform.VSCode
-        ? getLocalizedString("core.envFunc.readFile.errorMessage.vsc")
-        : getLocalizedString("core.envFunc.readFile.errorMessage");
+        ? getLocalizedString("core.envFunc.readFile.errorMessage.vsc", filePath)
+        : getLocalizedString("core.envFunc.readFile.errorMessage", filePath);
     const errorOptions: UserErrorOptions = {
       source,
       name: "ReadFileError",

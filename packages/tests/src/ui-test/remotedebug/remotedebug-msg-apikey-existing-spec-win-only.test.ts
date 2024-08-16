@@ -20,10 +20,7 @@ import {
 } from "../../utils/vscodeOperation";
 import { cleanUpLocalProject, cleanTeamsApp } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
-import {
-  initPage,
-  validateExisingApiMeResult,
-} from "../../utils/playwrightOperation";
+import { initPage, validateApiMeResult } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
@@ -70,7 +67,7 @@ describe("Remote debug Tests", function () {
       await driver.sleep(Timeout.openAPIProvision);
       const input = await InputBox.create();
       // input api Key
-      await input.setText("sdjilasdjasdjas");
+      await input.setText("my-secret-value");
       await input.confirm();
       await driver.sleep(Timeout.shortTimeWait);
       const dialog = new ModalDialog();
@@ -91,7 +88,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateExisingApiMeResult(page, remoteDebugTestContext.appName);
+      await validateApiMeResult(page, remoteDebugTestContext.appName);
     }
   );
 });

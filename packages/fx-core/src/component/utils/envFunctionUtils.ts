@@ -158,7 +158,10 @@ class UnsupportedFileFormatError extends UserError {
   constructor(platform: Platform | undefined) {
     const message =
       platform === Platform.VSCode
-        ? getLocalizedString("core.envFunc.unsupportedFile.errorMessage.vsc")
+        ? getLocalizedString(
+            "core.envFunc.unsupportedFile.errorMessage",
+            getLocalizedString("core.error.checkOutput.vsc")
+          )
         : getLocalizedString("core.envFunc.unsupportedFile.errorMessage");
     const errorOptions: UserErrorOptions = {
       source,
@@ -175,8 +178,11 @@ class InvalidFunctionError extends UserError {
   constructor(platform: Platform) {
     const message =
       platform === Platform.VSCode
-        ? getLocalizedString("core.envFunc.unsupportedFunction.errorMessage.vsc")
-        : getLocalizedString("core.envFunc.unsupportedFunction.errorMessage");
+        ? getLocalizedString(
+            "core.envFunc.unsupportedFunction.errorMessage",
+            getLocalizedString("core.error.checkOutput.vsc")
+          )
+        : getLocalizedString("core.envFunc.unsupportedFunction.errorMessage", "");
     const errorOptions: UserErrorOptions = {
       source,
       name: "InvalidFunction",
@@ -192,8 +198,12 @@ class InvalidFunctionParameter extends UserError {
   constructor(platform: Platform) {
     const message =
       platform === Platform.VSCode
-        ? getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage.vsc", "file")
-        : getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage", "file");
+        ? getLocalizedString(
+            "core.envFunc.invalidFunctionParameter.errorMessage",
+            "file",
+            getLocalizedString("core.error.checkOutput.vsc")
+          )
+        : getLocalizedString("core.envFunc.invalidFunctionParameter.errorMessage", "file", "");
     const errorOptions: UserErrorOptions = {
       source,
       name: "InvalidFunctionParameter",
@@ -209,8 +219,12 @@ class ReadFileError extends UserError {
   constructor(platform: Platform, filePath: string) {
     const message =
       platform === Platform.VSCode
-        ? getLocalizedString("core.envFunc.readFile.errorMessage.vsc", filePath)
-        : getLocalizedString("core.envFunc.readFile.errorMessage", filePath);
+        ? getLocalizedString(
+            "core.envFunc.readFile.errorMessage",
+            filePath,
+            getLocalizedString("core.error.checkOutput.vsc")
+          )
+        : getLocalizedString("core.envFunc.readFile.errorMessage", filePath, "");
     const errorOptions: UserErrorOptions = {
       source,
       name: "ReadFileError",

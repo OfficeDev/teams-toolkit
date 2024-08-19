@@ -21,4 +21,11 @@ describe("secret masker", () => {
       assert.equal(output, "none");
     });
   });
+
+  describe("secretMasker", () => {
+    it("not contain", async () => {
+      const output = dictMatcher.match("Successfully ran target precommit for project.");
+      assert.equal(output, "Successfully ran target precommit for project.");
+    });
+  });
 });

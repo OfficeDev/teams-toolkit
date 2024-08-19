@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 import * as crypto from "crypto";
-import * as fs from "fs";
 import * as path from "path";
 import { getResourceFolder } from "../../folder";
+import AdmZip from "adm-zip";
 
 /**
  * Bloom Filter is used to check whether a word is in the dictionary with less memory usage than normal hash map.
  */
-class BloomFilter {
+export class BloomFilter {
   private size = 100000000;
   private bitArray: Uint8Array;
   private numHashFunctions = 7;
@@ -41,14 +41,34 @@ class BloomFilter {
     return true;
   }
 
-  public saveToFile(filename: string): void {
-    fs.writeFileSync(filename, this.bitArray);
-  }
+  //   public saveToFile(filename: string): void {
+  //     fs.writeFileSync(filename, this.bitArray);
+  //   }
 
-  public static loadFromFile(filename: string): BloomFilter {
-    const bitArray = new Uint8Array(fs.readFileSync(filename));
+  //   public static loadFromFile(filename: string): BloomFilter {
+  //     const bitArray = new Uint8Array(fs.readFileSync(filename));
+  //     const bloomFilter = new BloomFilter();
+  //     bloomFilter.bitArray = bitArray;
+  //     return bloomFilter;
+  //   }
+
+  public static loadFromZipFile(zipFilename: string): BloomFilter {
+    // Read the zip file into memory
+    const zip = new AdmZip(zipFilename);
+
+    // Get the entries in the zip file
+    const zipEntries = zip.getEntries();
+
+    // Assuming the first file in the zip is the bit array file
+    const bitArrayFile = zipEntries[0];
+
+    // Read the content of the file as a buffer
+    const fileContents = bitArrayFile.getData();
+
+    // Create a new BloomFilter instance and populate it
     const bloomFilter = new BloomFilter();
-    bloomFilter.bitArray = bitArray;
+    bloomFilter.bitArray = new Uint8Array(fileContents);
+
     return bloomFilter;
   }
 }
@@ -56,7 +76,7 @@ class BloomFilter {
 class DictionaryMatcher {
   bloomFilter: BloomFilter;
   constructor() {
-    this.bloomFilter = BloomFilter.loadFromFile(path.join(getResourceFolder(), "dict.bf"));
+    this.bloomFilter = BloomFilter.loadFromZipFile(path.join(getResourceFolder(), "dict.zip"));
   }
   match(text: string): "exact" | "contains" | "none" {
     const input = trimNonAlphabetChars(text);

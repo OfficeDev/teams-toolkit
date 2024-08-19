@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 import { localize } from "./utils/localizeUtils";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
-import { featureFlagManager, FeatureFlagName, FeatureFlags } from "@microsoft/teamsfx-core";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 
 export let uriEventHandler: UriHandler;
 

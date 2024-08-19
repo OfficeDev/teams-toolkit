@@ -19,13 +19,13 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
   const azureOpenAIDeploymentName: string | undefined =
     inputs[QuestionNames.AzureOpenAIDeploymentName];
 
-  if (inputs.projectId !== undefined && (openAIKey !== undefined || azureOpenAIKey !== undefined)) {
+  if (inputs.projectId !== undefined && (openAIKey || azureOpenAIKey)) {
     const cryptoProvider = new LocalCrypto(inputs.projectId);
-    if (openAIKey !== undefined) {
+    if (openAIKey) {
       const result = cryptoProvider.encrypt(openAIKey);
       openAIKey = (result as any).value;
     }
-    if (azureOpenAIKey !== undefined) {
+    if (azureOpenAIKey) {
       const result = cryptoProvider.encrypt(azureOpenAIKey);
       azureOpenAIKey = (result as any).value;
     }

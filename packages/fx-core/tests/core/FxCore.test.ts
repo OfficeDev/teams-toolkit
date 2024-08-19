@@ -99,13 +99,14 @@ import {
 } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { UninstallInputs } from "../../build";
+import { SyncManifestInputs, UninstallInputs } from "../../build";
 import { CoreHookContext } from "../../src/core/types";
 import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
 import * as projMigrator from "../../src/core/middleware/projectMigratorV3";
 import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 import * as pluginGeneratorHelper from "../../src/component/generator/apiSpec/helper";
+import { SyncManifestDriver } from "../../src/component/driver/teamsApp/syncManifest";
 
 const tools = new MockTools();
 
@@ -5211,6 +5212,16 @@ describe("addPlugin", async () => {
       const core = new FxCore(tools);
       const result = await core.projectVersionCheck(inputs);
       assert.isTrue(result.isErr());
+    });
+    it("sync Manifest - success", async () => {
+      const core = new FxCore(tools);
+      const inputs = {
+        platform: Platform.CLI,
+        nonInteractive: true,
+      };
+      sandbox.stub(SyncManifestDriver.prototype, "sync").resolves(ok(new Map<string, string>()));
+      const res = await core.syncManifest(inputs as SyncManifestInputs);
+      assert.isTrue(res.isOk());
     });
   });
 });

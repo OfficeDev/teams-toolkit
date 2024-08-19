@@ -194,6 +194,14 @@ describe("SharedOpts", () => {
       await runCommand(Stage.createEnv);
       sinon.assert.calledOnce(createEnv);
     });
+    it("syncManifest", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const syncManifest = sandbox.spy(globalVariables.core, "syncManifest");
+      sandbox.stub(vscode.commands, "executeCommand");
+
+      await runCommand(Stage.syncManifest);
+      sinon.assert.calledOnce(syncManifest);
+    });
   });
 
   describe("processResult", () => {

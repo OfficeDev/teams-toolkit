@@ -134,7 +134,7 @@
   "plugins.appstudio.validationFailedNotice": "Manifest Validation is unsuccessful!",
   "plugins.appstudio.validateManifest.progressBar.message": "Validating manifest...",
   "plugins.appstudio.validateAppPackage.progressBar.message": "Validating app package...",
-  "plugins.appstudio.syncManifestFailedNotice": "Faile to sync manifest!",
+  "plugins.appstudio.syncManifestFailedNotice": "Failed to sync manifest!",
   "plugins.appstudio.adminPortal": "Go to admin portal",
   "plugins.appstudio.publishSucceedNotice.cli": "[%s] is published successfully to Admin Portal (%s). After approval, your app will be available for your organization. Get more info from %s.",
   "plugins.appstudio.updatePublihsedAppConfirm": "Do you want to submit a new update?",

@@ -99,7 +99,7 @@ import {
 } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { SyncManifestInputs, UninstallInputs } from "../../build";
+import { isValidProjectV3, SyncManifestInputs, UninstallInputs } from "../../build";
 import { CoreHookContext } from "../../src/core/types";
 import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
@@ -5216,7 +5216,7 @@ describe("addPlugin", async () => {
     it("sync Manifest - success", async () => {
       const core = new FxCore(tools);
       const inputs = {
-        platform: Platform.CLI,
+        platform: Platform.CLI_HELP,
         projectPath: "fake",
         env: "dev",
         nonInteractive: true,

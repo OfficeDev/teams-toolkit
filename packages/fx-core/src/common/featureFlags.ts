@@ -28,7 +28,9 @@ export class FeatureFlagName {
   static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
+  static readonly SyncManifest = "TEAMSFX_SYNC_MANIFEST";
 }
+
 export interface FeatureFlag {
   name: string;
   defaultValue: string;
@@ -76,6 +78,10 @@ export class FeatureFlags {
   };
   static readonly DevTunnelTest = {
     name: FeatureFlagName.DevTunnelTest,
+    defaultValue: "false",
+  };
+  static readonly SyncManifest = {
+    name: FeatureFlagName.SyncManifest,
     defaultValue: "false",
   };
 }

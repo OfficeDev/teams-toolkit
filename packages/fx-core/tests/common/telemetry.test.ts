@@ -59,7 +59,7 @@ describe("telemetry", () => {
       telemetryUtils.fillInErrorProperties(props, new ScriptExecutionError(error, "test"));
       assert.equal(
         props[TelemetryProperty.ErrorData],
-        maskSecret(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+        maskSecret(JSON.stringify(error, Object.getOwnPropertyNames(error)), { replace: "***" })
       );
     });
   });

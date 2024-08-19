@@ -47,7 +47,9 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
     useOpenAI: llmService === "llm-service-openai" ? "true" : "",
     useAzureOpenAI: llmService === "llm-service-azure-openai" ? "true" : "",
     openAIKey: openAIKey ?? "",
+    originalOpenAIKey: inputs[QuestionNames.OpenAIKey] ?? "",
     azureOpenAIKey: azureOpenAIKey ?? "",
+    originalAzureOpenAIKey: inputs[QuestionNames.AzureOpenAIKey] ?? "",
     azureOpenAIEndpoint: azureOpenAIEndpoint ?? "",
     azureOpenAIDeploymentName: azureOpenAIDeploymentName ?? "",
     isNewProjectTypeEnabled: featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType)

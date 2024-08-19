@@ -499,6 +499,7 @@ export class CapabilityOptions {
     const capabilities = [
       CapabilityOptions.empty(),
       ...CapabilityOptions.copilotExtensions(inputs),
+      ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),

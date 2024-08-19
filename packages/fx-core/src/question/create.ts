@@ -1441,9 +1441,11 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.customCopilotBasic().id ||
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.customCopilotRag().id ||
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.customCopilotAssistant().id
+            (inputs[QuestionNames.Capabilities] === CapabilityOptions.customCopilotBasic().id ||
+              inputs[QuestionNames.Capabilities] === CapabilityOptions.customCopilotRag().id ||
+              inputs[QuestionNames.Capabilities] ===
+                CapabilityOptions.customCopilotAssistant().id) &&
+            getRuntime(inputs) !== RuntimeOptions.DotNet().id
           );
         },
         data: llmServiceQuestion(),

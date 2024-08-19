@@ -27,9 +27,9 @@ export function maskSecret(inputText?: string, option?: MaskSecretOptions): stri
   // mask by secret pattern
   let output = maskByPattern(inputText);
   // mask by .env.xxx.user
-  output = maskSecretFromEnv(inputText, replace);
+  output = maskSecretFromEnv(output, replace);
   // mask by entropy
-  output = secretMasker.maskSecret(inputText, replace);
+  output = secretMasker.maskSecret(output, replace);
   return output;
 }
 

@@ -44,7 +44,6 @@ import {
   apiSpecLocationQuestion,
 } from "./create";
 import { UninstallInputs } from "./inputs";
-import { get } from "lodash";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();

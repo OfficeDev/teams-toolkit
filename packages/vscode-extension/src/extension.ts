@@ -245,7 +245,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant entries
+  // control whether to show sync manifest entries
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantEnabled",
@@ -272,6 +272,11 @@ export async function activate(context: vscode.ExtensionContext) {
     isOfficeManifestOnlyProject
   );
 
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isSyncManifestEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.SyncManifest)
+  );
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
@@ -681,7 +686,9 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(checkCopilotCallbackCmd);
 
-  registerInCommandController(context, "fx-extension.syncManifest", syncManifestHandler);
+  if (featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest)) {
+    registerInCommandController(context, "fx-extension.syncManifest", syncManifestHandler);
+  }
 }
 
 /**

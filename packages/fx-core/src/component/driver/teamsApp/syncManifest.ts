@@ -7,16 +7,7 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import * as path from "path";
 import { SyncManifestArgs } from "./interfaces/SyncManifest";
-import {
-  Colors,
-  FxError,
-  Platform,
-  Result,
-  TeamsAppManifest,
-  UserError,
-  err,
-  ok,
-} from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import * as appStudio from "./appStudio";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioResultFactory } from "./results";
@@ -25,10 +16,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { envUtil, DotenvOutput } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 import { metadataUtil } from "../../utils/metadataUtil";
-import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
-import { AppStudioScopes, getAppStudioEndpoint } from "../../../common/constants";
 import { manifestUtils } from "./utils/ManifestUtils";
-import { get } from "lodash";
 import fs from "fs-extra";
 
 const actionName = "teamsApp/syncManifest";

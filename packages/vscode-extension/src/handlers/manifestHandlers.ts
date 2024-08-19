@@ -40,7 +40,7 @@ export async function syncManifestHandler(...args: any[]): Promise<Result<null, 
   const inputs: SyncManifestInputs = {
     platform: Platform.VSCode,
   };
-  if (args && args.length > 0) {
+  if (args.length > 0) {
     inputs["teams-app-id"] = args[0];
   }
   return await runCommand(Stage.syncManifest, inputs);

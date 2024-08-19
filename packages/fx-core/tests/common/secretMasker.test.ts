@@ -5,6 +5,7 @@ import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
 import { dictMatcher } from "../../src/common/secretmasker/dict";
+import { secretMasker } from "../../src/common/secretmasker/masker";
 
 describe("secret masker", () => {
   const sandbox = sinon.createSandbox();
@@ -24,7 +25,7 @@ describe("secret masker", () => {
 
   describe("secretMasker", () => {
     it("not contain", async () => {
-      const output = dictMatcher.match("Successfully ran target precommit for project.");
+      const output = secretMasker.maskSecret("Successfully ran target precommit for project.");
       assert.equal(output, "Successfully ran target precommit for project.");
     });
   });

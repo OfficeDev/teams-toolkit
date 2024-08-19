@@ -1718,6 +1718,7 @@ export class FxCore {
       }
 
       let generateResult;
+      let pluginPath: string | undefined;
       if (!isPlugin) {
         generateResult = await specParser.generate(
           manifestPath,
@@ -1733,6 +1734,7 @@ export class FxCore {
         if (pluginPathRes.isErr()) {
           return err(pluginPathRes.error);
         }
+        pluginPath = pluginPathRes.value;
         generateResult = await specParser.generateForCopilot(
           manifestPath,
           operations,
@@ -1751,10 +1753,12 @@ export class FxCore {
       });
 
       if (generateResult.warnings && generateResult.warnings.length > 0) {
-        const warnSummary = generateScaffoldingSummary(
+        const warnSummary = await generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
-          path.relative(inputs.projectPath!, outputApiSpecPath)
+          path.relative(inputs.projectPath!, outputApiSpecPath),
+          pluginPath === undefined ? undefined : path.relative(inputs.projectPath!, pluginPath),
+          inputs.projectPath!
         );
 
         if (warnSummary) {
@@ -1963,12 +1967,14 @@ export class FxCore {
       });
 
       if (generateResult.warnings && generateResult.warnings.length > 0) {
-        const warnSummary = generateScaffoldingSummary(
+        const warnSummary = await generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
-          path.relative(inputs.projectPath, openApiSpecFilePath)
+          path.relative(inputs.projectPath, openApiSpecFilePath),
+          path.relative(inputs.projectPath, pluginManifestFilePath),
+          inputs.projectPath
         );
-        context.logProvider.info(warnSummary);
+        context.logProvider.info(warnSummary + "\n");
       }
     } catch (e) {
       let error: FxError;

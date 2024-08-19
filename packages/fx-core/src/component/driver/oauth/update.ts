@@ -20,6 +20,7 @@ import { OauthNameTooLongError } from "./error/oauthNameTooLong";
 import { UpdateOauthArgs } from "./interface/updateOauthArgs";
 import { logMessageKeys } from "./utility/constants";
 import { getandValidateOauthInfoFromSpec } from "./utility/utility";
+import { OauthDisablePKCEError } from "./error/oauthDisablePKCEError";
 
 const actionName = "oauth/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-update";
@@ -55,6 +56,10 @@ export class UpdateOauthDriver implements StepDriver {
         appStudioToken,
         args.configurationId
       );
+
+      if (getOauthRes.isPKCEEnabled && !args.isPKCEEnabled) {
+        throw new OauthDisablePKCEError(actionName);
+      }
 
       const diffMsgs = this.compareOauthRegistration(getOauthRes, args, domain);
       // If there is no difference, skip the update
@@ -162,6 +167,10 @@ export class UpdateOauthDriver implements StepDriver {
       invalidParameters.push("targetAudience");
     }
 
+    if (args.isPKCEEnabled && typeof args.isPKCEEnabled !== "boolean") {
+      invalidParameters.push("isPKCEEnabled");
+    }
+
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
@@ -204,6 +213,12 @@ export class UpdateOauthDriver implements StepDriver {
       );
     }
 
+    if (current.isPKCEEnabled !== input.isPKCEEnabled) {
+      diffMsgs.push(
+        `isPKCEEnabled: ${(!!current.isPKCEEnabled).toString()} => ${(!!input.isPKCEEnabled).toString()}`
+      );
+    }
+
     return diffMsgs;
   }
 
@@ -232,6 +247,7 @@ export class UpdateOauthDriver implements StepDriver {
       applicableToApps: applicableToApps,
       m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
+      isPKCEEnabled: !!args.isPKCEEnabled,
     } as OauthRegistration;
   }
 }

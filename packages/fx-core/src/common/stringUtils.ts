@@ -33,9 +33,9 @@ function getProbMap(str: string) {
 }
 
 // Measure the entropy of a string in bits per symbol.
-function shannonEntropy(str: string, probMap: Map<string, number>) {
+function shannonEntropy(probMap: Map<string, number>) {
   let sum = 0;
-  for (const char of str) {
+  for (const char of probMap.keys()) {
     const prob = probMap.get(char) || 0;
     const delta = (prob * Math.log(prob)) / Math.log(2);
     sum += delta;
@@ -81,54 +81,49 @@ function tokenize(text: string): Token[] {
 function computeShannonEntropy(token: Token) {
   if (!token.splitter) {
     const probMap = getProbMap(token.value);
-    token.entropy = shannonEntropy(token.value, probMap);
+    token.entropy = shannonEntropy(probMap);
   }
 }
 
 export interface MaskSecretOptions {
   threshold?: number;
   whiteList?: string[];
+  replace?: string;
 }
 
-export function maskSecret(
-  inputText?: string,
-  option = { threshold: MIN_ENTROPY, whiteList: WHITE_LIST }
-): string {
+export function maskSecret(inputText?: string, option?: MaskSecretOptions): string {
   if (!inputText) return "";
+  option = option || {};
+  const threshold = option.threshold || MIN_ENTROPY;
+  const whiteList = option.whiteList || WHITE_LIST;
+  const replace = option.replace || SECRET_REPLACE;
   // mask by secret pattern
   inputText = maskByPattern(inputText);
   // mask by .env.xxx.user
-  inputText = maskSecretValues(inputText, SECRET_REPLACE);
+  inputText = maskSecretFromEnv(inputText, replace);
   // mask by entropy
   let output = "";
   const tokens = tokenize(inputText);
   tokens.forEach((token) => {
     computeShannonEntropy(token);
-    if (
-      option.whiteList?.includes(token.value) ||
-      token.splitter ||
-      (token.entropy || 0) <= option.threshold
-    ) {
+    if (whiteList.includes(token.value) || token.splitter || (token.entropy || 0) <= threshold) {
       output += token.value;
     } else {
-      output += SECRET_REPLACE;
+      output += replace;
     }
   });
-  // for (const token of tokens) {
-  //   console.log(token);
-  // }
   return output;
 }
 
 function maskByPattern(command: string): string {
   const regexU = /(-u|--username|--user) (\S+)/;
-  const regexP = /(-p|--password|--pwd) (\S+)/;
+  const regexP = /(-p|--password|--pwd|--secret|--credential) (\S+)/;
   let output = command.replace(regexU, `$1 ${USER_REPLACE}`);
   output = output.replace(regexP, `$1 ${SECRET_REPLACE}`);
   return output;
 }
 
-export function maskSecretValues(stdout: string, replace = "***"): string {
+export function maskSecretFromEnv(stdout: string, replace = SECRET_REPLACE): string {
   for (const key of Object.keys(process.env)) {
     if (key.startsWith("SECRET_")) {
       const value = process.env[key];

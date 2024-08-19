@@ -28,6 +28,7 @@ describe("teamsApp/createAppPackage", async () => {
     platform: Platform.VSCode,
     logProvider: new MockedLogProvider(),
     ui: new MockedUserInteraction(),
+    addTelemetryProperties: () => {},
   };
   let mockedEnvRestore: RestoreFn;
   const fakeUrl = "https://fake.com";

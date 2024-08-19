@@ -44,7 +44,10 @@ export class Executor {
         const result = await execAsync(command, options);
 
         if (result.stderr) {
-          if (skipErrorMessage && result.stderr.includes(skipErrorMessage)) {
+          if (
+            skipErrorMessage &&
+            result.stderr.toLowerCase().includes(skipErrorMessage)
+          ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };
           }
@@ -242,7 +245,7 @@ export class Executor {
 
   static async preview(workspace: string, env = "dev") {
     const skipErrorMessage =
-      "Warning: If you changed the manifest file, please run";
+      "Warning: If you changed the manifest file, please run".toLowerCase();
     return this.executeCmd(
       workspace,
       "preview",

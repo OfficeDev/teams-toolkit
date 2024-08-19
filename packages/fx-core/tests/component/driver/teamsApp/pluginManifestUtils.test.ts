@@ -25,6 +25,7 @@ import path from "path";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { PluginManifestValidationResult } from "../../../../src/component/driver/teamsApp/interfaces/ValidationResult";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { MockedLogProvider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 
 describe("pluginManifestUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -368,6 +369,12 @@ describe("pluginManifestUtils", () => {
   });
 
   describe("validateAgainstSchema", async () => {
+    const driverContext = {
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectPath: "test",
+      addTelemetryProperties: () => {},
+    };
     it("validate success", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
@@ -375,7 +382,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -397,7 +405,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        context as any
       );
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -412,7 +421,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -425,7 +435,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
     });

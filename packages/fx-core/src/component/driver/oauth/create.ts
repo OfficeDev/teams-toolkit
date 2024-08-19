@@ -25,6 +25,7 @@ import { CreateOauthArgs } from "./interface/createOauthArgs";
 import { CreateOauthOutputs, OutputKeys } from "./interface/createOauthOutputs";
 import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
 import { OauthInfo, getandValidateOauthInfoFromSpec } from "./utility/utility";
+import { OauthIdentityProviderInvalid } from "./error/oauthIdentityProviderInvalid";
 
 const actionName = "oauth/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-register";
@@ -87,13 +88,19 @@ export class CreateOauthDriver implements StepDriver {
         }
 
         const clientSecret = process.env[QuestionNames.OauthClientSecret];
-        if (clientSecret) {
+        if (clientSecret && !args.isPKCEEnabled && args.identityProvider !== "MicrosoftEntra") {
           args.clientSecret = clientSecret;
         }
 
         this.validateArgs(args);
 
         const authInfo = await getandValidateOauthInfoFromSpec(args, context, actionName);
+
+        if (args.identityProvider === "MicrosoftEntra") {
+          if (!authInfo.authorizationEndpoint!.includes("microsoftonline")) {
+            throw new OauthIdentityProviderInvalid(actionName);
+          }
+        }
 
         const oauthRegistration = await this.mapArgsToOauthRegistration(
           context.m365TokenProvider,
@@ -186,8 +193,24 @@ export class CreateOauthDriver implements StepDriver {
       invalidParameters.push("clientId");
     }
 
-    if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
-      invalidParameters.push("clientSecret");
+    if (args.isPKCEEnabled && typeof args.isPKCEEnabled !== "boolean") {
+      invalidParameters.push("isPKCEEnabled");
+    }
+
+    if (
+      args.identityProvider &&
+      (typeof args.identityProvider !== "string" ||
+        (args.identityProvider !== "Custom" && args.identityProvider !== "MicrosoftEntra"))
+    ) {
+      invalidParameters.push("identityProvider");
+    }
+
+    const isCustomIdentityProvider = !args.identityProvider || args.identityProvider === "Custom";
+
+    if (!args.isPKCEEnabled || isCustomIdentityProvider) {
+      if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
+        invalidParameters.push("clientSecret");
+      }
     }
 
     if (args.refreshUrl && typeof args.refreshUrl !== "string") {
@@ -230,6 +253,18 @@ export class CreateOauthDriver implements StepDriver {
       ? (args.applicableToApps as OauthRegistrationAppType)
       : OauthRegistrationAppType.AnyApp;
 
+    if (args.identityProvider === "MicrosoftEntra") {
+      return {
+        description: args.name,
+        targetUrlsShouldStartWith: authInfo.domain,
+        applicableToApps: applicableToApps,
+        m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
+        targetAudience: targetAudience,
+        clientId: args.clientId,
+        identityProvider: "MicrosoftEntra",
+      } as OauthRegistration;
+    }
+
     return {
       description: args.name,
       targetUrlsShouldStartWith: authInfo.domain,
@@ -238,10 +273,12 @@ export class CreateOauthDriver implements StepDriver {
       targetAudience: targetAudience,
       clientId: args.clientId,
       clientSecret: args.clientSecret ?? "",
+      isPKCEEnabled: !!args.isPKCEEnabled,
       authorizationEndpoint: authInfo.authorizationEndpoint,
       tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,
       tokenRefreshEndpoint: args.refreshUrl ?? authInfo.tokenRefreshEndpoint,
       scopes: authInfo.scopes,
+      identityProvider: "Custom",
       // TODO: add this part back after TDP update
       // manageableByUsers: [
       //   {

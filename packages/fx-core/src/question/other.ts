@@ -864,13 +864,21 @@ export function oauthQuestion(): IQTreeNode {
       {
         data: oauthClientSecretQuestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret;
+          return (
+            !inputs.isPKCEEnabled &&
+            !inputs.clientSecret &&
+            (!inputs.identityProvider || inputs.identityProvider === "Custom")
+          );
         },
       },
       {
         data: oauthConfirmQestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret || !inputs.clientId;
+          return (
+            !inputs.isPKCEEnabled &&
+            (!inputs.clientSecret || !inputs.clientId) &&
+            (!inputs.identityProvider || inputs.identityProvider === "Custom")
+          );
         },
       },
     ],

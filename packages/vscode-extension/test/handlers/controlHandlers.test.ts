@@ -1,11 +1,13 @@
-import * as vscode from "vscode";
-import * as sinon from "sinon";
-import * as chai from "chai";
-import * as globalVariables from "../../src/globalVariables";
-import * as commonUtils from "../../src/utils/commonUtils";
+import { ok, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { featureFlagManager, manifestUtils } from "@microsoft/teamsfx-core";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { featureFlagManager } from "@microsoft/teamsfx-core";
+import * as chai from "chai";
+import fs from "fs-extra";
+import * as sinon from "sinon";
+import * as vscode from "vscode";
+import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
+import * as globalVariables from "../../src/globalVariables";
 import {
   openFolderHandler,
   openLifecycleTreeview,
@@ -14,12 +16,12 @@ import {
   saveTextDocumentHandler,
 } from "../../src/handlers/controlHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { PanelType } from "../../src/controls/PanelType";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryUpdateAppReason,
 } from "../../src/telemetry/extTelemetryEvents";
+import * as commonUtils from "../../src/utils/commonUtils";
 
 describe("Control Handlers", () => {
   describe("openWelcomeHandler", () => {
@@ -29,8 +31,10 @@ describe("Control Handlers", () => {
       sandbox.restore();
     });
 
-    it("openWelcomeHandler", async () => {
+    it("opens normal walkthrough", async () => {
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["bot"]);
       const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -43,8 +47,10 @@ describe("Control Handlers", () => {
       );
     });
 
-    it("openWelcomeHandler with chat", async () => {
+    it("opens walkthrough with chat", async () => {
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["bot"]);
       const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -54,6 +60,107 @@ describe("Control Handlers", () => {
         executeCommands,
         "workbench.action.openWalkthrough",
         "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
+      );
+    });
+
+    it("opens intelligent app walkthrough for API plugin apps", async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["plugin"]);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+      const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      await openWelcomeHandler();
+
+      sandbox.assert.calledOnceWithExactly(
+        executeCommands,
+        "workbench.action.openWalkthrough",
+        "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+      );
+    });
+
+    it("opens intelligent app walkthrough for JS/TS custom engine copilot apps", async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["bot"]);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+      sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+        return path.includes("package.json");
+      });
+      sandbox.stub(fs, "readFile").resolves(Buffer.from('"@microsoft/teams-ai"'));
+      const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      await openWelcomeHandler();
+
+      sandbox.assert.calledOnceWithExactly(
+        executeCommands,
+        "workbench.action.openWalkthrough",
+        "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+      );
+    });
+
+    it("opens intelligent app walkthrough for python custom engine copilot apps", async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["bot"]);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+      sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+        return path.includes("requirements.txt");
+      });
+      sandbox.stub(fs, "readFile").resolves(Buffer.from("teams-ai"));
+      const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      await openWelcomeHandler();
+
+      sandbox.assert.calledOnceWithExactly(
+        executeCommands,
+        "workbench.action.openWalkthrough",
+        "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+      );
+    });
+
+    it("opens normal walkthrough for JS/TS apps without ai library", async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["bot"]);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+      sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+        return path.includes("package.json");
+      });
+      sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+      const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      await openWelcomeHandler();
+
+      sandbox.assert.calledOnceWithExactly(
+        executeCommands,
+        "workbench.action.openWalkthrough",
+        "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
+      );
+    });
+
+    it("opens normal walkthrough for python custom engine copilot apps", async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      sandbox.stub(manifestUtils, "readAppManifest").resolves(ok({} as TeamsAppManifest));
+      sandbox.stub(manifestUtils, "getCapabilities").returns(["bot"]);
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+      sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+        return path.includes("requirements.txt");
+      });
+      sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+      const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      await openWelcomeHandler();
+
+      sandbox.assert.calledOnceWithExactly(
+        executeCommands,
+        "workbench.action.openWalkthrough",
+        "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
       );
     });
   });

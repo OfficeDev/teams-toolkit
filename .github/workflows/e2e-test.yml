@@ -197,12 +197,9 @@ jobs:
             8.0.x
 
       - name: Setup Python
-        run: |
-          sudo apt-get install python3.11
-          sudo apt-get install python3-pip
-          sudo apt-get install python3.11-venv
-          python3 --version
-          pip3 --version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - uses: pnpm/action-setup@v4
 

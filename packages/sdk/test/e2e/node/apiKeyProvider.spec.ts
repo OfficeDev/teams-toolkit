@@ -7,6 +7,7 @@ import { ApiKeyLocation, ApiKeyProvider, createApiClient } from "../../../src";
 import * as http from "http";
 import { formatString } from "../../../src/util/utils";
 import { ErrorMessage, ErrorCode, ErrorWithCode } from "../../../src/core/errors";
+const escape = require("escape-html");
 chaiUse(chaiPromises);
 
 describe("ApiKeyProvider Tests - Node", () => {
@@ -15,10 +16,13 @@ describe("ApiKeyProvider Tests - Node", () => {
   const apiBaseUrl = `http://${host}:${port}`;
   const server = http.createServer((req, res) => {
     res.writeHead(200);
-    const data = {
-      requestHeader: req.headers,
-      url: req.url,
+    const data: { requestHeader: { [key: string]: string }; url: string } = {
+      requestHeader: {},
+      url: req.url!,
     };
+    for (const [key, value] of Object.entries(req.headers)) {
+      data.requestHeader[key] = escape(value);
+    }
     res.end(JSON.stringify(data));
   });
 
@@ -89,7 +93,7 @@ describe("ApiKeyProvider Tests - Node", () => {
 
     // Assert
     assert.equal(res.data.url, "/foo");
-    assert.equal(res.data.requestHeader![keyName], keyVaule);
+    assert.equal(res.data.requestHeader![keyName], escape(keyVaule));
   });
 
   it("should throw error when connect to existing API with duplicate api key in header", async function () {

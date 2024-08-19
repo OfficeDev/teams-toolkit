@@ -1,4 +1,4 @@
-const { MemoryStorage } = require("botbuilder");
+const { MemoryStorage, MessageFactory } = require("botbuilder");
 const path = require("path");
 const config = require("../config");
 
@@ -56,6 +56,15 @@ const app = new Application({
       }
     },
     autoSignIn: true,
+  }
+});
+
+app.conversationUpdate("membersAdded", async (turnContext) => {
+  const welcomeText = "How can I help you today?";
+  for (const member of turnContext.activity.membersAdded) {
+    if (member.id !== turnContext.activity.recipient.id) {
+      await turnContext.sendActivity(MessageFactory.text(welcomeText));
+    }
   }
 });
 

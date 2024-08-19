@@ -26,6 +26,7 @@ import path from "path";
 import { pluginManifestUtils } from "./PluginManifestUtils";
 import { SummaryConstant } from "../../../configManager/constant";
 import { EOL } from "os";
+import { ManifestType } from "../../../utils/envFunctionUtils";
 
 export class CopilotGptManifestUtils {
   public async readCopilotGptManifestFile(
@@ -61,10 +62,10 @@ export class CopilotGptManifestUtils {
       return err(manifestRes.error);
     }
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       JSON.stringify(manifestRes.value),
       path,
-      TelemetryPropertyKey.customizedCopilotGptKeys,
+      ManifestType.DeclarativeCopilotManifest,
       context
     );
 
@@ -91,7 +92,7 @@ export class CopilotGptManifestUtils {
   public async validateAgainstSchema(
     declaraitveCopilot: IDeclarativeCopilot,
     manifestPath: string,
-    context?: WrapDriverContext
+    context: WrapDriverContext
   ): Promise<Result<DeclarativeCopilotManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(manifestPath, context);
     if (manifestRes.isErr()) {

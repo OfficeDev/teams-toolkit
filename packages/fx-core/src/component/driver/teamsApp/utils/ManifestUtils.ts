@@ -46,8 +46,8 @@ import {
 } from "../constants";
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
-import { TelemetryPropertyKey } from "./telemetry";
 import { getResolvedManifest } from "./utils";
+import { ManifestType } from "../../../utils/envFunctionUtils";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -328,10 +328,10 @@ export class ManifestUtils {
     const manifestTemplateString = JSON.stringify(manifest);
 
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       manifestTemplateString,
       manifestTemplatePath,
-      TelemetryPropertyKey.customizedKeys,
+      ManifestType.TeamsManifest,
       context
     );
 

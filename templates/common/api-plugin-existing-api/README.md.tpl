@@ -13,6 +13,8 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 - Enriching the data estate of your enterprise with industry-leading AI.
 - Keeping your users in the flow of their work, start to finish.
 - Inheriting world-class security, compliance, and privacy policies.
+
+![image](https://github.com/user-attachments/assets/1c125380-a935-4f65-a3b8-e8b9a646f3bc)
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
 # Overview of the basic declarative copilot with API plugin template
@@ -21,7 +23,10 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 
 With the declarative copilot, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative copilot can be used to create a grocery list based on a meal plan that you send to Copilot.
 
-You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A Declarative copilot can utilize multiple plugins at the same time.
+You can extend declarative copilots using plugins to retrieve data and execute tasks on external systems. A declarative copilot can utilize multiple plugins at the same time.
+
+![image](https://github.com/user-attachments/assets/be5bb0e0-09cc-4e57-b535-a65adadbe8aa)
+
 {{/DeclarativeCopilot}}
 
 ## Get started with the template
@@ -39,8 +44,15 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
-5. Open the `Copilot` app and send a prompt to trigger your plugin.
+{{^DeclarativeCopilot}}
+4. When Teams launches in the browser, open the `Copilot` app.
+5. Select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
    > Note: Please make sure to switch to New Teams when Teams web client has launched
+{{/DeclarativeCopilot}}
+{{#DeclarativeCopilot}}
+4. Select your declarative Copilot from the `Copilot` app.
+5. Send a prompt.
+{{/DeclarativeCopilot}}
 
 {{#ApiKey}}
 > [!NOTE]
@@ -49,6 +61,21 @@ You can extend declarative copilots using plugins to retrieve data and execute t
 
 {{#OAuth}}
 > [!NOTE]
+> If your identity server needs Proof of Key Code Exchange (PKCE) for token exchange, uncomment the `isPKCEEnabled` property in the` oauth/register` section of the `teamsapp.yml` file shown as below:
+```yaml
+  - uses: oauth/register
+    with:
+      name: {{ApiSpecAuthName}}
+      flow: authorizationCode
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+      # Uncomment below property to use proof key for code exchange (PKCE)
+      isPKCEEnabled: true
+    writeToEnvironmentFile:
+      configurationId: {{ApiSpecAuthRegistrationIdEnvName}}
+```
 > Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your Client ID and Client Secret.
 {{/OAuth}}
 

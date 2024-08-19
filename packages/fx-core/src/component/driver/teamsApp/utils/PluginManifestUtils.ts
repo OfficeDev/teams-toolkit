@@ -20,13 +20,13 @@ import path from "path";
 import { manifestUtils } from "./ManifestUtils";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { getResolvedManifest } from "./utils";
-import { TelemetryPropertyKey } from "./telemetry";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { PluginManifestValidationResult } from "../interfaces/ValidationResult";
 import { SummaryConstant } from "../../../configManager/constant";
 import { EOL } from "os";
+import { ManifestType } from "../../../utils/envFunctionUtils";
 
 export class PluginManifestUtils {
   public async readPluginManifestFile(
@@ -62,10 +62,10 @@ export class PluginManifestUtils {
       return err(manifestRes.error);
     }
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       JSON.stringify(manifestRes.value),
       path,
-      TelemetryPropertyKey.customizedAIPluginKeys,
+      ManifestType.PluginManifest,
       context
     );
 
@@ -79,7 +79,7 @@ export class PluginManifestUtils {
   public async validateAgainstSchema(
     plugin: IPlugin,
     path: string,
-    context?: WrapDriverContext
+    context: WrapDriverContext
   ): Promise<Result<PluginManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(path, context);
     if (manifestRes.isErr()) {

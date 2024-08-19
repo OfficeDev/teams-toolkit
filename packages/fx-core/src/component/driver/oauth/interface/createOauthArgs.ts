@@ -12,4 +12,6 @@ export interface CreateOauthArgs {
   clientId?: string; // Client id for Oauth
   clientSecret?: string; // Client secret for Oauth
   refreshUrl?: string; // Refresh url
+  isPKCEEnabled?: boolean; // Whether PKCE is enabled
+  identityProvider?: string; // Identity provider
 }

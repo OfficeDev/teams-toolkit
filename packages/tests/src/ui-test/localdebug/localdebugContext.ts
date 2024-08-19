@@ -33,7 +33,7 @@ export type LocalDebugTestName =
   | "ftNoti" // http and timer trigger notification bot
   | "linkunfurl"
   | "aichat"
-  | "aiassist"
+  | "aiagent"
   | "chatdata"
   | "msgnewapi"
   | "msgapikey"
@@ -46,6 +46,8 @@ export class LocalDebugTestContext extends TestContext {
   public needMigrate: boolean | undefined;
   public existingSpfxFolder: string;
   public customCopilotRagType: string;
+  public customCeopilotAgent: string;
+  public llmServiceType: string;
 
   constructor(
     testName: LocalDebugTestName,
@@ -57,7 +59,12 @@ export class LocalDebugTestContext extends TestContext {
       customCopilotRagType?:
         | "custom-copilot-rag-customize"
         | "custom-copilot-rag-azureAISearch"
-        | "custom-copilot-rag-customApi";
+        | "custom-copilot-rag-customApi"
+        | "custom-copilot-rag-microsoft365";
+      customCeopilotAgent?:
+        | "custom-copilot-agent-new"
+        | "custom-copilot-agent-assistants-api";
+      llmServiceType?: "llm-service-azure-openai" | "llm-service-openai";
     }
   ) {
     super(testName);
@@ -71,6 +78,12 @@ export class LocalDebugTestContext extends TestContext {
     this.customCopilotRagType = option?.customCopilotRagType
       ? option.customCopilotRagType
       : "custom-copilot-rag-customize";
+    this.customCeopilotAgent = option?.customCeopilotAgent
+      ? option.customCeopilotAgent
+      : "custom-copilot-agent-new";
+    this.llmServiceType = option?.llmServiceType
+      ? option.llmServiceType
+      : "llm-service-azure-openai";
   }
 
   public async before() {
@@ -82,11 +95,20 @@ export class LocalDebugTestContext extends TestContext {
     await openExistingProject(testFolder);
   }
 
-  public async after(hasAadPlugin = true, hasBotPlugin = false) {
+  public async after(
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasResourceGroup = false
+  ) {
     await stopDebugging();
     await this.context!.close();
     await this.browser!.close();
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.cleanResource(
+      hasAadPlugin,
+      hasBotPlugin,
+      "local",
+      hasResourceGroup
+    );
   }
 
   public async getTeamsAppId(): Promise<string> {
@@ -268,19 +290,19 @@ export class LocalDebugTestContext extends TestContext {
       case "aichat":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
-      case "aiassist":
+      case "aiagent":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --custom-copilot-agent ${this.customCeopilotAgent} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "chatdata":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msgnewapi":

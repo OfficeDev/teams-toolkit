@@ -1,5 +1,5 @@
 const helloWorldCard = require("../adaptiveCards/helloworldCommandResponse.json");
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 const { CardFactory, MessageFactory } = require("botbuilder");
 
 class HelloWorldCommandHandler {
@@ -14,7 +14,7 @@ class HelloWorldCommandHandler {
       body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
     };
 
-    const cardJson = AdaptiveCards.declare(helloWorldCard).render(cardData);
+    const cardJson = new ACData.Template(helloWorldCard).expand({ $root: cardData });
     return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }

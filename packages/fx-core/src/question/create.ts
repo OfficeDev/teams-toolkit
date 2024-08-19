@@ -23,7 +23,11 @@ import * as os from "os";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
-import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
+import {
+  FeatureFlags,
+  featureFlagManager,
+  isCopilotExtensionEnabled,
+} from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -84,7 +88,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
 
-      if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+      if (isCopilotExtensionEnabled()) {
         staticOptions.push(ProjectTypeOptions.copilotExtension(inputs.platform));
       }
 
@@ -565,9 +569,7 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     ) &&
     !(
       capabilities == CapabilityOptions.customCopilotRag().id &&
-      (inputs[CapabilityOptions.customCopilotRag().id] ==
-        CustomCopilotRagOptions.microsoft365().id ||
-        inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.customApi().id)
+      inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.microsoft365().id
     )
   ) {
     // support python language
@@ -1202,7 +1204,12 @@ function llmServiceQuestion(): SingleSelectQuestion {
     ],
     dynamicOptions: (inputs: Inputs) => {
       const options: OptionItem[] = [];
-      if (inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api") {
+      // python tpl supports az oai assistant now. if other languages support az oai assistant, change the condition here.
+      if (
+        (inputs[QuestionNames.CustomCopilotAssistant] === "custom-copilot-agent-assistants-api" &&
+          inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.PY) ||
+        inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api"
+      ) {
         options.push({
           id: "llm-service-azure-openai",
           label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
@@ -1569,7 +1576,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet)) {
     deleteNames.push(QuestionNames.Runtime);
   }
-  if (!featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension)) {
+  if (!isCopilotExtensionEnabled()) {
     deleteNames.push(QuestionNames.ApiPluginType);
     deleteNames.push(QuestionNames.WithPlugin);
   }

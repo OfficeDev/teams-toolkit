@@ -31,6 +31,12 @@ export interface OauthRegistration {
    * Currently max length 1
    */
   targetUrlsShouldStartWith: string[];
+
+  // indicating whether PKCE is enabled
+  isPKCEEnabled?: boolean;
+
+  // Identity provider, can be Custom or MicrosoftEntra
+  identityProvider?: string;
 }
 
 export enum OauthRegistrationAppType {

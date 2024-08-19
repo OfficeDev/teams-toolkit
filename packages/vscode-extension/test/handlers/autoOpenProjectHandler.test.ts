@@ -13,6 +13,7 @@ import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import { autoOpenProjectHandler } from "../../src/handlers/autoOpenProjectHandler";
+import * as pluginGeneratorHelper from "@microsoft/teamsfx-core/build/component/generator/apiSpec/helper";
 
 describe("autoOpenProjectHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -35,8 +36,8 @@ describe("autoOpenProjectHandler", () => {
 
     await autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
-    chai.assert.isTrue(executeCommandFunc.calledOnce);
+    chai.assert.isTrue(sendTelemetryStub.notCalled);
+    chai.assert.isTrue(executeCommandFunc.notCalled);
   });
 
   it("opens walk through if workspace Uri exists", async () => {
@@ -55,8 +56,8 @@ describe("autoOpenProjectHandler", () => {
 
     await autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
-    chai.assert.isTrue(executeCommandFunc.calledOnce);
+    chai.assert.isTrue(sendTelemetryStub.notCalled);
+    chai.assert.isTrue(executeCommandFunc.notCalled);
     chai.assert.isTrue(globalStateUpdateStub.calledTwice);
   });
 
@@ -126,6 +127,56 @@ describe("autoOpenProjectHandler", () => {
       ok({
         name: { short: "short", full: "full" },
         description: { short: "short", full: "" },
+        composeExtensions: [{ apiSpecificationFile: "test.json", commands: [{ id: "command1" }] }],
+      } as any)
+    );
+    const parseRes = {
+      id: "",
+      version: "",
+      capabilities: [""],
+      manifestVersion: "",
+      isApiME: true,
+      isSPFx: false,
+      isApiMeAAD: false,
+    };
+    const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
+    VsCodeLogInstance.outputChannel = {
+      show: () => {},
+      info: () => {},
+    } as unknown as vscode.OutputChannel;
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const generateWarningStub = sandbox
+      .stub(pluginGeneratorHelper, "generateScaffoldingSummary")
+      .resolves("warning message");
+
+    await autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledTwice);
+    chai.assert.isTrue(parseManifestStub.called);
+    chai.assert.isTrue(generateWarningStub.called);
+  });
+
+  it("opens README and skip show warnings if api file does not exist", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return JSON.stringify([{ type: "type", content: "content" }]);
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        name: { short: "short", full: "full" },
+        description: { short: "short", full: "" },
         composeExtensions: [{ commands: [{ id: "command1" }] }],
       } as any)
     );
@@ -144,11 +195,15 @@ describe("autoOpenProjectHandler", () => {
       info: () => {},
     } as unknown as vscode.OutputChannel;
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const generateWarningStub = sandbox
+      .stub(pluginGeneratorHelper, "generateScaffoldingSummary")
+      .resolves("warning message");
 
     await autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledTwice);
+    chai.assert.isTrue(sendTelemetryStub.calledOnce);
     chai.assert.isTrue(parseManifestStub.called);
+    chai.assert.isFalse(generateWarningStub.called);
   });
 
   it("opens README and show copilot plugin warnings successfully", async () => {
@@ -192,12 +247,16 @@ describe("autoOpenProjectHandler", () => {
       info: () => {},
     } as unknown as vscode.OutputChannel;
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const generateWarningStub = sandbox
+      .stub(pluginGeneratorHelper, "generateScaffoldingSummary")
+      .resolves("warning message");
 
     await autoOpenProjectHandler();
 
     chai.assert.isTrue(sendTelemetryStub.calledTwice);
     chai.assert.isTrue(parseManifestStub.called);
     chai.assert.isTrue(getApiSpecStub.called);
+    chai.assert.isTrue(generateWarningStub.called);
   });
   it("skip show warnings if parsing error", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));

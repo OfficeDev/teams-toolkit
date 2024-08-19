@@ -339,7 +339,7 @@ export class APP_STUDIO_API_NAMES {
   public static readonly CREATE_API_KEY = "create-api-key";
   public static readonly UPDATE_API_KEY = "update-api-key";
   public static readonly GET_API_KEY = "get-api-key";
-  public static readonly SUMIT_APP_VALIDATION = "submit-app-validation";
+  public static readonly SUBMIT_APP_VALIDATION = "submit-app-validation";
   public static readonly GET_APP_VALIDATION_RESULT = "get-app-validation-result";
   public static readonly GET_APP_VALIDATION_REQUESTS = "get-app-validation-requests";
   public static readonly GET_OAUTH = "get-oauth";
@@ -606,3 +606,5 @@ export const supportedLanguageCodes = [
   "sr",
   "lv",
 ];
+
+export const GeneralValidationErrorId = "693c7aa7-4d76-40ec-8282-06410f5d1f76";

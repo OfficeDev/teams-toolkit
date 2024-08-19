@@ -25,7 +25,7 @@ import { convertProject } from "office-addin-project";
 import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { assembleError } from "../../../error";
+import { assembleError, InputValidationError } from "../../../error";
 import {
   CapabilityOptions,
   ProgrammingLanguage,
@@ -107,16 +107,6 @@ export class OfficeAddinGenerator {
     const projectType = inputs[QuestionNames.ProjectType];
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
-    let host: string = inputHost;
-    if (projectType === ProjectTypeOptions.outlookAddin().id) {
-      host = "outlook";
-    } else if (projectType === ProjectTypeOptions.officeAddin().id) {
-      if (capability === "json-taskpane") {
-        host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
-      } else if (capability === CapabilityOptions.officeContentAddin().id) {
-        host = "xp"; // content add-in support excel, powerpoint
-      }
-    }
     const workingDir = process.cwd();
     const importProgressStr =
       projectType === ProjectTypeOptions.officeAddin().id
@@ -127,6 +117,25 @@ export class OfficeAddinGenerator {
     process.chdir(addinRoot);
     try {
       if (!fromFolder) {
+        let host: string = inputHost;
+        if (projectType === ProjectTypeOptions.outlookAddin().id) {
+          host = "outlook";
+        } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+          if (capability === "json-taskpane") {
+            host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
+          } else if (capability === CapabilityOptions.officeContentAddin().id) {
+            host = "xp"; // content add-in support excel, powerpoint
+          }
+        }
+        if (!["outlook", "wxpo", "xp"].includes(host)) {
+          return err(
+            new InputValidationError(
+              QuestionNames.OfficeAddinHost,
+              `Invalid host: ${host}`,
+              "office-addin-generator"
+            )
+          );
+        }
         // from template
         const framework = getOfficeAddinFramework(inputs);
         const templateConfig = getOfficeAddinTemplateConfig();
@@ -249,56 +258,5 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
     return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
-  }
-
-  public async post(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    actionContext?: ActionContext
-  ): Promise<Result<GeneratorResult, FxError>> {
-    const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
-    if (res.isErr()) return err(res.error);
-    await this.fixIconPath(destinationPath);
-    return ok({});
-  }
-
-  /**
-   * this is a work around for MOS API bug that will return invalid package if the icon path is not root folder of appPackage
-   * so this function will move the two icon files to root folder of appPackage and update the manifest.json
-   */
-  async fixIconPath(projectPath: string): Promise<void> {
-    const outlineOldPath = join(projectPath, "appPackage", "assets", "outline.png");
-    const colorOldPath = join(projectPath, "appPackage", "assets", "color.png");
-    const outlineNewPath = join(projectPath, "appPackage", "outline.png");
-    const colorNewPath = join(projectPath, "appPackage", "color.png");
-    const manifestPath = join(projectPath, "appPackage", "manifest.json");
-    if (!(await fse.pathExists(manifestPath))) return;
-    const manifest = await fse.readJson(manifestPath);
-    let change = false;
-    if (manifest.icons.outline === "assets/outline.png") {
-      if ((await fse.pathExists(outlineOldPath)) && !(await fse.pathExists(outlineNewPath))) {
-        await fse.move(outlineOldPath, outlineNewPath);
-        manifest.icons.outline = "outline.png";
-        change = true;
-      }
-    }
-    if (manifest.icons.color === "assets/color.png") {
-      if ((await fse.pathExists(colorOldPath)) && !(await fse.pathExists(colorNewPath))) {
-        await fse.move(colorOldPath, colorNewPath);
-        manifest.icons.color = "color.png";
-        change = true;
-      }
-    }
-    if (change) {
-      await fse.writeJson(manifestPath, manifest, { spaces: 4 });
-      const webpackConfigPath = join(projectPath, "webpack.config.js");
-      const content = await fse.readFile(webpackConfigPath, "utf8");
-      const newContent = content.replace(
-        'from: "appPackage/assets/*",\r\n            to: "assets/[name][ext][query]",\r\n          },',
-        'from: "appPackage/assets/*",\r\n            to: "assets/[name][ext][query]",\r\n          },\r\n          {\r\n            from: "appPackage/*.png",\r\n            to: "[name]" + "[ext]",\r\n          },'
-      );
-      await fse.writeFile(webpackConfigPath, newContent);
-    }
   }
 }

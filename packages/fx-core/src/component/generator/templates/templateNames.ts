@@ -344,44 +344,11 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
     },
     TemplateNames.CustomCopilotAssistantAssistantsApi,
   ],
-  // Copilot Plugin
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
-      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
-    },
-    TemplateNames.ApiPluginFromScratch,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
-      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
-    },
-    TemplateNames.ApiPluginFromScratchBearer,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
-      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
-      [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
-    },
-    TemplateNames.ApiPluginFromScratchOAuth,
-  ],
   [
     {
       [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
       [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.noPlugin().id,
     },
     TemplateNames.BasicGpt,
-  ],
-  [
-    {
-      [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
-      [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.withPlugin().id,
-      [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
-    },
-    TemplateNames.GptWithPluginFromScratch,
   ],
 ]);

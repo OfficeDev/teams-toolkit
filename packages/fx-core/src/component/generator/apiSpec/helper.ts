@@ -27,7 +27,6 @@ import {
   AppPackageFolderName,
   Context,
   FxError,
-  IMessagingExtensionCommand,
   Inputs,
   ManifestTemplateFileName,
   ManifestUtil,
@@ -56,6 +55,7 @@ import {
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
+import { sendTelemetryErrorEvent } from "../../../common/telemetry";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -68,11 +68,13 @@ const enum telemetryProperties {
   oauth2AuthCount = "oauth2-auth-count",
   otherAuthCount = "other-auth-count",
   isFromAddingApi = "is-from-adding-api",
+  failedReason = "failed-reason",
 }
 
 const enum telemetryEvents {
   validateApiSpec = "validate-api-spec",
   listApis = "spec-parser-list-apis-result",
+  failedToGetGenerateWarning = "failed-to-get-generate-warning",
 }
 
 export const copilotPluginParserOptions: ParseOptions = {
@@ -429,11 +431,22 @@ export function logValidationResults(
   void context.logProvider.info(outputMessage);
 }
 
-export function generateScaffoldingSummary(
+/**
+ * Generate scaffolding warning summary.
+ * @param warnings warnings returned from spec-parser.
+ * @param teamsManifest Teams manifest.
+ * @param apiSpecFilePath API spec path relative of project path.
+ * @param pluginManifestPath Plugin manifest path relative of project path.
+ * @param projectPath Project path.
+ * @returns Warning message.
+ */
+export async function generateScaffoldingSummary(
   warnings: Warning[],
   teamsManifest: TeamsAppManifest,
-  apiSpecFilePath: string
-): string {
+  apiSpecFilePath: string,
+  pluginManifestPath: string | undefined,
+  projectPath: string
+): Promise<string> {
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(
     warnings,
     apiSpecFilePath,
@@ -444,7 +457,23 @@ export function generateScaffoldingSummary(
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
 
-  if (apiSpecWarningMessage.length || manifestWarningMessage.length) {
+  let pluginWarningMessage: string[] = [];
+  if (pluginManifestPath) {
+    const pluginManifestWarningResult = await validatePluginManifestLength(
+      pluginManifestPath,
+      projectPath,
+      warnings
+    );
+    pluginWarningMessage = pluginManifestWarningResult.map((warn) => {
+      return `${SummaryConstant.NotExecuted} ${warn}`;
+    });
+  }
+
+  if (
+    apiSpecWarningMessage.length ||
+    manifestWarningMessage.length ||
+    pluginWarningMessage.length
+  ) {
     let details = "";
     if (apiSpecWarningMessage.length) {
       details += EOL + apiSpecWarningMessage.join(EOL);
@@ -452,6 +481,10 @@ export function generateScaffoldingSummary(
 
     if (manifestWarningMessage.length) {
       details += EOL + manifestWarningMessage.join(EOL);
+    }
+
+    if (pluginWarningMessage.length) {
+      details += EOL + pluginWarningMessage.join(EOL);
     }
 
     return getLocalizedString("core.copilotPlugin.scaffold.summary", details);
@@ -597,6 +630,64 @@ function validateTeamsManifestLength(
     }
   }
 
+  return resultWarnings;
+}
+
+async function validatePluginManifestLength(
+  pluginManifestPath: string,
+  projectPath: string,
+  warnings: Warning[]
+): Promise<string[]> {
+  const functionDescriptionLimit = 100;
+  const resultWarnings: string[] = [];
+
+  const manifestRes = await pluginManifestUtils.readPluginManifestFile(
+    path.join(projectPath, pluginManifestPath)
+  );
+  if (manifestRes.isErr()) {
+    sendTelemetryErrorEvent(
+      "spec-generator",
+      telemetryEvents.failedToGetGenerateWarning,
+      manifestRes.error
+    );
+    return [];
+  }
+
+  // validate function description
+  const functions = manifestRes.value.functions;
+  const functionDescriptionWarnings = warnings
+    .filter((w) => w.type === WarningType.FuncDescriptionTooLong)
+    .map((w) => w.data);
+  if (functions) {
+    functions.forEach((func) => {
+      if (!func.description) {
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.pluginManifest.missingFunctionDescription",
+            func.name
+          ) +
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.pluginManifest.missingFunctionDescription.mitigation",
+              func.name,
+              pluginManifestPath
+            )
+        );
+      } else if (functionDescriptionWarnings.includes(func.name)) {
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.pluginManifest.functionDescription.lengthExceeding",
+            func.name,
+            functionDescriptionLimit
+          ) +
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.pluginManifest.functionDescription.lengthExceeding.mitigation",
+              func.name,
+              pluginManifestPath
+            )
+        );
+      }
+    });
+  }
   return resultWarnings;
 }
 
@@ -796,12 +887,14 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
+const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
@@ -815,13 +908,16 @@ async function updateAdaptiveCardForCustomApi(
   language: string,
   destinationPath: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
       const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
-      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
+      const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
+      if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
+        (card.body[0] as any).$data = `\${${jsonPath}}`;
+      }
       const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }
@@ -833,7 +929,7 @@ async function updateActionForCustomApi(
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const actionsFilePath = path.join(chatFolder, "actions.json");
     const actions = [];
 
@@ -918,6 +1014,36 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
   return "result";
 });
   `,
+  python: `
+@bot_app.ai.action("{{operationId}}")
+async def {{operationId}}(
+  context: ActionTurnContext[Dict[str, Any]],
+  state: AppTurnState,
+):
+  parameters = context.data
+  path = parameters.get("path", {})
+  body = parameters.get("body", None)
+  query = parameters.get("query", {})
+  resp = client.{{operationId}}(**path, json=body, _headers={}, _params=query, _cookies={})
+
+  if resp.status_code != 200:
+    await context.send_activity(resp.reason)
+  else:
+    card_template_path = os.path.join(current_dir, 'adaptiveCards/{{operationId}}.json')
+    with open(card_template_path) as card_template_file:
+        adaptive_card_template = card_template_file.read()
+
+    renderer = AdaptiveCardRenderer(adaptive_card_template)
+
+    json_resoponse_str = resp.text
+    rendered_card_str = renderer.render(json_resoponse_str)
+    rendered_card_json = json.loads(rendered_card_str)
+    card = CardFactory.adaptive_card(rendered_card_json)
+    message = MessageFactory.attachment(card)
+    
+    await context.send_activity(message)
+  return "success"
+  `,
 };
 
 const AuthCode = {
@@ -966,6 +1092,24 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
+  } else if (language === ProgrammingLanguage.PY) {
+    // Update code in bot.py
+    const actionsCode = [];
+    const codeTemplate = ActionCode["python"];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace(/{{pathUrl}}/g, item.pathUrl)
+        .replace(/{{method}}/g, item.method);
+      actionsCode.push(code);
+    }
+
+    const botFilePath = path.join(destinationPath, "src", "bot.py");
+    const botFileContent = (await fs.readFile(botFilePath)).toString();
+    const updateBotFileContent = botFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("# Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(botFilePath, updateBotFileContent);
   }
 }
 

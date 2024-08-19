@@ -5217,6 +5217,8 @@ describe("addPlugin", async () => {
       const core = new FxCore(tools);
       const inputs = {
         platform: Platform.CLI,
+        projectPath: "fake",
+        env: "dev",
         nonInteractive: true,
       };
       sandbox.stub(SyncManifestDriver.prototype, "sync").resolves(ok(new Map<string, string>()));

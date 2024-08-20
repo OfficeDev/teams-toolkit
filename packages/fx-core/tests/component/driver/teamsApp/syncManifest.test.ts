@@ -234,7 +234,7 @@ describe("teamsApp/syncManifest", async () => {
       ok({
         manifest: Buffer.from(
           JSON.stringify({
-            id: "11",
+            id: "id-11",
           })
         ),
       })
@@ -270,7 +270,7 @@ describe("teamsApp/syncManifest", async () => {
 
     sinon.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
-        id: "${{TEAMS_APP_ID}}",
+        id: "id-${{TEAMS_APP_ID}}",
       } as TeamsAppManifest)
     );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);
@@ -280,7 +280,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("happy path", async () => {
+  it("Edit diff with placeholder conflicts", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -297,18 +297,158 @@ describe("teamsApp/syncManifest", async () => {
           ])
         )
       );
-    sinon.stub(fs, "mkdir").resolves();
-    sinon.stub(fs, "writeFile").resolves();
-    sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(envUtil, "readEnv").resolves(ok({}));
-    sinon.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sinon.stub(appStudio, "getAppPackage").resolves(
       ok({
-        manifest: Buffer.from(JSON.stringify({})),
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "11",
+            version: "22",
+          })
+        ),
       })
     );
-    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").throws("error");
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "${{TEAMS_APP_ID}}",
+        version: "{{TEAMS_APP_ID}}",
+      } as TeamsAppManifest)
+    );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);
     chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("Edit diff with no placeholder in template", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "11",
+            version: "22",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").throws("error");
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "111",
+        version: "222",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("Edit diff - cannot match template", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "11",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").throws("error");
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "app-${{TEAMS_APP_ID}}",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("Edit diff - placeholder conflicts in one match", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "app-1-2",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").throws("error");
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "app-${{TEAMS_APP_ID}}-${{TEAMS_APP_ID}}",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
   });
 });

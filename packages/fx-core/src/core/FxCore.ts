@@ -160,6 +160,7 @@ import { UninstallInputs } from "../question";
 import { PackageService } from "../component/m365/packageService";
 import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceConstant";
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
+import { generateDriverContext } from "../common/utils";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -1040,8 +1041,13 @@ export class FxCore {
 
     const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
+    const context = createContext();
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, undefined, false);
+    const manifestRes = await manifestUtils.getManifestV3(
+      manifestFilePath,
+      generateDriverContext(context, inputs as InputsWithProjectPath),
+      false
+    );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

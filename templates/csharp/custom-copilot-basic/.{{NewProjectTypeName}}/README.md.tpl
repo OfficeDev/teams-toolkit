@@ -9,7 +9,12 @@ The app template is built using the Teams AI library, which provides the capabil
 **Prerequisites**
 > To run the AI Chat Bot template in your local dev machine, you will need:
 >
-> - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
+{{#useOpenAI}}
+> - an account with [OpenAI](https://platform.openai.com).
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+> - [Azure OpenAI](https://aka.ms/oai/access) resource
+{{/useAzureOpenAI}}
 
 ### Debug bot app in Teams Web Client
 

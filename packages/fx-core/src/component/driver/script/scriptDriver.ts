@@ -106,10 +106,10 @@ export async function executeCommand(
   const dshell = await defaultShell();
   return new Promise((resolve) => {
     const finalShell = shell || dshell;
-    let finalCmd = command;
-    if (typeof finalShell === "string" && finalShell.includes("cmd")) {
-      finalCmd = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
-    }
+    const finalCmd = command;
+    // if (typeof finalShell === "string" && finalShell.includes("cmd")) {
+    //   finalCmd = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
+    // }
     const platform = os.platform();
     let workingDir = workingDirectory || ".";
     workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
@@ -204,9 +204,9 @@ export function convertScriptErrorToFxError(
   run: string
 ): ScriptTimeoutError | ScriptExecutionError {
   if (error.killed) {
-    return new ScriptTimeoutError(error);
+    return new ScriptTimeoutError(error, run);
   } else {
-    return new ScriptExecutionError(error);
+    return new ScriptExecutionError(error, run);
   }
 }
 

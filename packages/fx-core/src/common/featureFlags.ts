@@ -29,6 +29,7 @@ export class FeatureFlagName {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly SyncManifest = "TEAMSFX_SYNC_MANIFEST";
+  static readonly EnvFileFunc = "TEAMSFX_ENV_FILE_FUNC";
 }
 
 export interface FeatureFlag {
@@ -83,6 +84,10 @@ export class FeatureFlags {
   static readonly SyncManifest = {
     name: FeatureFlagName.SyncManifest,
     defaultValue: "false",
+  };
+  static readonly EnvFileFunc = {
+    name: FeatureFlagName.EnvFileFunc,
+    defaultValue: "true", // Set it to true for dogfooding. Will update it to false later.
   };
 }
 

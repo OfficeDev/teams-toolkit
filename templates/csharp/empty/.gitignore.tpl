@@ -5,6 +5,7 @@ env/.env.*.user
 env/.env.local
 appsettings.Development.json
 .deployment
+appsettings.TestTool.json
 
 # User-specific files
 *.user

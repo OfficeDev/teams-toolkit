@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { SpecGenerator } from "./apiSpec/generator";
-import { CopilotExtensionFromScratchGenerator } from "./copilotExtensionFromScratch/generator";
+import { CopilotExtensionGenerator } from "./copilotExtension/generator";
 import { OfficeAddinGeneratorNew } from "./officeAddin/generator";
 import { SPFxGeneratorImport, SPFxGeneratorNew } from "./spfx/spfxGenerator";
 import { SsrTabGenerator } from "./templates/ssrTabGenerator";
@@ -15,5 +15,5 @@ export const Generators = [
   new SPFxGeneratorNew(),
   new SPFxGeneratorImport(),
   new SpecGenerator(),
-  new CopilotExtensionFromScratchGenerator(),
+  new CopilotExtensionGenerator(),
 ];

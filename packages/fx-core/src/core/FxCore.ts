@@ -162,6 +162,7 @@ import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceCo
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
 import { SyncManifestArgs } from "../component/driver/teamsApp/interfaces/SyncManifest";
 import { SyncManifestDriver } from "../component/driver/teamsApp/syncManifest";
+import { generateDriverContext } from "../common/utils";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -1066,8 +1067,13 @@ export class FxCore {
 
     const hub = inputs[QuestionNames.M365Host] as HubTypes;
     const manifestFilePath = inputs[QuestionNames.TeamsAppManifestFilePath] as string;
+    const context = createContext();
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestFilePath, undefined, false);
+    const manifestRes = await manifestUtils.getManifestV3(
+      manifestFilePath,
+      generateDriverContext(context, inputs as InputsWithProjectPath),
+      false
+    );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

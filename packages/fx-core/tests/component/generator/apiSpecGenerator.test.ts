@@ -58,6 +58,8 @@ import {
 import { MockTools } from "../../core/utils";
 import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import * as pluginGeneratorHelper from "../../../src/component/generator/apiSpec/helper";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { FeatureFlagName } from "../../../src/common/featureFlags";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -1390,10 +1392,15 @@ describe("SpecGenerator", async () => {
 
   describe("getTempalteInfos", async () => {
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn | undefined;
     afterEach(async () => {
       sandbox.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
     });
     it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.EnvFileFunc]: "true" });
       const generator = new SpecGenerator();
       const context = createContext();
       const inputs: Inputs = {
@@ -1416,6 +1423,8 @@ describe("SpecGenerator", async () => {
         assert.isFalse(filterResult);
         filterResult = res.value[0].filterFn!("test.json");
         assert.isTrue(filterResult);
+        filterResult = res.value[0].filterFn!("instruction.txt");
+        assert.isFalse(filterResult);
       }
 
       inputs[QuestionNames.Capabilities] = CapabilityOptions.declarativeCopilot().id;
@@ -1426,7 +1435,9 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "true");
 
-        const filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        assert.isTrue(filterResult);
+        filterResult = res.value[0].filterFn!("instruction.txt");
         assert.isTrue(filterResult);
       }
 
@@ -1448,6 +1459,33 @@ describe("SpecGenerator", async () => {
       if (res.isOk()) {
         assert.equal(res.value.length, 1);
         assert.equal(res.value[0].templateName, "custom-copilot-rag-custom-api");
+      }
+    });
+
+    it("happy path", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.EnvFileFunc]: "false" });
+      const generator = new SpecGenerator();
+      const context = createContext();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.AppName]: "testapp",
+      };
+      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
+
+      const res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+        assert.equal(res.value[0].templateName, "api-plugin-existing-api");
+        assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "true");
+
+        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        assert.isTrue(filterResult);
+        filterResult = res.value[0].filterFn!("instruction.txt");
+        assert.isFalse(filterResult);
       }
     });
 

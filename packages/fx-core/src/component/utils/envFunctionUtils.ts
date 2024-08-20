@@ -13,7 +13,7 @@ import path from "path";
 import fs from "fs-extra";
 import stripBom from "strip-bom";
 import { FileNotFoundError } from "../../error";
-import { expandEnvironmentVariable, getAbsolutePath } from "./common";
+import { expandEnvironmentVariable } from "./common";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { featureFlagManager, FeatureFlags } from "../../common/featureFlags";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -39,7 +39,8 @@ export async function expandVariableWithFunction(
   ctx: DriverContext,
   envs: { [key in string]: string } | undefined,
   isJson: boolean,
-  manifestType: ManifestType
+  manifestType: ManifestType,
+  fromPath: string
 ): Promise<Result<string, FxError>> {
   if (!featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc)) {
     return ok(content);
@@ -52,7 +53,12 @@ export async function expandVariableWithFunction(
   }
   let count = 0;
   for (const placeholder of matches) {
-    const processedRes = await processFunction(placeholder.slice(2, -1).trim(), ctx, envs);
+    const processedRes = await processFunction(
+      placeholder.slice(2, -1).trim(),
+      ctx,
+      envs,
+      fromPath
+    );
     if (processedRes.isErr()) {
       return err(processedRes.error);
     }
@@ -78,7 +84,8 @@ export async function expandVariableWithFunction(
 async function processFunction(
   content: string,
   ctx: DriverContext,
-  envs: { [key in string]: string } | undefined
+  envs: { [key in string]: string } | undefined,
+  path: string
 ): Promise<Result<string, FxError>> {
   const firstTrimmedContent = content.trim();
   if (!firstTrimmedContent.startsWith("file(") || !firstTrimmedContent.endsWith(")")) {
@@ -95,24 +102,25 @@ async function processFunction(
     const res = await readFileContent(
       trimmedParameter.substring(1, trimmedParameter.length - 1),
       ctx,
-      envs
+      envs,
+      path
     );
     return res;
   } else if (trimmedParameter.startsWith("${{") && trimmedParameter.endsWith("}}")) {
     // env variable inside
     const resolvedParameter = expandEnvironmentVariable(trimmedParameter, envs);
 
-    const res = readFileContent(resolvedParameter, ctx, envs);
+    const res = readFileContent(resolvedParameter, ctx, envs, path);
     return res;
   } else if (trimmedParameter.startsWith("file(") && trimmedParameter.endsWith(")")) {
     // nested function inside
-    const processsedRes = await processFunction(trimmedParameter, ctx, envs);
+    const processsedRes = await processFunction(trimmedParameter, ctx, envs, path);
 
     if (processsedRes.isErr()) {
       return err(processsedRes.error);
     }
 
-    const readFileRes = await readFileContent(processsedRes.value, ctx, envs);
+    const readFileRes = await readFileContent(processsedRes.value, ctx, envs, path);
     return readFileRes;
   } else {
     // invalid content inside function
@@ -126,7 +134,8 @@ async function processFunction(
 async function readFileContent(
   filePath: string,
   ctx: DriverContext,
-  envs: { [key in string]: string } | undefined
+  envs: { [key in string]: string } | undefined,
+  fromPath: string
 ): Promise<Result<string, FxError>> {
   const ext = path.extname(filePath);
   if (ext.toLowerCase() !== ".txt") {
@@ -136,7 +145,7 @@ async function readFileContent(
     return err(new UnsupportedFileFormatError(ctx.platform));
   }
 
-  const absolutePath = getAbsolutePath(filePath, ctx.projectPath);
+  const absolutePath = getAbsolutePath(filePath, fromPath);
   if (await fs.pathExists(absolutePath)) {
     try {
       let fileContent = await fs.readFile(absolutePath, "utf8");
@@ -152,6 +161,12 @@ async function readFileContent(
   } else {
     return err(new FileNotFoundError(source, filePath));
   }
+}
+
+function getAbsolutePath(relativeOrAbsolutePath: string, fromPath: string): string {
+  return path.isAbsolute(relativeOrAbsolutePath)
+    ? relativeOrAbsolutePath
+    : path.join(path.dirname(fromPath), relativeOrAbsolutePath);
 }
 
 class UnsupportedFileFormatError extends UserError {

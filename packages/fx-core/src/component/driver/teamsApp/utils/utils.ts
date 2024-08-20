@@ -257,7 +257,8 @@ export async function getResolvedManifest(
       ctx,
       undefined,
       true,
-      manifestType
+      manifestType,
+      path
     );
     if (processedFunctionRes.isErr()) {
       return processedFunctionRes;

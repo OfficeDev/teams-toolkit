@@ -70,6 +70,7 @@ import {
   updateForCustomApi,
 } from "./helper";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
+import { declarativeCopilotInstructionFileName } from "../constant";
 
 const defaultDeclarativeCopilotActionId = "action_1";
 // const fromApiSpecComponentName = "copilot-plugin-existing-api";
@@ -435,11 +436,17 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         replaceMap: {
           ...context.templateVariables,
           DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
+          FileFunction: featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc) ? "true" : "",
         },
         filterFn: (fileName: string) => {
           if (fileName.includes(`${defaultDeclarativeCopilotManifestFileName}.tpl`)) {
             return isDeclarativeCopilot;
-          } else {
+          } else if (fileName.includes(declarativeCopilotInstructionFileName)) {
+            return (
+              isDeclarativeCopilot && featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc)
+            );
+          }
+          {
             return true;
           }
         },

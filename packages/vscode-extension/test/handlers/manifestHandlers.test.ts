@@ -8,6 +8,7 @@ import * as globalVariables from "../../src/globalVariables";
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  syncManifestHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "../../src/handlers/manifestHandlers";
@@ -114,6 +115,14 @@ describe("Manifest handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(ok(undefined));
       const res = await updatePreviewManifest([]);
       assert.isTrue(res.isErr());
+    });
+  });
+  describe("syncManifest", () => {
+    it("happy", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const runCommandStub = sandbox.stub(shared, "runCommand").resolves(ok(undefined));
+      await syncManifestHandler();
+      assert.isTrue(runCommandStub.calledOnce);
     });
   });
 });

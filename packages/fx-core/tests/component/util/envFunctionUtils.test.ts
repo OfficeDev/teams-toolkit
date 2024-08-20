@@ -208,7 +208,11 @@ describe("expandVariableWithFunction", async () => {
   });
 
   it("Read file content error - nested error", async () => {
-    mockedEnvRestore = mockedEnv({ TEST_ENV: "test", FILE_PATH: "testfile1.txt" });
+    mockedEnvRestore = mockedEnv({
+      TEST_ENV: "test",
+      FILE_PATH: "testfile1.txt",
+      [FeatureFlagName.EnvFileFunc]: "true",
+    });
     const content = "description:\"$[ file(file('testfile1.txt'))]\"C://test";
 
     sandbox.stub(fs, "pathExists").resolves(true);
@@ -243,7 +247,11 @@ describe("expandVariableWithFunction", async () => {
   });
 
   it("file not found error", async () => {
-    mockedEnvRestore = mockedEnv({ TEST_ENV: "test", FILE_PATH: "testfile1.txt" });
+    mockedEnvRestore = mockedEnv({
+      TEST_ENV: "test",
+      FILE_PATH: "testfile1.txt",
+      [FeatureFlagName.EnvFileFunc]: "true",
+    });
     const content = "description:\"$[ file('testfile1.txt')]\"C://test";
 
     sandbox.stub(fs, "pathExists").resolves(false);

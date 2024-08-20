@@ -56,10 +56,10 @@ describe("telemetry", () => {
     it("happy path", async () => {
       const props: any = {};
       const error = new Error("error message");
-      telemetryUtils.fillInErrorProperties(props, new ScriptExecutionError(error));
+      telemetryUtils.fillInErrorProperties(props, new ScriptExecutionError(error, "test"));
       assert.equal(
         props[TelemetryProperty.ErrorData],
-        maskSecret(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+        maskSecret(JSON.stringify(error, Object.getOwnPropertyNames(error)), { replace: "***" })
       );
     });
   });

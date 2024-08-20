@@ -5,85 +5,12 @@ import * as crypto from "crypto";
 import * as Handlebars from "handlebars";
 import { URL } from "url";
 import * as uuid from "uuid";
-import { FailedToParseResourceIdError } from "../error";
+import { FailedToParseResourceIdError } from "../error/common";
 import { getLocalizedString } from "./localizeUtils";
+import { secretMasker } from "./secretmasker/masker";
 
-const MIN_ENTROPY = 4;
 const SECRET_REPLACE = "<REDACTED:secret>";
 const USER_REPLACE = "<REDACTED:user>";
-
-const WHITE_LIST = [
-  "user-file-path",
-  "publish-app,",
-  "X-Correlation-ID",
-  "innerError",
-  "client-request-id",
-];
-
-function getProbMap(str: string) {
-  const probMap = new Map<string, number>();
-  for (const char of str) {
-    probMap.set(char, (probMap.get(char) || 0) + 1);
-  }
-  for (const [char, freq] of probMap.entries()) {
-    const prob = freq / str.length;
-    probMap.set(char, prob);
-  }
-  return probMap;
-}
-
-// Measure the entropy of a string in bits per symbol.
-function shannonEntropy(probMap: Map<string, number>) {
-  let sum = 0;
-  for (const char of probMap.keys()) {
-    const prob = probMap.get(char) || 0;
-    const delta = (prob * Math.log(prob)) / Math.log(2);
-    sum += delta;
-  }
-  return -sum;
-}
-
-class Token {
-  value: string;
-  splitter: boolean;
-  entropy?: number;
-  constructor(value: string, splitter: boolean) {
-    this.value = value;
-    this.splitter = splitter;
-  }
-}
-
-function tokenize(text: string): Token[] {
-  const splitterString = " '`\n\t\r\",:{}";
-  const splitterChars = new Set<string>();
-  for (const char of splitterString) {
-    splitterChars.add(char);
-  }
-  const tokens: Token[] = [];
-  let currentToken = "";
-  for (const char of text) {
-    if (splitterChars.has(char)) {
-      if (currentToken.length > 0) {
-        tokens.push(new Token(currentToken, false));
-        currentToken = "";
-      }
-      tokens.push(new Token(char, true));
-    } else {
-      currentToken += char;
-    }
-  }
-  if (currentToken.length > 0) {
-    tokens.push(new Token(currentToken, false));
-  }
-  return tokens;
-}
-
-function computeShannonEntropy(token: Token) {
-  if (!token.splitter) {
-    const probMap = getProbMap(token.value);
-    token.entropy = shannonEntropy(probMap);
-  }
-}
 
 export interface MaskSecretOptions {
   threshold?: number;
@@ -94,24 +21,15 @@ export interface MaskSecretOptions {
 export function maskSecret(inputText?: string, option?: MaskSecretOptions): string {
   if (!inputText) return "";
   option = option || {};
-  const threshold = option.threshold || MIN_ENTROPY;
-  const whiteList = option.whiteList || WHITE_LIST;
+  // const threshold = option.threshold || MIN_ENTROPY;
+  // const whiteList = option.whiteList || WHITE_LIST;
   const replace = option.replace || SECRET_REPLACE;
   // mask by secret pattern
-  inputText = maskByPattern(inputText);
+  let output = maskByPattern(inputText);
   // mask by .env.xxx.user
-  inputText = maskSecretFromEnv(inputText, replace);
+  output = maskSecretFromEnv(output, replace);
   // mask by entropy
-  let output = "";
-  const tokens = tokenize(inputText);
-  tokens.forEach((token) => {
-    computeShannonEntropy(token);
-    if (whiteList.includes(token.value) || token.splitter || (token.entropy || 0) <= threshold) {
-      output += token.value;
-    } else {
-      output += replace;
-    }
-  });
+  output = secretMasker.maskSecret(output, replace);
   return output;
 }
 

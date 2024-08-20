@@ -114,6 +114,9 @@ export class MockCore {
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
+  async syncManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
   async getProjectInfo(
     projectPath: string,
     env: string

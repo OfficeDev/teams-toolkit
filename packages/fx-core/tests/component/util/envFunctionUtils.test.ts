@@ -75,7 +75,7 @@ describe("expandVariableWithFunction", async () => {
     sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
       if (file.toString().endsWith("testfile1.txt")) {
         return Promise.resolve("description in ${{TEST_ENV}}" as any);
-      } else if (file.toString() === "C://testfile2.txt") {
+      } else if (file.toString().endsWith("testfile2.txt")) {
         return Promise.resolve("test/testfile1.txt" as any);
       } else {
         throw new Error("not support " + file);

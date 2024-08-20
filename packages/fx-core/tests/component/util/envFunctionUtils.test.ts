@@ -73,6 +73,7 @@ describe("expandVariableWithFunction", async () => {
       "description:\"$[file('testfile1.txt')]\",description2:\"$[file( file( 'C://testfile2.txt' ))] $[file(${{FILE_PATH}})]\"";
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
+      console.log(file.toString());
       if (file.toString().endsWith("testfile1.txt")) {
         return Promise.resolve("description in ${{TEST_ENV}}" as any);
       } else if (file.toString().endsWith("testfile2.txt")) {
@@ -90,6 +91,9 @@ describe("expandVariableWithFunction", async () => {
       ManifestType.DeclarativeCopilotManifest,
       "C://test.json"
     );
+    if (res.isErr()) {
+      console.log(res.error);
+    }
     assert.isTrue(
       res.isOk() &&
         res.value ===

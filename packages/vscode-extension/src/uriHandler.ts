@@ -14,7 +14,7 @@ export let uriEventHandler: UriHandler;
 enum Referrer {
   DeveloperPortal = "developerportal",
   OfficeDoc = "officedoc",
-  SyncManifest = "syncmanifset",
+  SyncManifest = "syncmanifest",
 }
 
 interface QueryParams {
@@ -88,7 +88,6 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
       );
       return;
     }
-
     if (
       queryParamas.referrer === Referrer.SyncManifest &&
       featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest)

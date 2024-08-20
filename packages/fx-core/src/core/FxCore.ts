@@ -983,7 +983,7 @@ export class FxCore {
     const context: DriverContext = createDriverContext(inputs);
     const projectPath = inputs[QuestionNames.ProjectPath] as string;
     const env = inputs[QuestionNames.Env] as string;
-    const teamsAppId = inputs[QuestionNames.TeamsAppId] as string;
+    const teamsAppId = inputs[QuestionNames.TeamsAppId];
     const args: SyncManifestArgs = {
       projectPath: projectPath,
       env: env,

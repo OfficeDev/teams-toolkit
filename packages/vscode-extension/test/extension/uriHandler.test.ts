@@ -3,6 +3,10 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { UriHandler, setUriEventHandler } from "../../src/uriHandler";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
+import { featureFlagManager, FeatureFlags, QuestionNames } from "@microsoft/teamsfx-core";
+import { syncManifestHandler } from "../../src/handlers/manifestHandlers";
+import * as shared from "../../src/handlers/sharedOpts";
+import { err, FxError, Inputs, Result, Stage, UserError, ok } from "@microsoft/teamsfx-api";
 
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();
@@ -123,6 +127,46 @@ describe("uri handler", () => {
       TelemetryTriggerFrom.ExternalUrl,
       "hello-world-teams-tab-and-outlook-add-in"
     );
+  });
+  it("valid sync manifest uri", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse(
+      "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=syncmanifest&appId=123"
+    );
+    featureFlagManager.setBooleanValue(FeatureFlags.SyncManifest, true);
+    const executeCommand = sandbox
+      .stub(vscode.commands, "executeCommand")
+      .callsFake(async (command: string, ...args: any[]) => {
+        const res = await syncManifestHandler(args);
+        chai.assert.isTrue(res.isOk());
+      });
+    sandbox
+      .stub(shared, "runCommand")
+      .callsFake((stage: Stage, inputs: Inputs | undefined): Promise<Result<any, FxError>> => {
+        if (inputs && inputs[QuestionNames.TeamsAppId] === "123") {
+          return Promise.resolve(ok(undefined));
+        }
+        return Promise.resolve(err(new UserError("ut", "error", "", "")));
+      });
+    await handler.handleUri(uri);
+
+    chai.assert.isTrue(executeCommand.calledOnce);
+  });
+
+  it("sync manifest uri, missing app Id", async () => {
+    const handler = new UriHandler();
+    featureFlagManager.setBooleanValue(FeatureFlags.SyncManifest, true);
+    const executeCommand = sandbox.stub(vscode.commands, "executeCommand").throws("error");
+    const uri = vscode.Uri.parse(
+      "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=syncmanifest"
+    );
+    await handler.handleUri(uri);
+
+    const uri1 = vscode.Uri.parse(
+      "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=syncmanifest&appId="
+    );
+    await handler.handleUri(uri1);
+    chai.assert.isTrue(executeCommand.notCalled);
   });
 
   it("set uri handler", async () => {

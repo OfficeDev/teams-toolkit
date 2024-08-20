@@ -1,5 +1,5 @@
-import { err, ok } from "@microsoft/teamsfx-api";
-import { UserCancelError } from "@microsoft/teamsfx-core";
+import { err, FxError, Inputs, ok, Result, Stage, UserError } from "@microsoft/teamsfx-api";
+import { QuestionNames, UserCancelError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import fs from "fs-extra";
 import * as sinon from "sinon";
@@ -119,10 +119,22 @@ describe("Manifest handlers", () => {
   });
   describe("syncManifest", () => {
     it("happy", async () => {
-      sandbox.stub(globalVariables, "core").value(new MockCore());
       const runCommandStub = sandbox.stub(shared, "runCommand").resolves(ok(undefined));
       await syncManifestHandler();
       assert.isTrue(runCommandStub.calledOnce);
+    });
+    it("teams app id in the input", async () => {
+      const runCommandStub = sandbox
+        .stub(shared, "runCommand")
+        .callsFake((stage: Stage, inputs: Inputs | undefined): Promise<Result<any, FxError>> => {
+          if (inputs && inputs[QuestionNames.TeamsAppId] === "teamsAppId") {
+            return Promise.resolve(ok(undefined));
+          }
+          return Promise.resolve(err(new UserError("ut", "error", "", "")));
+        });
+      const res = await syncManifestHandler("teamsAppId");
+      assert.isTrue(runCommandStub.calledOnce);
+      assert.isTrue(res.isOk());
     });
   });
 });

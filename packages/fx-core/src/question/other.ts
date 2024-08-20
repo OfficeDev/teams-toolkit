@@ -1103,7 +1103,6 @@ export function syncManifestQuestionNode(): IQTreeNode {
           name: QuestionNames.TeamsAppId,
           title: getLocalizedString("core.syncManifest.teamsAppId"),
           cliDescription: "Teams App ID (optional)",
-          default: "",
         },
         condition: () => {
           return true;

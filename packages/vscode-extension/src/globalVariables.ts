@@ -78,9 +78,9 @@ export function checkIsSPFx(directory: string): boolean {
 }
 
 export function checkIsDeclarativeCopilotApp(directory: string): boolean {
-  const manifest = manifestUtils.readAppManifestSync(directory);
-  if (manifest.isOk()) {
-    return manifestUtils.getCapabilities(manifest.value).includes("copilotGpt");
+  const manifestRes = manifestUtils.readAppManifestSync(directory);
+  if (manifestRes.isOk()) {
+    return manifestUtils.getCapabilities(manifestRes.value).includes("copilotGpt");
   } else {
     return false;
   }

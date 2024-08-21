@@ -275,7 +275,7 @@ export function getCapabilities(manifest: any): string[] {
   }
   if (
     manifest.copilotExtensions?.declarativeCopilots &&
-    manifest.copilotExtensions.declarativeCopilots > 0
+    manifest.copilotExtensions.declarativeCopilots.length > 0
   ) {
     capabilities.push("copilotGpt");
   }

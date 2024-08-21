@@ -10,7 +10,7 @@ import { envUtil } from "../../../../src/component/utils/envUtil";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, err, TeamsAppManifest, Err, UserError, Result, FxError } from "@microsoft/teamsfx-api";
 import * as appStudio from "../../../../src/component/driver/teamsApp/appStudio";
-import { DotenvOutput } from "../../../../build";
+import { DotenvOutput, getLocalizedString } from "../../../../build";
 
 describe("teamsApp/syncManifest", async () => {
   const syncManifestDriver = new SyncManifestDriver();
@@ -314,7 +314,7 @@ describe("teamsApp/syncManifest", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
         id: "${{TEAMS_APP_ID}}",
-        version: "{{TEAMS_APP_ID}}",
+        version: "${{TEAMS_APP_ID}}",
       } as TeamsAppManifest)
     );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);
@@ -443,6 +443,94 @@ describe("teamsApp/syncManifest", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
         id: "app-${{TEAMS_APP_ID}}-${{TEAMS_APP_ID}}",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("No diff", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "1",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").throws("error");
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "1",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("Edit diff with same placeholders", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "1",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").resolves(
+      ok({
+        TEAMS_APP_ID: "1",
+      } as DotenvOutput)
+    );
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "${{TEAMS_APP_ID}}",
       } as TeamsAppManifest)
     );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);

@@ -172,6 +172,14 @@ describe("uri handler", () => {
     chai.assert.isTrue(executeCommand.notCalled);
   });
 
+  it("not registered referrer", async () => {
+    const handler = new UriHandler();
+    const executeCommand = sandbox.stub(vscode.commands, "executeCommand").throws("error");
+    const uri = vscode.Uri.parse("vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=fake");
+    await handler.handleUri(uri);
+    chai.assert.isTrue(executeCommand.notCalled);
+  });
+
   it("set uri handler", async () => {
     const uriHandler = new UriHandler();
     setUriEventHandler(uriHandler);

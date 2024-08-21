@@ -136,6 +136,10 @@ export class SyncManifestDriver implements StepDriver {
         }
       }
     }
+    if (diffVariablesMap.size === 0) {
+      context.logProvider.info(getLocalizedString("core.syncManifest.noDiff"));
+      return ok(new Map<string, string>());
+    }
     const currentEnvRes = await envUtil.readEnv(args.projectPath, args.env);
     if (currentEnvRes.isErr()) {
       return err(currentEnvRes.error);

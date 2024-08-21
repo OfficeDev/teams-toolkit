@@ -591,6 +591,7 @@
   "core.syncManifest.editNotMatch": "Cannot match the value with placeholders in the template. Please manually update the local manifest. Template value: %s. New Value: %s.",
   "core.syncManifest.updateEnvSuccess": "Sucessfully updated the %s environment file. New values: %s",
   "core.syncManifest.success": "Sucessfully synced manifest to environment: %s.",
+  "core.syncManifest.noDiff": "Your manifest file is already up-to-date. Sync completed.",
   "core.syncManifest.saveManifestSuccess": "Successfully saved the manifest file to %s.",
   "ui.select.LoadingOptionsPlaceholder": "Loading options ...",
   "ui.select.LoadingDefaultPlaceholder": "Loading default value ...",

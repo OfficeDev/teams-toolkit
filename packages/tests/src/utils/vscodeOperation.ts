@@ -929,10 +929,13 @@ export async function createNewProject(
       await driver.sleep(Timeout.shortTimeWait);
       const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
       await ckAll?.click();
+      await input.confirm();
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
       await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);

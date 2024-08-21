@@ -2901,10 +2901,19 @@ export async function validateCustomapi(
         await textbox?.fill(options?.botCommand || "Get repairs for Karin");
         const sendButton = await frame?.waitForSelector('button[name="send"]');
         await sendButton?.click();
-        await frame?.waitForSelector(
-          `div.ac-textBlock div.fui-Primitive p:has-text("${options?.expectedReplyMessage}")`,
-          { timeout: timeout }
-        );
+        if (
+          options.expectedWelcomeMessage == ValidationContent.AiBotErrorMessage
+        ) {
+          await frame?.waitForSelector(
+            `p:has-text("${options?.expectedReplyMessage}")`,
+            { timeout: timeout }
+          );
+        } else {
+          await frame?.waitForSelector(
+            `div.ac-textBlock div.fui-Primitive p:has-text("${options?.expectedReplyMessage}")`,
+            { timeout: timeout }
+          );
+        }
         console.log(
           `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
         );

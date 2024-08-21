@@ -11,6 +11,7 @@ import {
   isValidProject,
   isValidOfficeAddInProject,
   isManifestOnlyOfficeAddinProject,
+  manifestUtils,
 } from "@microsoft/teamsfx-core";
 import { Tools } from "@microsoft/teamsfx-api";
 
@@ -23,6 +24,7 @@ export let isTeamsFxProject = false;
 export let isOfficeAddInProject = false;
 export let isOfficeManifestOnlyProject = false;
 export let isSPFxProject = false;
+export let isDeclarativeCopilotApp = false;
 export let isExistingUser = "no";
 export let defaultExtensionLogPath: string;
 export let commandIsRunning = false;
@@ -54,6 +56,7 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   }
   if (isTeamsFxProject && workspaceUri?.fsPath) {
     isSPFxProject = checkIsSPFx(workspaceUri?.fsPath);
+    isDeclarativeCopilotApp = checkIsDeclarativeCopilotApp(workspaceUri.fsPath);
   } else {
     isSPFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", "SPFx"));
   }
@@ -72,6 +75,15 @@ export function checkIsSPFx(directory: string): boolean {
     }
   }
   return false;
+}
+
+export function checkIsDeclarativeCopilotApp(directory: string): boolean {
+  const manifest = manifestUtils.readAppManifestSync(directory);
+  if (manifest.isOk()) {
+    return manifestUtils.getCapabilities(manifest.value).includes("copilotGpt");
+  } else {
+    return false;
+  }
 }
 
 export function setCommandIsRunning(isRunning: boolean) {

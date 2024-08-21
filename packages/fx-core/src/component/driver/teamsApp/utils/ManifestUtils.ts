@@ -56,6 +56,10 @@ export class ManifestUtils {
     const filePath = this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);
   }
+  readAppManifestSync(projectPath: string): Result<TeamsAppManifest, FxError> {
+    const filePath = this.getTeamsAppManifestPath(projectPath);
+    return this._readAppManifestSync(filePath);
+  }
   @hooks([ErrorContextMW({ component: "ManifestUtils" })])
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
@@ -64,6 +68,24 @@ export class ManifestUtils {
     // Be compatible with UTF8-BOM encoding
     // Avoid Unexpected token error at JSON.parse()
     let content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
+    content = stripBom(content);
+    const contentV3 = convertManifestTemplateToV3(content);
+    try {
+      const manifest = JSON.parse(contentV3) as TeamsAppManifest;
+      return ok(manifest);
+    } catch (e) {
+      return err(new JSONSyntaxError(manifestTemplatePath, e, "ManifestUtils"));
+    }
+  }
+
+  @hooks([ErrorContextMW({ component: "ManifestUtils" })])
+  _readAppManifestSync(manifestTemplatePath: string): Result<TeamsAppManifest, FxError> {
+    if (!fs.pathExistsSync(manifestTemplatePath)) {
+      return err(new FileNotFoundError("teamsApp", manifestTemplatePath));
+    }
+    // Be compatible with UTF8-BOM encoding
+    // Avoid Unexpected token error at JSON.parse()
+    let content = fs.readFileSync(manifestTemplatePath, { encoding: "utf-8" });
     content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);
     try {

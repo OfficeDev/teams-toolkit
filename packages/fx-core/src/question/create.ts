@@ -1218,11 +1218,19 @@ function llmServiceQuestion(): SingleSelectQuestion {
           ),
         });
       }
-      options.push({
-        id: "llm-service-openai",
-        label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
-        detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
-      });
+      options.push(
+        {
+          id: "llm-service-azure-openai",
+          label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
+          detail: getLocalizedString(
+            "core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"
+          ),
+        },
+        {
+          id: "llm-service-openai",
+          label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
+          detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
+        });
       return options;
     },
     skipSingleOption: true,

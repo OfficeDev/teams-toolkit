@@ -61,6 +61,7 @@ function containsSecretKeywords(token: string): number {
     "credential",
     "authorization",
     "bearer",
+    "encrypt",
   ];
   const weekKeywords = ["login", "auth"];
   if (keywords.some((keyword) => token.toLowerCase().includes(keyword))) return 1;

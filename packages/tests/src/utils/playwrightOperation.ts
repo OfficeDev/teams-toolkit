@@ -2902,7 +2902,7 @@ export async function validateCustomapi(
         const sendButton = await frame?.waitForSelector('button[name="send"]');
         await sendButton?.click();
         if (
-          options.expectedWelcomeMessage == ValidationContent.AiBotErrorMessage
+          options.expectedReplyMessage == ValidationContent.AiBotErrorMessage
         ) {
           await frame?.waitForSelector(
             `p:has-text("${options?.expectedReplyMessage}")`,

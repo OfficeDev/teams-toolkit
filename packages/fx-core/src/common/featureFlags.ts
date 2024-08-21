@@ -87,7 +87,7 @@ export class FeatureFlags {
   };
   static readonly EnvFileFunc = {
     name: FeatureFlagName.EnvFileFunc,
-    defaultValue: "true", // Set it to true for dogfooding. Will update it to false later.
+    defaultValue: "false", // Set it to true for dogfooding.
   };
 }
 

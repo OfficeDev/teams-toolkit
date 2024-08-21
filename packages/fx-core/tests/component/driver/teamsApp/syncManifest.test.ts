@@ -127,7 +127,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Add diff", async () => {
+  it("add diff", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -170,7 +170,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Delete diff", async () => {
+  it("delete diff", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -213,7 +213,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Edit diff", async () => {
+  it("edit diff", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -280,7 +280,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Edit diff with placeholder conflicts", async () => {
+  it("edit diff with placeholder conflicts", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -324,7 +324,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Edit diff with no placeholder in template", async () => {
+  it("edit diff with no placeholder in template", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -368,7 +368,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Edit diff - cannot match template", async () => {
+  it("edit diff - cannot match template", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -410,7 +410,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Edit diff - placeholder conflicts in one match", async () => {
+  it("edit diff - placeholder conflicts in one match", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -452,7 +452,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("No diff", async () => {
+  it("no diff", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -494,7 +494,7 @@ describe("teamsApp/syncManifest", async () => {
     }
   });
 
-  it("Edit diff with same placeholders", async () => {
+  it("edit diff with same placeholders", async () => {
     const args: SyncManifestArgs = {
       projectPath: "fakePath",
       env: "dev",
@@ -537,6 +537,115 @@ describe("teamsApp/syncManifest", async () => {
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("read env failed", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "1",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").resolves(err(new UserError("ut", "error", "", "")));
+    sinon.stub(envUtil, "writeEnv").throws("error");
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "${{TEAMS_APP_ID}}",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.deepEqual(result.error.name, "error");
+    }
+  });
+
+  it("write env failed", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+    };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "id-11",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves(err(new UserError("ut", "error", "", "")));
+    sinon.stub(envUtil, "readEnv").resolves(
+      ok({
+        TEAMS_APP_ID: "2",
+      } as DotenvOutput)
+    );
+    sinon
+      .stub(envUtil, "writeEnv")
+      .callsFake(
+        (
+          projectPath: string,
+          env: string,
+          newEnv: DotenvOutput
+        ): Promise<Result<undefined, FxError>> => {
+          if (
+            projectPath === args.projectPath &&
+            env === args.env &&
+            JSON.stringify(newEnv) === JSON.stringify({ TEAMS_APP_ID: "11" })
+          ) {
+            return Promise.resolve(ok(undefined));
+          } else {
+            return Promise.resolve(
+              err(new UserError("ut", "Invalid parameters passed to writeEnv", "", ""))
+            );
+          }
+        }
+      );
+
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "id-${{TEAMS_APP_ID}}",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      chai.assert.deepEqual(result.error.name, "error");
     }
   });
 });

@@ -5,6 +5,8 @@ import { ExtensionContext, Uri } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
 import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { err, ok, SystemError, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { manifestUtils } from "@microsoft/teamsfx-core";
 
 describe("Global Variables", () => {
   describe("isSPFxProject", () => {
@@ -82,6 +84,42 @@ describe("Global Variables", () => {
       globalVariables.unsetIsTeamsFxProject();
 
       chai.expect(globalVariables.isTeamsFxProject).equals(false);
+    });
+  });
+
+  describe("isDeclarativeCopilotApp", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Declarative copilot project", () => {
+      const teamsManifest = new TeamsAppManifest();
+      teamsManifest.copilotExtensions = {
+        declarativeCopilots: [{ id: "1", file: "testFile" }],
+      };
+      sandbox.stub(manifestUtils, "readAppManifestSync").returns(ok(teamsManifest));
+
+      const res = globalVariables.checkIsDeclarativeCopilotApp("projectPath");
+      chai.expect(res).to.be.true;
+    });
+
+    it("Not declarative copilot project", () => {
+      const teamsManifest = new TeamsAppManifest();
+      sandbox.stub(manifestUtils, "readAppManifestSync").returns(ok(teamsManifest));
+
+      const res = globalVariables.checkIsDeclarativeCopilotApp("projectPath");
+      chai.expect(res).to.be.false;
+    });
+
+    it("Error: return false", () => {
+      sandbox
+        .stub(manifestUtils, "readAppManifestSync")
+        .returns(err(new SystemError("error", "error", "error", "error")));
+
+      const res = globalVariables.checkIsDeclarativeCopilotApp("projectPath");
+      chai.expect(res).to.be.false;
     });
   });
 });

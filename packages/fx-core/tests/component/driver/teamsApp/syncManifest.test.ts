@@ -589,18 +589,6 @@ describe("teamsApp/syncManifest", async () => {
       projectPath: "fakePath",
       env: "dev",
     };
-    const teamsAppId = "mockedTeamsAppId";
-    const manifestTemplatePath = "mockedManifestTemplatePath";
-    sinon
-      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
-      .resolves(
-        ok(
-          new Map([
-            ["teamsAppId", teamsAppId],
-            ["manifestTemplatePath", manifestTemplatePath],
-          ])
-        )
-      );
     sinon.stub(appStudio, "getAppPackage").resolves(
       ok({
         manifest: Buffer.from(
@@ -668,8 +656,8 @@ describe("teamsApp/syncManifest", async () => {
       ok({
         manifest: Buffer.from(
           JSON.stringify({
-            id: "id-11",
-            version: "1.0",
+            id: "1",
+            version: "${{VERSION}}",
           })
         ),
       })
@@ -678,7 +666,7 @@ describe("teamsApp/syncManifest", async () => {
     sinon.stub(fs, "writeFile").resolves();
     sinon.stub(envUtil, "readEnv").resolves(
       ok({
-        TEAMS_APP_ID: "2",
+        VERSION: "1.0",
       } as DotenvOutput)
     );
     sinon
@@ -692,7 +680,7 @@ describe("teamsApp/syncManifest", async () => {
           if (
             projectPath === args.projectPath &&
             env === args.env &&
-            JSON.stringify(newEnv) === JSON.stringify({ TEAMS_APP_ID: "11" })
+            JSON.stringify(newEnv) === JSON.stringify({ VERSION: "2.0" })
           ) {
             return Promise.resolve(ok(undefined));
           } else {
@@ -705,8 +693,94 @@ describe("teamsApp/syncManifest", async () => {
 
     sinon.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
-        id: "id-${{TEAMS_APP_ID}}",
-        version: "1.0",
+        id: "1",
+        version: "2.0",
+      } as TeamsAppManifest)
+    );
+    const result = await syncManifestDriver.sync(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.deepEqual(result.value, new Map<string, string>());
+    }
+  });
+
+  it("happy path with teamsApp Id", async () => {
+    const args: SyncManifestArgs = {
+      projectPath: "fakePath",
+      env: "dev",
+      teamsAppId: "1",
+    };
+    const mockProjectModel: any = {
+      projectId: "12345",
+      provision: {
+        name: "provision",
+        driverDefs: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "testappname${{APP_NAME_SUFFIX}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+          {
+            uses: "teamsApp/zipAppPackage",
+            with: {
+              manifestPath: "./",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+        ],
+      },
+    };
+    sinon.stub(pathUtils, "getYmlFilePath").resolves("");
+    sinon.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    sinon.stub(appStudio, "getAppPackage").resolves(
+      ok({
+        manifest: Buffer.from(
+          JSON.stringify({
+            id: "1",
+            version: "${{VERSION}}",
+          })
+        ),
+      })
+    );
+    sinon.stub(fs, "mkdir").resolves();
+    sinon.stub(fs, "writeFile").resolves();
+    sinon.stub(envUtil, "readEnv").resolves(
+      ok({
+        VERSION: "1.0",
+      } as DotenvOutput)
+    );
+    sinon
+      .stub(envUtil, "writeEnv")
+      .callsFake(
+        (
+          projectPath: string,
+          env: string,
+          newEnv: DotenvOutput
+        ): Promise<Result<undefined, FxError>> => {
+          if (
+            projectPath === args.projectPath &&
+            env === args.env &&
+            JSON.stringify(newEnv) === JSON.stringify({ VERSION: "2.0" })
+          ) {
+            return Promise.resolve(ok(undefined));
+          } else {
+            return Promise.resolve(
+              err(new UserError("ut", "Invalid parameters passed to writeEnv", "", ""))
+            );
+          }
+        }
+      );
+
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        id: "1",
+        version: "2.0",
       } as TeamsAppManifest)
     );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);

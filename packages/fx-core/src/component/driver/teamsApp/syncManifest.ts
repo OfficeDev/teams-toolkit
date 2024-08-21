@@ -97,7 +97,7 @@ export class SyncManifestDriver implements StepDriver {
     // If there are edit differences, check if the differenet value is like a variable placeholder like: ${{Teams_APP_ID}}.
     const diffVariablesMap = new Map<string, string>();
     for (const diff of differences ?? []) {
-      if (diff.kind == "N") {
+      if (diff.kind === "N") {
         context.logProvider.warning(
           getLocalizedString("core.syncManifest.addWarning", diff.path, diff.rhs)
         );

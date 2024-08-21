@@ -133,6 +133,7 @@ describe("uri handler", () => {
     const uri = vscode.Uri.parse(
       "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=syncmanifest&appId=123"
     );
+    const currentFeatureFlag = featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest);
     featureFlagManager.setBooleanValue(FeatureFlags.SyncManifest, true);
     const executeCommand = sandbox
       .stub(vscode.commands, "executeCommand")
@@ -149,12 +150,13 @@ describe("uri handler", () => {
         return Promise.resolve(err(new UserError("ut", "error", "", "")));
       });
     await handler.handleUri(uri);
-
+    featureFlagManager.setBooleanValue(FeatureFlags.SyncManifest, currentFeatureFlag);
     chai.assert.isTrue(executeCommand.calledOnce);
   });
 
   it("sync manifest uri, missing app Id", async () => {
     const handler = new UriHandler();
+    const currentFeatureFlag = featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest);
     featureFlagManager.setBooleanValue(FeatureFlags.SyncManifest, true);
     const executeCommand = sandbox.stub(vscode.commands, "executeCommand").throws("error");
     const uri = vscode.Uri.parse(
@@ -166,6 +168,7 @@ describe("uri handler", () => {
       "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=syncmanifest&appId="
     );
     await handler.handleUri(uri1);
+    featureFlagManager.setBooleanValue(FeatureFlags.SyncManifest, currentFeatureFlag);
     chai.assert.isTrue(executeCommand.notCalled);
   });
 

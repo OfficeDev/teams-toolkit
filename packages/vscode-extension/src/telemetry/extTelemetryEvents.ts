@@ -34,7 +34,7 @@ export enum TelemetryEvent {
   AddWebpartStart = "add-web-part-start",
   AddWebpart = "add-web-part",
 
-  AddPluginStart = "add-web-part-start",
+  AddPluginStart = "add-plugin-start",
   AddPlugin = "add-plugin",
 
   ValidateManifestStart = "validate-manifest-start",

@@ -25,6 +25,7 @@ class SecretMasker {
     ],
     intercept_: [-7.761273206603221],
   };
+  // {"coef_": [[0.004155276527344043, 0.029504630645359853, 0.09946253119670634, 1.676866695531829, -0.33273998101038793, 0.34412671452144017]], "intercept_": [-6.146199795461423]}
   predict(features: number[]): number {
     const { coef_, intercept_ } = this.model;
     // Calculate the dot product between the features and the coefficients

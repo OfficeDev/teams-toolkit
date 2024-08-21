@@ -83,29 +83,9 @@ interface FeatureToken {
 
 export type Token = SplitterToken | FeatureToken;
 
-// export function tokenize(input: string): Token[] {
-//   // Regular expression to match any whitespace (including `\r\n`, `\t`, spaces, etc.)
-//   const tokens: string[] = input.split(/(\s+)/); // Retain the splitters in the result array
-
-//   // Map the tokens into an array of Token objects
-//   return tokens.map((t) => {
-//     if (/\s+/.test(t)) {
-//       return {
-//         type: "splitter",
-//         token: t,
-//       };
-//     } else {
-//       return {
-//         type: "feature",
-//         token: t,
-//       };
-//     }
-//   });
-// }
-
 export function tokenize(input: string): Token[] {
   // Regular expression to match JSON-specific delimiters and whitespace
-  const tokens: string[] = input.split(/(\s+|[{}[\],:"])/); // Retain and filter out empty tokens
+  const tokens: string[] = input.split(/(\s+|[{}[\],:"])/).filter((t) => t.length > 0); // Retain and filter out empty tokens
 
   // Map the tokens into an array of Token objects
   return tokens.map((t) => {

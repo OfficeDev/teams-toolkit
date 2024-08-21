@@ -10,7 +10,6 @@ import { getLocalizedString } from "./localizeUtils";
 import { secretMasker } from "./secretmasker/masker";
 
 const SECRET_REPLACE = "<REDACTED:secret>";
-const USER_REPLACE = "<REDACTED:user>";
 
 export interface MaskSecretOptions {
   threshold?: number;
@@ -20,13 +19,8 @@ export interface MaskSecretOptions {
 
 export function maskSecret(inputText?: string, option?: MaskSecretOptions): string {
   if (!inputText) return "";
-  option = option || {};
-  // const threshold = option.threshold || MIN_ENTROPY;
-  // const whiteList = option.whiteList || WHITE_LIST;
-  const replace = option.replace || SECRET_REPLACE;
-  // mask by .env.xxx.user
+  const replace = option?.replace || SECRET_REPLACE;
   let output = maskSecretFromEnv(inputText);
-  // mask by entropy
   output = secretMasker.maskSecret(output, replace);
   return output;
 }

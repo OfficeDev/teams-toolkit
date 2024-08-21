@@ -215,7 +215,13 @@ export class CreateAppPackageDriver implements StepDriver {
     const plugins = manifest.copilotExtensions?.plugins;
     // API plugin
     if (plugins?.length && plugins[0].file) {
-      const addFilesRes = await this.addPlugin(zip, plugins[0].file, appDirectory, context);
+      const addFilesRes = await this.addPlugin(
+        zip,
+        plugins[0].file,
+        appDirectory,
+        context,
+        jsonFileDir
+      );
       if (addFilesRes.isErr()) {
         return err(addFilesRes.error);
       }
@@ -239,7 +245,8 @@ export class CreateAppPackageDriver implements StepDriver {
         declarativeCopilots[0].file,
         copilotGptManifestFile,
         ManifestType.DeclarativeCopilotManifest,
-        context
+        context,
+        path.join(jsonFileDir, path.relative(appDirectory, copilotGptManifestFile))
       );
       if (addFileWithVariableRes.isErr()) {
         return err(addFileWithVariableRes.error);
@@ -267,7 +274,8 @@ export class CreateAppPackageDriver implements StepDriver {
               zip,
               normalizePath(pluginFileRelativePath, useForwardSlash),
               appDirectory,
-              context
+              context,
+              jsonFileDir
             );
 
             if (addPluginRes.isErr()) {
@@ -282,11 +290,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
     zip.writeZip(zipFileName);
 
-    if (await fs.pathExists(jsonFileName)) {
-      await fs.chmod(jsonFileName, 0o777);
-    }
-    await fs.writeFile(jsonFileName, JSON.stringify(manifest, null, 4));
-    await fs.chmod(jsonFileName, 0o444);
+    await this.writeJsonFile(jsonFileName, JSON.stringify(manifest, null, 4));
 
     const builtSuccess = [
       { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
@@ -359,13 +363,15 @@ export class CreateAppPackageDriver implements StepDriver {
    * @param pluginRelativePath plugin file path relative to app package folder
    * @param appDirectory app package path
    * @param context context
+   * @param outputDirectory folder where we should put the resolved manifest in.
    * @returns result of adding plugin file and plugin related files
    */
   private async addPlugin(
     zip: AdmZip,
     pluginRelativePath: string,
     appDirectory: string,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputDirectory: string
   ): Promise<Result<undefined, FxError>> {
     const pluginFile = path.resolve(appDirectory, pluginRelativePath);
     const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
@@ -378,7 +384,8 @@ export class CreateAppPackageDriver implements StepDriver {
       pluginRelativePath,
       pluginFile,
       ManifestType.PluginManifest,
-      context
+      context,
+      path.join(outputDirectory, path.relative(appDirectory, pluginFile))
     );
     if (addFileWithVariableRes.isErr()) {
       return err(addFileWithVariableRes.error);
@@ -454,7 +461,8 @@ export class CreateAppPackageDriver implements StepDriver {
     entryName: string,
     filePath: string,
     manifestType: ManifestType,
-    context: WrapDriverContext
+    context: WrapDriverContext,
+    outputPath?: string
   ): Promise<Result<undefined, FxError>> {
     const expandedEnvVarResult = await CreateAppPackageDriver.expandEnvVars(
       filePath,
@@ -469,10 +477,25 @@ export class CreateAppPackageDriver implements StepDriver {
     const attr = await fs.stat(filePath);
     zip.addFile(entryName, Buffer.from(content), "", attr.mode);
 
+    if (outputPath && path.extname(outputPath).toLowerCase() === ".json") {
+      await this.writeJsonFile(
+        `${outputPath.substring(0, outputPath.length - 5)}.${process.env.TEAMSFX_ENV!}.json`,
+        content
+      );
+    }
+
     return ok(undefined);
   }
 
   private addFileInZip(zip: AdmZip, zipPath: string, filePath: string) {
     zip.addLocalFile(filePath, zipPath === "." ? "" : zipPath);
+  }
+
+  private async writeJsonFile(jsonFileName: string, content: string) {
+    if (await fs.pathExists(jsonFileName)) {
+      await fs.chmod(jsonFileName, 0o777);
+    }
+    await fs.writeFile(jsonFileName, content);
+    await fs.chmod(jsonFileName, 0o444);
   }
 }

@@ -3761,6 +3761,7 @@ describe("scaffold question", () => {
         assert.deepEqual(options, [
           ApiAuthOptions.none(),
           ApiAuthOptions.apiKey(),
+          ApiAuthOptions.microsoftEntra(),
           ApiAuthOptions.oauth(),
         ]);
       }

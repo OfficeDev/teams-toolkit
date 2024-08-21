@@ -6,8 +6,15 @@ info:
 servers:
   - url: ${{OPENAPI_SERVER_URL}}/api
     description: The repair api server
+
 components:
   securitySchemes:
+{{#isMicrosoftEntra}}
+    aadAuthCode:
+      type: oauth2
+      description: AAD configuration for the repair service      
+{{/isMicrosoftEntra}}
+{{^isMicrosoftEntra}}
     oAuth2AuthCode:
       type: oauth2
       description: OAuth configuration for the repair service
@@ -17,7 +24,7 @@ components:
           tokenUrl: https://login.microsoftonline.com/${{AAD_APP_TENANT_ID}}/oauth2/v2.0/token
           scopes:
             api://${{AAD_APP_CLIENT_ID}}/repairs_read: Read repair records
-
+{{/isMicrosoftEntra}}
 paths:
   /repairs:
     get:
@@ -25,7 +32,12 @@ paths:
       summary: List all repairs
       description: Returns a list of repairs with their details and images
       security:
+{{#isMicrosoftEntra}}
+        - aadAuthCode: []
+{{/isMicrosoftEntra}}
+{{^isMicrosoftEntra}}
         - oAuth2AuthCode: []
+{{/isMicrosoftEntra}}
       parameters:
         - name: assignedTo
           in: query

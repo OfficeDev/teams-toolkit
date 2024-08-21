@@ -69,7 +69,12 @@
       "type": "OpenApi",
       "auth": {
         "type": "OAuthPluginVault",
+{{^isMicrosoftEntra}}
         "reference_id": "${{OAUTH2AUTHCODE_CONFIGURATION_ID}}"
+{{/isMicrosoftEntra}}
+{{#isMicrosoftEntra}}
+        "reference_id": "${{AADAUTHCODE_CONFIGURATION_ID}}"
+{{/isMicrosoftEntra}}
       },
       "spec": {
         "url": "apiSpecificationFile/repair.dev.yml",

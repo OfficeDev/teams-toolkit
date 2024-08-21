@@ -20,7 +20,7 @@
         {
             "adminConsentDescription": "Allows Copilot to read repair records on your behalf.",
             "adminConsentDisplayName": "Read repairs",
-            "id": "${{TEAMS_APP_ID}}",
+            "id": "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}",
             "isEnabled": true,
             "type": "User",
             "userConsentDescription": "Allows Copilot to read repair records.",
@@ -28,6 +28,16 @@
             "value": "repairs_read"
         }
     ],
+{{#isMicrosoftEntra}}
+    "preAuthorizedApplications": [
+        {
+            "appId": "ab3be6b7-f5df-413d-ac2d-abf1e3fd9c0b",
+            "permissionIds": [
+                "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
+            ]
+        }
+    ],
+{{/isMicrosoftEntra}}
     "replyUrlsWithType": [
         {
            "url": "https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect",

@@ -25,6 +25,7 @@ import { declarativeCopilotInstructionFileName } from "../constant";
 const enum telemetryProperties {
   templateName = "template-name",
   isDeclarativeCopilot = "is-declarative-copilot",
+  isMicrosoftEntra = "is-microsoft-entra",
 }
 
 /**
@@ -65,6 +66,7 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
       ),
       DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
       FileFunction: featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc) ? "true" : "",
+      MicrosoftEntra: auth === ApiAuthOptions.microsoftEntra().id ? "true" : "",
     };
 
     const filterFn = (fileName: string) => {
@@ -78,13 +80,15 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
     };
 
     let templateName;
-    if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id) {
-      templateName =
-        auth === ApiAuthOptions.apiKey().id
-          ? TemplateNames.ApiPluginFromScratchBearer
-          : auth === ApiAuthOptions.oauth().id
-          ? TemplateNames.ApiPluginFromScratchOAuth
-          : TemplateNames.ApiPluginFromScratch;
+    const apiPluginFromScratch =
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id;
+    if (apiPluginFromScratch) {
+      const authTemplateMap = {
+        [ApiAuthOptions.apiKey().id]: TemplateNames.ApiPluginFromScratchBearer,
+        [ApiAuthOptions.microsoftEntra().id]: TemplateNames.ApiPluginFromScratchOAuth,
+        [ApiAuthOptions.oauth().id]: TemplateNames.ApiPluginFromScratchOAuth,
+      };
+      templateName = authTemplateMap[auth] || TemplateNames.ApiPluginFromScratch;
     } else {
       templateName = TemplateNames.BasicGpt;
     }
@@ -92,6 +96,8 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
     merge(actionContext?.telemetryProps, {
       [telemetryProperties.templateName]: templateName,
       [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
+      [telemetryProperties.isMicrosoftEntra]:
+        auth === ApiAuthOptions.microsoftEntra().id ? "true" : "",
     });
 
     return Promise.resolve(

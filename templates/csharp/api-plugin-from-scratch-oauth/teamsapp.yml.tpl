@@ -7,7 +7,7 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsapp provision' is executed
 provision:
-    # Creates a new Microsoft Entra app to authenticate users if
+  # Creates a new Microsoft Entra app to authenticate users if
   # the environment variable that stores clientId is empty
   - uses: aadApp/create
     with:
@@ -17,7 +17,12 @@ provision:
       # defined here.
       name: {{appName}}-aad
       # If the value is false, the action will not generate client secret for you
+{{#isMicrosoftEntra}}
+      generateClientSecret: false
+{{/isMicrosoftEntra}}
+{{^isMicrosoftEntra}}
       generateClientSecret: true
+{{/isMicrosoftEntra}}
       # Authenticate users with a Microsoft work or school account in your
       # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
@@ -27,7 +32,9 @@ provision:
       clientId: AAD_APP_CLIENT_ID
       # Environment variable that starts with `SECRET_` will be stored to the
       # .env.{envName}.user environment file
+{{^isMicrosoftEntra}}
       clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+{{/isMicrosoftEntra}}
       objectId: AAD_APP_OBJECT_ID
       tenantId: AAD_APP_TENANT_ID
       authority: AAD_APP_OAUTH_AUTHORITY
@@ -43,7 +50,7 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  - uses: arm/deploy  # Deploy given ARM templates parallelly.
+  - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
       # AZURE_SUBSCRIPTION_ID is a built-in environment variable,
       # if its value is empty, TeamsFx will prompt you to select a subscription.
@@ -57,7 +64,7 @@ provision:
       # will skip the resource group selection prompt.
       resourceGroupName: ${{AZURE_RESOURCE_GROUP_NAME}}
       templates:
-        - path: ./infra/azure.bicep  # Relative path to this file
+        - path: ./infra/azure.bicep # Relative path to this file
           # Relative path to this yaml file.
           # Placeholders will be replaced with corresponding environment
           # variable before ARM deployment.
@@ -79,6 +86,17 @@ provision:
 
   - uses: oauth/register
     with:
+{{#isMicrosoftEntra}}
+      name: aadAuth
+      appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
+      iden
+    writeToEnvironmentFile:
+      configurationId: AADAUTHCODE_CONFIGURATION_ID
+{{/isMicrosoftEntra}}
+{{^isMicrosoftEntra}}
       name: oAuth2AuthCode
       flow: authorizationCode
       appId: ${{TEAMS_APP_ID}}
@@ -88,6 +106,7 @@ provision:
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
     writeToEnvironmentFile:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+{{/isMicrosoftEntra}}
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
@@ -101,7 +120,7 @@ provision:
   - uses: teamsApp/validateAppPackage
     with:
       # Relative path to this file. This is the path for built zip file.
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip     
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.

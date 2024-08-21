@@ -83,12 +83,14 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions.                                                                                                               |
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                                                                                                                                   |
 | `aad.manifest.json`  | This file defines the configuration of Microsoft Entra app. This template will only provision [single tenant](https://learn.microsoft.com/azure/active-directory/develop/single-and-multi-tenant-apps#who-can-sign-in-to-your-app) Microsoft Entra app. |
+{{^isMicrosoftEntra}}
 
 ## How OAuth works in the API plugin
 
 ![oauth-flow](https://github.com/OfficeDev/teams-toolkit/assets/107838226/f074abbe-d9e3-4a46-8e08-feb66b17a539)
 
 > **Note**: The OAuth flow is only functional in remote environments. It cannot be tested in a local environment due to the lack of authentication support in Azure Function core tools.
+{{/isMicrosoftEntra}}
 
 ## Addition information and references
 

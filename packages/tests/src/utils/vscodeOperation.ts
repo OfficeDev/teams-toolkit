@@ -549,7 +549,11 @@ export async function createNewProject(
     aiType?: "Azure OpenAI" | "OpenAI";
     testRootFolder?: string;
     appNameCopySuffix?: string;
-    dataOption?: "Customize" | "Azure AI Search" | "Microsoft 365";
+    dataOption?:
+      | "Customize"
+      | "Azure AI Search"
+      | "Custom API"
+      | "Microsoft 365";
   }
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
@@ -902,6 +906,33 @@ export async function createNewProject(
       await input.setText(aiType);
       await driver.sleep(Timeout.input);
       await input.confirm();
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      break;
+    }
+
+    case "cdcustomapi": {
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Chat With Your Data");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(dataOption);
+      await driver.sleep(Timeout.input);
+      const apiSpecFilePath =
+        "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/real-no-auth.yaml";
+      await input.selectQuickPick(
+        "Enter OpenAPI Description Document Location"
+      );
+      await inputFolderPath(driver, input, apiSpecFilePath);
+      await input.confirm();
+      await driver.sleep(Timeout.shortTimeWait);
+      const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
+      await ckAll?.click();
+      // Choose programming language
+      await input.selectQuickPick(lang);
+      await driver.sleep(Timeout.input);
+      await input.setText(aiType);
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);

@@ -2854,3 +2854,69 @@ export async function validateExisingApiMeResult(page: Page, appName: string) {
     throw error;
   }
 }
+
+export async function validateCustomapi(
+  page: Page,
+  options: {
+    hasWelcomeMessage?: boolean;
+    hasCommandReplyValidation: boolean;
+    botCommand?: string;
+    expectedWelcomeMessage?: string;
+    expectedReplyMessage?: string;
+    timeout?: number;
+  } = {
+    hasWelcomeMessage: true,
+    hasCommandReplyValidation: true,
+    botCommand: "Get repairs for Karin",
+    expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+    expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+  }
+) {
+  const timeout = options?.timeout ? options.timeout : 30 * 60 * 1000;
+  try {
+    console.log("start to verify bot");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+    try {
+      console.log("dismiss message");
+      await frame?.waitForSelector("div.ui-box");
+      await page
+        .click('button:has-text("Dismiss")', {
+          timeout: Timeout.playwrightDefaultTimeout,
+        })
+        .catch(() => {});
+    } catch (error) {
+      console.log("no message to dismiss");
+    }
+
+    if (options.hasCommandReplyValidation) {
+      await RetryHandler.retry(async () => {
+        console.log(
+          "sending message ",
+          options?.botCommand || "Get repairs for Karin"
+        );
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
+        );
+        await textbox?.fill(options?.botCommand || "Get repairs for Karin");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
+        await frame?.waitForSelector(
+          `div.ac-textBlock div.fui-Primitive p:has-text("${options?.expectedReplyMessage}")`,
+          { timeout: timeout }
+        );
+        console.log(
+          `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
+        );
+      }, 2);
+    }
+
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

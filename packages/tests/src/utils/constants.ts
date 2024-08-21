@@ -360,6 +360,7 @@ export type AppType =
   | "aiagentassist"
   | "aiagentnew"
   | "chatdata"
+  | "cdcustomapi" //chatadata customApi
   | "msgnewapi"
   | "msgopenapi"
   | "msgapikey"

@@ -31,6 +31,7 @@ const planner = new preview.AssistantsPlanner({
   {{#useOpenAI}}
   apiKey: config.openAIKey,
   assistant_id: config.openAIAssistantId,
+  {{/useOpenAI}}
   {{#useAzureOpenAI}}
    apiKey: config.azureOpenAIKey,
    assistant_id: config.azureOpenAIAssistantId,

@@ -36,8 +36,8 @@ describe("autoOpenProjectHandler", () => {
 
     await autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
-    chai.assert.isTrue(executeCommandFunc.calledOnce);
+    chai.assert.isTrue(sendTelemetryStub.notCalled);
+    chai.assert.isTrue(executeCommandFunc.notCalled);
   });
 
   it("opens walk through if workspace Uri exists", async () => {
@@ -56,8 +56,8 @@ describe("autoOpenProjectHandler", () => {
 
     await autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
-    chai.assert.isTrue(executeCommandFunc.calledOnce);
+    chai.assert.isTrue(sendTelemetryStub.notCalled);
+    chai.assert.isTrue(executeCommandFunc.notCalled);
     chai.assert.isTrue(globalStateUpdateStub.calledTwice);
   });
 

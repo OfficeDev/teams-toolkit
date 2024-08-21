@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import { hooks } from "@feathersjs/hooks";
 import {
+  Context,
   FxError,
   IComposeExtension,
   IMessagingExtensionCommand,
@@ -46,8 +47,9 @@ import {
 } from "../constants";
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
-import { TelemetryPropertyKey } from "./telemetry";
 import { getResolvedManifest } from "./utils";
+import { ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -310,7 +312,7 @@ export class ManifestUtils {
 
   async getManifestV3(
     manifestTemplatePath: string,
-    context?: WrapDriverContext,
+    context: DriverContext,
     generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -329,10 +331,10 @@ export class ManifestUtils {
     const manifestTemplateString = JSON.stringify(manifest);
 
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       manifestTemplateString,
       manifestTemplatePath,
-      TelemetryPropertyKey.customizedKeys,
+      ManifestType.TeamsManifest,
       context
     );
 

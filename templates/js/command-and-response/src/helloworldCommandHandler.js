@@ -1,6 +1,6 @@
 const helloWorldCard = require("./adaptiveCards/helloworldCommand.json");
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 const { CardFactory, MessageFactory } = require("botbuilder");
+const ACData = require("adaptivecards-templating");
 
 class HelloWorldCommandHandler {
   triggerPatterns = "helloWorld";
@@ -17,7 +17,7 @@ class HelloWorldCommandHandler {
       body: "Congratulations! Your Hello World App is running. Open the documentation below to learn more about how to build applications with the Teams Toolkit.",
     };
 
-    const cardJson = AdaptiveCards.declare(helloWorldCard).render(cardData);
+    const cardJson = new ACData.Template(helloWorldCard).expand({ $root: cardData });
     return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }

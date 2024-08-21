@@ -1315,9 +1315,14 @@ export async function validateWelcomeAndReplyBot(
 
 export async function validateBot(
   page: Page,
-  options: { botCommand?: string; expected?: ValidationContent } = {
+  options: {
+    botCommand?: string;
+    expected?: ValidationContent;
+    consentPrompt?: boolean;
+  } = {
     botCommand: "welcome",
     expected: ValidationContent.Bot,
+    consentPrompt: true,
   }
 ) {
   try {
@@ -1353,64 +1358,69 @@ export async function validateBot(
             `[Command "${options?.botCommand}" not executed successfully] ${e.message}`
           );
         }
-        try {
-          // wait for alert message to show
-          const btn = await frame?.waitForSelector(
-            `div.ui-box button:has-text("Continue")`
-          );
-          await btn?.click();
-          // wait for new tab to show
-          const popup = await page
-            .waitForEvent("popup")
-            .then((popup) =>
-              popup
-                .waitForEvent("close", {
-                  timeout: Timeout.playwrightConsentPopupPage,
+        if (options?.consentPrompt) {
+          try {
+            // wait for alert message to show
+            console.log("click Continue");
+            await page.waitForTimeout(Timeout.shortTimeLoading);
+            await page.screenshot({
+              path: getPlaywrightScreenshotPath("consent_login"),
+              fullPage: true,
+            });
+            const btn = await frame?.waitForSelector(
+              `div.ui-box button:has-text("Continue")`
+            );
+            await btn?.click();
+            // wait for new tab to show
+            const popup = await page
+              .waitForEvent("popup")
+              .then((popup) =>
+                popup
+                  .waitForEvent("close", {
+                    timeout: Timeout.playwrightConsentPopupPage,
+                  })
+                  .catch(() => popup)
+              )
+              .catch(() => {});
+            if (popup && !popup?.isClosed()) {
+              await popup
+                .click('button:has-text("Reload")', {
+                  timeout: Timeout.playwrightConsentPageReload,
                 })
-                .catch(() => popup)
-            )
-            .catch(() => {});
-          if (popup && !popup?.isClosed()) {
-            await popup
-              .click('button:has-text("Reload")', {
-                timeout: Timeout.playwrightConsentPageReload,
-              })
-              .catch(() => {});
-            await popup
-              .click('button:has-text("Continue")', {
-                timeout: Timeout.playwrightConsentPageReload,
-              })
-              .catch(() => {});
-            await popup.click("input.button[type='submit'][value='Accept']");
+                .catch(() => {});
+              await popup
+                .click('button:has-text("Continue")', {
+                  timeout: Timeout.playwrightConsentPageReload,
+                })
+                .catch(() => {});
+              await popup.click("input.button[type='submit'][value='Accept']");
+            }
+          } catch (error) {
+            console.log(error);
+            // reopen skip login
+            await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
+            console.log("reopen skip step");
+            console.log("verify bot successfully!!!");
+            await page.waitForTimeout(Timeout.shortTimeLoading);
+            return;
           }
-        } catch (error) {
-          console.log(error);
-          // reopen skip login
-          await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
-          console.log("reopen skip step");
-          console.log("verify bot successfully!!!");
-          await page.waitForTimeout(Timeout.shortTimeLoading);
-          return;
         }
+
         await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
         console.log("verify bot successfully!!!");
         console.log(`${options?.expected}`);
       } else {
-        await RetryHandler.retry(async () => {
-          console.log("sending message ", options?.botCommand);
-          const textbox = await frame?.waitForSelector(
-            'div.ck-content[role="textbox"]'
-          );
-          await textbox?.fill(options?.botCommand || "helloWorld");
-          const sendButton = await frame?.waitForSelector(
-            'button[name="send"]'
-          );
-          await sendButton?.click();
-          await frame?.waitForSelector(
-            `p:has-text("${options?.expected || ValidationContent.Bot}")`
-          );
-          console.log("verify bot successfully!!!");
-        }, 2);
+        console.log("sending message ", options?.botCommand);
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
+        );
+        await textbox?.fill(options?.botCommand || "helloWorld");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
+        await frame?.waitForSelector(
+          `p:has-text("${options?.expected || ValidationContent.Bot}")`
+        );
+        console.log("verify bot successfully!!!");
         console.log(`${options?.expected}`);
       }
     }, 2);

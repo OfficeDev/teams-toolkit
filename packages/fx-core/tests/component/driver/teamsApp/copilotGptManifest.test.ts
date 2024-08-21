@@ -24,6 +24,11 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { pluginManifestUtils } from "../../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { DeclarativeCopilotManifestValidationResult } from "../../../../src/component/driver/teamsApp/interfaces/ValidationResult";
+import { MockedLogProvider, MockedTelemetryReporter } from "../../../plugins/solution/util";
+import { WrapDriverContext } from "../../../../src/component/driver/util/wrapUtil";
+import { createContext, setTools } from "../../../../src/common/globalVars";
+import { generateDriverContext } from "../../../../src/common/utils";
+import { MockTools } from "../../../core/utils";
 
 describe("copilotGptManifestUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -81,6 +86,12 @@ describe("copilotGptManifestUtils", () => {
   });
 
   describe("getManifest", async () => {
+    setTools(new MockTools());
+    const context = generateDriverContext(createContext(), {
+      platform: Platform.VSCode,
+      projectPath: "",
+    });
+    const mockedContex = new WrapDriverContext(context, "test", "test");
     it("get manifest success", async () => {
       mockedEnvRestore = mockedEnv({
         ["APP_NAME_SUFFIX"]: "test",
@@ -88,7 +99,7 @@ describe("copilotGptManifestUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
 
-      const res = await copilotGptManifestUtils.getManifest("testPath");
+      const res = await copilotGptManifestUtils.getManifest("testPath", mockedContex);
 
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -98,7 +109,7 @@ describe("copilotGptManifestUtils", () => {
 
     it("get manifest error: file not found", async () => {
       sandbox.stub(fs, "pathExists").resolves(false);
-      const res = await copilotGptManifestUtils.getManifest("testPath");
+      const res = await copilotGptManifestUtils.getManifest("testPath", mockedContex);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.isTrue(res.error instanceof FileNotFoundError);
@@ -109,7 +120,7 @@ describe("copilotGptManifestUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
 
-      const res = await copilotGptManifestUtils.getManifest("testPath");
+      const res = await copilotGptManifestUtils.getManifest("testPath", mockedContex);
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -119,6 +130,12 @@ describe("copilotGptManifestUtils", () => {
   });
 
   describe("validateAgainstSchema", async () => {
+    const driverContext = {
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectPath: "test",
+      addTelemetryProperties: () => {},
+    };
     it("validate success", async () => {
       const manifest: DeclarativeCopilotManifestSchema = {
         ...gptManifest,
@@ -145,7 +162,8 @@ describe("copilotGptManifestUtils", () => {
 
       const res = await copilotGptManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -186,7 +204,8 @@ describe("copilotGptManifestUtils", () => {
 
       const res = await copilotGptManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -213,7 +232,8 @@ describe("copilotGptManifestUtils", () => {
 
       const res = await copilotGptManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -226,7 +246,8 @@ describe("copilotGptManifestUtils", () => {
 
       const res = await copilotGptManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
     });

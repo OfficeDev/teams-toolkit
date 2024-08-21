@@ -832,21 +832,26 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
-      // input fake Azure OpenAI Key
-      await input.setText("fake");
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      // input fake Azure OpenAI Endpoint
-      await input.setText("https://test.com");
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      await driver.sleep(Timeout.input);
-      // input deployment name
-      await input.setText("dev");
-      await driver.sleep(Timeout.input);
-      await input.confirm();
-      await driver.sleep(Timeout.input);
+      if (aiType === "Azure OpenAI") {
+        // input fake Azure OpenAI Key
+        await input.setText("fake");
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+        // input fake Azure OpenAI Endpoint
+        await input.setText("https://test.com");
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+        // input deployment name
+        await input.setText("dev");
+        await driver.sleep(Timeout.input);
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+      } else {
+        await input.confirm();
+        await driver.sleep(Timeout.input);
+      }
       break;
     }
     case "aiagentassist": {
@@ -914,7 +919,7 @@ export async function createNewProject(
     }
     case "msgopenapi": {
       const apiSpecFilePath =
-        "https://piercerepairsapi.azurewebsites.net/openapi.yml";
+        "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/real-no-auth.yaml";
       await createNewProjectByApispec(apiSpecFilePath, driver, input);
       break;
     }
@@ -943,40 +948,9 @@ export async function createNewProject(
       break;
     }
     case "msgapikeyspec": {
-      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
-      await input.selectQuickPick("Custom Search Results");
-      await input.setText("Start with an OpenAPI Description Document");
-      await input.confirm();
       const apiSpecFilePath =
-        testRootFolder + "\\..\\src\\ui-test\\case-resources\\repair.yaml";
-      console.log("choose yaml file path: ", apiSpecFilePath);
-      await input.selectQuickPick("Browse...");
-      await inputFolderPath(driver, input, apiSpecFilePath);
-      await driver.sleep(Timeout.shortTimeWait);
-      const okBtn = await driver.findElement(By.css(".quick-input-action"));
-      await okBtn?.click();
-      await driver.sleep(Timeout.input);
-      try {
-        const ckAll = await driver.findElement(
-          By.css(".quick-input-check-all")
-        );
-        await ckAll?.click();
-        await driver.sleep(Timeout.input);
-        await input.confirm();
-      } catch {
-        await RetryHandler.retry(async () => {
-          console.log("retry to click ok button");
-          const okBtn = await driver.findElement(By.css(".quick-input-action"));
-          await okBtn?.click();
-          await driver.sleep(Timeout.input);
-          const ckAll = await driver.findElement(
-            By.css(".quick-input-check-all")
-          );
-          await ckAll?.click();
-          await driver.sleep(Timeout.input);
-          await input.confirm();
-        }, 2);
-      }
+        "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/real-bearer.yaml";
+      await createNewProjectByApispec(apiSpecFilePath, driver, input);
       break;
     }
     default:

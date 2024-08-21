@@ -135,6 +135,7 @@ export class WrappedAxiosClient {
       }: ${innerError.message as string} `;
       properties[TelemetryProperty.ErrorMessage] = finalMessage;
       properties[TelemetryProperty.MOSTraceId] = tracingId;
+      properties[TelemetryProperty.MOSPATH] = fullPath;
     }
 
     TOOLS?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
@@ -226,6 +227,27 @@ export class WrappedAxiosClient {
         if (method.toUpperCase() === HttpMethod.POST) {
           return APP_STUDIO_API_NAMES.CREATE_BOT;
         }
+      }
+      if (fullPath.match(new RegExp("/api/v1.0/appvalidations/appdefinition/validate"))) {
+        return APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION;
+      }
+      if (
+        fullPath.match(
+          new RegExp(
+            "/api/v1.0/appvalidations/appdefinitions/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+          )
+        )
+      ) {
+        return APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS;
+      }
+      if (
+        fullPath.match(
+          new RegExp(
+            "/api/v1.0/appvalidations/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+          )
+        )
+      ) {
+        return APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT;
       }
     }
     if (

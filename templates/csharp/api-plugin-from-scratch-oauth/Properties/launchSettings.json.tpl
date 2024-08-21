@@ -1,7 +1,17 @@
 {
   "profiles": {
 {{^isNewProjectTypeEnabled}}
-    "Copilot (browser)": {
+    "Microsoft 365 app (browser)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "https://www.office.com/chat?auth=2",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
+    },
+    "Microsoft Teams (browser)": {
       "commandName": "Project",
       "commandLineArgs": "host start --port 5130 --pause-on-error",
       "dotnetRunMessages": true,

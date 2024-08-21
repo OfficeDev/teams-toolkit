@@ -17,7 +17,10 @@ import * as sinon from "sinon";
 import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import { setTools } from "../../../../src/common/globalVars";
 import * as commonTools from "../../../../src/common/utils";
-import { Constants } from "../../../../src/component/driver/teamsApp/constants";
+import {
+  Constants,
+  GeneralValidationErrorId,
+} from "../../../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import {
   AsyncAppValidationResponse,
@@ -401,6 +404,7 @@ describe("teamsApp/validateAppPackage", async () => {
 
   afterEach(() => {
     sinon.restore();
+    (mockedDriverContext.logProvider as MockedLogProvider).msg = "";
   });
 
   it("file not found - app package", async () => {
@@ -430,6 +434,32 @@ describe("teamsApp/validateAppPackage", async () => {
         {
           id: "fakeId",
           content: "Reserved Tab Name property should not be specified.",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid TypeB Plugin document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid DC document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content with code missing",
           filePath: "",
           shortCodeNumber: 123,
           validationCategory: "tab",
@@ -492,6 +522,13 @@ describe("teamsApp/validateAppPackage", async () => {
 
     result = (await teamsAppDriver.execute(args, contextWithoutUI)).result;
     chai.assert(result.isErr());
+
+    const msg = (mockedDriverContext.logProvider as MockedLogProvider).msg;
+    chai.assert(
+      msg.includes("Invalid API Plugin document") &&
+        msg.includes("Invalid DC document") &&
+        msg.includes("content with code missing")
+    );
   });
 
   it("validate app package - no error", async () => {
@@ -604,6 +641,32 @@ describe("teamsApp/validateAppPackage", async () => {
         {
           id: "fakeId",
           content: "Reserved Tab Name property should not be specified.",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid TypeB Plugin document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid DC document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content with code missing",
           filePath: "",
           shortCodeNumber: 123,
           validationCategory: "tab",

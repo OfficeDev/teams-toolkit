@@ -118,7 +118,7 @@
 /packages/fx-core/src/common/tools.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/utils.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/versionMetadata.ts @xzf0587 @blackchoey
-/packages/fx-core/src/common/wrappedAxiosClient.ts @nliu-ms @anchenyi
+/packages/fx-core/src/common/wrappedAxiosClient.ts @nliu-ms @anchenyi @jayzhang
 /packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/src/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
@@ -353,3 +353,4 @@
 /templates/constraints/yml/actions @hund030 @eriolchan @huimiu
 /templates/python @adashen @blackchoey @frankqianms
 /templates/scripts @hund030 @eriolchan @huimiu
+/templates/csharp/custom-copilot-* @adashen @blackchoey @frankqianms @xzf0587 

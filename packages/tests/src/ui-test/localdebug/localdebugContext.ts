@@ -59,7 +59,8 @@ export class LocalDebugTestContext extends TestContext {
       customCopilotRagType?:
         | "custom-copilot-rag-customize"
         | "custom-copilot-rag-azureAISearch"
-        | "custom-copilot-rag-customApi";
+        | "custom-copilot-rag-customApi"
+        | "custom-copilot-rag-microsoft365";
       customCeopilotAgent?:
         | "custom-copilot-agent-new"
         | "custom-copilot-agent-assistants-api";
@@ -289,7 +290,7 @@ export class LocalDebugTestContext extends TestContext {
       case "aichat":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "aiagent":

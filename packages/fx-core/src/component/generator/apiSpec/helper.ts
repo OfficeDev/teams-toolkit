@@ -134,20 +134,19 @@ export async function listOperations(
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
   try {
-    const specParser = new SpecParser(
-      apiSpecUrl as string,
-      isPlugin
-        ? copilotPluginParserOptions
-        : isCustomApi
-        ? {
-            projectType: ProjectType.TeamsAi,
-          }
-        : {
-            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: true,
-            allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
-          }
-    );
+    const specParserOptions = isPlugin
+      ? copilotPluginParserOptions
+      : isCustomApi
+      ? {
+          projectType: ProjectType.TeamsAi,
+        }
+      : {
+          projectType: ProjectType.SME,
+          allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+          allowMultipleParameters: true,
+          allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
+        };
+    const specParser = new SpecParser(apiSpecUrl as string, specParserOptions);
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
@@ -191,6 +190,7 @@ export async function listOperations(
 
     let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
+      [telemetryProperties.generateType]: specParserOptions.projectType?.toString() ?? "",
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),

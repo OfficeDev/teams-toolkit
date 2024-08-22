@@ -7,6 +7,7 @@ import AdmZip, { EntryHeader } from "adm-zip";
 import { Ignore } from "ignore";
 import path from "path";
 import { CacheFileInUse, DeployEmptyFolderError, ZipFileError } from "../../error/deploy";
+import axios from "axios";
 
 /**
  * Asynchronously zip a folder and return buffer
@@ -107,4 +108,23 @@ export async function forEachFileAndDir(
       .on("error", (err) => reject(err))
       .on("close", () => resolve({}));
   });
+}
+
+export async function isYamlFile(specPath: string): Promise<boolean> {
+  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
+    return true;
+  } else if (specPath.endsWith(".json")) {
+    return false;
+  }
+  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
+  const fileContent = isRemoteFile
+    ? (await axios.get(specPath)).data
+    : await fs.readFile(specPath, "utf-8");
+
+  try {
+    JSON.parse(fileContent);
+    return false;
+  } catch (error) {
+    return true;
+  }
 }

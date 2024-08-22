@@ -30,6 +30,7 @@ import {
   Inputs,
   ManifestTemplateFileName,
   ManifestUtil,
+  Platform,
   Result,
   SystemError,
   TeamsAppManifest,
@@ -38,14 +39,13 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
 import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { assembleError, MissingRequiredInputError } from "../../../error";
 import {
   apiPluginApiSpecOptionId,
   CustomCopilotRagOptions,
@@ -55,7 +55,8 @@ import {
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { sendTelemetryErrorEvent } from "../../../common/telemetry";
+import { sendTelemetryErrorEvent, TelemetryProperty } from "../../../common/telemetry";
+import * as util from "util";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -69,6 +70,7 @@ const enum telemetryProperties {
   otherAuthCount = "other-auth-count",
   isFromAddingApi = "is-from-adding-api",
   failedReason = "failed-reason",
+  generateType = "generate-type",
 }
 
 const enum telemetryEvents {
@@ -353,6 +355,111 @@ export async function listPluginExistingOperations(
   const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
   const listResult = await specParser.list();
   return listResult.APIs.map((o) => o.api);
+}
+
+interface SpecParserOutputFilePath {
+  destinationApiSpecFilePath: string;
+  pluginManifestFilePath?: string;
+  responseTemplateFolder?: string;
+}
+
+interface SpecParserGenerateResult {
+  warnings: WarningResult[];
+}
+export async function generateFromApiSpec(
+  specParser: SpecParser,
+  teamsManifestPath: string,
+  inputs: Inputs,
+  context: Context,
+  sourceComponent: string,
+  projectType: ProjectType,
+  outputFilePath: SpecParserOutputFilePath
+): Promise<Result<SpecParserGenerateResult, FxError>> {
+  const operations = inputs[QuestionNames.ApiOperation] as string[];
+  const validationRes = await specParser.validate();
+  const warnings = validationRes.warnings;
+  const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+
+  if (operationIdWarning && operationIdWarning.data) {
+    const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+      operations.includes(api)
+    );
+    if (apisMissingOperationId.length > 0) {
+      operationIdWarning.content = util.format(
+        getLocalizedString("core.common.MissingOperationId"),
+        apisMissingOperationId.join(", ")
+      );
+      delete operationIdWarning.data;
+    } else {
+      warnings.splice(warnings.indexOf(operationIdWarning), 1);
+    }
+  }
+
+  const specVersionWarning = warnings.find((w) => w.type === WarningType.ConvertSwaggerToOpenAPI);
+  if (specVersionWarning) {
+    specVersionWarning.content = ""; // We don't care content of this warning
+  }
+
+  if (validationRes.status === ValidationStatus.Error) {
+    logValidationResults(validationRes.errors, warnings, context, false, true);
+    const errorMessage =
+      inputs.platform === Platform.VSCode
+        ? getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+          )
+        : getLocalizedString("core.createProjectQuestion.apiSpec.multipleValidationErrors.message");
+    return err(new UserError(sourceComponent, invalidApiSpecErrorName, errorMessage, errorMessage));
+  }
+
+  try {
+    const generateResult =
+      projectType === ProjectType.Copilot
+        ? await specParser.generateForCopilot(
+            teamsManifestPath,
+            operations,
+            outputFilePath.destinationApiSpecFilePath,
+            outputFilePath.pluginManifestFilePath!
+          )
+        : await specParser.generate(
+            teamsManifestPath,
+            operations,
+            outputFilePath.destinationApiSpecFilePath,
+            projectType === ProjectType.TeamsAi ? undefined : outputFilePath.responseTemplateFolder
+          );
+
+    // Send SpecParser.generate() warnings
+    context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+      [telemetryProperties.generateType]: projectType.toString(),
+      [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+      [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+        .map((w) => w.type.toString() + ": " + w.content)
+        .join(";"),
+      [TelemetryProperty.Component]: sourceComponent,
+    });
+
+    if (generateResult.warnings && generateResult.warnings.length > 0) {
+      generateResult.warnings.find((o) => {
+        if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+          o.content = ""; // We don't care content of this warning
+        }
+      });
+      warnings.push(...generateResult.warnings);
+
+      return ok({
+        warnings,
+      });
+    } else {
+      return ok({ warnings: [] });
+    }
+  } catch (e) {
+    let error: FxError;
+    if (e instanceof SpecParserError) {
+      error = convertSpecParserErrorToFxError(e);
+    } else {
+      error = assembleError(e, sourceComponent);
+    }
+    return err(error);
+  }
 }
 
 export function logValidationResults(
@@ -708,25 +815,6 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
 
 export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
   return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
-}
-
-export async function isYamlSpecFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
 }
 
 export function formatValidationErrors(

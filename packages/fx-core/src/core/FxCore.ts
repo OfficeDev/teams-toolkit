@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { AuthType, SpecParser, SpecParserError, Utils } from "@microsoft/m365-spec-parser";
+import {
+  AuthType,
+  ProjectType,
+  SpecParser,
+  SpecParserError,
+  Utils,
+} from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -98,8 +104,8 @@ import {
   defaultApiSpecJsonFileName,
   defaultApiSpecYamlFileName,
   defaultPluginManifestFileName,
+  generateFromApiSpec,
   generateScaffoldingSummary,
-  isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
   specParserGenerateResultAllSuccessTelemetryProperty,
@@ -161,6 +167,7 @@ import { PackageService } from "../component/m365/packageService";
 import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceConstant";
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
 import { generateDriverContext } from "../common/utils";
+import { isYamlFile } from "../component/utils/fileOperation";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -1697,16 +1704,9 @@ export class FxCore {
         }
       }
 
-      let generateResult;
       let pluginPath: string | undefined;
-      if (!isPlugin) {
-        generateResult = await specParser.generate(
-          manifestPath,
-          operations,
-          outputApiSpecPath,
-          adaptiveCardFolder
-        );
-      } else {
+
+      if (isPlugin) {
         const pluginPathRes = await manifestUtils.getPluginFilePath(
           manifestRes.value,
           manifestPath
@@ -1715,26 +1715,28 @@ export class FxCore {
           return err(pluginPathRes.error);
         }
         pluginPath = pluginPathRes.value;
-        generateResult = await specParser.generateForCopilot(
-          manifestPath,
-          operations,
-          outputApiSpecPath,
-          pluginPathRes.value
-        );
+      }
+      const generateResult = await generateFromApiSpec(
+        specParser,
+        manifestPath,
+        inputs,
+        context,
+        CoreTelemetryComponentName,
+        isPlugin ? ProjectType.Copilot : ProjectType.SME,
+        {
+          destinationApiSpecFilePath: outputApiSpecPath,
+          responseTemplateFolder: adaptiveCardFolder,
+          pluginManifestFilePath: pluginPath,
+        }
+      );
+
+      if (generateResult.isErr()) {
+        return err(generateResult.error);
       }
 
-      // Send SpecParser.generate() warnings
-      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
-        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
-          .map((w) => w.type.toString() + ": " + w.content)
-          .join(";"),
-        [TelemetryProperty.Component]: CoreTelemetryComponentName,
-      });
-
-      if (generateResult.warnings && generateResult.warnings.length > 0) {
+      if (generateResult.value.warnings && generateResult.value.warnings.length > 0) {
         const warnSummary = await generateScaffoldingSummary(
-          generateResult.warnings,
+          generateResult.value.warnings,
           manifestRes.value,
           path.relative(inputs.projectPath!, outputApiSpecPath),
           pluginPath === undefined ? undefined : path.relative(inputs.projectPath!, pluginPath),
@@ -1836,7 +1838,6 @@ export class FxCore {
     if (!inputs.projectPath) {
       throw new Error("projectPath is undefined"); // should never happen
     }
-    const operations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation];
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const appPackageFolder = path.dirname(manifestPath);
@@ -1901,7 +1902,7 @@ export class FxCore {
     // generate file path
     let isYaml: boolean;
     try {
-      isYaml = await isYamlSpecFile(url);
+      isYaml = await isYamlFile(url);
     } catch (e) {
       isYaml = false;
     }
@@ -1927,43 +1928,33 @@ export class FxCore {
     }
     const pluginManifestFilePath = path.join(appPackageFolder, pluginManifestName);
 
-    // generate plugin related files
     const specParser = new SpecParser(url, { ...copilotPluginParserOptions, isGptPlugin: true });
-    try {
-      const generateResult = await specParser.generateForCopilot(
-        manifestPath,
-        operations,
-        openApiSpecFilePath,
-        pluginManifestFilePath
+    const generateRes = await generateFromApiSpec(
+      specParser,
+      manifestPath,
+      inputs,
+      context,
+      CoreTelemetryComponentName,
+      ProjectType.Copilot,
+      {
+        destinationApiSpecFilePath: openApiSpecFilePath,
+        pluginManifestFilePath: pluginManifestFilePath,
+      }
+    );
+    if (generateRes.isErr()) {
+      return err(generateRes.error);
+    }
+
+    const warnings = generateRes.value.warnings;
+    if (warnings && warnings.length > 0) {
+      const warnSummary = await generateScaffoldingSummary(
+        warnings,
+        manifestRes.value,
+        path.relative(inputs.projectPath, openApiSpecFilePath),
+        path.relative(inputs.projectPath, pluginManifestFilePath),
+        inputs.projectPath
       );
-
-      // Send SpecParser.generate() warnings
-      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
-        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
-          .map((w) => w.type.toString() + ": " + w.content)
-          .join(";"),
-        [TelemetryProperty.Component]: CoreTelemetryComponentName,
-      });
-
-      if (generateResult.warnings && generateResult.warnings.length > 0) {
-        const warnSummary = await generateScaffoldingSummary(
-          generateResult.warnings,
-          manifestRes.value,
-          path.relative(inputs.projectPath, openApiSpecFilePath),
-          path.relative(inputs.projectPath, pluginManifestFilePath),
-          inputs.projectPath
-        );
-        context.logProvider.info(warnSummary + "\n");
-      }
-    } catch (e) {
-      let error: FxError;
-      if (e instanceof SpecParserError) {
-        error = convertSpecParserErrorToFxError(e);
-      } else {
-        error = assembleError(e);
-      }
-      return err(error);
+      context.logProvider.info(warnSummary + "\n");
     }
 
     // update Teams manifest

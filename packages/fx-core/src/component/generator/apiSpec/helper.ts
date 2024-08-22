@@ -57,6 +57,7 @@ import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { sendTelemetryErrorEvent, TelemetryProperty } from "../../../common/telemetry";
 import * as util from "util";
+import axios from "axios";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -536,6 +537,25 @@ export function logValidationResults(
     );
 
   void context.logProvider.info(outputMessage);
+}
+
+export async function isYamlFile(specPath: string): Promise<boolean> {
+  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
+    return true;
+  } else if (specPath.endsWith(".json")) {
+    return false;
+  }
+  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
+  const fileContent = isRemoteFile
+    ? (await axios.get(specPath)).data
+    : await fs.readFile(specPath, "utf-8");
+
+  try {
+    JSON.parse(fileContent);
+    return false;
+  } catch (error) {
+    return true;
+  }
 }
 
 /**

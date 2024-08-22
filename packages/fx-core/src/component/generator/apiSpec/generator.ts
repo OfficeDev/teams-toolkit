@@ -56,11 +56,11 @@ import {
   generateFromApiSpec,
   generateScaffoldingSummary,
   getEnvName,
+  isYamlFile,
   updateForCustomApi,
 } from "./helper";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { declarativeCopilotInstructionFileName } from "../constant";
-import { isYamlFile } from "../../utils/fileOperation";
 
 const defaultDeclarativeCopilotActionId = "action_1";
 // const fromApiSpecComponentName = "copilot-plugin-existing-api";

@@ -106,11 +106,9 @@ import {
   defaultPluginManifestFileName,
   generateFromApiSpec,
   generateScaffoldingSummary,
+  isYamlFile,
   listOperations,
   listPluginExistingOperations,
-  specParserGenerateResultAllSuccessTelemetryProperty,
-  specParserGenerateResultTelemetryEvent,
-  specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/apiSpec/helper";
 import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
@@ -167,7 +165,6 @@ import { PackageService } from "../component/m365/packageService";
 import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceConstant";
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
 import { generateDriverContext } from "../common/utils";
-import { isYamlFile } from "../component/utils/fileOperation";
 
 export class FxCore {
   constructor(tools: Tools) {

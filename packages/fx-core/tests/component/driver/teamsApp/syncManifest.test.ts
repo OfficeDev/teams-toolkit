@@ -589,6 +589,18 @@ describe("teamsApp/syncManifest", async () => {
       projectPath: "fakePath",
       env: "dev",
     };
+    const teamsAppId = "mockedTeamsAppId";
+    const manifestTemplatePath = "mockedManifestTemplatePath";
+    sinon
+      .stub(syncManifestDriver, "getTeamsAppIdAndManifestTemplatePath" as keyof SyncManifestDriver)
+      .resolves(
+        ok(
+          new Map([
+            ["teamsAppId", teamsAppId],
+            ["manifestTemplatePath", manifestTemplatePath],
+          ])
+        )
+      );
     sinon.stub(appStudio, "getAppPackage").resolves(
       ok({
         manifest: Buffer.from(
@@ -657,7 +669,7 @@ describe("teamsApp/syncManifest", async () => {
         manifest: Buffer.from(
           JSON.stringify({
             id: "1",
-            version: "${{VERSION}}",
+            version: "2.0",
           })
         ),
       })
@@ -667,6 +679,7 @@ describe("teamsApp/syncManifest", async () => {
     sinon.stub(envUtil, "readEnv").resolves(
       ok({
         VERSION: "1.0",
+        TEAMS_APP_ID: "1",
       } as DotenvOutput)
     );
     sinon
@@ -694,7 +707,7 @@ describe("teamsApp/syncManifest", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
         id: "1",
-        version: "2.0",
+        version: "${{VERSION}}",
       } as TeamsAppManifest)
     );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);
@@ -743,7 +756,7 @@ describe("teamsApp/syncManifest", async () => {
         manifest: Buffer.from(
           JSON.stringify({
             id: "1",
-            version: "${{VERSION}}",
+            version: "2.0",
           })
         ),
       })
@@ -780,7 +793,7 @@ describe("teamsApp/syncManifest", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(
       ok({
         id: "1",
-        version: "2.0",
+        version: "${{VERSION}}",
       } as TeamsAppManifest)
     );
     const result = await syncManifestDriver.sync(args, mockedDriverContext);

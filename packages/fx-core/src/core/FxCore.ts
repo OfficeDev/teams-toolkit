@@ -1853,7 +1853,7 @@ export class FxCore {
    * Add plugin
    */
   @hooks([
-    ErrorContextMW({ component: "FxCore", stage: "addPlugin" }),
+    ErrorContextMW({ component: "FxCore", stage: Stage.addPlugin }),
     ErrorHandlerMW,
     QuestionMW("addPlugin"),
     ConcurrentLockerMW,

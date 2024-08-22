@@ -1204,25 +1204,20 @@ function llmServiceQuestion(): SingleSelectQuestion {
     ],
     dynamicOptions: (inputs: Inputs) => {
       const options: OptionItem[] = [];
-      // python tpl supports az oai assistant now. if other languages support az oai assistant, change the condition here.
-      if (
-        (inputs[QuestionNames.CustomCopilotAssistant] === "custom-copilot-agent-assistants-api" &&
-          inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.PY) ||
-        inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api"
-      ) {
-        options.push({
+      options.push(
+        {
           id: "llm-service-azure-openai",
           label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
           detail: getLocalizedString(
             "core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"
           ),
-        });
-      }
-      options.push({
-        id: "llm-service-openai",
-        label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
-        detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
-      });
+        },
+        {
+          id: "llm-service-openai",
+          label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
+          detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
+        }
+      );
       return options;
     },
     skipSingleOption: true,

@@ -23,7 +23,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 import { ErrorContextMW } from "../../../../common/globalVars";
-import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
+import { FileNotFoundError, JSONSyntaxError, ReadFileError } from "../../../../error/common";
 import { CapabilityOptions } from "../../../../question/constants";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
@@ -56,6 +56,30 @@ export class ManifestUtils {
     const filePath = this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);
   }
+
+  readAppManifestSync(projectPath: string): Result<TeamsAppManifest, FxError> {
+    const filePath = this.getTeamsAppManifestPath(projectPath);
+    if (!fs.existsSync(filePath)) {
+      return err(new FileNotFoundError("teamsApp", filePath));
+    }
+    // Be compatible with UTF8-BOM encoding
+    // Avoid Unexpected token error at JSON.parse()
+    let content;
+    try {
+      content = fs.readFileSync(filePath, { encoding: "utf-8" });
+    } catch (e) {
+      return err(new ReadFileError(e, "common"));
+    }
+    content = stripBom(content);
+    const contentV3 = convertManifestTemplateToV3(content);
+    try {
+      const manifest = JSON.parse(contentV3) as TeamsAppManifest;
+      return ok(manifest);
+    } catch (e) {
+      return err(new JSONSyntaxError(filePath, e, "ManifestUtils"));
+    }
+  }
+
   @hooks([ErrorContextMW({ component: "ManifestUtils" })])
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {

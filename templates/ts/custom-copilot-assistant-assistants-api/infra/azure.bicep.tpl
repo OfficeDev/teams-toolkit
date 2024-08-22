@@ -3,11 +3,22 @@
 @description('Used to generate names for all resources in this file')
 param resourceBaseName string
 
+{{#useOpenAI}}
 @secure()
 param openAIKey string
 
 @secure()
 param openAIAssistantId string
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+@secure()
+@description('Required in your bot project to access Azure OpenAI service. You can get it from Azure Portal > OpenAI > Keys > Key1 > Resource Management > Endpoint')  
+param azureOpenaiKey string
+param azureOpenaiEndpoint string
+
+@secure()
+param azureOpenaiAssistantId string
+{{/useAzureOpenAI}}
 
 param webAppSKU string
 
@@ -69,6 +80,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'BOT_TYPE'
           value: 'UserAssignedMsi'
         }
+        {{#useOpenAI}}
         {
           name: 'OPENAI_API_KEY'
           value: openAIKey
@@ -77,6 +89,21 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'OPENAI_ASSISTANT_ID'
           value: openAIAssistantId
         }
+        {{/useOpenAI}}
+        {{#useAzureOpenAI}}
+        {
+          name: 'AZURE_OPENAI_API_KEY'
+          value: azureOpenaiKey
+        }
+        {
+          name: 'AZURE_OPENAI_ENDPOINT'
+          value: azureOpenaiEndpoint
+        }
+        {
+          name: 'AZURE_OPENAI_ASSISTANT_ID'
+          value: azureOpenaiAssistantId
+        }
+        {{/useAzureOpenAI}}
       ]
       ftpsState: 'FtpsOnly'
     }

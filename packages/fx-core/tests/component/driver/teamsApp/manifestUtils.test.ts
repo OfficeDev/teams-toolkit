@@ -2,7 +2,10 @@
 import "mocha";
 import { assert } from "chai";
 import * as sinon from "sinon";
-import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import {
+  manifestUtils,
+  ManifestUtils,
+} from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
 import {
   TeamsAppManifest,
@@ -21,6 +24,7 @@ import {
   getConfigurableTabsTplExistingAppBasedOnVersion,
 } from "../../../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
+import { FileNotFoundError, JSONSyntaxError, ReadFileError } from "../../../../src/error";
 
 const latestManifestVersion = "1.17";
 const oldManifestVersion = "1.16";
@@ -302,3 +306,45 @@ function mockInputManifestFileExceedLimit(manifestUtils: ManifestUtils, manifest
   };
   sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest));
 }
+
+describe("readAppManifestSync", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("Success", () => {
+    const teamsManifest = new TeamsAppManifest();
+    sandbox.stub(fs, "existsSync").callsFake(() => {
+      return true;
+    });
+    sandbox.stub(fs, "readFileSync").returns(JSON.stringify(teamsManifest));
+
+    const res = manifestUtils.readAppManifestSync("projectPath");
+    assert.isTrue(res.isOk());
+  });
+
+  it("Return false if cannot find the manifest", () => {
+    sandbox.stub(fs, "existsSync").returns(false);
+
+    const res = manifestUtils.readAppManifestSync("projectPath");
+    assert.isTrue(res.isErr() && res.error instanceof FileNotFoundError);
+  });
+
+  it("Return false if pasring json failed", () => {
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "readFileSync").returns("");
+
+    const res = manifestUtils.readAppManifestSync("projectPath");
+    assert.isTrue(res.isErr() && res.error instanceof JSONSyntaxError);
+  });
+
+  it("Return false if read file failed", () => {
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "readFileSync").throws("error");
+
+    const res = manifestUtils.readAppManifestSync("projectPath");
+    assert.isTrue(res.isErr() && res.error instanceof ReadFileError);
+  });
+});

@@ -4457,6 +4457,35 @@ describe("copilotPlugin", async () => {
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    const listResult: ListAPIResult = {
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon
+      .stub(SpecParser.prototype, "generate")
+      .throws(new SpecParserError("", ErrorType.FilterSpecFailed));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
@@ -4769,7 +4798,13 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
-    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(
+      ok({
+        warnings: [
+          { type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" },
+        ],
+      })
+    );
 
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.addPlugin(inputs);

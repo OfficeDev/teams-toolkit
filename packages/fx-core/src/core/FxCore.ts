@@ -1610,40 +1610,39 @@ export class FxCore {
       url,
       getParserOptions(isPlugin ? ProjectType.Copilot : ProjectType.SME)
     );
-
-    const listResult = await specParser.list();
-    const apiResultList = listResult.APIs.filter((value) => value.isValid);
-
-    let existingOperations: string[];
-    let outputApiSpecPath: string;
-    if (isPlugin) {
-      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
-        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
-      }
-      outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
-      existingOperations = await listPluginExistingOperations(
-        manifestRes.value,
-        manifestPath,
-        inputs[QuestionNames.DestinationApiSpecFilePath]
-      );
-    } else {
-      const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
-      existingOperations = apiResultList
-        .filter((operation) => existingOperationIds.includes(operation.operationId))
-        .map((operation) => operation.api);
-      const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-      outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
-    }
-
-    const operations = [...existingOperations, ...newOperations];
-
-    const adaptiveCardFolder = path.join(
-      inputs.projectPath!,
-      AppPackageFolderName,
-      ResponseTemplatesFolderName
-    );
-
     try {
+      const listResult = await specParser.list();
+      const apiResultList = listResult.APIs.filter((value) => value.isValid);
+
+      let existingOperations: string[];
+      let outputApiSpecPath: string;
+      if (isPlugin) {
+        if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
+          return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
+        }
+        outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+        existingOperations = await listPluginExistingOperations(
+          manifestRes.value,
+          manifestPath,
+          inputs[QuestionNames.DestinationApiSpecFilePath]
+        );
+      } else {
+        const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+        existingOperations = apiResultList
+          .filter((operation) => existingOperationIds.includes(operation.operationId))
+          .map((operation) => operation.api);
+        const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+        outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+      }
+
+      const operations = [...existingOperations, ...newOperations];
+
+      const adaptiveCardFolder = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        ResponseTemplatesFolderName
+      );
+
       const authNames: Set<string> = new Set();
       const serverUrls: Set<string> = new Set();
       let authScheme: AuthType | undefined = undefined;

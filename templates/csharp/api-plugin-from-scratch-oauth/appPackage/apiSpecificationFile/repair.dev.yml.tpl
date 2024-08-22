@@ -9,12 +9,12 @@ servers:
 
 components:
   securitySchemes:
-{{#isMicrosoftEntra}}
+{{#MicrosoftEntra}}
     aadAuthCode:
       type: oauth2
       description: AAD configuration for the repair service      
-{{/isMicrosoftEntra}}
-{{^isMicrosoftEntra}}
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
     oAuth2AuthCode:
       type: oauth2
       description: OAuth configuration for the repair service
@@ -24,7 +24,7 @@ components:
           tokenUrl: https://login.microsoftonline.com/${{AAD_APP_TENANT_ID}}/oauth2/v2.0/token
           scopes:
             api://${{AAD_APP_CLIENT_ID}}/repairs_read: Read repair records
-{{/isMicrosoftEntra}}
+{{/MicrosoftEntra}}
 paths:
   /repairs:
     get:
@@ -32,12 +32,12 @@ paths:
       summary: List all repairs
       description: Returns a list of repairs with their details and images
       security:
-{{#isMicrosoftEntra}}
+{{#MicrosoftEntra}}
         - aadAuthCode: []
-{{/isMicrosoftEntra}}
-{{^isMicrosoftEntra}}
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
         - oAuth2AuthCode: []
-{{/isMicrosoftEntra}}
+{{/MicrosoftEntra}}
       parameters:
         - name: assignedTo
           in: query

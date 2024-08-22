@@ -28,7 +28,7 @@
             "value": "repairs_read"
         }
     ],
-{{#isMicrosoftEntra}}
+{{#MicrosoftEntra}}
     "preAuthorizedApplications": [
         {
             "appId": "ab3be6b7-f5df-413d-ac2d-abf1e3fd9c0b",
@@ -37,7 +37,7 @@
             ]
         }
     ],
-{{/isMicrosoftEntra}}
+{{/MicrosoftEntra}}
     "replyUrlsWithType": [
         {
            "url": "https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect",

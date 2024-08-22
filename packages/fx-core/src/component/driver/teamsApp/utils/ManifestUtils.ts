@@ -97,6 +97,7 @@ export class ManifestUtils {
       return err(new JSONSyntaxError(manifestTemplatePath, e, "ManifestUtils"));
     }
   }
+
   async _writeAppManifest(
     appManifest: TeamsAppManifest,
     manifestTemplatePath: string

@@ -93,8 +93,8 @@ export class SyncManifestDriver implements StepDriver {
     }
     const currentManifest = currentManifestRes.value as any;
     const differences = deepDiff.diff(currentManifest, newManifest);
-    // If there are add or delete differences, print warnings and return.
-    // If there are edit differences, check if the differenet value is like a variable placeholder like: ${{Teams_APP_ID}}.
+    // If there are add or delete differences, log warnings and return.
+    // If there are edit differences, check if the different value is like a variable placeholder like: ${{Teams_APP_ID}}.
     const diffVariablesMap = new Map<string, string>();
     for (const diff of differences ?? []) {
       if (diff.kind === "N") {

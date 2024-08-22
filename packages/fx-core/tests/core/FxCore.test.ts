@@ -2165,6 +2165,11 @@ describe("copilotPlugin", async () => {
       warnings: [],
       allSuccess: true,
     });
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
@@ -2217,6 +2222,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
@@ -2275,6 +2285,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(manifestUtils, "getPluginFilePath").resolves(ok("ai-plugin.json"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
@@ -2478,6 +2493,11 @@ describe("copilotPlugin", async () => {
       warnings: [],
       allSuccess: true,
     });
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
@@ -2552,6 +2572,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -2641,6 +2666,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const teamsappObject = {
@@ -2720,6 +2750,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const teamsappObject = {
@@ -2797,6 +2832,11 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
       allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
@@ -2887,6 +2927,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -3000,6 +3045,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -3097,6 +3147,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -3237,6 +3292,11 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     const teamsappObject = {
       provision: [
         {
@@ -3344,6 +3404,11 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
@@ -3493,6 +3558,11 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     const teamsappObject = {
       provision: [
         {
@@ -3635,6 +3705,11 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     const teamsappObject = {
       provision: [
         {
@@ -3782,6 +3857,11 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     const teamsappObject = {
       provision: [
         {
@@ -3930,6 +4010,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -4066,6 +4151,11 @@ describe("copilotPlugin", async () => {
       allSuccess: true,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
@@ -4209,6 +4299,11 @@ describe("copilotPlugin", async () => {
       allSuccess: false,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("warning message");
@@ -4280,6 +4375,11 @@ describe("copilotPlugin", async () => {
       allSuccess: false,
     });
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(SpecParser.prototype, "validate").resolves({
+      warnings: [],
+      status: ValidationStatus.Valid,
+      errors: [],
+    });
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));

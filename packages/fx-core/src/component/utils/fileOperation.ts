@@ -7,7 +7,6 @@ import AdmZip, { EntryHeader } from "adm-zip";
 import { Ignore } from "ignore";
 import path from "path";
 import { CacheFileInUse, DeployEmptyFolderError, ZipFileError } from "../../error/deploy";
-import axios from "axios";
 
 /**
  * Asynchronously zip a folder and return buffer

@@ -4769,10 +4769,7 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
-    sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
-      warnings: [],
-      allSuccess: true,
-    });
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.addPlugin(inputs);
@@ -4832,10 +4829,7 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
-    sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
-      warnings: [],
-      allSuccess: true,
-    });
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.addPlugin(inputs);
@@ -4895,10 +4889,7 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
-    sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
-      warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
-      allSuccess: true,
-    });
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.addPlugin(inputs);
@@ -5069,47 +5060,6 @@ describe("addPlugin", async () => {
     }
   });
 
-  it("error: generateForCopilot exception", async () => {
-    const appName = await mockV3Project();
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.Folder]: os.tmpdir(),
-      [QuestionNames.TeamsAppManifestFilePath]: "manifest.json",
-      [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
-      [QuestionNames.PluginAvailability]: PluginAvailabilityOptions.copilotPluginAndAction().id,
-      projectPath: path.join(os.tmpdir(), appName),
-    };
-    const manifest = new TeamsAppManifest();
-    manifest.copilotExtensions = {
-      declarativeCopilots: [
-        {
-          file: "test1.json",
-          id: "action_1",
-        },
-      ],
-    };
-    sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
-      if (path.endsWith("openapi_1.json")) {
-        return false;
-      }
-      if (path.endsWith("ai-plugin_1.json")) {
-        return false;
-      }
-      return true;
-    });
-    sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    sandbox
-      .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
-      .resolves(ok({} as DeclarativeCopilotManifestSchema));
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
-    sandbox.stub(SpecParser.prototype, "generateForCopilot").throws(new Error("fakeError"));
-    const core = new FxCore(tools);
-    const result = await core.addPlugin(inputs);
-    assert.isTrue(result.isErr());
-  });
-
   it("error: generateForCopilot error", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
@@ -5146,8 +5096,8 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     sandbox
-      .stub(SpecParser.prototype, "generateForCopilot")
-      .throws(new SpecParserError("fakeError", ErrorType.SpecNotValid));
+      .stub(CopilotPluginHelper, "generateFromApiSpec")
+      .resolves(err(new SystemError("", "", "", "")));
     const core = new FxCore(tools);
     const result = await core.addPlugin(inputs);
     assert.isTrue(result.isErr());
@@ -5196,10 +5146,7 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
-    sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
-      warnings: [],
-      allSuccess: true,
-    });
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.addPlugin(inputs);
@@ -5252,10 +5199,7 @@ describe("addPlugin", async () => {
       .resolves(err(new SystemError("addActionError", "addActionError", "", "")));
 
     const core = new FxCore(tools);
-    sandbox.stub(SpecParser.prototype, "generateForCopilot").resolves({
-      warnings: [],
-      allSuccess: true,
-    });
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.addPlugin(inputs);

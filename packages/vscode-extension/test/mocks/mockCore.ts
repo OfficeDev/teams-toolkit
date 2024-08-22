@@ -148,4 +148,8 @@ export class MockCore {
   async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
     return ok(true);
   }
+
+  async addPlugin(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
 }

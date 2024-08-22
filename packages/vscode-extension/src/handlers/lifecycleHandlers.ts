@@ -97,6 +97,11 @@ export async function addWebpartHandler(...args: unknown[]) {
   return await runCommand(Stage.addWebpart);
 }
 
+export async function addPluginHandler(...args: unknown[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddPluginStart, getTriggerFromProperty(args));
+  return await runCommand(Stage.addPlugin);
+}
+
 /**
  * scaffold based on app id from Developer Portal
  */

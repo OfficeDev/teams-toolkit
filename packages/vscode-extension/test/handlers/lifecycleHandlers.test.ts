@@ -13,6 +13,7 @@ import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
 import * as copilotHandler from "../../src/handlers/copilotChatHandlers";
 import {
+  addPluginHandler,
   addWebpartHandler,
   copilotPluginAddAPIHandler,
   createNewProjectHandler,
@@ -344,6 +345,23 @@ describe("Lifecycle handlers", () => {
       await copilotPluginAddAPIHandler(args);
 
       sinon.assert.calledOnce(addAPIHanlder);
+    });
+  });
+
+  describe("AddPluginHandler", async () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("success:", async () => {
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      const addPluginHanlder = sandbox.spy(globalVariables.core, "addPlugin");
+
+      await addPluginHandler();
+
+      sinon.assert.calledOnce(addPluginHanlder);
     });
   });
 });

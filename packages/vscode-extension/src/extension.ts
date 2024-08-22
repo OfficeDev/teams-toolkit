@@ -114,6 +114,7 @@ import {
   refreshEnvironment,
 } from "./handlers/envHandlers";
 import {
+  addPluginHandler,
   addWebpartHandler,
   copilotPluginAddAPIHandler,
   createNewProjectHandler,
@@ -579,6 +580,8 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   registerInCommandController(context, "fx-extension.OpenAdaptiveCardExt", installAdaptiveCardExt);
 
   registerInCommandController(context, "fx-extension.addWebpart", addWebpartHandler, "addWebpart");
+
+  registerInCommandController(context, "fx-extension.addPlugin", addPluginHandler, "addPlugin");
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {

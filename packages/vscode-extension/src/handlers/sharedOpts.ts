@@ -114,6 +114,10 @@ export async function runCommand(
         result = await core.copilotPluginAddAPI(inputs);
         break;
       }
+      case Stage.addPlugin: {
+        result = await core.addPlugin(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,

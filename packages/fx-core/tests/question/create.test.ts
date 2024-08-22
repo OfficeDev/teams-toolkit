@@ -1488,7 +1488,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 1);
+            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: "llm-service-openai" });
           } else if (question.name === QuestionNames.OpenAIKey) {
             return ok({ type: "success", result: "testKey" });

@@ -81,5 +81,12 @@ deploy:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
         BOT_TYPE: 'MultiTenant'
+        {{#useOpenAI}}
         OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
         OPENAI_ASSISTANT_ID: ${{OPENAI_ASSISTANT_ID}}
+        {{/useOpenAI}}
+        {{#useAzureOpenAI}}
+        AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
+        AZURE_OPENAI_ENDPOINT: ${{AZURE_OPENAI_ENDPOINT}}
+        AZURE_OPENAI_ASSISTANT_ID: ${{AZURE_OPENAI_ASSISTANT_ID}}
+        {{/useAzureOpenAI}}

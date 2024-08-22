@@ -1,25 +1,41 @@
-import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
+const { MemoryStorage, MessageFactory } = require("botbuilder");
+const config = require("../config");
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-import { Application, AI, preview } from "@microsoft/teams-ai";
+const { Application, AI, preview } = require("@microsoft/teams-ai");
 
-import config from "../config";
-
+{{#useOpenAI}}
 // See README.md to prepare your own OpenAI Assistant
 if (!config.openAIKey || !config.openAIAssistantId) {
   throw new Error(
     "Missing OPENAI_API_KEY or OPENAI_ASSISTANT_ID. See README.md to prepare your own OpenAI Assistant."
   );
 }
+{{/useOpenAI}}
+ {{#useAzureOpenAI}}
+// See README.md to prepare your own Azure OpenAI Assistant
+if (!config.azureOpenAIKey || !config.azureOpenAIAssistantId) {
+  throw new Error(
+    "Missing AZURE_OPENAI_API_KEY or AZURE_OPENAI_ASSISTANT_ID. See README.md to prepare your own Azure OpenAI Assistant."
+  );
+}
+{{/useAzureOpenAI}}
 
-import { resetMessage } from "./messages";
-import { httpErrorAction, getCurrentWeather, getNickname } from "./actions";
+const { resetMessage } = require("./messages");
+const { httpErrorAction, getCurrentWeather, getNickname } = require("./actions");
 
 // Create AI components
 // Use OpenAI
 const planner = new preview.AssistantsPlanner({
+{{#useOpenAI}}
   apiKey: config.openAIKey,
   assistant_id: config.openAIAssistantId,
+{{/useOpenAI}}
+ {{#useAzureOpenAI}}
+  apiKey: config.azureOpenAIKey,
+  assistant_id: config.azureOpenAIAssistantId,
+  endpoint: config.azureOpenAIEndpoint
+{{/useAzureOpenAI}}
 });
 
 // Define storage and application
@@ -31,7 +47,7 @@ const app = new Application({
   },
 });
 
-app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
+app.conversationUpdate("membersAdded", async (turnContext) => {
   const welcomeText = "How can I help you today?";
   for (const member of turnContext.activity.membersAdded) {
     if (member.id !== turnContext.activity.recipient.id) {
@@ -46,4 +62,4 @@ app.ai.action(AI.HttpErrorActionName, httpErrorAction);
 app.ai.action("getCurrentWeather", getCurrentWeather);
 app.ai.action("getNickname", getNickname);
 
-export default app;
+module.exports = app;

@@ -21,6 +21,13 @@ deploy:
     with:
       target: ./.localConfigs.testTool
       envs:
+        {{#useOpenAI}}
         OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
         OPENAI_ASSISTANT_ID: ${{OPENAI_ASSISTANT_ID}}
+        {{/useOpenAI}}
+        {{#useAzureOpenAI}}
+        AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
+        AZURE_OPENAI_ENDPOINT: ${{AZURE_OPENAI_ENDPOINT}}
+        AZURE_OPENAI_ASSISTANT_ID: ${{AZURE_OPENAI_ASSISTANT_ID}}
+        {{/useAzureOpenAI}}
         TEAMSFX_NOTIFICATION_STORE_FILENAME: ${{TEAMSFX_NOTIFICATION_STORE_FILENAME}}

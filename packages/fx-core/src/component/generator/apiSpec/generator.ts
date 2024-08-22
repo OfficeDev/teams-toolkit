@@ -297,7 +297,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
           ? path.join(destinationPath, AppPackageFolderName, defaultPluginManifestFileName)
           : undefined;
       const responseTemplateFolder =
-        getTemplateInfosState.type !== ProjectType.Copilot
+        getTemplateInfosState.type === ProjectType.SME
           ? path.join(destinationPath, AppPackageFolderName, ResponseTemplatesFolderName)
           : undefined;
       const specParser = new SpecParser(

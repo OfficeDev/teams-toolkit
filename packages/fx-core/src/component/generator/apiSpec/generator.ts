@@ -48,7 +48,6 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import {
   convertSpecParserErrorToFxError,
-  copilotPluginParserOptions,
   defaultApiSpecFolderName,
   defaultApiSpecJsonFileName,
   defaultApiSpecYamlFileName,
@@ -56,6 +55,7 @@ import {
   generateFromApiSpec,
   generateScaffoldingSummary,
   getEnvName,
+  getParserOptions,
   isYamlSpecFile,
   updateForCustomApi,
 } from "./helper";
@@ -302,14 +302,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
           : undefined;
       const specParser = new SpecParser(
         getTemplateInfosState.url,
-        getTemplateInfosState.type === ProjectType.Copilot
-          ? { ...copilotPluginParserOptions, isGptPlugin: isDeclarativeCopilot }
-          : {
-              allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-              allowMultipleParameters: true,
-              projectType: getTemplateInfosState.type,
-              allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
-            }
+        getParserOptions(getTemplateInfosState.type, isDeclarativeCopilot)
       );
       const generateResult = await generateFromApiSpec(
         specParser,

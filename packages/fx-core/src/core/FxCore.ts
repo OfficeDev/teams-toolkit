@@ -99,13 +99,13 @@ import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   convertSpecParserErrorToFxError,
-  copilotPluginParserOptions,
   defaultApiSpecFolderName,
   defaultApiSpecJsonFileName,
   defaultApiSpecYamlFileName,
   defaultPluginManifestFileName,
   generateFromApiSpec,
   generateScaffoldingSummary,
+  getParserOptions,
   isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
@@ -1608,12 +1608,7 @@ export class FxCore {
     // Merge existing operations in manifest.json
     const specParser = new SpecParser(
       url,
-      isPlugin
-        ? copilotPluginParserOptions
-        : {
-            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: true,
-          }
+      getParserOptions(isPlugin ? ProjectType.Copilot : ProjectType.SME)
     );
 
     const listResult = await specParser.list();
@@ -1925,7 +1920,7 @@ export class FxCore {
     }
     const pluginManifestFilePath = path.join(appPackageFolder, pluginManifestName);
 
-    const specParser = new SpecParser(url, { ...copilotPluginParserOptions, isGptPlugin: true });
+    const specParser = new SpecParser(url, getParserOptions(ProjectType.Copilot, true));
     const generateRes = await generateFromApiSpec(
       specParser,
       manifestPath,

@@ -80,19 +80,39 @@ const enum telemetryEvents {
   failedToGetGenerateWarning = "failed-to-get-generate-warning",
 }
 
-export const copilotPluginParserOptions: ParseOptions = {
-  allowAPIKeyAuth: false,
-  allowBearerTokenAuth: true,
-  allowMultipleParameters: true,
-  allowOauth2: true,
-  projectType: ProjectType.Copilot,
-  allowMissingId: true,
-  allowSwagger: true,
-  allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  allowResponseSemantics: true,
-  allowConversationStarters: true,
-  allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
-};
+export function getParserOptions(type: ProjectType, isDeclarativeCopilot?: boolean): ParseOptions {
+  return type === ProjectType.Copilot
+    ? {
+        isGptPlugin: isDeclarativeCopilot,
+        allowAPIKeyAuth: false,
+        allowBearerTokenAuth: true,
+        allowMultipleParameters: true,
+        allowOauth2: true,
+        projectType: ProjectType.Copilot,
+        allowMissingId: true,
+        allowSwagger: true,
+        allowMethods: [
+          "get",
+          "post",
+          "put",
+          "delete",
+          "patch",
+          "head",
+          "connect",
+          "options",
+          "trace",
+        ],
+        allowResponseSemantics: true,
+        allowConversationStarters: true,
+        allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
+      }
+    : {
+        projectType: type,
+        allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+        allowMultipleParameters: true,
+        allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
+      };
+}
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
@@ -133,21 +153,14 @@ export async function listOperations(
     !!inputs[QuestionNames.PluginAvailability];
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
+  const projectType = isPlugin
+    ? ProjectType.Copilot
+    : isCustomApi
+    ? ProjectType.TeamsAi
+    : ProjectType.SME;
 
   try {
-    const specParserOptions = isPlugin
-      ? copilotPluginParserOptions
-      : isCustomApi
-      ? {
-          projectType: ProjectType.TeamsAi,
-        }
-      : {
-          projectType: ProjectType.SME,
-          allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-          allowMultipleParameters: true,
-          allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
-        };
-    const specParser = new SpecParser(apiSpecUrl as string, specParserOptions);
+    const specParser = new SpecParser(apiSpecUrl as string, getParserOptions(projectType));
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
@@ -191,7 +204,7 @@ export async function listOperations(
 
     let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
-      [telemetryProperties.generateType]: specParserOptions.projectType?.toString() ?? "",
+      [telemetryProperties.generateType]: projectType.toString(),
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
@@ -353,7 +366,7 @@ export async function listPluginExistingOperations(
     );
   }
 
-  const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
+  const specParser = new SpecParser(apiSpecFilePath, getParserOptions(ProjectType.Copilot));
   const listResult = await specParser.list();
   return listResult.APIs.map((o) => o.api);
 }

@@ -1631,7 +1631,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ApiAuth) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: ApiAuthOptions.none().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
@@ -1686,7 +1686,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ApiAuth) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: ApiAuthOptions.apiKey().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;

@@ -10,7 +10,6 @@ import { getLocalizedString } from "./localizeUtils";
 import { secretMasker } from "./secretmasker/masker";
 
 const SECRET_REPLACE = "<REDACTED:secret>";
-const USER_REPLACE = "<REDACTED:user>";
 
 export interface MaskSecretOptions {
   threshold?: number;
@@ -20,24 +19,9 @@ export interface MaskSecretOptions {
 
 export function maskSecret(inputText?: string, option?: MaskSecretOptions): string {
   if (!inputText) return "";
-  option = option || {};
-  // const threshold = option.threshold || MIN_ENTROPY;
-  // const whiteList = option.whiteList || WHITE_LIST;
-  const replace = option.replace || SECRET_REPLACE;
-  // mask by secret pattern
-  let output = maskByPattern(inputText);
-  // mask by .env.xxx.user
-  output = maskSecretFromEnv(output, replace);
-  // mask by entropy
+  const replace = option?.replace || SECRET_REPLACE;
+  let output = maskSecretFromEnv(inputText);
   output = secretMasker.maskSecret(output, replace);
-  return output;
-}
-
-function maskByPattern(command: string): string {
-  const regexU = /(-u|--username|--user) (\S+)/;
-  const regexP = /(-p|--password|--pwd|--secret|--credential) (\S+)/;
-  let output = command.replace(regexU, `$1 ${USER_REPLACE}`);
-  output = output.replace(regexP, `$1 ${SECRET_REPLACE}`);
   return output;
 }
 
@@ -46,7 +30,7 @@ export function maskSecretFromEnv(stdout: string, replace = SECRET_REPLACE): str
     if (key.startsWith("SECRET_")) {
       const value = process.env[key];
       if (value) {
-        stdout = stdout.replace(value, replace);
+        stdout = stdout.replace(new RegExp(value, "g"), replace);
       }
     }
   }

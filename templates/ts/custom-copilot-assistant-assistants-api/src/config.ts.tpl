@@ -10,7 +10,6 @@ const config = {
   {{#useAzureOpenAI}}
   azureOpenAIKey: process.env.AZURE_OPENAI_API_KEY,
   azureOpenAIEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
-  azureOpenAIDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
   azureOpenAIAssistantId: process.env.AZURE_OPENAI_ASSISTANT_ID,
   {{/useAzureOpenAI}}
 };

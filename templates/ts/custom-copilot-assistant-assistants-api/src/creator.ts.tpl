@@ -8,8 +8,18 @@ if (!openAIKey) {
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
 const azureOpenAIKey = process.argv[2];
-const azureOpenAIDeploymentName = process.argv[3];
-const azureOpenAIEndpoint = process.argv[4];
+{{#azureOpenAIEndpoint}}
+const azureOpenAIEndpoint='{{{azureOpenAIEndpoint}}}';
+{{/azureOpenAIEndpoint}}
+{{^azureOpenAIEndpoint}}
+const azureOpenAIEndpoint='';
+{{/azureOpenAIEndpoint}}
+{{#azureOpenAIDeploymentName}}
+const azureOpenAIDeploymentName='{{{azureOpenAIDeploymentName}}}';
+{{/azureOpenAIDeploymentName}}
+{{^azureOpenAIDeploymentName}}
+const azureOpenAIDeploymentName='';
+{{/azureOpenAIDeploymentName}}
 if (!azureOpenAIKey || !azureOpenAIDeploymentName || !azureOpenAIEndpoint) {
   throw new Error("Missing input Azure OpenAI Key, Deployment Name or Endpoint");
 }

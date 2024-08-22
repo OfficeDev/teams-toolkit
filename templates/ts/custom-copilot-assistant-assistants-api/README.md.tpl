@@ -70,26 +70,24 @@ Before running or debugging your bot, please follow these steps to setup your ow
    ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. After `npm install` completed, run command `npm run assistant:create -- <your-azure-openai-api-key> <your-azure-openai-deployment-name> <your-azure-openai-endpoint>`
+1. After `npm install` completed, run command `npm run assistant:create -- <your-azure-openai-api-key>`
    ```
-   > npm run assistant:create -- xxxxxx xxxxxx xxxxxx
+   > npm run assistant:create -- xxxxxx
    ```
 1. The above command will output something like "*Created a new assistant with an ID of: **asst_xxx...***"
-1. Fill in Azure OpenAI API Key, ednpoint, deployment name, and the created Assistant ID into `env/.env.*.user`
+1. Fill in Azure OpenAI API Key, ednpoint, and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
    AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
-   AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-azure-openai-model-delopyment-name>
    AZURE_OPENAI_ASSISTANT_ID=<your-azure-openai-assistant-id>
    ```
 
 **If you already have an Assistant created**
 
-1. Fill in Azure OpenAI API Key, ednpoint, deployment name, and the created Assistant ID into `env/.env.*.user`
+1. Fill in Azure OpenAI API Key, ednpoint, and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
    AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
-   AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-azure-openai-model-delopyment-name>
    AZURE_OPENAI_ASSISTANT_ID=<your-azure-openai-assistant-id>
    ```
 {{/useAzureOpenAI}}

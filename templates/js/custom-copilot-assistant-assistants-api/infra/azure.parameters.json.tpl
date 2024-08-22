@@ -17,9 +17,6 @@
     "azureOpenaiKey": {
       "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
     },
-    "azureOpenaiModelDeploymentName" : {
-      "value": "${{AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}"
-    },
     "azureOpenaiEndpoint" : {
       "value": "${{AZURE_OPENAI_ENDPOINT}}"
     },

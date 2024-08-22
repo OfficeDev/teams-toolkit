@@ -539,25 +539,6 @@ export function logValidationResults(
   void context.logProvider.info(outputMessage);
 }
 
-export async function isYamlFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
-}
-
 /**
  * Generate scaffolding warning summary.
  * @param warnings warnings returned from spec-parser.
@@ -835,6 +816,25 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
 
 export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
   return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
+}
+
+export async function isYamlSpecFile(specPath: string): Promise<boolean> {
+  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
+    return true;
+  } else if (specPath.endsWith(".json")) {
+    return false;
+  }
+  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
+  const fileContent = isRemoteFile
+    ? (await axios.get(specPath)).data
+    : await fs.readFile(specPath, "utf-8");
+
+  try {
+    JSON.parse(fileContent);
+    return false;
+  } catch (error) {
+    return true;
+  }
 }
 
 export function formatValidationErrors(

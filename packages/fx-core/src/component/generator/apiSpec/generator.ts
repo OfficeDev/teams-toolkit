@@ -56,7 +56,7 @@ import {
   generateFromApiSpec,
   generateScaffoldingSummary,
   getEnvName,
-  isYamlFile,
+  isYamlSpecFile,
   updateForCustomApi,
 } from "./helper";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
@@ -185,7 +185,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         : ProjectType.SME;
 
     try {
-      getTemplateInfosState.isYaml = await isYamlFile(getTemplateInfosState.url);
+      getTemplateInfosState.isYaml = await isYamlSpecFile(getTemplateInfosState.url);
     } catch (e) {}
 
     const openapiSpecFileName = getTemplateInfosState.isYaml

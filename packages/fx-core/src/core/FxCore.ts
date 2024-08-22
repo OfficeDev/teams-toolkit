@@ -106,7 +106,7 @@ import {
   defaultPluginManifestFileName,
   generateFromApiSpec,
   generateScaffoldingSummary,
-  isYamlFile,
+  isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
 } from "../component/generator/apiSpec/helper";
@@ -1899,7 +1899,7 @@ export class FxCore {
     // generate file path
     let isYaml: boolean;
     try {
-      isYaml = await isYamlFile(url);
+      isYaml = await isYamlSpecFile(url);
     } catch (e) {
       isYaml = false;
     }

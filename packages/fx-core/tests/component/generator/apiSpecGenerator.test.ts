@@ -42,7 +42,7 @@ import * as CopilotPluginHelper from "../../../src/component/generator/apiSpec/h
 import {
   formatValidationErrors,
   generateScaffoldingSummary,
-  isYamlFile,
+  isYamlSpecFile,
   listPluginExistingOperations,
 } from "../../../src/component/generator/apiSpec/helper";
 import {
@@ -332,30 +332,30 @@ describe("isYamlFile", () => {
     sinon.restore();
   });
   it("should return false for a valid JSON file", async () => {
-    const result = await isYamlFile("test.json");
+    const result = await isYamlSpecFile("test.json");
     expect(result).to.be.false;
   });
 
   it("should return true for an yaml file", async () => {
-    const result = await isYamlFile("test.yaml");
+    const result = await isYamlSpecFile("test.yaml");
     expect(result).to.be.true;
   });
 
   it("should handle local json files", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
-    const result = await isYamlFile("path/to/localfile");
+    const result = await isYamlSpecFile("path/to/localfile");
     expect(result).to.be.false;
   });
 
   it("should handle remote files", async () => {
     const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
-    const result = await isYamlFile("http://example.com/remotefile");
+    const result = await isYamlSpecFile("http://example.com/remotefile");
     expect(result).to.be.false;
   });
 
   it("should return true if it is a yaml file", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
-    const result = await isYamlFile("path/to/localfile");
+    const result = await isYamlSpecFile("path/to/localfile");
     expect(result).to.be.true;
   });
 });
@@ -1502,7 +1502,7 @@ describe("SpecGenerator", async () => {
       };
       inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
       inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
-      sandbox.stub(CopilotPluginHelper, "isYamlFile").throws();
+      sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").throws();
       const res = await generator.getTemplateInfos(context, inputs, ".", { telemetryProps: {} });
       assert.isTrue(res.isOk());
       if (res.isOk()) {

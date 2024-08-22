@@ -91,7 +91,15 @@
       "remotedebug-aichat-bot-py-azureopenai-win-only",
       "remotedebug-aichat-bot-py-openai-win-only",
       "remotedebug-aichat-bot-ts-azureopenai-win-only",
-      "remotedebug-aichat-bot-ts-openai-win-only"
+      "remotedebug-aichat-bot-ts-openai-win-only",
+      "remotedebug-chatdata-customapi-js-azureopenai-win-only",
+      "remotedebug-chatdata-customapi-js-openai-win-only",
+      "remotedebug-chatdata-customapi-ts-azureopenai-win-only",
+      "remotedebug-chatdata-customapi-ts-openai-win-only",
+      "remotedebug-chatdata-customapi-py-azureopenai-win-only",
+      "remotedebug-chatdata-customapi-py-openai-win-only"
+      
+
     ],
     "node-20": ["localdebug-obo-tab"]
   },
@@ -151,7 +159,13 @@
       "localdebug-aichat-bot-py-azureopenai",
       "localdebug-aichat-bot-py-openai",
       "localdebug-aichat-bot-ts-azureopenai",
-      "localdebug-aichat-bot-ts-openai"
+      "localdebug-aichat-bot-ts-openai",
+      "localdebug-chatdata-customapi-js-azureopenai",
+      "localdebug-chatdata-customapi-js-openai",
+      "localdebug-chatdata-customapi-ts-azureopenai",
+      "localdebug-chatdata-customapi-ts-openai",
+      "localdebug-chatdata-customapi-py-azureopenai",
+      "localdebug-chatdata-customapi-py-openai"
     ],
     "node-20": ["localdebug-obo-tab"]
   },

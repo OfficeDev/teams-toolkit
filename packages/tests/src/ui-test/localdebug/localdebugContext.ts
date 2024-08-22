@@ -35,6 +35,7 @@ export type LocalDebugTestName =
   | "aichat"
   | "aiagent"
   | "chatdata"
+  | "cdcustomapi"
   | "msgnewapi"
   | "msgapikey"
   | "msgmicroentra";
@@ -321,6 +322,14 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth microsoft-entra --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "cdcustomapi": //chat data customApi
+        const apiSpecPath =
+          "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/real-no-auth.yaml";
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --llm-service ${this.llmServiceType} --programming-language ${this.lang}  --openapi-spec-location ${apiSpecPath} --api-operation "GET /repairs" --telemetry false`
         );
         break;
     }

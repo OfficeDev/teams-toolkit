@@ -67,12 +67,17 @@ Before running or debugging your bot, please follow these steps to setup your ow
    ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. After `npm install` completed, run command `npm run assistant:create -- <your-azure-openai-api-key>`
+1. After `npm install` completed, fill in both Azure OpenAI API Endpoint and Azure OpenAI API Deployment name into `src/creator.js`
+   ```
+   const azureOpenAIEndpoint="<your-azure-openai-endpoint>";
+   const azureOpenAIDeploymentName="<your-azure-openai-delopyment-name>";
+   ```
+1. Run command `npm run assistant:create -- <your-azure-openai-api-key>`
    ```
    > npm run assistant:create -- xxxxxx
    ```
 1. The above command will output something like "*Created a new assistant with an ID of: **asst_xxx...***"
-1. Fill in Azure OpenAI API Key, ednpoint, and the created Assistant ID into `env/.env.*.user`
+1. Fill in Azure OpenAI API Key, endpoint, and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
    AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
@@ -81,7 +86,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **If you already have an Assistant created**
 
-1. Fill in Azure OpenAI API Key, ednpoint, and the created Assistant ID into `env/.env.*.user`
+1. Fill in Azure OpenAI API Key, endpoint, and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
    AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>

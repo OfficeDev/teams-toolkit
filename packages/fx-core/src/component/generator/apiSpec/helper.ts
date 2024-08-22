@@ -458,13 +458,9 @@ export async function generateFromApiSpec(
         }
       });
       warnings.push(...generateResult.warnings);
-
-      return ok({
-        warnings,
-      });
-    } else {
-      return ok({ warnings: [] });
     }
+
+    return ok({ warnings });
   } catch (e) {
     let error: FxError;
     if (e instanceof SpecParserError) {

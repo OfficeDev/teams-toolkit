@@ -36,23 +36,28 @@ This app template also demonstrates usage of techniques like:
 1. In file *env/.env.local.user*, fill in your Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT`.
 
 ### Setting up index and documents
-1. Necessary keys will be loaded from *./.env*. Please create a file *./.env* and fill in the following keys.
+1. Please config the following keys in `./src/indexers/setup.py`.
 {{#useOpenAI}}
     ```
-    OPENAI_API_KEY=
-    AZURE_SEARCH_KEY=
-    AZURE_SEARCH_ENDPOINT=
+    config = {
+        'OPENAI_API_KEY': '<your-openai-api-key>',
+        'AZURE_SEARCH_KEY': '<your-azure-search-key>',
+        'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'
+    }
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
     ```
-    AZURE_OPENAI_API_KEY=
-    AZURE_OPENAI_ENDPOINT=
-    AZURE_OPENAI_EMBEDDING_DEPLOYMENT=
-    AZURE_SEARCH_KEY=
-    AZURE_SEARCH_ENDPOINT=
+    config = {
+        'AZURE_OPENAI_API_KEY': '<your-azure-openai-api-key>',
+        'AZURE_OPENAI_ENDPOINT': '<your-azure-openai-endpoint>',
+        'AZURE_OPENAI_EMBEDDING_DEPLOYMENT': '<your-azure-openai-embedding-deployment>',
+        'AZURE_SEARCH_KEY': '<your-azure-search-key>',
+        'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'
+    }
     ```
 {{/useAzureOpenAI}}
+
 1. Use command `python src/indexers/setup.py` to create index and upload documents in `src/indexers/data`.
 1. You will see the following information indicated the success of setup:
     ```
@@ -60,7 +65,13 @@ This app template also demonstrates usage of techniques like:
     Upload new documents succeeded. If they do not exist, wait for several seconds...
     setup finished
     ```
-1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python src/indexers/delete.py`.
+1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python src/indexers/delete.py`. Please configure the following keys in `./src/indexers/delete.py`.
+    ```
+    config = {
+        'AZURE_SEARCH_KEY': '<your-azure-search-key>',
+        'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'
+    }
+    ```
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.

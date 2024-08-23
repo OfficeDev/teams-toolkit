@@ -29,7 +29,21 @@ from get_data import get_doc_data
 
 from dotenv import load_dotenv
 
-load_dotenv(f'{os.getcwd()}/.env', override=True)
+{{#useOpenAI}}
+config = {
+    'OPENAI_API_KEY': '<your-openai-api-key>',
+    'AZURE_SEARCH_KEY': '<your-azure-search-key>',
+    'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'
+}
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+config = {
+    'AZURE_OPENAI_API_KEY': '<your-azure-openai-api-key>',
+    'AZURE_OPENAI_ENDPOINT': '<your-azure-openai-endpoint>',
+    'AZURE_OPENAI_EMBEDDING_DEPLOYMENT': '<your-azure-openai-embedding-deployment>',
+    'AZURE_SEARCH_KEY': '<your-azure-search-key>',
+    'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'
+}
 
 @dataclass
 class Doc:
@@ -75,14 +89,14 @@ async def setup(search_api_key, search_api_endpoint):
 
     {{#useAzureOpenAI}}
     embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
-        azure_api_key=os.getenv('AZURE_OPENAI_API_KEY'),
-        azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
-        azure_deployment=os.getenv('AZURE_OPENAI_EMBEDDING_DEPLOYMENT')
+        azure_api_key=config['AZURE_OPENAI_API_KEY'],
+        azure_endpoint=config['AZURE_OPENAI_ENDPOINT'],
+        azure_deployment=config['AZURE_OPENAI_EMBEDDING_DEPLOYMENT']
     ))
     {{/useAzureOpenAI}}
     {{#useOpenAI}}
     embeddings=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
-        api_key=os.getenv('OPENAI_API_KEY'),
+        api_key=config['OPENAI_API_KEY'],
         model='text-embedding-ada-002'
     ))
     {{/useOpenAI}}
@@ -91,8 +105,8 @@ async def setup(search_api_key, search_api_endpoint):
 
     print("Upload new documents succeeded. If they do not exist, wait for several seconds...")
     
-search_api_key = os.getenv('AZURE_SEARCH_KEY')
-search_api_endpoint = os.getenv('AZURE_SEARCH_ENDPOINT')
+search_api_key = config['AZURE_SEARCH_KEY']
+search_api_endpoint = config['AZURE_SEARCH_ENDPOINT']
 asyncio.run(setup(search_api_key, search_api_endpoint))
 print("setup finished")
 

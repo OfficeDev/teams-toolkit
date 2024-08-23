@@ -55,9 +55,11 @@ Before running or debugging your bot, please follow these steps to setup your ow
 {{/useAzureOpenAI}}
 
 {{#useOpenAI}}
-1. Necessary keys will be loaded from *./.env*. Please create a file *./.env* and fill in the following key.
+1. Please config the following key in `./src/utils/creator.py`.
    ```
-   OPENAI_API_KEY=<your-openai-api-key>
+   config = {
+      'OPENAI_API_KEY': '<your-openai-api-key>'
+   }
    ```
    Run command `python src/utils/creator.py`.
    ```
@@ -79,11 +81,13 @@ Before running or debugging your bot, please follow these steps to setup your ow
    ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. Necessary keys will be loaded from *./.env*. Please create a file *./.env* and fill in the following keys.
+1. Please config the following keys in `./src/utils/creator.py`.
    ```
-   AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
-   AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
-   AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-azure-openai-model-delopyment-name>
+   config = {
+      'AZURE_OPENAI_API_KEY': '<your-azure-openai-api-key>',
+      'AZURE_OPENAI_ENDPOINT': '<your-azure-openai-endpoint>',
+      'AZURE_OPENAI_MODEL_DEPLOYMENT_NAME': '<your-azure-openai-model-deployment-name>'
+   }
    ```
    Run command `python src/utils/creator.py`.
    ```

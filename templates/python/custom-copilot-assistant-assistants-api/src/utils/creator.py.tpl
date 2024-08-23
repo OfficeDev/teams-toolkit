@@ -6,7 +6,17 @@ from openai.types.shared_params import FunctionDefinition
 
 from dotenv import load_dotenv
 
-load_dotenv(f'{os.getcwd()}/.env', override=True)
+{{#useOpenAI}}
+config = {
+    'OPENAI_API_KEY': '<your-openai-api-key>'
+}
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+config = {
+    'AZURE_OPENAI_API_KEY': '<your-azure-openai-api-key>',
+    'AZURE_OPENAI_ENDPOINT': '<your-azure-openai-endpoint>',
+    'AZURE_OPENAI_MODEL_DEPLOYMENT_NAME': '<your-azure-openai-model-deployment-name>'
+}
 
 async def main():
     options = AssistantCreateParams(
@@ -63,19 +73,19 @@ async def main():
         model="gpt-3.5-turbo",
         {{/useOpenAI}}
         {{#useAzureOpenAI}}
-        model=os.getenv("AZURE_OPENAI_MODEL_DEPLOYMENT_NAME"),
+        model=config['AZURE_OPENAI_MODEL_DEPLOYMENT_NAME'],
         {{/useAzureOpenAI}}
     )
 
     {{#useOpenAI}}
-    assistant = await AssistantsPlanner.create_assistant(api_key=os.getenv("OPENAI_API_KEY"), api_version="", organization="", endpoint="", request=options)
+    assistant = await AssistantsPlanner.create_assistant(api_key=config['OPENAI_API_KEY'], api_version="", organization="", endpoint="", request=options)
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     assistant = await AssistantsPlanner.create_assistant(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"), 
+        api_key=config['AZURE_OPENAI_API_KEY'], 
         api_version="", 
         organization="", 
-        endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), 
+        endpoint=config['AZURE_OPENAI_ENDPOINT'], 
         request=options
     )
     {{/useAzureOpenAI}}

@@ -327,7 +327,7 @@ describe("generateScaffoldingSummary", async () => {
   });
 });
 
-describe("isYamlSpecFile", () => {
+describe("isYamlFile", () => {
   afterEach(() => {
     sinon.restore();
   });

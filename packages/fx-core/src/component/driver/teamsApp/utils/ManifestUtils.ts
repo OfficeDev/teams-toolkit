@@ -68,7 +68,7 @@ export class ManifestUtils {
     try {
       content = fs.readFileSync(filePath, { encoding: "utf-8" });
     } catch (e) {
-      return err(new ReadFileError(e, "common"));
+      return err(new ReadFileError(e, "ManifestUtils"));
     }
     content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);

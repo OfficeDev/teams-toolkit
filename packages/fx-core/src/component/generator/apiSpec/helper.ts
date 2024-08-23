@@ -30,6 +30,7 @@ import {
   Inputs,
   ManifestTemplateFileName,
   ManifestUtil,
+  Platform,
   Result,
   SystemError,
   TeamsAppManifest,
@@ -38,14 +39,13 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
 import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { assembleError, MissingRequiredInputError } from "../../../error";
 import {
   apiPluginApiSpecOptionId,
   CustomCopilotRagOptions,
@@ -55,7 +55,9 @@ import {
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { sendTelemetryErrorEvent } from "../../../common/telemetry";
+import { sendTelemetryErrorEvent, TelemetryProperty } from "../../../common/telemetry";
+import * as util from "util";
+import axios from "axios";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -69,6 +71,7 @@ const enum telemetryProperties {
   otherAuthCount = "other-auth-count",
   isFromAddingApi = "is-from-adding-api",
   failedReason = "failed-reason",
+  generateType = "generate-type",
 }
 
 const enum telemetryEvents {
@@ -77,19 +80,39 @@ const enum telemetryEvents {
   failedToGetGenerateWarning = "failed-to-get-generate-warning",
 }
 
-export const copilotPluginParserOptions: ParseOptions = {
-  allowAPIKeyAuth: false,
-  allowBearerTokenAuth: true,
-  allowMultipleParameters: true,
-  allowOauth2: true,
-  projectType: ProjectType.Copilot,
-  allowMissingId: true,
-  allowSwagger: true,
-  allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  allowResponseSemantics: true,
-  allowConversationStarters: true,
-  allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
-};
+export function getParserOptions(type: ProjectType, isDeclarativeCopilot?: boolean): ParseOptions {
+  return type === ProjectType.Copilot
+    ? {
+        isGptPlugin: isDeclarativeCopilot,
+        allowAPIKeyAuth: false,
+        allowBearerTokenAuth: true,
+        allowMultipleParameters: true,
+        allowOauth2: true,
+        projectType: ProjectType.Copilot,
+        allowMissingId: true,
+        allowSwagger: true,
+        allowMethods: [
+          "get",
+          "post",
+          "put",
+          "delete",
+          "patch",
+          "head",
+          "connect",
+          "options",
+          "trace",
+        ],
+        allowResponseSemantics: true,
+        allowConversationStarters: true,
+        allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
+      }
+    : {
+        projectType: type,
+        allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+        allowMultipleParameters: true,
+        allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
+      };
+}
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
@@ -130,22 +153,14 @@ export async function listOperations(
     !!inputs[QuestionNames.PluginAvailability];
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
+  const projectType = isPlugin
+    ? ProjectType.Copilot
+    : isCustomApi
+    ? ProjectType.TeamsAi
+    : ProjectType.SME;
 
   try {
-    const specParser = new SpecParser(
-      apiSpecUrl as string,
-      isPlugin
-        ? copilotPluginParserOptions
-        : isCustomApi
-        ? {
-            projectType: ProjectType.TeamsAi,
-          }
-        : {
-            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: true,
-            allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
-          }
-    );
+    const specParser = new SpecParser(apiSpecUrl as string, getParserOptions(projectType));
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
@@ -189,6 +204,7 @@ export async function listOperations(
 
     let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
+      [telemetryProperties.generateType]: projectType.toString(),
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
@@ -350,9 +366,110 @@ export async function listPluginExistingOperations(
     );
   }
 
-  const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
+  const specParser = new SpecParser(apiSpecFilePath, getParserOptions(ProjectType.Copilot));
   const listResult = await specParser.list();
   return listResult.APIs.map((o) => o.api);
+}
+
+interface SpecParserOutputFilePath {
+  destinationApiSpecFilePath: string;
+  pluginManifestFilePath?: string;
+  responseTemplateFolder?: string;
+}
+
+interface SpecParserGenerateResult {
+  warnings: WarningResult[];
+}
+export async function generateFromApiSpec(
+  specParser: SpecParser,
+  teamsManifestPath: string,
+  inputs: Inputs,
+  context: Context,
+  sourceComponent: string,
+  projectType: ProjectType,
+  outputFilePath: SpecParserOutputFilePath
+): Promise<Result<SpecParserGenerateResult, FxError>> {
+  const operations = inputs[QuestionNames.ApiOperation] as string[];
+  const validationRes = await specParser.validate();
+  const warnings = validationRes.warnings;
+  const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+
+  if (operationIdWarning && operationIdWarning.data) {
+    const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+      operations.includes(api)
+    );
+    if (apisMissingOperationId.length > 0) {
+      operationIdWarning.content = util.format(
+        getLocalizedString("core.common.MissingOperationId"),
+        apisMissingOperationId.join(", ")
+      );
+      delete operationIdWarning.data;
+    } else {
+      warnings.splice(warnings.indexOf(operationIdWarning), 1);
+    }
+  }
+
+  const specVersionWarning = warnings.find((w) => w.type === WarningType.ConvertSwaggerToOpenAPI);
+  if (specVersionWarning) {
+    specVersionWarning.content = ""; // We don't care content of this warning
+  }
+
+  if (validationRes.status === ValidationStatus.Error) {
+    logValidationResults(validationRes.errors, warnings, context, false, true);
+    const errorMessage =
+      inputs.platform === Platform.VSCode
+        ? getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+          )
+        : getLocalizedString("core.createProjectQuestion.apiSpec.multipleValidationErrors.message");
+    return err(new UserError(sourceComponent, invalidApiSpecErrorName, errorMessage, errorMessage));
+  }
+
+  try {
+    const generateResult =
+      projectType === ProjectType.Copilot
+        ? await specParser.generateForCopilot(
+            teamsManifestPath,
+            operations,
+            outputFilePath.destinationApiSpecFilePath,
+            outputFilePath.pluginManifestFilePath!
+          )
+        : await specParser.generate(
+            teamsManifestPath,
+            operations,
+            outputFilePath.destinationApiSpecFilePath,
+            projectType === ProjectType.TeamsAi ? undefined : outputFilePath.responseTemplateFolder
+          );
+
+    // Send SpecParser.generate() warnings
+    context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+      [telemetryProperties.generateType]: projectType.toString(),
+      [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+      [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+        .map((w) => w.type.toString() + ": " + w.content)
+        .join(";"),
+      [TelemetryProperty.Component]: sourceComponent,
+    });
+
+    if (generateResult.warnings && generateResult.warnings.length > 0) {
+      generateResult.warnings.find((o) => {
+        if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+          o.content = ""; // We don't care content of this warning
+        }
+      });
+      warnings.push(...generateResult.warnings);
+    }
+
+    return ok({ warnings });
+  } catch (e) {
+    let error: FxError;
+    if (e instanceof SpecParserError) {
+      error = convertSpecParserErrorToFxError(e);
+    } else {
+      error = assembleError(e, sourceComponent);
+    }
+    return err(error);
+  }
 }
 
 export function logValidationResults(

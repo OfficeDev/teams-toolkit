@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { AuthType, SpecParser, SpecParserError, Utils } from "@microsoft/m365-spec-parser";
+import {
+  AuthType,
+  ProjectType,
+  SpecParser,
+  SpecParserError,
+  Utils,
+} from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -93,18 +99,16 @@ import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   convertSpecParserErrorToFxError,
-  copilotPluginParserOptions,
   defaultApiSpecFolderName,
   defaultApiSpecJsonFileName,
   defaultApiSpecYamlFileName,
   defaultPluginManifestFileName,
+  generateFromApiSpec,
   generateScaffoldingSummary,
+  getParserOptions,
   isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
-  specParserGenerateResultAllSuccessTelemetryProperty,
-  specParserGenerateResultTelemetryEvent,
-  specParserGenerateResultWarningsTelemetryProperty,
 } from "../component/generator/apiSpec/helper";
 import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
@@ -1604,47 +1608,41 @@ export class FxCore {
     // Merge existing operations in manifest.json
     const specParser = new SpecParser(
       url,
-      isPlugin
-        ? copilotPluginParserOptions
-        : {
-            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: true,
-          }
+      getParserOptions(isPlugin ? ProjectType.Copilot : ProjectType.SME)
     );
-
-    const listResult = await specParser.list();
-    const apiResultList = listResult.APIs.filter((value) => value.isValid);
-
-    let existingOperations: string[];
-    let outputApiSpecPath: string;
-    if (isPlugin) {
-      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
-        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
-      }
-      outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
-      existingOperations = await listPluginExistingOperations(
-        manifestRes.value,
-        manifestPath,
-        inputs[QuestionNames.DestinationApiSpecFilePath]
-      );
-    } else {
-      const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
-      existingOperations = apiResultList
-        .filter((operation) => existingOperationIds.includes(operation.operationId))
-        .map((operation) => operation.api);
-      const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-      outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
-    }
-
-    const operations = [...existingOperations, ...newOperations];
-
-    const adaptiveCardFolder = path.join(
-      inputs.projectPath!,
-      AppPackageFolderName,
-      ResponseTemplatesFolderName
-    );
-
     try {
+      const listResult = await specParser.list();
+      const apiResultList = listResult.APIs.filter((value) => value.isValid);
+
+      let existingOperations: string[];
+      let outputApiSpecPath: string;
+      if (isPlugin) {
+        if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
+          return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
+        }
+        outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+        existingOperations = await listPluginExistingOperations(
+          manifestRes.value,
+          manifestPath,
+          inputs[QuestionNames.DestinationApiSpecFilePath]
+        );
+      } else {
+        const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+        existingOperations = apiResultList
+          .filter((operation) => existingOperationIds.includes(operation.operationId))
+          .map((operation) => operation.api);
+        const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+        outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+      }
+
+      const operations = [...existingOperations, ...newOperations];
+
+      const adaptiveCardFolder = path.join(
+        inputs.projectPath!,
+        AppPackageFolderName,
+        ResponseTemplatesFolderName
+      );
+
       const authNames: Set<string> = new Set();
       const serverUrls: Set<string> = new Set();
       let authScheme: AuthType | undefined = undefined;
@@ -1697,16 +1695,9 @@ export class FxCore {
         }
       }
 
-      let generateResult;
       let pluginPath: string | undefined;
-      if (!isPlugin) {
-        generateResult = await specParser.generate(
-          manifestPath,
-          operations,
-          outputApiSpecPath,
-          adaptiveCardFolder
-        );
-      } else {
+
+      if (isPlugin) {
         const pluginPathRes = await manifestUtils.getPluginFilePath(
           manifestRes.value,
           manifestPath
@@ -1715,26 +1706,28 @@ export class FxCore {
           return err(pluginPathRes.error);
         }
         pluginPath = pluginPathRes.value;
-        generateResult = await specParser.generateForCopilot(
-          manifestPath,
-          operations,
-          outputApiSpecPath,
-          pluginPathRes.value
-        );
+      }
+      const generateResult = await generateFromApiSpec(
+        specParser,
+        manifestPath,
+        inputs,
+        context,
+        CoreTelemetryComponentName,
+        isPlugin ? ProjectType.Copilot : ProjectType.SME,
+        {
+          destinationApiSpecFilePath: outputApiSpecPath,
+          responseTemplateFolder: adaptiveCardFolder,
+          pluginManifestFilePath: pluginPath,
+        }
+      );
+
+      if (generateResult.isErr()) {
+        return err(generateResult.error);
       }
 
-      // Send SpecParser.generate() warnings
-      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
-        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
-          .map((w) => w.type.toString() + ": " + w.content)
-          .join(";"),
-        [TelemetryProperty.Component]: CoreTelemetryComponentName,
-      });
-
-      if (generateResult.warnings && generateResult.warnings.length > 0) {
+      if (generateResult.value.warnings && generateResult.value.warnings.length > 0) {
         const warnSummary = await generateScaffoldingSummary(
-          generateResult.warnings,
+          generateResult.value.warnings,
           manifestRes.value,
           path.relative(inputs.projectPath!, outputApiSpecPath),
           pluginPath === undefined ? undefined : path.relative(inputs.projectPath!, pluginPath),
@@ -1836,7 +1829,6 @@ export class FxCore {
     if (!inputs.projectPath) {
       throw new Error("projectPath is undefined"); // should never happen
     }
-    const operations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation];
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const appPackageFolder = path.dirname(manifestPath);
@@ -1927,43 +1919,33 @@ export class FxCore {
     }
     const pluginManifestFilePath = path.join(appPackageFolder, pluginManifestName);
 
-    // generate plugin related files
-    const specParser = new SpecParser(url, { ...copilotPluginParserOptions, isGptPlugin: true });
-    try {
-      const generateResult = await specParser.generateForCopilot(
-        manifestPath,
-        operations,
-        openApiSpecFilePath,
-        pluginManifestFilePath
+    const specParser = new SpecParser(url, getParserOptions(ProjectType.Copilot, true));
+    const generateRes = await generateFromApiSpec(
+      specParser,
+      manifestPath,
+      inputs,
+      context,
+      CoreTelemetryComponentName,
+      ProjectType.Copilot,
+      {
+        destinationApiSpecFilePath: openApiSpecFilePath,
+        pluginManifestFilePath: pluginManifestFilePath,
+      }
+    );
+    if (generateRes.isErr()) {
+      return err(generateRes.error);
+    }
+
+    const warnings = generateRes.value.warnings;
+    if (warnings && warnings.length > 0) {
+      const warnSummary = await generateScaffoldingSummary(
+        warnings,
+        manifestRes.value,
+        path.relative(inputs.projectPath, openApiSpecFilePath),
+        path.relative(inputs.projectPath, pluginManifestFilePath),
+        inputs.projectPath
       );
-
-      // Send SpecParser.generate() warnings
-      context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
-        [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
-          .map((w) => w.type.toString() + ": " + w.content)
-          .join(";"),
-        [TelemetryProperty.Component]: CoreTelemetryComponentName,
-      });
-
-      if (generateResult.warnings && generateResult.warnings.length > 0) {
-        const warnSummary = await generateScaffoldingSummary(
-          generateResult.warnings,
-          manifestRes.value,
-          path.relative(inputs.projectPath, openApiSpecFilePath),
-          path.relative(inputs.projectPath, pluginManifestFilePath),
-          inputs.projectPath
-        );
-        context.logProvider.info(warnSummary + "\n");
-      }
-    } catch (e) {
-      let error: FxError;
-      if (e instanceof SpecParserError) {
-        error = convertSpecParserErrorToFxError(e);
-      } else {
-        error = assembleError(e);
-      }
-      return err(error);
+      context.logProvider.info(warnSummary + "\n");
     }
 
     // update Teams manifest

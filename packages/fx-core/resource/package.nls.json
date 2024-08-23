@@ -339,7 +339,7 @@
   "core.createProjectQuestion.capability.customCopilotRagMicrosoft365Option.detail": "Load your data from Microsoft Graph and SharePoint",
   "core.createProjectQuestion.capability.customCopilotRag.title": "Chat With Your Data",
   "core.createProjectQuestion.capability.customCopilotRag.placeholder": "Select an option to load your data",
-  "core.createProjectQuestion.capability.customCopilotAssistantNewOption.label": "Build New",
+  "core.createProjectQuestion.capability.customCopilotAssistantNewOption.label": "Build from Scratch",
   "core.createProjectQuestion.capability.customCopilotAssistantNewOption.detail": "Build your own AI Agent from scratch using Teams AI Library",
   "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.label": "Build with Assistants API",
   "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.detail": "Build an AI agent with OpenAI Assistants API and Teams AI Library",

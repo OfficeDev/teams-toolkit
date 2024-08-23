@@ -59,6 +59,13 @@ describe("copilotExtension", async () => {
       info = await generator.getTemplateInfos(context, inputs, ".");
       assert.isTrue(res);
       assert.equal(info.isOk() && info.value[0].templateName, "api-plugin-from-scratch-oauth");
+
+      inputs[QuestionNames.ApiAuth] = ApiAuthOptions.microsoftEntra().id;
+      res = await generator.activate(context, inputs);
+      info = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res);
+      assert.equal(info.isOk() && info.value[0].templateName, "api-plugin-from-scratch-oauth");
+
       if (info.isOk()) {
         const filterFn = info.value[0].filterFn;
         assert.isFalse(filterFn?.("repairDeclarativeCopilot.json"));

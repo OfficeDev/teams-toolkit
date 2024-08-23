@@ -3,8 +3,10 @@
 param resourceBaseName string
 param functionAppSKU string
 param aadAppClientId string
+{{^MicrosoftEntra}}
 @secure()
 param aadAppClientSecret string
+{{/MicrosoftEntra}}
 param aadAppTenantId string
 param aadAppOauthAuthorityHost string
 param location string = resourceGroup().location
@@ -52,10 +54,12 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'M365_CLIENT_ID'
           value: aadAppClientId
         }
+{{^MicrosoftEntra}}
         {
           name: 'M365_CLIENT_SECRET'
           value: aadAppClientSecret
         }
+{{/MicrosoftEntra}}
         {
           name: 'M365_TENANT_ID'
           value: aadAppTenantId
@@ -82,7 +86,6 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
       requireAuthentication: true
       unauthenticatedClientAction: 'Return401'
     }
-
     identityProviders: {
       azureActiveDirectory: {
         enabled: true

@@ -3,13 +3,16 @@
 param resourceBaseName string
 param functionAppSKU string
 param aadAppClientId string
+{{^MicrosoftEntra}}
 @secure()
 param aadAppClientSecret string
+{{/MicrosoftEntra}}
 param aadAppTenantId string
 param aadAppOauthAuthorityHost string
 param location string = resourceGroup().location
 param serverfarmsName string = resourceBaseName
 param functionAppName string = resourceBaseName
+
 
 // Compute resources for Azure Functions
 resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
@@ -51,10 +54,12 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'M365_CLIENT_ID'
           value: aadAppClientId
         }
+{{^MicrosoftEntra}}
         {
           name: 'M365_CLIENT_SECRET'
           value: aadAppClientSecret
         }
+{{/MicrosoftEntra}}
         {
           name: 'M365_TENANT_ID'
           value: aadAppTenantId

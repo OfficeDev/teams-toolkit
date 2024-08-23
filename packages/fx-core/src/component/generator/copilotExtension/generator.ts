@@ -5,7 +5,17 @@
  * @author yuqzho@microsoft.com
  */
 
-import { Context, FxError, GeneratorResult, Inputs, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  AppPackageFolderName,
+  Context,
+  err,
+  FxError,
+  GeneratorResult,
+  Inputs,
+  ManifestTemplateFileName,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import {
   ApiAuthOptions,
@@ -21,6 +31,9 @@ import { TemplateNames } from "../templates/templateNames";
 import { TemplateInfo } from "../templates/templateInfo";
 import { featureFlagManager, FeatureFlags } from "../../../common/featureFlags";
 import { declarativeCopilotInstructionFileName } from "../constant";
+import { addExistingPlugin } from "./helper";
+import path from "path";
+import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 
 const enum telemetryProperties {
   templateName = "template-name",
@@ -112,13 +125,42 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
     );
   }
 
-  public post(
+  public async post(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<GeneratorResult, FxError>> {
-    return Promise.resolve(ok({}));
+    const isAddingFromExistingPlugin =
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.existingPlugin().id;
+    if (isAddingFromExistingPlugin) {
+      const teamsManifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+      const declarativeCopilotManifestPathRes = await copilotGptManifestUtils.getManifestPath(
+        teamsManifestPath
+      );
+      if (declarativeCopilotManifestPathRes.isErr()) {
+        return err(declarativeCopilotManifestPathRes.error);
+      }
+      const addPluginRes = await addExistingPlugin(
+        declarativeCopilotManifestPathRes.value,
+        inputs[QuestionNames.PluginManifestFilePath],
+        inputs[QuestionNames.PluginOpenApiSpecFilePath],
+        "action_1",
+        context
+      );
+
+      if (addPluginRes.isErr()) {
+        return err(addPluginRes.error);
+      } else {
+        return ok({});
+      }
+    } else {
+      return ok({});
+    }
   }
 }
 

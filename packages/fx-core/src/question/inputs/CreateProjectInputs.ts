@@ -62,7 +62,11 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Create Declarative Copilot */
   "with-plugin"?: "no" | "yes";
   /** @description Create API Plugin */
-  "api-plugin-type"?: "new-api" | "api-spec";
+  "api-plugin-type"?: "new-api" | "api-spec" | "existing-plugin";
+  /** @description Import from Existing - Upload files */
+  "plugin-manifest-path"?: string;
+  /** @description Import from Existing - Upload files */
+  "plugin-opeanapi-spec-path"?: string;
   /** @description Authentication Type */
   "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
   /** @description Chat With Your Data */

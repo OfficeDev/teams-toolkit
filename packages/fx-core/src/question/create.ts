@@ -11,6 +11,7 @@ import {
   OptionItem,
   Platform,
   SingleFileOrInputQuestion,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   StaticOptions,
@@ -43,7 +44,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "../component/driver/teamsApp/utils/utils";
-import { listOperations } from "../component/generator/apiSpec/helper";
+import { getParserOptions, listOperations } from "../component/generator/apiSpec/helper";
 import {
   IOfficeAddinHostConfig,
   OfficeAddinProjectConfig,
@@ -71,6 +72,8 @@ import {
   capabilitiesHavePythonOption,
   getRuntime,
 } from "./constants";
+import { ErrorType, ProjectType, SpecParser } from "@microsoft/m365-spec-parser";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -1302,8 +1305,72 @@ function apiPluginStartQuestion(): SingleSelectQuestion {
         : getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.placeholder");
     },
     cliDescription: "API plugin type.",
-    staticOptions: ApiPluginStartOptions.all(),
+    staticOptions: ApiPluginStartOptions.staticAll(),
+    dynamicOptions: (inputs: Inputs) => {
+      return ApiPluginStartOptions.all(inputs);
+    },
     default: ApiPluginStartOptions.newApi().id,
+  };
+}
+
+function pluginManifestQuestion(): SingleFileQuestion {
+  return {
+    type: "singleFile",
+    name: QuestionNames.PluginManifestFilePath,
+    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.title"),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.addExistingPlugin.pluginManifest.placeholder"
+    ),
+    cliDescription: "Plugin manifest path.",
+    innerStep: 1,
+    innerTotalStep: 2,
+    filters: {
+      files: ["json"],
+    },
+    default: "",
+    validation: {
+      validFunc: async (input: string) => {
+        const manifestRes = await pluginManifestUtils.readPluginManifestFile(input);
+        if (manifestRes.isErr()) {
+          return manifestRes.error.message;
+        } else {
+          const manifest = manifestRes.value;
+
+          return manifest.schema_version &&
+            manifest.name_for_human &&
+            manifest.description_for_human
+            ? undefined
+            : "Missing required properties";
+        }
+      },
+    },
+  };
+}
+
+function pluginApiSpecQuestion(): SingleFileQuestion {
+  return {
+    type: "singleFile",
+    name: QuestionNames.PluginOpenApiSpecFilePath,
+    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.title"),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.addExistingPlugin.openApiSpec.placeholder"
+    ),
+    cliDescription: "OpenAPI description document used for your API plugin.",
+    innerStep: 2,
+    innerTotalStep: 2,
+    filters: {
+      files: ["json", "yml", "yaml"],
+    },
+    validation: {
+      validFunc: async (input: string) => {
+        const specParser = new SpecParser(input, getParserOptions(ProjectType.Copilot));
+        const validationRes = await specParser.validate();
+        const invalidSpecError = validationRes.errors.find(
+          (o) => o.type === ErrorType.SpecNotValid
+        );
+        return invalidSpecError?.content;
+      },
+    },
   };
 }
 
@@ -1374,11 +1441,25 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.Capabilities] == CapabilityOptions.apiPlugin().id ||
-            inputs[QuestionNames.WithPlugin] == DeclarativeCopilotTypeOptions.withPlugin().id
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
+            inputs[QuestionNames.WithPlugin] === DeclarativeCopilotTypeOptions.withPlugin().id
           );
         },
         data: apiPluginStartQuestion(),
+      },
+      {
+        condition: (inputs: Inputs) => {
+          return inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.existingPlugin().id;
+        },
+        data: { type: "group", name: QuestionNames.ImportPlugin },
+        children: [
+          {
+            data: pluginManifestQuestion(),
+          },
+          {
+            data: pluginApiSpecQuestion(),
+          },
+        ],
       },
       {
         condition: (inputs: Inputs) => {
@@ -1430,6 +1511,7 @@ export function capabilitySubTree(): IQTreeNode {
             (!!inputs[QuestionNames.Capabilities] &&
               inputs[QuestionNames.WithPlugin] !== DeclarativeCopilotTypeOptions.noPlugin().id &&
               inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.apiSpec().id &&
+              inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.existingPlugin().id &&
               inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
               inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
               inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id) ||

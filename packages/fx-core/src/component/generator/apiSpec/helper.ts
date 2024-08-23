@@ -121,11 +121,6 @@ export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
 
-export const defaultApiSpecFolderName = "apiSpecificationFile";
-export const defaultApiSpecYamlFileName = "openapi.yaml";
-export const defaultApiSpecJsonFileName = "openapi.json";
-export const defaultPluginManifestFileName = "ai-plugin.json";
-
 export interface ErrorResult {
   /**
    * The type of error.
@@ -825,25 +820,6 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
 
 export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
   return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
-}
-
-export async function isYamlSpecFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
 }
 
 export function formatValidationErrors(

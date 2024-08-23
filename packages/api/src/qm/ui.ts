@@ -58,6 +58,17 @@ export interface UIConfig<T> {
    * @param `command` is the command name that will be executed when current action triggered
    */
   buttons?: { icon: string; tooltip: string; command: string }[];
+
+  /**
+   * `innerStep` and `innerTotalStep` are used to describe the inner step of a group of questions
+   * `innerStep` is the sequence number of the current question in the group.
+   *  VSC will display the innerStep and innerTotalStep in the question title.
+   */
+  innerStep?: number;
+  /**
+   * `innerTotalStep` is the number of questions in the group in total
+   */
+  innerTotalStep?: number;
 }
 
 export interface ConfirmConfig extends UIConfig<boolean> {

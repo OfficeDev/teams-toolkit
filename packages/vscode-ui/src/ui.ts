@@ -823,6 +823,10 @@ export class VSCodeUI implements UserInteraction {
       if (config.step && config.step > 1) {
         quickPick.buttons = [QuickInputButtons.Back];
       }
+      if (!!config.innerStep && !!config.innerTotalStep) {
+        quickPick.totalSteps = config.innerTotalStep;
+        quickPick.step = config.innerStep;
+      }
       quickPick.ignoreFocusOut = true;
       quickPick.placeholder = config.placeholder;
       quickPick.matchOnDescription = false;

@@ -3,6 +3,8 @@
 
 import {
   Colors,
+  DefaultApiSpecJsonFileName,
+  DefaultApiSpecYamlFileName,
   FxError,
   IPlugin,
   ManifestUtil,
@@ -27,6 +29,7 @@ import { SummaryConstant } from "../../../configManager/constant";
 import { EOL } from "os";
 import { ManifestType } from "../../../utils/envFunctionUtils";
 import { DriverContext } from "../../interface/commonArgs";
+import { isJsonSpecFile } from "../../../../common/utils";
 
 export class PluginManifestUtils {
   public async readPluginManifestFile(
@@ -168,6 +171,28 @@ export class PluginManifestUtils {
 
       return outputMessage;
     }
+  }
+
+  public async getDefaultNextAvailableApiSpecPath(apiSpecPath: string, apiSpecFolder: string) {
+    let isYaml: boolean;
+    try {
+      isYaml = !(await isJsonSpecFile(apiSpecPath));
+    } catch (e) {
+      isYaml = false;
+    }
+
+    let openApiSpecFileName = isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName;
+    const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
+    const openApiSpecFileType = openApiSpecFileName.split(".")[1];
+    let apiSpecFileNameSuffix = 1;
+    openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+
+    while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
+      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${++apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+    }
+    const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
+
+    return openApiSpecFilePath;
   }
 
   async getApiSpecFilePathFromPlugin(

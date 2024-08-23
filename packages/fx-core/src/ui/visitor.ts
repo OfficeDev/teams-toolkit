@@ -267,6 +267,8 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       totalSteps: totalSteps,
       validation: validationFunc,
       filters: question.filters,
+      innerStep: question.innerStep,
+      innerTotalStep: question.innerTotalStep,
     });
   } else if (question.type === "folder") {
     const validationFunc = question.validation

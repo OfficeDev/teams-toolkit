@@ -78,6 +78,9 @@ export interface BaseQuestion {
    */
   totalSteps?: number;
 
+  innerStep?: number;
+  innerTotalStep?: number;
+
   /**
    * if true, the toolkit will not remember the value as default value
    */

@@ -42,7 +42,6 @@ import * as CopilotPluginHelper from "../../../src/component/generator/apiSpec/h
 import {
   formatValidationErrors,
   generateScaffoldingSummary,
-  isYamlSpecFile,
   listPluginExistingOperations,
 } from "../../../src/component/generator/apiSpec/helper";
 import {
@@ -60,6 +59,7 @@ import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/
 import * as pluginGeneratorHelper from "../../../src/component/generator/apiSpec/helper";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
+import * as commonUtils from "../../../src/common/utils";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -327,35 +327,35 @@ describe("generateScaffoldingSummary", async () => {
   });
 });
 
-describe("isYamlFile", () => {
+describe("isJsonSpecFile", () => {
   afterEach(() => {
     sinon.restore();
   });
-  it("should return false for a valid JSON file", async () => {
-    const result = await isYamlSpecFile("test.json");
-    expect(result).to.be.false;
+  it("should return true for a valid JSON file", async () => {
+    const result = await commonUtils.isJsonSpecFile("test.json");
+    expect(result).to.be.true;
   });
 
-  it("should return true for an yaml file", async () => {
-    const result = await isYamlSpecFile("test.yaml");
-    expect(result).to.be.true;
+  it("should return false for an yaml file", async () => {
+    const result = await commonUtils.isJsonSpecFile("test.yaml");
+    expect(result).to.be.false;
   });
 
   it("should handle local json files", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
-    const result = await isYamlSpecFile("path/to/localfile");
-    expect(result).to.be.false;
+    const result = await commonUtils.isJsonSpecFile("path/to/localfile");
+    expect(result).to.be.true;
   });
 
   it("should handle remote files", async () => {
     const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
-    const result = await isYamlSpecFile("http://example.com/remotefile");
-    expect(result).to.be.false;
+    const result = await commonUtils.isJsonSpecFile("http://example.com/remotefile");
+    expect(result).to.be.true;
   });
 
-  it("should return true if it is a yaml file", async () => {
+  it("should return false if it is a yaml file", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
-    const result = await isYamlSpecFile("path/to/localfile");
+    const result = await commonUtils.isJsonSpecFile("path/to/localfile");
     expect(result).to.be.true;
   });
 });
@@ -1502,7 +1502,7 @@ describe("SpecGenerator", async () => {
       };
       inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
       inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
-      sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").throws();
+      sandbox.stub(commonUtils, "isJsonSpecFile").throws();
       const res = await generator.getTemplateInfos(context, inputs, ".", { telemetryProps: {} });
       assert.isTrue(res.isOk());
       if (res.isOk()) {

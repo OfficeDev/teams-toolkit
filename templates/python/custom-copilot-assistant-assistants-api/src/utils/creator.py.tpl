@@ -6,7 +6,7 @@ from openai.types.shared_params import FunctionDefinition
 
 from dotenv import load_dotenv
 
-load_dotenv(f'{os.getcwd()}/env/.env.local.user', override=True)
+load_dotenv(f'{os.getcwd()}/.env', override=True)
 
 async def main():
     options = AssistantCreateParams(
@@ -68,11 +68,11 @@ async def main():
     )
 
     {{#useOpenAI}}
-    assistant = await AssistantsPlanner.create_assistant(api_key=os.getenv("SECRET_OPENAI_API_KEY"), api_version="", organization="", endpoint="", request=options)
+    assistant = await AssistantsPlanner.create_assistant(api_key=os.getenv("OPENAI_API_KEY"), api_version="", organization="", endpoint="", request=options)
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     assistant = await AssistantsPlanner.create_assistant(
-        api_key=os.getenv("SECRET_AZURE_OPENAI_API_KEY"), 
+        api_key=os.getenv("AZURE_OPENAI_API_KEY"), 
         api_version="", 
         organization="", 
         endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), 

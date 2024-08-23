@@ -29,7 +29,7 @@ from get_data import get_doc_data
 
 from dotenv import load_dotenv
 
-load_dotenv(f'{os.getcwd()}/env/.env.local.user', override=True)
+load_dotenv(f'{os.getcwd()}/.env', override=True)
 
 @dataclass
 class Doc:
@@ -75,14 +75,14 @@ async def setup(search_api_key, search_api_endpoint):
 
     {{#useAzureOpenAI}}
     embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
-        azure_api_key=os.getenv('SECRET_AZURE_OPENAI_API_KEY'),
+        azure_api_key=os.getenv('AZURE_OPENAI_API_KEY'),
         azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
         azure_deployment=os.getenv('AZURE_OPENAI_EMBEDDING_DEPLOYMENT')
     ))
     {{/useAzureOpenAI}}
     {{#useOpenAI}}
     embeddings=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
-        api_key=os.getenv('SECRET_OPENAI_API_KEY'),
+        api_key=os.getenv('OPENAI_API_KEY'),
         model='text-embedding-ada-002'
     ))
     {{/useOpenAI}}
@@ -91,7 +91,7 @@ async def setup(search_api_key, search_api_endpoint):
 
     print("Upload new documents succeeded. If they do not exist, wait for several seconds...")
     
-search_api_key = os.getenv('SECRET_AZURE_SEARCH_KEY')
+search_api_key = os.getenv('AZURE_SEARCH_KEY')
 search_api_endpoint = os.getenv('AZURE_SEARCH_ENDPOINT')
 asyncio.run(setup(search_api_key, search_api_endpoint))
 print("setup finished")

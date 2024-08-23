@@ -36,7 +36,23 @@ This app template also demonstrates usage of techniques like:
 1. In file *env/.env.local.user*, fill in your Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT`.
 
 ### Setting up index and documents
-1. Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT` are loaded from *env/.env.local.user*. Please make sure you have already configured them.
+1. Necessary keys will be loaded from *./.env*. Please create a file *./.env* and fill in the following keys.
+{{#useOpenAI}}
+    ```
+    OPENAI_API_KEY=
+    AZURE_SEARCH_KEY=
+    AZURE_SEARCH_ENDPOINT=
+    ```
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+    ```
+    AZURE_OPENAI_API_KEY=
+    AZURE_OPENAI_ENDPOINT=
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT=
+    AZURE_SEARCH_KEY=
+    AZURE_SEARCH_ENDPOINT=
+    ```
+{{/useAzureOpenAI}}
 1. Use command `python src/indexers/setup.py` to create index and upload documents in `src/indexers/data`.
 1. You will see the following information indicated the success of setup:
     ```

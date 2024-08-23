@@ -584,7 +584,7 @@
   "core.syncManifest.projectPath": "Project path",
   "core.syncManifest.env": "Target Teams Toolkit Environment",
   "core.syncManifest.teamsAppId": "Teams App ID (optional)",
-  "core.syncManifest.addWarning": "There are add changes in the manifest template, please manually update the local manifest. Diff Path: %s. New Value %s.",
+  "core.syncManifest.addWarning": "There are new properties added to the manifest template, please manually update the local manifest. Diff Path: %s. New Value %s.",
   "core.syncManifest.deleteWarning": "There are delete changes in the manifest template, please manually update the local manifest. Diff Path: %s. Old Value: %s.",
   "core.syncManifest.editKeyConflict": "There is a conflict in the placeholder variable in the new manifest. Please manually update the local manifest. Variable name: %s, value 1: %s, value 2: %s.",
   "core.syncManifest.editNonVarPlaceholder": "The new manifest contains changes that are not placeholder variables. Please manually update the local manifest. Old value: %s. New Value: %s.",

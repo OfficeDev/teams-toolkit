@@ -2,8 +2,6 @@ import os
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
 
-from dotenv import load_dotenv
-
 config = {
     'AZURE_SEARCH_KEY': '<your-azure-search-key>',
     'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'

@@ -4,8 +4,6 @@ from openai.types.beta import AssistantCreateParams
 from openai.types.beta.function_tool_param import FunctionToolParam
 from openai.types.shared_params import FunctionDefinition
 
-from dotenv import load_dotenv
-
 {{#useOpenAI}}
 config = {
     'OPENAI_API_KEY': '<your-openai-api-key>'

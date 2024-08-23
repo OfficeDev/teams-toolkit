@@ -27,8 +27,6 @@ from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
 
 from get_data import get_doc_data
 
-from dotenv import load_dotenv
-
 {{#useOpenAI}}
 config = {
     'OPENAI_API_KEY': '<your-openai-api-key>',

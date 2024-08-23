@@ -17,6 +17,7 @@ config = {
     'AZURE_OPENAI_ENDPOINT': '<your-azure-openai-endpoint>',
     'AZURE_OPENAI_MODEL_DEPLOYMENT_NAME': '<your-azure-openai-model-deployment-name>'
 }
+{{/useAzureOpenAI}}
 
 async def main():
     options = AssistantCreateParams(

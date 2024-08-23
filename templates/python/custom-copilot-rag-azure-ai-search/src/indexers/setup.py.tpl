@@ -44,6 +44,7 @@ config = {
     'AZURE_SEARCH_KEY': '<your-azure-search-key>',
     'AZURE_SEARCH_ENDPOINT': '<your-azure-search-endpoint>'
 }
+{{/useAzureOpenAI}}
 
 @dataclass
 class Doc:

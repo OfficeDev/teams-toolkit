@@ -461,7 +461,10 @@ export async function initTeamsPage(
         );
         await inputBox.fill("testing");
         await page.waitForTimeout(Timeout.shortTimeLoading);
-        await inputBox.press("Enter");
+        const testingTab = await page.waitForSelector(
+          "ul li:has-text('testing')"
+        );
+        await testingTab?.click();
         await page.waitForTimeout(Timeout.shortTimeLoading);
 
         const setUpBtn = await page?.waitForSelector(

@@ -70,7 +70,6 @@ new MyFirstMeetingTestCase(
   {
     teamsAppName: "fxuiMyFirslocal",
     type: "meeting",
-    skipValidation: true,
     debug: "cli",
   }
 ).test();

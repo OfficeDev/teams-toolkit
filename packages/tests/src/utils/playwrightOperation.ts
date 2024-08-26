@@ -432,22 +432,58 @@ export async function initTeamsPage(
       }
 
       // default
-      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-      await addBtn?.click();
-      await page.waitForTimeout(Timeout.shortTimeLoading);
+      if (options?.type !== "meeting") {
+        console.log("click add button");
+        const addBtn = await page?.waitForSelector(
+          "button>span:has-text('Add')"
+        );
+        await addBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+      } else {
+        // add in meeting
+        console.log("click showListBtn button");
+        const showListBtn = await page?.waitForSelector(
+          ".ui-splitbutton>button"
+        );
+        await showListBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
 
-      if (options?.type === "meeting") {
+        console.log("click addInMeetingBtn button");
+        const addInMeetingBtn = await page?.waitForSelector(
+          ".ui-popup__content li:has-text('Add to a meeting')"
+        );
+        await addInMeetingBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        console.log("input meeting name in search box");
+        const inputBox = await page.waitForSelector(
+          ".fui-DialogBody .ui-dropdown input.ui-box"
+        );
+        await inputBox.fill("testing");
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        await inputBox.press("Enter");
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        const setUpBtn = await page?.waitForSelector(
+          'button span:has-text("Set up a tab")'
+        );
+        await setUpBtn?.click();
+        console.log("click 'set up a tab' button");
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        await page?.waitForSelector('button span:has-text("Set up a tab")', {
+          state: "detached",
+        });
+
         // verify add page is closed
         try {
           await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a team')`
+            `:has-text('Add ${options?.teamsAppName} to a team')`
           );
         } catch (error) {
           await page?.waitForSelector(
             `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
           );
         }
-        // TODO: need to add more logic
         console.log("successful to add teams app!!!");
         return;
       }
@@ -527,6 +563,7 @@ export async function initTeamsPage(
 
     return page;
   } catch (error) {
+    console.log(error);
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
       fullPage: true,

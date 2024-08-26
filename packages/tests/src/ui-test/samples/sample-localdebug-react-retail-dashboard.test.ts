@@ -8,7 +8,10 @@
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Page } from "playwright";
-import { initTeamsPage } from "../../utils/playwrightOperation";
+import {
+  initTeamsPage,
+  validateRetailDashboard,
+} from "../../utils/playwrightOperation";
 import { SampledebugContext } from "./sampledebugContext";
 import { Env } from "../../utils/env";
 
@@ -31,6 +34,13 @@ class RetailDashboardTestCase extends CaseFactory {
         type: options?.type,
       }
     );
+  }
+
+  override async onValidate(
+    page: Page,
+    options?: { context: SampledebugContext }
+  ): Promise<void> {
+    return await validateRetailDashboard(page);
   }
 }
 

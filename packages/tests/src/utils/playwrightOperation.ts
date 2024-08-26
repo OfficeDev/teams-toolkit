@@ -2929,3 +2929,29 @@ export async function validateCustomapi(
     throw error;
   }
 }
+
+export async function validateRetailDashboard(page: Page) {
+  try {
+    console.log("start to verify dashboard tab");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("button:has-text('RetailDashboard')");
+    await frame?.waitForSelector("button:has-text('RetailHome')");
+    await frame?.waitForSelector("button:has-text('RetailInventory')");
+    await frame?.waitForSelector("span:has-text('Global Return Volume')");
+    await frame?.waitForSelector(
+      "span:has-text('Global Customer Satisfaction')"
+    );
+    await frame?.waitForSelector("span:has-text('Product Sell')");
+    await frame?.waitForSelector("span:has-text('Reasons for Return')");
+    console.log("Dashboard tab loaded successfully");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

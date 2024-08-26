@@ -36,6 +36,8 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.16.4" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.36.0" />
     <PackageReference Include="Microsoft.TeamsFx" Version="2.5.*">
       <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
       <ExcludeAssets>contentFiles</ExcludeAssets>

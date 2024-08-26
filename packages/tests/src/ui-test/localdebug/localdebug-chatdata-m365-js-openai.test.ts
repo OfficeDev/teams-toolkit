@@ -27,6 +27,7 @@ describe("Local Debug Tests", function () {
     this.timeout(Timeout.prepareTestCase);
     localDebugTestContext = new LocalDebugTestContext("chatdata", {
       customCopilotRagType: "custom-copilot-rag-microsoft365",
+      llmServiceType: "llm-service-openai",
     });
     await localDebugTestContext.before();
   });
@@ -55,7 +56,7 @@ describe("Local Debug Tests", function () {
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", openAiKey);
 
       console.log(`
-        SECRET_AZURE_OPENAI_API_KEY=${openAiKey}
+        SECRET_OPENAI_API_KEY=${openAiKey}
       `);
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);

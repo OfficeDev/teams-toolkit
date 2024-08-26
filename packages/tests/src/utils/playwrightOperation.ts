@@ -2933,13 +2933,13 @@ export async function validateCustomapi(
 export async function validateRetailDashboard(page: Page) {
   try {
     console.log("start to verify dashboard tab");
+    await page?.waitForSelector("button:has-text('RetailDashboard')");
+    await page?.waitForSelector("button:has-text('RetailHome')");
+    await page?.waitForSelector("button:has-text('RetailInventory')");
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
-    await frame?.waitForSelector("button:has-text('RetailDashboard')");
-    await frame?.waitForSelector("button:has-text('RetailHome')");
-    await frame?.waitForSelector("button:has-text('RetailInventory')");
     await frame?.waitForSelector("span:has-text('Global Return Volume')");
     await frame?.waitForSelector(
       "span:has-text('Global Customer Satisfaction')"

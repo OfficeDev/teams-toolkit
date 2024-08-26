@@ -47,7 +47,7 @@ app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
 });
 
 import { generateAdaptiveCard, addAuthConfig } from "./utility";
-import { TurnContext, ConversationState } from "botbuilder";
+import { ConversationState } from "botbuilder";
 import { TurnState, Memory } from "@microsoft/teams-ai";
 import yaml from "js-yaml";
 import { OpenAPIClientAxios, Document } from "openapi-client-axios";

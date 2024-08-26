@@ -53,6 +53,5 @@ new RetailDashboardTestCase(
   {
     teamsAppName: "react-retail-dashboard-dev",
     type: "spfx",
-    skipValidation: true,
   }
 ).test();

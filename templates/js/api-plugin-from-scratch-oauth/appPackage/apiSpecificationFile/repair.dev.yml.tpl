@@ -6,13 +6,18 @@ info:
 servers:
   - url: ${{OPENAPI_SERVER_URL}}/api
     description: The repair api server
-
 components:
   securitySchemes:
 {{#MicrosoftEntra}}
     aadAuthCode:
       type: oauth2
-      description: AAD configuration for the repair service      
+      description: AAD configuration for the repair service
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.microsoftonline.com/${{AAD_APP_TENANT_ID}}/oauth2/v2.0/authorize
+          tokenUrl: https://login.microsoftonline.com/${{AAD_APP_TENANT_ID}}/oauth2/v2.0/token
+          scopes:
+            api://${{OPENAPI_SERVER_DOMAIN}}/${{AAD_APP_CLIENT_ID}}/repairs_read: Read repair records
 {{/MicrosoftEntra}}
 {{^MicrosoftEntra}}
     oAuth2AuthCode:

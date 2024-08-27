@@ -1677,6 +1677,7 @@ export function createProjectCliHelpNode(): IQTreeNode {
   if (!isCopilotExtensionEnabled()) {
     deleteNames.push(QuestionNames.ApiPluginType);
     deleteNames.push(QuestionNames.WithPlugin);
+    deleteNames.push(QuestionNames.ImportPlugin);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

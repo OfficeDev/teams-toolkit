@@ -1583,7 +1583,7 @@ describe("scaffold question", () => {
       });
     });
 
-    describe("copilot plugin enabled", () => {
+    describe("copilot extension enabled", () => {
       let mockedEnvRestore: RestoreFn;
       const tools = new MockTools();
       setTools(tools);
@@ -1626,7 +1626,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ApiPluginType) {
             const select = question as SingleSelectQuestion;
             const options = select.staticOptions;
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: ApiPluginStartOptions.newApi().id });
           } else if (question.name === QuestionNames.ApiAuth) {
             const select = question as SingleSelectQuestion;

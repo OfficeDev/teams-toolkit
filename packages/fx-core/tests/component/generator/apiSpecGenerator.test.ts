@@ -356,7 +356,7 @@ describe("isJsonSpecFile", () => {
   it("should return false if it is a yaml file", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
     const result = await commonUtils.isJsonSpecFile("path/to/localfile");
-    expect(result).to.be.true;
+    expect(result).to.be.false;
   });
 });
 

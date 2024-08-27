@@ -569,7 +569,7 @@ export async function createNewProject(
   const aiType = option?.aiType ? option.aiType : "OpenAI";
   const aiManagement = option?.aiManagement
     ? option.aiManagement
-    : "Build from Scratch";
+    : "Build with Assistants API";
   const spfxFrameworkType = option?.spfxFrameworkType
     ? option.spfxFrameworkType
     : "React";
@@ -867,7 +867,7 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       await input.selectQuickPick("AI Agent");
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("Build with Assistants API");
+      await input.selectQuickPick(aiManagement);
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);
@@ -880,6 +880,9 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
+      await VSBrowser.instance.takeScreenshot(
+        getScreenshotName("input_status")
+      );
       break;
     }
     case "aiagentnew": {

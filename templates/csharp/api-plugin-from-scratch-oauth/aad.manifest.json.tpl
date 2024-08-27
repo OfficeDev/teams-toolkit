@@ -43,8 +43,13 @@
            "url": "https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect",
            "type": "Web"
         }
-    ],    
+    ],
     "identifierUris": [
+{{#MicrosoftEntra}}
+        "api://${{OPENAPI_SERVER_DOMAIN}}/${{AAD_APP_CLIENT_ID}}"
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
         "api://${{AAD_APP_CLIENT_ID}}"
+{{/MicrosoftEntra}}
     ]
 }

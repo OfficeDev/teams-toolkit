@@ -114,7 +114,7 @@ describe("Remote debug Tests", function () {
         await validateWelcomeAndReplyBot(page, {
           hasCommandReplyValidation: true,
           botCommand: "Show all tasks",
-          expectedReplyMessage: "current tasks",
+          expectedReplyMessage: "I can't display tasks",
           timeout: Timeout.longTimeWait,
         });
       } else {

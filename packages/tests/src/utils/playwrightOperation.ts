@@ -2310,6 +2310,7 @@ export async function validateBasicDashboardTab(page: Page) {
 export async function validateDashboardTab(page: Page) {
   try {
     console.log("start to verify dashboard tab");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );

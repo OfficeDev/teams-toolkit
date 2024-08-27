@@ -2992,7 +2992,7 @@ export async function validateMeeting(page: Page, name: string) {
       `iframe[name="embedded-page-container"]`
     );
     const frame = await frameElementHandle?.contentFrame();
-    await frame?.waitForSelector(`#root>div>p:has-text(${name})`);
+    await frame?.waitForSelector(`#root>div>p:has-text('${name}')`);
     const meetingId = await frame?.waitForSelector(`#root>div>p:nth-child(2)`);
     expect(meetingId).not.to.be.null;
     console.log("meeting tab loaded successfully");

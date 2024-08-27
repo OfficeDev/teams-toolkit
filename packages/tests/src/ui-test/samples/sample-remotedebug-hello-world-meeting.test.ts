@@ -37,7 +37,7 @@ class MyFirstMeetingTestCase extends CaseFactory {
   }
 
   override async onValidate(page: Page): Promise<void> {
-    return await validateMeeting(page, Env.displayName);
+    return await validateMeeting(page, Env.username);
   }
 }
 

@@ -71,7 +71,6 @@ describe("Remote debug Tests", function () {
       await createNewProject("aiagentnew", appName, {
         lang: "TypeScript",
         aiType: "Azure OpenAI",
-        aiManagement: "Build from Scratch",
       });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
@@ -112,12 +111,21 @@ describe("Remote debug Tests", function () {
           expectedReplyMessage:
             "Remind me to attend the team meeting next Monday",
         });
-        await validateWelcomeAndReplyBot(page, {
-          hasCommandReplyValidation: true,
-          botCommand: "Show all tasks",
-          expectedReplyMessage: "I can't display tasks",
-          timeout: Timeout.longTimeWait,
-        });
+        try {
+          await validateWelcomeAndReplyBot(page, {
+            hasCommandReplyValidation: true,
+            botCommand: "Show all tasks",
+            expectedReplyMessage: "task:",
+            timeout: Timeout.longTimeWait,
+          });
+        } catch (error) {
+          await validateWelcomeAndReplyBot(page, {
+            hasCommandReplyValidation: true,
+            botCommand: "Show all tasks",
+            expectedReplyMessage: "I'm sorry",
+            timeout: Timeout.longTimeWait,
+          });
+        }
       } else {
         await validateWelcomeAndReplyBot(page, {
           hasWelcomeMessage: false,

@@ -1066,3 +1066,48 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     },
   };
 }
+
+export function syncManifestQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: {
+          type: "folder",
+          name: QuestionNames.ProjectPath,
+          title: getLocalizedString("core.syncManifest.projectPath"),
+          cliDescription: "Project Path",
+          placeholder: "./",
+          default: "./",
+        },
+        condition: () => {
+          return true;
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.Env,
+          title: getLocalizedString("core.syncManifest.env"),
+          cliDescription: "Target Teams Toolkit Environment",
+        },
+        condition: () => {
+          return true;
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.TeamsAppId,
+          title: getLocalizedString("core.syncManifest.teamsAppId"),
+          cliDescription: "Teams App ID (optional)",
+        },
+        condition: () => {
+          return true;
+        },
+      },
+    ],
+  };
+}

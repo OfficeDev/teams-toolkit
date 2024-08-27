@@ -6,6 +6,7 @@ import {
   err,
   FxError,
   ok,
+  Platform,
   Result,
   SelectFileConfig,
   SingleSelectConfig,
@@ -22,6 +23,7 @@ import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { runCommand } from "./sharedOpts";
+import { SyncManifestInputs } from "@microsoft/teamsfx-core";
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
@@ -31,6 +33,17 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 
   const inputs = getSystemInputs();
   return await runCommand(Stage.validateApplication, inputs);
+}
+
+export async function syncManifestHandler(...args: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SyncManifest, getTriggerFromProperty(args));
+  const inputs: SyncManifestInputs = {
+    platform: Platform.VSCode,
+  };
+  if (args.length > 0) {
+    inputs["teams-app-id"] = args[0];
+  }
+  return await runCommand(Stage.syncManifest, inputs);
 }
 
 export async function buildPackageHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {

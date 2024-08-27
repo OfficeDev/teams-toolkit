@@ -1,4 +1,4 @@
-import asyncio, os
+import asyncio, os, argparse
 from teams.ai.planners import AssistantsPlanner
 from openai.types.beta import AssistantCreateParams
 from openai.types.beta.function_tool_param import FunctionToolParam
@@ -8,7 +8,20 @@ from dotenv import load_dotenv
 
 load_dotenv(f'{os.getcwd()}/env/.env.local.user', override=True)
 
+def load_keys_from_args():
+    parser = argparse.ArgumentParser(description='Load keys from command input parameters.')
+    {{#useAzureOpenAI}}
+    parser.add_argument('--api-key', type=str, required=True, help='Azure OpenAI API key for authentication')
+    {{/useAzureOpenAI}}
+    {{#useOpenAI}}
+    parser.add_argument('--api-key', type=str, required=True, help='OpenAI API key for authentication')
+    {{/useOpenAI}}
+    args = parser.parse_args()
+    return args
+
 async def main():
+    args = load_keys_from_args()
+
     options = AssistantCreateParams(
         name="Assistant",
         instructions="\n".join([
@@ -68,11 +81,11 @@ async def main():
     )
 
     {{#useOpenAI}}
-    assistant = await AssistantsPlanner.create_assistant(api_key=os.getenv("SECRET_OPENAI_API_KEY"), api_version="", organization="", endpoint="", request=options)
+    assistant = await AssistantsPlanner.create_assistant(api_key=args.api_key, api_version="", organization="", endpoint="", request=options)
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     assistant = await AssistantsPlanner.create_assistant(
-        api_key=os.getenv("SECRET_AZURE_OPENAI_API_KEY"), 
+        api_key=args.api_key, 
         api_version="", 
         organization="", 
         endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"), 

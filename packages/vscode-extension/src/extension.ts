@@ -126,6 +126,7 @@ import {
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  syncManifestHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
@@ -272,6 +273,11 @@ export async function activate(context: vscode.ExtensionContext) {
     isOfficeManifestOnlyProject
   );
 
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isSyncManifestEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.SyncManifest)
+  );
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
@@ -682,6 +688,10 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(checkCopilotCallback, args)
   );
   context.subscriptions.push(checkCopilotCallbackCmd);
+
+  if (featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest)) {
+    registerInCommandController(context, "fx-extension.syncManifest", syncManifestHandler);
+  }
 }
 
 /**

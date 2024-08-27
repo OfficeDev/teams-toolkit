@@ -872,17 +872,12 @@ export async function createNewProject(
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      // Choose openai
-      await input.selectQuickPick(aiType);
-      await driver.sleep(Timeout.input);
-      // input fake OpenAI Key
-      await input.setText("fake");
+      await input.setText(aiType);
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
-      await VSBrowser.instance.takeScreenshot(
-        getScreenshotName("input_status")
-      );
+      await input.confirm();
+      await driver.sleep(Timeout.input);
       break;
     }
     case "aiagentnew": {

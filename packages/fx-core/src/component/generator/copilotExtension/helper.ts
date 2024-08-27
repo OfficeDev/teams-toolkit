@@ -25,13 +25,6 @@ export async function addExistingPlugin(
   context: Context,
   source: string
 ): Promise<Result<undefined, FxError>> {
-  const declarativeCopilotManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
-    declarativeCopilotManifestPath
-  );
-  if (declarativeCopilotManifestRes.isErr()) {
-    return err(declarativeCopilotManifestRes.error);
-  }
-
   const pluginManifestRes = await pluginManifestUtils.readPluginManifestFile(
     fromPluginManifestPath
   );
@@ -52,7 +45,6 @@ export async function addExistingPlugin(
   const outputFolder = path.dirname(declarativeCopilotManifestPath);
 
   // Copy OpenAPI spec
-
   const originalDestApiSPecRelativePath = path.resolve(
     outputFolder,
     destinationApiSpecRelativePath
@@ -168,11 +160,11 @@ export function validateSourcePluginManifest(
         "MultipleApiSpecInPluginManifest",
         getDefaultString(
           "core.createProjectQuestion.addPlugin.pluginManifestMultipleApiSpec",
-          Array.from(apiSpecPaths).join(",")
+          Array.from(apiSpecPaths).join(", ")
         ),
         getLocalizedString(
           "core.createProjectQuestion.addPlugin.pluginManifestMultipleApiSpec",
-          Array.from(apiSpecPaths).join(",")
+          Array.from(apiSpecPaths).join(", ")
         )
       )
     );

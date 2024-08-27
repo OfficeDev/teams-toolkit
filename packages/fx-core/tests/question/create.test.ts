@@ -12,8 +12,11 @@ import {
   OptionItem,
   Platform,
   Question,
+  SingleFileQuestion,
   SingleSelectQuestion,
+  UserError,
   UserInteraction,
+  err,
   ok,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
@@ -58,6 +61,8 @@ import {
   getLanguageOptions,
   getSolutionName,
   officeAddinFrameworkQuestion,
+  pluginApiSpecQuestion,
+  pluginManifestQuestion,
   programmingLanguageQuestion,
   projectTypeQuestion,
 } from "../../src/question";
@@ -1583,7 +1588,7 @@ describe("scaffold question", () => {
       });
     });
 
-    describe("copilot extension enabled", () => {
+    describe("copilot plugin enabled", () => {
       let mockedEnvRestore: RestoreFn;
       const tools = new MockTools();
       setTools(tools);
@@ -2895,7 +2900,7 @@ describe("scaffold question", () => {
       });
     });
 
-    describe("customize GPT", () => {
+    describe("declarative copilot", () => {
       let mockedEnvRestore: RestoreFn;
       const tools = new MockTools();
       setTools(tools);
@@ -2911,7 +2916,7 @@ describe("scaffold question", () => {
         }
       });
 
-      it("customize GPT without plugin", async () => {
+      it("declarative copilot without plugin", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -2962,7 +2967,7 @@ describe("scaffold question", () => {
         ]);
       });
 
-      it("customize GPT with plugin from scratch", async () => {
+      it("declarative copilot with plugin from scratch", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -3013,6 +3018,179 @@ describe("scaffold question", () => {
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
+      });
+
+      it.only("declarative copilot with existing plugin", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+
+          await callFuncs(question, inputs);
+
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            const title =
+              typeof question.title === "function" ? await question.title(inputs) : question.title;
+            assert.equal(
+              title,
+              getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.title")
+            );
+            return ok({ type: "success", result: CapabilityOptions.declarativeCopilot().id });
+          } else if (question.name === QuestionNames.WithPlugin) {
+            return ok({ type: "success", result: DeclarativeCopilotTypeOptions.withPlugin().id });
+          } else if (question.name === QuestionNames.ApiPluginType) {
+            return ok({ type: "success", result: ApiPluginStartOptions.existingPlugin().id });
+          } else if (question.name === QuestionNames.PluginManifestFilePath) {
+            const select = question as SingleFileQuestion;
+            const titleFunc = select.title as LocalFunc<string>;
+            const title = await titleFunc(inputs);
+            const cliTitle = await titleFunc({ ...inputs, platform: Platform.CLI });
+            assert.isTrue(title?.toLowerCase().includes("upload"));
+            assert.isTrue(cliTitle?.toLowerCase().includes("plugin"));
+
+            const defaultFolderFunc = select.defaultFolder as LocalFunc<string>;
+            let defaultFolder = await defaultFolderFunc(inputs);
+            assert.notEqual(defaultFolder, "./");
+            defaultFolder = await defaultFolderFunc({ ...inputs, platform: Platform.CLI });
+            assert.equal(defaultFolder, "./");
+
+            sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
+              ok({
+                schema_version: "v2.0",
+                name_for_human: "test",
+                runtimes: [
+                  {
+                    type: "OpenApi",
+                    spec: {
+                      url: "test.json",
+                    },
+                  },
+                ],
+              } as any)
+            );
+            const validationFunc = question.validation as FuncValidation<string>;
+            const validationRes = await validationFunc.validFunc!("", inputs);
+            assert.isUndefined(validationRes);
+
+            return ok({ type: "success", result: "c://testFolder/test.json" });
+          } else if (question.name === QuestionNames.PluginOpenApiSpecFilePath) {
+            const select = question as SingleFileQuestion;
+            const titleFunc = select.title as LocalFunc<string>;
+            const title = await titleFunc(inputs);
+            const cliTitle = await titleFunc({ ...inputs, platform: Platform.CLI });
+            assert.isTrue(title?.toLowerCase().includes("file"));
+            assert.isTrue(cliTitle?.toLowerCase().includes("openapi"));
+
+            const defaultFolderFunc = select.defaultFolder as LocalFunc<string>;
+            let defaultFolder = await defaultFolderFunc(inputs);
+            assert.isTrue(defaultFolder.endsWith("testFolder"));
+            defaultFolder = await defaultFolderFunc({ ...inputs, platform: Platform.CLI });
+
+            assert.equal(defaultFolder, "./");
+
+            sandbox.stub(SpecParser.prototype, "validate").resolves({
+              status: ValidationStatus.Valid,
+              errors: [],
+              warnings: [],
+            });
+            const validationFunc = question.validation as FuncValidation<string>;
+            const validationRes = await validationFunc.validFunc!("test.json", inputs);
+            assert.isUndefined(validationRes);
+
+            return ok({ type: "success", result: "test.json" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.WithPlugin,
+          QuestionNames.ApiPluginType,
+          QuestionNames.PluginManifestFilePath,
+          QuestionNames.PluginOpenApiSpecFilePath,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("pluginManifestQuestion: Invalid due to read manifest error ", async () => {
+        const question = pluginManifestQuestion();
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        sandbox
+          .stub(pluginManifestUtils, "readPluginManifestFile")
+          .resolves(err(new UserError("source", "name", "fakeError", "fakeError")));
+        const validationFunc = question.validation as FuncValidation<string>;
+        const validationRes = await validationFunc.validFunc!("", inputs);
+        assert.equal(validationRes, "fakeError");
+      });
+
+      it("pluginManifestQuestion: Invalid due to missing runtime", async () => {
+        const question = pluginManifestQuestion();
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
+          ok({
+            schema_version: "v2.0",
+            name_for_human: "test",
+            runtimes: [],
+          } as any)
+        );
+        const validationFunc = question.validation as FuncValidation<string>;
+        const validationRes = await validationFunc.validFunc!("", inputs);
+        assert.isTrue(validationRes?.includes("OpenApi"));
+      });
+
+      it("pluginApiSpecQuestion: invalid file format", async () => {
+        const question = pluginApiSpecQuestion();
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+
+        const validationFunc = question.validation as FuncValidation<string>;
+        const validationRes = await validationFunc.validFunc!("test.txt", inputs);
+        assert.isTrue(validationRes?.includes("json, yml, yaml"));
+      });
+
+      it("pluginApiSpecQuestion: invalid spec ", async () => {
+        const question = pluginApiSpecQuestion();
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        sandbox.stub(SpecParser.prototype, "validate").resolves({
+          status: ValidationStatus.Error,
+          errors: [
+            {
+              type: ErrorType.SpecNotValid,
+              content: "invalidFile",
+            },
+          ],
+          warnings: [],
+        });
+        const validationFunc = question.validation as FuncValidation<string>;
+        const validationRes = await validationFunc.validFunc!("test.json", inputs);
+        assert.equal(validationRes, "invalidFile");
       });
     });
   });

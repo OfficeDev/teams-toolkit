@@ -174,12 +174,10 @@ export class PluginManifestUtils {
   }
 
   public async getDefaultNextAvailableApiSpecPath(apiSpecPath: string, apiSpecFolder: string) {
-    let isYaml: boolean;
+    let isYaml = false;
     try {
       isYaml = !(await isJsonSpecFile(apiSpecPath));
-    } catch (e) {
-      isYaml = false;
-    }
+    } catch (e) {}
 
     let openApiSpecFileName = isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName;
     const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];

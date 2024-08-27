@@ -23,7 +23,7 @@ import * as jsonschema from "jsonschema";
 import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
-import { ConstantString } from "../common/constants";
+import { ConstantString, SpecParserSource } from "../common/constants";
 import { Correlator } from "../common/correlator";
 import {
   FeatureFlags,
@@ -53,7 +53,13 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
+import {
+  CoreSource,
+  EmptyOptionError,
+  FileNotFoundError,
+  FileNotSupportError,
+  assembleError,
+} from "../error";
 import {
   ApiAuthOptions,
   ApiPluginStartOptions,
@@ -76,6 +82,11 @@ import {
 import { ErrorType, ProjectType, SpecParser } from "@microsoft/m365-spec-parser";
 import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 import { validateSourcePluginManifest } from "../component/generator/copilotExtension/helper";
+import {
+  ApiSpecTelemetryPropertis,
+  getQuestionValidationErrorEventName,
+  sendTelemetryErrorEvent,
+} from "../common/telemetry";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -1315,7 +1326,7 @@ function apiPluginStartQuestion(): SingleSelectQuestion {
   };
 }
 
-function pluginManifestQuestion(): SingleFileQuestion {
+export function pluginManifestQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: QuestionNames.PluginManifestFilePath,
@@ -1344,6 +1355,7 @@ function pluginManifestQuestion(): SingleFileQuestion {
           const manifest = manifestRes.value;
 
           const checkRes = validateSourcePluginManifest(
+            // TODO: telemetry
             manifest,
             QuestionNames.PluginManifestFilePath
           );
@@ -1356,7 +1368,8 @@ function pluginManifestQuestion(): SingleFileQuestion {
   };
 }
 
-function pluginApiSpecQuestion(): SingleFileQuestion {
+export function pluginApiSpecQuestion(): SingleFileQuestion {
+  const correlationId = Correlator.getId();
   return {
     type: "singleFile",
     name: QuestionNames.PluginOpenApiSpecFilePath,
@@ -1379,12 +1392,50 @@ function pluginApiSpecQuestion(): SingleFileQuestion {
         ? "./"
         : path.dirname(inputs[QuestionNames.PluginManifestFilePath] as string),
     validation: {
-      validFunc: async (input: string) => {
-        const specParser = new SpecParser(input, getParserOptions(ProjectType.Copilot));
+      validFunc: async (input: string, inputs?: Inputs) => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+        const filePath = input.trim();
+
+        const ext = path.extname(filePath).toLowerCase();
+        if (![".json", ".yml", ".yaml"].includes(ext)) {
+          const error = new FileNotSupportError(CoreSource, ["json", "yml", "yaml"].join(", "));
+          sendTelemetryErrorEvent(
+            CoreSource,
+            getQuestionValidationErrorEventName(QuestionNames.PluginOpenApiSpecFilePath),
+            error,
+            {
+              "correlation-id": correlationId,
+            }
+          );
+          return error.displayMessage;
+        }
+
+        const specParser = new SpecParser(filePath, getParserOptions(ProjectType.Copilot));
         const validationRes = await specParser.validate();
         const invalidSpecError = validationRes.errors.find(
           (o) => o.type === ErrorType.SpecNotValid
         );
+
+        if (invalidSpecError) {
+          const error = new UserError(
+            SpecParserSource,
+            ApiSpecTelemetryPropertis.InvalidApiSpec,
+            invalidSpecError.content,
+            invalidSpecError.content
+          );
+          sendTelemetryErrorEvent(
+            CoreSource,
+            getQuestionValidationErrorEventName(QuestionNames.PluginOpenApiSpecFilePath),
+            error,
+            {
+              "correlation-id": correlationId,
+              [ApiSpecTelemetryPropertis.SpecNotValidDetails]: invalidSpecError.content,
+            }
+          );
+        }
+
         return invalidSpecError?.content;
       },
     },

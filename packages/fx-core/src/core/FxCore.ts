@@ -1916,12 +1916,10 @@ export class FxCore {
     }
 
     // generate file path
-    let isYaml: boolean;
+    let isYaml = false;
     try {
       isYaml = !(await isJsonSpecFile(url));
-    } catch (e) {
-      isYaml = false;
-    }
+    } catch (e) {}
     await fs.ensureDir(apiSpecFolder);
 
     let openApiSpecFileName = isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName;

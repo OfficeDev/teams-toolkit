@@ -235,7 +235,7 @@ export class QuestionModelEngine {
             return await (question as any).defaultFolder(inputs);
           };
         } else {
-          defaultValue = question.defaultFolder;
+          defaultFolder = question.defaultFolder;
         }
       }
       return await ui.selectFile({

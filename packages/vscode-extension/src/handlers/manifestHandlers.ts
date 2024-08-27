@@ -36,7 +36,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 }
 
 export async function syncManifestHandler(...args: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SyncManifest, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SyncManifestStart, getTriggerFromProperty(args));
   const inputs: SyncManifestInputs = {
     platform: Platform.VSCode,
   };

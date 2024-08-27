@@ -765,6 +765,9 @@ export class VSCodeUI implements UserInteraction {
       //TODO quick workaround solution, which will blocking the UI popup
       config.default = await config.default();
     }
+    if (config.defaultFolder && typeof config.defaultFolder === "function") {
+      config.defaultFolder = await config.defaultFolder();
+    }
     return this.selectFileInQuickPick(config, "file", config.default as string);
   }
 
@@ -798,6 +801,7 @@ export class VSCodeUI implements UserInteraction {
         label: string;
         description?: string;
       }[];
+      defaultFolder?: string;
     },
     type: "file" | "files",
     defaultValue?: string
@@ -863,7 +867,11 @@ export class VSCodeUI implements UserInteraction {
             } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
-                defaultUri: config.default ? Uri.file(config.default as string) : undefined,
+                defaultUri: config.defaultFolder
+                  ? Uri.file(config.defaultFolder)
+                  : config.default
+                  ? Uri.file(config.default as string)
+                  : undefined,
                 canSelectFiles: true,
                 canSelectFolders: false,
                 canSelectMany: type === "files",

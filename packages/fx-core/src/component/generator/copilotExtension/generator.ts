@@ -150,7 +150,8 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
         inputs[QuestionNames.PluginManifestFilePath],
         inputs[QuestionNames.PluginOpenApiSpecFilePath],
         "action_1",
-        context
+        context,
+        this.componentName
       );
 
       if (addPluginRes.isErr()) {

@@ -6,23 +6,24 @@ import {
   err,
   FxError,
   ok,
+  PluginManifestSchema,
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { AppStudioError } from "../../driver/teamsApp/errors";
-import { AppStudioResultFactory } from "../../driver/teamsApp/results";
 import path from "path";
 import fs from "fs-extra";
 import { normalizePath } from "../../driver/teamsApp/utils/utils";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 
 export async function addExistingPlugin(
   declarativeCopilotManifestPath: string,
   fromPluginManifestPath: string,
   fromApiSpecPath: string,
   actionId: string,
-  context: Context
+  context: Context,
+  source: string
 ): Promise<Result<undefined, FxError>> {
   const declarativeCopilotManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
     declarativeCopilotManifestPath
@@ -40,56 +41,32 @@ export async function addExistingPlugin(
   const pluginManifest = pluginManifestRes.value;
 
   // prerequiste check
-  const runtimes = pluginManifest.runtimes;
-  if (!runtimes) {
-    return err(
-      AppStudioResultFactory.UserError(
-        AppStudioError.TeamsAppRequiredPropertyMissingError.name,
-        AppStudioError.TeamsAppRequiredPropertyMissingError.message(
-          "runtimes",
-          fromPluginManifestPath
-        )
-      )
-    );
+  const checkRes = validateSourcePluginManifest(pluginManifest, source);
+  if (checkRes.isErr()) {
+    return err(checkRes.error);
   }
-
-  const expectedApiSpecRelativePath = new Set<string>();
-  for (const runtime of runtimes) {
-    if (runtime.type === "OpenApi" && runtime.spec?.url) {
-      expectedApiSpecRelativePath.add(runtime.spec.url);
-    }
-  }
-
-  if (expectedApiSpecRelativePath.size === 0) {
-    return err(new UserError("", "", "", ""));
-  }
-
-  if (expectedApiSpecRelativePath.size > 1) {
-    return err(new UserError("", "", "", ""));
-  }
+  const runtimes = pluginManifest.runtimes!; // have validated that the value exists.
+  const destinationApiSpecRelativePath = runtimes.find((runtime) => runtime.type === "OpenApi")!
+    .spec.url as string; // have validated that the value exists.
 
   const outputFolder = path.dirname(declarativeCopilotManifestPath);
 
   // Copy OpenAPI spec
-  let needUpdatePluginManifest = false;
-  const destinationApiSpecRelativePath = Array.from(expectedApiSpecRelativePath)[0];
 
   const originalDestApiSPecRelativePath = path.resolve(
     outputFolder,
     destinationApiSpecRelativePath
   );
   let destinationApiSpecPath = originalDestApiSPecRelativePath;
-  if (
-    (await fs.pathExists(originalDestApiSPecRelativePath)) &&
-    !path.isAbsolute(originalDestApiSPecRelativePath)
-  ) {
-    context.logProvider.warning(`${originalDestApiSPecRelativePath} exists.`);
-  } else {
+  const needUpdatePluginManifest =
+    (await fs.pathExists(originalDestApiSPecRelativePath)) ||
+    path.relative(outputFolder, originalDestApiSPecRelativePath).startsWith("..");
+
+  if (needUpdatePluginManifest) {
     destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
       fromApiSpecPath,
       path.join(outputFolder, DefaultApiSpecFolderName)
     );
-    needUpdatePluginManifest = true;
   }
   await fs.ensureFile(destinationApiSpecPath);
   await fs.copyFile(fromApiSpecPath, destinationApiSpecPath);
@@ -118,6 +95,87 @@ export async function addExistingPlugin(
   );
   if (addActionRes.isErr()) {
     return err(addActionRes.error);
+  }
+  return ok(undefined);
+}
+
+export function validateSourcePluginManifest(
+  manifest: PluginManifestSchema,
+  source: string
+): Result<undefined, UserError> {
+  if (!manifest.schema_version) {
+    return err(
+      new UserError(
+        source,
+        "MissingSchemaVersion",
+        getDefaultString(
+          "core.createProjectQuestion.addPlugin.MissingRequiredProperty",
+          "schema_version"
+        ),
+        getLocalizedString(
+          "core.createProjectQuestion.addPlugin.MissingRequiredProperty",
+          "schema_version"
+        )
+      )
+    );
+  }
+
+  if (!manifest.runtimes) {
+    return err(
+      new UserError(
+        source,
+        "MissingRuntimes",
+        getDefaultString(
+          "core.createProjectQuestion.addPlugin.MissingRequiredProperty",
+          "runtimes"
+        ),
+        getLocalizedString(
+          "core.createProjectQuestion.addPlugin.MissingRequiredProperty",
+          "runtimes"
+        )
+      )
+    );
+  }
+
+  const apiSpecPaths = new Set<string>();
+  for (const runtime of manifest.runtimes) {
+    if (runtime.type === "OpenApi" && runtime.spec?.url) {
+      apiSpecPaths.add(runtime.spec.url);
+    }
+  }
+
+  if (apiSpecPaths.size === 0) {
+    return err(
+      new UserError(
+        source,
+        "MissingApiSpec",
+        getDefaultString(
+          "core.createProjectQuestion.addPlugin.pluginManifestMissingApiSpec",
+          "OpenApi"
+        ),
+        getLocalizedString(
+          "core.createProjectQuestion.addPlugin.pluginManifestMissingApiSpec",
+          "OpenApi"
+        )
+      )
+    );
+  }
+
+  if (apiSpecPaths.size > 1) {
+    return err(
+      new UserError(
+        source,
+        "MultipleApiSpecInPluginManifest",
+        getDefaultString(
+          "core.createProjectQuestion.addPlugin.pluginManifestMultipleApiSpec",
+          Array.from(apiSpecPaths).join(",")
+        ),
+        getLocalizedString(
+          "core.createProjectQuestion.addPlugin.pluginManifestMultipleApiSpec",
+          Array.from(apiSpecPaths).join(",")
+        )
+      )
+    );
   }
 
   return ok(undefined);

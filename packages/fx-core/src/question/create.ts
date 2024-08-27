@@ -16,6 +16,7 @@ import {
   Stage,
   StaticOptions,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
@@ -74,6 +75,7 @@ import {
 } from "./constants";
 import { ErrorType, ProjectType, SpecParser } from "@microsoft/m365-spec-parser";
 import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
+import { validateSourcePluginManifest } from "../component/generator/copilotExtension/helper";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -1317,7 +1319,11 @@ function pluginManifestQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: QuestionNames.PluginManifestFilePath,
-    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.title"),
+    title: (inputs: Inputs) => {
+      return CLIPlatforms.includes(inputs.platform)
+        ? "Plugin Manifest Path"
+        : getLocalizedString("core.createProjectQuestion.addExistingPlugin.title");
+    },
     placeholder: getLocalizedString(
       "core.createProjectQuestion.addExistingPlugin.pluginManifest.placeholder"
     ),
@@ -1327,20 +1333,23 @@ function pluginManifestQuestion(): SingleFileQuestion {
     filters: {
       files: ["json"],
     },
-    default: "",
+    defaultFolder: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform) ? "./" : os.homedir(),
     validation: {
       validFunc: async (input: string) => {
-        const manifestRes = await pluginManifestUtils.readPluginManifestFile(input);
+        const manifestRes = await pluginManifestUtils.readPluginManifestFile(input.trim());
         if (manifestRes.isErr()) {
-          return manifestRes.error.message;
+          return (manifestRes.error as UserError).displayMessage;
         } else {
           const manifest = manifestRes.value;
 
-          return manifest.schema_version &&
-            manifest.name_for_human &&
-            manifest.description_for_human
-            ? undefined
-            : "Missing required properties";
+          const checkRes = validateSourcePluginManifest(
+            manifest,
+            QuestionNames.PluginManifestFilePath
+          );
+          if (checkRes.isErr()) {
+            return checkRes.error.displayMessage;
+          }
         }
       },
     },
@@ -1351,7 +1360,11 @@ function pluginApiSpecQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: QuestionNames.PluginOpenApiSpecFilePath,
-    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.title"),
+    title: (inputs: Inputs) => {
+      return CLIPlatforms.includes(inputs.platform)
+        ? "OpenAPI Description Document used for Your API Plugin"
+        : getLocalizedString("core.createProjectQuestion.addExistingPlugin.title");
+    },
     placeholder: getLocalizedString(
       "core.createProjectQuestion.addExistingPlugin.openApiSpec.placeholder"
     ),
@@ -1361,6 +1374,10 @@ function pluginApiSpecQuestion(): SingleFileQuestion {
     filters: {
       files: ["json", "yml", "yaml"],
     },
+    defaultFolder: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "./"
+        : path.dirname(inputs[QuestionNames.PluginManifestFilePath] as string),
     validation: {
       validFunc: async (input: string) => {
         const specParser = new SpecParser(input, getParserOptions(ProjectType.Copilot));

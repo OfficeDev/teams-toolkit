@@ -228,6 +228,16 @@ export class QuestionModelEngine {
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
+      let defaultFolder;
+      if (question.defaultFolder) {
+        if (typeof question.defaultFolder === "function") {
+          defaultFolder = async () => {
+            return await (question as any).defaultFolder(inputs);
+          };
+        } else {
+          defaultValue = question.defaultFolder;
+        }
+      }
       return await ui.selectFile({
         name: question.name,
         title: title,
@@ -238,6 +248,7 @@ export class QuestionModelEngine {
         totalSteps: totalSteps,
         validation: validationFunc,
         filters: question.filters,
+        defaultFolder,
       });
     } else if (question.type === "folder") {
       const validationFunc = question.validation

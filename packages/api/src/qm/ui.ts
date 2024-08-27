@@ -182,6 +182,11 @@ export type SelectFileConfig = UIConfig<string> & {
     label: string;
     description?: string;
   }[];
+
+  /**
+   * Default Uri when open file selector window.
+   */
+  defaultFolder?: string | (() => Promise<string>);
 };
 
 /**

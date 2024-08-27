@@ -63,9 +63,9 @@ export interface CreateProjectInputs extends Inputs {
   "with-plugin"?: "no" | "yes";
   /** @description Create API Plugin */
   "api-plugin-type"?: "new-api" | "api-spec" | "existing-plugin";
-  /** @description Import from Existing - Upload files */
+  /** @description Plugin Manifest Path */
   "plugin-manifest-path"?: string;
-  /** @description Import from Existing - Upload files */
+  /** @description OpenAPI Description Document used for Your API Plugin */
   "plugin-opeanapi-spec-path"?: string;
   /** @description Authentication Type */
   "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";

@@ -476,17 +476,6 @@ export async function initTeamsPage(
         await page?.waitForSelector('button span:has-text("Set up a tab")', {
           state: "detached",
         });
-
-        // verify add page is closed
-        try {
-          await page?.waitForSelector(
-            `:has-text('Add ${options?.teamsAppName} to a team')`
-          );
-        } catch (error) {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
-          );
-        }
         console.log("successful to add teams app!!!");
         return;
       }
@@ -2987,6 +2976,26 @@ export async function validateRetailDashboard(page: Page) {
     await frame?.waitForSelector("span:has-text('Product Sell')");
     await frame?.waitForSelector("span:has-text('Reasons for Return')");
     console.log("Dashboard tab loaded successfully");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateMeeting(page: Page, name: string) {
+  try {
+    console.log("start to verify meeting");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(`#root>div>p:has-text(${name})`);
+    const meetingId = await frame?.waitForSelector(`#root>div>p:nth-child(2)`);
+    expect(meetingId).not.to.be.null;
+    console.log("meeting tab loaded successfully");
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

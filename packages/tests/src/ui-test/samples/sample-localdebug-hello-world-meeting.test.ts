@@ -10,6 +10,7 @@ import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import {
   initTeamsPage,
   reopenTeamsPage,
+  validateMeeting,
 } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
@@ -58,6 +59,14 @@ class MyFirstMeetingTestCase extends CaseFactory {
         type: options?.type,
       }
     );
+  }
+
+  override async onCliValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.displayName);
+  }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.displayName);
   }
 }
 

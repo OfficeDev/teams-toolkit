@@ -21,6 +21,7 @@ import {
   selectTeamsAppManifestQuestionNode,
   uninstallQuestionNode,
   validateTeamsAppQuestionNode,
+  syncManifestQuestionNode,
 } from "./other";
 export * from "./constants";
 export * from "./create";
@@ -75,6 +76,9 @@ export class QuestionNodes {
   }
   uninstall(): IQTreeNode {
     return uninstallQuestionNode();
+  }
+  syncManifest(): IQTreeNode {
+    return syncManifestQuestionNode();
   }
 }
 

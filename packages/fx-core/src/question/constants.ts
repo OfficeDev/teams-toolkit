@@ -82,6 +82,7 @@ export enum QuestionNames {
 
   ManifestPath = "manifest-path",
   ManifestId = "manifest-id",
+  TeamsAppId = "teams-app-id",
   TitleId = "title-id",
   UserEmail = "email",
 
@@ -97,6 +98,8 @@ export enum QuestionNames {
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
   PluginAvailability = "plugin-availability",
+
+  SyncManifest = "sync-manifest",
   ApiPluginType = "api-plugin-type",
   WithPlugin = "with-plugin",
 }

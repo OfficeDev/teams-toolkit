@@ -2993,7 +2993,10 @@ export async function validateMeeting(page: Page, name: string) {
     );
     const frame = await frameElementHandle?.contentFrame();
     await frame?.waitForSelector(`#root>div>p:has-text('${name}')`);
-    const meetingId = await frame?.waitForSelector(`#root>div>p:nth-child(2)`);
+    const meetingId = (
+      await frame?.waitForSelector(`#root>div>p:nth-child(1)`)
+    )?.innerText();
+    console.log("meetingId: ", meetingId);
     expect(meetingId).not.to.be.null;
     console.log("meeting tab loaded successfully");
   } catch (error) {

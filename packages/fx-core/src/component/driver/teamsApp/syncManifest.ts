@@ -48,18 +48,18 @@ export class SyncManifestDriver implements StepDriver {
         )
       );
     }
-    let teamsAppId = "";
-    let manifestTemplatePath = "";
 
     const res = await this.getTeamsAppIdAndManifestTemplatePath(args);
     if (res.isErr()) {
       return err(res.error);
     }
-    teamsAppId = res.value.get("teamsAppId") ?? "";
-    manifestTemplatePath = res.value.get("manifestTemplatePath") ?? "";
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const teamsAppId = res.value.get("teamsAppId")!;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const manifestTemplatePath = res.value.get("manifestTemplatePath")!;
 
     const appPackageRes = await appStudio.getAppPackage(
-      teamsAppId ?? "",
+      teamsAppId,
       context.m365TokenProvider,
       context.logProvider
     );

@@ -230,6 +230,15 @@ export enum ProjectMigratorGuideStatus {
   Cancel = "cancel",
 }
 
+export enum ApiSpecTelemetryPropertis {
+  SpecNotValidDetails = "spec-not-valid-details",
+  InvalidApiSpec = "invalid-api-spec",
+}
+
+export function getQuestionValidationErrorEventName(questionName: string) {
+  return `invalid-${questionName}`;
+}
+
 export function sendTelemetryEvent(
   component: string,
   eventName: string,

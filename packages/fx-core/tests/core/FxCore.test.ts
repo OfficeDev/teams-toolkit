@@ -2089,6 +2089,8 @@ describe("getQuestions", async () => {
         "me-architecture",
         "with-plugin",
         "api-plugin-type",
+        "plugin-manifest-path",
+        "plugin-opeanapi-spec-path",
         "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",

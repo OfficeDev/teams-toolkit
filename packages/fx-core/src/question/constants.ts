@@ -103,6 +103,9 @@ export enum QuestionNames {
   SyncManifest = "sync-manifest",
   ApiPluginType = "api-plugin-type",
   WithPlugin = "with-plugin",
+  ImportPlugin = "import-plugin",
+  PluginManifestFilePath = "plugin-manifest-path",
+  PluginOpenApiSpecFilePath = "plugin-opeanapi-spec-path",
 }
 
 export const AppNamePattern =
@@ -1269,7 +1272,31 @@ export class ApiPluginStartOptions {
     };
   }
 
-  static all(): OptionItem[] {
-    return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
+  static existingPlugin(): OptionItem {
+    return {
+      id: "existing-plugin",
+      label: getLocalizedString("core.createProjectQuestion.apiPlugin.importPlugin.label"),
+      detail: getLocalizedString("core.createProjectQuestion.apiPlugin.importPlugin.detail"),
+    };
+  }
+
+  static staticAll(): OptionItem[] {
+    return [
+      ApiPluginStartOptions.newApi(),
+      ApiPluginStartOptions.apiSpec(),
+      ApiPluginStartOptions.existingPlugin(),
+    ];
+  }
+
+  static all(inputs: Inputs): OptionItem[] {
+    if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+      return [
+        ApiPluginStartOptions.newApi(),
+        ApiPluginStartOptions.apiSpec(),
+        ApiPluginStartOptions.existingPlugin(),
+      ];
+    } else {
+      return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
+    }
   }
 }

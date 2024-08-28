@@ -55,14 +55,17 @@ import {
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
-import { sendTelemetryErrorEvent, TelemetryProperty } from "../../../common/telemetry";
+import {
+  ApiSpecTelemetryPropertis,
+  sendTelemetryErrorEvent,
+  TelemetryProperty,
+} from "../../../common/telemetry";
 import * as util from "util";
-import axios from "axios";
+import { SpecParserSource } from "../../../common/constants";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
-  specNotValidDetails = "spec-not-valid-details",
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
@@ -72,6 +75,7 @@ const enum telemetryProperties {
   isFromAddingApi = "is-from-adding-api",
   failedReason = "failed-reason",
   generateType = "generate-type",
+  projectType = "project-type",
 }
 
 const enum telemetryEvents {
@@ -121,11 +125,6 @@ export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
 
-export const defaultApiSpecFolderName = "apiSpecificationFile";
-export const defaultApiSpecYamlFileName = "openapi.yaml";
-export const defaultApiSpecJsonFileName = "openapi.json";
-export const defaultPluginManifestFileName = "ai-plugin.json";
-
 export interface ErrorResult {
   /**
    * The type of error.
@@ -165,6 +164,7 @@ export async function listOperations(
     validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
     logValidationResults(
+      projectType,
       validationRes.errors,
       validationRes.warnings,
       context,
@@ -255,7 +255,15 @@ export async function listOperations(
             inputs
           );
 
-          logValidationResults(errors, [], context, true, false, existingCorrelationId);
+          logValidationResults(
+            projectType,
+            errors,
+            [],
+            context,
+            true,
+            false,
+            existingCorrelationId
+          );
           return err(errors);
         }
 
@@ -273,7 +281,15 @@ export async function listOperations(
             ],
             inputs
           );
-          logValidationResults(errors, [], context, true, false, existingCorrelationId);
+          logValidationResults(
+            projectType,
+            errors,
+            [],
+            context,
+            true,
+            false,
+            existingCorrelationId
+          );
           return err(errors);
         }
       } else {
@@ -419,7 +435,7 @@ export async function generateFromApiSpec(
   }
 
   if (validationRes.status === ValidationStatus.Error) {
-    logValidationResults(validationRes.errors, warnings, context, false, true);
+    logValidationResults(projectType, validationRes.errors, warnings, context, false, true);
     const errorMessage =
       inputs.platform === Platform.VSCode
         ? getLocalizedString(
@@ -478,6 +494,7 @@ export async function generateFromApiSpec(
 }
 
 export function logValidationResults(
+  projectType: ProjectType,
   errors: ErrorResult[],
   warnings: WarningResult[],
   context: Context,
@@ -495,11 +512,12 @@ export function logValidationResults(
       [telemetryProperties.validationWarnings]: warnings
         .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
         .join(";"),
+      [telemetryProperties.projectType]: projectType.toString(),
     };
 
     const specNotValidError = errors.find((error) => error.type === ErrorType.SpecNotValid);
     if (specNotValidError) {
-      properties[telemetryProperties.specNotValidDetails] = specNotValidError.content;
+      properties[ApiSpecTelemetryPropertis.SpecNotValidDetails] = specNotValidError.content;
     }
 
     if (existingCorrelationId) {
@@ -829,26 +847,12 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
 }
 
 export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
-  return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
-}
-
-export async function isYamlSpecFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
+  return new SystemError(
+    SpecParserSource,
+    error.errorType.toString(),
+    error.message,
+    error.message
+  );
 }
 
 export function formatValidationErrors(

@@ -57,15 +57,15 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
-  /** @description Architecture of Search Based Message Extension */
+  /** @description Architecture of search based message extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
-  /** @description Create Declarative Copilot */
+  /** @description Create declarative copilot */
   "with-plugin"?: "no" | "yes";
   /** @description Create API Plugin */
   "api-plugin-type"?: "new-api" | "api-spec" | "existing-plugin";
-  /** @description Plugin Manifest Path */
+  /** @description Import manifest file */
   "plugin-manifest-path"?: string;
-  /** @description OpenAPI Description Document used for Your API Plugin */
+  /** @description Import OpenAPI description document */
   "plugin-opeanapi-spec-path"?: string;
   /** @description Authentication Type */
   "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";

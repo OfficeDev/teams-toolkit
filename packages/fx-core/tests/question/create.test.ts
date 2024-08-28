@@ -3056,11 +3056,8 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: ApiPluginStartOptions.existingPlugin().id });
           } else if (question.name === QuestionNames.PluginManifestFilePath) {
             const select = question as SingleFileQuestion;
-            const titleFunc = select.title as LocalFunc<string>;
-            const title = await titleFunc(inputs);
-            const cliTitle = await titleFunc({ ...inputs, platform: Platform.CLI });
-            assert.isTrue(title?.toLowerCase().includes("upload"));
-            assert.isTrue(cliTitle?.toLowerCase().includes("plugin"));
+            const title = select.title;
+            assert.isNotEmpty(title);
 
             const defaultFolderFunc = select.defaultFolder as LocalFunc<string>;
             let defaultFolder = await defaultFolderFunc(inputs);
@@ -3089,11 +3086,8 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: "c://testFolder/test.json" });
           } else if (question.name === QuestionNames.PluginOpenApiSpecFilePath) {
             const select = question as SingleFileQuestion;
-            const titleFunc = select.title as LocalFunc<string>;
-            const title = await titleFunc(inputs);
-            const cliTitle = await titleFunc({ ...inputs, platform: Platform.CLI });
-            assert.isTrue(title?.toLowerCase().includes("file"));
-            assert.isTrue(cliTitle?.toLowerCase().includes("openapi"));
+            const title = select.title;
+            assert.isNotEmpty(title);
 
             const defaultFolderFunc = select.defaultFolder as LocalFunc<string>;
             let defaultFolder = await defaultFolderFunc(inputs);

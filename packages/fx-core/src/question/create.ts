@@ -1330,17 +1330,11 @@ export function pluginManifestQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: QuestionNames.PluginManifestFilePath,
-    title: (inputs: Inputs) => {
-      return CLIPlatforms.includes(inputs.platform)
-        ? "Plugin Manifest Path"
-        : getLocalizedString("core.createProjectQuestion.addExistingPlugin.title");
-    },
+    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.pluginManifest.title"),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.addExistingPlugin.pluginManifest.placeholder"
     ),
     cliDescription: "Plugin manifest path.",
-    innerStep: 1,
-    innerTotalStep: 2,
     filters: {
       files: ["json"],
     },
@@ -1373,17 +1367,11 @@ export function pluginApiSpecQuestion(): SingleFileQuestion {
   return {
     type: "singleFile",
     name: QuestionNames.PluginOpenApiSpecFilePath,
-    title: (inputs: Inputs) => {
-      return CLIPlatforms.includes(inputs.platform)
-        ? "OpenAPI Description Document used for Your API Plugin"
-        : getLocalizedString("core.createProjectQuestion.addExistingPlugin.title");
-    },
+    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.apiSpec.title"),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.addExistingPlugin.openApiSpec.placeholder"
     ),
     cliDescription: "OpenAPI description document used for your API plugin.",
-    innerStep: 2,
-    innerTotalStep: 2,
     filters: {
       files: ["json", "yml", "yaml"],
     },

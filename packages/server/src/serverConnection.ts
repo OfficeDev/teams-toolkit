@@ -45,8 +45,9 @@ import LogProvider from "./providers/logger";
 import TelemetryReporter from "./providers/telemetry";
 import TokenProvider from "./providers/tokenProvider";
 import UserInteraction from "./providers/userInteraction";
-import { standardizeResult } from "./utils";
+import { isGuidEmpty, standardizeResult } from "./utils";
 import { SyncManifestInputsForVS } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/SyncManifest";
+import { template } from "lodash";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -197,9 +198,13 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
+    let teamsAppId = inputs?.teamsAppFromTdp?.appId;
+    if (teamsAppId && isGuidEmpty(teamsAppId)) {
+      teamsAppId = undefined;
+    }
     const coreInputs: SyncManifestInputs = {
       ...inputs,
-      "teams-app-id": inputs?.teamsAppFromTdp?.appId,
+      "teams-app-id": teamsAppId,
     };
     const res = await Correlator.runWithId(
       corrId,

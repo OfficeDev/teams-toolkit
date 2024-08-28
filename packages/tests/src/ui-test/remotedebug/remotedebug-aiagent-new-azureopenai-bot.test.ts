@@ -68,7 +68,10 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aiagentnew", appName, { aiType: "Azure OpenAI" });
+      await createNewProject("aiagentnew", appName, {
+        aiType: "Azure OpenAI",
+        aiManagement: "Build from Scratch",
+      });
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;

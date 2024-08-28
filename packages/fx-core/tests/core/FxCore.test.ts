@@ -5308,16 +5308,33 @@ describe("addPlugin", async () => {
       const res = await core.syncManifest(inputs as SyncManifestInputs);
       assert.isTrue(res.isOk());
     });
-    it("sync Manifest - success", async () => {
+    it("sync Manifest - default CLI project path", async () => {
       const core = new FxCore(tools);
       const inputs = {
         platform: Platform.CLI_HELP,
         env: "dev",
         nonInteractive: true,
+        ignoreLockByUT: true,
       };
-      const defaultProjectPath = CLIPlatforms.includes(inputs.platform)
-        ? "./"
-        : path.join(os.homedir(), ConstantString.RootFolder);
+      const defaultProjectPath = "./";
+      sandbox
+        .stub(SyncManifestDriver.prototype, "sync")
+        .callsFake(async (args: SyncManifestArgs, context: WrapDriverContext) => {
+          assert.isTrue(args.projectPath === defaultProjectPath);
+          return ok(new Map<string, string>());
+        });
+      const res = await core.syncManifest(inputs as SyncManifestInputs);
+      assert.isTrue(res.isOk());
+    });
+    it("sync Manifest - default VSC project path", async () => {
+      const core = new FxCore(tools);
+      const inputs = {
+        platform: Platform.VSCode,
+        env: "dev",
+        nonInteractive: true,
+        ignoreLockByUT: true,
+      };
+      const defaultProjectPath = path.join(os.homedir(), ConstantString.RootFolder);
       sandbox
         .stub(SyncManifestDriver.prototype, "sync")
         .callsFake(async (args: SyncManifestArgs, context: WrapDriverContext) => {

@@ -437,6 +437,12 @@ describe("Wrapped Axios Client Test", () => {
     );
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
 
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/oAuthConfigurations/${fakeId}`,
+      ""
+    );
+    chai.assert.notEqual(apiName, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
+
     apiName = WrappedAxiosClient.convertUrlToApiName(getAppStudioEndpoint() + `unknown`, "GET");
     chai.assert.equal(apiName, (getAppStudioEndpoint() + `unknown`).replace(/\//g, `-`));
 

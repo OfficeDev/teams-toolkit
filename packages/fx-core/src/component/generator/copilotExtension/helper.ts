@@ -24,7 +24,7 @@ export async function addExistingPlugin(
   actionId: string,
   context: Context,
   source: string
-): Promise<Result<undefined, FxError>> {
+): Promise<Result<string, FxError>> {
   const pluginManifestRes = await pluginManifestUtils.readPluginManifestFile(
     fromPluginManifestPath
   );
@@ -88,7 +88,7 @@ export async function addExistingPlugin(
   if (addActionRes.isErr()) {
     return err(addActionRes.error);
   }
-  return ok(undefined);
+  return ok(destinationPluginManifestPath);
 }
 
 export function validateSourcePluginManifest(

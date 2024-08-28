@@ -98,7 +98,6 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
-  PluginAvailability = "plugin-availability",
 
   SyncManifest = "sync-manifest",
   ApiPluginType = "api-plugin-type",
@@ -1280,16 +1279,20 @@ export class ApiPluginStartOptions {
     };
   }
 
-  static staticAll(): OptionItem[] {
-    return [
-      ApiPluginStartOptions.newApi(),
-      ApiPluginStartOptions.apiSpec(),
-      ApiPluginStartOptions.existingPlugin(),
-    ];
+  static staticAll(doesProjectExists?: boolean): OptionItem[] {
+    return doesProjectExists
+      ? [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()]
+      : [
+          ApiPluginStartOptions.newApi(),
+          ApiPluginStartOptions.apiSpec(),
+          ApiPluginStartOptions.existingPlugin(),
+        ];
   }
 
-  static all(inputs: Inputs): OptionItem[] {
-    if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+  static all(inputs: Inputs, doesProjectExists?: boolean): OptionItem[] {
+    if (doesProjectExists) {
+      return [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()];
+    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
       return [
         ApiPluginStartOptions.newApi(),
         ApiPluginStartOptions.apiSpec(),

@@ -1304,30 +1304,33 @@ function declarativeCopilotPluginQuestion(): SingleSelectQuestion {
   };
 }
 
-function apiPluginStartQuestion(): SingleSelectQuestion {
+export function apiPluginStartQuestion(doesProjectExists?: boolean): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.ApiPluginType,
     title: (inputs: Inputs) => {
-      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id
+      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
+        doesProjectExists
         ? getLocalizedString("core.createProjectQuestion.addApiPlugin.title")
         : getLocalizedString("core.createProjectQuestion.createApiPlugin.title");
     },
     placeholder: (inputs: Inputs) => {
-      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id
+      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
+        doesProjectExists
         ? getLocalizedString("core.createProjectQuestion.addApiPlugin.placeholder")
         : getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.placeholder");
     },
     cliDescription: "API plugin type.",
-    staticOptions: ApiPluginStartOptions.staticAll(),
+    staticOptions: ApiPluginStartOptions.staticAll(doesProjectExists),
     dynamicOptions: (inputs: Inputs) => {
-      return ApiPluginStartOptions.all(inputs);
+      return ApiPluginStartOptions.all(inputs, doesProjectExists);
     },
     default: ApiPluginStartOptions.newApi().id,
   };
 }
 
 export function pluginManifestQuestion(): SingleFileQuestion {
+  const correlationId = Correlator.getId();
   return {
     type: "singleFile",
     name: QuestionNames.PluginManifestFilePath,
@@ -1345,16 +1348,31 @@ export function pluginManifestQuestion(): SingleFileQuestion {
       validFunc: async (input: string) => {
         const manifestRes = await pluginManifestUtils.readPluginManifestFile(input.trim());
         if (manifestRes.isErr()) {
+          sendTelemetryErrorEvent(
+            CoreSource,
+            getQuestionValidationErrorEventName(QuestionNames.PluginManifestFilePath),
+            manifestRes.error,
+            {
+              "correlation-id": correlationId,
+            }
+          );
           return (manifestRes.error as UserError).displayMessage;
         } else {
           const manifest = manifestRes.value;
 
           const checkRes = validateSourcePluginManifest(
-            // TODO: telemetry
             manifest,
             QuestionNames.PluginManifestFilePath
           );
           if (checkRes.isErr()) {
+            sendTelemetryErrorEvent(
+              CoreSource,
+              getQuestionValidationErrorEventName(QuestionNames.PluginManifestFilePath),
+              checkRes.error,
+              {
+                "correlation-id": correlationId,
+              }
+            );
             return checkRes.error.displayMessage;
           }
         }

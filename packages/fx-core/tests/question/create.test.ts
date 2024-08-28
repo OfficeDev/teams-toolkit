@@ -1657,6 +1657,43 @@ describe("scaffold question", () => {
         ]);
       });
 
+      it("traverse in vscode Copilot Plugin from Kiota", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        inputs[QuestionNames.Capabilities] = CapabilityOptions.apiPlugin().id;
+        inputs[QuestionNames.ApiSpecLocation] = "api-spec-path";
+        inputs[QuestionNames.ApiPluginManifestPath] = "api-plugin-manifest-path";
+        inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
+        inputs[QuestionNames.ApiOperation] = "api-plugin-manifest-path";
+        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.copilotExtension().id;
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.ApiSpecLocation,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
       it("traverse in vscode Copilot Plugin from new API with API Key authentication", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,

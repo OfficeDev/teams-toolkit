@@ -1517,6 +1517,7 @@ describe("SpecGenerator", async () => {
     const tools = new MockTools();
     setTools(tools);
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn | undefined;
 
     const apiOperations: ApiOperation[] = [
       {
@@ -1540,6 +1541,9 @@ describe("SpecGenerator", async () => {
 
     afterEach(async () => {
       sandbox.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
     });
 
     it("API ME success", async function () {
@@ -2188,6 +2192,64 @@ describe("SpecGenerator", async () => {
       assert.isTrue(result.isErr() && result.error.name === "test");
       assert.isTrue(generateBasedOnSpec.calledOnce);
       assert.isTrue(addAction.calledOnce);
+    });
+
+    it("generate for kiota", async function () {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.KiotaIntegration]: "true" });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.AppName]: "test",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.ApiPluginManifestPath]: "test.json",
+        [QuestionNames.ProjectType]: "copilot-extension-type",
+        getTemplateInfosState: {
+          templateName: "api-plugin-existing-api",
+          isPlugin: true,
+          uri: "https://test.com",
+          isYaml: true,
+          type: ProjectType.Copilot,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "list").resolves({
+        APIs: [
+          {
+            api: "api1",
+            server: "https://test",
+            operationId: "get",
+            auth: {
+              name: "test",
+              authScheme: {
+                type: "http",
+                scheme: "bearer",
+              },
+            },
+            isValid: true,
+            reason: [],
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generateForCopilot")
+        .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
     });
   });
 });

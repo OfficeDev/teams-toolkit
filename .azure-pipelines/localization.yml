@@ -69,7 +69,7 @@ extends:
             isAutoCompletePrSelected: false
             packageSourceAuth: patAuth
             patVariable: '$(System.AccessToken)'
-            dependencyPackageSource: https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/ceapex.LocTools/nuget/v3/index.json'
+            dependencyPackageSource: https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/TeamsFx/nuget/v3/index.json'
         - task: PowerShell@2
           displayName: Copy zh json files for VSC
           inputs:

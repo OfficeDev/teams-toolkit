@@ -3020,7 +3020,7 @@ describe("scaffold question", () => {
         ]);
       });
 
-      it.only("declarative copilot with existing plugin", async () => {
+      it("declarative copilot with existing plugin", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };

@@ -14,9 +14,6 @@ dependencies:
   adaptivecards-templating:
     specifier: ^2.1.0
     version: 2.1.0(adaptive-expressions@4.22.3)
-  fast-xml-parser:
-    specifier: ^4.4.1
-    version: 4.4.1
   markdown-it:
     specifier: ^13.0.2
     version: 13.0.2

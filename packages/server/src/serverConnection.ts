@@ -28,6 +28,7 @@ import {
   FxCore,
   PackageService,
   QuestionNames,
+  SyncManifestInputs,
   TestToolInstallOptions,
   assembleError,
   environmentNameManager,
@@ -45,6 +46,7 @@ import TelemetryReporter from "./providers/telemetry";
 import TokenProvider from "./providers/tokenProvider";
 import UserInteraction from "./providers/userInteraction";
 import { standardizeResult } from "./utils";
+import { SyncManifestInputsForVS } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/SyncManifest";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -186,6 +188,23 @@ export default class ServerConnection implements IServerConnection {
       corrId,
       (params) => this.core.validateManifest(params),
       inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async syncTeamsAppManifestRequest(
+    inputs: SyncManifestInputsForVS,
+    token: CancellationToken
+  ): Promise<Result<undefined, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const coreInputs: SyncManifestInputs = {
+      ...inputs,
+      "teams-app-id": inputs?.teamsAppFromTdp?.appId,
+    };
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.syncManifest(params),
+      coreInputs
     );
     return standardizeResult(res);
   }

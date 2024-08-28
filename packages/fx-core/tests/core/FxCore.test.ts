@@ -10,6 +10,7 @@ import {
   WarningType,
 } from "@microsoft/m365-spec-parser";
 import {
+  CLIPlatforms,
   DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
@@ -107,6 +108,9 @@ import * as projMigrator from "../../src/core/middleware/projectMigratorV3";
 import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 import * as pluginGeneratorHelper from "../../src/component/generator/apiSpec/helper";
 import { SyncManifestDriver } from "../../src/component/driver/teamsApp/syncManifest";
+import { ConstantString } from "../../src/common/constants";
+import { SyncManifestArgs } from "../../src/component/driver/teamsApp/interfaces/SyncManifest";
+import { WrapDriverContext } from "../../src/component/driver/util/wrapUtil";
 
 const tools = new MockTools();
 
@@ -5301,6 +5305,25 @@ describe("addPlugin", async () => {
         nonInteractive: true,
       };
       sandbox.stub(SyncManifestDriver.prototype, "sync").resolves(ok(new Map<string, string>()));
+      const res = await core.syncManifest(inputs as SyncManifestInputs);
+      assert.isTrue(res.isOk());
+    });
+    it("sync Manifest - success", async () => {
+      const core = new FxCore(tools);
+      const inputs = {
+        platform: Platform.CLI_HELP,
+        env: "dev",
+        nonInteractive: true,
+      };
+      const defaultProjectPath = CLIPlatforms.includes(inputs.platform)
+        ? "./"
+        : path.join(os.homedir(), ConstantString.RootFolder);
+      sandbox
+        .stub(SyncManifestDriver.prototype, "sync")
+        .callsFake(async (args: SyncManifestArgs, context: WrapDriverContext) => {
+          assert.isTrue(args.projectPath === defaultProjectPath);
+          return ok(new Map<string, string>());
+        });
       const res = await core.syncManifest(inputs as SyncManifestInputs);
       assert.isTrue(res.isOk());
     });

@@ -1411,6 +1411,9 @@ export function capabilitySubTree(): IQTreeNode {
           },
           {
             data: apiOperationQuestion(),
+            condition: (inputs: Inputs) => {
+              return !inputs[QuestionNames.ApiPluginManifestPath];
+            },
           },
         ],
       },

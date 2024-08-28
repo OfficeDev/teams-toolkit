@@ -51,6 +51,10 @@ extends:
           - output: pipelineArtifact
             displayName: 'Publish Artifact: drop'
             targetPath: '$(Build.ArtifactStagingDirectory)\loc'
+            artifactName: drop
+            artifactType: Container
+            condition: succeeded()
+            sbomEnabled: false
         steps:
         - checkout: self
           clean: true

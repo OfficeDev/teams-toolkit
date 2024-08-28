@@ -23,6 +23,14 @@ export class ConfigManager {
       ConfigurationKey.CopilotExtensionEnable,
       false
     ).toString();
+    process.env["DEVELOP_COPILOT_PLUGIN"] = this.getConfiguration(
+      ConfigurationKey.CopilotExtensionEnable,
+      false
+    ).toString();
+    process.env["TEAMSFX_DECLARATIVE_COPILOT"] = this.getConfiguration(
+      ConfigurationKey.CopilotExtensionEnable,
+      false
+    ).toString();
   }
   loadLogLevel() {
     const logLevel = this.getConfiguration(ConfigurationKey.LogLevel, "Info") as string;

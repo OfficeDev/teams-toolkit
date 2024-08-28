@@ -50,6 +50,7 @@ extends:
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish Artifact: drop'
+            targetPath: '$(Build.ArtifactStagingDirectory)\loc'
         steps:
         - checkout: self
           clean: true

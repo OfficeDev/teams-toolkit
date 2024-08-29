@@ -199,6 +199,7 @@ import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { isVSCodeInsiderVersion } from "./utils/versionUtil";
+import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value =
@@ -239,6 +240,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Call activate function of toolkit core.
   activateHandlers();
+
+  // Register createPluginWithManifest command
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
+    const createPluginWithManifestCommand = vscode.commands.registerCommand(
+      "fx-extension.createprojectfromkiota",
+      createPluginWithManifest
+    );
+    context.subscriptions.push(createPluginWithManifestCommand);
+  }
 
   // Init VSC context key
   await initializeContextKey(context, isTeamsFxProject);

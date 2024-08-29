@@ -289,6 +289,9 @@ export enum TelemetryEvent {
   stopAddInDebug = "stop-office-addin-debug",
   generateAddInGUID = "generate-addin-guid",
   openNewOfficeAddInProject = "open-new-office-addin-project",
+
+  CreatePluginWithManifestStart = "create-plugin-with-manifest-start",
+  CreatePluginWithManifest = "create-plugin-with-manifest",
 }
 
 export enum TelemetryProperty {

@@ -148,7 +148,7 @@ export class CryptoCachePlugin {
             }
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         VsCodeLogInstance.warning(
           localize("teamstoolkit.cacheAccess.readTokenFail") + (err.message as string)
         );
@@ -158,7 +158,7 @@ export class CryptoCachePlugin {
         const data = cacheContext.tokenCache.serialize();
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
-      } catch (err) {
+      } catch (err: any) {
         VsCodeLogInstance.warning(
           localize("teamstoolkit.cacheAccess.writeTokenFail") + (err.message as string)
         );
@@ -174,7 +174,7 @@ export class CryptoCachePlugin {
         const data = cacheContext.tokenCache.serialize();
         const text = await this.accountCrypto.encrypt(data);
         await fs.writeFile(fileCachePath, text, UTF8);
-      } catch (err) {
+      } catch (err: any) {
         VsCodeLogInstance.warning(
           localize("teamstoolkit.cacheAccess.saveTokenFail") + (err.message as string)
         );
@@ -196,7 +196,7 @@ export async function saveAccountId(accountName: string, accountId?: string) {
       // this is to remove current account
       await fs.writeFile(accountPath + accountName, "", UTF8);
     }
-  } catch (err) {
+  } catch (err: any) {
     VsCodeLogInstance.warning(
       localize("teamstoolkit.cacheAccess.saveHomeAccountIdFail") + (err.message as string)
     );
@@ -207,7 +207,7 @@ export async function clearCache(accountName: string) {
   await fs.ensureDir(cacheDir);
   try {
     await fs.writeFile(cachePath + accountName + cachePathEnd, "");
-  } catch (err) {
+  } catch (err: any) {
     VsCodeLogInstance.warning(
       localize("teamstoolkit.cacheAccess.writeTokenFail") + (err.message as string)
     );
@@ -218,7 +218,7 @@ export async function loadAccountId(accountName: string) {
   if (await fs.pathExists(accountPath + accountName)) {
     try {
       return await fs.readFile(accountPath + accountName, UTF8);
-    } catch (err) {
+    } catch (err: any) {
       VsCodeLogInstance.warning(
         localize("teamstoolkit.cacheAccess.readHomeAccountIdFail") + (err.message as string)
       );

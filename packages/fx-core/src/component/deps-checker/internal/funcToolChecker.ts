@@ -96,7 +96,7 @@ export class FuncToolChecker implements DepsChecker {
       }
 
       return installationInfo;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof DepsCheckerError) {
         return await this.getDepsInfo(undefined, undefined, error);
       }

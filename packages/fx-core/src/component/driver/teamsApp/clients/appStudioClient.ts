@@ -562,7 +562,7 @@ export namespace AppStudioClient {
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);
       }
-    } catch (err) {
+    } catch (err: any) {
       if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
         requester = createRequesterWithToken(appStudioToken, region);
         await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);

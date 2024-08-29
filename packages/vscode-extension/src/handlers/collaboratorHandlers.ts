@@ -53,7 +53,7 @@ export async function manageCollaboratorHandler(env?: string): Promise<Result<an
         result = await listCollaborator(env);
         break;
     }
-  } catch (e) {
+  } catch (e: any) {
     result = wrapError(e);
   }
 
@@ -85,7 +85,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
 
     void window.showInformationMessage(grantSucceededMsg);
     VsCodeLogInstance.info(grantSucceededMsg);
-  } catch (e) {
+  } catch (e: any) {
     result = wrapError(e);
   }
 
@@ -113,7 +113,7 @@ export async function listCollaborator(env?: string): Promise<Result<any, FxErro
     }
 
     VsCodeLogInstance.outputChannel.show();
-  } catch (e) {
+  } catch (e: any) {
     result = wrapError(e);
   }
 

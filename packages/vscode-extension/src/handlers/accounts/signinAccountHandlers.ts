@@ -60,7 +60,7 @@ export async function signinAzureCallback(...args: unknown[]): Promise<Result<nu
   }
   try {
     await azureAccountManager.getIdentityCredentialAsync(true);
-  } catch (error) {
+  } catch (error: any) {
     if (!isUserCancelError(error)) {
       return err(error);
     }

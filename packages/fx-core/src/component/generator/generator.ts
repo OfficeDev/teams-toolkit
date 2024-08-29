@@ -229,7 +229,7 @@ export async function sampleDefaultOnActionError(
   context.logProvider.error(error.message);
   if (error instanceof BaseComponentInnerError) throw error.toFxError();
   if (await fs.pathExists(context.destination)) {
-    await fs.rm(context.destination, { recursive: true });
+    fs.rm(context.destination, { recursive: true }, (err: NodeJS.ErrnoException | null) => {});
   }
   switch (action.name) {
     case GeneratorActionName.FetchSampleInfo:

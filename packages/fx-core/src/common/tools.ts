@@ -68,7 +68,7 @@ export async function listDevTunnels(
     };
     const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
     return ok(tunnels);
-  } catch (error) {
+  } catch (error: any) {
     return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", error.message));
   }
 }

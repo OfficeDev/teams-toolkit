@@ -201,7 +201,7 @@ export class CodeFlowLogin {
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
-    } catch (e) {
+    } catch (e: any) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, e, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
@@ -296,7 +296,7 @@ export class CodeFlowLogin {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return true;
-    } catch (e) {
+    } catch (e: any) {
       VsCodeLogInstance.error("[Logout " + this.accountName + "] " + (e.message as string));
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: this.accountName,
@@ -352,7 +352,7 @@ export class CodeFlowLogin {
             return undefined;
           });
       }
-    } catch (error) {
+    } catch (error: any) {
       VsCodeLogInstance.error("[Login] " + (error.message as string));
       if (
         error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
@@ -385,7 +385,7 @@ export class CodeFlowLogin {
         } else {
           return err(LoginCodeFlowError(new Error("No token response.")));
         }
-      } catch (error) {
+      } catch (error: any) {
         VsCodeLogInstance.debug(
           "[Login] " +
             stringUtil.format(

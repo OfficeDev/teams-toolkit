@@ -162,6 +162,7 @@ export enum TelemetryEvent {
   DependencyApi = "dependency-api",
   AppStudioApi = "app-studio-api",
   MOSApi = "ttk-mos-api",
+  ViewPluginManifestAfterAdded = "view-plugin-manifest-after-added",
 }
 
 export enum ProjectTypeProps {

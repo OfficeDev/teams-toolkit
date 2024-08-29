@@ -1926,7 +1926,7 @@ export class FxCore {
     }
 
     let destinationPluginManifestPath: string;
-    // generate files]
+    // generate files
     if (isGenerateFromApiSpec) {
       const url = inputs[QuestionNames.ApiSpecLocation].trim();
 
@@ -1989,18 +1989,25 @@ export class FxCore {
       destinationPluginManifestPath = addPluginRes.value;
     }
 
-    const successMessage = getLocalizedString("core.addPlugin.success", actionId);
-
     if (inputs.platform === Platform.VSCode) {
+      const successMessage = getLocalizedString("core.addPlugin.success.vsc", actionId);
+      const viewPluginManifest = getLocalizedString("core.addPlugin.success.viewPluginManifest");
       void context.userInteraction
-        .showMessage("info", successMessage, false, "View plugin manifest")
+        .showMessage("info", successMessage, false, viewPluginManifest)
         .then((userRes) => {
-          if (userRes.isOk() && userRes.value) {
-            console.log(userRes.value);
+          if (userRes.isOk() && userRes.value === viewPluginManifest) {
+            context.telemetryReporter.sendTelemetryEvent(
+              TelemetryEvent.ViewPluginManifestAfterAdded
+            );
             void TOOLS?.ui?.openFile?.(destinationPluginManifestPath);
           }
         });
     } else {
+      const successMessage = getLocalizedString(
+        "core.addPlugin.success",
+        actionId,
+        destinationPluginManifestPath
+      );
       void context.userInteraction.showMessage("info", successMessage, false);
     }
 

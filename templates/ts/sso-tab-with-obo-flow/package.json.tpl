@@ -10,8 +10,6 @@
     "@microsoft/teams-js": "^2.22.0",
     "@microsoft/teamsfx": "^2.2.0",
     "@microsoft/teamsfx-react": "^3.0.0",
-    "ajv": "^8.17.1",
-    "ajv-keywords": "^5.1.0",
     "axios": "^0.21.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

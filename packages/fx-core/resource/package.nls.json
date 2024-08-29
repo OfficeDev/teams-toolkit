@@ -445,7 +445,7 @@
   "core.addPlugin.success.vsc": "API plugin \"%s\" added to the project successfully.",
   "core.addPlugin.success": "API plugin \"%s\" added to the project successfully. You can view plugin manifest in \"%s\".",
   "core.addPlugin.success.viewPluginManifest": "View plugin manifest",
-  "core.addPlugin.warning.variables": "Found environment variables \"%s\". Ensure the values are set in .env file or system environment variables",
+  "core.addPlugin.warning.variables": "Found environment variables \"%s\" in the newly added plugin. Ensure the values are set in .env file or system environment variables",
   "core.updateBotIdsQuestion.title": "Create new bot(s) for debugging",
   "core.updateBotIdsQuestion.placeholder": "Deselect to keep the original botId value",
   "_core.updateBotIdsQuestion.placeholder.comment": "'botId' is the field name that shouldn't be localized.",

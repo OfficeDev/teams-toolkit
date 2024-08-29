@@ -227,7 +227,7 @@ describe("helper", async () => {
       sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
         ok({
           schema_version: "v1",
-          name_for_human: "test",
+          name_for_human: "${{file}}",
           runtimes: [{ type: "OpenApi", spec: { url: "test.json" } }],
         } as any)
       );

@@ -199,6 +199,7 @@ import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { isVSCodeInsiderVersion } from "./utils/versionUtil";
+import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value =
@@ -532,6 +533,15 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(validatePrerequisitesCmd);
 
   registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
+
+  // Register createPluginWithManifest command
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
+    const createPluginWithManifestCommand = vscode.commands.registerCommand(
+      "fx-extension.createPluginFromManifest",
+      createPluginWithManifest
+    );
+    context.subscriptions.push(createPluginWithManifestCommand);
+  }
 }
 
 /**

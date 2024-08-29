@@ -551,5 +551,6 @@
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.title": "Intelligent App Resources",
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.description": "Explore these resources to build intelligent apps and enhance your development projects\n🗒️ [Generative AI for Beginners](https://github.com/microsoft/generative-ai-for-beginners/tree/main)\n✨ [Retrieval Augmented Generation (RAG)](https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview)\n📚 [AI Learning and Community Hub](https://learn.microsoft.com/en-us/ai/)",
-  "teamstoolkit.m365.needSignIn.message": "You need to sign in your Microsoft 365 account."
+  "teamstoolkit.m365.needSignIn.message": "You need to sign in your Microsoft 365 account.",
+  "teamstoolkit.handler.createPluginWithManifest.error.missingParameter": "Missing parameter in the createPluginWithManifest command. Usage: createPluginWithManifest(API_SPEC_PATH:string, PLUGIN_MANIFEST_PATH: string, SCAFFOLD_NEW: boolean)."
 }

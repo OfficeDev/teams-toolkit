@@ -1142,35 +1142,6 @@ export const recommendedLocations = [
   "West US 3",
 ];
 
-export class PluginAvailabilityOptions {
-  static action(): OptionItem {
-    return {
-      id: "action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
-    };
-  }
-  static copilotPlugin(): OptionItem {
-    return {
-      id: "api-plugin",
-      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
-    };
-  }
-  static copilotPluginAndAction(): OptionItem {
-    return {
-      id: "api-plugin-and-action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
-    };
-  }
-
-  static all(): OptionItem[] {
-    return [
-      PluginAvailabilityOptions.copilotPlugin(),
-      PluginAvailabilityOptions.action(),
-      PluginAvailabilityOptions.copilotPluginAndAction(),
-    ];
-  }
-}
-
 export class TeamsAppValidationOptions {
   static schema(): OptionItem {
     return {

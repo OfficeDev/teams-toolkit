@@ -135,7 +135,6 @@ import {
   ApiPluginStartOptions,
   AppNamePattern,
   HubTypes,
-  PluginAvailabilityOptions,
   ProjectTypeOptions,
   QuestionNames,
   SPFxVersionOptionIds,

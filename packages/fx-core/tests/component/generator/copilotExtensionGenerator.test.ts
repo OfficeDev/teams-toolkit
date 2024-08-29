@@ -163,7 +163,7 @@ describe("copilotExtension", async () => {
       sandbox
         .stub(copilotGptManifestUtils, "getManifestPath")
         .resolves(ok("declarativeCopilot.json"));
-      sandbox.stub(generatorHelper, "addExistingPlugin").resolves(ok(undefined));
+      sandbox.stub(generatorHelper, "addExistingPlugin").resolves(ok("test.json"));
 
       const res = await generator.post(context, inputs, "");
       assert.isTrue(res.isOk());

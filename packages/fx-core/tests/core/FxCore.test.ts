@@ -90,6 +90,7 @@ import {
   InvalidProjectError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  NotImplementedError,
   UserCancelError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
@@ -97,12 +98,13 @@ import {
   CapabilityOptions,
   QuestionNames,
   ScratchOptions,
+  SyncManifestInputs,
+  UninstallInputs,
   questionNodes,
 } from "../../src/question";
 import { ApiPluginStartOptions, HubOptions } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { NotImplementedError, SyncManifestInputs, UninstallInputs } from "../../build";
 import { CoreHookContext } from "../../src/core/types";
 import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";

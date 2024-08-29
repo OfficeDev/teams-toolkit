@@ -36,7 +36,11 @@ import { envUtil } from "../../src/component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../../src/core/collaborator";
 import { setTools } from "../../src/common/globalVars";
 import { SPFxImportFolderQuestion, questionNodes } from "../../src/question";
-import { QuestionNames, TeamsAppValidationOptions } from "../../src/question/constants";
+import {
+  ApiPluginStartOptions,
+  QuestionNames,
+  TeamsAppValidationOptions,
+} from "../../src/question/constants";
 import {
   apiSpecApiKeyQuestion,
   createNewEnvQuestionNode,
@@ -53,7 +57,6 @@ import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockedAzureTokenProvider } from "../core/other.test";
 import { MockTools, MockUserInteraction } from "../core/utils";
 import { callFuncs } from "./create.test";
-import { ApiPluginStartOptions } from "../../build";
 
 const ui = new MockUserInteraction();
 

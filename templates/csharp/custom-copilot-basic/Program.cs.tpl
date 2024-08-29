@@ -45,7 +45,7 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
 builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new AzureOpenAIModelOptions(
         config.Azure.OpenAIApiKey,
-        config.Azure.OpenAIDeploymentName
+        config.Azure.OpenAIDeploymentName,
         config.Azure.OpenAIEndpoint
     )
     {

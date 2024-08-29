@@ -1696,7 +1696,7 @@
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "async-mutex": "^0.3.1",
-    "axios": "^1.6.8",
+    "axios": "^1.7.4",
     "dotenv": "^8.2.0",
     "dree": "^4.7.0",
     "express": "^4.19.2",

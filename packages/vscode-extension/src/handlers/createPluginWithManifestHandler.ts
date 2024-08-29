@@ -8,7 +8,6 @@ import {
   ok,
   Result,
   Stage,
-  SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { getSystemInputs } from "../utils/systemEnvUtils";

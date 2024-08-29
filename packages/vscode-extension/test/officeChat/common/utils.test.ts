@@ -4,7 +4,6 @@ import fs from "fs";
 import chaiPromised from "chai-as-promised";
 import * as commonUtils from "../../../src/officeChat/common/utils";
 import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
-import { AxiosResponse } from "axios";
 
 chai.use(chaiPromised);
 

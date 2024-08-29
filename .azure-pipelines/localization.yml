@@ -15,16 +15,14 @@ name: $(Date:yyyyMMdd).$(Rev:r)
 variables:
 - name: 1espt.codesignvalidation.enforced
   value: false
-- name: GitHubPat
-  value: 
-- name: OneLocBuildPat
-  value: 
 - name: PipelineClassification_Audited
   value: Production
 - name: PipelineGovernanceStatus_Audited
   value: true
 - name: policy_service.build_task_injection.enabled
   value: true
+- name: TeamName
+  value: 'TeamsFx'
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
@@ -50,10 +48,16 @@ extends:
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish Artifact: drop'
+            targetPath: '$(Build.ArtifactStagingDirectory)\loc'
+            artifactName: drop
+            artifactType: Container
+            condition: succeeded()
+            sbomEnabled: false
         steps:
         - checkout: self
           clean: true
           fetchTags: false
+          persistCredentials: true
         - task: NuGetAuthenticate@1
           displayName: NuGet Authenticate
           inputs:
@@ -66,6 +70,8 @@ extends:
             isShouldReusePrSelected: true
             isAutoCompletePrSelected: false
             packageSourceAuth: patAuth
+            patVariable: '$(System.AccessToken)'
+            dependencyPackageSource: https://devdiv.pkgs.visualstudio.com/DevDiv/_packaging/TeamsFx/nuget/v3/index.json
         - task: PowerShell@2
           displayName: Copy zh json files for VSC
           inputs:

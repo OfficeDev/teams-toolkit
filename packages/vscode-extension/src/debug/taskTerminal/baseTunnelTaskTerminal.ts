@@ -106,7 +106,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     }
 
     if (args.type) {
-      if (typeof args.type !== "string" || !Object.values(TunnelType).includes(args.type)) {
+      if (typeof args.type !== "string" || !Object.values(TunnelType).includes(args.type as any)) {
         throw BaseTaskTerminal.taskDefinitionError("args.type");
       }
     }

@@ -16,6 +16,7 @@ import path from "path";
 import fs from "fs-extra";
 import { normalizePath } from "../../driver/teamsApp/utils/utils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
+import { getEnvironmentVariables } from "../../utils/common";
 
 export async function addExistingPlugin(
   declarativeCopilotManifestPath: string,
@@ -38,6 +39,7 @@ export async function addExistingPlugin(
   if (checkRes.isErr()) {
     return err(checkRes.error);
   }
+
   const runtimes = pluginManifest.runtimes!; // have validated that the value exists.
   const destinationApiSpecRelativePath = runtimes.find((runtime) => runtime.type === "OpenApi")!
     .spec.url as string; // have validated that the value exists.
@@ -88,6 +90,14 @@ export async function addExistingPlugin(
   if (addActionRes.isErr()) {
     return err(addActionRes.error);
   }
+
+  const pluginManifestVariables = getEnvironmentVariables(JSON.stringify(pluginManifest));
+  if (pluginManifestVariables.length > 0) {
+    context.logProvider.warning(
+      getLocalizedString("core.addPlugin.warning.variables", pluginManifestVariables.join(", "))
+    );
+  }
+
   return ok(destinationPluginManifestPath);
 }
 

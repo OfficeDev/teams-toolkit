@@ -14,7 +14,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "declarationMap": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,

@@ -229,13 +229,13 @@ export async function sampleDefaultOnActionError(
   context.logProvider.error(error.message);
   if (error instanceof BaseComponentInnerError) throw error.toFxError();
   if (await fs.pathExists(context.destination)) {
-    await fs.rm(context.destination, { recursive: true });
+    await fs.remove(context.destination);
   }
   switch (action.name) {
     case GeneratorActionName.FetchSampleInfo:
       throw new FetchSampleInfoError(error).toFxError();
     case GeneratorActionName.DownloadDirectory:
-      const url = convertToUrl(context.sampleInfo!);
+      const url = convertToUrl(context.sampleInfo);
       if (isApiLimitError(error)) {
         throw new DownloadSampleApiLimitError(url, error).toFxError();
       } else {

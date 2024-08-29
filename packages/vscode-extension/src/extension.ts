@@ -241,15 +241,6 @@ export async function activate(context: vscode.ExtensionContext) {
   // Call activate function of toolkit core.
   activateHandlers();
 
-  // Register createPluginWithManifest command
-  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
-    const createPluginWithManifestCommand = vscode.commands.registerCommand(
-      "fx-extension.createPluginFromManifest",
-      createPluginWithManifest
-    );
-    context.subscriptions.push(createPluginWithManifestCommand);
-  }
-
   // Init VSC context key
   await initializeContextKey(context, isTeamsFxProject);
 
@@ -542,6 +533,15 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(validatePrerequisitesCmd);
 
   registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
+
+  // Register createPluginWithManifest command
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
+    const createPluginWithManifestCommand = vscode.commands.registerCommand(
+      "fx-extension.createPluginFromManifest",
+      createPluginWithManifest
+    );
+    context.subscriptions.push(createPluginWithManifestCommand);
+  }
 }
 
 /**

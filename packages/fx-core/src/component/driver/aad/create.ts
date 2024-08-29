@@ -85,7 +85,7 @@ export class CreateAadAppDriver implements StepDriver {
         const isMsftAccount =
           tokenJson.isOk() &&
           tokenJson.value.unique_name &&
-          (tokenJson.value.unique_name as string).includes("@microsoft.com");
+          (tokenJson.value.unique_name as string).endsWith("@microsoft.com");
 
         // Create new Microsoft Entra app if no client id exists
         const signInAudience = args.signInAudience

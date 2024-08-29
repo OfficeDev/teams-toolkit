@@ -103,7 +103,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       const isMsftAccount =
         tokenJson.isOk() &&
         tokenJson.value.unique_name &&
-        (tokenJson.value.unique_name as string).includes("@microsoft.com");
+        (tokenJson.value.unique_name as string).endsWith("@microsoft.com");
 
       const startTime = performance.now();
       if (!botAadAppState.botId) {

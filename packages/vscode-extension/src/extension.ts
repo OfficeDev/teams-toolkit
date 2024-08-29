@@ -244,7 +244,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register createPluginWithManifest command
   if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
     const createPluginWithManifestCommand = vscode.commands.registerCommand(
-      "fx-extension.createprojectfromkiota",
+      "fx-extension.createPluginFromManifest",
       createPluginWithManifest
     );
     context.subscriptions.push(createPluginWithManifestCommand);

@@ -19,7 +19,7 @@ describe("File: officeChat/common/utils", () => {
     it("return file response data", async () => {
       sandbox.stub(requestUtils, "sendRequestWithTimeout").resolves({
         data: "testData",
-      } as AxiosResponse);
+      } as AxiosResponse<string>);
       const result = await commonUtils.fetchRawFileContent("test");
       chai.assert.equal(result, "testData");
     });

@@ -18,7 +18,7 @@ export interface CreateAppPackageArgs {
   outputJsonPath?: string;
 
   /**
-   * Manifest folder path
+   * Folder path where output files should be put
    */
   outputFolder?: string;
 }

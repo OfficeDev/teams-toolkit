@@ -76,11 +76,11 @@ export class CreateAppPackageDriver implements StepDriver {
     const zipFileDir = path.dirname(zipFileName);
     await fs.mkdir(zipFileDir, { recursive: true });
 
-    let jsonFileDir = "";
-    let teamsManifestJsonFileName = "";
+    let jsonFileDir;
+    let teamsManifestJsonFileName;
     const shouldwriteAllManifest = !!args.outputFolder;
     if (args.outputJsonPath) {
-      let teamsManifestJsonFileName = args.outputJsonPath;
+      teamsManifestJsonFileName = args.outputJsonPath;
       if (!path.isAbsolute(teamsManifestJsonFileName)) {
         teamsManifestJsonFileName = path.join(context.projectPath, teamsManifestJsonFileName);
       }

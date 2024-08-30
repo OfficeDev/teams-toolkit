@@ -95,8 +95,8 @@ export enum TemplateProjectFolder {
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
   HelloWorldTabDocker = "hello-world-tab-docker",
-  FoodCatalog = "gc-nodejs-typescript-food-catalog",
-  RedditLink = "reddit-link-unfurling",
+  FoodCatalog = "nodejs-typescript-food-catalog",
+  RedditLink = "nodejs",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }

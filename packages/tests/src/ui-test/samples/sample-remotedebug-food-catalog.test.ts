@@ -5,6 +5,8 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import path from "path";
+import os from "os";
 import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
@@ -18,5 +20,7 @@ new FoodCatalogTestCase(
   [],
   {
     skipInit: true,
+    repoPath: "./resource/samples",
+    testRootFolder: path.resolve(os.homedir(), "resource"),
   }
 ).test();

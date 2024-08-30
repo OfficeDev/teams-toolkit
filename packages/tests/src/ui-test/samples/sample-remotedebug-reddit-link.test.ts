@@ -32,12 +32,13 @@ class RedditLinkTestCase extends CaseFactory {
 }
 
 new RedditLinkTestCase(
-  TemplateProject.FoodCatalog,
+  TemplateProject.RedditLink,
   27852468,
   "v-ivanchen@microsoft.com",
   "dev",
   [],
   {
     skipValidation: true,
+    repoPath: "./resource/samples/msgext-link-unfurling-reddit",
   }
 ).test();

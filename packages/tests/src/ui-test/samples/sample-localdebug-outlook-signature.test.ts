@@ -49,5 +49,6 @@ new OutlookSignatureTestCase(
   [],
   {
     skipInit: true,
+    repoPath: "./resource/samples",
   }
 ).test();

@@ -5,7 +5,7 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProject, Timeout } from "../../utils/constants";
+import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
 class OutlookSignatureTestCase extends CaseFactory {}
@@ -18,5 +18,6 @@ new OutlookSignatureTestCase(
   [],
   {
     skipInit: true,
+    repoPath: "./resource/samples",
   }
 ).test();

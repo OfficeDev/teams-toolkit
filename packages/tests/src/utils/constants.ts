@@ -399,6 +399,9 @@ export enum LocalDebugTaskLabel {
   StartWebServer = "Start web server",
   DockerRun = "docker-run: debug",
   DockerTask = "docker",
+  EnsureDevTunnnel = "Ensure DevTunnel",
+  RunWatch = "Run watch",
+  FuncStart = "func: host start",
 }
 
 export class LocalDebugTaskResult {
@@ -414,6 +417,7 @@ export class LocalDebugTaskResult {
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
   static readonly DockerFinish = "press any key to close it";
+  static readonly DevtunnelSuccess = "Ready to accept connections for tunnel:";
 }
 
 export enum LocalDebugTaskLabel2 {

@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import { TemplateProject } from "../../utils/constants";
+import { LocalDebugTaskLabel, TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
 import { editDotEnvFile } from "../../utils/commonUtils";
@@ -36,7 +36,7 @@ new RedditLinkTestCase(
   27851434,
   "v-ivanchen@microsoft.com",
   "local",
-  [],
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication],
   {
     skipValidation: true,
     repoPath: "./resource/samples/msgext-link-unfurling-reddit",

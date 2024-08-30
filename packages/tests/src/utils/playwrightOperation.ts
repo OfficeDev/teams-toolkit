@@ -109,10 +109,10 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging("Debug in Teams (Chrome)");
   },
   [TemplateProject.FoodCatalog]: async () => {
-    await startDebugging();
+    await startDebugging("Debug");
   },
   [TemplateProject.RedditLink]: async () => {
-    await startDebugging();
+    await startDebugging("Debug in Teams (Chrome)");
   },
 };
 

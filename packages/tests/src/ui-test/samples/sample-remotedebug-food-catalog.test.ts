@@ -7,10 +7,26 @@
 
 import path from "path";
 import os from "os";
+import fs from "fs";
 import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
+import { AzSqlHelper } from "../../utils/azureCliHelper";
+import { SampledebugContext } from "./sampledebugContext";
 
-class FoodCatalogTestCase extends CaseFactory {}
+class FoodCatalogTestCase extends CaseFactory {
+  override async onAfterCreate(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev"
+  ): Promise<void> {
+    // create folder for the test "/env/.env.dev"
+    await sampledebugContext.createEnvFolder(["env"]);
+    // create .env file
+    const filePath = path.resolve("env", `.env.${env}`);
+    const envContent =
+      "SECRET_TABLE_STORAGE_CONNECTION_STRING=crypto_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    fs.writeFileSync(filePath, envContent);
+  }
+}
 
 new FoodCatalogTestCase(
   TemplateProject.FoodCatalog,

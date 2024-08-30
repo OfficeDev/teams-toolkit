@@ -8,7 +8,8 @@
     "rootDir": ".",
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "strict": false /* enable all strict type-checking options */,
+    "strict": true /* enable all strict type-checking options */,
+    "useUnknownInCatchVariables": false,
     "jsx": "react",
     "plugins": [],
     "esModuleInterop": true

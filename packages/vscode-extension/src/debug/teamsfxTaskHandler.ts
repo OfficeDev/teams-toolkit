@@ -341,7 +341,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
-        cwd = cwdOption.replace("${workspaceFolder}", globalVariables.workspaceUri.fsPath);
+        cwd = cwdOption.replace("${workspaceFolder}", globalVariables.workspaceUri!.fsPath);
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
       let validNpmInstallLogInfo = false;

@@ -235,7 +235,7 @@ export async function sampleDefaultOnActionError(
     case GeneratorActionName.FetchSampleInfo:
       throw new FetchSampleInfoError(error).toFxError();
     case GeneratorActionName.DownloadDirectory:
-      const url = convertToUrl(context.sampleInfo);
+      const url = convertToUrl(context.sampleInfo!);
       if (isApiLimitError(error)) {
         throw new DownloadSampleApiLimitError(url, error).toFxError();
       } else {

@@ -59,6 +59,8 @@ export enum TemplateProject {
   LargeScaleBot = "Large Scale Notification Bot",
   BotSSODocker = "Containerized Bot App with SSO Enabled",
   HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
+  FoodCatalog = "Ingest Custom API Data into Microsoft 365 with a Microsoft Graph Connector",
+  RedditLink = "Format Reddit Link into Adaptive Card",
 }
 
 export enum TemplateProjectFolder {
@@ -93,6 +95,8 @@ export enum TemplateProjectFolder {
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
   HelloWorldTabDocker = "hello-world-tab-docker",
+  FoodCatalog = "gc-nodejs-typescript-food-catalog",
+  RedditLink = "reddit-link-unfurling",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -134,6 +138,8 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
     [TemplateProject.HelloWorldTabDocker]:
       TemplateProjectFolder.HelloWorldTabDocker,
+    [TemplateProject.FoodCatalog]: TemplateProjectFolder.FoodCatalog,
+    [TemplateProject.RedditLink]: TemplateProjectFolder.RedditLink,
   };
 
 export enum Resource {

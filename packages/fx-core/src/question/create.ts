@@ -1537,9 +1537,10 @@ export function capabilitySubTree(): IQTreeNode {
         // from API spec
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
-            inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+            !featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+            (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
+              inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
+              inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
           );
         },
         data: { type: "group", name: QuestionNames.FromExistingApi },
@@ -1628,10 +1629,26 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // root folder
         data: folderQuestion(),
+        condition: (inputs: Inputs) => {
+          // Only skip this project when need to rediect to Kiota: 1. Feature flag enabled 2. Creating plugin from existing spec 3. No plugin manifest path
+          return (
+            !featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) ||
+            inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.apiSpec().id ||
+            !!inputs[QuestionNames.ApiPluginManifestPath]
+          );
+        },
       },
       {
         // app name
         data: appNameQuestion(),
+        condition: (inputs: Inputs) => {
+          // Only skip this project when need to rediect to Kiota: 1. Feature flag enabled 2. Creating plugin from existing spec 3. No plugin manifest path
+          return (
+            !featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) ||
+            inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.apiSpec().id ||
+            !!inputs[QuestionNames.ApiPluginManifestPath]
+          );
+        },
       },
     ],
     condition: (inputs: Inputs) => {

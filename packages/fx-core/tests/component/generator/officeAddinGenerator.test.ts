@@ -334,7 +334,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     sinon.restore();
     mockedEnvRestore();
     if (await fse.pathExists(testFolder)) {
-      await fse.rm(testFolder, { recursive: true });
+      await fse.remove(testFolder);
     }
   });
 
@@ -845,7 +845,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     sinon.restore();
     mockedEnvRestore();
     if (await fse.pathExists(testFolder)) {
-      await fse.rm(testFolder, { recursive: true });
+      await fse.remove(testFolder);
     }
   });
 

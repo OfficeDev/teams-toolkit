@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true /* enable all strict type-checking options */,
+    "useUnknownInCatchVariables": false,
     "jsx": "react",
     "plugins": [],
     "esModuleInterop": true

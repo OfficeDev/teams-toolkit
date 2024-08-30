@@ -107,7 +107,7 @@ function isCheckDevProxyTask(task: vscode.Task): boolean {
 function isTeamsFxTransparentTask(task: vscode.Task): boolean {
   if (task.definition && task.definition.type === ProductName) {
     const command = task.definition.command as string;
-    if (Object.values(TaskCommand).includes(command)) {
+    if (Object.values(TaskCommand).includes(command as any)) {
       return true;
     }
   }

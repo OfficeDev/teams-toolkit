@@ -107,7 +107,7 @@ describe("Generator utils", () => {
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
-      await fs.rm(tmpDir, { recursive: true });
+      await fs.remove(tmpDir);
     }
     mockedEnvRestore();
   });
@@ -521,7 +521,7 @@ describe("Generator error", async () => {
 
   afterEach(async () => {
     if (await fs.pathExists(tmpDir)) {
-      await fs.rm(tmpDir, { recursive: true });
+      await fs.remove(tmpDir);
     }
     sandbox.restore();
   });
@@ -784,7 +784,7 @@ describe("render template", () => {
     afterEach(async () => {
       sandbox.restore();
       if (await fs.pathExists(tmpDir)) {
-        await fs.rm(tmpDir, { recursive: true });
+        await fs.remove(tmpDir);
       }
       mockedEnvRestore();
     });
@@ -1181,7 +1181,7 @@ describe("Generate sample using download directory", () => {
     sandbox.restore();
     mockedEnvRestore();
     if (await fs.pathExists(tmpDir)) {
-      await fs.rm(tmpDir, { recursive: true });
+      await fs.remove(tmpDir);
     }
   });
 
@@ -1250,7 +1250,7 @@ describe("Generate sample using download directory", () => {
   });
 
   it("clean up if downloading failed", async () => {
-    const rmStub = sandbox.stub(fs, "rm").resolves();
+    const rmStub = sandbox.stub(fs, "remove").resolves();
     const existsStub = sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(generatorUtils, "downloadDirectory").rejects();
     const result = await Generator.generateSample(ctx, tmpDir, "test");

@@ -22,7 +22,9 @@ class FoodCatalogTestCase extends CaseFactory {
     const filePath = path.resolve("env", `.env.${env}`);
     const envContent =
       "NOTIFICATION_ENDPOINT=https://test.com\nNOTIFICATION_DOMAIN=test.com";
-    fs.writeFileSync(filePath, envContent);
+    fs.writeFileSync(filePath, envContent, { encoding: "utf-8" });
+    console.log("env file created");
+    console.log(fs.readFileSync(filePath, { encoding: "utf-8" }));
     // add chmod +x to the script
     if (os.platform() === "linux" || os.platform() === "darwin") {
       const scriptPath = path.resolve(

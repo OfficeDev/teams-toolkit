@@ -18,7 +18,9 @@ class OutlookSignatureTestCase extends CaseFactory {
     const { success } = await Executor.execute(
       "npm install",
       sampledebugContext.projectPath,
-      process.env
+      process.env,
+      undefined,
+      "npm warn"
     );
     expect(success).to.be.true;
     const childProcess = Executor.spawnCommand(

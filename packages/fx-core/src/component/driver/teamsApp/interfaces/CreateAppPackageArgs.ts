@@ -15,5 +15,10 @@ export interface CreateAppPackageArgs {
   /**
    * Manifest file path
    */
-  outputJsonPath: string;
+  outputJsonPath?: string;
+
+  /**
+   * Manifest folder path
+   */
+  outputFolder?: string;
 }

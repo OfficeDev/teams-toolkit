@@ -79,6 +79,7 @@ export enum QuestionNames {
   ConfirmAadManifest = "confirmAadManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
+  OutputFolderParamName = "output-folder",
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",

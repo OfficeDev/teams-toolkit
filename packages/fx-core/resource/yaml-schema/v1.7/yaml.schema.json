@@ -14,7 +14,7 @@
     "version": {
       "type": "string",
       "description": "The version of the yaml file schema",
-      "const": "v1.6"
+      "const": "v1.7"
     },
     "additionalMetadata": {
       "type": "object",
@@ -877,7 +877,7 @@
           "type": "object",
           "additionalProperties": false,
           "description": "parameters for this action",
-          "required": ["manifestPath", "outputZipPath", "outputJsonPath"],
+          "required": ["manifestPath", "outputZipPath", "outputFolder"],
           "properties": {
             "manifestPath": {
               "type": "string",
@@ -887,9 +887,9 @@
               "type": "string",
               "description": "Path to the output zip package"
             },
-            "outputJsonPath": {
+            "outputFolder": {
               "type": "string",
-              "description": "Path to the output manifest file"
+              "description": "Path to the output folder containing manifests"
             }
           }
         }

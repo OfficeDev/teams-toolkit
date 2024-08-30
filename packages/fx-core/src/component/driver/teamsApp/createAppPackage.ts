@@ -336,7 +336,7 @@ export class CreateAppPackageDriver implements StepDriver {
     if (!args || (!args.outputJsonPath && !args.outputFolder)) {
       invalidParams.push("outputJsonPath or outputFolder");
     }
-    if (!args || (args.outputJsonPath && !args.outputZipPath)) {
+    if (!args || !args.outputZipPath) {
       invalidParams.push("outputZipPath");
     }
     if (invalidParams.length > 0) {

@@ -21,6 +21,7 @@ import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp"
 import { getResolvedManifest, normalizePath } from "./utils/utils";
 import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 import { ManifestType } from "../../utils/envFunctionUtils";
+import { getAbsolutePath } from "../../utils/common";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -69,10 +70,7 @@ export class CreateAppPackageDriver implements StepDriver {
     // Deal with relative path
     // Environment variables should have been replaced by value
     // ./build/appPackage/appPackage.dev.zip instead of ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-    let zipFileName = args.outputZipPath;
-    if (!path.isAbsolute(zipFileName)) {
-      zipFileName = path.join(context.projectPath, zipFileName);
-    }
+    const zipFileName = getAbsolutePath(args.outputZipPath, context.projectPath);
     const zipFileDir = path.dirname(zipFileName);
     await fs.mkdir(zipFileDir, { recursive: true });
 
@@ -80,17 +78,10 @@ export class CreateAppPackageDriver implements StepDriver {
     let teamsManifestJsonFileName;
     const shouldwriteAllManifest = !!args.outputFolder;
     if (args.outputJsonPath) {
-      teamsManifestJsonFileName = args.outputJsonPath;
-      if (!path.isAbsolute(teamsManifestJsonFileName)) {
-        teamsManifestJsonFileName = path.join(context.projectPath, teamsManifestJsonFileName);
-      }
+      teamsManifestJsonFileName = getAbsolutePath(args.outputJsonPath, context.projectPath);
       jsonFileDir = path.dirname(teamsManifestJsonFileName);
     } else {
-      let jsonOutputFolder = args.outputFolder!;
-      if (!path.isAbsolute(jsonOutputFolder)) {
-        jsonOutputFolder = path.join(context.projectPath, jsonOutputFolder);
-      }
-      jsonFileDir = jsonOutputFolder;
+      jsonFileDir = getAbsolutePath(args.outputFolder!, context.projectPath);
       teamsManifestJsonFileName = path.join(
         jsonFileDir,
         `manifest.${process.env.TEAMSFX_ENV!}.json`

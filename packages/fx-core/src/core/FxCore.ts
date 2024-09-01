@@ -113,7 +113,10 @@ import {
 import { LaunchHelper } from "../component/m365/launchHelper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
-import { expandEnvironmentVariable } from "../component/utils/common";
+import {
+  expandEnvironmentVariable,
+  outputScaffoldingWarningMessage,
+} from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
@@ -1985,7 +1988,9 @@ export class FxCore {
       if (addPluginRes.isErr()) {
         return err(addPluginRes.error);
       }
-      destinationPluginManifestPath = addPluginRes.value;
+      destinationPluginManifestPath = addPluginRes.value.destinationPluginManifestPath;
+      const warningMessage = outputScaffoldingWarningMessage(addPluginRes.value.warnings);
+      context.logProvider.info(warningMessage);
     }
 
     if (inputs.platform === Platform.VSCode) {

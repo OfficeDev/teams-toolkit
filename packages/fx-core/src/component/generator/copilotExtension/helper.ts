@@ -9,6 +9,7 @@ import {
   PluginManifestSchema,
   Result,
   UserError,
+  Warning,
 } from "@microsoft/teamsfx-api";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
@@ -17,6 +18,17 @@ import fs from "fs-extra";
 import { normalizePath } from "../../driver/teamsApp/utils/utils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getEnvironmentVariables } from "../../utils/common";
+import { sendTelemetryErrorEvent } from "../../../common/telemetry";
+import { assembleError } from "../../../error";
+
+export interface AddExistingPluginResult {
+  warnings: Warning[];
+  destinationPluginManifestPath: string;
+}
+
+const pluginManifestPlaceholderWarning = "add-exsiting-plugin-manifest-placehoder";
+const apiSpecPlaceholderWarning = "add-exsiting-plugin-api-spec-placehoder";
+const readApiSpecErrorTelemetry = "read-api-spec-error";
 
 export async function addExistingPlugin(
   declarativeCopilotManifestPath: string,
@@ -25,7 +37,7 @@ export async function addExistingPlugin(
   actionId: string,
   context: Context,
   source: string
-): Promise<Result<string, FxError>> {
+): Promise<Result<AddExistingPluginResult, FxError>> {
   const pluginManifestRes = await pluginManifestUtils.readPluginManifestFile(
     fromPluginManifestPath
   );
@@ -57,6 +69,7 @@ export async function addExistingPlugin(
     path.relative(outputFolder, originalDestApiSPecRelativePath).startsWith("..");
 
   if (needUpdatePluginManifest) {
+    // TODO: telemetry
     destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
       fromApiSpecPath,
       path.join(outputFolder, DefaultApiSpecFolderName)
@@ -91,14 +104,38 @@ export async function addExistingPlugin(
     return err(addActionRes.error);
   }
 
+  const warnings: Warning[] = [];
   const pluginManifestVariables = getEnvironmentVariables(JSON.stringify(pluginManifest));
   if (pluginManifestVariables.length > 0) {
-    context.logProvider.warning(
-      getLocalizedString("core.addPlugin.warning.variables", pluginManifestVariables.join(", "))
-    );
+    warnings.push({
+      type: pluginManifestPlaceholderWarning,
+      content: getLocalizedString(
+        "core.addPlugin.warning.manifestVariables",
+        pluginManifestVariables.join(", ")
+      ),
+    });
   }
 
-  return ok(destinationPluginManifestPath);
+  try {
+    const apiSpecContent = await fs.readFile(destinationApiSpecPath, "utf8");
+    const apiSpecVariables = getEnvironmentVariables(apiSpecContent);
+    if (apiSpecVariables.length > 0) {
+      warnings.push({
+        type: apiSpecPlaceholderWarning,
+        content: getLocalizedString(
+          "core.addPlugin.warning.apiSpecVariables",
+          apiSpecVariables.join(", ")
+        ),
+      });
+    }
+  } catch (e) {
+    sendTelemetryErrorEvent(source, readApiSpecErrorTelemetry, assembleError(e));
+  }
+
+  return ok({
+    destinationPluginManifestPath,
+    warnings,
+  });
 }
 
 export function validateSourcePluginManifest(

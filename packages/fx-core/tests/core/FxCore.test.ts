@@ -4934,7 +4934,9 @@ describe("addPlugin", async () => {
       .stub(copilotGptManifestUtils, "readCopilotGptManifestFile")
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
     sandbox.stub(copilotGptManifestUtils, "getManifestPath").resolves(ok("dcManifest.json"));
-    sandbox.stub(copilotExtensionHelper, "addExistingPlugin").resolves(ok("ai-plugin.json"));
+    sandbox
+      .stub(copilotExtensionHelper, "addExistingPlugin")
+      .resolves(ok({ destinationPluginManifestPath: "ai-plugin.json", warnings: [] }));
 
     const core = new FxCore(tools);
 

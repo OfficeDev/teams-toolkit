@@ -20,7 +20,7 @@ import { ok, Platform, PluginManifestSchema, TeamsAppManifest } from "@microsoft
 import AdmZip from "adm-zip";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../../src/error/teamsApp";
 
-describe.only("teamsApp/createAppPackage", async () => {
+describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),

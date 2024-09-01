@@ -13,12 +13,12 @@ export interface CreateAppPackageArgs {
   outputZipPath: string;
 
   /**
-   * Manifest file path
+   * Manifest file path. This parameter is used when teamspp yaml version <= 1.6
    */
   outputJsonPath?: string;
 
   /**
-   * Folder path where output files should be put
+   * Folder path where output files should be put.  This parameter is used when teamspp yaml version > 1.6
    */
   outputFolder?: string;
 }

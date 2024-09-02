@@ -1,11 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, Inputs, ok, Platform, Stage, UserError, Void } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  Stage,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import {
   DependencyStatus,
   DepsManager,
   NodeNotFoundError,
+  QuestionNames,
   SyncManifestInputs,
   teamsDevPortalClient,
   TestToolInstallOptions,
@@ -543,5 +554,49 @@ describe("serverConnections", () => {
     if (res.isErr()) {
       assert.equal(res.error.source, "source");
     }
+  });
+
+  it("syncTeamsAppManifestRequest with teamsApp Id", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (inputs[QuestionNames.TeamsAppId] === "123") {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
+    const res = await connection.syncTeamsAppManifestRequest(
+      {
+        teamsAppFromTdp: {
+          teamsAppId: "123",
+        },
+      } as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+
+  it("syncTeamsAppManifestRequest with empty GUID", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (!inputs[QuestionNames.TeamsAppId]) {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
+    const res = await connection.syncTeamsAppManifestRequest(
+      {
+        teamsAppFromTdp: {
+          teamsAppId: "00000000-0000-0000-0000-000000000000",
+        },
+      } as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
   });
 });

@@ -47,7 +47,6 @@ import TokenProvider from "./providers/tokenProvider";
 import UserInteraction from "./providers/userInteraction";
 import { isGuidEmpty, standardizeResult } from "./utils";
 import { SyncManifestInputsForVS } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/SyncManifest";
-import { template } from "lodash";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;

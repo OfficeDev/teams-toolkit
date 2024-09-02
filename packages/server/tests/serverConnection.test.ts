@@ -547,7 +547,9 @@ describe("serverConnections", () => {
     const fake = sandbox.fake.resolves(err(new UserError("source", "name", "", "")));
     sandbox.replace(connection["core"], "syncManifest", fake);
     const res = await connection.syncTeamsAppManifestRequest(
-      {} as SyncManifestInputsForVS,
+      {
+        correlationId: "123",
+      } as SyncManifestInputsForVS,
       {} as CancellationToken
     );
     assert.isTrue(res.isErr());
@@ -594,6 +596,25 @@ describe("serverConnections", () => {
         teamsAppFromTdp: {
           teamsAppId: "00000000-0000-0000-0000-000000000000",
         },
+      } as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+  it("syncTeamsAppManifestRequest with teamsAppFromTdp but no teamsAppId", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (!inputs[QuestionNames.TeamsAppId]) {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
+    const res = await connection.syncTeamsAppManifestRequest(
+      {
+        teamsAppFromTdp: {},
       } as SyncManifestInputsForVS,
       {} as CancellationToken
     );

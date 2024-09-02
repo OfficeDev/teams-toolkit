@@ -18,6 +18,10 @@ import {
   CreateProjectInputs,
   CreateProjectResult,
   CryptoProvider,
+  DefaultApiSpecFolderName,
+  DefaultApiSpecJsonFileName,
+  DefaultApiSpecYamlFileName,
+  DefaultPluginManifestFileName,
   Func,
   FxError,
   IGenerator,
@@ -99,14 +103,9 @@ import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   convertSpecParserErrorToFxError,
-  defaultApiSpecFolderName,
-  defaultApiSpecJsonFileName,
-  defaultApiSpecYamlFileName,
-  defaultPluginManifestFileName,
   generateFromApiSpec,
   generateScaffoldingSummary,
   getParserOptions,
-  isYamlSpecFile,
   listOperations,
   listPluginExistingOperations,
 } from "../component/generator/apiSpec/helper";
@@ -166,7 +165,7 @@ import { MosServiceEndpoint, MosServiceScope } from "../component/m365/serviceCo
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
 import { SyncManifestArgs } from "../component/driver/teamsApp/interfaces/SyncManifest";
 import { SyncManifestDriver } from "../component/driver/teamsApp/syncManifest";
-import { generateDriverContext } from "../common/utils";
+import { generateDriverContext, isJsonSpecFile } from "../common/utils";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -1023,11 +1022,10 @@ export class FxCore {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env
           .TEAMSFX_ENV!}.zip`,
-      outputJsonPath:
+      outputFolder:
         inputs[QuestionNames.OutputManifestParamName] ??
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
-          .TEAMSFX_ENV!}.json`,
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}`,
     };
     const result = (await driver.execute(args, context)).result;
     if (context.platform === Platform.VSCode) {
@@ -1858,7 +1856,7 @@ export class FxCore {
     const url = inputs[QuestionNames.ApiSpecLocation];
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const appPackageFolder = path.dirname(manifestPath);
-    const apiSpecFolder = path.join(appPackageFolder, defaultApiSpecFolderName);
+    const apiSpecFolder = path.join(appPackageFolder, DefaultApiSpecFolderName);
     const needAddAction =
       inputs[QuestionNames.PluginAvailability] === PluginAvailabilityOptions.action().id ||
       inputs[QuestionNames.PluginAvailability] ===
@@ -1917,15 +1915,13 @@ export class FxCore {
     }
 
     // generate file path
-    let isYaml: boolean;
+    let isYaml = false;
     try {
-      isYaml = await isYamlSpecFile(url);
-    } catch (e) {
-      isYaml = false;
-    }
+      isYaml = !(await isJsonSpecFile(url));
+    } catch (e) {}
     await fs.ensureDir(apiSpecFolder);
 
-    let openApiSpecFileName = isYaml ? defaultApiSpecYamlFileName : defaultApiSpecJsonFileName;
+    let openApiSpecFileName = isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName;
     const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
     const openApiSpecFileType = openApiSpecFileName.split(".")[1];
     let apiSpecFileNameSuffix = 1;
@@ -1936,10 +1932,9 @@ export class FxCore {
     }
     const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
 
-    let pluginManifestName = defaultPluginManifestFileName;
-    const pluginManifestNamePrefix = defaultPluginManifestFileName.split(".")[0];
+    const pluginManifestNamePrefix = DefaultPluginManifestFileName.split(".")[0];
     let pluginFileNameSuffix = 1;
-    pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
+    let pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
     while (await fs.pathExists(path.join(appPackageFolder, pluginManifestName))) {
       pluginManifestName = `${pluginManifestNamePrefix}_${++pluginFileNameSuffix}.json`;
     }

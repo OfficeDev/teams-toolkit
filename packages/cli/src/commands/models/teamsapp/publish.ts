@@ -10,7 +10,7 @@ import {
   ProjectFolderOption,
   TeamsAppManifestFileOption,
   TeamsAppOuputPackageOption,
-  TeamsAppOutputManifestFileOption,
+  TeamsAppOutputFolderOption,
   TeamsAppPackageOption,
 } from "../../common";
 import { validateArgumentConflict } from "./update";
@@ -22,7 +22,7 @@ export const teamsappPublishCommand: CLICommand = {
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,
     TeamsAppOuputPackageOption,
-    TeamsAppOutputManifestFileOption,
+    TeamsAppOutputFolderOption,
     EnvOption,
     EnvFileOption,
     ProjectFolderOption,

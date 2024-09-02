@@ -117,7 +117,7 @@ describe("ProjectMigratorMW", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isOk());
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 
@@ -145,7 +145,7 @@ describe("ProjectMigratorMW", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isErr());
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 
@@ -218,7 +218,7 @@ describe("ProjectMigratorMW", () => {
       assert.isTrue(res.isErr());
       assert.instanceOf((res as any).error, NotAllowedMigrationError);
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 });
@@ -264,7 +264,7 @@ describe("ProjectMigratorMW with no TEAMSFX_V3", () => {
       const res = await my.other(inputs);
       assert.isTrue(res.isErr());
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 });

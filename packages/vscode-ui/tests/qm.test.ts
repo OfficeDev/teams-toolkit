@@ -975,17 +975,32 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFile", async () => {
-      sandbox.stub(mockUI, "selectFile").resolves(ok({ type: "success", result: "a" }));
+      const uiStub = sandbox
+        .stub(mockUI, "selectFile")
+        .resolves(ok({ type: "success", result: "a" }));
       const question: SingleFileQuestion = {
         type: "singleFile",
         name: "test",
         title: "test",
+        innerStep: 1,
+        innerTotalStep: 2,
+        defaultFolder: "./",
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const res = await engine.defaultVisotor(question, mockUI, inputs);
+      let res = await engine.defaultVisotor(question, mockUI, inputs);
       assert.isTrue(res.isOk() && res.value.type === "success");
+
+      question.defaultFolder = (inputs: Inputs) => {
+        return "test";
+      };
+      res = await engine.defaultVisotor(question, mockUI, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+      assert.isTrue(
+        typeof uiStub.args[1][0].defaultFolder === "function" &&
+          (await uiStub.args[1][0].defaultFolder()) === "test"
+      );
     });
     it("selectFolder", async () => {
       sandbox.stub(mockUI, "selectFolder").resolves(ok({ type: "success", result: "a" }));

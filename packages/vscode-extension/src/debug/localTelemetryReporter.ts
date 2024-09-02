@@ -256,7 +256,7 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
           task?.type === TeamsFxTaskType ||
           (task?.type === "shell" &&
             task?.command &&
-            Object.values(TeamsFxNpmCommands).includes(task?.command));
+            Object.values(TeamsFxNpmCommands).includes(task?.command as any));
 
         // Only send the info scaffold by Teams Toolkit. If user changed some property, the value will be "unknown".
         dependsOnArr.push({
@@ -284,7 +284,9 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
 
     const teamsfxTasks = taskJson?.tasks?.filter(
       (t) =>
-        t?.type === TeamsFxTaskType && t?.command && Object.values(TaskCommand).includes(t?.command)
+        t?.type === TeamsFxTaskType &&
+        t?.command &&
+        Object.values(TaskCommand).includes(t?.command as any)
     );
 
     return {

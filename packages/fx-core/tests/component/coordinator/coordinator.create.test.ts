@@ -32,12 +32,15 @@ import {
 import { validationUtils } from "../../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { FeatureFlagName } from "../../../src/common/featureFlags";
 
 describe("coordinator create", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   let generator: sinon.SinonStub;
   setTools(tools);
+  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
     generator = sandbox
@@ -45,6 +48,9 @@ describe("coordinator create", () => {
       .resolves(ok(undefined));
   });
   afterEach(() => {
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
     sandbox.restore();
   });
 
@@ -783,6 +789,28 @@ describe("coordinator create", () => {
       };
       const res = await coordinator.create(v3ctx, inputs);
       assert.isTrue(res.isErr());
+    });
+
+    it("success for kiota integration", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(SPFxGeneratorNew.prototype, "run").resolves(ok({}));
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+      };
+      const context = createContext();
+      const res = await coordinator.create(context, inputs);
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.createProjectForKiota, true);
+        assert.equal(res.value.projectPath, "");
+      }
     });
   });
 });

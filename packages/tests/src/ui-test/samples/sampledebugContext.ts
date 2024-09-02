@@ -533,6 +533,6 @@ export class SampledebugContext extends TestContext {
     folderPath: string,
     folderName: string
   ): Promise<void> {
-    return fs.mkdir(path.resolve(...folderPath, folderName));
+    return fs.mkdir(path.resolve(folderPath, folderName));
   }
 }

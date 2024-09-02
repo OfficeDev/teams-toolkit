@@ -21,7 +21,11 @@ class FoodCatalogTestCase extends CaseFactory {
     // create folder for the test "/env/.env.dev"
     await sampledebugContext.createEnvFolder(["env"]);
     // create .env file
-    const filePath = path.resolve("env", `.env.${env}.user`);
+    const filePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}`
+    );
     const envContent =
       "SECRET_TABLE_STORAGE_CONNECTION_STRING=crypto_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
     fs.writeFileSync(filePath, envContent);

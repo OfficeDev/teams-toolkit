@@ -19,7 +19,11 @@ class FoodCatalogTestCase extends CaseFactory {
     // create folder for the test "/env/.env.dev"
     await sampledebugContext.createEnvFolder(["env"]);
     // create .env file
-    const filePath = path.resolve("env", `.env.${env}`);
+    const filePath = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}`
+    );
     const envContent =
       "NOTIFICATION_ENDPOINT=https://test.com\nNOTIFICATION_DOMAIN=test.com";
     fs.writeFileSync(filePath, envContent, { encoding: "utf-8" });

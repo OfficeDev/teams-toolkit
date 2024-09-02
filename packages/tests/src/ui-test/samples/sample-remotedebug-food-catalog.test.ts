@@ -10,7 +10,6 @@ import os from "os";
 import fs from "fs";
 import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
-import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
@@ -29,22 +28,13 @@ class FoodCatalogTestCase extends CaseFactory {
     const filePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      `.env.${env}`
+      `.env.${env}.user`
     );
     // fake the connection string
     const envContent =
-      "SECRET_STORAGE_ACCOUNT_CONNECTION_STRING=crypto_8eaa370c338c7cd3e60acf8bff8dfd25ae9cc602ce325a75e15bf8bd60de0c55edcf8d8d2db87e9315d590887b6fd05983e80dd81aedaa2149a1c7abbdaa6dd71388e9d9ddf9234c79fa64e026fda755a8d593f9f4fb65f8534bd75d31a3d71db50865bed3f381862ca0cd517b376c0484c7b28293ec511cfeceb9a676f3f57c5034d672e607f064476fd23caa880b7805dae421635a8cb097290d53ce8cad142dd6be54f12d665554590e42229591dd09f685a3c9a6c293a1f688aba8540388cc2364993a9ca512f17d32baa8f391ff4d8efbd6275385e80b5c25cea4a321b98e42cd5af79fc9be9567635c365b33dbfb587fcdd13ba19f213b7f62412127a88df3152865eedce6bec495832f4bfb751da99253a19c86211a08bb6fbeb5\nSECRET_TABLE_STORAGE_CONNECTION_STRING=crypto_8eaa370c338c7cd3e60acf8bff8dfd25ae9cc602ce325a75e15bf8bd60de0c55edcf8d8d2db87e9315d590887b6fd05983e80dd81aedaa2149a1c7abbdaa6dd71388e9d9ddf9234c79fa64e026fda755a8d593f9f4fb65f8534bd75d31a3d71db50865bed3f381862ca0cd517b376c0484c7b28293ec511cfeceb9a676f3f57c5034d672e607f064476fd23caa880b7805dae421635a8cb097290d53ce8cad142dd6be54f12d665554590e42229591dd09f685a3c9a6c293a1f688aba8540388cc2364993a9ca512f17d32baa8f391ff4d8efbd6275385e80b5c25cea4a321b98e42cd5af79fc9be9567635c365b33dbfb587fcdd13ba19f213b7f62412127a88df3152865eedce6bec495832f4bfb751da99253a19c86211a08bb6fbeb5";
+      "SECRET_TABLE_STORAGE_CONNECTION_STRING=crypto_57b97a613f16180d949c16d8236a0560344d73a10519351330803dcc383215ff40c0c9c301a14db335895a5b2380f4353acc787760fdd522fb6efcfa8e10a807c11f07d9eb52f31964cafaf1adef4c1e87dd63748d99670ddcfb26ac0a611e676b9834393888cdfeb6c0bf46ece3bd0ac231529715fe70405c5708b6637efecbf5856ad2e5256d9d95e8003734e4172a8b7f3041f80bbc723acd43d82311f11fdaab0b491cc77e15884f21f9c292562c8279634761d823b2d256a5f2d48ff76bfc18d3d2518dca6c17b8d777b6f1f47a28fca8248930ca387e17939bc899ee7eb7cfaee705bcf443302d72e88e197ba2cd3162182585e8753778f516175fccb3927d7938b22b51c1ca1bfc6d26286e8c56a075d369ec1ad1f2c3fd7b1f7e";
     fs.writeFileSync(filePath, envContent);
     console.log(fs.readFileSync(filePath, { encoding: "utf-8" }));
-    // npm install
-    const { success } = await Executor.execute(
-      "npm install",
-      sampledebugContext.projectPath,
-      process.env,
-      undefined,
-      "npm warn"
-    );
-    expect(success).to.be.true;
   }
 }
 

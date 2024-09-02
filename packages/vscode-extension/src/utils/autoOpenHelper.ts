@@ -19,6 +19,7 @@ import {
   generateScaffoldingSummary,
   globalStateGet,
   globalStateUpdate,
+  outputScaffoldingWarningMessage,
 } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
@@ -173,8 +174,10 @@ export async function ShowScaffoldingWarningSummary(
             workspacePath
           );
         }
-      }
-      if (commonProperties.isApiME && teamsManifest.composeExtensions![0].apiSpecificationFile) {
+      } else if (
+        commonProperties.isApiME &&
+        teamsManifest.composeExtensions![0].apiSpecificationFile
+      ) {
         message = await generateScaffoldingSummary(
           createWarnings,
           teamsManifest,
@@ -182,6 +185,8 @@ export async function ShowScaffoldingWarningSummary(
           undefined,
           workspacePath
         );
+      } else {
+        message = outputScaffoldingWarningMessage(createWarnings);
       }
 
       if (message) {

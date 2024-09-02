@@ -99,7 +99,6 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
-  PluginAvailability = "plugin-availability",
 
   SyncManifest = "sync-manifest",
   ApiPluginType = "api-plugin-type",
@@ -1144,35 +1143,6 @@ export const recommendedLocations = [
   "West US 3",
 ];
 
-export class PluginAvailabilityOptions {
-  static action(): OptionItem {
-    return {
-      id: "action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
-    };
-  }
-  static copilotPlugin(): OptionItem {
-    return {
-      id: "api-plugin",
-      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
-    };
-  }
-  static copilotPluginAndAction(): OptionItem {
-    return {
-      id: "api-plugin-and-action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
-    };
-  }
-
-  static all(): OptionItem[] {
-    return [
-      PluginAvailabilityOptions.copilotPlugin(),
-      PluginAvailabilityOptions.action(),
-      PluginAvailabilityOptions.copilotPluginAndAction(),
-    ];
-  }
-}
-
 export class TeamsAppValidationOptions {
   static schema(): OptionItem {
     return {
@@ -1281,16 +1251,20 @@ export class ApiPluginStartOptions {
     };
   }
 
-  static staticAll(): OptionItem[] {
-    return [
-      ApiPluginStartOptions.newApi(),
-      ApiPluginStartOptions.apiSpec(),
-      ApiPluginStartOptions.existingPlugin(),
-    ];
+  static staticAll(doesProjectExists?: boolean): OptionItem[] {
+    return doesProjectExists
+      ? [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()]
+      : [
+          ApiPluginStartOptions.newApi(),
+          ApiPluginStartOptions.apiSpec(),
+          ApiPluginStartOptions.existingPlugin(),
+        ];
   }
 
-  static all(inputs: Inputs): OptionItem[] {
-    if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+  static all(inputs: Inputs, doesProjectExists?: boolean): OptionItem[] {
+    if (doesProjectExists) {
+      return [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()];
+    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
       return [
         ApiPluginStartOptions.newApi(),
         ApiPluginStartOptions.apiSpec(),

@@ -26,6 +26,8 @@ import * as generatorHelper from "../../../src/component/generator/copilotExtens
 import { pluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import fs from "fs-extra";
 import path from "path";
+import { MockLogProvider } from "../../core/utils";
+import * as commons from "../../../src/component/utils/common";
 
 describe("copilotExtension", async () => {
   let mockedEnvRestore: RestoreFn | undefined;
@@ -163,9 +165,53 @@ describe("copilotExtension", async () => {
       sandbox
         .stub(copilotGptManifestUtils, "getManifestPath")
         .resolves(ok("declarativeCopilot.json"));
-      sandbox.stub(generatorHelper, "addExistingPlugin").resolves(ok(undefined));
+      sandbox
+        .stub(generatorHelper, "addExistingPlugin")
+        .resolves(ok({ destinationPluginManifestPath: "test.json", warnings: [] }));
 
-      const res = await generator.post(context, inputs, "");
+      let res = await generator.post(context, inputs, "");
+      assert.isTrue(res.isOk());
+
+      res = await generator.post(context, { ...inputs, platform: Platform.CLI }, "");
+      assert.isTrue(res.isOk());
+
+      res = await generator.post(context, { ...inputs, platform: Platform.VS }, "");
+      assert.isTrue(res.isOk());
+    });
+
+    it("add plugin success with warnings", async () => {
+      const generator = new CopilotExtensionGenerator();
+      const context = createContext();
+
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.existingPlugin().id,
+        [QuestionNames.AppName]: "app",
+      };
+
+      const logStub = sandbox.stub(MockLogProvider.prototype, "info").resolves();
+      sandbox
+        .stub(copilotGptManifestUtils, "getManifestPath")
+        .resolves(ok("declarativeCopilot.json"));
+      sandbox.stub(generatorHelper, "addExistingPlugin").resolves(
+        ok({
+          destinationPluginManifestPath: "test.json",
+          warnings: [{ type: "test", content: "warningContent" }],
+        })
+      );
+
+      let res = await generator.post(context, inputs, "");
+      assert.isFalse(logStub.called);
+      assert.isTrue(res.isOk());
+
+      res = await generator.post(context, { ...inputs, platform: Platform.CLI }, "");
+      assert.isTrue(res.isOk());
+      assert.isTrue(logStub.called);
+
+      res = await generator.post(context, { ...inputs, platform: Platform.VS }, "");
+      assert.isTrue(logStub.called);
       assert.isTrue(res.isOk());
     });
     it("get manifest path error", async () => {
@@ -227,7 +273,7 @@ describe("helper", async () => {
       sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
         ok({
           schema_version: "v1",
-          name_for_human: "test",
+          name_for_human: "${{file}}",
           runtimes: [{ type: "OpenApi", spec: { url: "test.json" } }],
         } as any)
       );
@@ -242,6 +288,8 @@ describe("helper", async () => {
       sandbox.stub(fs, "ensureFile").resolves();
       sandbox.stub(fs, "copyFile").resolves();
       sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readFile").resolves();
+      sandbox.stub(commons, "getEnvironmentVariables").returns([]);
       const res = await generatorHelper.addExistingPlugin(
         "test.json",
         "originalManifest.json",
@@ -266,6 +314,7 @@ describe("helper", async () => {
       const getApiSpecPath = sandbox
         .stub(pluginManifestUtils, "getDefaultNextAvailableApiSpecPath")
         .resolves("nextApiSpec.json");
+      sandbox.stub(commons, "getEnvironmentVariables").returns([]);
       sandbox
         .stub(copilotGptManifestUtils, "getDefaultNextAvailablePluginManifestPath")
         .resolves("nextPluginManifest.json");
@@ -274,6 +323,7 @@ describe("helper", async () => {
       sandbox.stub(fs, "ensureFile").resolves();
       sandbox.stub(fs, "copyFile").resolves();
       sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readFile").resolves();
       const res = await generatorHelper.addExistingPlugin(
         "test.json",
         "originalManifest.json",
@@ -283,6 +333,80 @@ describe("helper", async () => {
         "source"
       );
       assert.isTrue(res.isOk());
+      assert.isTrue(getApiSpecPath.notCalled);
+    });
+
+    it("success: has warning", async () => {
+      sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
+        ok({
+          schema_version: "v1",
+          name_for_human: "test",
+          runtimes: [{ type: "OpenApi", spec: { url: "test.json" } }],
+        } as any)
+      );
+      sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as any));
+      const getApiSpecPath = sandbox
+        .stub(pluginManifestUtils, "getDefaultNextAvailableApiSpecPath")
+        .resolves("nextApiSpec.json");
+      sandbox.stub(commons, "getEnvironmentVariables").returns(["TEST_ENV"]);
+      sandbox
+        .stub(copilotGptManifestUtils, "getDefaultNextAvailablePluginManifestPath")
+        .resolves("nextPluginManifest.json");
+      sandbox.stub(fs, "pathExists").resolves(false);
+      sandbox.stub(path, "relative").returns("test");
+      sandbox.stub(fs, "ensureFile").resolves();
+      sandbox.stub(fs, "copyFile").resolves();
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readFile").resolves();
+      const res = await generatorHelper.addExistingPlugin(
+        "test.json",
+        "originalManifest.json",
+        "originalManifest.yaml",
+        "id",
+        context,
+        "source"
+      );
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.warnings.length, 2);
+      }
+      assert.isTrue(getApiSpecPath.notCalled);
+    });
+
+    it("success: only get partial warning", async () => {
+      sandbox.stub(pluginManifestUtils, "readPluginManifestFile").resolves(
+        ok({
+          schema_version: "v1",
+          name_for_human: "test",
+          runtimes: [{ type: "OpenApi", spec: { url: "test.json" } }],
+        } as any)
+      );
+      sandbox.stub(copilotGptManifestUtils, "addAction").resolves(ok({} as any));
+      const getApiSpecPath = sandbox
+        .stub(pluginManifestUtils, "getDefaultNextAvailableApiSpecPath")
+        .resolves("nextApiSpec.json");
+      sandbox.stub(commons, "getEnvironmentVariables").returns(["TEST_ENV"]);
+      sandbox
+        .stub(copilotGptManifestUtils, "getDefaultNextAvailablePluginManifestPath")
+        .resolves("nextPluginManifest.json");
+      sandbox.stub(fs, "pathExists").resolves(false);
+      sandbox.stub(path, "relative").returns("test");
+      sandbox.stub(fs, "ensureFile").resolves();
+      sandbox.stub(fs, "copyFile").resolves();
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readFile").throws();
+      const res = await generatorHelper.addExistingPlugin(
+        "test.json",
+        "originalManifest.json",
+        "originalManifest.yaml",
+        "id",
+        context,
+        "source"
+      );
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.warnings.length, 1);
+      }
       assert.isTrue(getApiSpecPath.notCalled);
     });
 

@@ -14,6 +14,7 @@ import {
   Inputs,
   ManifestTemplateFileName,
   ok,
+  Platform,
   Result,
 } from "@microsoft/teamsfx-api";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
@@ -34,11 +35,13 @@ import { declarativeCopilotInstructionFileName } from "../constant";
 import { addExistingPlugin } from "./helper";
 import path from "path";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
+import { outputScaffoldingWarningMessage } from "../../utils/common";
 
 const enum telemetryProperties {
   templateName = "template-name",
   isDeclarativeCopilot = "is-declarative-copilot",
   isMicrosoftEntra = "is-microsoft-entra",
+  needAddPluginFromExisting = "need-add-plugin-from-existing",
 }
 
 /**
@@ -111,6 +114,9 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
       [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
       [telemetryProperties.isMicrosoftEntra]:
         auth === ApiAuthOptions.microsoftEntra().id ? "true" : "",
+      [telemetryProperties.needAddPluginFromExisting]:
+        inputs[QuestionNames.ApiPluginType] ===
+        ApiPluginStartOptions.existingPlugin().id.toString(),
     });
 
     return Promise.resolve(
@@ -157,7 +163,13 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
       if (addPluginRes.isErr()) {
         return err(addPluginRes.error);
       } else {
-        return ok({});
+        if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
+          const warningMessage = outputScaffoldingWarningMessage(addPluginRes.value.warnings);
+          if (warningMessage) {
+            context.logProvider.info(warningMessage);
+          }
+        }
+        return ok({ warnings: addPluginRes.value.warnings });
       }
     } else {
       return ok({});

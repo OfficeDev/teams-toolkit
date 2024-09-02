@@ -292,6 +292,8 @@ export enum TelemetryEvent {
 
   CreatePluginWithManifestStart = "create-plugin-with-manifest-start",
   CreatePluginWithManifest = "create-plugin-with-manifest",
+
+  InstallKiota = "install-kiota",
 }
 
 export enum TelemetryProperty {
@@ -411,6 +413,7 @@ export enum TelemetryProperty {
   CopilotChatResponseTokenPerSecond = "copilot-chat-response-token-per-second",
   CopilotChatRequestToken = "copilot-chat-request-token",
   CopilotChatResponseToken = "copilot-chat-response-token",
+  KiotaInstalled = "kiota-installed",
 }
 
 export enum TelemetryMeasurements {

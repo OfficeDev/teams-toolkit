@@ -39,6 +39,7 @@ import {
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
+  ApiPluginStartOptions,
   AppNamePattern,
   ProjectTypeOptions,
   QuestionNames,
@@ -62,6 +63,7 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
+import { featureFlagManager, FeatureFlags } from "../../common/featureFlags";
 
 const M365Actions = [
   "botAadApp/create",
@@ -90,6 +92,16 @@ class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<CreateProjectResult, FxError>> {
+    // Handle command redirect to Kiota. Only happens in vscode.
+    if (
+      inputs.platform === Platform.VSCode &&
+      featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
+      !inputs[QuestionNames.ApiPluginManifestPath]
+    ) {
+      return ok({ projectPath: "", createProjectForKiota: true });
+    }
+
     let folder = inputs["folder"] as string;
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));

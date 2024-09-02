@@ -27,7 +27,7 @@ provision:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./appPackage/build
+      outputFolder: ./appPackage/build
 
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.

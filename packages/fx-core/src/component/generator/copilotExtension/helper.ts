@@ -69,7 +69,6 @@ export async function addExistingPlugin(
     path.relative(outputFolder, originalDestApiSPecRelativePath).startsWith("..");
 
   if (needUpdatePluginManifest) {
-    // TODO: telemetry
     destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
       fromApiSpecPath,
       path.join(outputFolder, DefaultApiSpecFolderName)

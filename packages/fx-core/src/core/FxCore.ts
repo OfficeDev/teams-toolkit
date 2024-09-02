@@ -1022,11 +1022,10 @@ export class FxCore {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/appPackage.${process.env
           .TEAMSFX_ENV!}.zip`,
-      outputJsonPath:
+      outputFolder:
         inputs[QuestionNames.OutputManifestParamName] ??
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}/manifest.${process.env
-          .TEAMSFX_ENV!}.json`,
+        `${inputs.projectPath}/${AppPackageFolderName}/${BuildFolderName}`,
     };
     const result = (await driver.execute(args, context)).result;
     if (context.platform === Platform.VSCode) {

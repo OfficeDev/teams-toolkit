@@ -160,7 +160,7 @@ export interface TeamsAppInputs extends InputsWithProjectPath {
   "manifest-file"?: string;
   "package-file"?: string;
   "output-package-file"?: string;
-  "output-manifest-file"?: string;
+  "output-folder"?: string;
   env?: string;
   "env-file"?: string;
 }

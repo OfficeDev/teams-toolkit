@@ -37,11 +37,11 @@ export const TeamsAppOuputPackageOption: CLICommandOption = {
   description: "Specifies the output zipped Microsoft Teams app package file path.",
   default: "./appPackage/build/appPackage.${env}.zip",
 };
-export const TeamsAppOutputManifestFileOption: CLICommandOption = {
-  name: "output-manifest-file",
+export const TeamsAppOutputFolderOption: CLICommandOption = {
+  name: "output-folder",
   type: "string",
-  description: "Specifies the output Microsoft Teams app manifest file path.",
-  default: "./appPackage/build/manifest.${env}.json",
+  description: "Specifies the output folder containing the manifest(s).",
+  default: "./appPackage/build",
 };
 export const EnvOption: CLICommandOption = {
   name: "env",

@@ -228,11 +228,10 @@ export default class ServerConnection implements IServerConnection {
       BuildFolderName,
       `appPackage.${inputs.env}.zip`
     );
-    inputs[QuestionNames.OutputManifestParamName] = path.join(
+    inputs[QuestionNames.OutputFolderParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
-      BuildFolderName,
-      `manifest.${inputs.env}.json`
+      BuildFolderName
     );
     const res = await Correlator.runWithId(
       corrId,

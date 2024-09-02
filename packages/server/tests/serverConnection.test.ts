@@ -6,6 +6,7 @@ import {
   DependencyStatus,
   DepsManager,
   NodeNotFoundError,
+  SyncManifestInputs,
   teamsDevPortalClient,
   TestToolInstallOptions,
 } from "@microsoft/teamsfx-core";
@@ -16,6 +17,7 @@ import { Duplex } from "stream";
 import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
 import ServerConnection from "../src/serverConnection";
+import { SyncManifestInputsForVS } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/SyncManifest";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -527,5 +529,19 @@ describe("serverConnections", () => {
     sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
     const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
     assert.isTrue(res.isOk());
+  });
+
+  it("syncTeamsAppManifestRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err(new UserError("source", "name", "", "")));
+    sandbox.replace(connection["core"], "syncManifest", fake);
+    const res = await connection.syncTeamsAppManifestRequest(
+      {} as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.source, "source");
+    }
   });
 });

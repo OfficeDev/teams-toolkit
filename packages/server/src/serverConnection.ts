@@ -198,10 +198,7 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    let teamsAppId = inputs?.teamsAppFromTdp?.teamsAppId;
-    if (teamsAppId && isGuidEmpty(teamsAppId)) {
-      teamsAppId = undefined;
-    }
+    const teamsAppId = inputs?.teamsAppFromTdp?.teamsAppId;
     const coreInputs: SyncManifestInputs = {
       ...inputs,
       [QuestionNames.TeamsAppId]: teamsAppId,

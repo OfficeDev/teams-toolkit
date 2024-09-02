@@ -19,10 +19,10 @@ class FoodCatalogTestCase extends CaseFactory {
     env: "local" | "dev"
   ): Promise<void> {
     // create folder for the test "/env/.env.dev"
-    await sampledebugContext.createEnvFolder([
+    await sampledebugContext.createEnvFolder(
       sampledebugContext.projectPath,
-      "env",
-    ]);
+      "env"
+    );
     // create .env file
     const filePath = path.resolve(
       sampledebugContext.projectPath,

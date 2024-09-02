@@ -529,7 +529,10 @@ export class SampledebugContext extends TestContext {
     }
   }
 
-  public createEnvFolder(path: string[]): Promise<void> {
-    return fs.mkdir(path.join(...path));
+  public createEnvFolder(
+    folderPath: string,
+    folderName: string
+  ): Promise<void> {
+    return fs.mkdir(path.resolve(...folderPath, folderName));
   }
 }

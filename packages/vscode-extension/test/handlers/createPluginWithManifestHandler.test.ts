@@ -28,7 +28,16 @@ describe("createPluginWithManifestHandler", () => {
     const core = new MockCore();
     sandbox.stub(globalVariables, "core").value(core);
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
-    const res = await createPluginWithManifest(["specPath", "pluginManifestPath", true]);
+    const res = await createPluginWithManifest(["specPath", "pluginManifestPath"]);
+    chai.assert.isTrue(res.isOk());
+    chai.assert.isTrue(openFolder.calledOnce);
+  });
+
+  it("happy path: successfullly create plugin project with folder path", async () => {
+    const core = new MockCore();
+    sandbox.stub(globalVariables, "core").value(core);
+    const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
+    const res = await createPluginWithManifest(["specPath", "pluginManifestPath", "folder"]);
     chai.assert.isTrue(res.isOk());
     chai.assert.isTrue(openFolder.calledOnce);
   });
@@ -38,6 +47,23 @@ describe("createPluginWithManifestHandler", () => {
     sandbox.stub(globalVariables, "core").value(core);
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
     const res = await createPluginWithManifest(["specPath"]);
+    chai.assert.isTrue(res.isErr());
+    chai.assert.isTrue(openFolder.notCalled);
+    if (res.isErr()) {
+      chai.assert.equal(res.error.name, "missingParameter");
+    }
+  });
+
+  it("should throw error if args length is bigger than 3", async () => {
+    const core = new MockCore();
+    sandbox.stub(globalVariables, "core").value(core);
+    const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      "folder",
+      "extra",
+    ]);
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {

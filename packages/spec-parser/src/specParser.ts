@@ -306,6 +306,12 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
+      const existingPluginManifestInfo = existingPluginFilePath
+        ? {
+            manifestPath: existingPluginFilePath,
+            specPath: this.pathOrSpec as string,
+          }
+        : undefined;
       const [updatedManifest, apiPlugin, warnings] =
         await ManifestUpdater.updateManifestWithAiPlugin(
           manifestPath,
@@ -313,22 +319,14 @@ export class SpecParser {
           pluginFilePath,
           newSpec,
           this.options,
-          authInfo
+          authInfo,
+          existingPluginManifestInfo
         );
 
       result.warnings.push(...warnings);
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 4 });
-      if (existingPluginFilePath) {
-        const originPluginManifest = (await fs.readJSON(
-          existingPluginFilePath
-        )) as PluginManifestSchema;
-        // TODO (kiota): refactor to avoid generate apiPlugin
-        originPluginManifest.functions = apiPlugin.functions;
-        await fs.outputJSON(pluginFilePath, originPluginManifest, { spaces: 4 });
-      } else {
-        await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 4 });
-      }
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 4 });
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;

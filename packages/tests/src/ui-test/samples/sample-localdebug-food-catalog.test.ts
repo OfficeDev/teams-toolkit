@@ -27,8 +27,7 @@ class FoodCatalogTestCase extends CaseFactory {
       "env",
       `.env.${env}`
     );
-    const envContent =
-      "NOTIFICATION_ENDPOINT=https://test.com\nNOTIFICATION_DOMAIN=test.com";
+    const envContent = `NOTIFICATION_ENDPOINT=https://test.com\nNOTIFICATION_DOMAIN=test.com\nAPP_NAME=${sampledebugContext.appName}`;
     fs.writeFileSync(filePath, envContent, { encoding: "utf-8" });
     console.log("env file created");
     console.log(fs.readFileSync(filePath, { encoding: "utf-8" }));

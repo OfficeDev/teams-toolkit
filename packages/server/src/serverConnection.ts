@@ -94,6 +94,7 @@ export default class ServerConnection implements IServerConnection {
       this.listOpenAPISpecOperationsRequest.bind(this),
       this.checkAndInstallTestTool.bind(this),
       this.listPluginApiSpecs.bind(this),
+      this.syncTeamsAppManifestRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);

@@ -32,7 +32,6 @@
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
         "start": "vite",
         "build": "tsc && vite build",
-        "server": "vite preview",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "eslintConfig": {

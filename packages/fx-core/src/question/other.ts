@@ -15,6 +15,7 @@ import {
   SingleSelectQuestion,
   TextInputQuestion,
   FolderQuestion,
+  CLIPlatforms,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -44,6 +45,7 @@ import {
   apiSpecLocationQuestion,
 } from "./create";
 import { UninstallInputs } from "./inputs";
+import * as os from "os";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -1064,5 +1066,44 @@ function oauthClientSecretQuestion(): TextInputQuestion {
         return;
       },
     },
+  };
+}
+
+export function syncManifestQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: {
+          type: "folder",
+          name: QuestionNames.ProjectPath,
+          title: getLocalizedString("core.syncManifest.projectPath"),
+          cliDescription: "Project Path",
+          placeholder: "./",
+          default: (inputs: Inputs) =>
+            CLIPlatforms.includes(inputs.platform)
+              ? "./"
+              : path.join(os.homedir(), ConstantString.RootFolder),
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.Env,
+          title: getLocalizedString("core.syncManifest.env"),
+          cliDescription: "Target Teams Toolkit Environment",
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.TeamsAppId,
+          title: getLocalizedString("core.syncManifest.teamsAppId"),
+          cliDescription: "Teams App ID (optional)",
+        },
+      },
+    ],
   };
 }

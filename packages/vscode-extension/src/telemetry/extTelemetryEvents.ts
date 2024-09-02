@@ -40,6 +40,8 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
   ValidateApplication = "validate-application",
+  SyncManifestStart = "sync-manifest-start",
+  SyncManifest = "sync-manifest",
 
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
@@ -287,6 +289,11 @@ export enum TelemetryEvent {
   stopAddInDebug = "stop-office-addin-debug",
   generateAddInGUID = "generate-addin-guid",
   openNewOfficeAddInProject = "open-new-office-addin-project",
+
+  CreatePluginWithManifestStart = "create-plugin-with-manifest-start",
+  CreatePluginWithManifest = "create-plugin-with-manifest",
+
+  InstallKiota = "install-kiota",
 }
 
 export enum TelemetryProperty {
@@ -406,6 +413,7 @@ export enum TelemetryProperty {
   CopilotChatResponseTokenPerSecond = "copilot-chat-response-token-per-second",
   CopilotChatRequestToken = "copilot-chat-request-token",
   CopilotChatResponseToken = "copilot-chat-response-token",
+  KiotaInstalled = "kiota-installed",
 }
 
 export enum TelemetryMeasurements {

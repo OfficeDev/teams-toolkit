@@ -97,7 +97,7 @@ describe("SPFxGenerator", function () {
       mockedEnvRestore();
     }
     if (await fs.pathExists(testFolder)) {
-      await fs.rm(testFolder, { recursive: true });
+      await fs.remove(testFolder);
     }
   });
 

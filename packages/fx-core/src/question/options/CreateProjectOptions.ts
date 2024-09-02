@@ -121,7 +121,17 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     description: "API plugin type.",
     default: "new-api",
-    choices: ["new-api", "api-spec"],
+    choices: ["new-api", "api-spec", "existing-plugin"],
+  },
+  {
+    name: "plugin-manifest-path",
+    type: "string",
+    description: "Plugin manifest path.",
+  },
+  {
+    name: "plugin-opeanapi-spec-path",
+    type: "string",
+    description: "OpenAPI description document used for your API plugin.",
   },
   {
     name: "api-auth",

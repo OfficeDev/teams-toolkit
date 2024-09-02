@@ -50,6 +50,11 @@
     "markdown-it": "^13.0.2",
     "react": "^17.0.2"
   },
+  "overrides": {
+    "adaptive-expressions":{
+      "fast-xml-parser": "4.4.1"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },

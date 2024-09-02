@@ -27,7 +27,7 @@ import { PluginManifestValidationResult } from "../../../../src/component/driver
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 import { createContext, setTools } from "../../../../src/common/globalVars";
-import { generateDriverContext } from "../../../../src/common/utils";
+import * as commonUtils from "../../../../src/common/utils";
 import { WrapDriverContext } from "../../../../src/component/driver/util/wrapUtil";
 import { MockTools } from "../../../core/utils";
 
@@ -323,7 +323,7 @@ describe("pluginManifestUtils", () => {
 
   describe("getManifest", async () => {
     setTools(new MockTools());
-    const context = generateDriverContext(createContext(), {
+    const context = commonUtils.generateDriverContext(createContext(), {
       platform: Platform.VSCode,
       projectPath: "",
     });
@@ -449,6 +449,46 @@ describe("pluginManifestUtils", () => {
         driverContext as any
       );
       chai.assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("getDefaultNextAvailableApiSpecPath", async () => {
+    it("Json file: success on second try", async () => {
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+
+      const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
+        "testPath.json",
+        "test"
+      );
+
+      chai.assert.equal(res, path.join("test", "openapi_2.json"));
+    });
+
+    it("Yaml file: success on first try", async () => {
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+
+      const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
+        "testPath.yaml",
+        "test"
+      );
+
+      chai.assert.equal(res, path.join("test", "openapi_1.yaml"));
+    });
+
+    it("success on third try with ", async () => {
+      sandbox.stub(commonUtils, "isJsonSpecFile").throws("fail");
+      sandbox
+        .stub(fs, "pathExists")
+        .onFirstCall()
+        .resolves(true)
+        .onSecondCall()
+        .resolves(true)
+        .onThirdCall()
+        .resolves(false);
+
+      const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath("testPath", "test");
+
+      chai.assert.equal(res, path.join("test", "openapi_3.json"));
     });
   });
 });

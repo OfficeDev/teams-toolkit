@@ -10,6 +10,7 @@ import {
   WarningType,
 } from "@microsoft/m365-spec-parser";
 import {
+  CLIPlatforms,
   DeclarativeCopilotManifestSchema,
   FxError,
   IQTreeNode,
@@ -99,13 +100,17 @@ import {
 } from "../../src/question/constants";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { UninstallInputs } from "../../build";
+import { isValidProjectV3, SyncManifestInputs, UninstallInputs } from "../../build";
 import { CoreHookContext } from "../../src/core/types";
 import * as projectHelper from "../../src/common/projectSettingsHelper";
 import * as migrationUtil from "../../src/core/middleware/utils/v3MigrationUtils";
 import * as projMigrator from "../../src/core/middleware/projectMigratorV3";
 import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 import * as pluginGeneratorHelper from "../../src/component/generator/apiSpec/helper";
+import { SyncManifestDriver } from "../../src/component/driver/teamsApp/syncManifest";
+import { ConstantString } from "../../src/common/constants";
+import { SyncManifestArgs } from "../../src/component/driver/teamsApp/interfaces/SyncManifest";
+import { WrapDriverContext } from "../../src/component/driver/util/wrapUtil";
 
 const tools = new MockTools();
 
@@ -2084,6 +2089,8 @@ describe("getQuestions", async () => {
         "me-architecture",
         "with-plugin",
         "api-plugin-type",
+        "plugin-manifest-path",
+        "plugin-opeanapi-spec-path",
         "api-auth",
         "custom-copilot-rag",
         "openapi-spec-location",
@@ -5290,6 +5297,54 @@ describe("addPlugin", async () => {
       const core = new FxCore(tools);
       const result = await core.projectVersionCheck(inputs);
       assert.isTrue(result.isErr());
+    });
+    it("sync Manifest - success", async () => {
+      const core = new FxCore(tools);
+      const inputs = {
+        platform: Platform.CLI_HELP,
+        projectPath: "fake",
+        env: "dev",
+        nonInteractive: true,
+      };
+      sandbox.stub(SyncManifestDriver.prototype, "sync").resolves(ok(new Map<string, string>()));
+      const res = await core.syncManifest(inputs as SyncManifestInputs);
+      assert.isTrue(res.isOk());
+    });
+    it("sync Manifest - default CLI project path", async () => {
+      const core = new FxCore(tools);
+      const inputs = {
+        platform: Platform.CLI_HELP,
+        env: "dev",
+        nonInteractive: true,
+        ignoreLockByUT: true,
+      };
+      const defaultProjectPath = "./";
+      sandbox
+        .stub(SyncManifestDriver.prototype, "sync")
+        .callsFake(async (args: SyncManifestArgs, context: WrapDriverContext) => {
+          assert.isTrue(args.projectPath === defaultProjectPath);
+          return ok(new Map<string, string>());
+        });
+      const res = await core.syncManifest(inputs as SyncManifestInputs);
+      assert.isTrue(res.isOk());
+    });
+    it("sync Manifest - default VSC project path", async () => {
+      const core = new FxCore(tools);
+      const inputs = {
+        platform: Platform.VSCode,
+        env: "dev",
+        nonInteractive: true,
+        ignoreLockByUT: true,
+      };
+      const defaultProjectPath = path.join(os.homedir(), ConstantString.RootFolder);
+      sandbox
+        .stub(SyncManifestDriver.prototype, "sync")
+        .callsFake(async (args: SyncManifestArgs, context: WrapDriverContext) => {
+          assert.isTrue(args.projectPath === defaultProjectPath);
+          return ok(new Map<string, string>());
+        });
+      const res = await core.syncManifest(inputs as SyncManifestInputs);
+      assert.isTrue(res.isOk());
     });
   });
 });

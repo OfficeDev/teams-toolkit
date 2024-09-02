@@ -424,7 +424,7 @@ export class URI implements UriComponents {
 
   static revive(data: UriComponents | URI | undefined | null): URI | undefined | null {
     if (!data) {
-      return data;
+      return data as any;
     }
     if (data instanceof URI) {
       return data;

@@ -11,7 +11,7 @@ import {
   ProjectFolderOption,
   TeamsAppManifestFileOption,
   TeamsAppOuputPackageOption,
-  TeamsAppOutputManifestFileOption,
+  TeamsAppOutputFolderOption,
   TeamsAppPackageOption,
   ValidateMethodOption,
 } from "../../common";
@@ -42,7 +42,7 @@ function getOptions(): CLICommandOption[] {
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,
     TeamsAppOuputPackageOption,
-    TeamsAppOutputManifestFileOption,
+    TeamsAppOutputFolderOption,
     EnvOption,
     EnvFileOption,
     ProjectFolderOption,

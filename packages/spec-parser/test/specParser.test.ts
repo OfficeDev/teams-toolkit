@@ -938,7 +938,14 @@ describe("SpecParser", () => {
       const pluginFilePath = "ai-plugin.json";
 
       try {
-        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFilePath, signal);
+        await specParser.generateForCopilot(
+          manifestPath,
+          filter,
+          specPath,
+          pluginFilePath,
+          undefined,
+          signal
+        );
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
@@ -964,7 +971,14 @@ describe("SpecParser", () => {
           return Promise.resolve();
         });
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFilePath, signal);
+        await specParser.generateForCopilot(
+          manifestPath,
+          filter,
+          specPath,
+          pluginFilePath,
+          undefined,
+          signal
+        );
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
@@ -1000,6 +1014,7 @@ describe("SpecParser", () => {
           filter,
           outputSpecPath,
           pluginFilePath,
+          undefined,
           signal
         );
 
@@ -1037,6 +1052,7 @@ describe("SpecParser", () => {
           filter,
           outputSpecPath,
           pluginFilePath,
+          undefined,
           signal
         );
 
@@ -1135,6 +1151,86 @@ describe("SpecParser", () => {
         expect(err.errorType).to.equal(ErrorType.GenerateFailed);
         expect(err.message).to.equal("Error: outputFile error");
       }
+    });
+
+    it(" should generate adaptivecard for existing plugin manifest", async () => {
+      const pluginManifest = {
+        schema_version: "1",
+        name_for_human: "test",
+        description_for_human: "test",
+      };
+      const pluginManifestWithAdaptiveCard = {
+        schema_version: "1",
+        name_for_human: "test",
+        description_for_human: "test",
+        functions: [
+          {
+            name: "test",
+          },
+        ],
+      };
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").callsFake((path, data) => {
+        if (path === "pluginFilePath") {
+          expect(data.function).to.not.be.undefined;
+          expect(data.function[0].name).to.equal("test");
+        }
+      });
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+      sinon.stub(fs, "readJSON").resolves(pluginManifest);
+
+      const updateManifestWithAiPluginStub = sinon
+        .stub(ManifestUpdater, "updateManifestWithAiPlugin")
+        .resolves([{}, pluginManifestWithAdaptiveCard, []] as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const pluginFilePath = "ai-plugin.json";
+      const result = await specParser.generateForCopilot(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        pluginFilePath,
+        "existingPluginManifest"
+      );
+
+      expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(updateManifestWithAiPluginStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledTwice).to.be.true;
     });
   });
 

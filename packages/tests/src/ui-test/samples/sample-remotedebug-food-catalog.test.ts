@@ -27,7 +27,7 @@ class FoodCatalogTestCase extends CaseFactory {
     const filePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      `.env.${env}`
+      `.env.${env}.user`
     );
     const envContent =
       "SECRET_TABLE_STORAGE_CONNECTION_STRING=crypto_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";

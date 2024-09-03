@@ -406,7 +406,7 @@ export abstract class CaseFactory {
                 if (options?.container) {
                   await Executor.login();
                 }
-                if (options?.skipDeploy) {
+                if (!options?.skipDeploy) {
                   await sampledebugContext.deployProject(
                     sampledebugContext.projectPath,
                     Timeout.botDeploy

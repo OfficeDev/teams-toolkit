@@ -28,7 +28,7 @@ class FoodCatalogTestCase extends CaseFactory {
       "",
       "dev",
       process.env,
-      "Error: script.MissingEnvironmentVariablesError: Missing environment variables"
+      "Failed to Execute lifecycle provision because there are unresolved placeholders".toLowerCase()
     );
     console.log("[start] update env file.");
     const envFilePath = path.resolve(

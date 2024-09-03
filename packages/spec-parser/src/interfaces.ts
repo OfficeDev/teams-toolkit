@@ -23,6 +23,8 @@ export interface ValidateResult {
    * An array of error results generated during validation.
    */
   errors: ErrorResult[];
+
+  specHash?: string;
 }
 
 export interface SpecValidationResult {

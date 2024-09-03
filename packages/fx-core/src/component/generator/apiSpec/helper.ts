@@ -69,6 +69,7 @@ const enum telemetryProperties {
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
+  specHash = "spec-hash",
   bearerTokenAuthCount = "bearer-token-auth-count",
   oauth2AuthCount = "oauth2-auth-count",
   otherAuthCount = "other-auth-count",
@@ -168,6 +169,7 @@ export async function listOperations(
       context,
       shouldLogWarning,
       false,
+      validationRes.specHash,
       existingCorrelationId
     );
     if (validationRes.status === ValidationStatus.Error) {
@@ -209,6 +211,7 @@ export async function listOperations(
       [telemetryProperties.bearerTokenAuthCount]: bearerTokenAuthAPIs.length.toString(),
       [telemetryProperties.oauth2AuthCount]: oauth2AuthAPIs.length.toString(),
       [telemetryProperties.otherAuthCount]: otherAuthAPIs.length.toString(),
+      [telemetryProperties.specHash]: validationRes.specHash!,
     });
 
     // Filter out exsiting APIs
@@ -260,6 +263,7 @@ export async function listOperations(
             context,
             true,
             false,
+            validationRes.specHash,
             existingCorrelationId
           );
           return err(errors);
@@ -286,6 +290,7 @@ export async function listOperations(
             context,
             true,
             false,
+            validationRes.specHash,
             existingCorrelationId
           );
           return err(errors);
@@ -433,7 +438,15 @@ export async function generateFromApiSpec(
   }
 
   if (validationRes.status === ValidationStatus.Error) {
-    logValidationResults(projectType, validationRes.errors, warnings, context, false, true);
+    logValidationResults(
+      projectType,
+      validationRes.errors,
+      warnings,
+      context,
+      false,
+      true,
+      validationRes.specHash
+    );
     const errorMessage =
       inputs.platform === Platform.VSCode
         ? getLocalizedString(
@@ -498,6 +511,7 @@ export function logValidationResults(
   context: Context,
   shouldLogWarning: boolean,
   shouldSkipTelemetry: boolean,
+  specHash?: string,
   existingCorrelationId?: string
 ): void {
   if (!shouldSkipTelemetry) {
@@ -512,6 +526,10 @@ export function logValidationResults(
         .join(";"),
       [telemetryProperties.projectType]: projectType.toString(),
     };
+
+    if (specHash) {
+      properties[telemetryProperties.specHash] = specHash;
+    }
 
     const specNotValidError = errors.find((error) => error.type === ErrorType.SpecNotValid);
     if (specNotValidError) {

@@ -43,7 +43,6 @@ import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
-import { createHash } from "crypto";
 import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError, MissingRequiredInputError } from "../../../error";

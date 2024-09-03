@@ -36,9 +36,10 @@ class FoodCatalogTestCase extends CaseFactory {
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      `.env.${env}`
+      `.env.${env}.user`
     );
     let envContent = fs.readFileSync(envFilePath, "utf-8");
+    console.log(`envContent: ${envContent}`);
     const storageConnectionString = fs
       .readFileSync(envFilePath, "utf-8")
       .split("\n")

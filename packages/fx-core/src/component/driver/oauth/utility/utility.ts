@@ -46,7 +46,7 @@ export async function getandValidateOauthInfoFromSpec(
     allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
   });
   const listResult = await parser.list();
-  const operations = listResult.APIs.filter((value) => value.isValid).filter((value) => {
+  const operations = listResult.APIs.filter((value) => {
     const auth = value.auth;
     return auth && auth.authScheme.type === "oauth2" && auth.name === args.name;
   });

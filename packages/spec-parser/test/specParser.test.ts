@@ -1153,7 +1153,7 @@ describe("SpecParser", () => {
       }
     });
 
-    it(" should generate adaptivecard for existing plugin manifest", async () => {
+    it("should generate adaptivecard for existing plugin manifest", async () => {
       const pluginManifest = {
         schema_version: "1",
         name_for_human: "test",

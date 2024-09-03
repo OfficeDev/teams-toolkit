@@ -35,7 +35,7 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
     TelemetryEvent.CreatePluginWithManifestStart,
     getTriggerFromProperty(args)
   );
-  if (!args || args.length < 2) {
+  if (!args || args.length < 2 || args.length > 3) {
     const error = new UserError(
       ExtensionSource,
       "missingParameter",
@@ -47,7 +47,7 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
 
   const specPath = args[0];
   const pluginManifestPath = args[1];
-  const scaffoldNew = args.length > 2 ? args[2] : true;
+  const outputFolder = args[2] ?? undefined;
 
   const inputs = getSystemInputs();
   inputs.capabilities = CapabilityOptions.apiPlugin().id;
@@ -56,7 +56,7 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
   inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
   inputs[QuestionNames.ApiOperation] = pluginManifestPath;
   inputs[QuestionNames.ProjectType] = ProjectTypeOptions.copilotExtension().id;
-  // TODO (kiota): handle scaffold directly scenario
+  inputs[QuestionNames.Folder] = outputFolder;
   const result = await runCommand(Stage.create, inputs);
 
   if (result.isErr()) {

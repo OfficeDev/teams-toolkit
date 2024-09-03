@@ -327,3 +327,8 @@ export interface InferredProperties {
   subtitle?: string;
   imageUrl?: string;
 }
+
+export interface ExistingPluginManifestInfo {
+  manifestPath: string;
+  specPath: string;
+}

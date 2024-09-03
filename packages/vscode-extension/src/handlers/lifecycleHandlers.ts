@@ -275,13 +275,11 @@ function handleTriggerKiotaCommand(
     VsCodeLogInstance.error(localize("teamstoolkit.error.KiotaNotInstalled"));
     return ok({ projectPath: "" });
   } else {
-    void vscode.commands.executeCommand("kiota.openApiExplorer.searchOrOpenApiDescription", [
-      {
-        kind: "Plugin",
-        type: "ApiPlugin",
-        source: "ttk",
-      },
-    ]);
+    void vscode.commands.executeCommand("kiota.openApiExplorer.searchOrOpenApiDescription", {
+      kind: "Plugin",
+      type: "ApiPlugin",
+      source: "ttk",
+    });
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
       [TelemetryProperty.KiotaInstalled]: "Yes",
       ...getTriggerFromProperty(args),

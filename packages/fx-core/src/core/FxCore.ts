@@ -19,9 +19,6 @@ import {
   CreateProjectResult,
   CryptoProvider,
   DefaultApiSpecFolderName,
-  DefaultApiSpecJsonFileName,
-  DefaultApiSpecYamlFileName,
-  DefaultPluginManifestFileName,
   Func,
   FxError,
   IGenerator,
@@ -42,7 +39,6 @@ import {
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
-import { OpenAPIV3 } from "openapi-types";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
@@ -64,7 +60,7 @@ import {
   isValidProjectV3,
 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { TelemetryEvent, TelemetryProperty, telemetryUtils } from "../common/telemetry";
+import { TelemetryEvent, telemetryUtils } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -1741,7 +1737,7 @@ export class FxCore {
         manifestPath,
         inputs,
         context,
-        CoreTelemetryComponentName,
+        "copilotPluginAddAPI",
         isPlugin ? ProjectType.Copilot : ProjectType.SME,
         {
           destinationApiSpecFilePath: outputApiSpecPath,
@@ -1943,7 +1939,7 @@ export class FxCore {
         teamsManifestPath,
         inputs,
         context,
-        CoreTelemetryComponentName,
+        Stage.addPlugin,
         ProjectType.Copilot,
         {
           destinationApiSpecFilePath: destinationApiSpecPath,

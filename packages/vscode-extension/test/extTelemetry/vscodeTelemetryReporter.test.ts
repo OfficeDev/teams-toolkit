@@ -90,6 +90,35 @@ describe("vscodeTelemetryReporter", () => {
     );
   });
 
+  it("sendTelemetryErrorEvent: not overwrite correlationId if existing", () => {
+    tester.sendTelemetryErrorEvent(
+      "sampleErrorEvent",
+      {
+        stringProp: "some string",
+        "error-stack": "some user stack trace at (C:/fake_path/fake_file:1:1)",
+        "correlation-id": "fakeId",
+      },
+      { numericMeasure: 123 },
+      ["error-stack"]
+    );
+
+    sinon.assert.calledOnceWithMatch(
+      sendTelemetryErrorEventSpy,
+      "sampleErrorEvent",
+      {
+        stringProp: "some string",
+        "error-stack": "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)",
+        "project-id": "",
+        "correlation-id": "fakeId",
+        "feature-flags": featureFlags,
+        "programming-language": "",
+        "host-type": "",
+        "is-from-sample": "",
+      },
+      { numericMeasure: 123 }
+    );
+  });
+
   it("sendTelemetryException", () => {
     const error = new Error("error for test");
     tester.sendTelemetryException(error, { stringProp: "some string" }, { numericMeasure: 123 });

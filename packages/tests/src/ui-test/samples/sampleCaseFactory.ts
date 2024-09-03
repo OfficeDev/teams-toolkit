@@ -151,6 +151,7 @@ export abstract class CaseFactory {
     repoPath?: string;
     container?: boolean;
     dockerFolder?: string;
+    skipDeploy?: boolean;
   };
 
   public constructor(
@@ -174,6 +175,7 @@ export abstract class CaseFactory {
       repoPath?: string;
       container?: boolean;
       dockerFolder?: string;
+      skipDeploy?: boolean;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -404,10 +406,12 @@ export abstract class CaseFactory {
                 if (options?.container) {
                   await Executor.login();
                 }
-                await sampledebugContext.deployProject(
-                  sampledebugContext.projectPath,
-                  Timeout.botDeploy
-                );
+                if (options?.skipDeploy) {
+                  await sampledebugContext.deployProject(
+                    sampledebugContext.projectPath,
+                    Timeout.botDeploy
+                  );
+                }
               },
             };
 

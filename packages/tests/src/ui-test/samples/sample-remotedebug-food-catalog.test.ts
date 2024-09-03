@@ -11,8 +11,6 @@ import fs from "fs";
 import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
-import { Executor } from "../../utils/executor";
-import { expect } from "chai";
 
 class FoodCatalogTestCase extends CaseFactory {
   override async onAfterCreate(
@@ -62,6 +60,7 @@ new FoodCatalogTestCase(
   [],
   {
     skipInit: true,
+    skipDeploy: true,
     repoPath: "./resource/samples",
     testRootFolder: path.resolve(os.homedir(), "resource"),
   }

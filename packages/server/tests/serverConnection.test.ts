@@ -544,18 +544,22 @@ describe("serverConnections", () => {
 
   it("syncTeamsAppManifestRequest", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.resolves(err(new UserError("source", "name", "", "")));
-    sandbox.replace(connection["core"], "syncManifest", fake);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (!inputs[QuestionNames.TeamsAppId]) {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
     const res = await connection.syncTeamsAppManifestRequest(
       {
         correlationId: "123",
       } as SyncManifestInputsForVS,
       {} as CancellationToken
     );
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      assert.equal(res.error.source, "source");
-    }
+    assert.isTrue(res.isOk());
   });
 
   it("syncTeamsAppManifestRequest with teamsApp Id", async () => {

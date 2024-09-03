@@ -8,13 +8,16 @@
 import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 
-class DiceRollerTestCase extends CaseFactory {}
+class OutlookSignatureTestCase extends CaseFactory {}
 
-new DiceRollerTestCase(
-  TemplateProject.DiceRoller,
-  24121529,
+new OutlookSignatureTestCase(
+  TemplateProject.OutlookSignature,
+  24121523,
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { skipInit: true }
+  {
+    skipInit: true,
+    repoPath: "./resource/Samples",
+  }
 ).test();

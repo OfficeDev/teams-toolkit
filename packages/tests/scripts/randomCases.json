@@ -34,7 +34,13 @@
             "remotedebug-chatdata-m365-js-azureopenai",
             "remotedebug-chatdata-m365-js-openai",
             "remotedebug-chatdata-m365-ts-azureopenai",
-            "remotedebug-chatdata-m365-ts-openai"
+            "remotedebug-chatdata-m365-ts-openai",
+            "sample-localdebug-food-catalog",
+            "sample-remotedebug-food-catalog",
+            "sample-localdebug-outlook-signature",
+            "sample-remotedebug-outlook-signature",
+            "sample-localdebug-reddit-link",
+            "sample-remotedebug-reddit-link"
         ]
     },
     {

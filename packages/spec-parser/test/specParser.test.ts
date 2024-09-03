@@ -20,6 +20,7 @@ import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { SMEValidator } from "../src/validators/smeValidator";
 import { ValidatorFactory } from "../src/validators/validatorFactory";
+import { createHash } from "crypto";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -133,16 +134,15 @@ describe("SpecParser", () => {
 
       const result = await specParser.validate();
 
-      expect(result).to.deep.equal({
-        status: ValidationStatus.Warning,
-        errors: [],
-        warnings: [
-          {
-            type: WarningType.ConvertSwaggerToOpenAPI,
-            content: ConstantString.ConvertSwaggerToOpenAPI,
-          },
-        ],
-      });
+      expect(result.warnings).to.deep.equal([
+        {
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: ConstantString.ConvertSwaggerToOpenAPI,
+        },
+      ]);
+      expect(result.status).equal(ValidationStatus.Warning);
+      expect(result.errors).to.be.an("array").that.is.empty;
+
       sinon.assert.calledOnce(dereferenceStub);
     });
 
@@ -221,16 +221,14 @@ describe("SpecParser", () => {
 
       const result = await specParser.validate();
 
-      expect(result).to.deep.equal({
-        status: ValidationStatus.Error,
-        errors: [
-          {
-            type: ErrorType.SwaggerNotSupported,
-            content: ConstantString.SwaggerNotSupported,
-          },
-        ],
-        warnings: [],
-      });
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.status).equal(ValidationStatus.Error);
+      expect(result.errors).to.deep.equal([
+        {
+          type: ErrorType.SwaggerNotSupported,
+          content: ConstantString.SwaggerNotSupported,
+        },
+      ]);
     });
 
     it("should return an error result object if no server information", async function () {
@@ -250,6 +248,7 @@ describe("SpecParser", () => {
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: "",
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -275,6 +274,7 @@ describe("SpecParser", () => {
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -304,6 +304,7 @@ describe("SpecParser", () => {
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -324,6 +325,7 @@ describe("SpecParser", () => {
         errors: [
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -381,6 +383,9 @@ describe("SpecParser", () => {
 
       expect(result.errors[0].type).equal(ErrorType.RemoteRefNotSupported);
       expect(result.status).equal(ValidationStatus.Error);
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
     });
 
     it("should return an warning result object if missing operation id", async function () {
@@ -439,6 +444,7 @@ describe("SpecParser", () => {
           },
         ],
         errors: [],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -504,6 +510,7 @@ describe("SpecParser", () => {
             ],
           },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -557,6 +564,9 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
       sinon.assert.calledOnce(dereferenceStub);
     });
 
@@ -609,6 +619,9 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
       sinon.assert.calledOnce(dereferenceStub);
     });
 
@@ -709,6 +722,9 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
     });
 
     it("should only create validator once if already created", async () => {
@@ -814,6 +830,9 @@ describe("SpecParser", () => {
       );
       expect(result.errors[0].data).equal("3.1.0");
       expect(result.status).equal(ValidationStatus.Error);
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
 
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -867,6 +886,9 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
       sinon.assert.calledOnce(dereferenceStub);
     });
 

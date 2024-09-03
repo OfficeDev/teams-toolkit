@@ -20,16 +20,18 @@ class FoodCatalogTestCase extends CaseFactory {
     env: "local" | "dev"
   ): Promise<void> {
     console.log("pre provision project");
-    await sampledebugContext.provisionProject(
-      sampledebugContext.appName,
-      sampledebugContext.projectPath,
-      true,
-      "cli",
-      "",
-      "dev",
-      process.env,
-      "lifecycle provision because there are unresolved placeholders"
-    );
+    try {
+      await sampledebugContext.provisionProject(
+        sampledebugContext.appName,
+        sampledebugContext.projectPath,
+        true,
+        "cli",
+        "",
+        "dev",
+        process.env,
+        "lifecycle provision because there are unresolved placeholders"
+      );
+    } catch (error) {}
     console.log("[start] update env file.");
     const envFilePath = path.resolve(
       sampledebugContext.projectPath,

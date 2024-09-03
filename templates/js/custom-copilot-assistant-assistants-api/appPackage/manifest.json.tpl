@@ -29,7 +29,24 @@
                 "personal"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Solve the equation: 3x + 11= 14",
+                            "description": "Help me solve the equation: 3x + 11= 14"
+                        },
+                        {
+                            "title": "What's weather in Redmond, US?",
+                            "description": "What's weather in Redmond, US?"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

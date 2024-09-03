@@ -28,7 +28,7 @@ class FoodCatalogTestCase extends CaseFactory {
       "",
       "dev",
       process.env,
-      "Failed to Execute lifecycle provision because there are unresolved placeholders".toLowerCase()
+      "lifecycle provision because there are unresolved placeholders"
     );
     console.log("[start] update env file.");
     const envFilePath = path.resolve(

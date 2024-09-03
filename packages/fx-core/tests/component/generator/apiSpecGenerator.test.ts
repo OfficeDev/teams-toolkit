@@ -1271,6 +1271,7 @@ describe("listOperations", async () => {
       status: ValidationStatus.Valid,
       warnings: [],
       errors: [],
+      specHash: "xxx",
     });
     sandbox
       .stub(SpecParser.prototype, "list")
@@ -1291,6 +1292,7 @@ describe("listOperations", async () => {
       status: ValidationStatus.Valid,
       warnings: [],
       errors: [],
+      specHash: "",
     });
     sandbox.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -1333,6 +1335,7 @@ describe("listOperations", async () => {
       status: ValidationStatus.Valid,
       warnings: [],
       errors: [],
+      specHash: "",
     });
     sandbox.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -1687,6 +1690,7 @@ describe("SpecGenerator", async () => {
             content: "",
           },
         ],
+        specHash: "xxx",
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
@@ -1745,6 +1749,7 @@ describe("SpecGenerator", async () => {
         warnings: [
           { type: WarningType.OperationIdMissing, content: "warning", data: ["operation2"] },
         ],
+        specHash: "xxx",
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
@@ -1780,6 +1785,7 @@ describe("SpecGenerator", async () => {
         status: ValidationStatus.Warning,
         errors: [],
         warnings: [{ type: WarningType.OperationIdMissing, content: "warning" }],
+        specHash: "xxx",
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox
@@ -1814,6 +1820,7 @@ describe("SpecGenerator", async () => {
         status: ValidationStatus.Error,
         errors: [{ type: ErrorType.NoServerInformation, content: "" }],
         warnings: [],
+        specHash: "xxx",
       });
 
       sandbox.stub(SpecParser.prototype, "generate").resolves();

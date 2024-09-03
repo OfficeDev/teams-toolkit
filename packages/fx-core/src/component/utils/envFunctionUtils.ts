@@ -20,7 +20,7 @@ import { DriverContext } from "../driver/interface/commonArgs";
 
 const source = "ResolveManifestFunction";
 const telemetryEvent = "manifest-with-function";
-const helpLink = undefined; // TODO: update link
+const helpLink = "https://aka.ms/teamsfx-customize-manifest";
 
 enum TelemetryPropertyKey {
   manifestType = "manifest-type",

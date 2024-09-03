@@ -17,11 +17,11 @@ describe("vscodeTelemetryReporter", () => {
   let tester: VSCodeTelemetryReporter;
   const sandbox = sinon.createSandbox();
   const reporterStub = new MockTelemetryReporter();
-  const sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
-  const sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
-  const sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");
+  let sendTelemetryEventSpy: sinon.SinonSpy;
+  let sendTelemetryExceptionSpy: sinon.SinonSpy;
+  let sendTelemetryErrorEventSpy: sinon.SinonSpy;
 
-  before(() => {
+  beforeEach(() => {
     tester = new VSCodeTelemetryReporter(
       "test",
       "1.0.0-rc.1",
@@ -32,9 +32,13 @@ describe("vscodeTelemetryReporter", () => {
     tester.addSharedProperty("programming-language", "");
     tester.addSharedProperty("host-type", "");
     tester.addSharedProperty("is-from-sample", "");
+
+    sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
+    sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");
+    sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
   });
 
-  after(() => {
+  afterEach(() => {
     tester.dispose();
     sandbox.restore();
   });

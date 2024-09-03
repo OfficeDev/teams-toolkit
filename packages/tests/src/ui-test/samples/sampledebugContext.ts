@@ -447,7 +447,8 @@ export class SampledebugContext extends TestContext {
     tool: "ttk" | "cli" = "cli",
     option = "",
     env: "dev" | "local" = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    skipErrorMessage?: string
   ) {
     if (tool === "cli") {
       await this.runCliProvision(
@@ -456,7 +457,8 @@ export class SampledebugContext extends TestContext {
         createRg,
         option,
         env,
-        processEnv
+        processEnv,
+        skipErrorMessage
       );
     } else {
       await runProvision(appName);
@@ -493,7 +495,8 @@ export class SampledebugContext extends TestContext {
     createRg = true,
     option = "",
     env: "dev" | "local" = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    skipErrorMessage?: string
   ) {
     if (createRg) {
       await createResourceGroup(appName, env, "westus");
@@ -504,7 +507,8 @@ export class SampledebugContext extends TestContext {
     const { success, stderr, stdout } = await Executor.provision(
       projectPath,
       env,
-      true
+      true,
+      skipErrorMessage
     );
     console.log(`stdout: ${stdout}`);
     if (!success) {

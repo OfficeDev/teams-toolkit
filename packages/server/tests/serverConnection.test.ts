@@ -1,11 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, Inputs, ok, Platform, Stage, UserError, Void } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  Stage,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import {
   DependencyStatus,
   DepsManager,
   NodeNotFoundError,
+  QuestionNames,
+  SyncManifestInputs,
   teamsDevPortalClient,
   TestToolInstallOptions,
 } from "@microsoft/teamsfx-core";
@@ -16,6 +28,7 @@ import { Duplex } from "stream";
 import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
 import ServerConnection from "../src/serverConnection";
+import { SyncManifestInputsForVS } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/SyncManifest";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -526,6 +539,67 @@ describe("serverConnections", () => {
     const fake = sandbox.fake.resolves(ok(undefined));
     sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
     const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
+  });
+
+  it("syncTeamsAppManifestRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (!inputs[QuestionNames.TeamsAppId]) {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
+    const res = await connection.syncTeamsAppManifestRequest(
+      {
+        correlationId: "123",
+      } as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+
+  it("syncTeamsAppManifestRequest with teamsApp Id", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (inputs[QuestionNames.TeamsAppId] === "123") {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
+    const res = await connection.syncTeamsAppManifestRequest(
+      {
+        teamsAppFromTdp: {
+          teamsAppId: "123",
+        },
+      } as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+  it("syncTeamsAppManifestRequest with teamsAppFromTdp but no teamsAppId", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox
+      .stub(connection["core"], "syncManifest")
+      .callsFake((inputs: SyncManifestInputs): Promise<Result<any, FxError>> => {
+        if (!inputs[QuestionNames.TeamsAppId]) {
+          return Promise.resolve(ok(undefined));
+        } else {
+          return Promise.resolve(err(new UserError("source", "name", "", "")));
+        }
+      });
+    const res = await connection.syncTeamsAppManifestRequest(
+      {
+        teamsAppFromTdp: {},
+      } as SyncManifestInputsForVS,
+      {} as CancellationToken
+    );
     assert.isTrue(res.isOk());
   });
 });

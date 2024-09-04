@@ -4,6 +4,15 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### September 12, 2024
+
+#### New Features
+- **Author Instructions for Declarative Copilot via an External File**: Developers can now use an external file to author instructions for their declarative copilots and reference it in the manifest file. This has significantly imporved the authoring experience for long instructions comparing to using json files for authoring.
+![External File](https://github.com/user-attachments/assets/fa13711c-fe8c-4155-bd7f-9e0a8e0ed606)
+
+- **Add a Plugin to Declarative Copilot**: Temas Toolkit now offers the capability for developers to add a plugin as a skill to the declarative copilot. Developers can either add a new API plugin using OpenAPI description document, or reference an existing API plugin via its manifest file.
+![Add Plugin](https://github.com/user-attachments/assets/009a63d0-8bc0-4449-8ba6-cef25779c140)
+
 ### August 14, 2024
 
 #### New Features

@@ -23,7 +23,6 @@
     "@types/react-router-dom": "^5.3.3",
     "concurrently": "^8.2.2",
     "env-cmd": "^10.1.0",
-    "typescript": "^4.1.2",
     "vite": "^5.4.2",
     "@vitejs/plugin-basic-ssl": "^1.1.0",
     "@vitejs/plugin-react": "^4.3.1"

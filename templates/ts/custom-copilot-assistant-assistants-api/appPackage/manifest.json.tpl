@@ -41,8 +41,8 @@
                             "description": "Help me solve the equation: 3x + 11= 14"
                         },
                         {
-                            "title": "What's weather in Redmond, US?",
-                            "description": "What's weather in Redmond, US?"
+                            "title": "The weather of San Francisco",
+                            "description": "The weather of San Francisco"
                         }
                     ]
                 }

@@ -132,10 +132,10 @@ deploy:
     with:
       args: run build --if-present
     env:
-      VITE_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
-      VITE_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
-      VITE_APP_FUNC_NAME: getUserProfile
-      VITE_APP_FUNC_ENDPOINT: ${{API_FUNCTION_ENDPOINT}}
+      REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+      REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
+      REACT_APP_FUNC_NAME: getUserProfile
+      REACT_APP_FUNC_ENDPOINT: ${{API_FUNCTION_ENDPOINT}}
   # Deploy bits to Azure Static Web Apps
   - uses: cli/runNpxCommand
     name: deploy to Azure Static Web Apps

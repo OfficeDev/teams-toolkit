@@ -4,6 +4,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import { configMgr } from "../../src/config";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("configMgr", () => {
   const sanbox = sinon.createSandbox();
@@ -53,6 +54,14 @@ describe("configMgr", () => {
     });
   });
   describe("loadConfigs", () => {
+    beforeEach(async () => {
+      sanbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sanbox.stub(vscode.workspace, "getConfiguration").returns({
+        get: () => {
+          return "test";
+        },
+      } as any);
+    });
     afterEach(() => {
       sanbox.restore();
     });

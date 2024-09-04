@@ -82,7 +82,7 @@ app.authentication.get("graph").onUserSignInFailure(async (context, state, error
 
 app.feedbackLoop(async (context, state, feedbackLoopData) => {
   //add custom feedback process logic here
-  console.log('Your feedback is ' + JSON.stringify(context.activity.value));
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
 });
 
 export default app;

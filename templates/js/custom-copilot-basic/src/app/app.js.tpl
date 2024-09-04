@@ -50,7 +50,7 @@ app.conversationUpdate("membersAdded", async (turnContext) => {
 
 app.feedbackLoop(async (context, state, feedbackLoopData) => {
   //add custom feedback process logic here
-  console.log('Your feedback is ' + JSON.stringify(context.activity.value));
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
 });
 
 module.exports = app;

@@ -208,9 +208,9 @@ export async function activate(context: vscode.ExtensionContext) {
     isVSCodeInsiderVersion();
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
-  configMgr.registerConfigChangeCallback();
-
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
+
+  configMgr.registerConfigChangeCallback();
 
   initVSCodeUI(context);
   initializeGlobalVariables(context);

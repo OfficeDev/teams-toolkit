@@ -294,6 +294,7 @@ export enum TelemetryEvent {
   CreatePluginWithManifest = "create-plugin-with-manifest",
 
   InstallKiota = "install-kiota",
+  Configuration = "vsc-configuration",
 }
 
 export enum TelemetryProperty {

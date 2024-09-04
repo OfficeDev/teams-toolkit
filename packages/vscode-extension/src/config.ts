@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import { CONFIGURATION_PREFIX, ConfigurationKey } from "./constants";
 import VsCodeLogInstance from "./commonlib/log";
 import { LogLevel } from "@microsoft/teamsfx-api";
+import { ExtTelemetry } from "./telemetry/extTelemetry";
+import { TelemetryEvent } from "./telemetry/extTelemetryEvents";
 
 export class ConfigManager {
   registerConfigChangeCallback() {
@@ -13,6 +15,13 @@ export class ConfigManager {
   loadConfigs() {
     this.loadLogLevel();
     this.loadFeatureFlags();
+    const vscConfigs: { [p: string]: string } = {};
+    Object.values(ConfigurationKey).forEach((value) => {
+      vscConfigs[value] = this.getConfiguration(value, "").toString();
+    });
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Configuration, {
+      ...vscConfigs,
+    });
   }
   loadFeatureFlags() {
     process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = this.getConfiguration(

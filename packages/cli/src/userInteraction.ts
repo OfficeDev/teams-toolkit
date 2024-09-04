@@ -474,7 +474,7 @@ class CLIUserInteraction implements UserInteraction {
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
-      default: (config.default as string) || "./",
+      default: config.default as string,
       validation: config.validation || pathValidation,
     };
     return this.inputText(newConfig);

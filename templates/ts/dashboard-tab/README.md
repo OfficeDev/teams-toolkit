@@ -54,11 +54,13 @@ The following files can be customized and demonstrate an example implementation 
 
 The following are project-related files. You generally will not need to customize these files.
 
-| File                      | Contents                             |
-| ------------------------- | ------------------------------------ |
-| `src/index.css`           | The style of application entry point |
-| `src/index.tsx`           | Application entry point              |
-| `src/internal/context.ts` | TeamsFx Context                      |
+| File                      | Contents                                   |
+| ------------------------- | ------------------------------------------ |
+| `src/main.css`            | The style of React application entry point |
+| `src/main.tsx`            | The entry point for a React application    |
+| `src/internal/context.ts` | TeamsFx Context                            |
+| `index.html`              | The entry point of the application         |
+| `vite.config.ts`          | Vite configuration file                    |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

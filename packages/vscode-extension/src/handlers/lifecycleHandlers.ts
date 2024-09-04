@@ -8,6 +8,7 @@ import {
   ok,
   Result,
   Stage,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   ApiPluginStartOptions,
@@ -15,6 +16,8 @@ import {
   assembleError,
   AuthSvcScopes,
   CapabilityOptions,
+  featureFlagManager,
+  FeatureFlags,
   isUserCancelError,
   isValidOfficeAddInProject,
   QuestionNames,
@@ -24,7 +27,11 @@ import * as vscode from "vscode";
 import M365TokenInstance from "../commonlib/m365Login";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
 import envTreeProviderInstance from "../treeview/environmentTreeViewProvider";
 import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
@@ -32,6 +39,8 @@ import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { openFolder, openOfficeDevFolder } from "../utils/workspaceUtils";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
 import { runCommand } from "./sharedOpts";
+import { ExtensionSource } from "../error/error";
+import VsCodeLogInstance from "../commonlib/log";
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
@@ -51,6 +60,16 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   }
 
   const res = result.value as CreateProjectResult;
+
+  // For Kiota integration
+  if (
+    featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+    res.projectPath === "" &&
+    res.createProjectForKiota
+  ) {
+    return handleTriggerKiotaCommand(args, res);
+  }
+
   if (res.shouldInvokeTeamsAgent) {
     await invokeTeamsAgent([TelemetryTriggerFrom.CreateAppQuestionFlow]);
     return result;
@@ -95,6 +114,11 @@ export async function publishHandler(...args: unknown[]): Promise<Result<null, F
 export async function addWebpartHandler(...args: unknown[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddWebpartStart, getTriggerFromProperty(args));
   return await runCommand(Stage.addWebpart);
+}
+
+export async function addPluginHandler(...args: unknown[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddPluginStart, getTriggerFromProperty(args));
+  return await runCommand(Stage.addPlugin);
 }
 
 /**
@@ -213,4 +237,53 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;
+}
+
+function handleTriggerKiotaCommand(
+  args: any[],
+  result: CreateProjectResult
+): Result<CreateProjectResult, FxError> {
+  if (!vscode.extensions.getExtension("ms-graph.kiota")) {
+    void vscode.window
+      .showInformationMessage(
+        localize("teamstoolkit.error.KiotaNotInstalled"),
+        "Install Kiota",
+        "Cancel"
+      )
+      .then((selection) => {
+        if (selection === "Install Kiota") {
+          // Open market place to install kiota
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InstallKiota, {
+            ...getTriggerFromProperty(args),
+          });
+          void vscode.commands.executeCommand("extension.open", "ms-graph.kiota");
+        } else {
+          return err(
+            new UserError(
+              ExtensionSource,
+              "KiotaNotInstalled",
+              localize("teamstoolkit.error.KiotaNotInstalled")
+            )
+          );
+        }
+      });
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.KiotaInstalled]: "No",
+      ...getTriggerFromProperty(args),
+    });
+    VsCodeLogInstance.error(localize("teamstoolkit.error.KiotaNotInstalled"));
+    return ok({ projectPath: "" });
+  } else {
+    void vscode.commands.executeCommand("kiota.openApiExplorer.searchOrOpenApiDescription", {
+      kind: "Plugin",
+      type: "ApiPlugin",
+      source: "ttk",
+    });
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.KiotaInstalled]: "Yes",
+      ...getTriggerFromProperty(args),
+    });
+    return ok(result);
+  }
 }

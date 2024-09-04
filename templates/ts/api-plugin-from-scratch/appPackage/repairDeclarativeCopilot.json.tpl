@@ -1,5 +1,6 @@
 {
-    "$schema": "https://aka.ms/json-schemas/copilot-extensions/v1.0/declarative-copilot.schema.json",
+    "$schema": "https://aka.ms/json-schemas/copilot-extensions/vNext/declarative-copilot.schema.json",
+    "version": "v1.0",
     "name": "{{appName}}${{APP_NAME_SUFFIX}}",
     "description": "This declarative copilot helps you with finding car repair records.",
     {{#FileFunction}}

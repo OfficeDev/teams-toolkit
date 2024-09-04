@@ -19,12 +19,13 @@ class SecretMasker {
   model: SVMModel = {
     coef_: [
       [
-        0.8648359577916889, 0.612715668310322, -0.059693023942576584, 1.1417652344119453,
-        -0.12576782743439452, 1.1909328608363758,
+        1.1407116640136614, -1.207072387304919, -0.42671866671203285, 1.760054415121175, 0.0,
+        1.776337354749609,
       ],
     ],
-    intercept_: [-7.761273206603221],
+    intercept_: [-9.96020839830461],
   };
+
   predict(features: number[]): number {
     const { coef_, intercept_ } = this.model;
     // Calculate the dot product between the features and the coefficients

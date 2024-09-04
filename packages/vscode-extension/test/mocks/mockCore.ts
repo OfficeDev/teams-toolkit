@@ -114,6 +114,9 @@ export class MockCore {
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
+  async syncManifest(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
+  }
   async getProjectInfo(
     projectPath: string,
     env: string
@@ -147,5 +150,9 @@ export class MockCore {
 
   async isEnvFile(projectPath: string, inputFile: string): Promise<Result<boolean, FxError>> {
     return ok(true);
+  }
+
+  async addPlugin(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    return ok(undefined);
   }
 }

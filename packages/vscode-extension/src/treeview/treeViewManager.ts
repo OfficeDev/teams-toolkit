@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { featureFlagManager, FeatureFlags, manifestUtils } from "@microsoft/teamsfx-core";
 
-import { isSPFxProject, workspaceUri } from "../globalVariables";
+import { isDeclarativeCopilotApp, isSPFxProject, workspaceUri } from "../globalVariables";
 import { hasAdaptiveCardInWorkspace } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
@@ -212,6 +212,17 @@ class TreeViewManager {
               localize("teamstoolkit.commmands.addWebpart.description"),
               "fx-extension.addWebpart",
               "addWebpart",
+              { name: "teamsfx-add-feature", custom: false }
+            ),
+          ]
+        : []),
+      ...(isDeclarativeCopilotApp
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.addPluginTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.addPluginDescription"),
+              "fx-extension.addPlugin",
+              "addPlugin",
               { name: "teamsfx-add-feature", custom: false }
             ),
           ]

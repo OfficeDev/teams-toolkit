@@ -156,7 +156,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(generateWarningStub.called);
   });
 
-  it("opens README and skip show warnings if api file does not exist", async () => {
+  it("opens README and show warnings", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
     const showMessageStub = sandbox
@@ -201,7 +201,7 @@ describe("autoOpenProjectHandler", () => {
 
     await autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryStub.calledTwice);
     chai.assert.isTrue(parseManifestStub.called);
     chai.assert.isFalse(generateWarningStub.called);
   });

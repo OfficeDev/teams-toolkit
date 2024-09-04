@@ -108,6 +108,12 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.HelloWorldTabDocker]: async () => {
     await startDebugging("Debug in Teams (Chrome)");
   },
+  [TemplateProject.FoodCatalog]: async () => {
+    await startDebugging("Debug");
+  },
+  [TemplateProject.RedditLink]: async () => {
+    await startDebugging("Debug in Teams (Chrome)");
+  },
 };
 
 export async function initPage(
@@ -432,22 +438,50 @@ export async function initTeamsPage(
       }
 
       // default
-      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-      await addBtn?.click();
-      await page.waitForTimeout(Timeout.shortTimeLoading);
+      if (options?.type !== "meeting") {
+        console.log("click add button");
+        const addBtn = await page?.waitForSelector(
+          "button>span:has-text('Add')"
+        );
+        await addBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+      } else {
+        // add in meeting
+        console.log("click showListBtn button");
+        const showListBtn = await page?.waitForSelector(
+          ".ui-splitbutton>button"
+        );
+        await showListBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
 
-      if (options?.type === "meeting") {
-        // verify add page is closed
-        try {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a team')`
-          );
-        } catch (error) {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
-          );
-        }
-        // TODO: need to add more logic
+        console.log("click addInMeetingBtn button");
+        const addInMeetingBtn = await page?.waitForSelector(
+          ".ui-popup__content li:has-text('Add to a meeting')"
+        );
+        await addInMeetingBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        console.log("input meeting name in search box");
+        const inputBox = await page.waitForSelector(
+          ".fui-DialogBody .ui-dropdown input.ui-box"
+        );
+        await inputBox.fill("testing");
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        const testingTab = await page.waitForSelector(
+          "ul li:has-text('testing')"
+        );
+        await testingTab?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        const setUpBtn = await page?.waitForSelector(
+          'button span:has-text("Set up a tab")'
+        );
+        await setUpBtn?.click();
+        console.log("click 'set up a tab' button");
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        await page?.waitForSelector('button span:has-text("Set up a tab")', {
+          state: "detached",
+        });
         console.log("successful to add teams app!!!");
         return;
       }
@@ -527,6 +561,7 @@ export async function initTeamsPage(
 
     return page;
   } catch (error) {
+    console.log(error);
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
       fullPage: true,
@@ -2310,6 +2345,7 @@ export async function validateBasicDashboardTab(page: Page) {
 export async function validateDashboardTab(page: Page) {
   try {
     console.log("start to verify dashboard tab");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
@@ -2846,6 +2882,125 @@ export async function validateExisingApiMeResult(page: Page, appName: string) {
       });
       assert.fail("Unable to reach app. Please try again.");
     }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateCustomapi(
+  page: Page,
+  options: {
+    hasWelcomeMessage?: boolean;
+    hasCommandReplyValidation: boolean;
+    botCommand?: string;
+    expectedWelcomeMessage?: string;
+    expectedReplyMessage?: string;
+    timeout?: number;
+  } = {
+    hasWelcomeMessage: true,
+    hasCommandReplyValidation: true,
+    botCommand: "Get repairs for Karin",
+    expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+    expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+  }
+) {
+  const timeout = options?.timeout ? options.timeout : 30 * 60 * 1000;
+  try {
+    console.log("start to verify bot");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frame = await page.waitForSelector("div#app");
+    try {
+      console.log("dismiss message");
+      await frame?.waitForSelector("div.ui-box");
+      await page
+        .click('button:has-text("Dismiss")', {
+          timeout: Timeout.playwrightDefaultTimeout,
+        })
+        .catch(() => {});
+    } catch (error) {
+      console.log("no message to dismiss");
+    }
+
+    if (options.hasCommandReplyValidation) {
+      await RetryHandler.retry(async () => {
+        console.log(
+          "sending message ",
+          options?.botCommand || "Get repairs for Karin"
+        );
+        const textbox = await frame?.waitForSelector(
+          'div.ck-content[role="textbox"]'
+        );
+        await textbox?.fill(options?.botCommand || "Get repairs for Karin");
+        const sendButton = await frame?.waitForSelector('button[name="send"]');
+        await sendButton?.click();
+        if (
+          options.expectedReplyMessage == ValidationContent.AiBotErrorMessage
+        ) {
+          await frame?.waitForSelector(
+            `p:has-text("${options?.expectedReplyMessage}")`,
+            { timeout: timeout }
+          );
+        } else {
+          await frame?.waitForSelector(
+            `div.ac-textBlock div.fui-Primitive p:has-text("${options?.expectedReplyMessage}")`,
+            { timeout: timeout }
+          );
+        }
+        console.log(
+          `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
+        );
+      }, 2);
+    }
+
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateRetailDashboard(page: Page) {
+  try {
+    console.log("start to verify dashboard tab");
+    await page?.waitForSelector("button:has-text('RetailDashboard')");
+    await page?.waitForSelector("button:has-text('RetailHome')");
+    await page?.waitForSelector("button:has-text('RetailInventory')");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("span:has-text('Global Return Volume')");
+    await frame?.waitForSelector(
+      "span:has-text('Global Customer Satisfaction')"
+    );
+    await frame?.waitForSelector("span:has-text('Product Sell')");
+    await frame?.waitForSelector("span:has-text('Reasons for Return')");
+    console.log("Dashboard tab loaded successfully");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateMeeting(page: Page, name: string) {
+  try {
+    console.log("start to verify meeting");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(`#root>div>p:has-text('${name}')`);
+    console.log("meeting tab loaded successfully");
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

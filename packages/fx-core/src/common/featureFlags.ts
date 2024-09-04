@@ -28,8 +28,11 @@ export class FeatureFlagName {
   static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
+  static readonly SyncManifest = "TEAMSFX_SYNC_MANIFEST";
   static readonly EnvFileFunc = "TEAMSFX_ENV_FILE_FUNC";
+  static readonly KiotaIntegration = "TEAMSFX_KIOTA_INTEGRATION";
 }
+
 export interface FeatureFlag {
   name: string;
   defaultValue: string;
@@ -79,9 +82,17 @@ export class FeatureFlags {
     name: FeatureFlagName.DevTunnelTest,
     defaultValue: "false",
   };
+  static readonly SyncManifest = {
+    name: FeatureFlagName.SyncManifest,
+    defaultValue: "false",
+  };
   static readonly EnvFileFunc = {
     name: FeatureFlagName.EnvFileFunc,
-    defaultValue: "false", // Set it to true for dogfooding.
+    defaultValue: "true", // Set it to true for dogfooding.
+  };
+  static readonly KiotaIntegration = {
+    name: FeatureFlagName.KiotaIntegration,
+    defaultValue: "false",
   };
 }
 

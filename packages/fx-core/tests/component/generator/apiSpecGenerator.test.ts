@@ -42,7 +42,6 @@ import * as CopilotPluginHelper from "../../../src/component/generator/apiSpec/h
 import {
   formatValidationErrors,
   generateScaffoldingSummary,
-  isYamlSpecFile,
   listPluginExistingOperations,
 } from "../../../src/component/generator/apiSpec/helper";
 import {
@@ -60,6 +59,7 @@ import { copilotGptManifestUtils } from "../../../src/component/driver/teamsApp/
 import * as pluginGeneratorHelper from "../../../src/component/generator/apiSpec/helper";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
+import * as commonUtils from "../../../src/common/utils";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -327,36 +327,36 @@ describe("generateScaffoldingSummary", async () => {
   });
 });
 
-describe("isYamlSpecFile", () => {
+describe("isJsonSpecFile", () => {
   afterEach(() => {
     sinon.restore();
   });
-  it("should return false for a valid JSON file", async () => {
-    const result = await isYamlSpecFile("test.json");
-    expect(result).to.be.false;
+  it("should return true for a valid JSON file", async () => {
+    const result = await commonUtils.isJsonSpecFile("test.json");
+    expect(result).to.be.true;
   });
 
-  it("should return true for an yaml file", async () => {
-    const result = await isYamlSpecFile("test.yaml");
-    expect(result).to.be.true;
+  it("should return false for an yaml file", async () => {
+    const result = await commonUtils.isJsonSpecFile("test.yaml");
+    expect(result).to.be.false;
   });
 
   it("should handle local json files", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
-    const result = await isYamlSpecFile("path/to/localfile");
-    expect(result).to.be.false;
+    const result = await commonUtils.isJsonSpecFile("path/to/localfile");
+    expect(result).to.be.true;
   });
 
   it("should handle remote files", async () => {
     const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
-    const result = await isYamlSpecFile("http://example.com/remotefile");
-    expect(result).to.be.false;
+    const result = await commonUtils.isJsonSpecFile("http://example.com/remotefile");
+    expect(result).to.be.true;
   });
 
-  it("should return true if it is a yaml file", async () => {
+  it("should return false if it is a yaml file", async () => {
     const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
-    const result = await isYamlSpecFile("path/to/localfile");
-    expect(result).to.be.true;
+    const result = await commonUtils.isJsonSpecFile("path/to/localfile");
+    expect(result).to.be.false;
   });
 });
 
@@ -1271,6 +1271,7 @@ describe("listOperations", async () => {
       status: ValidationStatus.Valid,
       warnings: [],
       errors: [],
+      specHash: "xxx",
     });
     sandbox
       .stub(SpecParser.prototype, "list")
@@ -1291,6 +1292,7 @@ describe("listOperations", async () => {
       status: ValidationStatus.Valid,
       warnings: [],
       errors: [],
+      specHash: "",
     });
     sandbox.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -1333,6 +1335,7 @@ describe("listOperations", async () => {
       status: ValidationStatus.Valid,
       warnings: [],
       errors: [],
+      specHash: "",
     });
     sandbox.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -1502,7 +1505,7 @@ describe("SpecGenerator", async () => {
       };
       inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
       inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
-      sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").throws();
+      sandbox.stub(commonUtils, "isJsonSpecFile").throws();
       const res = await generator.getTemplateInfos(context, inputs, ".", { telemetryProps: {} });
       assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -1517,6 +1520,7 @@ describe("SpecGenerator", async () => {
     const tools = new MockTools();
     setTools(tools);
     const sandbox = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn | undefined;
 
     const apiOperations: ApiOperation[] = [
       {
@@ -1540,6 +1544,9 @@ describe("SpecGenerator", async () => {
 
     afterEach(async () => {
       sandbox.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
     });
 
     it("API ME success", async function () {
@@ -1683,6 +1690,7 @@ describe("SpecGenerator", async () => {
             content: "",
           },
         ],
+        specHash: "xxx",
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
@@ -1741,6 +1749,7 @@ describe("SpecGenerator", async () => {
         warnings: [
           { type: WarningType.OperationIdMissing, content: "warning", data: ["operation2"] },
         ],
+        specHash: "xxx",
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
@@ -1776,6 +1785,7 @@ describe("SpecGenerator", async () => {
         status: ValidationStatus.Warning,
         errors: [],
         warnings: [{ type: WarningType.OperationIdMissing, content: "warning" }],
+        specHash: "xxx",
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox
@@ -1810,6 +1820,7 @@ describe("SpecGenerator", async () => {
         status: ValidationStatus.Error,
         errors: [{ type: ErrorType.NoServerInformation, content: "" }],
         warnings: [],
+        specHash: "xxx",
       });
 
       sandbox.stub(SpecParser.prototype, "generate").resolves();
@@ -2188,6 +2199,64 @@ describe("SpecGenerator", async () => {
       assert.isTrue(result.isErr() && result.error.name === "test");
       assert.isTrue(generateBasedOnSpec.calledOnce);
       assert.isTrue(addAction.calledOnce);
+    });
+
+    it("generate for kiota", async function () {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.KiotaIntegration]: "true" });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.AppName]: "test",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.ApiPluginManifestPath]: "test.json",
+        [QuestionNames.ProjectType]: "copilot-extension-type",
+        getTemplateInfosState: {
+          templateName: "api-plugin-existing-api",
+          isPlugin: true,
+          uri: "https://test.com",
+          isYaml: true,
+          type: ProjectType.Copilot,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "list").resolves({
+        APIs: [
+          {
+            api: "api1",
+            server: "https://test",
+            operationId: "get",
+            auth: {
+              name: "test",
+              authScheme: {
+                type: "http",
+                scheme: "bearer",
+              },
+            },
+            isValid: true,
+            reason: [],
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generateForCopilot")
+        .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
     });
   });
 });

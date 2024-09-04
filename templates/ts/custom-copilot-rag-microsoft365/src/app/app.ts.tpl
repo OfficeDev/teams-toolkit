@@ -1,4 +1,4 @@
-import { MemoryStorage MessageFactory, TurnContext } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
 

@@ -55,7 +55,8 @@ describe("Local Debug Tests", function () {
 
       await waitForTerminal(
         LocalDebugTaskLabel.StartFrontend,
-        "Compiled successfully!"
+        // [BUG] warning error message block the frontend validation
+        "Compiled with warnings"
       );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();

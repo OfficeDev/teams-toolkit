@@ -161,6 +161,9 @@
   "teamstoolkit.commandsTreeViewProvider.guideTitle": "View How-to Guides",
   "teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle": "Manage Collaborator",
   "teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription": "Manage M365 Teams App (with Microsoft Entra app) Collaborators",
+  "teamstoolkit.commandsTreeViewProvider.addPluginTitle": "Add Plugin",
+  "teamstoolkit.commandsTreeViewProvider.addPluginDescription": "Add plugin in declarative copilot",
+  "teamstoolkit.commandsTreeViewProvider.addPlugin.running": "Adding plugin...",
   "teamstoolkit.commandsTreeViewProvider.addWebpartTitle": "Add SPFx Web Part",
   "teamstoolkit.commandsTreeViewProvider.officeDevDeployTitle": "Deploy",
   "teamstoolkit.commandsTreeViewProvider.officeDevDeployDescription": "Deploy",
@@ -186,6 +189,7 @@
   "teamstoolkit.commandsTreeViewProvider.officeAddIn.documentationDescription": "The documentation about how to create Office Add-in project",
   "teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugTitle": "Stop Previewing Your Office Add-in",
   "teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugDescription": "Stop debugging the Office Add-in project",
+  "teamstoolkit.commandsTreeViewProvider.syncManifest": "Sync Manifest",
   "teamstoolkit.common.readMore": "Read more",
   "teamstoolkit.common.signin": "Sign in",
   "teamstoolkit.common.signout": "Sign out",
@@ -547,5 +551,7 @@
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.title": "Intelligent App Resources",
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.description": "Explore these resources to build intelligent apps and enhance your development projects\n🗒️ [Generative AI for Beginners](https://github.com/microsoft/generative-ai-for-beginners/tree/main)\n✨ [Retrieval Augmented Generation (RAG)](https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview)\n📚 [AI Learning and Community Hub](https://learn.microsoft.com/en-us/ai/)",
-  "teamstoolkit.m365.needSignIn.message": "You need to sign in your Microsoft 365 account."
+  "teamstoolkit.m365.needSignIn.message": "You need to sign in your Microsoft 365 account.",
+  "teamstoolkit.handler.createPluginWithManifest.error.missingParameter": "Missing parameter in the createPluginWithManifest command. Usage: createPluginWithManifest(API_SPEC_PATH:string, PLUGIN_MANIFEST_PATH: string, OUTPUT_FOLDER: string).",
+  "teamstoolkit.error.KiotaNotInstalled": "You need to install Microsoft Kiota extension to use this feature."
 }

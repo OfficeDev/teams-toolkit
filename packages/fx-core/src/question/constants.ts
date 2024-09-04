@@ -44,6 +44,7 @@ export enum QuestionNames {
   FromExistingApi = "from-existing-api", // group name for creating an App from existing api
   ApiSpecLocation = "openapi-spec-location",
   ApiOperation = "api-operation",
+  ApiPluginManifestPath = "external-api-plugin-manifest-path", // manifest path for creating project from existing plugin manifest. Use in Kiota integration, etc.
   MeArchitectureType = "me-architecture",
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
@@ -78,10 +79,12 @@ export enum QuestionNames {
   ConfirmAadManifest = "confirmAadManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
+  OutputFolderParamName = "output-folder",
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",
   ManifestId = "manifest-id",
+  TeamsAppId = "teams-app-id",
   TitleId = "title-id",
   UserEmail = "email",
 
@@ -96,9 +99,13 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
-  PluginAvailability = "plugin-availability",
+
+  SyncManifest = "sync-manifest",
   ApiPluginType = "api-plugin-type",
   WithPlugin = "with-plugin",
+  ImportPlugin = "import-plugin",
+  PluginManifestFilePath = "plugin-manifest-path",
+  PluginOpenApiSpecFilePath = "plugin-opeanapi-spec-path",
 }
 
 export const AppNamePattern =
@@ -1136,35 +1143,6 @@ export const recommendedLocations = [
   "West US 3",
 ];
 
-export class PluginAvailabilityOptions {
-  static action(): OptionItem {
-    return {
-      id: "action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
-    };
-  }
-  static copilotPlugin(): OptionItem {
-    return {
-      id: "api-plugin",
-      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
-    };
-  }
-  static copilotPluginAndAction(): OptionItem {
-    return {
-      id: "api-plugin-and-action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
-    };
-  }
-
-  static all(): OptionItem[] {
-    return [
-      PluginAvailabilityOptions.copilotPlugin(),
-      PluginAvailabilityOptions.action(),
-      PluginAvailabilityOptions.copilotPluginAndAction(),
-    ];
-  }
-}
-
 export class TeamsAppValidationOptions {
   static schema(): OptionItem {
     return {
@@ -1265,7 +1243,35 @@ export class ApiPluginStartOptions {
     };
   }
 
-  static all(): OptionItem[] {
-    return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
+  static existingPlugin(): OptionItem {
+    return {
+      id: "existing-plugin",
+      label: getLocalizedString("core.createProjectQuestion.apiPlugin.importPlugin.label"),
+      detail: getLocalizedString("core.createProjectQuestion.apiPlugin.importPlugin.detail"),
+    };
+  }
+
+  static staticAll(doesProjectExists?: boolean): OptionItem[] {
+    return doesProjectExists
+      ? [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()]
+      : [
+          ApiPluginStartOptions.newApi(),
+          ApiPluginStartOptions.apiSpec(),
+          ApiPluginStartOptions.existingPlugin(),
+        ];
+  }
+
+  static all(inputs: Inputs, doesProjectExists?: boolean): OptionItem[] {
+    if (doesProjectExists) {
+      return [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()];
+    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+      return [
+        ApiPluginStartOptions.newApi(),
+        ApiPluginStartOptions.apiSpec(),
+        ApiPluginStartOptions.existingPlugin(),
+      ];
+    } else {
+      return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
+    }
   }
 }

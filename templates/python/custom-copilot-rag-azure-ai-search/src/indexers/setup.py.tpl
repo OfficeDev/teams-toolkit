@@ -1,5 +1,4 @@
-import asyncio
-import os
+import asyncio, os, argparse
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -60,7 +59,19 @@ async def create_index_if_not_exists(client: SearchIndexClient, name: str):
 
     client.create_or_update_index(doc_index)
 
-async def setup(search_api_key, search_api_endpoint):
+def load_keys_from_args():
+    parser = argparse.ArgumentParser(description='Load keys from command input parameters.')
+    {{#useAzureOpenAI}}
+    parser.add_argument('--api-key', type=str, required=True, help='Azure OpenAI API key for authentication')
+    {{/useAzureOpenAI}}
+    {{#useOpenAI}}
+    parser.add_argument('--api-key', type=str, required=True, help='OpenAI API key for authentication')
+    {{/useOpenAI}}
+    parser.add_argument('--ai-search-key', type=str, required=True, help='AI Search key for authentication')
+    args = parser.parse_args()
+    return args
+
+async def setup(search_api_key, search_api_endpoint, args):
     index = 'contoso-electronics'
 
     credentials = AzureKeyCredential(search_api_key)
@@ -75,14 +86,14 @@ async def setup(search_api_key, search_api_endpoint):
 
     {{#useAzureOpenAI}}
     embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
-        azure_api_key=os.getenv('SECRET_AZURE_OPENAI_API_KEY'),
+        azure_api_key=args.api_key,
         azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
         azure_deployment=os.getenv('AZURE_OPENAI_EMBEDDING_DEPLOYMENT')
     ))
     {{/useAzureOpenAI}}
     {{#useOpenAI}}
     embeddings=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
-        api_key=os.getenv('SECRET_OPENAI_API_KEY'),
+        api_key=args.api_key,
         model='text-embedding-ada-002'
     ))
     {{/useOpenAI}}
@@ -91,8 +102,9 @@ async def setup(search_api_key, search_api_endpoint):
 
     print("Upload new documents succeeded. If they do not exist, wait for several seconds...")
     
-search_api_key = os.getenv('SECRET_AZURE_SEARCH_KEY')
+args = load_keys_from_args()
+search_api_key = args.ai_search_key
 search_api_endpoint = os.getenv('AZURE_SEARCH_ENDPOINT')
-asyncio.run(setup(search_api_key, search_api_endpoint))
+asyncio.run(setup(search_api_key, search_api_endpoint, args))
 print("setup finished")
 

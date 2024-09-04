@@ -92,6 +92,11 @@ describe("ExtTelemetry", () => {
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CopilotPluginAddAPI);
     });
 
+    it("Stage.syncManifest", () => {
+      const stage = Stage.syncManifest;
+      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.SyncManifest);
+    });
+
     it("unknown", () => {
       const stage = "unknown";
       chai.expect(ExtTelemetry.stageToEvent(stage as Stage)).equals(undefined);

@@ -71,6 +71,7 @@ describe("Remote debug Tests", function () {
       await createNewProject("aiagentnew", appName, {
         lang: "TypeScript",
         aiType: "OpenAI",
+        aiManagement: "Build from Scratch",
       });
       validateFileExist(projectPath, "src/index.ts");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");

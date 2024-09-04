@@ -94,7 +94,9 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     }
 
     this.checkAndOverwriteSharedProperty(properties);
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    if (properties[TelemetryProperty.CorrelationId] == undefined) {
+      properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    }
 
     const featureFlags = featureFlagManager.listEnabled();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";

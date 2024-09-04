@@ -345,6 +345,7 @@ export class APP_STUDIO_API_NAMES {
   public static readonly GET_OAUTH = "get-oauth";
   public static readonly CREATE_OAUTH = "create-oauth";
   public static readonly UPDATE_OAUTH = "update-oauth";
+  public static readonly CHECK_SIDELOADING_STATUS = "check-sideloading-status";
 }
 
 /**

@@ -66,7 +66,7 @@ describe("Remote debug Tests", function () {
     async function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("chatdata", appName, {
-        aiType: "Azure OpenAI",
+        aiType: "OpenAI",
         dataOption: "Microsoft 365",
       });
       validateFileExist(projectPath, "src/index.js");

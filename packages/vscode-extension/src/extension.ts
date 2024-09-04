@@ -114,6 +114,7 @@ import {
   refreshEnvironment,
 } from "./handlers/envHandlers";
 import {
+  addPluginHandler,
   addWebpartHandler,
   copilotPluginAddAPIHandler,
   createNewProjectHandler,
@@ -125,6 +126,7 @@ import {
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  syncManifestHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
@@ -197,6 +199,7 @@ import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { isVSCodeInsiderVersion } from "./utils/versionUtil";
+import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value =
@@ -205,9 +208,9 @@ export async function activate(context: vscode.ExtensionContext) {
     isVSCodeInsiderVersion();
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
-  configMgr.registerConfigChangeCallback();
-
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
+
+  configMgr.registerConfigChangeCallback();
 
   initVSCodeUI(context);
   initializeGlobalVariables(context);
@@ -271,6 +274,11 @@ export async function activate(context: vscode.ExtensionContext) {
     isOfficeManifestOnlyProject
   );
 
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isSyncManifestEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.SyncManifest)
+  );
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
@@ -525,6 +533,15 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(validatePrerequisitesCmd);
 
   registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
+
+  // Register createPluginWithManifest command
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
+    const createPluginWithManifestCommand = vscode.commands.registerCommand(
+      "fx-extension.createprojectfromkiota",
+      createPluginWithManifest
+    );
+    context.subscriptions.push(createPluginWithManifestCommand);
+  }
 }
 
 /**
@@ -579,6 +596,8 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   registerInCommandController(context, "fx-extension.OpenAdaptiveCardExt", installAdaptiveCardExt);
 
   registerInCommandController(context, "fx-extension.addWebpart", addWebpartHandler, "addWebpart");
+
+  registerInCommandController(context, "fx-extension.addPlugin", addPluginHandler, "addPlugin");
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
@@ -679,6 +698,10 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(checkCopilotCallback, args)
   );
   context.subscriptions.push(checkCopilotCallbackCmd);
+
+  if (featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest)) {
+    registerInCommandController(context, "fx-extension.syncManifest", syncManifestHandler);
+  }
 }
 
 /**

@@ -3762,6 +3762,169 @@ describe("updateManifestWithAiPlugin", () => {
       );
     }
   });
+
+  it("should update existing manifest", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+    const existingPluginManifestPath = "/path/to/your/pluginManifest.json";
+    const specPath = "/path/to/your/spec.yaml";
+    const relativePath = ManifestUpdater.getRelativePath(existingPluginManifestPath, specPath);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
+    };
+    const originalPluginManifest = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: relativePath,
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").callsFake(async (path) => {
+      if (path === manifestPath) {
+        return Promise.resolve(originalManifest);
+      } else if (path === existingPluginManifestPath) {
+        return Promise.resolve(originalPluginManifest);
+      } else {
+        return Promise.resolve({});
+      }
+    });
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false)
+      .withArgs(existingPluginManifestPath)
+      .resolves(true);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options,
+      undefined,
+      {
+        manifestPath: existingPluginManifestPath,
+        specPath: specPath,
+      }
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
+  });
 });
 
 describe("manifestUpdater", () => {

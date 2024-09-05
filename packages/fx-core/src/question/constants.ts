@@ -604,8 +604,10 @@ export class CapabilityOptions {
   static copilotExtensions(inputs?: Inputs): OptionItem[] {
     if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [CapabilityOptions.apiPlugin()];
-    } else {
+    } else if (isCopilotExtensionEnabled()) {
       return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    } else {
+      return [CapabilityOptions.declarativeCopilot()];
     }
   }
 
@@ -655,9 +657,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isCopilotExtensionEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotExtensions());
-    }
+    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only

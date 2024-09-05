@@ -259,7 +259,9 @@ export function capabilityQuestion(): SingleSelectQuestion {
       return getLocalizedString("core.createCapabilityQuestion.placeholder");
     },
     forgetLastValue: true,
-    skipSingleOption: true,
+    skipSingleOption: (inputs: Inputs): boolean => {
+      return isFromDevPortal(inputs);
+    },
   };
 }
 

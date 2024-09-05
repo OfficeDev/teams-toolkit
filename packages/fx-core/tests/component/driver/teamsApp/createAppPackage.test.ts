@@ -14,7 +14,6 @@ import {
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import { FileNotFoundError, JSONSyntaxError } from "../../../../src/error/common";
-import { FeatureFlagName } from "../../../../src/common/featureFlags";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, PluginManifestSchema, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
@@ -35,7 +34,6 @@ describe("teamsApp/createAppPackage", async () => {
   const openapiServerPlaceholder = "TEAMSFX_TEST_API_URL";
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CopilotExtension]: "true",
       ["CONFIG_TEAMS_APP_NAME"]: "fakeName",
       [openapiServerPlaceholder]: fakeUrl,
       ["APP_NAME_SUFFIX"]: "test",

@@ -226,7 +226,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * if true: single select question will be automatically answered with the single option;
    * if false: use still need to do the selection manually even there is no other choice.
    */
-  skipSingleOption?: boolean;
+  skipSingleOption?: boolean | LocalFunc<boolean>;
 
   /**
    * the command is only for CLI option description

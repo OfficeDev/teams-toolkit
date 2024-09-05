@@ -601,11 +601,16 @@ export class CapabilityOptions {
     return items;
   }
 
-  static copilotExtensions(inputs?: Inputs): OptionItem[] {
+  static copilotExtensions(inputs?: Inputs, isStatic?: boolean): OptionItem[] {
+    if (isStatic) {
+      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    }
     if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [CapabilityOptions.apiPlugin()];
-    } else {
+    } else if (isCopilotExtensionEnabled()) {
       return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    } else {
+      return [CapabilityOptions.declarativeCopilot()];
     }
   }
 
@@ -635,7 +640,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.copilotExtensions(inputs),
+      ...CapabilityOptions.copilotExtensions(inputs, true),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
@@ -655,9 +660,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isCopilotExtensionEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotExtensions());
-    }
+    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only

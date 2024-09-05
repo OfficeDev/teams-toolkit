@@ -88,7 +88,7 @@ describe("AppCredential Tests - Node", () => {
     assert.strictEqual(errorResult.code, ErrorCode.ServiceError);
     assert.include(
       errorResult.message,
-      "Get M365 tenant credential failed with error: invalid_client: 7000215"
+      "Get M365 tenant credential failed with error: invalid_client: Error(s): 7000215"
     );
   });
 });
@@ -179,7 +179,7 @@ describe("AppCredential Tests with Auth Config - Node", () => {
     assert.strictEqual(errorResult.code, ErrorCode.ServiceError);
     assert.include(
       errorResult.message,
-      "Get M365 tenant credential failed with error: invalid_client: 7000215"
+      "Get M365 tenant credential failed with error: invalid_client: Error(s): 7000215"
     );
   });
 });

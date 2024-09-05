@@ -283,9 +283,9 @@ export class WebviewPanel {
 
   private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
     const urlInfo = sample.downloadUrlInfo;
-    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/${sample.thumbnailPath}?raw=1`;
+    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/`;
     const imageRegex = /img\s+src="(?!https:\/\/camo\.githubusercontent\.com\/.)([^"]+)"/gm;
-    return htmlContent.replace(imageRegex, `img src="${imageUrl}"`);
+    return htmlContent.replace(imageRegex, `img src="${imageUrl}$1?raw=1"`);
   }
 
   private replaceMermaidRelatedContent(htmlContent: string): string {

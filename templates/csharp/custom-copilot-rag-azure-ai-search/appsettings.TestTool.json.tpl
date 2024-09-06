@@ -12,7 +12,7 @@
 {{#useOpenAI}}
   "OpenAI": {
     "ApiKey": "{{{originalOpenAIKey}}}",
-    "EmbeddingModel": "{{{openAIEmbeddingModel}}}",
+    "EmbeddingModel": "{{{openAIEmbeddingModel}}}"
   },
   "Azure": {
     "AISearchApiKey": "{{{originalAzureAISearchApiKey}}}",

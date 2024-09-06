@@ -68,7 +68,7 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
 {{#useAzureOpenAI}}
     AzureOpenAIApiKey = config.Azure.OpenAIApiKey,
     AzureOpenAIEndpoint = config.Azure.OpenAIEndpoint,
-    AzureOpenAIEmbeddingDeployment = config.Azure.OpenAIEmbeddingDeployment,
+    AzureOpenAIEmbeddingDeployment = config.Azure.OpenAIEmbeddingDeploymentName,
 {{/useAzureOpenAI}}
  };
 
@@ -85,7 +85,7 @@ builder.Services.AddTransient<IBot>(sp =>
     {
         PromptFolder = "./Prompts"
     });
-    prompts.AddDataSource("my-ai-search", dataSource);
+    prompts.AddDataSource("azure-ai-search", dataSource);
 
     // Create ActionPlanner
     ActionPlanner<TurnState> planner = new(

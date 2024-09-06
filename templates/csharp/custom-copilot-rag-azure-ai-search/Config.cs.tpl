@@ -8,6 +8,7 @@ namespace {{SafeProjectName}}
         public string BOT_TENANT_ID { get; set; }
 {{#useOpenAI}}
         public OpenAIConfigOptions OpenAI { get; set; }
+        public AzureConfigOptions Azure { get; set; }
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
         public AzureConfigOptions Azure { get; set; }
@@ -21,7 +22,7 @@ namespace {{SafeProjectName}}
     public class OpenAIConfigOptions
     {
         public string ApiKey { get; set; }
-        public string EmbeddingModel = { get; set; };
+        public string EmbeddingModel { get; set; }
         public string DefaultModel = "gpt-3.5-turbo";
     }
     public class AzureConfigOptions
@@ -39,7 +40,7 @@ namespace {{SafeProjectName}}
         public string OpenAIApiKey { get; set; }
         public string OpenAIEndpoint { get; set; }
         public string OpenAIDeploymentName { get; set; }
-        public string OpenAIEmbeddingDeployment { get; set; }
+        public string OpenAIEmbeddingDeploymentName { get; set; }
         public string AISearchApiKey { get; set; }
         public string AISearchEndpoint { get; set; }
     }

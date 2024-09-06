@@ -151,6 +151,6 @@ namespace {{SafeProjectName}}
         /// Azure OpenAI embeddings deployment name
         /// </summary>
         public string AzureOpenAIEmbeddingDeployment { get; set; }
-    }
 {{/useAzureOpenAI}}
+    }
 }

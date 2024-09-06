@@ -65,7 +65,7 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   if (
     featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
     res.projectPath === "" &&
-    res.createProjectForKiota
+    res.lastCommand
   ) {
     return handleTriggerKiotaCommand(args, res);
   }
@@ -279,6 +279,9 @@ function handleTriggerKiotaCommand(
       kind: "Plugin",
       type: "ApiPlugin",
       source: "ttk",
+      ttkContext: {
+        lastCommand: result.lastCommand,
+      },
     });
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
       [TelemetryProperty.KiotaInstalled]: "Yes",

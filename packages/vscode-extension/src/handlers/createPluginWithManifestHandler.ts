@@ -14,6 +14,7 @@ import { getSystemInputs } from "../utils/systemEnvUtils";
 import {
   ApiPluginStartOptions,
   CapabilityOptions,
+  KiotaLastCommands,
   ProjectTypeOptions,
   QuestionNames,
 } from "@microsoft/teamsfx-core";
@@ -35,10 +36,16 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
     TelemetryEvent.CreatePluginWithManifestStart,
     getTriggerFromProperty(args)
   );
-  if (!args || args.length < 2 || args.length > 3) {
+  if (
+    !args ||
+    args.length < 3 ||
+    args.length > 4 ||
+    !args[2].lastCommand ||
+    !Object.values(KiotaLastCommands).includes(args[2].lastCommand)
+  ) {
     const error = new UserError(
       ExtensionSource,
-      "missingParameter",
+      "invlaidParameter",
       localize("teamstoolkit.handler.createPluginWithManifest.error.missingParameter")
     );
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreatePluginWithManifest, error);
@@ -47,10 +54,16 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
 
   const specPath = args[0];
   const pluginManifestPath = args[1];
-  const outputFolder = args[2] ?? undefined;
+  const lastCommand = args[2].lastCommand;
+  const outputFolder = args[3] ?? undefined;
 
   const inputs = getSystemInputs();
-  inputs.capabilities = CapabilityOptions.apiPlugin().id;
+  if (lastCommand === KiotaLastCommands.createDeclarativeCopilotWithManifest) {
+    inputs.capabilities = CapabilityOptions.declarativeCopilot().id;
+    inputs[QuestionNames.WithPlugin] = "yes";
+  } else {
+    inputs.capabilities = CapabilityOptions.apiPlugin().id;
+  }
   inputs[QuestionNames.ApiSpecLocation] = specPath;
   inputs[QuestionNames.ApiPluginManifestPath] = pluginManifestPath;
   inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;

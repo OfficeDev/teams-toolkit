@@ -131,7 +131,7 @@ describe("Lifecycle handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(
         ok({
           projectPath: "",
-          createProjectForKiota: true,
+          lastCommand: "command",
         })
       );
       sandbox.stub(vscode.extensions, "getExtension").returns({
@@ -159,7 +159,7 @@ describe("Lifecycle handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(
         ok({
           projectPath: "",
-          createProjectForKiota: true,
+          lastCommand: "command",
         })
       );
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
@@ -184,7 +184,7 @@ describe("Lifecycle handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(
         ok({
           projectPath: "",
-          createProjectForKiota: true,
+          lastCommand: "command",
         })
       );
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);

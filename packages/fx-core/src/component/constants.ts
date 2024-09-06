@@ -110,3 +110,8 @@ export enum BotScenario {
 export const AadConstants = {
   DefaultTemplateFileName: "aad.manifest.json",
 };
+
+export const KiotaLastCommands = {
+  createPluginWithManifest: "createPluginWithManifest",
+  createDeclarativeCopilotWithManifest: "createDeclarativeCopilotWithManifest",
+};

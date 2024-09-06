@@ -107,3 +107,4 @@ export * from "./question/options";
 export * from "./component/middleware/actionExecutionMW";
 export { TemplateInfo } from "./component/generator/templates/templateInfo";
 export { AadSet } from "./common/globalVars";
+export { KiotaLastCommands } from "./component/constants";

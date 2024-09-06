@@ -13,6 +13,10 @@
 - **Add a Plugin to Declarative Copilot**: Temas Toolkit now offers the capability for developers to add a plugin as a skill to the declarative copilot. Developers can either add a new API plugin using OpenAPI description document, or reference an existing API plugin via its manifest file.
 ![Add Plugin](https://github.com/user-attachments/assets/009a63d0-8bc0-4449-8ba6-cef25779c140)
 
+#### Bug Fixes:
+- Upgraded axios dependency used in Teams Toolkit to v1.7.6 to fix vulunerability issue. [#12306](https://github.com/OfficeDev/teams-toolkit/pull/12306)
+- Changed a string when creating `AI Agent` without Assistant API for better clarity. [#12266](https://github.com/OfficeDev/teams-toolkit/pull/12266)
+
 ### August 14, 2024
 
 #### New Features

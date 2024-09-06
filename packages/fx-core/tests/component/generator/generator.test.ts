@@ -943,6 +943,7 @@ describe("render template", () => {
 
     it("template variables with custom copilot - AI Search for csharp", async () => {
       inputs.projectId = "test-id";
+      inputs[QuestionNames.AzureOpenAIKey] = "test-key";
       inputs[QuestionNames.AzureAISearchApiKey] = "test-search-key";
       inputs[QuestionNames.AzureAISearchEndpoint] = "test-search-endpoint";
       inputs[QuestionNames.OpenAIEmbeddingModel] = "test-openai-embedding-model";

@@ -11,6 +11,7 @@ This app template also demonstrates usage of techniques like:
 >
 > To run the template in your local dev machine, you will need:
 >
+> - Prepare your own [Azure AI Search](https://azure.microsoft.com/en-us/products/ai-services/ai-search).
 {{#useOpenAI}}
 > - an account with [OpenAI](https://platform.openai.com).
 {{/useOpenAI}}
@@ -24,6 +25,9 @@ This app template also demonstrates usage of techniques like:
 1. Fill in your OpenAI API Key in `env/.env.local.user`
     ```
     SECRET_OPENAI_API_KEY="<your-openai-api-key>"
+    OPENAI_EMBEDDING_MODEL="<your-openai-embedding-model>"
+    SECRET_AI_SEARCH_API_KEY="<your-azure-ai-search-api-key>"
+    AI_SEARCH_ENDPOINT="<your-azure-ai-search-endpoint>"
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
@@ -32,15 +36,18 @@ This app template also demonstrates usage of techniques like:
     SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
     AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
     AZURE_OPENAI_DEPLOYMENT_NAME="<your-azure-openai-deployment-name>"
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME="<your-azure-openai-embedding-deployment-name>"
+    SECRET_AI_SEARCH_API_KEY="<your-azure-ai-search-api-key>"
+    AI_SEARCH_ENDPOINT="<your-azure-ai-search-endpoint>"
     ```
 {{/useAzureOpenAI}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
-2. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
-3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
+1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
+1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-2. In the launched browser, select the Add button to load the app in Teams
-3. In the chat bar, type and send anything to your bot to trigger a response
+1. In the launched browser, select the Add button to load the app in Teams
+1. In the chat bar, type and send anything to your bot to trigger a response
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
@@ -49,7 +56,12 @@ to install the app to
 1. Fill in your OpenAI API Key in `appsettings.TestTool.json`
     ```
     "OpenAI": {
-      "ApiKey": "<your-openai-api-key>"
+      "ApiKey": "<your-openai-api-key>",
+      "EmbeddingModel": "<your-openai-embedding-model>"
+    },
+    "Azure": {
+      "AISearchApiKey": "<your-azure-ai-search-api-key>",
+      "AISearchEndpoint": "<your-azure-ai-search-endpoint>"
     }
     ```
 {{/useOpenAI}}
@@ -60,13 +72,15 @@ to install the app to
       "OpenAIApiKey": "<your-azure-openai-api-key>",
       "OpenAIEndpoint": "<your-azure-openai-endpoint>",
       "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
-
+      "OpenAIEmbeddingDeploymentName": "<your-azure-openai-embedding-deployment-name>",
+      "AISearchApiKey": "<your-azure-ai-search-api-key>",
+      "AISearchEndpoint": "<your-azure-ai-search-endpoint>"
     }
     ```
 {{/useAzureOpenAI}}
 1. Select `Teams App Test Tool (browser)` in debug dropdown menu
-2. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-3. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
@@ -76,6 +90,7 @@ to install the app to
 
 - Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
 - Understand more about [build your own data ingestion](https://aka.ms/teamsfx-rag-bot#build-your-own-data-ingestion).
+- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#azure-ai-search-as-data-source).
 
 ## Additional information and references
 

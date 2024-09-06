@@ -162,7 +162,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 6);
           assert.isUndefined((options as OptionItem[])[0].groupName);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
@@ -217,7 +217,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 6);
           assert.isFalse((options[2] as OptionItem).detail?.includes("Copilot"));
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
@@ -3185,10 +3185,9 @@ describe("scaffold question", () => {
       setTools(tools);
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.CopilotExtension]: "true",
+          [FeatureFlagName.CopilotExtension]: "false",
         });
       });
-
       afterEach(() => {
         if (mockedEnvRestore) {
           mockedEnvRestore();
@@ -3219,7 +3218,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 1);
             const title =
               typeof question.title === "function" ? await question.title(inputs) : question.title;
             assert.equal(
@@ -3270,7 +3269,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 1);
 
             return ok({ type: "success", result: CapabilityOptions.declarativeCopilot().id });
           } else if (question.name === QuestionNames.WithPlugin) {
@@ -3502,7 +3501,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 7);
           assert.equal(
             getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
             (options as OptionItem[])[0].groupName

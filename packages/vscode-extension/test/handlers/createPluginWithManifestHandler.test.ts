@@ -28,7 +28,24 @@ describe("createPluginWithManifestHandler", () => {
     const core = new MockCore();
     sandbox.stub(globalVariables, "core").value(core);
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
-    const res = await createPluginWithManifest(["specPath", "pluginManifestPath"]);
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      "createPluginWithManifest",
+    ]);
+    chai.assert.isTrue(res.isOk());
+    chai.assert.isTrue(openFolder.calledOnce);
+  });
+
+  it("happy path: successfullly create declarative copilot project", async () => {
+    const core = new MockCore();
+    sandbox.stub(globalVariables, "core").value(core);
+    const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      "createDeclarativeCopilotWithManifest",
+    ]);
     chai.assert.isTrue(res.isOk());
     chai.assert.isTrue(openFolder.calledOnce);
   });
@@ -37,12 +54,17 @@ describe("createPluginWithManifestHandler", () => {
     const core = new MockCore();
     sandbox.stub(globalVariables, "core").value(core);
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
-    const res = await createPluginWithManifest(["specPath", "pluginManifestPath", "folder"]);
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      "createPluginWithManifest",
+      "folder",
+    ]);
     chai.assert.isTrue(res.isOk());
     chai.assert.isTrue(openFolder.calledOnce);
   });
 
-  it("should throw error if args length is less than 2", async () => {
+  it("should throw error if args length is less than 3", async () => {
     const core = new MockCore();
     sandbox.stub(globalVariables, "core").value(core);
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
@@ -50,24 +72,37 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "missingParameter");
+      chai.assert.equal(res.error.name, "invlaidParameter");
     }
   });
 
-  it("should throw error if args length is bigger than 3", async () => {
+  it("should throw error if args length is bigger than 4", async () => {
     const core = new MockCore();
     sandbox.stub(globalVariables, "core").value(core);
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
     const res = await createPluginWithManifest([
       "specPath",
       "pluginManifestPath",
+      "createPluginWithManifest",
       "folder",
       "extra",
     ]);
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "missingParameter");
+      chai.assert.equal(res.error.name, "invlaidParameter");
+    }
+  });
+
+  it("should throw error if command name invalid", async () => {
+    const core = new MockCore();
+    sandbox.stub(globalVariables, "core").value(core);
+    const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
+    const res = await createPluginWithManifest(["specPath", "pluginManifestPath", "test"]);
+    chai.assert.isTrue(res.isErr());
+    chai.assert.isTrue(openFolder.notCalled);
+    if (res.isErr()) {
+      chai.assert.equal(res.error.name, "invlaidParameter");
     }
   });
 
@@ -79,7 +114,7 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "missingParameter");
+      chai.assert.equal(res.error.name, "invlaidParameter");
     }
   });
 
@@ -90,7 +125,11 @@ describe("createPluginWithManifestHandler", () => {
       .stub(globalVariables.core, "createProject")
       .resolves(err(new UserError("core", "fakeError", "fakeErrorMessage")));
     const openFolder = sandbox.stub(workspaceUtils, "openFolder").resolves();
-    const res = await createPluginWithManifest(["specPath", "pluginManifestPath", true]);
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      "createPluginWithManifest",
+    ]);
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {

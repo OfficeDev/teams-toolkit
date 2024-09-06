@@ -11,15 +11,7 @@
         "ts-node/register",
         "--no-timeouts",
         "--colors",
-        // "${workspaceFolder}/tests/**/*.test.ts"
-        // "${workspaceFolder}/tests/core/middleware/migration/*.test.ts"
-        // "${workspaceFolder}/tests/core/middleware/projectVersionChecker.test.ts"
-        // "${workspaceFolder}/tests/core/FxCore.test.ts"
-        // "${workspaceFolder}/tests/component/coordinator/coordinator.provision.test.ts"
-        // "${workspaceFolder}/tests/component/driver/arm/*.test.ts"
-        "${workspaceFolder}/tests/component/generator/generator.test.ts"
-        // "${workspaceFolder}/tests/component/util/metadataRscPermissionUtil.test.ts"
-        // "${workspaceFolder}/tests/component/middleware/*.test.ts"
+        "${workspaceFolder}/tests/**/*.test.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

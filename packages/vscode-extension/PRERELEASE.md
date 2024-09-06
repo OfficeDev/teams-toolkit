@@ -7,15 +7,16 @@
 ### September 12, 2024
 
 #### New Features
-- **Author Instructions for Declarative Copilot via an External File**: Developers can now use an external file to author instructions for their declarative copilots and reference it in the manifest file. This has significantly imporved the authoring experience for long instructions comparing to using json files for authoring.
+- **External File Support for Declarative Copilot Instructions**: Developers now have the ability to use an external file to author instructions for their declarative copilots and reference it in the manifest file. This greatly improves the authoring experience for longer instructions compared to using JSON files.
 ![External File](https://github.com/user-attachments/assets/fa13711c-fe8c-4155-bd7f-9e0a8e0ed606)
 
-- **Add a Plugin to Declarative Copilot**: Temas Toolkit now offers the capability for developers to add a plugin as a skill to the declarative copilot. Developers can either add a new API plugin using OpenAPI description document, or reference an existing API plugin via its manifest file.
+- **Plugin Integration for Declarative Copilot**: Teams Toolkit now allows developers to add a plugin as a skill to the declarative copilot. Developers can either add a new API plugin using an OpenAPI description document or reference an existing API plugin via its manifest file.
 ![Add Plugin](https://github.com/user-attachments/assets/009a63d0-8bc0-4449-8ba6-cef25779c140)
 
 #### Bug Fixes:
-- Upgraded axios dependency used in Teams Toolkit to v1.7.6 to fix vulunerability issue. [#12306](https://github.com/OfficeDev/teams-toolkit/pull/12306)
-- Changed a string when creating `AI Agent` without Assistant API for better clarity. [#12266](https://github.com/OfficeDev/teams-toolkit/pull/12266)
+- Upgraded the axios dependency used in Teams Toolkit to version 1.7.6 to fix a vulnerability issue. [#12306](https://github.com/OfficeDev/teams-toolkit/pull/12306)
+- Changed a string for better clarity when creating an `AI Agent` without Assistant API. [#12266](https://github.com/OfficeDev/teams-toolkit/pull/12266)
+
 
 ### August 14, 2024
 

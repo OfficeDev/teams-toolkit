@@ -57,9 +57,13 @@ export enum QuestionNames {
   CustomCopilotAssistant = "custom-copilot-agent",
   LLMService = "llm-service",
   OpenAIKey = "openai-key",
+  OpenAIEmbeddingModel = "openai-embedding-model",
   AzureOpenAIKey = "azure-openai-key",
   AzureOpenAIEndpoint = "azure-openai-endpoint",
   AzureOpenAIDeploymentName = "azure-openai-deployment-name",
+  AzureOpenAIEmbeddingDeploymentName = "azure-openai-embedding-deployment-name",
+  AzureAISearchApiKey = "azure-ai-search-api-key",
+  AzureAISearchEndpoint = "azure-ai-search-endpoint",
 
   Features = "features",
   Env = "env",

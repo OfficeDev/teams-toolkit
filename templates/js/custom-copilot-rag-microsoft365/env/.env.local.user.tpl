@@ -6,7 +6,7 @@ SECRET_BOT_PASSWORD=
 SECRET_AAD_APP_CLIENT_SECRET=
 {{#useOpenAI}}
 {{#openAIKey}}
-SECRET_OPENAI_API_KEY='{{{openAIKey}}}'
+SECRET_OPENAI_API_KEY={{{openAIKey}}}
 {{/openAIKey}}
 {{^openAIKey}}
 SECRET_OPENAI_API_KEY=
@@ -14,7 +14,7 @@ SECRET_OPENAI_API_KEY=
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
 {{#azureOpenAIKey}}
-SECRET_AZURE_OPENAI_API_KEY='{{{azureOpenAIKey}}}'
+SECRET_AZURE_OPENAI_API_KEY={{{azureOpenAIKey}}}
 {{/azureOpenAIKey}}
 {{^azureOpenAIKey}}
 SECRET_AZURE_OPENAI_API_KEY=

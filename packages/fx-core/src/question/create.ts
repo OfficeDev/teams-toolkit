@@ -587,12 +587,7 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     return [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
       { id: ProgrammingLanguage.TS, label: "TypeScript" },
-      {
-        id: ProgrammingLanguage.PY,
-        label: "Python",
-        detail: "",
-        description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
-      },
+      { id: ProgrammingLanguage.PY, label: "Python" },
     ];
   } else {
     // other cases

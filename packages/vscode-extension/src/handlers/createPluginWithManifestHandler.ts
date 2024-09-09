@@ -45,7 +45,7 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
   ) {
     const error = new UserError(
       ExtensionSource,
-      "invlaidParameter",
+      "invalidParameter",
       localize("teamstoolkit.handler.createPluginWithManifest.error.missingParameter")
     );
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreatePluginWithManifest, error);

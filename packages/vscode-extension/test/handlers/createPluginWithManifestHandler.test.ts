@@ -78,7 +78,7 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "invlaidParameter");
+      chai.assert.equal(res.error.name, "invalidParameter");
     }
   });
 
@@ -98,7 +98,7 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "invlaidParameter");
+      chai.assert.equal(res.error.name, "invalidParameter");
     }
   });
 
@@ -116,7 +116,7 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "invlaidParameter");
+      chai.assert.equal(res.error.name, "invalidParameter");
     }
   });
 
@@ -134,7 +134,7 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "invlaidParameter");
+      chai.assert.equal(res.error.name, "invalidParameter");
     }
   });
 
@@ -146,7 +146,7 @@ describe("createPluginWithManifestHandler", () => {
     chai.assert.isTrue(res.isErr());
     chai.assert.isTrue(openFolder.notCalled);
     if (res.isErr()) {
-      chai.assert.equal(res.error.name, "invlaidParameter");
+      chai.assert.equal(res.error.name, "invalidParameter");
     }
   });
 

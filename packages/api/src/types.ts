@@ -153,7 +153,7 @@ export interface CreateProjectResult {
   warnings?: Warning[];
   shouldInvokeTeamsAgent?: boolean;
   projectId?: string;
-  createProjectForKiota?: boolean;
+  lastCommand?: string;
 }
 
 export interface TeamsAppInputs extends InputsWithProjectPath {

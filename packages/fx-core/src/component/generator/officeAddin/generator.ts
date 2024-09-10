@@ -120,7 +120,10 @@ export class OfficeAddinGenerator {
         let host: string = inputHost;
         if (projectType === ProjectTypeOptions.outlookAddin().id) {
           host = "outlook";
-        } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+        } else if (
+          projectType === ProjectTypeOptions.officeMetaOS().id ||
+          ProjectTypeOptions.officeAddin().id
+        ) {
           if (capability === "json-taskpane") {
             host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
           } else if (capability === CapabilityOptions.officeContentAddin().id) {
@@ -139,7 +142,10 @@ export class OfficeAddinGenerator {
         // from template
         const framework = getOfficeAddinFramework(inputs);
         const templateConfig = getOfficeAddinTemplateConfig();
-        const projectLink = templateConfig[capability].framework[framework][language];
+        const projectLink =
+          projectType === ProjectTypeOptions.officeMetaOS().id
+            ? "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/json-wxpo-preview.zip"
+            : templateConfig[capability].framework[framework][language];
 
         // Copy project template files from project repository
         if (projectLink) {
@@ -152,7 +158,10 @@ export class OfficeAddinGenerator {
             return err(fetchRes.error);
           }
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+          if (
+            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeMetaOS().id ||
+            ProjectTypeOptions.officeAddin().id
+          ) {
             cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
           } else {
             cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
@@ -248,7 +257,9 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
   ): Promise<Result<TemplateInfo[], FxError>> {
     const projectType = inputs[QuestionNames.ProjectType];
     const tplName =
-      projectType === ProjectTypeOptions.officeAddin().id ? templateNameForWXPO : templateName;
+      projectType === ProjectTypeOptions.officeMetaOS().id || ProjectTypeOptions.officeAddin().id
+        ? templateNameForWXPO
+        : templateName;
     let lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as ProgrammingLanguage;
     lang =
       inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||

@@ -62,9 +62,6 @@
     "workspaceContains:/**/manifest.json",
     "workspaceContains:/manifest*.xml"
   ],
-  "enabledApiProposals": [
-    "languageModelSystem"
-  ],
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",

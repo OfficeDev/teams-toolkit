@@ -133,7 +133,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
 
       if (
         inputs.platform === Platform.VSCode &&
-        featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant) &&
+        featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries) &&
         !inputs.teamsAppFromTdp
       ) {
         staticOptions.push(ProjectTypeOptions.startWithGithubCopilot());

@@ -187,7 +187,7 @@ export class ScratchOptions {
 
 export class ProjectTypeOptions {
   static getCreateGroupName(): string | undefined {
-    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
       ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
       : undefined;
   }

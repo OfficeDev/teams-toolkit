@@ -142,7 +142,7 @@ describe("Lifecycle handlers", () => {
         extensionKind: vscode.ExtensionKind.UI,
         exports: {},
         packageJSON: {
-          version: "1.19.100000001",
+          version: "1.18.100000002",
         },
         activate: () => Promise.resolve(),
       });
@@ -172,7 +172,7 @@ describe("Lifecycle handlers", () => {
         extensionKind: vscode.ExtensionKind.UI,
         exports: {},
         packageJSON: {
-          version: "1.20.24090901",
+          version: "1.19.24090901",
         },
         activate: () => Promise.resolve(),
       });

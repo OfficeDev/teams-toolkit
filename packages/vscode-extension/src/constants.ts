@@ -74,4 +74,4 @@ export const TerminalName = "Teams Toolkit";
 export const InstallCopilotChatLink = "https://aka.ms/install-github-copilot-chat";
 
 export const KiotaExtensionId = "ms-graph.kiota";
-export const KiotaMinVersion = "1.19.100000001";
+export const KiotaMinVersion = "1.18.100000002";

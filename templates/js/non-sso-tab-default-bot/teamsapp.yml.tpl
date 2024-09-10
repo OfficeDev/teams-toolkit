@@ -91,7 +91,7 @@ deploy:
   - uses: cli/runNpxCommand
     name: deploy to Azure Static Web Apps
     with:
-      args: '@azure/static-web-apps-cli deploy ./build -d ${{SECRET_TAB_SWA_DEPLOYMENT_TOKEN}} --env production'
+      args: '@azure/static-web-apps-cli deploy tab/build -d ${{SECRET_TAB_SWA_DEPLOYMENT_TOKEN}} --env production'
   # Deploy your application to Azure App Service using the zip deploy feature.
   # For additional details, refer to https://aka.ms/zip-deploy-to-app-services.
   - uses: azureAppService/zipDeploy

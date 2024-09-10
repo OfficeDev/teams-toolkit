@@ -122,7 +122,7 @@ export class OfficeAddinGenerator {
           host = "outlook";
         } else if (
           projectType === ProjectTypeOptions.officeMetaOS().id ||
-          ProjectTypeOptions.officeAddin().id
+          projectType === ProjectTypeOptions.officeAddin().id
         ) {
           if (capability === "json-taskpane") {
             host = "wxpo"; // wxpo - support word, excel, powerpoint, outlook
@@ -160,7 +160,7 @@ export class OfficeAddinGenerator {
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           if (
             inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeMetaOS().id ||
-            ProjectTypeOptions.officeAddin().id
+            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
           ) {
             cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
           } else {
@@ -257,7 +257,8 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
   ): Promise<Result<TemplateInfo[], FxError>> {
     const projectType = inputs[QuestionNames.ProjectType];
     const tplName =
-      projectType === ProjectTypeOptions.officeMetaOS().id || ProjectTypeOptions.officeAddin().id
+      projectType === ProjectTypeOptions.officeMetaOS().id ||
+      projectType === ProjectTypeOptions.officeAddin().id
         ? templateNameForWXPO
         : templateName;
     let lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as ProgrammingLanguage;

@@ -41,13 +41,14 @@ import { LifeCycleUndefinedError } from "../../error/yml";
 import {
   ApiPluginStartOptions,
   AppNamePattern,
+  CapabilityOptions,
   ProjectTypeOptions,
   QuestionNames,
   ScratchOptions,
 } from "../../question/constants";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { Lifecycle } from "../configManager/lifecycle";
-import { CoordinatorSource } from "../constants";
+import { CoordinatorSource, KiotaLastCommands } from "../constants";
 import { deployUtils } from "../deployUtils";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -97,9 +98,15 @@ class Coordinator {
       inputs.platform === Platform.VSCode &&
       featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
-      !inputs[QuestionNames.ApiPluginManifestPath]
+      !inputs[QuestionNames.ApiPluginManifestPath] &&
+      (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id)
     ) {
-      return ok({ projectPath: "", createProjectForKiota: true });
+      const lastCommand =
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id
+          ? KiotaLastCommands.createPluginWithManifest
+          : KiotaLastCommands.createDeclarativeCopilotWithManifest;
+      return ok({ projectPath: "", lastCommand: lastCommand });
     }
 
     let folder = inputs["folder"] as string;

@@ -60,6 +60,7 @@ import * as pluginGeneratorHelper from "../../../src/component/generator/apiSpec
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
 import * as commonUtils from "../../../src/common/utils";
+import * as helper from "../../../src/component/generator/apiSpec/helper";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -1512,6 +1513,127 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value.length, 1);
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].language, ProgrammingLanguage.CSharp);
+      }
+    });
+
+    it("happy path for kiota integration with auth", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.EnvFileFunc]: "true",
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      const generator = new SpecGenerator();
+      const context = createContext();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.AppName]: "testapp",
+        [QuestionNames.ApiPluginManifestPath]: "ai-plugin.json",
+      };
+      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
+      sandbox.stub(helper, "listOperations").resolves(
+        ok([
+          {
+            id: "operation1",
+            label: "operation1",
+            groupName: "1",
+            data: {
+              serverUrl: "https://server1",
+              authName: "auth",
+              authType: "apiKey",
+            },
+          },
+        ])
+      );
+      const res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+        assert.equal(res.value[0].templateName, "api-plugin-existing-api");
+        assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "");
+
+        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        assert.isFalse(filterResult);
+        filterResult = res.value[0].filterFn!("test.json");
+        assert.isTrue(filterResult);
+        filterResult = res.value[0].filterFn!("instruction.txt");
+        assert.isFalse(filterResult);
+      }
+    });
+
+    it("happy path for kiota integration without auth", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.EnvFileFunc]: "true",
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      const generator = new SpecGenerator();
+      const context = createContext();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.AppName]: "testapp",
+        [QuestionNames.ApiPluginManifestPath]: "ai-plugin.json",
+      };
+      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
+      sandbox.stub(helper, "listOperations").resolves(
+        ok([
+          {
+            id: "operation1",
+            label: "operation1",
+            groupName: "1",
+            data: {
+              serverUrl: "https://server1",
+            },
+          },
+        ])
+      );
+      const res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.equal(res.value.length, 1);
+        assert.equal(res.value[0].templateName, "api-plugin-existing-api");
+        assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "");
+
+        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        assert.isFalse(filterResult);
+        filterResult = res.value[0].filterFn!("test.json");
+        assert.isTrue(filterResult);
+        filterResult = res.value[0].filterFn!("instruction.txt");
+        assert.isFalse(filterResult);
+      }
+    });
+
+    it("parse failed for kiota integration", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.EnvFileFunc]: "true",
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      const generator = new SpecGenerator();
+      const context = createContext();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.AppName]: "testapp",
+        [QuestionNames.ApiPluginManifestPath]: "ai-plugin.json",
+      };
+      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
+      sandbox.stub(helper, "listOperations").resolves(
+        err([
+          {
+            type: ErrorType.SpecNotValid,
+            content: "test",
+          },
+        ])
+      );
+      const res = await generator.getTemplateInfos(context, inputs, ".");
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.equal(res.error.name, "ListOperationsFailed");
       }
     });
   });

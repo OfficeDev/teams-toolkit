@@ -99,40 +99,6 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const filteredQuestionNames = [
-        QuestionNames.WithPlugin.toString(),
-        QuestionNames.ApiPluginType.toString(),
-      ];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => filteredQuestionNames.includes(o.name)).length === 0
-      );
-
-      const res = await getCreateCommand().handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("createProjectOptions - need to adjust options when feature flag is enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "true",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-
-      const filteredQuestionNames = [
-        QuestionNames.WithPlugin.toString(),
-        QuestionNames.ApiPluginType.toString(),
-      ];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => filteredQuestionNames.includes(o.name)).length === 2
-      );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });

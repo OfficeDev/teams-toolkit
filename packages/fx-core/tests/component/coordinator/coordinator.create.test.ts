@@ -791,11 +791,10 @@ describe("coordinator create", () => {
       assert.isTrue(res.isErr());
     });
 
-    it("success for kiota integration", async () => {
+    it("success for kiota integration: plugin", async () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.KiotaIntegration]: "true",
       });
-      sandbox.stub(SPFxGeneratorNew.prototype, "run").resolves(ok({}));
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
       const inputs: Inputs = {
@@ -808,7 +807,29 @@ describe("coordinator create", () => {
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isOk());
       if (res.isOk()) {
-        assert.equal(res.value.createProjectForKiota, true);
+        assert.isNotNull(res.value.lastCommand);
+        assert.equal(res.value.projectPath, "");
+      }
+    });
+
+    it("success for kiota integration: declarative copilot", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.WithPlugin]: "yes",
+      };
+      const context = createContext();
+      const res = await coordinator.create(context, inputs);
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.isNotNull(res.value.lastCommand);
         assert.equal(res.value.projectPath, "");
       }
     });

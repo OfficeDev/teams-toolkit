@@ -27,6 +27,7 @@ import {
   ResponseTemplatesFolderName,
   Result,
   SystemError,
+  UserError,
   Warning,
   err,
   ok,
@@ -56,6 +57,7 @@ import {
   generateScaffoldingSummary,
   getEnvName,
   getParserOptions,
+  listOperations,
   updateForCustomApi,
 } from "./helper";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
@@ -167,6 +169,29 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       [telemetryProperties.templateName]: getTemplateInfosState.templateName,
       [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
     });
+
+    // For Kiota integration, we need to get auth info here
+    if (
+      featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+      inputs[QuestionNames.ApiPluginManifestPath]
+    ) {
+      const operationsResult = await listOperations(
+        context,
+        inputs[QuestionNames.ApiSpecLocation],
+        inputs
+      );
+      if (operationsResult.isErr()) {
+        const msg = operationsResult.error.map((e) => e.content).join("\n");
+        return err(new UserError("generator", "ListOperationsFailed", msg));
+      }
+
+      const operations = operationsResult.value;
+      const authApi = operations.find((api) => !!api.data.authName);
+      if (authApi) {
+        authData = authApi.data;
+      }
+    }
+
     const appName = inputs[QuestionNames.AppName];
     let language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
     if (getTemplateInfosState.templateName !== forCustomCopilotRagCustomApi) {

@@ -15,7 +15,6 @@ export class FeatureFlagName {
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly CopilotExtension = "DEVELOP_COPILOT_EXTENSION";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly DeclarativeCopilot = "TEAMSFX_DECLARATIVE_COPILOT";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
@@ -48,10 +47,6 @@ export class FeatureFlags {
   };
   static readonly CopilotPlugin = {
     name: FeatureFlagName.CopilotPlugin,
-    defaultValue: "false",
-  }; // old feature flag. Keep it for backwards compatibility.
-  static readonly DeclarativeCopilot = {
-    name: FeatureFlagName.DeclarativeCopilot,
     defaultValue: "false",
   }; // old feature flag. Keep it for backwards compatibility.
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
@@ -104,8 +99,7 @@ export class FeatureFlags {
 export function isCopilotExtensionEnabled(): boolean {
   return (
     featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension) ||
-    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin) ||
-    featureFlagManager.getBooleanValue(FeatureFlags.DeclarativeCopilot)
+    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
   );
 }
 

@@ -242,7 +242,7 @@ class TreeViewManager {
         undefined,
         { name: "debug-alt", custom: false }
       ),
-      ...(featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+      ...(featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
         ? [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle"),

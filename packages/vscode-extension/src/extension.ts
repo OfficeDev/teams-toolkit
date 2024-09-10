@@ -241,11 +241,11 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant entries
+  // control whether to show chat participant ui entries
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isChatParticipantEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)
+    "fx-extension.isChatParticipantUIEntriesEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.

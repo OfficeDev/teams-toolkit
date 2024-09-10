@@ -108,7 +108,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotExtension]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
-        [FeatureFlagName.ChatParticipant]: "false",
+        [FeatureFlagName.ChatParticipantUIEntries]: "false",
       });
     });
     afterEach(() => {
@@ -3395,7 +3395,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotExtension]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
-        [FeatureFlagName.ChatParticipant]: "true",
+        [FeatureFlagName.ChatParticipantUIEntries]: "true",
       });
     });
     afterEach(() => {
@@ -3809,7 +3809,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotExtension]: "true",
-        [FeatureFlagName.ChatParticipant]: "false",
+        [FeatureFlagName.ChatParticipantUIEntries]: "false",
       });
     });
 

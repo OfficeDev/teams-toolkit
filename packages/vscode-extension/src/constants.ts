@@ -5,6 +5,7 @@ export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   CopilotExtensionEnable = "developCopilotPlugin",
   LogLevel = "logLevel",
+  EnableMicrosoftKiota = "enableMicrosoftKiota",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -71,3 +72,6 @@ export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
 export const TerminalName = "Teams Toolkit";
 
 export const InstallCopilotChatLink = "https://aka.ms/install-github-copilot-chat";
+
+export const KiotaExtensionId = "ms-graph.kiota";
+export const KiotaMinVersion = "1.18.100000002";

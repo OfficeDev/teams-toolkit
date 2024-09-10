@@ -41,6 +41,9 @@ import { invokeTeamsAgent } from "./copilotChatHandlers";
 import { runCommand } from "./sharedOpts";
 import { ExtensionSource } from "../error/error";
 import VsCodeLogInstance from "../commonlib/log";
+import * as versionUtil from "../utils/versionUtil";
+import { KiotaExtensionId, KiotaMinVersion } from "../constants";
+import * as stringUtil from "util";
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
@@ -243,10 +246,10 @@ function handleTriggerKiotaCommand(
   args: any[],
   result: CreateProjectResult
 ): Result<CreateProjectResult, FxError> {
-  if (!vscode.extensions.getExtension("ms-graph.kiota")) {
+  if (!validateKiotaInstallation()) {
     void vscode.window
       .showInformationMessage(
-        localize("teamstoolkit.error.KiotaNotInstalled"),
+        stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion),
         "Install Kiota",
         "Cancel"
       )
@@ -262,7 +265,7 @@ function handleTriggerKiotaCommand(
             new UserError(
               ExtensionSource,
               "KiotaNotInstalled",
-              localize("teamstoolkit.error.KiotaNotInstalled")
+              stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion)
             )
           );
         }
@@ -272,7 +275,9 @@ function handleTriggerKiotaCommand(
       [TelemetryProperty.KiotaInstalled]: "No",
       ...getTriggerFromProperty(args),
     });
-    VsCodeLogInstance.error(localize("teamstoolkit.error.KiotaNotInstalled"));
+    VsCodeLogInstance.error(
+      stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion)
+    );
     return ok({ projectPath: "" });
   } else {
     void vscode.commands.executeCommand("kiota.openApiExplorer.searchOrOpenApiDescription", {
@@ -289,4 +294,18 @@ function handleTriggerKiotaCommand(
     });
     return ok(result);
   }
+}
+
+function validateKiotaInstallation(): boolean {
+  const installed = vscode.extensions.getExtension(KiotaExtensionId);
+  if (!installed) {
+    return false;
+  }
+
+  const kiotaVersion = installed.packageJSON.version;
+  if (!kiotaVersion) {
+    return false;
+  }
+
+  return versionUtil.compare(kiotaVersion, KiotaMinVersion) !== -1;
 }

@@ -1045,11 +1045,11 @@ export function apiAuthQuestion(): SingleSelectQuestion {
       if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
       } else if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id) {
-        options.push(
-          ApiAuthOptions.apiKey(),
-          ApiAuthOptions.microsoftEntra(),
-          ApiAuthOptions.oauth()
-        );
+        options.push(ApiAuthOptions.apiKey());
+        if (featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginAAD)) {
+          options.push(ApiAuthOptions.microsoftEntra());
+        }
+        options.push(ApiAuthOptions.oauth());
       }
       return options;
     },

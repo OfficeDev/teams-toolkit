@@ -146,7 +146,7 @@ export class CodeIssueCorrector implements ISkill {
     const sampleMessage: LanguageModelChatMessage | null =
       spec.appendix.codeSample.length > 0
         ? new LanguageModelChatMessage(
-            LanguageModelChatMessageRole.System,
+            LanguageModelChatMessageRole.User,
             getCodeSamplePrompt(spec.appendix.codeSample)
           )
         : null;
@@ -331,7 +331,7 @@ export class CodeIssueCorrector implements ISkill {
     // The order in array is matter, don't change it unless you know what you are doing
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, tempUserInput),
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, defaultSystemPrompt),
     ];
 
     if (!!sampleMessage) {
@@ -343,7 +343,7 @@ export class CodeIssueCorrector implements ISkill {
     // }
 
     messages.push(
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, referenceUserPrompt)
     );
 
     let msgCount = countMessagesTokens(messages);

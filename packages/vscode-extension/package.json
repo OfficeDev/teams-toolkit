@@ -1552,6 +1552,7 @@
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
         "description": "%teamstoolkit.chatParticipants.officeAddIn.description%",
+        "when": "fx-extension.isOfficeChatParticipantEnabled",
         "commands": [
           {
             "name": "create",

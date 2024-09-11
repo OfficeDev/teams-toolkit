@@ -1595,6 +1595,7 @@ describe("scaffold question", () => {
       beforeEach(() => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.CopilotExtension]: "true",
+          [FeatureFlagName.ApiPluginAAD]: "true",
         });
       });
 
@@ -1862,6 +1863,7 @@ describe("scaffold question", () => {
       it("traverse in cli", async () => {
         mockedEnvRestore = mockedEnv({
           TEAMSFX_CLI_DOTNET: "false",
+          [FeatureFlagName.ApiPluginAAD]: "true",
         });
 
         const inputs: Inputs = {
@@ -4094,6 +4096,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotExtension]: "true",
+        [FeatureFlagName.ApiPluginAAD]: "true",
       });
     });
 
@@ -4132,6 +4135,39 @@ describe("scaffold question", () => {
           ApiAuthOptions.none(),
           ApiAuthOptions.apiKey(),
           ApiAuthOptions.microsoftEntra(),
+          ApiAuthOptions.oauth(),
+        ]);
+      }
+    });
+  });
+  describe("api plugin auth question (AAD disabled)", () => {
+    let mockedEnvRestore: RestoreFn;
+    const tools = new MockTools();
+    setTools(tools);
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotExtension]: "true",
+      });
+    });
+
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+
+    it("api plugin from scratch without AAD enabled", async () => {
+      const question = apiAuthQuestion();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.newApi().id;
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        assert.deepEqual(options, [
+          ApiAuthOptions.none(),
+          ApiAuthOptions.apiKey(),
           ApiAuthOptions.oauth(),
         ]);
       }

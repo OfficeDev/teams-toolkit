@@ -124,7 +124,9 @@ export function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
-        if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
+        if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeMetaOS)) {
+          staticOptions.push(ProjectTypeOptions.officeMetaOS(inputs.platform));
+        } else if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
           staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
         } else {
           staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
@@ -196,6 +198,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
           );
         case ProjectTypeOptions.outlookAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
+        case ProjectTypeOptions.officeMetaOS().id:
         case ProjectTypeOptions.officeAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
         case ProjectTypeOptions.copilotExtension().id:
@@ -561,6 +564,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
   if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
+    if (projectType === ProjectTypeOptions.officeMetaOS().id) {
+      return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
+    }
     if (capabilities.endsWith("-manifest")) {
       return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
     }

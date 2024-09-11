@@ -13,6 +13,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly OfficeMetaOS = "TEAMSFX_OFFICE_METAOS";
   static readonly CopilotExtension = "DEVELOP_COPILOT_EXTENSION";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly DeclarativeCopilot = "TEAMSFX_DECLARATIVE_COPILOT";
@@ -57,6 +58,10 @@ export class FeatureFlags {
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
+  static readonly OfficeMetaOS = {
+    name: FeatureFlagName.OfficeMetaOS,
+    defaultValue: "false",
+  };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,
     defaultValue: "false",

@@ -198,13 +198,14 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
-import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { getPackageVersion, getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value =
-    (featureFlagManager.getBooleanValue(CoreFeatureFlags.OfficeChatParticipant) ||
-      extensionPackage.version.includes("alpha")) &&
+    ((getPackageVersion(extensionPackage.version) === "beta" &&
+      featureFlagManager.getBooleanValue(CoreFeatureFlags.OfficeChatParticipant)) ||
+      getPackageVersion(extensionPackage.version) === "alpha") &&
     semver.gte(vscode.version, "1.90.0");
   featureFlagManager.setBooleanValue(CoreFeatureFlags.OfficeChatParticipant, value);
 

@@ -24,7 +24,7 @@ describe("FileSystemWatcher", function () {
       const workspacePath = "test";
       sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
       sandbox.stub(globalVariables, "initializeGlobalVariables");
-      sandbox.stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged");
+      sandbox.stub(TreeViewManagerInstance, "updateDevelopmentTreeView");
 
       const watcher = {
         onDidCreate: () => ({ dispose: () => undefined }),
@@ -87,15 +87,15 @@ describe("FileSystemWatcher", function () {
 
     it("refreshSPFxTreeOnFileChanged", () => {
       const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
-      const updateTreeViewsOnSPFxChanged = sandbox
+      const updateDevelopmentTreeView = sandbox
         // eslint-disable-next-line no-secrets/no-secrets
-        .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
+        .stub(TreeViewManagerInstance, "updateDevelopmentTreeView")
         .resolves();
 
       refreshSPFxTreeOnFileChanged();
 
       chai.expect(initGlobalVariables.calledOnce).to.be.true;
-      chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
+      chai.expect(updateDevelopmentTreeView.calledOnce).to.be.true;
     });
   });
 

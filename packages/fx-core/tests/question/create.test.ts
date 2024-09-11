@@ -4147,6 +4147,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotExtension]: "true",
+        [FeatureFlagName.ApiPluginAAD]: "false",
       });
     });
 

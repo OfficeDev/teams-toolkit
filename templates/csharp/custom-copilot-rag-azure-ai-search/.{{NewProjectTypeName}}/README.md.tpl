@@ -22,7 +22,7 @@ This app template also demonstrates usage of techniques like:
 ## Create your Azure AI Search document index 
 **Before running or debugging your bot, please follow these steps to create your document index in Auzre AI Search.**
 
-> This app template provides script `Indexer.ps1` to help create assistant. You can change the instructions and settings in the script to customize the document index.
+> This app template provides script `Indexer.ps1` to help create document index. You can change the instructions and settings in the script to customize the document index.
 {{#useOpenAI}}
 1. Make sure your OpenAI and Azure AI search settings in `appsettings.TestTool.json`.
     ```
@@ -42,7 +42,7 @@ This app template also demonstrates usage of techniques like:
     "Azure": {
       "OpenAIApiKey": "<your-azure-openai-api-key>",
       "OpenAIEndpoint": "<your-azure-openai-endpoint>",
-      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
+      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>",
       "OpenAIEmbeddingDeploymentName": "<your-azure-openai-embedding-deployment-name>",
       "AISearchApiKey": "<your-azure-ai-search-api-key>",
       "AISearchEndpoint": "<your-azure-ai-search-endpoint>"
@@ -80,7 +80,7 @@ This app template also demonstrates usage of techniques like:
 1. Create your Azure AI Search document index as mentioned above.
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel.
 1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies.
-1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to
+1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
 1. In the launched browser, select the Add button to load the app in Teams.
 1. In the chat bar, type and send anything to your bot to trigger a response.

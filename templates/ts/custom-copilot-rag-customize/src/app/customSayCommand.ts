@@ -14,7 +14,7 @@ export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEna
     try {
       result = JSON.parse(data.response.content);
     } catch (error) {
-      console.error(`Response unformat, send the raw text. error: ${error}`);
+      console.error(`Response is not valid json, send the raw text. error: ${error}`);
       await context.sendActivity({
         type: ActivityTypes.Message,
         text: data.response.content,

@@ -124,14 +124,14 @@ describe("Lifecycle handlers", () => {
       assert.isTrue(openFolder.calledOnce);
     });
 
-    it("kiota integration: kiota installed", async () => {
+    it("kiota integration: kiota installed release version", async () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.KiotaIntegration]: "true",
       });
       sandbox.stub(shared, "runCommand").resolves(
         ok({
           projectPath: "",
-          createProjectForKiota: true,
+          lastCommand: "command",
         })
       );
       sandbox.stub(vscode.extensions, "getExtension").returns({
@@ -141,7 +141,39 @@ describe("Lifecycle handlers", () => {
         extensionPath: "mockedPath",
         extensionKind: vscode.ExtensionKind.UI,
         exports: {},
-        packageJSON: {},
+        packageJSON: {
+          version: "1.18.100000002",
+        },
+        activate: () => Promise.resolve(),
+      });
+      const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
+      const logError = sandbox.stub(VsCodeLogInstance, "error").resolves();
+      const res = await createNewProjectHandler();
+      assert.isTrue(res.isOk());
+      assert.isTrue(executeCommand.calledOnce);
+      assert.isTrue(logError.notCalled);
+    });
+
+    it("kiota integration: kiota installed pre-release version", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(shared, "runCommand").resolves(
+        ok({
+          projectPath: "",
+          lastCommand: "command",
+        })
+      );
+      sandbox.stub(vscode.extensions, "getExtension").returns({
+        id: "mockedId",
+        extensionUri: vscode.Uri.parse("file://mockedUri"),
+        isActive: true,
+        extensionPath: "mockedPath",
+        extensionKind: vscode.ExtensionKind.UI,
+        exports: {},
+        packageJSON: {
+          version: "1.19.24090901",
+        },
         activate: () => Promise.resolve(),
       });
       const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
@@ -159,10 +191,80 @@ describe("Lifecycle handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(
         ok({
           projectPath: "",
-          createProjectForKiota: true,
+          lastCommand: "command",
         })
       );
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
+      const showMessageStub = sandbox
+        .stub(vscode.window, "showInformationMessage")
+        .callsFake((title: string, ...items: any[]) => {
+          return Promise.resolve(items[0]);
+        });
+      const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
+      const logError = sandbox.stub(VsCodeLogInstance, "error").resolves();
+      const res = await createNewProjectHandler();
+      assert.isTrue(res.isOk());
+      assert.isTrue(showMessageStub.calledOnce);
+      assert.isTrue(executeCommand.calledOnce);
+      assert.isTrue(logError.calledOnce);
+    });
+
+    it("kiota integration: kiota version not match and click install", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(shared, "runCommand").resolves(
+        ok({
+          projectPath: "",
+          lastCommand: "command",
+        })
+      );
+      sandbox.stub(vscode.extensions, "getExtension").returns({
+        id: "mockedId",
+        extensionUri: vscode.Uri.parse("file://mockedUri"),
+        isActive: true,
+        extensionPath: "mockedPath",
+        extensionKind: vscode.ExtensionKind.UI,
+        exports: {},
+        packageJSON: {
+          version: "1.18.100000001",
+        },
+        activate: () => Promise.resolve(),
+      });
+      const showMessageStub = sandbox
+        .stub(vscode.window, "showInformationMessage")
+        .callsFake((title: string, ...items: any[]) => {
+          return Promise.resolve(items[0]);
+        });
+      const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
+      const logError = sandbox.stub(VsCodeLogInstance, "error").resolves();
+      const res = await createNewProjectHandler();
+      assert.isTrue(res.isOk());
+      assert.isTrue(showMessageStub.calledOnce);
+      assert.isTrue(executeCommand.calledOnce);
+      assert.isTrue(logError.calledOnce);
+    });
+
+    it("kiota integration: no kiota version and click install", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(shared, "runCommand").resolves(
+        ok({
+          projectPath: "",
+          lastCommand: "command",
+        })
+      );
+      sandbox.stub(vscode.extensions, "getExtension").returns({
+        id: "mockedId",
+        extensionUri: vscode.Uri.parse("file://mockedUri"),
+        isActive: true,
+        extensionPath: "mockedPath",
+        extensionKind: vscode.ExtensionKind.UI,
+        exports: {},
+        packageJSON: {},
+        activate: () => Promise.resolve(),
+      });
       const showMessageStub = sandbox
         .stub(vscode.window, "showInformationMessage")
         .callsFake((title: string, ...items: any[]) => {
@@ -184,7 +286,7 @@ describe("Lifecycle handlers", () => {
       sandbox.stub(shared, "runCommand").resolves(
         ok({
           projectPath: "",
-          createProjectForKiota: true,
+          lastCommand: "command",
         })
       );
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);

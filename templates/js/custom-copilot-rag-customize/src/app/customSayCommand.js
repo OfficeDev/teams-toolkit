@@ -6,15 +6,35 @@ function sayCommand(feedbackLoopEnabled = false) {
     if (!data.response?.content) {
       return "";
     }
-    let content = "";
-    let result = JSON.parse(data.response.content);
     const isTeamsChannel = context.activity.channelId === botbuilder.Channels.Msteams;
+    let content = "";
+    let result = undefined;
+    try {
+      result = JSON.parse(data.response.content);
+    } catch (error) {
+      console.error(`Response unformat, send the raw text. error: ${error}`);
+      await context.sendActivity({
+        type: botbuilder.ActivityTypes.Message,
+        text: data.response.content,
+        ...(isTeamsChannel ? { channelData: { feedbackLoopEnabled } } : {}),
+        entities: [
+          {
+            type: "https://schema.org/Message",
+            "@type": "Message",
+            "@context": "https://schema.org",
+            "@id": "",
+            additionalType: ["AIGeneratedContent"],
+          },
+        ],
+      });
+      return "";
+    }
     // If the response from AI includes citations, those citations will be parsed and added to the SAY command.
     let citations = [];
     let position = 1;
     if (result.results && result.results.length > 0) {
       result.results.forEach((contentItem) => {
-        if (contentItem.citationTitle.length > 0) {
+        if (contentItem.citationTitle && contentItem.citationTitle.length > 0) {
           const clientCitation = {
             "@type": "Claim",
             position: `${position}`,
@@ -32,7 +52,10 @@ function sayCommand(feedbackLoopEnabled = false) {
           content += `${contentItem.answer}<br>`;
         }
       });
+    } else {
+      content = data.response.content;
     }
+
     if (isTeamsChannel) {
       content = content.split("\n").join("<br>");
     }

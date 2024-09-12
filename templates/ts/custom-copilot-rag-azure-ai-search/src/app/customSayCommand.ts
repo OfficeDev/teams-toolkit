@@ -8,12 +8,28 @@ export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEna
       return "";
     }
 
-    let content = "";
-    const result = JSON.parse(data.response.content);
     const isTeamsChannel = context.activity.channelId === Channels.Msteams;
-
-    if (isTeamsChannel) {
-      content = content.split("\n").join("<br>");
+    let content = "";
+    let result = undefined;
+    try {
+      result = JSON.parse(data.response.content);
+    } catch (error) {
+      console.error(`Response unformat, send the raw text. error: ${error}`);
+      await context.sendActivity({
+        type: ActivityTypes.Message,
+        text: data.response.content,
+        ...(isTeamsChannel ? { channelData: { feedbackLoopEnabled } } : {}),
+        entities: [
+          {
+            type: "https://schema.org/Message",
+            "@type": "Message",
+            "@context": "https://schema.org",
+            "@id": "",
+            additionalType: ["AIGeneratedContent"],
+          },
+        ] as AIEntity[],
+      });
+      return "";
     }
 
     // If the response from AI includes citations, those citations will be parsed and added to the SAY command.
@@ -22,7 +38,7 @@ export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEna
 
     if (result.results && result.results.length > 0) {
       result.results.forEach((contentItem) => {
-        if (contentItem.citationTitle.length > 0) {
+        if (contentItem.citationTitle && contentItem.citationTitle.length > 0) {
           const clientCitation: ClientCitation = {
             "@type": "Claim",
             position: `${position}`,
@@ -40,6 +56,12 @@ export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEna
           content += `${contentItem.answer}<br>`;
         }
       });
+    } else {
+      content = data.response.content;
+    }
+
+    if (isTeamsChannel) {
+      content = content.split("\n").join("<br>");
     }
 
     // If there are citations, modify the content so that the sources are numbers instead of [doc1], [doc2], etc.

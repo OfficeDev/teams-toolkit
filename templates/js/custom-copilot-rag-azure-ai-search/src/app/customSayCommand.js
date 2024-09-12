@@ -62,4 +62,6 @@ function sayCommand(feedbackLoopEnabled = false) {
     return "";
   };
 }
-exports.sayCommand = sayCommand;
+module.exports = {
+  sayCommand,
+};

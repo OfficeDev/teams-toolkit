@@ -199,6 +199,7 @@ import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
+import { manifestListener } from "./manifestListener";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
@@ -317,6 +318,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
   if (vscode.workspace.isTrusted) {
     registerLanguageFeatures(context);
+    context.subscriptions.push(manifestListener());
   }
 
   registerDebugConfigProviders(context);

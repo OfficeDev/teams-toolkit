@@ -147,7 +147,7 @@ export class AzureAISearchDataSource implements DataSource {
         let usedTokens = 0;
         let doc = "";
         for await (const result of searchResults.results) {
-            const formattedResult = this.formatDocument(result.document.description);
+            const formattedResult = this.formatDocument(`${result.document.description}\n Citation title:${result.document.docTitle}.`);
             const tokens = tokenizer.encode(formattedResult).length;
 
             if (usedTokens + tokens > maxTokens) {

@@ -2,6 +2,80 @@
 
 > Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of pre-released versions, please refer to the [Teams Toolkit Pre-release Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/PRERELEASE.md).
 
+## 5.10.0 - Sep 17, 2024
+
+This update represents a minor version increment of the Teams Toolkit, introducing new features and addressing user-reported bugs. These incremental enhancements were previously documented in the prerelease version and a series of blog posts:
+
+- [July Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-july-2024/): You can now debug Teams apps directly in the desktop client, use managed identities for better security, and clean up development resources more easily.
+- [August Prererelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-august-2024/): This update adds enhanced app validation, Python support for intelligent chatbots, and the ability to create custom copilots. It also introduces the Assistant API on Azure OpenAI Service for AI Agents.
+
+Below is a comprehensive list of new features, enhancements, and bug fixes implemented since the last stable release.
+
+### New Features
+
+- **External File Support for Declarative Copilot Instructions**: Developers now have the ability to use an external file to author instructions for their declarative copilots and reference it in the manifest file. This greatly improves the authoring experience for longer instructions compared to using JSON files.
+![External File](https://github.com/user-attachments/assets/fa13711c-fe8c-4155-bd7f-9e0a8e0ed606)
+
+- **Plugin Integration for Declarative Copilot**: Teams Toolkit now allows developers to add a plugin as a skill to the declarative copilot. Developers can either add a new API plugin using an OpenAPI description document or reference an existing API plugin via its manifest file.
+![Add Plugin](https://github.com/user-attachments/assets/009a63d0-8bc0-4449-8ba6-cef25779c140)
+
+- **Enhanced App Validation**: Developers can now evaluate their app packages using the same test cases Microsoft employs during app review. The Enhanced App Validation feature in Teams Toolkit identifies any errors or warnings within your app package and provides clear guidelines for resolution. For more details on Microsoft test cases, refer to the [Teams Store validation guidelines](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines) and [Commercial marketplace certification policies](https://learn.microsoft.com/en-us/legal/marketplace/certification-policies). 
+![App Validation](https://github.com/user-attachments/assets/4c2b8c49-6a0a-4ea7-8796-a94464714463)
+
+- **Generate an Intelligent Chatbot with Python**: Following the release of support for building [Custom Engine Copilot](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-custom-engine-copilot) during Build 2024, which included the ability to "chat with" your own API, Teams Toolkit now extends this capability to the Python programming language.
+![App Generator](https://github.com/user-attachments/assets/21efa344-aea5-4d44-bb78-aa8e26dc68a1)
+
+- **Create Declarative Copilot**: Teams Toolkit now allows you to build a declarative copilot, enabling you to customize Microsoft 365 Copilot by declaring specific instructions, actions, and knowledge. Declarative copilots run on the same orchestrator, foundation models, and trusted AI services that power Microsoft Copilot. You can learn more about [declarative copilots here](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-declarative-copilot). The toolkit supports the creation of both basic declarative copilots and those with an API plugin.
+![Declarative Copilot](https://github.com/user-attachments/assets/37412cdd-c7e8-4e38-bd45-794997b050ec)
+
+- **Using Assistant API on Azure OpenAI Service**: The Teams Toolkit has updated the `AI Agent` (Python) app template to support the Assistant API on Azure OpenAI Service. You can now build your own AI Agents on Microsoft 365 using Python, with the option to use either Azure OpenAI Service or OpenAI directly. Support for TypeScript and JavaScript is forthcoming.
+
+- **Debug Apps in Teams Desktop Client**: The Teams desktop client now offers a faster and more reliable way to debug your Teams applications, with the same capabilities available in the Teams web client, such as breakpoints and hot reload. This feature is now available for Custom Engine Copilots, Bots, and Message Extensions apps.
+![Debug in Desktop](https://github.com/OfficeDev/teams-toolkit/assets/11220663/dc85ee11-e847-40d7-bceb-b5dc3e83f040)
+
+- **Use Managed Identity for Bot and Message Extension when deploying to Azure**: The Teams Toolkit has transitioned from client ID and secret-based identity to user-assigned managed identity for Bot and Message Extension application templates, enhancing security. [Learn more](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) about the benefits of using managed identities for Azure resources.
+![MSI](https://github.com/OfficeDev/teams-toolkit/assets/11220663/b2ffddb2-8c04-4ee4-aaaa-ae7c666af6e1)
+
+- **Clean Up Resources Created After Development**: You can now safely clean up resources created after application development by deleting the application registration in the Teams Developer Portal and Bot Framework Portal, and removing uploaded custom apps in Microsoft 365 applications. This can be done via the `teamsapp uninstall` command, either by using the App ID in the Teams application manifest file or by specifying an environment if your project is managed by the Teams Toolkit.
+![Uninstall](https://github.com/OfficeDev/teams-toolkit/assets/11220663/294447b7-d5f9-47cc-ab37-9235dbd5c111)
+
+- **Integrated CodeTour Instructions for Using Graph Connector Data Source**: The `Chat With Your Data - Microsoft 365` app template in Teams Toolkit now includes interactive CodeTour instructions. By default, the app uses content uploaded to SharePoint, but with these instructions, you can easily switch to a Graph connector data source if you have external content. Learn more about using the [Graph connector](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector).
+![Code Tour](https://github.com/OfficeDev/teams-toolkit/assets/11220663/be2eb3d6-0468-4316-8e6f-e8025408045a)
+
+- **Build AI Agent With Assistant API and Python**: Previously we have included the AI Assistant Bot app template to help you get started with building a GPT-like chat bot with AI capabilities using `Teams AI Library`. Now we have added a new AI Agent app template to help you build an AI agent with Assistant API and Python. This template showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
+
+### Enhancemens
+
+- Teams Toolkit will continue to update scaffold app templates to ensure compliance with [Teams Store validation guidelines](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/prepare/teams-store-validation-guidelines). The first round of updates focuses on bot templates, including:
+  - [PR#12063](https://github.com/OfficeDev/teams-toolkit/pull/12063): Updated `Basic Bot` and `Message Extension`
+  - [PR#12096](https://github.com/OfficeDev/teams-toolkit/pull/12096): Updated `Chat Command`
+  - [PR#12123](https://github.com/OfficeDev/teams-toolkit/pull/12123): Updated `Chat Notification Messages` 
+  - [PR#12119](https://github.com/OfficeDev/teams-toolkit/pull/12119): Updated `Sequential Workflow in Chat`
+- Teams Toolkit now prompts users to generate an API key before debugging API ME or API Plugin with API Key authentication templates.
+- Secret values have been redacted from the Visual Studio Code output channel.
+- Updated application templates to use the latest [manifest schema version v1.17](https://learn.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema).
+- Improved the readability of error messages generated by the Teams Toolkit.
+
+### Bug Fixes
+
+- Upgraded the axios dependency used in Teams Toolkit to version 1.7.6 to fix a vulnerability issue. [#12306](https://github.com/OfficeDev/teams-toolkit/pull/12306)
+- Changed a string for better clarity when creating an `AI Agent` without Assistant API. [#12266](https://github.com/OfficeDev/teams-toolkit/pull/12266)
+- Fixed vulnerability issues in TeamsFx SDK. [#11973](https://github.com/OfficeDev/teams-toolkit/pull/11937)
+- Resolved compatibility issues with `groupchat` and `groupChat` in the Teams app manifest. [#12028](https://github.com/OfficeDev/teams-toolkit/pull/12028)
+- Corrected an issue where the link redirection for the lifecycle `Provision` button was incorrect. [#12120](https://github.com/OfficeDev/teams-toolkit/pull/12120)
+- Fixed initialization failures of `publicClientApplication` in TeamsFx SDK. [#12159](https://github.com/OfficeDev/teams-toolkit/pull/12159)
+- Addressed issues when creating SharePoint Framework-based tab apps. [#12173](https://github.com/OfficeDev/teams-toolkit/pull/12173)
+- Resolved an issue where users still saw a pop-up window when logging into a Microsoft 365 account in non-interactive mode. [#11978](https://github.com/OfficeDev/teams-toolkit/pull/11978)
+- Fixed an issue where importing an SPFx project failed due to case-sensitive file systems on Ubuntu. [#11972](https://github.com/OfficeDev/teams-toolkit/pull/11972)
+- Addressed an issue where debugging an Outlook Add-in might fail with the error `Package is invalid`. [#11963](https://github.com/OfficeDev/teams-toolkit/pull/11963)
+- Corrected unclear error messages for commands that only work for projects created by the Teams Toolkit. [#11945](https://github.com/OfficeDev/teams-toolkit/pull/11945)
+- Fixed a vulnerability issue with `ws` affected by a DoS when handling a request with many HTTP headers. [#650](https://github.com/OfficeDev/teams-toolkit/security/dependabot/650) [#11937](https://github.com/OfficeDev/teams-toolkit/pull/11937)
+- Fixed an issue where sometimes you may not be able to scroll down in Teams Toolkit CLI. [#11762](https://github.com/OfficeDev/teams-toolkit/pull/11762)
+- Fixed an issue where Teams Toolkit generated Adaptive Cards may contain empty property. [#11759](https://github.com/OfficeDev/teams-toolkit/pull/11759)
+- Fixed an issue where you may need to press enter twice after selecting resource group during provision using Teams Toolkit CLI. [#11724](https://github.com/OfficeDev/teams-toolkit/pull/11724)
+- Fixed an issue to enable shell option in Windows platform to avoid [command injection via args parameters](https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2#command-injection-via-args-parameter-of-child_processspawn-without-shell-option-enabled-on-windows-cve-2024-27980---high). [#11699](https://github.com/OfficeDev/teams-toolkit/pull/11699)
+- Fixed an issue where provision summary logs are printed twice. [#11658](https://github.com/OfficeDev/teams-toolkit/pull/11658)
+
 ## 5.8.1 - May 27, 2024
 
 Hotfix version.

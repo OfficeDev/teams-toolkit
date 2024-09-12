@@ -16,16 +16,43 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [Azure OpenAI](https://aka.ms/oai/access) resource
 {{/useAzureOpenAI}}
 
+### Debug bot app in Teams App Test Tool
+{{#useOpenAI}}
+1. Ensure your OpenAI API Key filled in `appsettings.TestTool.json`
+    ```
+    "OpenAI": {
+      "ApiKey": "<your-openai-api-key>"
+    }
+    ```
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+1. Ensure your Azure OpenAI settings filled in `appsettings.TestTool.json`
+    ```
+    "Azure": {
+      "OpenAIApiKey": "<your-azure-openai-api-key>",
+      "OpenAIEndpoint": "<your-azure-openai-endpoint>",
+      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
+    }
+    ```
+{{/useAzureOpenAI}}
+1. Select `Teams App Test Tool (browser)` in debug dropdown menu
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
+
+**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+
+![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/053218b7-cb17-4db4-9b8a-50ca04c1cb55)
+
 ### Debug bot app in Teams Web Client
 
 {{#useOpenAI}}
-1. Fill in your OpenAI API Key in `env/.env.local.user`
+1. Ensure your OpenAI API Key filled in `env/.env.local.user`
     ```
     SECRET_OPENAI_API_KEY="<your-openai-api-key>"
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. Fill in your Azure OpenAI settings in `env/.env.local.user`
+1. Ensure your Azure OpenAI settings filled in `env/.env.local.user`
     ```
     SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
     AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
@@ -40,29 +67,6 @@ The app template is built using the Teams AI library, which provides the capabil
 1. In the chat bar, type and send anything to your bot to trigger a response
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
-
-### Debug bot app in Teams App Test Tool
-{{#useOpenAI}}
-1. Fill in your OpenAI API Key in `appsettings.TestTool.json`
-    ```
-    "OpenAI": {
-      "ApiKey": "<your-openai-api-key>"
-    }
-    ```
-{{/useOpenAI}}
-{{#useAzureOpenAI}}
-1. Fill in your Azure OpenAI settings in `appsettings.TestTool.json`
-    ```
-    "Azure": {
-      "OpenAIApiKey": "<your-azure-openai-api-key>",
-      "OpenAIEndpoint": "<your-azure-openai-endpoint>",
-      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
-    }
-    ```
-{{/useAzureOpenAI}}
-1. Select `Teams App Test Tool (browser)` in debug dropdown menu
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
 
 ## Extend the AI Chat Bot template with more AI capabilities
 

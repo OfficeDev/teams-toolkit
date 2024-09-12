@@ -59,7 +59,6 @@ This app template also demonstrates usage of techniques like:
       "OpenAIApiKey": "<your-azure-openai-api-key>",
       "OpenAIEndpoint": "<your-azure-openai-endpoint>",
       "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
-
     }
     ```
 {{/useAzureOpenAI}}

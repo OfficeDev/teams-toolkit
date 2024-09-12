@@ -1,9 +1,10 @@
 const { MemoryStorage, MessageFactory } = require("botbuilder");
 const path = require("path");
 const config = require("../config");
+const customSayCommand = require("./customSayCommand");
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-const { Application, ActionPlanner, OpenAIModel, PromptManager } = require("@microsoft/teams-ai");
+const { AI, Application, ActionPlanner, OpenAIModel, PromptManager } = require("@microsoft/teams-ai");
 const { GraphDataSource } = require("./graphDataSource");
 
 // Create AI components
@@ -59,6 +60,7 @@ const app = new Application({
     autoSignIn: true,
   }
 });
+app.ai.action(AI.SayCommandActionName, customSayCommand.sayCommand(true));
 
 app.conversationUpdate("membersAdded", async (turnContext) => {
   const welcomeText = "How can I help you today?";

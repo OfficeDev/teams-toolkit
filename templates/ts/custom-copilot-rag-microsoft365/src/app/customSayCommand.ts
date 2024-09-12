@@ -1,78 +1,75 @@
-import { ActivityTypes, Channels, TurnContext } from 'botbuilder';
-import { PredictedSayCommand, TurnState, Utilities, ClientCitation } from '@microsoft/teams-ai';
-import { AIEntity } from '@microsoft/teams-ai/lib/actions/SayCommand';
+import { ActivityTypes, Channels, TurnContext } from "botbuilder";
+import { PredictedSayCommand, TurnState, Utilities, ClientCitation } from "@microsoft/teams-ai";
+import { AIEntity } from "@microsoft/teams-ai/lib/actions/SayCommand";
 
 /**
  * @private
  * @param {boolean} feedbackLoopEnabled - If true, the feedback loop UI for Teams will be enabled.
  * @returns {''} - An empty string.
  */
-export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEnabled: boolean = false) {
-    return async (context: TurnContext, _state: TState, data: PredictedSayCommand) => {
-        if (!data.response?.content) {
-            return '';
+export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEnabled = false) {
+  return async (context: TurnContext, _state: TState, data: PredictedSayCommand) => {
+    if (!data.response?.content) {
+      return "";
+    }
+
+    let content = "";
+    const result = JSON.parse(data.response.content);
+    const isTeamsChannel = context.activity.channelId === Channels.Msteams;
+
+    if (isTeamsChannel) {
+      content = content.split("\n").join("<br>");
+    }
+
+    // If the response from AI includes citations, those citations will be parsed and added to the SAY command.
+    const citations = [];
+    let position = 1;
+
+    if (result.results && result.results.length > 0) {
+      result.results.forEach((contentItem) => {
+        if (contentItem.citationTitle.length > 0) {
+          const clientCitation: ClientCitation = {
+            "@type": "Claim",
+            position: `${position}`,
+            appearance: {
+              "@type": "DigitalDocument",
+              name: contentItem.citationTitle || `Document #${position}`,
+              url: contentItem.citationUrl,
+              abstract: Utilities.snippet(contentItem.citationContent, 500),
+            },
+          };
+          content += `${contentItem.answer}[${position}]<br>`;
+          position++;
+          citations.push(clientCitation);
+        } else {
+          content += `${contentItem.answer}<br>`;
         }
+      });
+    }
 
-        let content = '';
-        let result = JSON.parse(data.response.content);
-        const isTeamsChannel = context.activity.channelId === Channels.Msteams;
+    // If there are citations, modify the content so that the sources are numbers instead of [doc1], [doc2], etc.
+    const contentText = citations.length < 1 ? content : Utilities.formatCitationsResponse(content);
 
-        if (isTeamsChannel) {
-            content = content.split('\n').join('<br>');
-        }
+    // If there are citations, filter out the citations unused in content.
+    const referencedCitations =
+      citations.length > 0 ? Utilities.getUsedCitations(contentText, citations) : undefined;
 
-        // If the response from AI includes citations, those citations will be parsed and added to the SAY command.
-        let citations= [];
-        let position = 1;
+    await context.sendActivity({
+      type: ActivityTypes.Message,
+      text: contentText,
+      ...(isTeamsChannel ? { channelData: { feedbackLoopEnabled } } : {}),
+      entities: [
+        {
+          type: "https://schema.org/Message",
+          "@type": "Message",
+          "@context": "https://schema.org",
+          "@id": "",
+          additionalType: ["AIGeneratedContent"],
+          ...(referencedCitations ? { citation: referencedCitations } : {}),
+        },
+      ] as AIEntity[],
+    });
 
-        if (result.results && result.results.length > 0) {
-            result.results.forEach((contentItem) => {
-                if(contentItem.citationTitle.length > 0)
-                {
-                    const clientCitation: ClientCitation = {
-                        '@type': 'Claim',
-                        position: `${position}`,
-                        appearance: {
-                            '@type': 'DigitalDocument',
-                            name: contentItem.citationTitle || `Document #${position}`,
-                            url:contentItem.citationUrl,
-                            abstract:Utilities.snippet(contentItem.citationContent, 500)
-                        }
-                    };
-                    content += `${contentItem.answer}[${position}]<br>`;
-                    position++;
-                    citations.push(clientCitation);
-                }
-                else
-                {
-                    content += `${contentItem.answer}<br>`;
-                }
-                 
-            });
-        }
-
-        // If there are citations, modify the content so that the sources are numbers instead of [doc1], [doc2], etc.
-        const contentText = citations.length < 1 ? content : Utilities.formatCitationsResponse(content);
-
-        // If there are citations, filter out the citations unused in content.
-        const referencedCitations = citations.length > 0 ? Utilities.getUsedCitations(contentText, citations) : undefined;
-
-        await context.sendActivity({
-            type: ActivityTypes.Message,
-            text: contentText,
-            ...(isTeamsChannel ? { channelData: { feedbackLoopEnabled } } : {}),
-            entities: [
-                {
-                    type: 'https://schema.org/Message',
-                    '@type': 'Message',
-                    '@context': 'https://schema.org',
-                    '@id': '',
-                    additionalType: ['AIGeneratedContent'],
-                    ...(referencedCitations ? { citation: referencedCitations } : {})
-                }
-            ] as AIEntity[]
-        });
-
-        return '';
-    };
+    return "";
+  };
 }

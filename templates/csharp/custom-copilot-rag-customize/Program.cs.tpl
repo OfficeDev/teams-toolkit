@@ -77,7 +77,7 @@ builder.Services.AddTransient<IBot>(sp =>
             prompts: prompts,
             defaultPrompt: async (context, state, planner) =>
             {
-                PromptTemplate template = prompts.GetPrompt("Chat");
+                PromptTemplate template = prompts.GetPrompt("chat");
                 return await Task.FromResult(template);
             }
         )

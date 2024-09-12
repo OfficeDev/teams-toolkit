@@ -26,10 +26,17 @@
     <PackageReference Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.3" />
   </ItemGroup>
 
+  <!-- Exclude local settings from publish -->
   <ItemGroup>
-    <Content Include="Prompts\Chat\skprompt.txt">
+    <Content Remove="appsettings.Development.json" />
+    <Content Include="appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <CopyToPublishDirectory>None</CopyToPublishDirectory>
+    </Content>
+    <Content Remove="appsettings.TestTool.json" />
+    <Content Include="appsettings.TestTool.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>None</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 </Project>

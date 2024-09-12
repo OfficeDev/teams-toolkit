@@ -2,11 +2,6 @@ import { ActivityTypes, Channels, TurnContext } from "botbuilder";
 import { PredictedSayCommand, TurnState, Utilities, ClientCitation } from "@microsoft/teams-ai";
 import { AIEntity } from "@microsoft/teams-ai/lib/actions/SayCommand";
 
-/**
- * @private
- * @param {boolean} feedbackLoopEnabled - If true, the feedback loop UI for Teams will be enabled.
- * @returns {''} - An empty string.
- */
 export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEnabled = false) {
   return async (context: TurnContext, _state: TState, data: PredictedSayCommand) => {
     if (!data.response?.content) {

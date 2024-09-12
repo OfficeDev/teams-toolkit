@@ -1,12 +1,6 @@
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sayCommand = void 0;
 const botbuilder = require("botbuilder");
 const Utilities = require("@microsoft/teams-ai");
-/**
- * @private
- * @param {boolean} feedbackLoopEnabled - If true, the feedback loop UI for Teams will be enabled.
- * @returns {''} - An empty string.
- */
+
 function sayCommand(feedbackLoopEnabled = false) {
   return async (context, _state, data) => {
     if (!data.response?.content) {

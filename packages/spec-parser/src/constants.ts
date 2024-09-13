@@ -127,5 +127,5 @@ export class ConstantString {
   static readonly FunctionDescriptionMaxLens = 100;
   static readonly DefaultPluginId = "plugin_1";
   static readonly PluginManifestSchema =
-    "https://aka.ms/json-schemas/copilot-extensions/v2.1/plugin.schema.json";
+    "https://aka.ms/json-schemas/copilot/plugin/v2.1/schema.json";
 }

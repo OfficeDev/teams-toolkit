@@ -75,7 +75,7 @@ describe("copilotExtension", async () => {
 
       if (info.isOk()) {
         const filterFn = info.value[0].filterFn;
-        assert.isFalse(filterFn?.("repairDeclarativeCopilot.json"));
+        assert.isFalse(filterFn?.("repairDeclarativeAgent.json"));
         assert.isFalse(filterFn?.("instruction.txt"));
         assert.isTrue(filterFn?.("test.json"));
       }
@@ -118,7 +118,7 @@ describe("copilotExtension", async () => {
 
       if (info.isOk()) {
         const filterFn = info.value[0].filterFn;
-        assert.isTrue(filterFn?.("repairDeclarativeCopilot.json"));
+        assert.isTrue(filterFn?.("repairDeclarativeAgent.json"));
         assert.isTrue(filterFn?.("instruction.txt"));
         assert.isTrue(filterFn?.("test.json"));
       }
@@ -143,7 +143,7 @@ describe("copilotExtension", async () => {
 
       if (info.isOk()) {
         const filterFn = info.value[0].filterFn;
-        assert.isTrue(filterFn?.("repairDeclarativeCopilot.json"));
+        assert.isTrue(filterFn?.("repairDeclarativeAgent.json"));
         assert.isFalse(filterFn?.("instruction.txt"));
         assert.isTrue(filterFn?.("test.json"));
       }
@@ -164,7 +164,7 @@ describe("copilotExtension", async () => {
 
       sandbox
         .stub(copilotGptManifestUtils, "getManifestPath")
-        .resolves(ok("declarativeCopilot.json"));
+        .resolves(ok("declarativeAgent.json"));
       sandbox
         .stub(generatorHelper, "addExistingPlugin")
         .resolves(ok({ destinationPluginManifestPath: "test.json", warnings: [] }));
@@ -194,7 +194,7 @@ describe("copilotExtension", async () => {
       const logStub = sandbox.stub(MockLogProvider.prototype, "info").resolves();
       sandbox
         .stub(copilotGptManifestUtils, "getManifestPath")
-        .resolves(ok("declarativeCopilot.json"));
+        .resolves(ok("declarativeAgent.json"));
       sandbox.stub(generatorHelper, "addExistingPlugin").resolves(
         ok({
           destinationPluginManifestPath: "test.json",
@@ -246,7 +246,7 @@ describe("copilotExtension", async () => {
 
       sandbox
         .stub(copilotGptManifestUtils, "getManifestPath")
-        .resolves(ok("declarativeCopilot.json"));
+        .resolves(ok("declarativeAgent.json"));
       sandbox
         .stub(generatorHelper, "addExistingPlugin")
         .resolves(err(new UserError("fakeError", "fakeError", "fakeError", "fakeError")));

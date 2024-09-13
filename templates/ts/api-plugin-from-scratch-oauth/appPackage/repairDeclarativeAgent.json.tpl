@@ -2,7 +2,7 @@
     "$schema": "https://aka.ms/json-schemas/copilot-extensions/vNext/declarative-copilot.schema.json",
     "version": "v1.0",
     "name": "{{appName}}${{APP_NAME_SUFFIX}}",
-    "description": "This declarative copilot helps you with finding car repair records.",
+    "description": "This declarative agent helps you with finding car repair records.",
     {{#FileFunction}}
     "instructions": "$[file('instruction.txt')]",
     {{/FileFunction}}
@@ -17,7 +17,7 @@
     "actions": [
         {
             "id": "repairPlugin",
-            "file": "ai-plugin.json"
+            "file": "ai-plugin.${{TEAMSFX_ENV}}.json"
         }
     ]
 }

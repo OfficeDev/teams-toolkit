@@ -1423,7 +1423,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "");
 
-        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        let filterResult = res.value[0].filterFn!("declarativeAgent.json.tpl");
         assert.isFalse(filterResult);
         filterResult = res.value[0].filterFn!("test.json");
         assert.isTrue(filterResult);
@@ -1439,7 +1439,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "true");
 
-        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        let filterResult = res.value[0].filterFn!("declarativeAgent.json.tpl");
         assert.isTrue(filterResult);
         filterResult = res.value[0].filterFn!("instruction.txt");
         assert.isTrue(filterResult);
@@ -1486,7 +1486,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "true");
 
-        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        let filterResult = res.value[0].filterFn!("declarativeAgent.json.tpl");
         assert.isTrue(filterResult);
         filterResult = res.value[0].filterFn!("instruction.txt");
         assert.isFalse(filterResult);
@@ -1553,7 +1553,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "");
 
-        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        let filterResult = res.value[0].filterFn!("declarativeAgent.json.tpl");
         assert.isFalse(filterResult);
         filterResult = res.value[0].filterFn!("test.json");
         assert.isTrue(filterResult);
@@ -1597,7 +1597,7 @@ describe("SpecGenerator", async () => {
         assert.equal(res.value[0].templateName, "api-plugin-existing-api");
         assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "");
 
-        let filterResult = res.value[0].filterFn!("declarativeCopilot.json.tpl");
+        let filterResult = res.value[0].filterFn!("declarativeAgent.json.tpl");
         assert.isFalse(filterResult);
         filterResult = res.value[0].filterFn!("test.json");
         assert.isTrue(filterResult);
@@ -2335,7 +2335,7 @@ describe("SpecGenerator", async () => {
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.ApiPluginManifestPath]: "test.json",
-        [QuestionNames.ProjectType]: "copilot-extension-type",
+        [QuestionNames.ProjectType]: "copilot-agent-type",
         getTemplateInfosState: {
           templateName: "api-plugin-existing-api",
           isPlugin: true,

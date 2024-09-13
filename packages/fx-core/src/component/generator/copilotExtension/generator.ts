@@ -86,7 +86,7 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
     };
 
     const filterFn = (fileName: string) => {
-      if (fileName.toLowerCase().includes("declarativecopilot.json")) {
+      if (fileName.toLowerCase().includes("declarativeagent.json")) {
         return isDeclarativeCopilot;
       } else if (fileName.includes(declarativeCopilotInstructionFileName)) {
         return isDeclarativeCopilot && featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc);

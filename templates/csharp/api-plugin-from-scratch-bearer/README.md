@@ -8,7 +8,7 @@
 >
 > - [Visual Studio 2022](https://aka.ms/vs) 17.11 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
-> - [Copilot for Microsoft 365 license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
+> - [Microsoft 365 Copilot license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
 
 ### Add your own API Key
 
@@ -37,7 +37,7 @@
 
 ## Learn more
 
-- [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
+- [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)
 
 ## Report an issue
 

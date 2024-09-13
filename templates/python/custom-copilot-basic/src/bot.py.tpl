@@ -66,5 +66,5 @@ async def on_error(context: TurnContext, error: Exception):
 
 @bot_app.feedback_loop()
 async def feedback_loop(_context: TurnContext, _state: TurnState, feedback_loop_data: FeedbackLoopData):
-    # You can add your logic for proccessing feedback loop data here.
-    print(f"feedback loop data:\n{json.dumps(json.loads(feedback_loop_data.to_json()), indent=4)}")
+    # Add custom feedback process logic here.
+    print(f"Your feedback is:\n{json.dumps(json.loads(feedback_loop_data.to_json()), indent=4)}")

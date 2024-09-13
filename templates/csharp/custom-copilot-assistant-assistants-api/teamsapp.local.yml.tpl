@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.7/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.5
+version: v1.7
 
 provision:
   # Creates a Teams app
@@ -50,19 +50,14 @@ provision:
 {{#useOpenAI}}
         OpenAI:
           ApiKey: ${{SECRET_OPENAI_API_KEY}}
-          EmbeddingModel: ${{OPENAI_EMBEDDING_MODEL}}
-        Azure:
-          AISearchApiKey: ${{SECRET_AI_SEARCH_API_KEY}}
-          AISearchEndpoint: ${{AI_SEARCH_ENDPOINT}}
+          AssistantId: ${{OPENAI_ASSISTANT_ID}}
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
         Azure:
           OpenAIApiKey: ${{SECRET_AZURE_OPENAI_API_KEY}}
           OpenAIEndpoint: ${{AZURE_OPENAI_ENDPOINT}}
           OpenAIDeploymentName: ${{AZURE_OPENAI_DEPLOYMENT_NAME}}
-          OpenAIEmbeddingDeploymentName: ${{AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME}}
-          AISearchApiKey: ${{SECRET_AI_SEARCH_API_KEY}}
-          AISearchEndpoint: ${{AI_SEARCH_ENDPOINT}}
+          OpenAIAssistantId: ${{AZURE_OPENAI_ASSISTANT_ID}}
 {{/useAzureOpenAI}}
 
   # Create or update the bot registration on dev.botframework.com
@@ -86,7 +81,7 @@ provision:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+      outputFolder: ./appPackage/build
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:

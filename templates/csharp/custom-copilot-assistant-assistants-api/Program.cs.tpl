@@ -3,10 +3,8 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Teams.AI;
-using Microsoft.Teams.AI.AI.Models;
 using Microsoft.Teams.AI.AI.Planners;
-using Microsoft.Teams.AI.AI.Prompts;
-using Microsoft.Teams.AI.State;
+using Microsoft.Teams.AI.AI.Planners.Experimental;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,31 +29,12 @@ builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp => sp.GetService<Clou
 builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
-
 {{#useOpenAI}}
-builder.Services.AddSingleton<OpenAIModel>(sp => new(
-    new OpenAIModelOptions(config.OpenAI.ApiKey, config.OpenAI.DefaultModel)
-    {
-        LogRequests = true
-    },
-    sp.GetService<ILoggerFactory>()
-));
+builder.Services.AddSingleton(_ => new AssistantsPlannerOptions(config.OpenAI.ApiKey, config.OpenAI.AssistantId));
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-builder.Services.AddSingleton<OpenAIModel>(sp => new(
-    new AzureOpenAIModelOptions(
-        config.Azure.OpenAIApiKey,
-        config.Azure.OpenAIDeploymentName,
-        config.Azure.OpenAIEndpoint
-    )
-    {
-        LogRequests = true
-    },
-    sp.GetService<ILoggerFactory>()
-));
+builder.Services.AddSingleton(_ => new AssistantsPlannerOptions(config.Azure.OpenAIApiKey, config.Azure.OpenAIAssistantId, config.Azure.OpenAIEndpoint));
 {{/useAzureOpenAI}}
-
-MyDataSource myDataSource = new MyDataSource("my-ai-search");
 
 // Create the bot as transient. In this case the ASP Controller is expecting an IBot.
 builder.Services.AddTransient<IBot>(sp =>
@@ -63,29 +42,9 @@ builder.Services.AddTransient<IBot>(sp =>
     // Create loggers
     ILoggerFactory loggerFactory = sp.GetService<ILoggerFactory>();
 
-    // Create Prompt Manager
-    PromptManager prompts = new(new()
-    {
-        PromptFolder = "./Prompts"
-    });
-    prompts.AddDataSource("my-ai-search", myDataSource);
+    IPlanner<AssistantsState> planner = new AssistantsPlanner<AssistantsState>(sp.GetService<AssistantsPlannerOptions>()!, loggerFactory);
 
-    // Create ActionPlanner
-    ActionPlanner<TurnState> planner = new(
-        options: new(
-            model: sp.GetService<OpenAIModel>(),
-            prompts: prompts,
-            defaultPrompt: async (context, state, planner) =>
-            {
-                PromptTemplate template = prompts.GetPrompt("chat");
-                return await Task.FromResult(template);
-            }
-        )
-        { LogRepairs = true },
-        loggerFactory: loggerFactory
-    );
-
-    Application<TurnState> app = new ApplicationBuilder<TurnState>()
+    Application<AssistantsState> app = new ApplicationBuilder<AssistantsState>()
         .WithAIOptions(new(planner))
         .WithStorage(sp.GetService<IStorage>())
         .Build();
@@ -102,6 +61,10 @@ builder.Services.AddTransient<IBot>(sp =>
         }
     });
 
+    app.AI.ImportActions(new ActionHandlers());
+
+    // Listen for user to say "/reset".
+    app.OnMessage("/reset", ActivityHandlers.ResetMessageHandler);
     return app;
 });
 

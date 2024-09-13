@@ -1,4 +1,4 @@
-# Overview of the AI Chat Bot template
+# Overview of the AI Agent template
 
 This template showcases a bot app that responds to user questions like an AI assistant. This enables your users to talk with the AI assistant in Teams to find information.
 
@@ -16,9 +16,12 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [Azure OpenAI](https://aka.ms/oai/access) resource
 {{/useAzureOpenAI}}
 
-### Debug bot app in Teams App Test Tool
+## Create your Assistant 
+**Before running or debugging your bot, follow these steps to setup your own Assistant.**
+
+> This app template provides script `Create-Assistant.ps1` to help create assistant. You can change the instructions and settings in the script to customize assistant.
 {{#useOpenAI}}
-1. Ensure your OpenAI API Key is filled in `appsettings.TestTool.json`.
+1. Ensure your OpenAI settings filled in `appsettings.TestTool.json`.
     ```
     "OpenAI": {
       "ApiKey": "<your-openai-api-key>"
@@ -26,7 +29,7 @@ The app template is built using the Teams AI library, which provides the capabil
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. Ensure your Azure OpenAI settings are filled in `appsettings.TestTool.json`.
+1. Ensure your Azure OpenAI settings filled in `appsettings.TestTool.json`.
     ```
     "Azure": {
       "OpenAIApiKey": "<your-azure-openai-api-key>",
@@ -35,23 +38,57 @@ The app template is built using the Teams AI library, which provides the capabil
     }
     ```
 {{/useAzureOpenAI}}
-1. Select `Teams App Test Tool (browser)` in debug dropdown menu.
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
-1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response.
+1. Open PowerShell, change the current working directory to this project root and run command `. ./Create-Assistant.ps1`.
+   ```
+   > . ./Create-Assistant.ps1
+   ```
+1. The above command will display the properties of the newly created assistant, including the ID like "id: asst_xxx...". 
+1. Fill in your assistant id in `env/.env.local.user`, `env/.env.dev.user` and `appsettings.TestTool.json`.
 
-### Debug bot app in Teams Web Client
+### Debug bot app in Teams App Test Tool
 {{#useOpenAI}}
-1. Ensure your OpenAI API Key is filled in `env/.env.local.user`.
+1. Ensure your OpenAI API Key filled in `appsettings.TestTool.json`.
     ```
-    SECRET_OPENAI_API_KEY="<your-openai-api-key>"
+    "OpenAI": {
+      "ApiKey": "<your-openai-api-key>",
+      "AssistantId": "<your-openai-assistant-id>"
+    }
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. Ensure your Azure OpenAI settings are filled in `env/.env.local.user`.
+1. Ensure your Azure OpenAI settings filled in `appsettings.TestTool.json`.
+    ```
+    "Azure": {
+      "OpenAIApiKey": "<your-azure-openai-api-key>",
+      "OpenAIEndpoint": "<your-azure-openai-endpoint>",
+      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>",
+      "OpenAIAssistantId": "<your-azure-openai-assistant-id>"
+    }
+    ```
+{{/useAzureOpenAI}}
+1. Select `Teams App Test Tool (browser)` in debug dropdown menu.
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
+1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response.
+**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+
+![AI Agent in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/37978464/e3b458f3-5e74-460d-9df2-bf77ed8d9c54)
+
+### Debug bot app in Teams Web Client
+
+{{#useOpenAI}}
+1. Ensure your OpenAI API Key filled in `env/.env.local.user`.
+    ```
+    SECRET_OPENAI_API_KEY="<your-openai-api-key>"
+    OPENAI_ASSISTANT_ID="<your-openai-assistant-id>"
+    ```
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+1. Ensure your Azure OpenAI settings filled in `env/.env.local.user`.
     ```
     SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
     AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
     AZURE_OPENAI_DEPLOYMENT_NAME="<your-azure-openai-deployment-name>"
+    AZURE_OPENAI_ASSISTANT_ID="<your-azure-openai-assistant-id>"
     ```
 {{/useAzureOpenAI}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel.
@@ -64,8 +101,9 @@ The app template is built using the Teams AI library, which provides the capabil
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ## Extend the AI Chat Bot template with more AI capabilities
-
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Chat Bot template with more AI capabilities.
+You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
+- [Customize assistant creation](https://aka.ms/teamsfx-ai-agent#customize-assistant-creation)
+- [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-with-assistants-api)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

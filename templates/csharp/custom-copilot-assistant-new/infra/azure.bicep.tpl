@@ -5,7 +5,6 @@ param resourceBaseName string
 {{#useOpenAI}}
 @secure()
 param openAIApiKey string
-param openAIEmbeddingModel string
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
 @secure()
@@ -13,10 +12,7 @@ param azureOpenAIApiKey string
 
 param azureOpenAIEndpoint string
 param azureOpenAIDeploymentName string
-param azureOpenAIEmbeddingDeploymentName string
 {{/useAzureOpenAI}}
-param AISearchApiKey string
-param AISearchEndpoint string
 
 param webAppSKU string
 
@@ -79,10 +75,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'OpenAI__ApiKey'
           value: openAIApiKey
         }
-        {
-          name: 'OpenAI__EmbeddingModel'
-          value: openAIEmbeddingModel
-        }
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
         {
@@ -97,19 +89,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'Azure__OpenAIDeploymentName'
           value: azureOpenAIDeploymentName
         }
-        {
-          name: 'Azure__OpenAIEmbeddingDeploymentName'
-          value: azureOpenAIEmbeddingDeploymentName
-        }
 {{/useAzureOpenAI}}
-        {
-          name: 'Azure__AISearchApiKey'
-          value: AISearchApiKey
-        }
-        {
-          name: 'Azure__AISearchEndpoint'
-          value: AISearchEndpoint
-        }
       ]
       ftpsState: 'FtpsOnly'
     }

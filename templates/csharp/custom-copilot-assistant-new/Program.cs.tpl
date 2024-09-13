@@ -1,4 +1,5 @@
 using {{SafeProjectName}};
+using {{SafeProjectName}}.Model;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
@@ -6,7 +7,6 @@ using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.AI.Models;
 using Microsoft.Teams.AI.AI.Planners;
 using Microsoft.Teams.AI.AI.Prompts;
-using Microsoft.Teams.AI.State;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,8 +55,6 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
 ));
 {{/useAzureOpenAI}}
 
-MyDataSource myDataSource = new MyDataSource("my-ai-search");
-
 // Create the bot as transient. In this case the ASP Controller is expecting an IBot.
 builder.Services.AddTransient<IBot>(sp =>
 {
@@ -68,16 +66,15 @@ builder.Services.AddTransient<IBot>(sp =>
     {
         PromptFolder = "./Prompts"
     });
-    prompts.AddDataSource("my-ai-search", myDataSource);
 
     // Create ActionPlanner
-    ActionPlanner<TurnState> planner = new(
+    ActionPlanner<AppState> planner = new(
         options: new(
             model: sp.GetService<OpenAIModel>(),
             prompts: prompts,
             defaultPrompt: async (context, state, planner) =>
             {
-                PromptTemplate template = prompts.GetPrompt("chat");
+                PromptTemplate template = prompts.GetPrompt("planner");
                 return await Task.FromResult(template);
             }
         )
@@ -85,7 +82,7 @@ builder.Services.AddTransient<IBot>(sp =>
         loggerFactory: loggerFactory
     );
 
-    Application<TurnState> app = new ApplicationBuilder<TurnState>()
+    Application<AppState> app = new ApplicationBuilder<AppState>()
         .WithAIOptions(new(planner))
         .WithStorage(sp.GetService<IStorage>())
         .Build();
@@ -101,6 +98,10 @@ builder.Services.AddTransient<IBot>(sp =>
             }
         }
     });
+
+    app.AI.ImportActions(new ActionHandlers());
+    // Listen for user to say "/reset".
+    app.OnMessage("/reset", ActivityHandlers.ResetMessageHandler);
 
     return app;
 });

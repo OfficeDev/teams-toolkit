@@ -318,7 +318,7 @@
   "core.createProjectQuestion.projectType.copilotGroup.title": "Use Copilot",
   "core.createProjectQuestion.projectType.createGroup.title": "Create",
   "core.createProjectQuestion.projectType.declarativeCopilot.label": "Declarative Agent",
-  "core.createProjectQuestion.projectType.declarativeCopilot.detail": "Create your own Copilot by declaring instructions, actions, & knowledge to suit your needs.",
+  "core.createProjectQuestion.projectType.declarativeCopilot.detail": "Create your own copilot by declaring instructions, actions, & knowledge to suit your needs.",
   "core.createProjectQuestion.title": "New Project",
   "core.createProjectQuestion.capability.botMessageExtension.label": "Start with a Bot",
   "core.createProjectQuestion.capability.botMessageExtension.detail": "Create a message extension using Bot Framework",

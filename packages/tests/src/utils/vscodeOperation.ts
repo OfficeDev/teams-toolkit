@@ -765,7 +765,9 @@ export async function createNewProject(
     }
     case "workflow": {
       await input.selectQuickPick(CreateProjectQuestion.Bot);
-      await input.selectQuickPick("Sequential Workflow in Chat");
+      // await input.selectQuickPick("Sequential Workflow in Chat");
+      await input.setText("Sequential Workflow in Chat");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);

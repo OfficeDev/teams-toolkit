@@ -39,12 +39,12 @@
                     ],
                     "commands": [
                         {
-                            "title": "Hello, how can you help me?",
-                            "description": "Say hello to the bot and ask it for help."
+                            "title": "How can you help me?",
+                            "description": "A sample prompt"
                         },
                         {
-                            "title": "How can I develop apps with Teams Toolkit?",
-                            "description": "Get information of how to develop apps with Teams Toolkit."
+                            "title": "How to develop TeamsToolkit app?",
+                            "description": "How can I develop apps with Teams Toolkit?"
                         }
                     ]
                 }

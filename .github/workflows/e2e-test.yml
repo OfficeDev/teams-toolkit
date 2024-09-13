@@ -302,7 +302,7 @@ jobs:
         if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         working-directory: packages/tests
         run: |
-          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report
 
   tear-down:
     needs: [execute-case, e2e-coverage]

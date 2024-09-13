@@ -31,7 +31,7 @@ export function getOfficeProjectMatchSystemPrompt(
 
   const messages = [
     new vscode.LanguageModelChatMessage(
-      vscode.LanguageModelChatMessageRole.System,
+      vscode.LanguageModelChatMessageRole.User,
       `
 You're an assistant designed to find matched Office Add-in projects based on user's input and a list of existing application descriptions. Follow the instructions and think step by step. You'll respond a JSON object containing the addin ID you choose with a float number between 0-1.0 representing confidence. Here's an example of your output format:
 { "id": "", "score": 1.0 }
@@ -78,7 +78,7 @@ export const defaultOfficeSystemPrompt = () => {
   );
 
   return new vscode.LanguageModelChatMessage(
-    vscode.LanguageModelChatMessageRole.System,
+    vscode.LanguageModelChatMessageRole.User,
     `You are an expert in Office JavaScript add-in development area. Your job is to answer general conceputal question related with Office JavaScript add-in development. Follow the <Instructions> and think step by step.
   
     <Instruction>
@@ -104,7 +104,7 @@ export const defaultOfficeSystemPrompt = () => {
 
 export const describeOfficeProjectSystemPrompt = () =>
   new vscode.LanguageModelChatMessage(
-    vscode.LanguageModelChatMessageRole.System,
+    vscode.LanguageModelChatMessageRole.User,
     `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
   );
 
@@ -830,6 +830,6 @@ class ${className} extends OfficeExtension.ClientObject {
 
 export const describeOfficeStepSystemPrompt = () =>
   new vscode.LanguageModelChatMessage(
-    vscode.LanguageModelChatMessageRole.System,
+    vscode.LanguageModelChatMessageRole.User,
     `You are an advisor for Office Add-ins developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
   );

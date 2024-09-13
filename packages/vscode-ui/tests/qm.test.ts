@@ -258,6 +258,40 @@ describe("Question Model - Visitor Test", () => {
       assert.sameOrderedMembers(expectedSequence, actualSequence);
     });
 
+    it("success: auto skip single option select with skipSingleOption being a function", async () => {
+      const actualSequence: string[] = [];
+      sandbox.stub(mockUI, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+        actualSequence.push(config.name);
+        return ok({ type: "success", result: `mocked value of ${config.name}` });
+      });
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [],
+      };
+      const num = 10;
+      const expectedSequence: string[] = [];
+      for (let i = 1; i <= num; ++i) {
+        const name = `${i}`;
+        const question = createSingleSelectQuestion(name);
+        if (i % 2 === 0) question.staticOptions = [`mocked value of ${name}`];
+        else {
+          question.staticOptions = [`mocked value of ${name}`, `mocked value of ${name} - 2`];
+          expectedSequence.push(name);
+        }
+        question.skipSingleOption = () => {
+          return true;
+        };
+        root.children!.push({ data: question });
+      }
+      const inputs = createInputs();
+      const res = await engine.traverse(root, inputs, mockUI);
+      assert.isTrue(res.isOk());
+      for (let i = 1; i <= num; ++i) {
+        assert.isTrue(inputs[`${i}`] === `mocked value of ${i}`);
+      }
+      assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+
     it("success: flat sequence with back operation", async () => {
       const actualSequence: string[] = [];
       let backed = false;

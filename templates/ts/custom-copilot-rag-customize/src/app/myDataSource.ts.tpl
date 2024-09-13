@@ -15,7 +15,7 @@ export class MyDataSource implements DataSource {
     /**
      * Local data.
      */
-    private _data: string[];
+    private _data: { content: string; citation: string; }[];
 
     /**
      * Creates a new instance of the MyDataSource instance.
@@ -31,7 +31,12 @@ export class MyDataSource implements DataSource {
         const filePath = path.join(__dirname, "../data");
         const files = fs.readdirSync(filePath);
         this._data = files.map(file => {
-            return fs.readFileSync(path.join(filePath, file), "utf-8");
+            const data = 
+            {
+                content:fs.readFileSync(path.join(filePath, file), "utf-8"),
+                citation:file
+            };
+            return data;
         });
     }
 
@@ -51,16 +56,16 @@ export class MyDataSource implements DataSource {
             return { output: "", length: 0, tooLong: false };
         }
         for (let data of this._data) {
-            if (data.includes(query)) {
-                return { output: this.formatDocument(data), length: data.length, tooLong: false };
+            if (data.content.includes(query)) {
+                return { output: this.formatDocument(`${data.content}\n Citation title:${data.citation}`), length: data.content.length, tooLong: false };
             }
         }
         if (query.toLocaleLowerCase().includes("perksplus")) {
-            return { output: this.formatDocument(this._data[0]), length: this._data[0].length, tooLong: false };
+            return { output: this.formatDocument(`${this._data[0].content}\n Citation title:${this._data[0].citation}`), length: this._data[0].content.length, tooLong: false };
         } else if (query.toLocaleLowerCase().includes("company") || query.toLocaleLowerCase().includes("history")) {
-            return { output: this.formatDocument(this._data[1]), length: this._data[1].length, tooLong: false };
+            return { output: this.formatDocument(`${this._data[1].content}\n Citation title:${this._data[1].citation}`), length: this._data[1].content.length, tooLong: false };
         } else if (query.toLocaleLowerCase().includes("northwind") || query.toLocaleLowerCase().includes("health")) {
-            return { output: this.formatDocument(this._data[2]), length: this._data[2].length, tooLong: false };
+            return { output: this.formatDocument(`${this._data[2].content}\n Citation title:${this._data[2].citation}`), length: this._data[2].content.length, tooLong: false };
         }
         return { output: "", length: 0, tooLong: false };
     }

@@ -162,7 +162,7 @@
   "teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle": "Manage Collaborator",
   "teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription": "Manage M365 Teams App (with Microsoft Entra app) Collaborators",
   "teamstoolkit.commandsTreeViewProvider.addPluginTitle": "Add Plugin",
-  "teamstoolkit.commandsTreeViewProvider.addPluginDescription": "Add plugin in declarative copilot",
+  "teamstoolkit.commandsTreeViewProvider.addPluginDescription": "Add plugin in declarative agent",
   "teamstoolkit.commandsTreeViewProvider.addPlugin.running": "Adding plugin...",
   "teamstoolkit.commandsTreeViewProvider.addWebpartTitle": "Add SPFx Web Part",
   "teamstoolkit.commandsTreeViewProvider.officeDevDeployTitle": "Deploy",
@@ -541,12 +541,12 @@
   "teamstoolkit.walkthroughs.buildIntelligentApps.copilotPlugin.description": "Transform your app into a plugin to enhance Copilot's skills and boost user productivity in daily tasks and workflows. Explore [Copilot Extensibility](https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/)\n[Check Copilot Access](command:fx-extension.checkCopilotAccess?%5B%22WalkThrough%22%5D)",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.buildPlugin.title": "Build a Plugin",
-  "teamstoolkit.walkthroughs.buildIntelligentApps.buildPlugin.description": "Expand, enrich, and customize Copilot with plugins and Graph connectors in any of the following ways\n[OpenAPI Description Document](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22project-type%22%3A%20%22copilot-extension-type%22%2C%20%22capabilities%22%3A%20%22api-plugin%22%7D%5D)\n[Teams Message Extension](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22search-app%22%2C%20%22project-type%22%3A%20%22me-type%22%2C%20%22me-architecture%22%3A%20%22bot-plugin%22%7D%5D)\n[Graph Connector](command:fx-extension.openSamples?%5B%22WalkThrough%22%2C%20%22gc-nodejs-typescript-food-catalog%22%5D)",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.buildPlugin.description": "Expand, enrich, and customize Copilot with plugins and Graph connectors in any of the following ways\n[OpenAPI Description Document](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22project-type%22%3A%20%22copilot-agent-type%22%2C%20%22capabilities%22%3A%20%22api-plugin%22%7D%5D)\n[Teams Message Extension](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22search-app%22%2C%20%22project-type%22%3A%20%22me-type%22%2C%20%22me-architecture%22%3A%20%22bot-plugin%22%7D%5D)\n[Graph Connector](command:fx-extension.openSamples?%5B%22WalkThrough%22%2C%20%22gc-nodejs-typescript-food-catalog%22%5D)",
 
-  "teamstoolkit.walkthroughs.buildIntelligentApps.customCopilot.title": "Custom Engine Copilot",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.customCopilot.title": "Custom Engine Agent",
   "teamstoolkit.walkthroughs.buildIntelligentApps.customCopilot.description": "Build your intelligent, natural language-driven experiences in Teams, leveraging its vast user base for collaboration. \nTeams toolkit integrates with Azure OpenAI and Teams AI Library to streamline copilot development and offer unique Teams-based capabilities. \nExplore [Teams AI Library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview) and [Azure OpenAI Service](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview)",
 
-  "teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.title": "Build Custom Engine Copilot",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.title": "Build Custom Engine Agent",
   "teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.description": "Build an AI agent bot for common tasks or an intelligent chatbot to answer specific questions\n[Build a Basic AI Chatbot](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22custom-copilot-basic%22%2C%20%22project-type%22%3A%20%22custom-copilot-type%22%7D%5D)\n[Build an AI Agent](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22custom-copilot-agent%22%2C%20%22project-type%22%3A%20%22custom-copilot-type%22%7D%5D)\n[Build a Bot to Chat with Your Data](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22custom-copilot-rag%22%2C%20%22project-type%22%3A%20%22custom-copilot-type%22%7D%5D)",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.title": "Intelligent App Resources",

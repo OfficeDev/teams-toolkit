@@ -75,7 +75,7 @@ const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-a
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
 
 const failedToUpdateCustomApiTemplateErrorName = "failed-to-update-custom-api-template";
-const defaultDeclarativeCopilotManifestFileName = "declarativeCopilot.json";
+const defaultDeclarativeCopilotManifestFileName = "declarativeAgent.json";
 
 const enum telemetryProperties {
   templateName = "template-name",

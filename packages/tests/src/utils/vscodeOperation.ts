@@ -765,7 +765,9 @@ export async function createNewProject(
     }
     case "workflow": {
       await input.selectQuickPick(CreateProjectQuestion.Bot);
-      await input.selectQuickPick("Sequential Workflow in Chat");
+      // await input.selectQuickPick("Sequential Workflow in Chat");
+      await input.setText("Sequential Workflow in Chat");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);
@@ -865,7 +867,9 @@ export async function createNewProject(
     case "aiagentassist": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("AI Agent");
+      // await input.selectQuickPick("AI Agent");
+      await input.setText("AI Agent");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(aiManagement);
       await driver.sleep(Timeout.input);
@@ -883,7 +887,9 @@ export async function createNewProject(
     case "aiagentnew": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("AI Agent");
+      // await input.selectQuickPick("AI Agent");
+      await input.setText("AI Agent");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.selectQuickPick(aiManagement);
       await driver.sleep(Timeout.input);

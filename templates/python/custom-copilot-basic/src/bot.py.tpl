@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+from dataclasses import asdict
 
 from botbuilder.core import MemoryStorage, TurnContext
 from teams import Application, ApplicationOptions, TeamsAdapter
@@ -67,4 +68,4 @@ async def on_error(context: TurnContext, error: Exception):
 @bot_app.feedback_loop()
 async def feedback_loop(_context: TurnContext, _state: TurnState, feedback_loop_data: FeedbackLoopData):
     # Add custom feedback process logic here.
-    print(f"Your feedback is:\n{json.dumps(json.loads(feedback_loop_data.to_json()), indent=4)}")
+    print(f"Your feedback is:\n{json.dumps(asdict(feedback_loop_data), indent=4)}")

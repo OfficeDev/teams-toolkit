@@ -4,6 +4,13 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### September 17, 2024
+
+#### Enhancement
+
+- Updated terminology for creating `Copilot Extension` and `Custom Engine Copilot` to enhance clarity.
+- Updated `Declarative Agent` and `API Plugin` app template to point to the latest manifest schema.
+
 ### September 12, 2024
 
 #### New Features

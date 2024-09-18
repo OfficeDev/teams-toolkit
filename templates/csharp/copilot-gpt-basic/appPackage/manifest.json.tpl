@@ -31,8 +31,8 @@
     "copilotExtensions": {
         "declarativeCopilots": [            
             {
-                "id": "declarativeCopilot",
-                "file": "declarativeCopilot.json"
+                "id": "declarativeAgent",
+                "file": "declarativeAgent.json"
             }
         ]
     },

@@ -41,7 +41,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "search-message-extension",
       "link-unfurling",
       "api-plugin",
-      "declarative-copilot",
+      "declarative-agent",
       "custom-copilot-basic",
       "custom-copilot-rag",
       "custom-copilot-agent",

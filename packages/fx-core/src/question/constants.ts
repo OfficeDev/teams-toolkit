@@ -271,7 +271,7 @@ export class ProjectTypeOptions {
 
   static copilotExtension(platform?: Platform): OptionItem {
     return {
-      id: "copilot-extension-type",
+      id: "copilot-agent-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
@@ -744,7 +744,7 @@ export class CapabilityOptions {
   // copilot extension - declarative copilot
   static declarativeCopilot(): OptionItem {
     return {
-      id: "declarative-copilot",
+      id: "declarative-agent",
       label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
       detail: getLocalizedString(
         "core.createProjectQuestion.projectType.declarativeCopilot.detail"

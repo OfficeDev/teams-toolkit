@@ -24,8 +24,8 @@ To call your Azure Functions, the client sends an HTTP request with an SSO token
 import { TeamsUserCredentialAuthConfig, TeamsUserCredential } from "@microsoft/teamsfx";
 
 const authConfig: TeamsUserCredentialAuthConfig = {
-  clientId: process.env.REACT_APP_CLIENT_ID,
-  initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+  clientId: "YOUR_CLIENT_ID",
+  initiateLoginEndpoint: "YOUR_LOGIN_PAGE_URL",
 };
 const teamsUserCredential = new TeamsUserCredential(authConfig);
 const accessToken = await teamsUserCredential.getToken(""); // Get SSO token
@@ -39,16 +39,16 @@ const response = await axios.default.get(endpoint + "/api/" + functionName, {
 
 ### Add More Functions
 
-- From Visual Studio Code, open the command palette, select `Teams: Add Resources` and select `Azure Functions App`.
+- From Visual Studio Code, open the command palette, select `Teams: View How-to Guides` and select `Integrate with Azure Functions`.
 
 ## Change Node.js runtime version
 
 By default, Teams Toolkit and Teams Toolkit CLI will provision an Azure functions app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
 
 - Sign in to [Azure Portal](https://azure.microsoft.com/).
-- Find your application's resource group and Azure Functions app resource. The resource group name and the Azure functions app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
+- Find your application's resource group and Azure Functions app resource. The resource group name and the Azure functions app name are stored in your project configuration file `env.*.json`. You can find them by searching the key `AZURE_RESOURCE_GROUP_NAME` and `FUNCTION_APP_NAME` in that file.
 - After enter the home page of the Azure Functions app, you can find a navigation item called `Configuration` under `settings` group.
-- Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~16` or `~18` according to your requirement.
+- Click `Configuration`, you would see a list of settings. Then click `General settings` and update the `Node.js Version` value to `Node.js 18 LTS` or `Node.js 20 LTS` according to your requirement.
 - After Click `OK` button, don't forget to click `Save` button on the top of the page.
 
 Then following requests sent to the Azure Functions app will be handled by new node runtime version.
@@ -62,7 +62,7 @@ Then following requests sent to the Azure Functions app will be handled by new n
 
 You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
 
-- `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
+- `manifest.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
 This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
@@ -92,17 +92,17 @@ Once the provisioning and deployment steps are finished, you can preview your ap
 
 To check that your manifest file is valid:
 
-- From Visual Studio Code: open the command palette and select: `Teams: Validate manifest file`.
+- From Visual Studio Code: open the command palette and select: `Teams: Validate Application`.
 - From Teams Toolkit CLI: run command `teamsapp validate` in your project directory.
 
 ## Package
 
-- From Visual Studio Code: open the command palette and select `Teams: Zip Teams metadata package`.
+- From Visual Studio Code: open the command palette and select `Teams: Zip Teams App Package`.
 - Alternatively, from the command line run `teamsapp package` in the project directory.
 
 ## Publish to Teams
 
 Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
 
-- From Visual Studio Code: open the command palette and select: `Teams: Publish to Teams`.
+- From Visual Studio Code: open the command palette and select: `Teams: Publish`.
 - From Teams Toolkit CLI: run command `teamsapp publish` in your project directory.

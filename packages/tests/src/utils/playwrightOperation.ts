@@ -460,13 +460,6 @@ export async function initTeamsPage(
         await page.waitForTimeout(Timeout.shortTimeLoading);
       } else {
         // add in meeting
-        console.log("click showListBtn button");
-        const showListBtn = await page?.waitForSelector(
-          ".ui-splitbutton>button"
-        );
-        await showListBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-
         console.log("click addInMeetingBtn button");
         let addInMeetingBtn;
         try {
@@ -509,18 +502,14 @@ export async function initTeamsPage(
       try {
         // teams app add
         const dialog = await page.waitForSelector("div[role='dialog']");
-        const spfxTab = await dialog?.waitForSelector(
-          "li:has-text('test-team')"
+        const openBtn = await dialog?.waitForSelector(
+          "button:has-text('Open')"
         );
-        console.log("click spfx tab");
-        await spfxTab?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const gotoBtn = await dialog?.waitForSelector("button[data-tid='go']");
-        console.log("click 'set up a tab' button");
-        await gotoBtn?.click();
+        console.log("click 'open' button");
+        await openBtn?.click();
         await page.waitForTimeout(Timeout.shortTimeLoading);
 
-        await page?.waitForSelector("button[data-tid='go']", {
+        await page?.waitForSelector("div[role='dialog']", {
           state: "detached",
         });
         console.log("successful to add teams app!!!");

@@ -518,7 +518,23 @@ export async function initTeamsPage(
       }
 
       {
-        console.log('[start] click "save" button');
+        // spfx add to channel
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        const spfxTab = await dialog?.waitForSelector(
+          "li:has-text('test-team')"
+        );
+        console.log("click spfxTab tab");
+        await spfxTab?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        const gotoBtn = await dialog?.waitForSelector("button[data-tid='go']");
+        console.log("click 'set up a tab' button");
+        await gotoBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        await page?.waitForSelector("button[data-tid='go']", {
+          state: "detached",
+        });
+
         const frameElementHandle = await page.waitForSelector(
           `iframe[name="embedded-page-container"]`
         );

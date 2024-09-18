@@ -455,6 +455,7 @@ export async function initTeamsPage(
           throw "error to add app";
         }
       }
+      await addInBtn?.click();
       if (options?.type === "meeting") {
         // select meeting tab in dialog box
         const dialog = await page.waitForSelector("div[role='dialog']");

@@ -1095,3 +1095,64 @@ export function syncManifestQuestionNode(): IQTreeNode {
     ],
   };
 }
+
+//  Creata a Teams bot using a definition of Declarative Agent.
+export function dcToBotQuestionNode(): IQTreeNode {
+  return {
+    data: apiPluginStartQuestion(true),
+    children: [
+      {
+        data: pluginManifestQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.existingPlugin().id,
+        },
+      },
+      {
+        data: pluginApiSpecQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.existingPlugin().id,
+        },
+      },
+      {
+        data: apiSpecLocationQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.apiSpec().id,
+        },
+      },
+      {
+        data: apiOperationQuestion(true, true),
+        condition: {
+          equals: ApiPluginStartOptions.apiSpec().id,
+        },
+      },
+      {
+        data: selectTeamsAppManifestQuestion(),
+      },
+    ],
+  };
+}
+
+export function selectDeclarativeAgentQuestion(): SingleFileQuestion {
+  return {
+    name: QuestionNames.DeclarativeAgentFilePath,
+    cliName: "declarative-agent-file",
+    cliShortName: "d",
+    cliDescription:
+      "Specify the path for Declarative Agent file. It can be either absolute path or relative path to the project root folder, with default at './appPackage/declarativeAgent.json'",
+    title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./appPackage/manifest.json";
+      } else {
+        if (!inputs.projectPath) return undefined;
+        const manifestPath = path.join(inputs.projectPath, AppPackageFolderName, "manifest.json");
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
+      }
+    },
+  };
+}

@@ -58,6 +58,9 @@
   "create.sample": {
     "description": "Create an app from existing sample."
   },
+  "create.dc-bot": {
+    "description": "Create a Teams bot based on a Declarative Agent definition."
+  },
   "collaborator": {
     "description": "Check, grant and list permissions for who can access and manage Microsoft Teams application and Microsoft Entra application."
   },

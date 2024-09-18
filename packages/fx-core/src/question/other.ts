@@ -1107,27 +1107,6 @@ export function dcToBotQuestionNode(): IQTreeNode {
           equals: ApiPluginStartOptions.existingPlugin().id,
         },
       },
-      {
-        data: pluginApiSpecQuestion(),
-        condition: {
-          equals: ApiPluginStartOptions.existingPlugin().id,
-        },
-      },
-      {
-        data: apiSpecLocationQuestion(),
-        condition: {
-          equals: ApiPluginStartOptions.apiSpec().id,
-        },
-      },
-      {
-        data: apiOperationQuestion(true, true),
-        condition: {
-          equals: ApiPluginStartOptions.apiSpec().id,
-        },
-      },
-      {
-        data: selectTeamsAppManifestQuestion(),
-      },
     ],
   };
 }
@@ -1139,16 +1118,20 @@ export function selectDeclarativeAgentQuestion(): SingleFileQuestion {
     cliShortName: "d",
     cliDescription:
       "Specify the path for Declarative Agent file. It can be either absolute path or relative path to the project root folder, with default at './appPackage/declarativeAgent.json'",
-    title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
+    title: getLocalizedString("core.selectDeclarativeAgentQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
       if (inputs.platform === Platform.CLI_HELP) {
-        return "./appPackage/manifest.json";
+        return "./appPackage/declarativeAgent.json";
       } else {
         if (!inputs.projectPath) return undefined;
-        const manifestPath = path.join(inputs.projectPath, AppPackageFolderName, "manifest.json");
-        if (fs.pathExistsSync(manifestPath)) {
-          return manifestPath;
+        const declarativeAgentPath = path.join(
+          inputs.projectPath,
+          AppPackageFolderName,
+          "declarativeAgent.json"
+        );
+        if (fs.pathExistsSync(declarativeAgentPath)) {
+          return declarativeAgentPath;
         } else {
           return undefined;
         }

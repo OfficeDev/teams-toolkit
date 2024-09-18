@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "setup": "pnpm install && npm run build",
+    "setup": "echo `whoami`",
     "watch": "pnpm --parallel -r run watch",
     "build": "pnpm -r run build",
     "precommit": "lint-staged",

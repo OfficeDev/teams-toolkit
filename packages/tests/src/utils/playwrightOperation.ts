@@ -612,17 +612,22 @@ export async function reopenTeamsPage(
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
       if (options?.type === "meeting") {
-        // verify add page is closed
-        try {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a team')`
-          );
-        } catch (error) {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
-          );
-        }
-        // TODO: need to add more logic
+        // select meeting tab in dialog box
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        const meetingTab = await dialog?.waitForSelector(
+          "li:has-text('testing')"
+        );
+        console.log("click meeting tab");
+        await meetingTab?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        const gotoBtn = await dialog?.waitForSelector("button[data-tid='go']");
+        console.log("click 'set up a tab' button");
+        await gotoBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        await page?.waitForSelector("button[data-tid='go']", {
+          state: "detached",
+        });
         console.log("successful to add teams app!!!");
         return;
       }

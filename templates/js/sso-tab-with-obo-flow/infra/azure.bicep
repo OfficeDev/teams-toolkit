@@ -132,3 +132,4 @@ output TAB_ENDPOINT string = 'https://${siteDomain}'
 output API_FUNCTION_ENDPOINT string = apiEndpoint
 output AZURE_STATIC_WEB_APPS_RESOURCE_ID string = swa.id
 output API_FUNCTION_RESOURCE_ID string = functionApp.id
+output FUNCTION_APP_NAME string = functionAppName

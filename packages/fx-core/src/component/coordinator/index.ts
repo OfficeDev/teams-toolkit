@@ -164,7 +164,10 @@ class Coordinator {
         [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
-      if (projectType === ProjectTypeOptions.customCopilot().id) {
+      if (
+        projectType === ProjectTypeOptions.customCopilot().id ||
+        (projectType === ProjectTypeOptions.bot().id && inputs.platform === Platform.VS)
+      ) {
         merge(actionContext?.telemetryProps, {
           [TelemetryProperty.CustomCopilotRAG]: inputs["custom-copilot-rag"] ?? "",
           [TelemetryProperty.CustomCopilotAgent]: inputs["custom-copilot-agent"] ?? "",

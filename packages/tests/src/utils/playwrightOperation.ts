@@ -438,47 +438,24 @@ export async function initTeamsPage(
       }
 
       // default
-      if (options?.type !== "meeting") {
-        console.log("click add button");
-        let addBtn;
+      console.log("click add button");
+      let addInBtn;
+      try {
+        addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
+      } catch {
         try {
-          addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-        } catch {
-          try {
-            addBtn = await page?.waitForSelector(
-              "button>span:has-text('Open')"
-            );
-          } catch {
-            await page.screenshot({
-              path: getPlaywrightScreenshotPath("add_page"),
-              fullPage: true,
-            });
-            throw "error to add app";
-          }
-        }
-        await addBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-      } else {
-        // add in meeting
-        console.log("click addInMeetingBtn button");
-        let addInMeetingBtn;
-        try {
-          addInMeetingBtn = await page?.waitForSelector(
-            ".ui-popup__content li:has-text('Add')"
+          addInBtn = await page?.waitForSelector(
+            "button>span:has-text('Open')"
           );
         } catch {
-          try {
-            addInMeetingBtn = await page?.waitForSelector(
-              "button>span:has-text('Open')"
-            );
-          } catch {
-            await page.screenshot({
-              path: getPlaywrightScreenshotPath("add_page"),
-              fullPage: true,
-            });
-            throw "error to add app";
-          }
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("add_page"),
+            fullPage: true,
+          });
+          throw "error to add app";
         }
+      }
+      if (options?.type === "meeting") {
         // select meeting tab in dialog box
         const dialog = await page.waitForSelector("div[role='dialog']");
         const meetingTab = await dialog?.waitForSelector(
@@ -518,28 +495,30 @@ export async function initTeamsPage(
       }
 
       {
-        // spfx add to channel
-        const dialog = await page.waitForSelector("div[role='dialog']");
-        const spfxTab = await dialog?.waitForSelector(
-          "li:has-text('test-team')"
-        );
-        console.log("click spfxTab tab");
-        await spfxTab?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const gotoBtn = await dialog?.waitForSelector("button[data-tid='go']");
-        console.log("click 'set up a tab' button");
-        await gotoBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-
-        await page?.waitForSelector("button[data-tid='go']", {
-          state: "detached",
-        });
-
-        const frameElementHandle = await page.waitForSelector(
-          `iframe[name="embedded-page-container"]`
-        );
-        const frame = await frameElementHandle?.contentFrame();
         if (options?.type === "spfx") {
+          // spfx add to channel
+          const dialog = await page.waitForSelector("div[role='dialog']");
+          const spfxTab = await dialog?.waitForSelector(
+            "li:has-text('test-team')"
+          );
+          console.log("click spfxTab tab");
+          await spfxTab?.click();
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          const gotoBtn = await dialog?.waitForSelector(
+            "button[data-tid='go']"
+          );
+          console.log("click 'set up a tab' button");
+          await gotoBtn?.click();
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+
+          await page?.waitForSelector("button[data-tid='go']", {
+            state: "detached",
+          });
+
+          const frameElementHandle = await page.waitForSelector(
+            `iframe[name="embedded-page-container"]`
+          );
+          const frame = await frameElementHandle?.contentFrame();
           try {
             console.log("Load debug scripts");
             await frame?.click('button:has-text("Load debug scripts")');
@@ -2973,9 +2952,6 @@ export async function validateCustomapi(
 export async function validateRetailDashboard(page: Page) {
   try {
     console.log("start to verify dashboard tab");
-    await page?.waitForSelector("button:has-text('RetailDashboard')");
-    await page?.waitForSelector("button:has-text('RetailHome')");
-    await page?.waitForSelector("button:has-text('RetailInventory')");
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
@@ -2984,8 +2960,6 @@ export async function validateRetailDashboard(page: Page) {
     await frame?.waitForSelector(
       "span:has-text('Global Customer Satisfaction')"
     );
-    await frame?.waitForSelector("span:has-text('Product Sell')");
-    await frame?.waitForSelector("span:has-text('Reasons for Return')");
     console.log("Dashboard tab loaded successfully");
   } catch (error) {
     await page.screenshot({

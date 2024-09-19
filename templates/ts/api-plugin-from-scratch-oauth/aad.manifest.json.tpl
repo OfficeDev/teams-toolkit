@@ -40,7 +40,12 @@
 {{/MicrosoftEntra}}
     "replyUrlsWithType": [
         {
+{{#MicrosoftEntra}}
+           "url": "https://teams.microsoft.com/api/platform/v1.0/oAuthConsentRedirect",
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
            "url": "https://teams.microsoft.com/api/platform/v1.0/oAuthRedirect",
+{{/MicrosoftEntra}}
            "type": "Web"
         }
     ],

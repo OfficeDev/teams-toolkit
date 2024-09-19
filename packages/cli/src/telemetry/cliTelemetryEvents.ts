@@ -120,6 +120,8 @@ export enum TelemetryEvent {
   Doctor = "doctor",
 
   AddCopilotPlugin = "add-copilot-plugin",
+
+  CreateDeclarativeAgentBot = "create-declarative-agent-bot",
 }
 
 export enum TelemetryProperty {

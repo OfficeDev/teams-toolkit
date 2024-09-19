@@ -5,6 +5,7 @@ import { ConversationStarter } from "./pluginManifest";
 
 export interface DeclarativeCopilotManifestSchema {
   id?: string;
+  version: string;
   name: string;
   description: string;
   instructions?: string;

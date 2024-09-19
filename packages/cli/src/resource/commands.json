@@ -58,7 +58,7 @@
   "create.sample": {
     "description": "Create an app from existing sample."
   },
-  "create.dc-bot": {
+  "create.da-bot": {
     "description": "Create a Teams bot based on a Declarative Agent definition."
   },
   "collaborator": {

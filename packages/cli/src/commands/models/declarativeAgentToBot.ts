@@ -1,23 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand } from "@microsoft/teamsfx-api";
-import { AddPluginInputs, AddPluginOptions } from "@microsoft/teamsfx-core";
+import { DeclarativeAgentBotInputs, DeclarativeAgentBotOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { ProjectFolderOption } from "../common";
 
 export const declarativeAgentToBotCommand: CLICommand = {
-  name: "DC2Bot",
-  description: commands["create.dc-bot"].description,
-  options: [...AddPluginOptions, ProjectFolderOption],
+  name: "DA2Bot",
+  description: commands["create.da-bot"].description,
+  options: DeclarativeAgentBotOptions,
   telemetry: {
-    event: TelemetryEvent.AddCopilotPlugin,
+    event: TelemetryEvent.CreateDeclarativeAgentBot,
   },
   handler: async (ctx) => {
-    const inputs = ctx.optionValues as AddPluginInputs;
+    const inputs = ctx.optionValues as DeclarativeAgentBotInputs;
     const core = getFxCore();
-    const res = await core.addPlugin(inputs);
+    const res = await core.createDeclarativeAgentBot(inputs);
     return res;
   },
 };

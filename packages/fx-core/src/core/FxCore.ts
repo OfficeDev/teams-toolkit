@@ -2107,4 +2107,59 @@ export class FxCore {
 
     return ok(undefined);
   }
+
+  /**
+   * Create Declarative Agent Bot
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: Stage.createDeclarativeAgentBot }),
+    ErrorHandlerMW,
+    QuestionMW("declarativeAgentToBot"),
+    ConcurrentLockerMW,
+  ])
+  async createDeclarativeAgentBot(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (!inputs.projectPath) {
+      throw new Error("projectPath is undefined");
+    }
+    const context = createContext();
+    const teamsManifestPath = inputs[QuestionNames.ManifestPath];
+
+    // validate the project is valid for creating declarative agent bot
+    const manifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    // read declarative agent manifest
+    const declarativeAgentManifestPath = inputs[QuestionNames.DeclarativeAgentFilePath];
+    const declarativeAgentManifesRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
+      declarativeAgentManifestPath
+    );
+    if (declarativeAgentManifesRes.isErr()) {
+      return err(declarativeAgentManifesRes.error);
+    }
+    const declarativeAgentManifest = declarativeAgentManifesRes.value;
+
+    // user confirm
+    const confirmRes = await context.userInteraction.showMessage(
+      "warn",
+      getLocalizedString("core.createDeclarativeAgentBot.confirm", inputs.projectPath),
+      true,
+      getLocalizedString("core.createDeclarativeAgentBot.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.createDeclarativeAgentBot.continue")) {
+      return err(new UserCancelError());
+    }
+
+    // create bot
+    const botID = "";
+
+    const successMessage = getLocalizedString("core.createDeclarativeAgentBot.success", botID);
+    void context.userInteraction.showMessage("info", successMessage, false);
+
+    return ok(undefined);
+  }
 }

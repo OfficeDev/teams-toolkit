@@ -350,7 +350,7 @@
   "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.detail": "Build an AI agent with OpenAI Assistants API and Teams AI Library",
   "core.createProjectQuestion.capability.customCopilotAssistant.title": "AI Agent",
   "core.createProjectQuestion.capability.customCopilotAssistant.placeholder": "Choose how you want to manage your AI tasks",
-  "core.createProjectQuestion.capability.customEngineAgent.description": "Works in Teams and Copilot for Microsoft 365",
+  "core.createProjectQuestion.capability.customEngineAgent.description": "Works in Teams and Microsoft 365 Copilot",
   "core.createProjectQuestion.llmService.title": "Service for Large Language Model (LLM)",
   "core.createProjectQuestion.llmService.placeholder": "Select a service to access LLMs",
   "core.createProjectQuestion.llmServiceOpenAIOption.label": "OpenAI",

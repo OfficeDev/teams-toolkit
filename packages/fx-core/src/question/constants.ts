@@ -794,9 +794,6 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotRagOption.detail"
       ),
-      description: getLocalizedString(
-        "core.createProjectQuestion.capability.customEngineAgent.description"
-      ),
     };
   }
 
@@ -808,9 +805,6 @@ export class CapabilityOptions {
       ),
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantOption.detail"
-      ),
-      description: getLocalizedString(
-        "core.createProjectQuestion.capability.customEngineAgent.description"
       ),
     };
   }

@@ -1097,15 +1097,14 @@ export function syncManifestQuestionNode(): IQTreeNode {
 }
 
 //  Creata a Teams bot using a definition of Declarative Agent.
-export function dcToBotQuestionNode(): IQTreeNode {
+export function declarativeAgentToBotQuestionNode(): IQTreeNode {
   return {
-    data: apiPluginStartQuestion(true),
+    data: {
+      type: "group",
+    },
     children: [
       {
-        data: pluginManifestQuestion(),
-        condition: {
-          equals: ApiPluginStartOptions.existingPlugin().id,
-        },
+        data: selectDeclarativeAgentQuestion(),
       },
     ],
   };

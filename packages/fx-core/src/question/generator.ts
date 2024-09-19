@@ -460,6 +460,9 @@ async function batchGenerate() {
 
   await generateCliOptions(questionNodes.syncManifest(), "SyncManifest");
   await generateInputs(questionNodes.syncManifest(), "SyncManifest");
+
+  await generateCliOptions(questionNodes.declarativeAgentToBot(), "DeclarativeAgentBot");
+  await generateInputs(questionNodes.declarativeAgentToBot(), "DeclarativeAgentBot");
 }
 
 void batchGenerate();

@@ -13,6 +13,7 @@ import {
   apiSpecApiKeyQuestion,
   copilotPluginAddAPIQuestionNode,
   createNewEnvQuestionNode,
+  declarativeAgentToBotQuestionNode,
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
   listCollaboratorQuestionNode,
@@ -79,6 +80,9 @@ export class QuestionNodes {
   }
   syncManifest(): IQTreeNode {
     return syncManifestQuestionNode();
+  }
+  declarativeAgentToBot(): IQTreeNode {
+    return declarativeAgentToBotQuestionNode();
   }
 }
 

@@ -98,8 +98,8 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
         }
         validation: {
 {{#MicrosoftEntra}}
-          jwtClaimChecks: {
-            allowedClientApplications: [
+          defaultAuthorizationPolicy: {
+            allowedApplications: [
               aadAppClientId
               clientIdForTGS
             ]

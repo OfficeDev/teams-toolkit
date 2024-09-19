@@ -80,7 +80,9 @@ var aadApplicationIdUriWithDomain = 'api://${functionApp.properties.defaultHostN
 {{/MicrosoftEntra}}
 
 // Configure Azure Functions to use Azure AD for authentication.
+{{#MicrosoftEntra}}
 var clientIdForTGS = 'ab3be6b7-f5df-413d-ac2d-abf1e3fd9c0b'
+{{/MicrosoftEntra}}
 resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: functionApp
   name: 'authsettingsV2'

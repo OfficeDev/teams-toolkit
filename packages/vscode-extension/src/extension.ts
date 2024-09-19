@@ -534,7 +534,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
     const createPluginWithManifestCommand = vscode.commands.registerCommand(
       "fx-extension.createprojectfromkiota",
-      createPluginWithManifest
+      () => Correlator.run(createPluginWithManifest)
     );
     context.subscriptions.push(createPluginWithManifestCommand);
   }

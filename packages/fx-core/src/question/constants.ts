@@ -780,7 +780,7 @@ export class CapabilityOptions {
         "core.createProjectQuestion.capability.customCopilotBasicOption.detail"
       ),
       description: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotEngineAgent.description"
+        "core.createProjectQuestion.capability.customEngineAgent.description"
       ),
     };
   }
@@ -795,7 +795,7 @@ export class CapabilityOptions {
         "core.createProjectQuestion.capability.customCopilotRagOption.detail"
       ),
       description: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotEngineAgent.description"
+        "core.createProjectQuestion.capability.customEngineAgent.description"
       ),
     };
   }
@@ -810,7 +810,7 @@ export class CapabilityOptions {
         "core.createProjectQuestion.capability.customCopilotAssistantOption.detail"
       ),
       description: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotEngineAgent.description"
+        "core.createProjectQuestion.capability.customEngineAgent.description"
       ),
     };
   }

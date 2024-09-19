@@ -781,7 +781,7 @@ export class CapabilityOptions {
       ),
       description: getLocalizedString(
         "core.createProjectQuestion.capability.copilotEngineAgent.description"
-      )
+      ),
     };
   }
 
@@ -796,7 +796,7 @@ export class CapabilityOptions {
       ),
       description: getLocalizedString(
         "core.createProjectQuestion.capability.copilotEngineAgent.description"
-      )
+      ),
     };
   }
 
@@ -811,7 +811,7 @@ export class CapabilityOptions {
       ),
       description: getLocalizedString(
         "core.createProjectQuestion.capability.copilotEngineAgent.description"
-      )
+      ),
     };
   }
 }

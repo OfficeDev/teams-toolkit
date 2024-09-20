@@ -5225,6 +5225,9 @@ describe("generateCommands", () => {
                         type: "string",
                         description: "Name of the pet",
                       },
+                      unknown: {
+                        type: "unknown",
+                      },
                     },
                   },
                 },

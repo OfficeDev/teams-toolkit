@@ -135,7 +135,7 @@ export class WrappedAxiosClient {
       }: ${innerError.message as string} `;
       properties[TelemetryProperty.ErrorMessage] = finalMessage;
       properties[TelemetryProperty.MOSTraceId] = tracingId;
-      properties[TelemetryProperty.MOSPATH] = fullPath;
+      properties[TelemetryProperty.MOSPATH] = error.request.path.replace(/\//g, "__");
     }
 
     TOOLS?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);

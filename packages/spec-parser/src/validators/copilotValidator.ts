@@ -85,7 +85,6 @@ export class CopilotValidator extends Validator {
     if (requestJsonBody) {
       const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
 
-      // if there is no type property, it should be an object
       if (!Utils.isObjectSchema(requestBodySchema)) {
         result.reason.push(ErrorType.PostBodySchemaIsNotJson);
       }

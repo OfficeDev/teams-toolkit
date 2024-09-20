@@ -2152,6 +2152,66 @@ describe("Validator", () => {
       assert.deepEqual(reason, [ErrorType.PostBodySchemaIsNotJson]);
     });
 
+    it("should return true if method is POST, and request body schema type is undefined but contains properties", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid, reason } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, true);
+    });
+
     it("should return true if there is no parameters for copilot", () => {
       const method = "GET";
       const path = "/users";

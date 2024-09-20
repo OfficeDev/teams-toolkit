@@ -159,7 +159,10 @@ export class ManifestUpdater {
               if (requestBody) {
                 const requestJsonBody = requestBody.content!["application/json"];
                 const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-                if (requestBodySchema.type === "object") {
+                if (
+                  requestBodySchema.type === "object" ||
+                  (!requestBodySchema.type && requestBodySchema.properties)
+                ) {
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
                     ManifestUpdater.checkSchema(schema, method, pathUrl);

@@ -18,10 +18,10 @@ import { SpecParserError } from "./specParserError";
 
 export class Utils {
   static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
-    if (schema.type === "object") {
+    if (schema.type === "object" || (!schema.type && schema.properties)) {
       for (const property in schema.properties) {
         const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
-        if (nestedSchema.type === "object") {
+        if (nestedSchema.type === "object" || (!nestedSchema.type && nestedSchema.properties)) {
           return true;
         }
       }
@@ -311,7 +311,7 @@ export class Utils {
       } else {
         optionalParams.push(parameter);
       }
-    } else if (schema.type === "object") {
+    } else if (schema.type === "object" || (!schema.type && schema.properties)) {
       const { properties } = schema;
       for (const property in properties) {
         let isRequired = false;

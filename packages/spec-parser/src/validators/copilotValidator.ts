@@ -11,6 +11,7 @@ import {
   SpecValidationResult,
 } from "../interfaces";
 import { Validator } from "./validator";
+import { Utils } from "../utils";
 
 export class CopilotValidator extends Validator {
   constructor(spec: OpenAPIV3.Document, options: ParseOptions) {
@@ -85,10 +86,7 @@ export class CopilotValidator extends Validator {
       const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
 
       // if there is no type property, it should be an object
-      if (
-        requestBodySchema.type !== "object" &&
-        (requestBodySchema.type || !requestBodySchema.properties)
-      ) {
+      if (!Utils.isObjectSchema(requestBodySchema)) {
         result.reason.push(ErrorType.PostBodySchemaIsNotJson);
       }
 

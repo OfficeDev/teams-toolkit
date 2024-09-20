@@ -280,7 +280,7 @@ export abstract class Validator {
       } else {
         paramResult.optionalNum = paramResult.optionalNum + 1;
       }
-    } else if (schema.type === "object" || (!schema.type && schema.properties)) {
+    } else if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       for (const property in properties) {
         let isRequired = false;

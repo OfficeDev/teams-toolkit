@@ -18,15 +18,19 @@ import { SpecParserError } from "./specParserError";
 
 export class Utils {
   static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
-    if (schema.type === "object" || (!schema.type && schema.properties)) {
+    if (this.isObjectSchema(schema)) {
       for (const property in schema.properties) {
         const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
-        if (nestedSchema.type === "object" || (!nestedSchema.type && nestedSchema.properties)) {
+        if (this.isObjectSchema(nestedSchema)) {
           return true;
         }
       }
     }
     return false;
+  }
+
+  static isObjectSchema(schema: OpenAPIV3.SchemaObject): boolean {
+    return schema.type === "object" || (!schema.type && !!schema.properties);
   }
 
   static containMultipleMediaTypes(
@@ -311,7 +315,7 @@ export class Utils {
       } else {
         optionalParams.push(parameter);
       }
-    } else if (schema.type === "object" || (!schema.type && schema.properties)) {
+    } else if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       for (const property in properties) {
         let isRequired = false;

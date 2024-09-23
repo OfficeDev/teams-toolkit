@@ -295,6 +295,8 @@ export enum TelemetryEvent {
 
   InstallKiota = "install-kiota",
   Configuration = "vsc-configuration",
+
+  UpdateAddPluginTreeview = "update-add-plugin-tree-view",
 }
 
 export enum TelemetryProperty {
@@ -415,6 +417,7 @@ export enum TelemetryProperty {
   CopilotChatRequestToken = "copilot-chat-request-token",
   CopilotChatResponseToken = "copilot-chat-response-token",
   KiotaInstalled = "kiota-installed",
+  ShowAddPluginTreeView = "show-add-plugin-tree-view",
 }
 
 export enum TelemetryMeasurements {

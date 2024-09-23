@@ -198,14 +198,11 @@ import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/project
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
-import { isVSCodeInsiderVersion } from "./utils/versionUtil";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
+import { manifestListener } from "./manifestListener";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const value =
-    IsChatParticipantEnabled &&
-    semver.gte(vscode.version, "1.90.0-insider") &&
-    isVSCodeInsiderVersion();
+  const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
@@ -225,8 +222,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerInternalCommands(context);
 
   if (featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)) {
-    registerChatParticipant(context);
-
     registerOfficeChatParticipant(context);
   }
 
@@ -247,11 +242,11 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant entries
+  // control whether to show chat participant ui entries
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isChatParticipantEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)
+    "fx-extension.isChatParticipantUIEntriesEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.
@@ -323,6 +318,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
   if (vscode.workspace.isTrusted) {
     registerLanguageFeatures(context);
+    context.subscriptions.push(manifestListener());
   }
 
   registerDebugConfigProviders(context);
@@ -538,7 +534,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
     const createPluginWithManifestCommand = vscode.commands.registerCommand(
       "fx-extension.createprojectfromkiota",
-      createPluginWithManifest
+      () => Correlator.run(createPluginWithManifest)
     );
     context.subscriptions.push(createPluginWithManifestCommand);
   }

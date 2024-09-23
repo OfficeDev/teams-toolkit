@@ -57,9 +57,13 @@ export enum QuestionNames {
   CustomCopilotAssistant = "custom-copilot-agent",
   LLMService = "llm-service",
   OpenAIKey = "openai-key",
+  OpenAIEmbeddingModel = "openai-embedding-model",
   AzureOpenAIKey = "azure-openai-key",
   AzureOpenAIEndpoint = "azure-openai-endpoint",
   AzureOpenAIDeploymentName = "azure-openai-deployment-name",
+  AzureOpenAIEmbeddingDeploymentName = "azure-openai-embedding-deployment-name",
+  AzureAISearchApiKey = "azure-ai-search-api-key",
+  AzureAISearchEndpoint = "azure-ai-search-endpoint",
 
   Features = "features",
   Env = "env",
@@ -183,7 +187,7 @@ export class ScratchOptions {
 
 export class ProjectTypeOptions {
   static getCreateGroupName(): string | undefined {
-    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
       ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
       : undefined;
   }
@@ -235,6 +239,17 @@ export class ProjectTypeOptions {
     };
   }
 
+  static officeMetaOS(platform?: Platform): OptionItem {
+    return {
+      id: "office-meta-os-type",
+      label: `${platform === Platform.VSCode ? "$(teamsfx-m365) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.officeAddin.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
+    };
+  }
+
   static officeAddin(platform?: Platform): OptionItem {
     return {
       id: "office-addin-type",
@@ -248,6 +263,7 @@ export class ProjectTypeOptions {
 
   static officeAddinAllIds(platform?: Platform): string[] {
     return [
+      ProjectTypeOptions.officeMetaOS(platform).id,
       ProjectTypeOptions.officeAddin(platform).id,
       ProjectTypeOptions.outlookAddin(platform).id,
     ];
@@ -566,6 +582,7 @@ export class CapabilityOptions {
   static officeAddinDynamicCapabilities(projectType: string, host?: string): OptionItem[] {
     const items: OptionItem[] = [];
     const isOutlookAddin = projectType === ProjectTypeOptions.outlookAddin().id;
+    const isMetaOSAddin = projectType === ProjectTypeOptions.officeMetaOS().id;
     const isOfficeAddin = projectType === ProjectTypeOptions.officeAddin().id;
 
     const pushToItems = (option: any) => {
@@ -577,10 +594,12 @@ export class CapabilityOptions {
       });
     };
 
-    if (isOutlookAddin || isOfficeAddin) {
+    if (isOutlookAddin || isMetaOSAddin || isOfficeAddin) {
       pushToItems("json-taskpane");
       if (isOutlookAddin) {
         items.push(CapabilityOptions.outlookAddinImport());
+      } else if (isMetaOSAddin) {
+        items.push(CapabilityOptions.officeAddinImport());
       } else {
         items.push(CapabilityOptions.officeContentAddin());
         items.push(CapabilityOptions.officeAddinImport());
@@ -759,6 +778,9 @@ export class CapabilityOptions {
       ),
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotBasicOption.detail"
+      ),
+      description: getLocalizedString(
+        "core.createProjectQuestion.capability.customEngineAgent.description"
       ),
     };
   }

@@ -38,7 +38,6 @@ export function buildDynamicPrompt<T>(format: IDynamicPromptFormat<T>, args: T):
 function createMessage(role: MessageRole, prompt: string): LanguageModelChatMessage {
   switch (role) {
     case "system":
-      return new LanguageModelChatMessage(LanguageModelChatMessageRole.System, prompt);
     case "user":
       return new LanguageModelChatMessage(LanguageModelChatMessageRole.User, prompt);
     case "assistant":

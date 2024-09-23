@@ -1,9 +1,10 @@
 const { MemoryStorage, MessageFactory } = require("botbuilder");
 const path = require("path");
 const config = require("../config");
+const customSayCommand = require("./customSayCommand");
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-const { Application, ActionPlanner, OpenAIModel, PromptManager } = require("@microsoft/teams-ai");
+const { AI, Application, ActionPlanner, OpenAIModel, PromptManager } = require("@microsoft/teams-ai");
 const { GraphDataSource } = require("./graphDataSource");
 
 // Create AI components
@@ -40,6 +41,7 @@ const app = new Application({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
   authentication: {
     settings: {
@@ -58,6 +60,7 @@ const app = new Application({
     autoSignIn: true,
   }
 });
+app.ai.action(AI.SayCommandActionName, customSayCommand.sayCommand(true));
 
 app.conversationUpdate("membersAdded", async (turnContext) => {
   const welcomeText = "How can I help you today?";
@@ -77,6 +80,11 @@ app.authentication.get("graph").onUserSignInFailure(async (context, state, error
   // Failed to login
   await context.sendActivity("Failed to login");
   await context.sendActivity(`Error message: ${error.message}`);
+});
+
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
 });
 
 module.exports = app;

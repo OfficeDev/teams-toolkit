@@ -173,6 +173,8 @@ import { SyncManifestArgs } from "../component/driver/teamsApp/interfaces/SyncMa
 import { SyncManifestDriver } from "../component/driver/teamsApp/syncManifest";
 import { generateDriverContext } from "../common/utils";
 import { addExistingPlugin } from "../component/generator/copilotExtension/helper";
+import { DeclarativeAgentBotContext } from "../component/feature/declarativeAgentBotContext";
+import { create } from "../component/feature/createDeclarativeAgentBot";
 import { featureFlagManager, FeatureFlags } from "../common/featureFlags";
 
 export class FxCore {
@@ -2154,10 +2156,19 @@ export class FxCore {
       return err(new UserCancelError());
     }
 
-    // create bot
-    const botID = "";
+    // create a context for creating declarative agent bot
+    const declarativeAgentBotContext = await DeclarativeAgentBotContext.create(
+      inputs.env,
+      inputs.projectPath,
+      declarativeAgentManifestPath,
+      inputs.tokenProvider
+    );
+    await create(declarativeAgentBotContext);
 
-    const successMessage = getLocalizedString("core.createDeclarativeAgentBot.success", botID);
+    const successMessage = getLocalizedString(
+      "core.createDeclarativeAgentBot.success",
+      declarativeAgentBotContext.teamsBotId
+    );
     void context.userInteraction.showMessage("info", successMessage, false);
 
     return ok(undefined);

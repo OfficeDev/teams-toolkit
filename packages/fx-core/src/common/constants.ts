@@ -71,6 +71,14 @@ export function getAppStudioEndpoint(): string {
   }
 }
 
+export function getCopilotStudioEndpoint(): string {
+  if (process.env.COPILOT_STUDIO_ENV && process.env.COPILOT_STUDIO_ENV === "test") {
+    return "https://api.test.powerplatform.com";
+  } else {
+    return "https://api.powerplatform.com";
+  }
+}
+
 export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
@@ -78,3 +86,4 @@ export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`
 export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
 export const SpecParserSource = "SpecParser";
+export const CopilotStudioScopes = [`${getCopilotStudioEndpoint()}/.default`];

@@ -7,6 +7,9 @@ import { DeclarativeAgentContext } from "./declarativeAgentContext";
 import { AppPackageFolderName } from "@microsoft/teamsfx-api";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
+import { copilotGptManifestUtils } from "../driver/teamsApp/utils/CopilotGptManifestUtils";
+import { CopilotStudioScopes } from "../../common/constants";
+import { DeclarativeAgentBotDefinition } from "./declarativeAgentDefinition";
 
 const launchJsonFile = ".vscode/launch.json";
 const backupFolder = ".backup";
@@ -71,6 +74,42 @@ export async function uppdateManifest(context: DeclarativeAgentContext): Promise
     });
     await fs.writeFile(manifestPath, manifest);
   }
+}
+
+export async function provisionBot(context: DeclarativeAgentContext): Promise<void> {
+  const copilotGptManifestPath = path.join(
+    context.projectPath,
+    context.declarativeAgentManifestPath
+  );
+  const copilotGptManifest = await copilotGptManifestUtils.readCopilotGptManifestFile(
+    copilotGptManifestPath
+  );
+  if (copilotGptManifest.isErr()) {
+    return;
+  }
+
+  // construct payload for bot provisioning
+  const payload: DeclarativeAgentBotDefinition = {
+    GptDefinition: {
+      id: copilotGptManifest.value.id,
+      name: copilotGptManifest.value.name,
+      description: copilotGptManifest.value.description,
+      instructions: copilotGptManifest.value.instructions,
+    },
+    PersistentModel: 1,
+    EnableChannels: ["msteams"],
+  };
+
+  // provision bot
+  const result = await context.tokenProvider.getAccessToken({
+    scopes: CopilotStudioScopes,
+  });
+
+  if (result.isErr()) {
+    return;
+  }
+
+  const copilotStudioAccessToken = result.value;
 }
 
 async function backup(context: DeclarativeAgentContext, filePath: string): Promise<void> {

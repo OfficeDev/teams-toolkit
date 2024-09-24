@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import { hooks } from "@feathersjs/hooks";
 import {
-  Context,
   FxError,
   IComposeExtension,
   IMessagingExtensionCommand,
@@ -21,35 +20,34 @@ import "reflect-metadata";
 import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 import { ErrorContextMW } from "../../../../common/globalVars";
+import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 import { FileNotFoundError, JSONSyntaxError, ReadFileError } from "../../../../error/common";
 import { CapabilityOptions } from "../../../../question/constants";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
 import { expandEnvironmentVariable } from "../../../utils/common";
-import { WrapDriverContext } from "../../util/wrapUtil";
+import { ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
 import {
-  getBotsTplExistingAppBasedOnVersion,
-  getBotsTplForCommandAndResponseBasedOnVersion,
-  getBotsTplForNotificationBasedOnVersion,
-  getBotsTplBasedOnVersion,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_M365_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
-  getConfigurableTabsTplExistingAppBasedOnVersion,
-  getConfigurableTabsTplBasedOnVersion,
   Constants,
   STATIC_TABS_MAX_ITEMS,
   STATIC_TABS_TPL_EXISTING_APP,
   STATIC_TABS_TPL_V3,
   WEB_APPLICATION_INFO_V3,
+  getBotsTplBasedOnVersion,
+  getBotsTplExistingAppBasedOnVersion,
+  getBotsTplForCommandAndResponseBasedOnVersion,
+  getBotsTplForNotificationBasedOnVersion,
+  getConfigurableTabsTplBasedOnVersion,
+  getConfigurableTabsTplExistingAppBasedOnVersion,
 } from "../constants";
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { getResolvedManifest } from "./utils";
-import { ManifestType } from "../../../utils/envFunctionUtils";
-import { DriverContext } from "../../interface/commonArgs";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {

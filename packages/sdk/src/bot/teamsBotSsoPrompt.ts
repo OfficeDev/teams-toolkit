@@ -31,8 +31,6 @@ import { v4 as uuidv4 } from "uuid";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { validateScopesType, formatString, parseJwt } from "../util/utils";
-import { TeamsFx } from "../core/teamsfx";
-import { IdentityType } from "../models/identityType";
 import { OnBehalfOfCredentialAuthConfig } from "../models/configuration";
 import { OnBehalfOfUserCredential } from "../credential/onBehalfOfUserCredential";
 
@@ -136,17 +134,6 @@ export class TeamsBotSsoPrompt extends Dialog {
   /**
    * Constructor of TeamsBotSsoPrompt.
    *
-   * @param {TeamsFx} teamsfx - Used to provide configuration and auth
-   * @param {string} dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
-   * @param {TeamsBotSsoPromptSettings} settings Settings used to configure the prompt.
-   *
-   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
-   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   */
-  constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);
-  /**
-   * Constructor of TeamsBotSsoPrompt.
-   *
    * @param {OnBehalfOfCredentialAuthConfig} authConfig - Used to provide configuration and auth
    * @param {string} initiateLoginEndpoint - Login URL for Teams to redirect to
    * @param {string} dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
@@ -160,19 +147,12 @@ export class TeamsBotSsoPrompt extends Dialog {
     initiateLoginEndpoint: string,
     dialogId: string,
     settings: TeamsBotSsoPromptSettings
-  );
-  constructor(authConfig: TeamsFx | OnBehalfOfCredentialAuthConfig, ...args: any) {
-    super(arguments.length === 3 ? args[0] : args[1]);
-    if ((authConfig as TeamsFx).getCredential) {
-      const teamsfx = authConfig as TeamsFx;
-      this.authConfig = this.loadAndValidateConfig(teamsfx);
-      this.initiateLoginEndpoint = teamsfx.getConfig("initiateLoginEndpoint");
-      this.settings = args[1] as TeamsBotSsoPromptSettings;
-    } else {
-      this.initiateLoginEndpoint = args[0];
-      this.authConfig = authConfig as OnBehalfOfCredentialAuthConfig;
-      this.settings = args[2] as TeamsBotSsoPromptSettings;
-    }
+  ) {
+    super(dialogId);
+
+    this.initiateLoginEndpoint = initiateLoginEndpoint;
+    this.authConfig = authConfig;
+    this.settings = settings;
 
     validateScopesType(this.settings.scopes);
 
@@ -281,60 +261,6 @@ export class TeamsBotSsoPrompt extends Dialog {
 
       return Dialog.EndOfTurn;
     }
-  }
-
-  private loadAndValidateConfig(teamsfx: TeamsFx): OnBehalfOfCredentialAuthConfig {
-    if (teamsfx.getIdentityType() !== IdentityType.User) {
-      const errorMsg = formatString(
-        ErrorMessage.IdentityTypeNotSupported,
-        teamsfx.getIdentityType().toString(),
-        "TeamsBotSsoPrompt"
-      );
-      internalLogger.error(errorMsg);
-      throw new ErrorWithCode(errorMsg, ErrorCode.IdentityTypeNotSupported);
-    }
-
-    const missingConfigurations: string[] = [];
-
-    if (!teamsfx.hasConfig("initiateLoginEndpoint")) {
-      missingConfigurations.push("initiateLoginEndpoint");
-    }
-
-    if (!teamsfx.hasConfig("clientId")) {
-      missingConfigurations.push("clientId");
-    }
-
-    if (!teamsfx.hasConfig("tenantId")) {
-      missingConfigurations.push("tenantId");
-    }
-
-    if (missingConfigurations.length != 0) {
-      const errorMsg = formatString(
-        ErrorMessage.InvalidConfiguration,
-        missingConfigurations.join(", "),
-        "undefined"
-      );
-      internalLogger.error(errorMsg);
-      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
-    }
-
-    let authConfig: OnBehalfOfCredentialAuthConfig;
-    if (teamsfx.getConfig("clientSecret")) {
-      authConfig = {
-        authorityHost: teamsfx.getConfig("authorityHost"),
-        clientId: teamsfx.getConfig("clientId"),
-        tenantId: teamsfx.getConfig("tenantId"),
-        clientSecret: teamsfx.getConfig("clientSecret"),
-      };
-    } else {
-      authConfig = {
-        authorityHost: teamsfx.getConfig("authorityHost"),
-        clientId: teamsfx.getConfig("clientId"),
-        tenantId: teamsfx.getConfig("tenantId"),
-        certificateContent: teamsfx.getConfig("certificateContent"),
-      };
-    }
-    return authConfig;
   }
 
   /**

@@ -9,17 +9,13 @@
 import { AccessToken } from '@azure/identity';
 import { Activity } from 'botbuilder';
 import { Attachment } from 'botbuilder';
-import { AuthenticationProvider } from '@microsoft/microsoft-graph-client';
 import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
-import { BotFrameworkAdapter } from 'botbuilder';
 import { CardAction } from 'botbuilder';
 import { CardImage } from 'botbuilder';
 import { ChannelInfo } from 'botbuilder';
-import { Client } from '@microsoft/microsoft-graph-client';
 import { CloudAdapter } from 'botbuilder';
 import { ComponentDialog } from 'botbuilder-dialogs';
-import { ConnectionConfig } from 'tedious';
 import { ConversationReference } from 'botbuilder';
 import { ConversationState } from 'botbuilder';
 import { Dialog } from 'botbuilder-dialogs';
@@ -45,8 +41,6 @@ import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 import { TurnContext } from 'botbuilder';
 import { UserState } from 'botbuilder';
-import { WebRequest } from 'botbuilder';
-import { WebResponse } from 'botbuilder';
 
 // @public
 export enum AdaptiveCardResponse {
@@ -70,23 +64,11 @@ export class ApiKeyProvider implements AuthProvider {
 // @public
 export class AppCredential implements TokenCredential {
     constructor(authConfig: AppCredentialAuthConfig);
-    constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
 }
 
 // @public
 export type AppCredentialAuthConfig = OnBehalfOfCredentialAuthConfig;
-
-// @public @deprecated
-export interface AuthenticationConfiguration {
-    readonly applicationIdUri?: string;
-    readonly authorityHost?: string;
-    readonly certificateContent?: string;
-    readonly clientId?: string;
-    readonly clientSecret?: string;
-    readonly initiateLoginEndpoint?: string;
-    readonly tenantId?: string;
-}
 
 // @public
 export interface AuthProvider {
@@ -109,19 +91,19 @@ export class BearerTokenAuthProvider implements AuthProvider {
 
 declare namespace BotBuilderCloudAdapter {
     export {
-        ConversationOptions_2 as ConversationOptions,
-        NotificationOptions_3 as NotificationOptions,
-        ConversationBot_2 as ConversationBot,
+        ConversationOptions,
+        NotificationOptions_2 as NotificationOptions,
+        ConversationBot,
         BotSsoExecutionDialog,
-        Channel_2 as Channel,
-        Member_2 as Member,
-        NotificationBot_2 as NotificationBot,
-        sendAdaptiveCard_2 as sendAdaptiveCard,
-        sendMessage_2 as sendMessage,
-        TeamsBotInstallation_2 as TeamsBotInstallation,
-        SearchScope_2 as SearchScope,
-        CommandBot_2 as CommandBot,
-        CardActionBot_2 as CardActionBot
+        Channel,
+        Member,
+        NotificationBot,
+        sendAdaptiveCard,
+        sendMessage,
+        TeamsBotInstallation,
+        SearchScope,
+        CommandBot,
+        CardActionBot
     }
 }
 export { BotBuilderCloudAdapter }
@@ -130,9 +112,9 @@ export { BotBuilderCloudAdapter }
 export interface BotSsoConfig {
     aad: {
         scopes: string[];
-    } & ((OnBehalfOfCredentialAuthConfig & {
+    } & OnBehalfOfCredentialAuthConfig & {
         initiateLoginEndpoint: string;
-    }) | AuthenticationConfiguration);
+    };
     // (undocumented)
     dialog?: {
         CustomBotSsoExecutionActivityHandler?: new (ssoConfig: BotSsoConfig) => BotSsoExecutionActivityHandler;
@@ -156,7 +138,6 @@ export interface BotSsoExecutionActivityHandler {
 
 // @public
 export class BotSsoExecutionDialog extends ComponentDialog {
-    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
     constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogName?: string);
     addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
     protected onEndDialog(context: TurnContext): Promise<void>;
@@ -166,15 +147,8 @@ export class BotSsoExecutionDialog extends ComponentDialog {
 // @public (undocumented)
 export type BotSsoExecutionDialogHandler = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage) => Promise<void>;
 
-// @public @deprecated (undocumented)
-export class CardActionBot {
-    constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
-    registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
-    registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler[]): void;
-}
-
 // @public
-class CardActionBot_2 {
+class CardActionBot {
     constructor(adapter: CloudAdapter, options?: CardActionOptions);
     registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
     registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler[]): void;
@@ -192,37 +166,18 @@ export class CertificateAuthProvider implements AuthProvider {
 }
 
 // @public
-export class Channel implements NotificationTarget {
+class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
     readonly parent: TeamsBotInstallation;
-    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-    readonly type: NotificationTargetType;
-}
-
-// @public
-class Channel_2 implements NotificationTarget {
-    constructor(parent: TeamsBotInstallation_2, info: ChannelInfo);
-    readonly info: ChannelInfo;
-    readonly parent: TeamsBotInstallation_2;
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     // Warning: (ae-forgotten-export) The symbol "MessageResponse" needs to be exported by the entry point index.d.ts
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
 }
 
-// @public @deprecated (undocumented)
-export class CommandBot {
-    constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
-    registerCommand(command: TeamsFxBotCommandHandler): void;
-    registerCommands(commands: TeamsFxBotCommandHandler[]): void;
-    registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void;
-    registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void;
-}
-
 // @public
-class CommandBot_2 {
+class CommandBot {
     constructor(adapter: CloudAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
     registerCommand(command: TeamsFxBotCommandHandler): void;
     registerCommands(commands: TeamsFxBotCommandHandler[]): void;
@@ -242,46 +197,18 @@ export interface CommandOptions {
     ssoCommands?: TeamsFxBotSsoCommandHandler[];
 }
 
-// @public @deprecated (undocumented)
-export class ConversationBot {
+// @public
+class ConversationBot {
     constructor(options: ConversationOptions);
-    readonly adapter: BotFrameworkAdapter;
+    readonly adapter: CloudAdapter;
     readonly cardAction?: CardActionBot;
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
-    requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
-}
-
-// @public
-class ConversationBot_2 {
-    constructor(options: ConversationOptions_2);
-    readonly adapter: CloudAdapter;
-    readonly cardAction?: CardActionBot_2;
-    readonly command?: CommandBot_2;
-    readonly notification?: NotificationBot_2;
     requestHandler(req: Request_2, res: Response_2, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
 }
 
-// @public @deprecated
-export interface ConversationOptions {
-    adapter?: BotFrameworkAdapter;
-    adapterConfig?: {
-        [key: string]: unknown;
-    };
-    cardAction?: CardActionOptions & {
-        enabled?: boolean;
-    };
-    command?: CommandOptions & {
-        enabled?: boolean;
-    };
-    notification?: NotificationOptions_2 & {
-        enabled?: boolean;
-    };
-    ssoConfig?: BotSsoConfig;
-}
-
 // @public
-interface ConversationOptions_2 {
+interface ConversationOptions {
     adapter?: CloudAdapter;
     adapterConfig?: {
         [key: string]: unknown;
@@ -292,7 +219,7 @@ interface ConversationOptions_2 {
     command?: CommandOptions & {
         enabled?: boolean;
     };
-    notification?: NotificationOptions_3 & {
+    notification?: NotificationOptions_2 & {
         enabled?: boolean;
     };
     ssoConfig?: BotSsoConfig;
@@ -312,14 +239,6 @@ export interface ConversationReferenceStoreAddOptions {
 
 // @public
 export function createApiClient(apiEndpoint: string, authProvider: AuthProvider): AxiosInstance;
-
-// Warning: (ae-forgotten-export) The symbol "TeamsFxConfiguration" needs to be exported by the entry point index.d.ts
-//
-// @public @deprecated
-export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
-
-// @public @deprecated
-export function createMicrosoftGraphClientWithCredential(credential: TokenCredential, scopes?: string | string[]): Client;
 
 // @public
 export function createPemCertOption(cert: string | Buffer, key: string | Buffer, options?: {
@@ -371,17 +290,11 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
     resources?: string[];
 }
 
-// @public @deprecated
-export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
-
 // @public
 export function handleMessageExtensionLinkQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
 
 // @public
 export function handleMessageExtensionQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
-
-// @public @deprecated
-export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
 export enum IdentityType {
@@ -423,20 +336,10 @@ export enum LogLevel {
 }
 
 // @public
-export class Member implements NotificationTarget {
+class Member implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
     readonly account: TeamsChannelAccount;
     readonly parent: TeamsBotInstallation;
-    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-    readonly type: NotificationTargetType;
-}
-
-// @public
-class Member_2 implements NotificationTarget {
-    constructor(parent: TeamsBotInstallation_2, account: TeamsChannelAccount);
-    readonly account: TeamsChannelAccount;
-    readonly parent: TeamsBotInstallation_2;
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
@@ -461,48 +364,21 @@ export interface MessageExtensionTokenResponse extends TokenResponse {
     ssoTokenExpiration: string;
 }
 
-// @public @deprecated
-export class MsGraphAuthProvider implements AuthenticationProvider {
-    constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
-    constructor(credential: TokenCredential, scopes?: string | string[]);
-    getAccessToken(): Promise<string>;
-}
-
-// @public @deprecated (undocumented)
-export class NotificationBot {
-    constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
+// @public
+class NotificationBot {
+    constructor(adapter: CloudAdapter, options?: NotificationOptions_2);
+    buildTeamsBotInstallation(conversationReference: Partial<ConversationReference>): TeamsBotInstallation | null;
     findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
     findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member[]>;
     findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel | undefined>;
     findMember(predicate: (member: Member) => Promise<boolean>, scope?: SearchScope): Promise<Member | undefined>;
-    installations(): Promise<TeamsBotInstallation[]>;
-}
-
-// @public
-class NotificationBot_2 {
-    constructor(adapter: CloudAdapter, options?: NotificationOptions_3);
-    buildTeamsBotInstallation(conversationReference: Partial<ConversationReference>): TeamsBotInstallation_2 | null;
-    findAllChannels(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2[]>;
-    findAllMembers(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2[]>;
-    findChannel(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2 | undefined>;
-    findMember(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2 | undefined>;
-    getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation_2>>;
-    // @deprecated
-    installations(): Promise<TeamsBotInstallation_2[]>;
+    getPagedInstallations(pageSize?: number, continuationToken?: string, validationEnabled?: boolean): Promise<PagedData<TeamsBotInstallation>>;
     validateInstallation(conversationReference: Partial<ConversationReference>): Promise<boolean>;
 }
 
-// @public @deprecated
-interface NotificationOptions_2 {
-    storage?: NotificationTargetStorage;
-}
-export { NotificationOptions_2 as NotificationOptions }
-
 // @public
-interface NotificationOptions_3 {
+interface NotificationOptions_2 {
     botAppId?: string;
-    // @deprecated
-    storage?: NotificationTargetStorage;
     store?: ConversationReferenceStore;
 }
 
@@ -511,20 +387,6 @@ export interface NotificationTarget {
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
-}
-
-// @public @deprecated
-export interface NotificationTargetStorage {
-    delete(key: string): Promise<void>;
-    list(): Promise<{
-        [key: string]: unknown;
-    }[]>;
-    read(key: string): Promise<{
-        [key: string]: unknown;
-    } | undefined>;
-    write(key: string, object: {
-        [key: string]: unknown;
-    }): Promise<void>;
 }
 
 // @public
@@ -550,7 +412,6 @@ export type OnBehalfOfCredentialAuthConfig = {
 // @public
 export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string, config: OnBehalfOfCredentialAuthConfig);
-    constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
 }
@@ -562,7 +423,7 @@ export interface PagedData<T> {
 }
 
 // @public
-export enum SearchScope {
+enum SearchScope {
     All = 7,
     Channel = 4,
     Group = 2,
@@ -570,24 +431,10 @@ export enum SearchScope {
 }
 
 // @public
-enum SearchScope_2 {
-    All = 7,
-    Channel = 4,
-    Group = 2,
-    Person = 1
-}
+function sendAdaptiveCard(target: NotificationTarget, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 
 // @public
-export function sendAdaptiveCard(target: NotificationTarget, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-
-// @public
-function sendAdaptiveCard_2(target: NotificationTarget, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-
-// @public
-export function sendMessage(target: NotificationTarget, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-
-// @public
-function sendMessage_2(target: NotificationTarget, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
+function sendMessage(target: NotificationTarget, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 
 // @public
 export function setLogFunction(logFunction?: LogFunction): void;
@@ -598,30 +445,15 @@ export function setLogger(logger?: Logger): void;
 // @public
 export function setLogLevel(level: LogLevel): void;
 
-// @public @deprecated (undocumented)
-export class TeamsBotInstallation implements NotificationTarget {
-    constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);
-    readonly adapter: BotFrameworkAdapter;
-    channels(): Promise<Channel[]>;
-    readonly conversationReference: Partial<ConversationReference>;
-    getTeamDetails(): Promise<TeamDetails | undefined>;
-    members(): Promise<Member[]>;
-    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
-    readonly type?: NotificationTargetType;
-}
-
 // @public
-class TeamsBotInstallation_2 implements NotificationTarget {
+class TeamsBotInstallation implements NotificationTarget {
     constructor(adapter: CloudAdapter, conversationReference: Partial<ConversationReference>, botAppId: string);
     readonly adapter: CloudAdapter;
     readonly botAppId: string;
-    channels(): Promise<Channel_2[]>;
+    channels(): Promise<Channel[]>;
     readonly conversationReference: Partial<ConversationReference>;
-    getPagedMembers(pageSize?: number, continuationToken?: string): Promise<PagedData<Member_2>>;
+    getPagedMembers(pageSize?: number, continuationToken?: string): Promise<PagedData<Member>>;
     getTeamDetails(): Promise<TeamDetails | undefined>;
-    // @deprecated
-    members(): Promise<Member_2[]>;
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
@@ -629,7 +461,6 @@ class TeamsBotInstallation_2 implements NotificationTarget {
 
 // @public
 export class TeamsBotSsoPrompt extends Dialog {
-    constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);
     constructor(authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogId: string, settings: TeamsBotSsoPromptSettings);
     beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
     continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
@@ -646,19 +477,6 @@ export interface TeamsBotSsoPromptSettings {
 export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
     ssoToken: string;
     ssoTokenExpiration: string;
-}
-
-// @public @deprecated
-export class TeamsFx implements TeamsFxConfiguration {
-    constructor(identityType?: IdentityType, customConfig?: Record<string, string> | AuthenticationConfiguration);
-    getConfig(key: string): string;
-    getConfigs(): Record<string, string>;
-    getCredential(): TokenCredential;
-    getIdentityType(): IdentityType;
-    getUserInfo(resources?: string[]): Promise<UserInfo>;
-    hasConfig(key: string): boolean;
-    login(scopes: string | string[], resources?: string[]): Promise<void>;
-    setSsoToken(ssoToken: string): TeamsFx;
 }
 
 // @public
@@ -683,7 +501,6 @@ export interface TeamsFxBotSsoCommandHandler {
 // @public
 export class TeamsUserCredential implements TokenCredential {
     constructor(authConfig: TeamsUserCredentialAuthConfig);
-    constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(resources?: string[]): Promise<UserInfo>;
     login(scopes: string | string[], resources?: string[]): Promise<void>;

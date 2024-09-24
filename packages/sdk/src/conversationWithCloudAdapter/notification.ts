@@ -23,7 +23,7 @@ import {
 } from "../conversation/interface";
 import { NotificationOptions } from "./interface";
 import { NotificationMiddleware } from "../conversation/middlewares/notificationMiddleware";
-import { DefaultConversationReferenceStore, LocalFileStorage } from "../conversation/storage";
+import { DefaultConversationReferenceStore } from "../conversation/storage";
 import * as utils from "../conversation/utils";
 
 /**
@@ -519,26 +519,6 @@ export class TeamsBotInstallation implements NotificationTarget {
   }
 
   /**
-   * Get members from this bot installation.
-   *
-   * @returns An array of members from where the bot is installed.
-   *
-   * @deprecated Use `getPagedMembers` instead.
-   */
-  public async members(): Promise<Member[]> {
-    const members: Member[] = [];
-
-    let continuationToken: string | undefined;
-    do {
-      const pagedData = await this.getPagedMembers(undefined, continuationToken);
-      continuationToken = pagedData.continuationToken;
-      members.push(...pagedData.data);
-    } while (continuationToken);
-
-    return members;
-  }
-
-  /**
    * Get team details from this bot installation
    *
    * @returns The team details if bot is installed into a team, otherwise returns `undefined`.
@@ -585,13 +565,9 @@ export class NotificationBot {
     if (options?.store) {
       this.conversationReferenceStore = options.store;
     } else {
-      const storage =
-        options?.storage ??
-        new LocalFileStorage(
-          path.resolve(process.env.RUNNING_ON_AZURE === "1" ? process.env.TEMP ?? "./" : "./")
-        );
-
-      this.conversationReferenceStore = new DefaultConversationReferenceStore(storage);
+      this.conversationReferenceStore = new DefaultConversationReferenceStore(
+        path.resolve(process.env.RUNNING_ON_AZURE === "1" ? process.env.TEMP ?? "./" : "./")
+      );
     }
 
     this.adapter = adapter.use(
@@ -689,28 +665,6 @@ export class NotificationBot {
   }
 
   /**
-   * Get all targets where the bot is installed.
-   *
-   * @remarks
-   * The result is retrieving from the persisted storage.
-   *
-   * @returns An array of {@link TeamsBotInstallation}.
-   *
-   * @deprecated Use getPagedInstallations instead.
-   */
-  public async installations(): Promise<TeamsBotInstallation[]> {
-    let continuationToken: string | undefined;
-    const targets: TeamsBotInstallation[] = [];
-    do {
-      const result = await this.getPagedInstallations(undefined, continuationToken);
-      continuationToken = result.continuationToken;
-      targets.push(...result.data);
-    } while (continuationToken);
-
-    return targets;
-  }
-
-  /**
    * Return the first {@link Member} where predicate is true, and undefined otherwise.
    *
    * @param predicate - Find calls predicate once for each member of the installation,
@@ -727,7 +681,15 @@ export class NotificationBot {
   ): Promise<Member | undefined> {
     for (const target of await this.installations()) {
       if (this.matchSearchScope(target, scope)) {
-        for (const member of await target.members()) {
+        const members: Member[] = [];
+        let continuationToken: string | undefined;
+        do {
+          const pagedData = await target.getPagedMembers(undefined, continuationToken);
+          continuationToken = pagedData.continuationToken;
+          members.push(...pagedData.data);
+        } while (continuationToken);
+
+        for (const member of members) {
           if (await predicate(member)) {
             return member;
           }
@@ -781,7 +743,15 @@ export class NotificationBot {
     const members: Member[] = [];
     for (const target of await this.installations()) {
       if (this.matchSearchScope(target, scope)) {
-        for (const member of await target.members()) {
+        const members: Member[] = [];
+        let continuationToken: string | undefined;
+        do {
+          const pagedData = await target.getPagedMembers(undefined, continuationToken);
+          continuationToken = pagedData.continuationToken;
+          members.push(...pagedData.data);
+        } while (continuationToken);
+
+        for (const member of members) {
           if (await predicate(member)) {
             members.push(member);
           }
@@ -826,6 +796,27 @@ export class NotificationBot {
       (target.type === NotificationTargetType.Group && (scope & SearchScope.Group) !== 0) ||
       (target.type === NotificationTargetType.Person && (scope & SearchScope.Person) !== 0)
     );
+  }
+
+  /**
+   * @internal
+   * Get all targets where the bot is installed.
+   *
+   * @remarks
+   * The result is retrieving from the persisted storage.
+   *
+   * @returns An array of {@link TeamsBotInstallation}
+   */
+  private async installations(): Promise<TeamsBotInstallation[]> {
+    let continuationToken: string | undefined;
+    const targets: TeamsBotInstallation[] = [];
+    do {
+      const result = await this.getPagedInstallations(undefined, continuationToken);
+      continuationToken = result.continuationToken;
+      targets.push(...result.data);
+    } while (continuationToken);
+
+    return targets;
   }
 }
 

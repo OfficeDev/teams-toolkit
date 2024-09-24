@@ -7,19 +7,11 @@ export { AppCredential } from "./credential/appCredential.browser";
 export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential.browser";
 export { TeamsUserCredential } from "./credential/teamsUserCredential.browser";
 
-export { MsGraphAuthProvider } from "./core/msGraphAuthProvider";
-export {
-  createMicrosoftGraphClient,
-  createMicrosoftGraphClientWithCredential,
-} from "./core/msGraphClientProvider";
-export { getTediousConnectionConfig } from "./core/defaultTediousConnectionConfiguration.browser";
-
 export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoPrompt.browser";
 export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResponse";
 
 export { UserInfo } from "./models/userinfo";
 export {
-  AuthenticationConfiguration,
   AppCredentialAuthConfig,
   OnBehalfOfCredentialAuthConfig,
   TeamsUserCredentialAuthConfig,
@@ -48,7 +40,6 @@ export {
   createPfxCertOption,
 } from "./apiClient/certificateAuthProvider.browser";
 
-export { TeamsFx } from "./core/teamsfx.browser";
 export { IdentityType } from "./models/identityType";
 
 export {
@@ -56,10 +47,7 @@ export {
   CommandMessage,
   CommandOptions,
   CardActionOptions,
-  ConversationOptions,
-  NotificationOptions,
   NotificationTarget,
-  NotificationTargetStorage,
   NotificationTargetType,
   InvokeResponseErrorCode,
   TriggerPatterns,
@@ -70,22 +58,8 @@ export {
   BotSsoConfig,
   BotSsoExecutionDialogHandler,
 } from "./conversation/interface";
-export { ConversationBot } from "./conversation/conversation.browser";
 export { BotSsoExecutionDialog } from "./conversation/sso/botSsoExecutionDialog.browser";
-export {
-  Channel,
-  Member,
-  NotificationBot,
-  sendAdaptiveCard,
-  sendMessage,
-  TeamsBotInstallation,
-} from "./conversation/notification.browser";
-export { CommandBot } from "./conversation/command.browser";
-export { CardActionBot } from "./conversation/cardAction.browser";
-export {
-  handleMessageExtensionQueryWithToken,
-  handleMessageExtensionQueryWithSSO,
-} from "./messageExtension/executeWithSSO.browser";
+export { handleMessageExtensionQueryWithSSO } from "./messageExtension/executeWithSSO.browser";
 export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";
 
 import * as BotBuilderCloudAdapter from "./conversationWithCloudAdapter/conversationWithCloudAdapter.browser";

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "2.3.2",
+  "version": "3.0.0-rc",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -50,14 +50,12 @@
     "@azure/msal-node": "^2.13.1",
     "adaptivecards-templating": "^2.3.1",
     "adaptive-expressions": "^4.23.0",
-    "@microsoft/microsoft-graph-client": "^3.0.7",
     "axios": "^1.7.5",
     "botbuilder": "^4.23.0",
     "botbuilder-dialogs": "^4.23.0",
     "botframework-connector": "^4.23.0",
     "botframework-schema": "^4.23.0",
     "jwt-decode": "^3.1.2",
-    "tedious": "^14.3.0",
     "uuid": "^8.3.2"
   },
   "peerDependencies": {
@@ -80,7 +78,6 @@
     "@types/mochawesome": "^6.2.1",
     "@types/node": "^18.0.0",
     "@types/sinon": "^10.0.6",
-    "@types/tedious": "^4.0.5",
     "@types/url-join": "^4.0.1",
     "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^5.13.0",

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  BotFrameworkAdapter,
   ConversationState,
   ConversationReference,
   UserState,
@@ -13,10 +12,7 @@ import {
   SigninStateVerificationQuery,
 } from "botbuilder";
 import { TeamsBotSsoPromptTokenResponse } from "../bot/teamsBotSsoPromptTokenResponse";
-import {
-  AuthenticationConfiguration,
-  OnBehalfOfCredentialAuthConfig,
-} from "../models/configuration";
+import { OnBehalfOfCredentialAuthConfig } from "../models/configuration";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -88,64 +84,6 @@ export interface NotificationTarget {
     card: unknown,
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse>;
-}
-
-/**
- * Interface for a storage provider that stores and retrieves notification target references.
- *
- * @deprecated Use ConversationReferenceStore to customize the way
- * to persist bot notification connections instead.
- */
-export interface NotificationTargetStorage {
-  /**
-   * Read one notification target by its key.
-   *
-   * @param key - the key of a notification target.
-   *
-   * @returns - the notification target. Or undefined if not found.
-   */
-  read(key: string): Promise<{ [key: string]: unknown } | undefined>;
-
-  /**
-   * List all stored notification targets.
-   *
-   * @returns - an array of notification target. Or an empty array if nothing is stored.
-   */
-  list(): Promise<{ [key: string]: unknown }[]>;
-
-  /**
-   * Write one notification target by its key.
-   *
-   * @param key - the key of a notification target.
-   * @param object - the notification target.
-   */
-  write(key: string, object: { [key: string]: unknown }): Promise<void>;
-
-  /**
-   * Delete one notification target by its key.
-   *
-   * @param key - the key of a notification target.
-   */
-  delete(key: string): Promise<void>;
-}
-
-/**
- * Options to initialize {@link NotificationBot}.
- * @deprecated Please use BotBuilderCloudAdapter.NotificationOptions instead.
- */
-export interface NotificationOptions {
-  /**
-   * An optional storage to persist bot notification connections.
-   *
-   * @remarks
-   * If `storage` is not provided, a default local file storage will be used,
-   * which stores notification connections into:
-   *   - ".notification.localstore.json" if running locally
-   *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
-   *
-   * It's recommended to use your own shared storage for production environment.
-   */
-  storage?: NotificationTargetStorage;
 }
 
 /**
@@ -402,12 +340,10 @@ export interface BotSsoConfig {
      * The list of scopes for which the token will have access
      */
     scopes: string[];
-  } & (
-    | (OnBehalfOfCredentialAuthConfig & { initiateLoginEndpoint: string })
-    | AuthenticationConfiguration
-  );
+  } & OnBehalfOfCredentialAuthConfig & { initiateLoginEndpoint: string };
 
   dialog?: {
+    // eslint-disable-next-line no-secrets/no-secrets
     /**
      * Custom sso execution activity handler class which should implement the interface {@link BotSsoExecutionActivityHandler}. If not provided, it will use {@link DefaultBotSsoExecutionActivityHandler} by default
      */
@@ -451,65 +387,7 @@ export interface BotSsoConfig {
   };
 }
 
-/**
- * Options to initialize {@link ConversationBot}
- * @deprecated Please use BotBuilderCloudAdapter.ConversationOptions instead.
- */
-export interface ConversationOptions {
-  /**
-   * The bot adapter. If not provided, a default adapter will be created:
-   * - with `adapterConfig` as constructor parameter.
-   * - with a default error handler that logs error to console, sends trace activity, and sends error message to user.
-   *
-   * @remarks
-   * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
-   */
-  adapter?: BotFrameworkAdapter;
-
-  /**
-   * If `adapter` is not provided, this `adapterConfig` will be passed to the new `BotFrameworkAdapter` when created internally.
-   *
-   * @remarks
-   * If neither `adapter` nor `adapterConfig` is provided, will use BOT_ID and BOT_PASSWORD from environment variables.
-   */
-  adapterConfig?: { [key: string]: unknown };
-
-  /**
-   * Configurations for sso command bot
-   */
-  ssoConfig?: BotSsoConfig;
-
-  /**
-   * The command part.
-   */
-  command?: CommandOptions & {
-    /**
-     * Whether to enable command or not.
-     */
-    enabled?: boolean;
-  };
-
-  /**
-   * The notification part.
-   */
-  notification?: NotificationOptions & {
-    /**
-     * Whether to enable notification or not.
-     */
-    enabled?: boolean;
-  };
-
-  /**
-   * The adaptive card action handler part.
-   */
-  cardAction?: CardActionOptions & {
-    /**
-     * Whether to enable adaptive card actions or not.
-     */
-    enabled?: boolean;
-  };
-}
-
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Interface for user to customize SSO execution activity handler
  *
@@ -532,6 +410,7 @@ export interface ConversationOptions {
  * For details information about how to implement a BotSsoExecutionActivityHandler, please refer DefaultBotSsoExecutionActivityHandler class source code: https://aka.ms/teamsfx-default-sso-execution-activity-handler
  */
 export interface BotSsoExecutionActivityHandler {
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link BotSsoExecutionDialog}
    * @param handler {@link BotSsoExecutionDialogHandler} callback function

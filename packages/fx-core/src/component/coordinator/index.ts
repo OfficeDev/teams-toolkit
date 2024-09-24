@@ -11,6 +11,7 @@ import {
   InputsWithProjectPath,
   Platform,
   Result,
+  TeamsAppManifest,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -65,6 +66,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { featureFlagManager, FeatureFlags } from "../../common/featureFlags";
+import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
 
 const M365Actions = [
   "botAadApp/create",
@@ -215,6 +217,10 @@ class Coordinator {
         return err(res.error);
       }
     }
+
+    const trimRes = await manifestUtils.trimManifestShortName(projectPath);
+    if (trimRes.isErr()) return err(trimRes.error);
+
     return ok({ projectPath: projectPath, warnings });
   }
 

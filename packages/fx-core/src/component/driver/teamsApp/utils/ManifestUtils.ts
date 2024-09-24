@@ -393,6 +393,32 @@ export class ManifestUtils {
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     return ok(manifest);
   }
+
+  /**
+   * trim the short name in manifest to make sure it is no more than 25 length
+   */
+  async trimManifestShortName(
+    projectPath: string,
+    maxLength = 25
+  ): Promise<Result<undefined, FxError>> {
+    const manifestPath = this.getTeamsAppManifestPath(projectPath);
+    const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
+    const shortName = manifest.name.short;
+    let hasSuffix = false;
+    let trimmedName = shortName;
+    if (shortName.includes("${{APP_NAME_SUFFIX}}")) {
+      hasSuffix = true;
+      trimmedName = shortName.replace("${{APP_NAME_SUFFIX}}", "");
+    }
+    if (trimmedName.length <= maxLength) return ok(undefined);
+    let newShortName = trimmedName.replace(/\s/g, "").slice(0, maxLength);
+    if (hasSuffix) {
+      newShortName += "${{APP_NAME_SUFFIX}}";
+    }
+    manifest.name.short = newShortName;
+    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+    return ok(undefined);
+  }
 }
 
 export const manifestUtils = new ManifestUtils();

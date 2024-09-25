@@ -60,7 +60,7 @@ import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
-import { Utils } from "./utils/utils";
+import { getShellOptionValue, Utils } from "./utils/utils";
 
 export class SPFxGenerator {
   @hooks([
@@ -350,6 +350,7 @@ export class SPFxGenerator {
           {
             timeout: 2 * 60 * 1000,
             env: yoEnv,
+            shell: getShellOptionValue(),
           },
           "yo",
           ...args

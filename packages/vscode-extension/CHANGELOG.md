@@ -6,7 +6,7 @@
 
 Hotfix version.
 
-- Fixed an issue ([#12143](https://github.com/OfficeDev/teams-toolkit/issues/12143)) where users may encounter an error (`SPFx.LatestPackageInstallFailed`) when creating a Tab with an SPFx project.
+- Fixed an issue ([#12143](https://github.com/OfficeDev/teams-toolkit/issues/12143)) where users may encounter an error (`SPFx.LatestPackageInstallFailed`) when creating a Tab with SPFx project.
 - Resolved an issue ([#12384](https://github.com/OfficeDev/teams-toolkit/issues/12384)) where users may encounter an error (`AppStudioPlugin.TeamsAppCreateConflict`) during local debugging.
 
 ## 5.8.1 - May 27, 2024

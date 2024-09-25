@@ -262,7 +262,6 @@ export enum ErrorCode {
     FailedToRetrieveSsoToken = "FailedToRetrieveSsoToken",
     FailedToRunDedupStep = "FailedToRunDedupStep",
     FailedToRunSsoStep = "FailedToRunSsoStep",
-    IdentityTypeNotSupported = "IdentityTypeNotSupported",
     InternalError = "InternalError",
     InvalidCertificate = "InvalidCertificate",
     InvalidConfiguration = "InvalidConfiguration",
@@ -295,12 +294,6 @@ export function handleMessageExtensionLinkQueryWithSSO(context: TurnContext, con
 
 // @public
 export function handleMessageExtensionQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
-
-// @public
-export enum IdentityType {
-    App = "Application",
-    User = "User"
-}
 
 // @public
 export enum InvokeResponseErrorCode {

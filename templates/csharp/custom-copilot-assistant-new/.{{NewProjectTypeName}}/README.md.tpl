@@ -1,4 +1,4 @@
-# Overview of the AI Agent template new
+# Overview of the AI Agent template
 
 This template showcases a bot app that responds to user questions like an AI assistant. This enables your users to talk with the AI assistant in Teams to find information.
 

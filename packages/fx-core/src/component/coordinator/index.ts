@@ -24,6 +24,7 @@ import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
 import { AppStudioScopes, getResourceGroupInPortal } from "../../common/constants";
+import { FeatureFlags, featureFlagManager } from "../../common/featureFlags";
 import { ErrorContextMW, globalVars } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly } from "../../common/stringUtils";
@@ -54,6 +55,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { updateTeamsAppV3ForPublish } from "../driver/teamsApp/appStudio";
 import { Constants } from "../driver/teamsApp/constants";
+import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../generator/generator";
 import { Generators } from "../generator/generatorProvider";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -64,7 +66,6 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { featureFlagManager, FeatureFlags } from "../../common/featureFlags";
 
 const M365Actions = [
   "botAadApp/create",
@@ -164,7 +165,10 @@ class Coordinator {
         [TelemetryProperty.Capabilities]: capability,
         [TelemetryProperty.IsFromTdp]: (!!inputs.teamsAppFromTdp).toString(),
       });
-      if (projectType === ProjectTypeOptions.customCopilot().id) {
+      if (
+        projectType === ProjectTypeOptions.customCopilot().id ||
+        (projectType === ProjectTypeOptions.bot().id && inputs.platform === Platform.VS)
+      ) {
         merge(actionContext?.telemetryProps, {
           [TelemetryProperty.CustomCopilotRAG]: inputs["custom-copilot-rag"] ?? "",
           [TelemetryProperty.CustomCopilotAgent]: inputs["custom-copilot-agent"] ?? "",
@@ -212,6 +216,10 @@ class Coordinator {
         return err(res.error);
       }
     }
+
+    const trimRes = await manifestUtils.trimManifestShortName(projectPath);
+    if (trimRes.isErr()) return err(trimRes.error);
+
     return ok({ projectPath: projectPath, warnings });
   }
 

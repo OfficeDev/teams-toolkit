@@ -463,7 +463,7 @@ export class Notification {
 }
 
 export class CreateProjectQuestion {
-  static readonly CustomCopilot = "Custom Engine Copilot";
+  static readonly CustomCopilot = "Custom Engine Agent";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";

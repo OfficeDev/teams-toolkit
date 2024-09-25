@@ -5219,12 +5219,14 @@ describe("generateCommands", () => {
               content: {
                 "application/json": {
                   schema: {
-                    type: "object",
                     required: ["name"],
                     properties: {
                       name: {
                         type: "string",
                         description: "Name of the pet",
+                      },
+                      unknown: {
+                        type: "unknown",
                       },
                     },
                   },

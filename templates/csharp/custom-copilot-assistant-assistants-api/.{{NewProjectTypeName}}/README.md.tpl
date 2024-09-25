@@ -19,7 +19,7 @@ The app template is built using the Teams AI library, which provides the capabil
 ## Create your Assistant 
 **Before running or debugging your bot, follow these steps to setup your own Assistant.**
 
-> This app template provides script `Create-Assistant.ps1` to help create assistant. You can change the instructions and settings in the script to customize assistant.
+> This app template provides script `Create-Assistant.ps1` to help create assistant. The app assistant provides capabilities such as solving a math problem, calling functions for city weather and city nickname. Get more information in `ActionHandlers.cs`. You can change the instructions and settings in the script to customize assistant.
 {{#useOpenAI}}
 1. Ensure your OpenAI settings filled in `appsettings.TestTool.json`.
     ```

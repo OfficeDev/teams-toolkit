@@ -21,6 +21,28 @@ describe("utils", () => {
     });
   });
 
+  describe("isObjectSchema", () => {
+    it('should return true when schema.type is "object"', () => {
+      const schema: OpenAPIV3.SchemaObject = { type: "object" };
+      expect(Utils.isObjectSchema(schema)).to.be.true;
+    });
+
+    it("should return true when schema.type is not defined but schema.properties is defined", () => {
+      const schema: OpenAPIV3.SchemaObject = { properties: { prop1: { type: "string" } } };
+      expect(Utils.isObjectSchema(schema)).to.be.true;
+    });
+
+    it("should return false when schema.type is not defined and schema.properties is not defined", () => {
+      const schema: OpenAPIV3.SchemaObject = {};
+      expect(Utils.isObjectSchema(schema)).to.be.false;
+    });
+
+    it('should return false when schema.type is defined but not "object"', () => {
+      const schema: OpenAPIV3.SchemaObject = { type: "string" };
+      expect(Utils.isObjectSchema(schema)).to.be.false;
+    });
+  });
+
   describe("convertPathToCamelCase", () => {
     it("should convert a path to camel case", () => {
       const path = "this/is/a/{test}/path";

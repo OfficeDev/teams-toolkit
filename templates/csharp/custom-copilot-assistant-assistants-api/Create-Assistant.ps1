@@ -9,9 +9,11 @@ $AZURE_OPENAI_ENDPOINT = $config.Azure.OpenAIEndpoint
 $Auzre_OpenAI_DEPLOYMENTNAME = $config.Azure.OpenAIDeploymentName
 
 # check if OpenAI is enabled
-if ($config.OpenAI -and !$OPENAI_API_KEY) {
-    Write-Error "OpenAI API Key is not provided in the $configPath file."
-    exit
+if ($config.OpenAI) {
+    if (!$OPENAI_API_KEY) {
+        Write-Error "OpenAI API Key is not provided in the $configPath file."
+        exit    
+    }
 }
 else {
     # check if Azure OpenAI is enabled

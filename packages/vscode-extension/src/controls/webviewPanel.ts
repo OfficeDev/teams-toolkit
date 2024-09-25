@@ -266,6 +266,7 @@ export class WebviewPanel {
     if (this.panel && this.panel.webview) {
       let readme = this.replaceRelativeImagePaths(htmlContent, sample);
       readme = this.replaceMermaidRelatedContent(readme);
+      readme = this.addTabIndex(readme);
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleReadme,
         readme: readme,
@@ -293,6 +294,11 @@ export class WebviewPanel {
     const loaderRegex = /<span(.*)>\s.*\s*<circle(.*)<\/circle>\s.*<\/path>\s.*\s*<\/span>/gm;
     const loaderRemovedHtmlContent = htmlContent.replace(loaderRegex, "");
     return loaderRemovedHtmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
+  }
+
+  private addTabIndex(htmlContent: string): string {
+    const tabIndexRegex = /<(p|h1|h2|h3|li)/gm;
+    return htmlContent.replace(tabIndexRegex, `<$1 tabIndex="0"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {

@@ -263,7 +263,7 @@ export abstract class Validator {
     const isRequiredWithoutDefault = isRequired && schema.default === undefined;
     const isCopilot = this.projectType === ProjectType.Copilot;
 
-    if (isCopilot && this.hasNestedObjectInSchema(schema)) {
+    if (isCopilot && Utils.hasNestedObjectInSchema(schema)) {
       paramResult.isValid = false;
       paramResult.reason = [ErrorType.RequestBodyContainsNestedObject];
       return paramResult;
@@ -280,7 +280,7 @@ export abstract class Validator {
       } else {
         paramResult.optionalNum = paramResult.optionalNum + 1;
       }
-    } else if (schema.type === "object") {
+    } else if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       for (const property in properties) {
         let isRequired = false;
@@ -323,7 +323,7 @@ export abstract class Validator {
       const param = paramObject[i];
       const schema = param.schema as OpenAPIV3.SchemaObject;
 
-      if (isCopilot && this.hasNestedObjectInSchema(schema)) {
+      if (isCopilot && Utils.hasNestedObjectInSchema(schema)) {
         paramResult.isValid = false;
         paramResult.reason.push(ErrorType.ParamsContainsNestedObject);
         continue;
@@ -371,17 +371,5 @@ export abstract class Validator {
     }
 
     return paramResult;
-  }
-
-  private hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
-    if (schema.type === "object") {
-      for (const property in schema.properties) {
-        const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
-        if (nestedSchema.type === "object") {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 }

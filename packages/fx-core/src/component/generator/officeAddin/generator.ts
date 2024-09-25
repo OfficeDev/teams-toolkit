@@ -145,7 +145,7 @@ export class OfficeAddinGenerator {
         const projectLink =
           projectType === ProjectTypeOptions.officeMetaOS().id
             ? "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/json-wxpo-preview.zip"
-            : templateConfig[capability].framework[framework][language];
+            : "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/yo-office.zip";
 
         // Copy project template files from project repository
         if (projectLink) {
@@ -157,15 +157,7 @@ export class OfficeAddinGenerator {
           if (fetchRes.isErr()) {
             return err(fetchRes.error);
           }
-          let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          if (
-            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeMetaOS().id ||
-            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
-          ) {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
-          } else {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
-          }
+          const cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           await OfficeAddinGenerator.childProcessExec(cmdLine);
           const manifestPath = templateConfig[capability].manifestPath as string;
           // modify manifest guid and DisplayName

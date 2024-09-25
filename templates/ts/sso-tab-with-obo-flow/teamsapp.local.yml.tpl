@@ -137,10 +137,10 @@ deploy:
         PORT: 53000
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
-        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
-        REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
-        REACT_APP_FUNC_NAME: ${{FUNC_NAME}}
-        REACT_APP_FUNC_ENDPOINT: ${{FUNC_ENDPOINT}}
+        VITE_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        VITE_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
+        VITE_FUNC_NAME: ${{FUNC_NAME}}
+        VITE_FUNC_ENDPOINT: ${{FUNC_ENDPOINT}}
 
   # Generate runtime environment variables for backend
   - uses: file/createOrUpdateEnvironmentFile

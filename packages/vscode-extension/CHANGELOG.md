@@ -2,6 +2,13 @@
 
 > Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of pre-released versions, please refer to the [Teams Toolkit Pre-release Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/PRERELEASE.md).
 
+## 5.8.2 - Sep 26, 2024
+
+Hotfix version.
+
+- Fixed an issue ([#12143](https://github.com/OfficeDev/teams-toolkit/issues/12143)) where users may encounter an error (`SPFx.LatestPackageInstallFailed`) when creating a Tab with SPFx project.
+- Resolved an issue ([#12384](https://github.com/OfficeDev/teams-toolkit/issues/12384)) where users may encounter an error (`AppStudioPlugin.TeamsAppCreateConflict`) during local debugging.
+
 ## 5.8.1 - May 27, 2024
 
 Hotfix version.

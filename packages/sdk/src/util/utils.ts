@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ErrorWithCode, ErrorCode } from "../core/errors";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoTokenInfo";
 import { UserInfo, UserTenantIdAndLoginHint } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
@@ -183,6 +183,46 @@ export function getScopesArray(scopes: string | string[]): string[] {
 export function getAuthority(authorityHost: string, tenantId: string): string {
   const normalizedAuthorityHost = authorityHost.replace(/\/+$/g, "");
   return normalizedAuthorityHost + "/" + tenantId;
+}
+
+/**
+ * @internal
+ */
+export function validateConfig(config: any): void {
+  if (
+    config.clientId &&
+    (config.clientSecret || config.certificateContent) &&
+    config.tenantId &&
+    config.authorityHost
+  ) {
+    return;
+  }
+
+  const missingValues = [];
+
+  if (!config.clientId) {
+    missingValues.push("clientId");
+  }
+
+  if (!config.clientSecret && !config.certificateContent) {
+    missingValues.push("clientSecret or certificateContent");
+  }
+
+  if (!config.tenantId) {
+    missingValues.push("tenantId");
+  }
+
+  if (!config.authorityHost) {
+    missingValues.push("authorityHost");
+  }
+
+  const errorMsg = formatString(
+    ErrorMessage.InvalidConfiguration,
+    missingValues.join(", "),
+    "undefined"
+  );
+  internalLogger.error(errorMsg);
+  throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
 }
 
 /**

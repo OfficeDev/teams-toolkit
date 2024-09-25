@@ -40,8 +40,6 @@ export {
   createPfxCertOption,
 } from "./apiClient/certificateAuthProvider.browser";
 
-export { IdentityType } from "./models/identityType";
-
 export {
   AdaptiveCardResponse,
   CommandMessage,

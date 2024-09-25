@@ -743,15 +743,15 @@ export class NotificationBot {
     const members: Member[] = [];
     for (const target of await this.installations()) {
       if (this.matchSearchScope(target, scope)) {
-        const members: Member[] = [];
+        const targetMembers: Member[] = [];
         let continuationToken: string | undefined;
         do {
           const pagedData = await target.getPagedMembers(undefined, continuationToken);
           continuationToken = pagedData.continuationToken;
-          members.push(...pagedData.data);
+          targetMembers.push(...pagedData.data);
         } while (continuationToken);
 
-        for (const member of members) {
+        for (const member of targetMembers) {
           if (await predicate(member)) {
             members.push(member);
           }

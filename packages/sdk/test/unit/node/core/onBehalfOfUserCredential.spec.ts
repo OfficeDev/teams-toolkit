@@ -4,9 +4,9 @@
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import {
-  AuthenticationConfiguration,
   ErrorCode,
   ErrorWithCode,
+  OnBehalfOfCredentialAuthConfig,
   OnBehalfOfUserCredential,
   UserInfo,
 } from "../../../../src";
@@ -63,7 +63,7 @@ fakeCert
     uti: "test_uti",
     ver: "2.0",
   });
-  const authConfig: AuthenticationConfiguration = {
+  const authConfig: OnBehalfOfCredentialAuthConfig = {
     clientId: clientId,
     clientSecret: clientSecret,
     authorityHost: authorityHost,
@@ -130,7 +130,7 @@ fakeCert
       certificateContent: certificateContent,
       authorityHost: authorityHost,
       tenantId: tenantId,
-    });
+    } as unknown as OnBehalfOfCredentialAuthConfig);
 
     // certificateContent has higher priority than clientSecret
     assert.strictEqual(
@@ -146,7 +146,7 @@ fakeCert
         clientSecret: clientSecret,
         authorityHost: authorityHost,
         tenantId: tenantId,
-      });
+      } as unknown as OnBehalfOfCredentialAuthConfig);
     })
       .to.throw(ErrorWithCode, "clientId in configuration is invalid: undefined")
       .with.property("code", InvalidConfiguration);
@@ -158,7 +158,7 @@ fakeCert
         clientSecret: clientSecret,
         clientId: clientId,
         tenantId: tenantId,
-      });
+      } as unknown as OnBehalfOfCredentialAuthConfig);
     })
       .to.throw(ErrorWithCode, "authorityHost in configuration is invalid: undefined")
       .with.property("code", InvalidConfiguration);
@@ -170,7 +170,7 @@ fakeCert
         clientId: clientId,
         authorityHost: authorityHost,
         tenantId: tenantId,
-      });
+      } as unknown as OnBehalfOfCredentialAuthConfig);
     })
       .to.throw(
         ErrorWithCode,
@@ -185,7 +185,7 @@ fakeCert
         clientId: clientId,
         clientSecret: clientSecret,
         authorityHost: authorityHost,
-      });
+      } as unknown as OnBehalfOfCredentialAuthConfig);
     })
       .to.throw(ErrorWithCode, "tenantId in configuration is invalid: undefined")
       .with.property("code", InvalidConfiguration);
@@ -193,7 +193,7 @@ fakeCert
 
   it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, certificateContent, authorityHost, tenantId not found", async function () {
     expect(() => {
-      new OnBehalfOfUserCredential(ssoToken, {});
+      new OnBehalfOfUserCredential(ssoToken, {} as unknown as OnBehalfOfCredentialAuthConfig);
     })
       .to.throw(
         ErrorWithCode,
@@ -236,37 +236,37 @@ fakeCert
       tenantId: tenantId,
     });
     const token = await oboCredential.getToken(scope);
-    assert.strictEqual(token!.token, accessToken);
-    assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
+    assert.strictEqual(token?.token, accessToken);
+    assert.strictEqual(token?.expiresOnTimestamp, accessTokenExpNumber);
   });
 
   it("getToken should success when scopes is empty string", async function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken, authConfig);
     const token = await oboCredential.getToken("");
-    assert.strictEqual(token!.token, ssoToken);
-    assert.strictEqual(token!.expiresOnTimestamp, ssoTokenExp);
+    assert.strictEqual(token?.token, ssoToken);
+    assert.strictEqual(token?.expiresOnTimestamp, ssoTokenExp);
   });
 
   it("getToken should success when scopes is empty array", async function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken, authConfig);
     const token = await oboCredential.getToken([]);
-    assert.strictEqual(token!.token, ssoToken);
-    assert.strictEqual(token!.expiresOnTimestamp, ssoTokenExp);
+    assert.strictEqual(token?.token, ssoToken);
+    assert.strictEqual(token?.expiresOnTimestamp, ssoTokenExp);
   });
 
   it("getToken should success when scopes is string", async function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken, authConfig);
     const token = await oboCredential.getToken(scope);
-    assert.strictEqual(token!.token, accessToken);
-    assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
+    assert.strictEqual(token?.token, accessToken);
+    assert.strictEqual(token?.expiresOnTimestamp, accessTokenExpNumber);
   });
 
   it("getToken should success when scopes is string array", async function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken, authConfig);
     const scopesArray: string[] = [scope, "fake_scope_2"];
     const token = await oboCredential.getToken(scopesArray);
-    assert.strictEqual(token!.token, accessToken);
-    assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
+    assert.strictEqual(token?.token, accessToken);
+    assert.strictEqual(token?.expiresOnTimestamp, accessTokenExpNumber);
   });
 
   it("getToken should throw TokenExpiredError when get SSO token with sso token expired", async function () {
@@ -288,16 +288,16 @@ fakeCert
     const credential = new OnBehalfOfUserCredential(expiredSsoToken, authConfig);
     let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
-    assert.strictEqual(err.message!, "Sso token has already expired.");
+    assert.strictEqual(err.message, "Sso token has already expired.");
 
     err = await expect(credential.getToken("")).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
-    assert.strictEqual(err.message!, "Sso token has already expired.");
+    assert.strictEqual(err.message, "Sso token has already expired.");
 
     err = await expect(credential.getToken(scope)).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
     assert.isTrue(
-      err.message!.indexOf(
+      err.message?.indexOf(
         "Failed to get access token from AAD server, assertion is invalid because of various reasons: "
       ) >= 0
     );
@@ -320,7 +320,7 @@ fakeCert
     );
     assert.strictEqual(errorResult.code, ServiceError);
     assert.isTrue(
-      errorResult.message!.indexOf("Failed to acquire access token on behalf of user: ") >= 0
+      errorResult.message?.indexOf("Failed to acquire access token on behalf of user: ") >= 0
     );
   });
 

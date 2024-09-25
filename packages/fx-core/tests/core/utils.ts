@@ -20,7 +20,6 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  PermissionRequestProvider,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -39,7 +38,6 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { DEFAULT_PERMISSION_REQUEST } from "../../src/component/constants";
 import { MyTokenCredential } from "../plugins/solution/util";
 
 export function randomAppName() {
@@ -267,6 +265,10 @@ export class MockUserInteraction implements UserInteraction {
   async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
     return ok({ type: "success", result: true });
   }
+
+  async openFile(filePath: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
+  }
 }
 
 export class MockTools implements Tools {
@@ -278,7 +280,6 @@ export class MockTools implements Tools {
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();
   cryptoProvider = new MockCryptoProvider();
-  permissionRequestProvider = new MockPermissionRequestProvider();
 }
 
 export class MockCryptoProvider implements CryptoProvider {
@@ -288,16 +289,6 @@ export class MockCryptoProvider implements CryptoProvider {
 
   decrypt(ciphertext: string): Result<string, FxError> {
     return ok(ciphertext);
-  }
-}
-
-export class MockPermissionRequestProvider implements PermissionRequestProvider {
-  async checkPermissionRequest(): Promise<Result<undefined, FxError>> {
-    return ok(undefined);
-  }
-
-  async getPermissionRequest(): Promise<Result<string, FxError>> {
-    return ok(JSON.stringify(DEFAULT_PERMISSION_REQUEST));
   }
 }
 

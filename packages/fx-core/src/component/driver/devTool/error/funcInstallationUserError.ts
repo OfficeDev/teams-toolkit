@@ -3,7 +3,7 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
-import { DepsCheckerError } from "../../../../common/deps-checker/depsError";
+import { DepsCheckerError } from "../../../deps-checker/depsError";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "FuncInstallationError";

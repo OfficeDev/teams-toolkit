@@ -15,21 +15,21 @@ import {
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import * as sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
-import { getLockFolder, ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
-import { CallbackRegistry } from "../../../src/core/callback";
-import { CoreSource, NoProjectOpenedError } from "../../../src/core/error";
-import { randomAppName } from "../utils";
-import * as tools from "../../../src/common/tools";
+import * as sinon from "sinon";
 import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
+import * as tools from "../../../src/common/utils";
+import { CallbackRegistry } from "../../../src/core/callback";
+import { ConcurrentLockerMW, getLockFolder } from "../../../src/core/middleware/concurrentLocker";
+import { CoreSource, NoProjectOpenedError } from "../../../src/error";
 import {
   ConcurrentError,
   FileNotFoundError,
   InvalidProjectError,
   UserCancelError,
 } from "../../../src/error/common";
+import { randomAppName } from "../utils";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {
@@ -61,7 +61,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       const exist = await fs.pathExists(lockfilePath);
       assert.isFalse(exist);
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 
@@ -102,7 +102,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       await my.methodReturnOK(inputs);
       assert.isTrue(my.count === 2);
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 
@@ -117,7 +117,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     } catch (e) {
       assert.isTrue(e instanceof UserCancelError);
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 
@@ -148,7 +148,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       const res = await my.methodReturnOK(inputs);
       assert.isTrue(res.isErr() && res.error instanceof InvalidProjectError);
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
     assert.isTrue(my.count === 0);
   });
@@ -164,7 +164,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       await fs.ensureDir(path.join(inputs.projectPath, `${SettingsFolderName}`));
       await my.methodCallSelf(inputs);
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
     assert.isTrue(my.count === 1);
   });
@@ -204,7 +204,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
       expect(d).eql(1);
       expect(functionName).eql("myMethod");
     } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
+      await fs.remove(inputs.projectPath!);
     }
   });
 });

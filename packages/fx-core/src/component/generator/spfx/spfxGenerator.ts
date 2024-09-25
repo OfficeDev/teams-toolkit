@@ -8,6 +8,7 @@ import {
   Context,
   err,
   FxError,
+  GeneratorResult,
   Inputs,
   IProgressHandler,
   IStaticTab,
@@ -25,17 +26,16 @@ import { EOL } from "os";
 import * as path from "path";
 import semver from "semver";
 import * as util from "util";
-import { cpUtils } from "../../../common/deps-checker";
+import { cpUtils } from "../../deps-checker";
 import { jsonUtils } from "../../../common/jsonUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, UserCancelError } from "../../../error";
 import {
   CapabilityOptions,
   ProgrammingLanguage,
+  QuestionNames,
   SPFxVersionOptionIds,
-} from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
-import { SPFxQuestionNames } from "../../constants";
+} from "../../../question/constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { envUtil } from "../../utils/envUtil";
@@ -60,7 +60,7 @@ import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
-import { Utils } from "./utils/utils";
+import { getShellOptionValue, Utils } from "./utils/utils";
 
 export class SPFxGenerator {
   @hooks([
@@ -345,11 +345,12 @@ export class SPFxGenerator {
 
       try {
         await cpUtils.executeCommand(
-          isAddSPFx ? inputs[SPFxQuestionNames.SPFxFolder] : destinationPath,
+          isAddSPFx ? inputs[QuestionNames.SPFxFolder] : destinationPath,
           context.logProvider,
           {
             timeout: 2 * 60 * 1000,
             env: yoEnv,
+            shell: getShellOptionValue(),
           },
           "yo",
           ...args
@@ -649,23 +650,24 @@ export class SPFxGenerator {
         return undefined;
       }
 
-      const webpartName = webparts[0].split(path.sep).pop();
-      const webpartManifestPath = path.join(
-        webpartsDir,
-        webparts[0],
-        `${webpartName as string}WebPart.manifest.json`
+      const webpartManifest = (await fs.readdir(path.join(webpartsDir, webparts[0]))).find((file) =>
+        file.endsWith("WebPart.manifest.json")
       );
-      if (!(await fs.pathExists(webpartManifestPath))) {
+      if (webpartManifest === undefined) {
         throw new FileNotFoundError(
           Constants.PLUGIN_NAME,
-          webpartManifestPath,
+          path.join(
+            webpartsDir,
+            webparts[0],
+            `${webparts[0].split(path.sep).pop() as string}WebPart.manifest.json`
+          ),
           Constants.IMPORT_HELP_LINK
         );
       }
 
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifest = JSON.parse(
-        (await fs.readFile(webpartManifestPath, "utf8"))
+        (await fs.readFile(path.join(webpartsDir, webparts[0], webpartManifest), "utf8"))
           .toString()
           .replace(matchHashComment, "")
           .trim()
@@ -707,21 +709,24 @@ export class SPFxGenerator {
         );
         for (let i = 1; i < webparts.length; i++) {
           const webpart = webparts[i];
-          const webpartManifestPath = path.join(
-            webpartsDir,
-            webpart,
-            `${webpart.split(path.sep).pop() as string}WebPart.manifest.json`
+          const webpartManifestFile = (await fs.readdir(path.join(webpartsDir, webpart))).find(
+            (file) => file.endsWith("WebPart.manifest.json")
           );
-          if (!(await fs.pathExists(webpartManifestPath))) {
+
+          if (webpartManifestFile === undefined) {
             importDetails.push(
-              ` [${i}] Web part manifest doesn't exist at ${webpartManifestPath}, skip...`
+              ` [${i}] Web part manifest doesn't exist at ${path.join(
+                webpartsDir,
+                webpart,
+                `${webpart as string}WebPart.manifest.json`
+              )}, skip...`
             );
             continue;
           }
 
           const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
           const webpartManifest = JSON.parse(
-            (await fs.readFile(webpartManifestPath, "utf8"))
+            (await fs.readFile(path.join(webpartsDir, webpart, webpartManifestFile), "utf8"))
               .toString()
               .replace(matchHashComment, "")
               .trim()
@@ -1006,7 +1011,7 @@ export class SPFxGeneratorImport extends DefaultTemplateGenerator {
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<GeneratorResult, FxError>> {
     try {
       const spfxFolder = inputs[QuestionNames.SPFxFolder] as string;
       await SPFxGenerator.updateSPFxTemplate(spfxFolder, destinationPath, this.importDetails);
@@ -1022,7 +1027,7 @@ export class SPFxGeneratorImport extends DefaultTemplateGenerator {
         getLocalizedString("plugins.spfx.import.success", destinationPath),
         false
       );
-      return ok(undefined);
+      return ok({});
     } catch (error) {
       this.importDetails.push(
         getLocalizedString("plugins.spfx.import.log.fail", context.logProvider?.getLogFilePath())

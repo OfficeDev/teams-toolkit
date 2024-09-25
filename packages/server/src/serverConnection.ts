@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Tunnel } from "@microsoft/dev-tunnels-contracts";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -10,35 +11,31 @@ import {
   FxError,
   IQTreeNode,
   Inputs,
-  OpenAIPluginManifest,
   Result,
   Stage,
   Tools,
-  UserError,
   Void,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
 import {
-  Correlator,
-  FxCore,
-  environmentManager,
-  getCopilotStatus,
-  getSideloadingStatus,
-  setRegion,
-  listDevTunnels,
-  HubOptions,
-  environmentNameManager,
-  TestToolInstallOptions,
-  DependencyStatus,
-  DepsManager,
-  assembleError,
-  DepsType,
   CoreDepsLoggerAdapter,
   CoreDepsTelemetryAdapter,
+  Correlator,
+  DepsManager,
+  DepsType,
   EmptyTelemetry,
+  FxCore,
+  PackageService,
+  QuestionNames,
+  SyncManifestInputs,
+  TestToolInstallOptions,
+  assembleError,
+  environmentNameManager,
+  getSideloadingStatus,
+  listDevTunnels,
+  teamsDevPortalClient,
 } from "@microsoft/teamsfx-core";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
@@ -49,7 +46,7 @@ import TelemetryReporter from "./providers/telemetry";
 import TokenProvider from "./providers/tokenProvider";
 import UserInteraction from "./providers/userInteraction";
 import { standardizeResult } from "./utils";
-import { Tunnel } from "@microsoft/dev-tunnels-contracts";
+import { SyncManifestInputsForVS } from "@microsoft/teamsfx-core/build/component/driver/teamsApp/interfaces/SyncManifest";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -93,10 +90,10 @@ export default class ServerConnection implements IServerConnection {
       this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
       this.copilotPluginAddAPIRequest.bind(this),
-      this.loadOpenAIPluginManifestRequest.bind(this),
       this.listOpenAPISpecOperationsRequest.bind(this),
       this.checkAndInstallTestTool.bind(this),
       this.listPluginApiSpecs.bind(this),
+      this.syncTeamsAppManifestRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -196,6 +193,24 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
+  public async syncTeamsAppManifestRequest(
+    inputs: SyncManifestInputsForVS,
+    token: CancellationToken
+  ): Promise<Result<undefined, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const teamsAppId = inputs.teamsAppFromTdp?.teamsAppId;
+    const coreInputs: SyncManifestInputs = {
+      ...inputs,
+      [QuestionNames.TeamsAppId]: teamsAppId,
+    };
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.syncManifest(params),
+      coreInputs
+    );
+    return standardizeResult(res);
+  }
+
   public async provisionResourcesRequest(
     inputs: Inputs,
     token: CancellationToken
@@ -228,17 +243,16 @@ export default class ServerConnection implements IServerConnection {
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     let func: Func;
-    inputs[CoreQuestionNames.OutputZipPathParamName] = path.join(
+    inputs[QuestionNames.OutputZipPathParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
       BuildFolderName,
       `appPackage.${inputs.env}.zip`
     );
-    inputs[CoreQuestionNames.OutputManifestParamName] = path.join(
+    inputs[QuestionNames.OutputFolderParamName] = path.join(
       inputs.projectPath!,
       AppPackageFolderName,
-      BuildFolderName,
-      `manifest.${inputs.env}.json`
+      BuildFolderName
     );
     const res = await Correlator.runWithId(
       corrId,
@@ -346,7 +360,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
-    const res = await getCopilotStatus(accountToken.token, true);
+    const res = await PackageService.GetSharedInstance().getCopilotStatus(accountToken.token, true);
     return ok(String(res));
   }
 
@@ -413,7 +427,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<any, FxError>> {
-    await setRegion(accountToken.token);
+    await teamsDevPortalClient.setRegionEndpointByToken(accountToken.token);
     return ok(true);
   }
 
@@ -424,7 +438,7 @@ export default class ServerConnection implements IServerConnection {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
-      (params) => listDevTunnels(inputs.devTunnelToken),
+      (params) => listDevTunnels(inputs.devTunnelToken, inputs.isGitHub),
       inputs
     );
     return standardizeResult(res);
@@ -451,19 +465,6 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (inputs) => this.core.listPluginApiSpecs(inputs),
-      inputs
-    );
-    return standardizeResult(res);
-  }
-
-  public async loadOpenAIPluginManifestRequest(
-    inputs: Inputs,
-    token: CancellationToken
-  ): Promise<Result<OpenAIPluginManifest, FxError>> {
-    const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const res = await Correlator.runWithId(
-      corrId,
-      (inputs) => this.core.copilotPluginLoadOpenAIManifest(inputs),
       inputs
     );
     return standardizeResult(res);

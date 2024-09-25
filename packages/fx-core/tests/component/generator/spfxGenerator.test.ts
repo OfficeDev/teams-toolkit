@@ -1,16 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Context,
-  err,
-  Inputs,
-  ok,
-  Platform,
-  Result,
-  Stage,
-  SystemError,
-} from "@microsoft/teamsfx-api";
+import { Context, err, Inputs, ok, Platform, Stage, SystemError } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -18,7 +9,9 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { cpUtils } from "../../../src/common/deps-checker";
+import { createContext, setTools } from "../../../src/common/globalVars";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { cpUtils } from "../../../src/component/deps-checker/";
 import { ManifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
 import { GeneratorChecker } from "../../../src/component/generator/spfx/depsChecker/generatorChecker";
@@ -28,10 +21,9 @@ import {
   SPFxGeneratorImport,
   SPFxGeneratorNew,
 } from "../../../src/component/generator/spfx/spfxGenerator";
-import { Utils } from "../../../src/component/generator/spfx/utils/utils";
-import { createContextV3 } from "../../../src/component/utils";
+import { getShellOptionValue, Utils } from "../../../src/component/generator/spfx/utils/utils";
 import { envUtil } from "../../../src/component/utils/envUtil";
-import { setTools } from "../../../src/core/globalVars";
+import { FileNotFoundError, UserCancelError } from "../../../src/error";
 import {
   CapabilityOptions,
   ProjectTypeOptions,
@@ -39,8 +31,7 @@ import {
   SPFxVersionOptionIds,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { FileNotFoundError, UserCancelError } from "../../../src/error";
+import os from "os";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -50,7 +41,7 @@ describe("SPFxGenerator", function () {
   beforeEach(async () => {
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
+    context = createContext();
 
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
@@ -71,8 +62,8 @@ describe("SPFxGenerator", function () {
       if (directory.includes("teams")) {
         return {
           $schema:
-            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-          manifestVersion: "1.16",
+            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+          manifestVersion: "1.17",
           id: "fakedId",
           name: {
             short: "thisisaverylongappnametotestifitwillbetruncated",
@@ -106,7 +97,7 @@ describe("SPFxGenerator", function () {
       mockedEnvRestore();
     }
     if (await fs.pathExists(testFolder)) {
-      await fs.rm(testFolder, { recursive: true });
+      await fs.remove(testFolder);
     }
   });
 
@@ -445,6 +436,40 @@ describe("SPFxGenerator", function () {
     }
   });
 
+  it("No valid web part manifest when import SPFx solution", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      "app-name": "spfxTestApp",
+      "spfx-solution": "import",
+      "spfx-folder": "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else {
+        return [];
+      }
+    });
+    sinon.stub(fs, "statSync").returns({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    sinon.stub(fs, "copy").resolves();
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
+    if (result.isErr()) {
+      chai.expect(result.error.name).to.eq("FileNotFoundError");
+    }
+  });
+
   it("Copy existing SPFx solution failed when import SPFx solution", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -479,8 +504,10 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readdir").callsFake((directory: any) => {
       if (directory === path.join("c:\\test", "teams")) {
         return ["1_color.png", "1_outline.png"] as any;
-      } else {
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
         return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
       }
     });
     sinon.stub(fs, "statSync").returns({
@@ -502,6 +529,58 @@ describe("SPFxGenerator", function () {
     }
   });
 
+  it("Web part with invalid manifeset will not be imported", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: testFolder,
+      [QuestionNames.AppName]: "spfxTestApp",
+      [QuestionNames.SPFxSolution]: "import",
+      [QuestionNames.SPFxFolder]: "c:\\test",
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts", "helloworld")) {
+        return ["HelloWorldWebPart.manifest.json"] as any;
+      } else {
+        return [] as any;
+      }
+    });
+    sinon.stub(fs, "statSync").returns({
+      isDirectory: () => {
+        return true;
+      },
+    } as any);
+    const generateTemplateStub = sinon
+      .stub(Generator, "generateTemplate" as any)
+      .resolves(ok(undefined));
+    const fakedManifest = {
+      name: { short: "thisisaverylongappnametotestifitwillbetruncated" },
+      staticTabs: [{ name: "default" }],
+    };
+    const readAppManifestStub = sinon
+      .stub(ManifestUtils.prototype, "_readAppManifest")
+      .resolves(ok(fakedManifest as any));
+    const writeAppManifestStub = sinon
+      .stub(ManifestUtils.prototype, "_writeAppManifest")
+      .resolves();
+    const writeEnvStub = sinon.stub(envUtil, "writeEnv");
+    sinon.stub(fs, "copy").resolves();
+
+    const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+    chai.expect(fakedManifest.staticTabs.length).to.eq(1);
+    chai.expect(generateTemplateStub.calledOnce).to.eq(true);
+    chai.expect(writeEnvStub.calledOnce).to.eq(true);
+    chai.expect(readAppManifestStub.calledTwice).to.eq(true);
+    chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
+  });
+
   it("Generate template fail when import SPFx solution", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -512,7 +591,15 @@ describe("SPFxGenerator", function () {
     };
 
     sinon.stub(fs, "pathExists").resolves(true);
-    sinon.stub(fs, "readdir").resolves(["helloworld", "second"] as any);
+    sinon.stub(fs, "readdir").callsFake((directory: any) => {
+      if (directory === path.join("c:\\test", "teams")) {
+        return ["1_color.png", "1_outline.png"] as any;
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
+        return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
+      }
+    });
     sinon.stub(fs, "statSync").returns({
       isDirectory: () => {
         return true;
@@ -542,8 +629,10 @@ describe("SPFxGenerator", function () {
     sinon.stub(fs, "readdir").callsFake((directory: any) => {
       if (directory === path.join("c:\\test", "teams")) {
         return ["1_color.png", "1_outline.png"] as any;
-      } else {
+      } else if (directory === path.join("c:\\test", "src", "webparts")) {
         return ["helloworld", "second"] as any;
+      } else {
+        return ["HelloWorldWebPart.manifest.json"] as any;
       }
     });
     sinon.stub(fs, "statSync").returns({
@@ -1109,13 +1198,34 @@ describe("Utils", () => {
     const res = Utils.truncateAppShortName(appName);
     chai.expect(res).equals("appNameWithoutSuffix");
   });
+
+  describe("getShellOptionValue", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("windows", () => {
+      sandbox.stub(os, "type").returns("Windows_NT");
+      const res = getShellOptionValue();
+
+      chai.expect(res).equal("cmd.exe");
+    });
+
+    it("non windowns", () => {
+      sandbox.stub(os, "type").returns("Linux");
+      const res = getShellOptionValue();
+
+      chai.expect(res).true;
+    });
+  });
 });
 
 describe("SPFxGeneratorNew", () => {
   const gtools = new MockTools();
   setTools(gtools);
   const generator = new SPFxGeneratorNew();
-  const context = createContextV3();
+  const context = createContext();
   describe("activate", () => {
     it("happy path", () => {
       const inputs: Inputs = {
@@ -1165,7 +1275,7 @@ describe("SPFxGeneratorImport", () => {
   const gtools = new MockTools();
   setTools(gtools);
   const generator = new SPFxGeneratorImport();
-  const context = createContextV3();
+  const context = createContext();
   describe("activate", () => {
     it("happy path", () => {
       const inputs: Inputs = {

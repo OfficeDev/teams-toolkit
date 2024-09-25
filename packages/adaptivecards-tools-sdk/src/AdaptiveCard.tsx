@@ -9,10 +9,9 @@ export interface AdaptiveCardProps<D> {
   data?: D;
 }
 
-// TODO: Error handling
-// TODO: plain payload without templating
-// TODO: better rendering to JSX instead of DOM manipulation directly
-// TODO: support themes and simulating renderers (Teams, Outlook, themes)
+/**
+ * @deprecated This package will be deprecated by 2025-08. Please use [adaptivecards-templating](https://www.npmjs.com/package/adaptivecards-templating) instead.
+ */
 export function AdaptiveCard<D = any>(props: AdaptiveCardProps<D>): any {
   const { template, data } = props;
 

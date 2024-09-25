@@ -13,6 +13,7 @@ export const logMessageKeys = {
   skipGenerateClientSecret: "driver.aadApp.log.skipGenerateClientSecret",
   outputAadAppManifest: "driver.aadApp.log.outputAadAppManifest",
   successUpdateAadAppManifest: "driver.aadApp.log.successUpdateAadAppManifest",
+  deleteAadAfterDebugging: "driver.aadApp.log.deleteAadAfterDebugging",
 };
 
 export const descriptionMessageKeys = {
@@ -38,6 +39,8 @@ export const constants = {
   aadAppPasswordDisplayName: "default",
   oauthAuthorityPrefix: "https://login.microsoftonline.com",
   defaultHelpLink: "https://aka.ms/teamsfx-actions/aadapp-create",
+  missingServiceManagementReferenceHelpLink:
+    "https://aka.ms/teamsfx/missing-service-management-reference-help",
 };
 
 export const telemetryKeys = {

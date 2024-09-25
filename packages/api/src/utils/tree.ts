@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { Result } from "neverthrow";
 import { FxError } from "../error";
 

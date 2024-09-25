@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
 import * as chai from "chai";
-import { isValidHttpUrl } from "../../src/question/util";
+import "mocha";
+import { isValidHttpUrl } from "../../src/common/stringUtils";
 
 describe("isValidHttpUrl", () => {
   it("valid https url", () => {

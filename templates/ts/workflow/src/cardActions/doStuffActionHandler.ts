@@ -1,4 +1,4 @@
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import * as ACData from "adaptivecards-templating";
 import { TurnContext, InvokeResponse } from "botbuilder";
 import { TeamsFxAdaptiveCardActionHandler, InvokeResponseFactory } from "@microsoft/teamsfx";
 import responseCard from "../adaptiveCards/doStuffActionResponse.json";
@@ -24,7 +24,7 @@ export class DoStuffActionHandler implements TeamsFxAdaptiveCardActionHandler {
       body: "Congratulations! Your task is processed successfully.",
     };
 
-    const cardJson = AdaptiveCards.declare(responseCard).render(cardData);
+    const cardJson = new ACData.Template(responseCard).expand({ $root: cardData });
     return InvokeResponseFactory.adaptiveCard(cardJson);
 
     /**

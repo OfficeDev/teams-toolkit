@@ -25,12 +25,14 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/adaptivecards-tools": "^1.0.0",
+        "adaptivecards-templating": "^2.3.1",
+        "adaptive-expressions": "^4.22.3",
         "@microsoft/teamsfx": "^2.3.1",
         "botbuilder": "^4.20.0"
     },
     "devDependencies": {
         "@azure/functions": "^3.5.0",
+        "@types/json-schema": "^7.0.15",
         "azurite": "^3.16.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",

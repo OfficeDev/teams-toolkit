@@ -5,7 +5,8 @@
  * @author Huajie Zhang <huajiezhang@microsoft.com>
  */
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../constants";
+import { ComponentNames } from "../../migrate";
+import semver from "semver";
 
 const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
@@ -36,6 +37,22 @@ export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [
   },
 ];
 
+export const CONFIGURABLE_TABS_TPL_V4: IConfigurableTab[] = [
+  {
+    configurationUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/config`,
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupChat"],
+  },
+];
+
+export function getConfigurableTabsTplBasedOnVersion(version: string): IConfigurableTab[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return CONFIGURABLE_TABS_TPL_V4;
+  }
+  return CONFIGURABLE_TABS_TPL_V3;
+}
+
 const BOT_ID_PLACEHOLDER = `{{state.${BOT_STATE_KEY}.botId}}`;
 
 export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
@@ -58,6 +75,34 @@ export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3: IBot[] = [
   },
 ];
 
+export const BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V4: IBot[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    scopes: ["personal", "team", "groupChat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupChat"],
+        commands: [
+          {
+            title: "helloWorld",
+            description: "A helloworld command to send a welcome message",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export function getBotsTplForCommandAndResponseBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V4;
+  }
+  return BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3;
+}
+
 export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
@@ -66,6 +111,23 @@ export const BOTS_TPL_FOR_NOTIFICATION_V3: IBot[] = [
     isNotificationOnly: false,
   },
 ];
+
+export const BOTS_TPL_FOR_NOTIFICATION_V4: IBot[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    scopes: ["personal", "team", "groupChat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+  },
+];
+
+export function getBotsTplForNotificationBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_FOR_NOTIFICATION_V4;
+  }
+  return BOTS_TPL_FOR_NOTIFICATION_V3;
+}
 
 export const BOTS_TPL_V3: IBot[] = [
   {
@@ -90,6 +152,39 @@ export const BOTS_TPL_V3: IBot[] = [
     ],
   },
 ];
+
+export const BOTS_TPL_V4: IBot[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    scopes: ["personal", "team", "groupChat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupChat"],
+        commands: [
+          {
+            title: "welcome",
+            description: "Resend welcome card of this Bot",
+          },
+          {
+            title: "learn",
+            description: "Learn about Adaptive Card and Bot Command",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+export function getBotsTplBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_V4;
+  }
+  return BOTS_TPL_V3;
+}
+
 export const COMPOSE_EXTENSIONS_TPL_M365_V3: IComposeExtension[] = [
   {
     botId: BOT_ID_PLACEHOLDER,
@@ -190,16 +285,6 @@ export const WEB_APPLICATION_INFO_V3 = {
   resource: `{{{state.${AAD_STATE_KEY}.applicationIdUris}}}`,
 };
 
-export function getAppStudioEndpoint(): string {
-  if (process.env.APP_STUDIO_ENV && process.env.APP_STUDIO_ENV === "int") {
-    return "https://dev-int.teams.microsoft.com";
-  } else {
-    return "https://dev.teams.microsoft.com";
-  }
-}
-
-export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
-
 export class Constants {
   public static readonly MANIFEST_FILE = "manifest.json";
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
@@ -254,12 +339,13 @@ export class APP_STUDIO_API_NAMES {
   public static readonly CREATE_API_KEY = "create-api-key";
   public static readonly UPDATE_API_KEY = "update-api-key";
   public static readonly GET_API_KEY = "get-api-key";
-  public static readonly SUMIT_APP_VALIDATION = "submit-app-validation";
+  public static readonly SUBMIT_APP_VALIDATION = "submit-app-validation";
   public static readonly GET_APP_VALIDATION_RESULT = "get-app-validation-result";
   public static readonly GET_APP_VALIDATION_REQUESTS = "get-app-validation-requests";
   public static readonly GET_OAUTH = "get-oauth";
   public static readonly CREATE_OAUTH = "create-oauth";
   public static readonly UPDATE_OAUTH = "update-oauth";
+  public static readonly CHECK_SIDELOADING_STATUS = "check-sideloading-status";
 }
 
 /**
@@ -300,6 +386,29 @@ export const BOTS_TPL_EXISTING_APP: IBot[] = [
   },
 ];
 
+export const BOTS_TPL_EXISTING_APP_V2: IBot[] = [
+  {
+    botId: "{{config.manifest.botId}}",
+    scopes: ["personal", "team", "groupChat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupChat"],
+        commands: [],
+      },
+    ],
+  },
+];
+
+export function getBotsTplExistingAppBasedOnVersion(version: string): IBot[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return BOTS_TPL_EXISTING_APP_V2;
+  }
+  return BOTS_TPL_EXISTING_APP;
+}
+
 export const COMPOSE_EXTENSIONS_TPL_EXISTING_APP: IComposeExtension[] = [
   {
     botId: "{{config.manifest.botId}}",
@@ -322,6 +431,24 @@ export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
     scopes: ["team", "groupchat"],
   },
 ];
+
+export const CONFIGURABLE_TABS_TPL_EXISTING_APP_V2: IConfigurableTab[] = [
+  {
+    configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupChat"],
+  },
+];
+
+export function getConfigurableTabsTplExistingAppBasedOnVersion(
+  version: string
+): IConfigurableTab[] {
+  const manifestVersion = semver.coerce(version);
+  if (version === "devPreview" || (manifestVersion && semver.gte(manifestVersion, "1.17.0"))) {
+    return CONFIGURABLE_TABS_TPL_EXISTING_APP_V2;
+  }
+  return CONFIGURABLE_TABS_TPL_EXISTING_APP;
+}
 
 export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
   {
@@ -480,3 +607,5 @@ export const supportedLanguageCodes = [
   "sr",
   "lv",
 ];
+
+export const GeneralValidationErrorId = "693c7aa7-4d76-40ec-8282-06410f5d1f76";

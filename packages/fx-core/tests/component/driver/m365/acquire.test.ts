@@ -5,7 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
-import { PackageService } from "../../../../src/common/m365/packageService";
+import { PackageService } from "../../../../src/component/m365/packageService";
 import { M365TitleAcquireDriver } from "../../../../src/component/driver/m365/acquire";
 import {
   MockedLogProvider,

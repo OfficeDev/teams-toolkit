@@ -18,8 +18,8 @@ export async function checkCredential(): Promise<{
   };
 }
 
-export function getFixedCommonProjectSettings(rootPath: string | undefined) {
-  return core.getFixedCommonProjectSettings(rootPath);
+export function getProjectMetadata(rootPath: string | undefined) {
+  return core.getProjectMetadata(rootPath);
 }
 
 export function globalStateGet(key: string, defaultValue?: any) {

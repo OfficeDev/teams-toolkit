@@ -465,6 +465,10 @@ export class CodeIssueDetector {
         while (node && !ts.isCallExpression(node)) {
           node = node.parent;
         }
+
+        if (!node) {
+          return;
+        }
         const callExpression = node;
 
         if (!ts.isCallExpression(callExpression)) {

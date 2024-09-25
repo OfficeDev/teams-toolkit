@@ -17,7 +17,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { AccountInfo, LogLevel } from "@azure/msal-node";
-import { ExtensionErrors } from "../error";
+import { ExtensionErrors } from "../error/error";
 import { CodeFlowLogin, ConvertTokenToJson, UserCancelError } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";

@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
+import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
 import chai from "chai";
 import fs from "fs-extra";
-import AdmZip from "adm-zip";
+import "mocha";
+import * as sinon from "sinon";
 import { v4 as uuid } from "uuid";
-import { TeamsAppManifest, ok, Platform } from "@microsoft/teamsfx-api";
-import { PublishAppPackageDriver } from "../../../../src/component/driver/teamsApp/publishAppPackage";
-import { PublishAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/PublishAppPackageArgs";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
+import { PublishingState } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
+import { PublishAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/PublishAppPackageArgs";
+import { PublishAppPackageDriver } from "../../../../src/component/driver/teamsApp/publishAppPackage";
+import { UserCancelError } from "../../../../src/error/common";
 import {
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
-import { PublishingState } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
-import { UserCancelError } from "../../../../src/error/common";
 
 describe("teamsApp/publishAppPackage", async () => {
   const teamsAppDriver = new PublishAppPackageDriver();
@@ -80,8 +80,8 @@ describe("teamsApp/publishAppPackage", async () => {
       const archivedFile = zip.toBuffer();
       return archivedFile;
     });
-    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
-    sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());
+    sinon.stub(teamsDevPortalClient, "getStaggedApp").resolves(undefined);
+    sinon.stub(teamsDevPortalClient, "publishTeamsApp").resolves(uuid());
 
     const result = await teamsAppDriver.execute(args, mockedDriverContext);
     console.log(JSON.stringify(result));
@@ -103,7 +103,7 @@ describe("teamsApp/publishAppPackage", async () => {
       const archivedFile = zip.toBuffer();
       return archivedFile;
     });
-    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(state);
+    sinon.stub(teamsDevPortalClient, "getStaggedApp").resolves(state);
     sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Cancel"));
 
     const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
@@ -130,8 +130,8 @@ describe("teamsApp/publishAppPackage", async () => {
       const archivedFile = zip.toBuffer();
       return archivedFile;
     });
-    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(state);
-    sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
+    sinon.stub(teamsDevPortalClient, "getStaggedApp").resolves(state);
+    sinon.stub(teamsDevPortalClient, "publishTeamsAppUpdate").resolves(uuid());
     sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Confirm"));
 
     const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;

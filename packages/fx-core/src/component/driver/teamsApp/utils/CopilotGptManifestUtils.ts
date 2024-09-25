@@ -11,6 +11,7 @@ import {
   IDeclarativeCopilot,
   Platform,
   Colors,
+  DefaultPluginManifestFileName,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { FileNotFoundError, JSONSyntaxError, WriteFileError } from "../../../../error/common";
@@ -26,6 +27,9 @@ import path from "path";
 import { pluginManifestUtils } from "./PluginManifestUtils";
 import { SummaryConstant } from "../../../configManager/constant";
 import { EOL } from "os";
+import { ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
+import { manifestUtils } from "./ManifestUtils";
 
 export class CopilotGptManifestUtils {
   public async readCopilotGptManifestFile(
@@ -54,17 +58,17 @@ export class CopilotGptManifestUtils {
    */
   public async getManifest(
     path: string,
-    context?: WrapDriverContext
+    context: DriverContext
   ): Promise<Result<DeclarativeCopilotManifestSchema, FxError>> {
     const manifestRes = await this.readCopilotGptManifestFile(path);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       JSON.stringify(manifestRes.value),
       path,
-      TelemetryPropertyKey.customizedCopilotGptKeys,
+      ManifestType.DeclarativeCopilotManifest,
       context
     );
 
@@ -91,7 +95,7 @@ export class CopilotGptManifestUtils {
   public async validateAgainstSchema(
     declaraitveCopilot: IDeclarativeCopilot,
     manifestPath: string,
-    context?: WrapDriverContext
+    context: DriverContext
   ): Promise<Result<DeclarativeCopilotManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(manifestPath, context);
     if (manifestRes.isErr()) {
@@ -142,6 +146,28 @@ export class CopilotGptManifestUtils {
     }
   }
 
+  public async getManifestPath(teamsManifestPath: string): Promise<Result<string, FxError>> {
+    const teamsManifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
+
+    if (teamsManifestRes.isErr()) {
+      return err(teamsManifestRes.error);
+    }
+    const filePath = teamsManifestRes.value.copilotExtensions?.declarativeCopilots?.[0].file;
+    if (!filePath) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "copilotExtensions.declarativeCopilots.file",
+            teamsManifestPath
+          )
+        )
+      );
+    } else {
+      return ok(path.resolve(path.dirname(teamsManifestPath), filePath));
+    }
+  }
+
   public async addAction(
     copilotGptPath: string,
     id: string,
@@ -178,41 +204,45 @@ export class CopilotGptManifestUtils {
   ): string | Array<{ content: string; color: Colors }> {
     const validationErrors = validationRes.validationResult;
     const filePath = validationRes.filePath;
-    let hasError = validationErrors.length > 0;
+    const hasDeclarativeCopilotError = validationErrors.length > 0;
+    let hasActionError = false;
 
     for (const actionValidationRes of validationRes.actionValidationResult) {
       if (actionValidationRes.validationResult.length > 0) {
-        hasError = true;
+        hasActionError = true;
         break;
       }
     }
-    if (!hasError) {
+    if (!hasDeclarativeCopilotError && !hasActionError) {
       return "";
     }
 
     if (platform !== Platform.CLI) {
-      const errors = validationErrors
-        .map((error: string) => {
-          return `${SummaryConstant.Failed} ${error}`;
-        })
-        .join(EOL);
-      let outputMessage =
-        getLocalizedString(
-          "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
-          filePath
-        ) +
-        EOL +
-        errors;
+      let outputMessage = "";
+      if (hasDeclarativeCopilotError) {
+        const errors = validationErrors
+          .map((error: string) => {
+            return `${SummaryConstant.Failed} ${error}`;
+          })
+          .join(EOL);
+        outputMessage +=
+          getLocalizedString(
+            "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
+            filePath
+          ) +
+          EOL +
+          errors;
+      }
 
       for (const actionValidationRes of validationRes.actionValidationResult) {
-        if (pluginPath && actionValidationRes.filePath !== pluginPath) {
+        if (!pluginPath || actionValidationRes.filePath !== pluginPath) {
           // do not output validation result of the Declarative Copilot if same file has been validated when validating plugin manifest.
           const actionValidationMessage = pluginManifestUtils.logValidationErrors(
             actionValidationRes,
             platform
           ) as string;
           if (actionValidationMessage) {
-            outputMessage += EOL + actionValidationMessage;
+            outputMessage += (!outputMessage ? "" : EOL) + actionValidationMessage;
           }
         }
       }
@@ -220,24 +250,26 @@ export class CopilotGptManifestUtils {
       return outputMessage;
     } else {
       const outputMessage = [];
-      outputMessage.push({
-        content:
-          getDefaultString(
-            "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
-            filePath
-          ) + "\n",
-        color: Colors.BRIGHT_WHITE,
-      });
-      validationErrors.map((error: string) => {
-        outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+      if (hasDeclarativeCopilotError) {
         outputMessage.push({
-          content: `${error}\n`,
+          content:
+            getDefaultString(
+              "driver.teamsApp.summary.validateDeclarativeCopilotManifest.checkPath",
+              filePath
+            ) + "\n",
           color: Colors.BRIGHT_WHITE,
         });
-      });
+        validationErrors.map((error: string) => {
+          outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+          outputMessage.push({
+            content: `${error}\n`,
+            color: Colors.BRIGHT_WHITE,
+          });
+        });
+      }
 
       for (const actionValidationRes of validationRes.actionValidationResult) {
-        if (pluginPath && actionValidationRes.filePath !== pluginPath) {
+        if (!pluginPath || actionValidationRes.filePath !== pluginPath) {
           const actionValidationMessage = pluginManifestUtils.logValidationErrors(
             actionValidationRes,
             platform
@@ -252,6 +284,16 @@ export class CopilotGptManifestUtils {
 
       return outputMessage;
     }
+  }
+
+  public async getDefaultNextAvailablePluginManifestPath(folder: string) {
+    const pluginManifestNamePrefix = DefaultPluginManifestFileName.split(".")[0];
+    let pluginFileNameSuffix = 1;
+    let pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
+    while (await fs.pathExists(path.join(folder, pluginManifestName))) {
+      pluginManifestName = `${pluginManifestNamePrefix}_${++pluginFileNameSuffix}.json`;
+    }
+    return path.join(folder, pluginManifestName);
   }
 }
 

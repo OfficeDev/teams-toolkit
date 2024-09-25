@@ -8,7 +8,7 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
-import { globalVars } from "../../core/globalVars";
+import { globalVars } from "../../common/globalVars";
 import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
 import {
   IYamlParser,
@@ -33,7 +33,7 @@ function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectMo
     if (typeof obj[environmentFolderPath] !== "string") {
       return err(new YamlFieldTypeError("environmentFolderPath", "string"));
     }
-    result.environmentFolderPath = obj[environmentFolderPath] as unknown as string;
+    result.environmentFolderPath = obj[environmentFolderPath] as string;
   }
 
   if ("version" in obj) {

@@ -4,12 +4,9 @@
   "parameters": {
     "resourceBaseName": {
       "value": "apime${{RESOURCE_SUFFIX}}"
-    },    
+    },
     "functionAppSKU": {
       "value": "Y1"
-    },
-    "functionStorageSKU": {
-      "value": "Standard_LRS"
     },
     "aadAppClientId": {
       "value": "${{AAD_APP_CLIENT_ID}}"

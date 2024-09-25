@@ -20,6 +20,7 @@ export class HttpMethod {
   public static readonly POST = "POST";
   public static readonly GET = "GET";
   public static readonly DELETE = "DELETE";
+  public static readonly PATCH = "PATCH";
 }
 
 export class TelemetryConstant {

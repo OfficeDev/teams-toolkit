@@ -3,6 +3,8 @@
 
 import {
   Colors,
+  DefaultApiSpecJsonFileName,
+  DefaultApiSpecYamlFileName,
   FxError,
   IPlugin,
   ManifestUtil,
@@ -18,15 +20,16 @@ import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
 import stripBom from "strip-bom";
 import path from "path";
 import { manifestUtils } from "./ManifestUtils";
-import { WrapDriverContext } from "../../util/wrapUtil";
 import { getResolvedManifest } from "./utils";
-import { TelemetryPropertyKey } from "./telemetry";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { PluginManifestValidationResult } from "../interfaces/ValidationResult";
 import { SummaryConstant } from "../../../configManager/constant";
 import { EOL } from "os";
+import { ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
+import { isJsonSpecFile } from "../../../../common/utils";
 
 export class PluginManifestUtils {
   public async readPluginManifestFile(
@@ -55,17 +58,17 @@ export class PluginManifestUtils {
    */
   public async getManifest(
     path: string,
-    context?: WrapDriverContext
+    context: DriverContext
   ): Promise<Result<PluginManifestSchema, FxError>> {
     const manifestRes = await this.readPluginManifestFile(path);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       JSON.stringify(manifestRes.value),
       path,
-      TelemetryPropertyKey.customizedAIPluginKeys,
+      ManifestType.PluginManifest,
       context
     );
 
@@ -79,7 +82,7 @@ export class PluginManifestUtils {
   public async validateAgainstSchema(
     plugin: IPlugin,
     path: string,
-    context?: WrapDriverContext
+    context: DriverContext
   ): Promise<Result<PluginManifestValidationResult, FxError>> {
     const manifestRes = await this.getManifest(path, context);
     if (manifestRes.isErr()) {
@@ -168,6 +171,26 @@ export class PluginManifestUtils {
 
       return outputMessage;
     }
+  }
+
+  public async getDefaultNextAvailableApiSpecPath(apiSpecPath: string, apiSpecFolder: string) {
+    let isYaml = false;
+    try {
+      isYaml = !(await isJsonSpecFile(apiSpecPath));
+    } catch (e) {}
+
+    let openApiSpecFileName = isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName;
+    const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
+    const openApiSpecFileType = openApiSpecFileName.split(".")[1];
+    let apiSpecFileNameSuffix = 1;
+    openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+
+    while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
+      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${++apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+    }
+    const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
+
+    return openApiSpecFilePath;
   }
 
   async getApiSpecFilePathFromPlugin(

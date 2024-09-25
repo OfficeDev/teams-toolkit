@@ -5,22 +5,22 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from "axios";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
+import { GraphScopes } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AadOwner } from "../../../../common/permissionInterface";
-import { GraphScopes } from "../../../../common/tools";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 import {
   DeleteOrUpdatePermissionFailedError,
   HostNameNotOnVerifiedDomainError,
 } from "../error/aadManifestError";
+import { ClientSecretNotAllowedError } from "../error/clientSecretNotAllowedError";
+import { CredentialInvalidLifetimeError } from "../error/credentialInvalidLifetimeError";
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadManifestHelper } from "./aadManifestHelper";
-import { aadErrorCode, constants } from "./constants";
-import { CredentialInvalidLifetimeError } from "../error/credentialInvalidLifetimeError";
-import { ClientSecretNotAllowedError } from "../error/clientSecretNotAllowedError";
+import { aadErrorCode } from "./constants";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 

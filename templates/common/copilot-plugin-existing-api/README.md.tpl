@@ -22,7 +22,7 @@ This app template allows Teams to interact directly with third-party data, apps,
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
 4. Select `Preview in Teams (Edge)` or `Preview in Teams (Chrome)` from the launch configuration dropdown.
 5. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension.
-
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 {{#ApiKey}}
 > [!NOTE]
 > Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
@@ -30,6 +30,21 @@ This app template allows Teams to interact directly with third-party data, apps,
 
 {{#OAuth}}
 > [!NOTE]
+> If your identity server needs Proof of Key Code Exchange (PKCE) for token exchange, uncomment the `isPKCEEnabled` property in the` oauth/register` section of the `teamsapp.yml` file shown as below:
+```yaml
+  - uses: oauth/register
+    with:
+      name: {{ApiSpecAuthName}}
+      flow: authorizationCode
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+      # Uncomment below property to use proof key for code exchange (PKCE)
+      isPKCEEnabled: true
+    writeToEnvironmentFile:
+      configurationId: {{ApiSpecAuthRegistrationIdEnvName}}
+```
 > Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your Client ID and Client Secret.
 {{/OAuth}}
 

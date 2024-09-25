@@ -6,23 +6,23 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { environmentNameManager } from "@microsoft/teamsfx-core/build/core/environmentName";
 import axios from "axios";
 import * as chai from "chai";
 import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import { FrontendWebAppConfig } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { EnvConstants } from "../../commonlib/constants";
-import { Capability } from "../../utils/constants";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getWebappSettings,
 } from "../../commonlib/utilities";
+import { Capability } from "../../utils/constants";
 import {
   cleanUp,
   createResourceGroup,
@@ -57,7 +57,12 @@ describe("Blazor App", function () {
         Capability.TabNonSso,
         env
       );
-      const programCsPath = path.join(testFolder, appName, "App.razor");
+      const programCsPath = path.join(
+        testFolder,
+        appName,
+        "Components",
+        "App.razor"
+      );
       chai.assert.isTrue(await fs.pathExists(programCsPath));
     }
   );

@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 import { FxError, ok, Result, err, SystemError, UserError } from "@microsoft/teamsfx-api";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import * as os from "os";
 import vsCodeLogProvider from "../commonlib/log";
 import jscodeshift = require("jscodeshift");
 import transform from "./migrationTool/replaceSDK";
 import transformTs from "./migrationTool/ts/replaceTsSDK";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as constants from "./constants";

@@ -2,10 +2,9 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { environmentNameManager } from "@microsoft/teamsfx-core";
-import { envUtil } from "@microsoft/teamsfx-core";
+import { environmentNameManager, envUtil } from "@microsoft/teamsfx-core";
 import { environmentVariableRegex } from "./constants";
-import { getSystemInputs } from "./handlers";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 import { DotenvParseOutput } from "dotenv";
 
 export class ManifestTemplateHoverProvider implements vscode.HoverProvider {

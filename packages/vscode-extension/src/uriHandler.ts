@@ -7,11 +7,16 @@ import * as vscode from "vscode";
 import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 import { localize } from "./utils/localizeUtils";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
+
+export let uriEventHandler: UriHandler;
 
 enum Referrer {
   DeveloperPortal = "developerportal",
   OfficeDoc = "officedoc",
+  SyncManifest = "syncmanifest",
 }
+
 interface QueryParams {
   appId?: string;
   referrer?: string;
@@ -66,7 +71,10 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
             isRunning = false;
           }
         );
-    } else if (queryParamas.referrer === Referrer.OfficeDoc) {
+      return;
+    }
+
+    if (queryParamas.referrer === Referrer.OfficeDoc) {
       if (!queryParamas.sampleId) {
         void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.invalidLink")
@@ -78,6 +86,24 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
         TelemetryTriggerFrom.ExternalUrl,
         queryParamas.sampleId
       );
+      return;
+    }
+    if (
+      queryParamas.referrer === Referrer.SyncManifest &&
+      featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest)
+    ) {
+      if (!queryParamas.appId) {
+        void vscode.window.showErrorMessage(
+          localize("teamstoolkit.devPortalIntegration.invalidLink")
+        );
+        return;
+      }
+      void vscode.commands.executeCommand("fx-extension.syncManifest", queryParamas.appId);
+      return;
     }
   }
+}
+
+export function setUriEventHandler(uriHandler: UriHandler) {
+  uriEventHandler = uriHandler;
 }

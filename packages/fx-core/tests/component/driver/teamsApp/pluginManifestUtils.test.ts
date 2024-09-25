@@ -25,6 +25,11 @@ import path from "path";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { PluginManifestValidationResult } from "../../../../src/component/driver/teamsApp/interfaces/ValidationResult";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { MockedLogProvider, MockedTelemetryReporter } from "../../../plugins/solution/util";
+import { createContext, setTools } from "../../../../src/common/globalVars";
+import * as commonUtils from "../../../../src/common/utils";
+import { WrapDriverContext } from "../../../../src/component/driver/util/wrapUtil";
+import { MockTools } from "../../../core/utils";
 
 describe("pluginManifestUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -317,6 +322,12 @@ describe("pluginManifestUtils", () => {
   });
 
   describe("getManifest", async () => {
+    setTools(new MockTools());
+    const context = commonUtils.generateDriverContext(createContext(), {
+      platform: Platform.VSCode,
+      projectPath: "",
+    });
+    const mockedContex = new WrapDriverContext(context, "test", "test");
     const testPluginManifest = {
       ...pluginManifest,
       name_for_human: "name${{APP_NAME_SUFFIX}}",
@@ -337,7 +348,7 @@ describe("pluginManifestUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(testPluginManifest) as any);
 
-      const res = await pluginManifestUtils.getManifest("testPath");
+      const res = await pluginManifestUtils.getManifest("testPath", mockedContex);
 
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -347,7 +358,7 @@ describe("pluginManifestUtils", () => {
 
     it("get manifest error: file not found", async () => {
       sandbox.stub(fs, "pathExists").resolves(false);
-      const res = await pluginManifestUtils.getManifest("testPath");
+      const res = await pluginManifestUtils.getManifest("testPath", mockedContex);
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
         chai.assert.isTrue(res.error instanceof FileNotFoundError);
@@ -358,7 +369,7 @@ describe("pluginManifestUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(testPluginManifest) as any);
 
-      const res = await pluginManifestUtils.getManifest("testPath");
+      const res = await pluginManifestUtils.getManifest("testPath", mockedContex);
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -368,6 +379,12 @@ describe("pluginManifestUtils", () => {
   });
 
   describe("validateAgainstSchema", async () => {
+    const driverContext = {
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectPath: "test",
+      addTelemetryProperties: () => {},
+    };
     it("validate success", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(pluginManifest) as any);
@@ -375,7 +392,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -397,7 +415,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        context as any
       );
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -412,7 +431,8 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -425,9 +445,50 @@ describe("pluginManifestUtils", () => {
 
       const res = await pluginManifestUtils.validateAgainstSchema(
         { id: "1", file: "file" },
-        "testPath"
+        "testPath",
+        driverContext as any
       );
       chai.assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("getDefaultNextAvailableApiSpecPath", async () => {
+    it("Json file: success on second try", async () => {
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+
+      const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
+        "testPath.json",
+        "test"
+      );
+
+      chai.assert.equal(res, path.join("test", "openapi_2.json"));
+    });
+
+    it("Yaml file: success on first try", async () => {
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+
+      const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
+        "testPath.yaml",
+        "test"
+      );
+
+      chai.assert.equal(res, path.join("test", "openapi_1.yaml"));
+    });
+
+    it("success on third try with ", async () => {
+      sandbox.stub(commonUtils, "isJsonSpecFile").throws("fail");
+      sandbox
+        .stub(fs, "pathExists")
+        .onFirstCall()
+        .resolves(true)
+        .onSecondCall()
+        .resolves(true)
+        .onThirdCall()
+        .resolves(false);
+
+      const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath("testPath", "test");
+
+      chai.assert.equal(res, path.join("test", "openapi_3.json"));
     });
   });
 });

@@ -9,6 +9,7 @@ import { stopDebugging } from "../../utils/vscodeOperation";
 import { TestContext } from "../testContext";
 import { dotenvUtil } from "../../utils/envUtil";
 import { TestFilePath } from "../../utils/constants";
+import { VSBrowser } from "vscode-extension-tester";
 
 export type LocalDebugTestName =
   | "tab"
@@ -22,6 +23,7 @@ export type LocalDebugTestName =
   | "crbot" // command an response bot
   | "tabbot"
   | "spfx"
+  | "spfximport"
   | "botfunc"
   | "template"
   | "m365lp"
@@ -31,38 +33,83 @@ export type LocalDebugTestName =
   | "ftNoti" // http and timer trigger notification bot
   | "linkunfurl"
   | "aichat"
-  | "aiassist"
-  | "msgnewapi";
+  | "aiagent"
+  | "chatdata"
+  | "cdcustomapi"
+  | "msgnewapi"
+  | "msgapikey"
+  | "msgmicroentra";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
-  public lang: "javascript" | "typescript" = "javascript";
-  needMigrate: boolean | undefined;
+  public lang: "javascript" | "typescript" | "python";
+  public framework: "react" | "minimal" | "none";
+  public needMigrate: boolean | undefined;
+  public existingSpfxFolder: string;
+  public customCopilotRagType: string;
+  public customCeopilotAgent: string;
+  public llmServiceType: string;
 
   constructor(
     testName: LocalDebugTestName,
-    lang: "javascript" | "typescript" = "javascript",
-    needMigrate?: boolean
+    option?: {
+      lang?: "javascript" | "typescript" | "python";
+      framework?: "react" | "minimal" | "none";
+      needMigrate?: boolean;
+      existingSpfxFolder?: string;
+      customCopilotRagType?:
+        | "custom-copilot-rag-customize"
+        | "custom-copilot-rag-azureAISearch"
+        | "custom-copilot-rag-customApi"
+        | "custom-copilot-rag-microsoft365";
+      customCeopilotAgent?:
+        | "custom-copilot-agent-new"
+        | "custom-copilot-agent-assistants-api";
+      llmServiceType?: "llm-service-azure-openai" | "llm-service-openai";
+    }
   ) {
     super(testName);
     this.testName = testName;
-    this.lang = lang;
-    this.needMigrate = needMigrate;
+    this.lang = option?.lang ? option.lang : "javascript";
+    this.framework = option?.framework ? option.framework : "react";
+    this.needMigrate = option?.needMigrate;
+    this.existingSpfxFolder = option?.existingSpfxFolder
+      ? option.existingSpfxFolder
+      : "existingspfx";
+    this.customCopilotRagType = option?.customCopilotRagType
+      ? option.customCopilotRagType
+      : "custom-copilot-rag-customize";
+    this.customCeopilotAgent = option?.customCeopilotAgent
+      ? option.customCeopilotAgent
+      : "custom-copilot-agent-new";
+    this.llmServiceType = option?.llmServiceType
+      ? option.llmServiceType
+      : "llm-service-azure-openai";
   }
 
   public async before() {
     await super.before();
     await this.createProject();
-    await this.disableDebugConsole();
+    await VSBrowser.instance.driver.sleep(30000);
+    // await this.disableDebugConsole();
     const testFolder = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(testFolder);
   }
 
-  public async after(hasAadPlugin = true, hasBotPlugin = false) {
+  public async after(
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasResourceGroup = false
+  ) {
     await stopDebugging();
     await this.context!.close();
     await this.browser!.close();
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.cleanResource(
+      hasAadPlugin,
+      hasBotPlugin,
+      "local",
+      hasResourceGroup
+    );
   }
 
   public async getTeamsAppId(): Promise<string> {
@@ -80,6 +127,24 @@ export class LocalDebugTestContext extends TestContext {
     );
     const result = context.obj.TEAMS_APP_ID as string;
     console.log(`TEAMS APP ID: ${result}`);
+    return result;
+  }
+
+  public async getM365AppId(): Promise<string> {
+    const userDataFile = path.join(
+      TestFilePath.configurationFolder,
+      `.env.local`
+    );
+    const configFilePath = path.resolve(
+      this.testRootFolder,
+      this.appName,
+      userDataFile
+    );
+    const context = dotenvUtil.deserialize(
+      await fs.readFile(configFilePath, { encoding: "utf8" })
+    );
+    const result = context.obj.M365_APP_ID as string;
+    console.log(`M365 APP ID: ${result}`);
     return result;
   }
 
@@ -159,7 +224,18 @@ export class LocalDebugTestContext extends TestContext {
       case "spfx":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type none --spfx-webpart-name ${this.appName} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName} --telemetry false`
+        );
+        break;
+      case "spfximport":
+        const resourcePath = path.resolve(
+          __dirname,
+          "../../../.test-resources/",
+          this.existingSpfxFolder
+        );
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-solution import --spfx-folder ${resourcePath} --telemetry false`
         );
         break;
       case "botfunc":
@@ -215,19 +291,45 @@ export class LocalDebugTestContext extends TestContext {
       case "aichat":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-basic --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
-      case "aiassist":
+      case "aiagent":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --custom-copilot-agent ${this.customCeopilotAgent} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "chatdata":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --llm-service ${this.llmServiceType} --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "msgnewapi":
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "msgapikey":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth api-key --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "msgmicroentra":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --api-auth microsoft-entra --programming-language ${this.lang} --telemetry false`
+        );
+        break;
+      case "cdcustomapi": //chat data customApi
+        const apiSpecPath =
+          "https://raw.githubusercontent.com/SLdragon/example-openapi-spec/main/real-no-auth.yaml";
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-rag --custom-copilot-rag ${this.customCopilotRagType} --llm-service ${this.llmServiceType} --programming-language ${this.lang}  --openapi-spec-location ${apiSpecPath} --api-operation "GET /repairs" --telemetry false`
         );
         break;
     }
@@ -305,21 +407,5 @@ export class LocalDebugSampleTestContext extends LocalDebugTestContext {
     super("template");
     this.testName = "template";
     this.sampleName = sampleName;
-  }
-}
-
-export class LocalDebugSpfxTestContext extends LocalDebugTestContext {
-  public framework: "react" | "minimal" | "none";
-  constructor(framework: "react" | "minimal" | "none" = "react") {
-    super("spfx");
-    this.testName = "spfx";
-    this.framework = framework;
-  }
-
-  public async createProject(): Promise<void> {
-    await execCommand(
-      this.testRootFolder,
-      `teamsapp new --app-name ${this.appName} --interactive false --capability tab-spfx --spfx-framework-type ${this.framework} --spfx-webpart-name ${this.appName} --telemetry false`
-    );
   }
 }

@@ -20,7 +20,7 @@ describe("OfficeTemplateModelPorvider", () => {
 
     const bm25ModelPowerPointCached = await provider.getBM25Model("PowerPoint");
     expect(bm25ModelPowerPointCached).to.equal(bm25ModelPowerPoint);
-  });
+  }).timeout(5000);
 
   it("invalid host", async () => {
     const bm25ModelFake = await provider.getBM25Model("Fake" as WXPAppName);

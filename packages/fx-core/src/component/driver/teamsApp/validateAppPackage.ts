@@ -5,39 +5,39 @@
  * @author Ning Liu <nliu@microsoft.com>
  */
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
-  Result,
-  FxError,
-  ok,
-  err,
-  TeamsAppManifest,
-  Platform,
   Colors,
+  FxError,
   LogLevel,
   ManifestUtil,
+  Platform,
+  Result,
+  TeamsAppManifest,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { hooks } from "@feathersjs/hooks/lib";
-import { Service } from "typedi";
-import fs from "fs-extra";
-import * as path from "path";
-import { EOL } from "os";
-import { merge } from "lodash";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryPropertyKey } from "./utils/telemetry";
-import { AppStudioResultFactory } from "./results";
-import { AppStudioError } from "./errors";
-import { AppStudioClient } from "./clients/appStudioClient";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
 import AdmZip from "adm-zip";
-import { Constants } from "./constants";
-import { metadataUtil } from "../../utils/metadataUtil";
-import { SummaryConstant } from "../../configManager/constant";
+import fs from "fs-extra";
+import { merge } from "lodash";
+import { EOL } from "os";
+import * as path from "path";
+import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../common/constants";
+import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
+import { SummaryConstant } from "../../configManager/constant";
+import { metadataUtil } from "../../utils/metadataUtil";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { Constants, GeneralValidationErrorId } from "./constants";
+import { AppStudioError } from "./errors";
+import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
+import { AppStudioResultFactory } from "./results";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 
 const actionName = "teamsApp/validateAppPackage";
 
@@ -100,9 +100,9 @@ export class ValidateAppPackageDriver implements StepDriver {
     const appStudioToken = appStudioTokenRes.value;
 
     try {
-      const validationResult = await AppStudioClient.partnerCenterAppPackageValidation(
-        archivedFile,
-        appStudioToken
+      const validationResult = await teamsDevPortalClient.partnerCenterAppPackageValidation(
+        appStudioToken,
+        archivedFile
       );
 
       if (context.platform === Platform.CLI) {
@@ -155,7 +155,10 @@ export class ValidateAppPackageDriver implements StepDriver {
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
-            content: `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
+            content:
+              error.id === GeneralValidationErrorId && error.code
+                ? `${this.processErrorCode(error.code)}`
+                : `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
             color: Colors.BRIGHT_WHITE,
           });
           if (error.helpUrl) {
@@ -212,11 +215,15 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            let message = `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
-              "error.teamsApp.validate.details",
-              error.filePath,
-              error.title
-            )} \n`;
+            const errorContent =
+              error.id === GeneralValidationErrorId && error.code
+                ? this.processErrorCode(error.code)
+                : `${error.content} \n${getLocalizedString(
+                    "error.teamsApp.validate.details",
+                    error.filePath,
+                    error.title
+                  )}`;
+            let message = `${SummaryConstant.Failed} ${errorContent}\n`;
             if (error.helpUrl) {
               message += getLocalizedString("core.option.learnMore", error.helpUrl);
             }
@@ -352,5 +359,14 @@ export class ValidateAppPackageDriver implements StepDriver {
       );
     }
     return ok(undefined);
+  }
+
+  private processErrorCode(errorCode: string): string {
+    if (errorCode.startsWith("Invalid TypeB ")) {
+      // A temporary solution to update the error message.
+      return errorCode.substring(0, 8) + "API " + errorCode.substring(14);
+    } else {
+      return errorCode;
+    }
   }
 }

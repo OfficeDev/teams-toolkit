@@ -77,7 +77,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateQueryOrg(page, { displayName: Env.displayName });
+      await validateQueryOrg(page, {
+        displayName: Env.displayName,
+        appName: sampledebugContext.appName.substring(0, 10),
+      });
       console.log("debug finish!");
     }
   );

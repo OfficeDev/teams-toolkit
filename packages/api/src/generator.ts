@@ -4,7 +4,7 @@
 import { Result } from "neverthrow";
 import { Context } from "./context";
 import { FxError } from "./error";
-import { Inputs } from "./types";
+import { Inputs, Warning } from "./types";
 
 export interface IGenerator {
   componentName: string;
@@ -12,5 +12,9 @@ export interface IGenerator {
     context: Context,
     inputs: Inputs,
     destinationPath: string
-  ): Promise<Result<undefined, FxError>>;
+  ): Promise<Result<GeneratorResult, FxError>>;
+}
+
+export interface GeneratorResult {
+  warnings?: Warning[];
 }

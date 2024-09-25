@@ -10,7 +10,7 @@ The following two conditions are required for Teams app development:
 You can contact your tenant administrator to turn on the upload custom app permission for your organization.
 
 Or, if you're a Visual Studio subscriber, create a Microsoft 365 developer account to
-resolve your account issues. [Learn more about Microsoft 365 Developer Program](https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program).
+resolve your account issues. [Get more info about Microsoft 365 Developer Program](https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program).
 
 ## How
 

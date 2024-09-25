@@ -13,12 +13,11 @@ import {
   downloadDirectory,
   fetchZipFromUrl,
   getSampleInfoFromName,
-  SampleUrlInfo,
   unzip,
-  getTemplateLatestTag,
+  getTemplateUrl,
+  getTemplateLatestVersion,
 } from "./utils";
-import semver from "semver";
-import templateConfig from "../../common/templates-config.json";
+import { SampleUrlInfo } from "../../common/samples";
 
 export interface GeneratorContext {
   name: string;
@@ -59,8 +58,12 @@ export enum GeneratorActionName {
 export const ScaffoldRemoteTemplateAction: GeneratorAction = {
   name: GeneratorActionName.ScaffoldRemoteTemplate,
   run: async (context: GeneratorContext) => {
-    const templateUrl = await determineTemplateSource(context);
-    if (templateUrl === "local") {
+    if (!context.language) {
+      throw new MissKeyError("language");
+    }
+
+    const templateUrl = await getTemplateUrl(context.language, getTemplateLatestVersion);
+    if (!templateUrl) {
       return;
     }
 
@@ -78,12 +81,16 @@ export const ScaffoldRemoteTemplateAction: GeneratorAction = {
 export const ScaffoldLocalTemplateAction: GeneratorAction = {
   name: GeneratorActionName.ScaffoldLocalTemplate,
   run: async (context: GeneratorContext) => {
+    if (!context.language) {
+      throw new MissKeyError("language");
+    }
+
     if (context.outputs?.length) {
       return;
     }
     context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
     const fallbackPath = path.join(getTemplatesFolder(), "fallback");
-    const fileName = `${context.language!}.zip`;
+    const fileName = `${context.language}.zip`;
     const zipPath: string = path.join(fallbackPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
@@ -101,23 +108,6 @@ export const ScaffoldLocalTemplateAction: GeneratorAction = {
     }
   },
 };
-
-async function determineTemplateSource(context: GeneratorContext) {
-  let url = "local";
-  if (!Boolean(templateConfig.useLocalTemplate)) {
-    const latestTag = await getTemplateLatestTag(
-      context.language!,
-      context.tryLimits,
-      context.timeoutInMs
-    );
-    const latestVersion = latestTag.replace(templateConfig.tagPrefix, "").trim();
-    if (semver.gt(latestVersion, templateConfig.localVersion)) {
-      // git tag version is higher than the local version, download template from github
-      url = `${templateConfig.templateDownloadBaseURL}/${latestTag}/${context.language!}.zip`;
-    }
-  }
-  return url;
-}
 
 export const fetchSampleInfoAction: GeneratorAction = {
   name: GeneratorActionName.FetchSampleInfo,

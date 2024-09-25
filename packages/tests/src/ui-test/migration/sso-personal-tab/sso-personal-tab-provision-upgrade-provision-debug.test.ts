@@ -10,6 +10,7 @@ import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
+  execCommandIfExist,
 } from "../../../utils/vscodeOperation";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
@@ -31,6 +32,19 @@ describe("Migration Tests", function () {
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
     await mirgationDebugTestContext.after(true, false, "dev");
+
+    //Close the folder and cleanup local sample project
+    await execCommandIfExist("Workspaces: Close Workspace", Timeout.webView);
+    console.log(
+      `[Successfully] start to clean up for ${mirgationDebugTestContext.projectPath}`
+    );
+    await mirgationDebugTestContext.cleanUp(
+      mirgationDebugTestContext.appName,
+      mirgationDebugTestContext.projectPath,
+      true,
+      false,
+      false
+    );
   });
 
   it(

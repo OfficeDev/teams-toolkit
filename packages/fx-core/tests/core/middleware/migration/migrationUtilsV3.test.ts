@@ -23,7 +23,7 @@ import { MigrationContext } from "../../../../src/core/middleware/utils/migratio
 import { mockMigrationContext } from "./utils";
 import sinon from "sinon";
 import { getPlaceholderMappings } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
-import { setTools, TOOLS } from "../../../../src/core/globalVars";
+import { setTools, TOOLS } from "../../../../src/common/globalVars";
 import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 describe("MigrationUtilsV3", () => {
@@ -270,7 +270,7 @@ describe("Migration: upgrade cancel messages", () => {
     v3MigrationUtils.outputCancelMessage("4.2.2", Platform.VSCode);
     const groundTruth = [
       `Upgrade cancelled.`,
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at https://aka.ms/teams-toolkit-5.0-upgrade.`,
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Get more info at https://aka.ms/teams-toolkit-5.0-upgrade.`,
       `If you want to upgrade, please run command (Teams: Upgrade project) or click the "Upgrade project" button on Teams Toolkit sidebar to trigger the upgrade.`,
       `If you are not ready to upgrade, please continue to use the old version Teams Toolkit 4.x.x.`,
     ];
@@ -281,7 +281,7 @@ describe("Migration: upgrade cancel messages", () => {
     v3MigrationUtils.outputCancelMessage("4.2.2", Platform.VS);
     const groundTruth = [
       `Upgrade cancelled.`,
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Learn more at https://aka.ms/teams-toolkit-5.0-upgrade.`,
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. Get more info at https://aka.ms/teams-toolkit-5.0-upgrade.`,
       `If you want to upgrade, please trigger this command again.`,
       `If you are not ready to upgrade, please continue to use the old version Teams Toolkit.`,
     ];
@@ -292,7 +292,7 @@ describe("Migration: upgrade cancel messages", () => {
     v3MigrationUtils.outputCancelMessage("4.2.2", Platform.CLI);
     const groundTruth = [
       `Upgrade cancelled.`,
-      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Learn more at https://aka.ms/teams-toolkit-5.0-upgrade.`,
+      `Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. Get more info at https://aka.ms/teams-toolkit-5.0-upgrade.`,
       `If you want to upgrade, please trigger this command again.`,
       `If you are not ready to upgrade, please continue to use the old version Teams Toolkit CLI 1.x.x.`,
     ];

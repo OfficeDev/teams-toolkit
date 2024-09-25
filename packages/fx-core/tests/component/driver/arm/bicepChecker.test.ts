@@ -1,18 +1,16 @@
-import "mocha";
+import { Context } from "@microsoft/teamsfx-api";
+import { AxiosRequestConfig, default as axios } from "axios";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import * as sinon from "sinon";
+import "mocha";
 import mockFs from "mock-fs";
-import { AxiosRequestConfig, default as axios } from "axios";
+import * as sinon from "sinon";
 import * as stream from "stream";
-
+import { createContext, setTools } from "../../../../src/common/globalVars";
 import { ensureBicepForDriver } from "../../../../src/component/driver/arm/util/bicepChecker";
-import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
-import { createContextV3 } from "../../../../src/component/utils";
-import { MockTools } from "../../../core/utils";
-import { setTools } from "../../../../src/core/globalVars";
-import { Context } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
+import { cpUtils } from "../../../../src/component/utils/depsChecker/cpUtils";
+import { MockTools } from "../../../core/utils";
 
 chai.use(chaiAsPromised);
 
@@ -64,7 +62,7 @@ describe("BicepChecker", () => {
 
     const tools = new MockTools();
     setTools(tools);
-    context = createContextV3();
+    context = createContext();
   });
 
   afterEach(() => {

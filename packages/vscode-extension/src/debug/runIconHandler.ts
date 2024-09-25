@@ -3,7 +3,7 @@
 import { FxError, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
-import { ExtensionErrors, ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 

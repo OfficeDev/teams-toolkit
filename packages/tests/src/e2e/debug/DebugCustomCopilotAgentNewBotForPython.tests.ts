@@ -50,7 +50,7 @@ describe("Debug V3 command-and-response template", () => {
 
   it(
     "Azure OpenAI happy path: provision and deploy",
-    { testPlanCaseId: 27689382, author: "frankqian@microsoft.com" },
+    { testPlanCaseId: 28957868, author: "frankqian@microsoft.com" },
     async function () {
       // create
       const myRecordAzOpenAI: Record<string, string> = {};

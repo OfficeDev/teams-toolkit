@@ -3,11 +3,11 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { Inputs, err } from "@microsoft/teamsfx-api";
 import _ from "lodash";
+import { TOOLS } from "../../common/globalVars";
 import { environmentNameManager } from "../../core/environmentName";
-import { NoProjectOpenedError } from "../../core/error";
-import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
-import { QuestionNames } from "../../question/questionNames";
+import { NoProjectOpenedError } from "../../error";
+import { QuestionNames } from "../../question/constants";
 import { selectTargetEnvQuestion } from "../../question/other";
 import { traverse } from "../../ui/visitor";
 import { envUtil } from "../utils/envUtil";

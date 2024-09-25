@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import * as sinon from "sinon";
+import { SpecParser } from "@microsoft/m365-spec-parser";
+import { ConfirmConfig, UserError, err, ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import "mocha";
+import { RestoreFn } from "mocked-env";
+import * as sinon from "sinon";
+import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
+import { setTools } from "../../../../src/common/globalVars";
+import { UpdateOauthArgs } from "../../../../src/component/driver/oauth/interface/updateOauthArgs";
+import { UpdateOauthDriver } from "../../../../src/component/driver/oauth/update";
+import {
+  OauthRegistrationAppType,
+  OauthRegistrationTargetAudience,
+} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { setTools } from "../../../../src/core/globalVars";
-import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { UpdateOauthDriver } from "../../../../src/component/driver/oauth/update";
-import {
-  OauthRegistrationAppType,
-  OauthRegistrationTargetAudience,
-} from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
-import { SpecParser } from "@microsoft/m365-spec-parser";
-import { ConfirmConfig, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { UpdateOauthArgs } from "../../../../src/component/driver/oauth/interface/updateOauthArgs";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -55,7 +55,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("happy path: update all fields", async () => {
-    sinon.stub(AppStudioClient, "updateOauthRegistration").resolves({
+    sinon.stub(teamsDevPortalClient, "updateOauthRegistration").resolves({
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test2"],
       applicableToApps: OauthRegistrationAppType.SpecificApp,
@@ -66,8 +66,9 @@ describe("CreateOauthDriver", () => {
       authorizationEndpoint: "mockedAuthorizationEndpoint",
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
+      isPKCEEnabled: true,
     });
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test"],
@@ -78,6 +79,7 @@ describe("CreateOauthDriver", () => {
       authorizationEndpoint: "mockedAuthorizationEndpoint",
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
+      isPKCEEnabled: false,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -134,6 +136,7 @@ describe("CreateOauthDriver", () => {
       expect((config as ConfirmConfig).title.includes("applicableToApps")).to.be.true;
       expect((config as ConfirmConfig).title.includes("m365AppId")).to.be.true;
       expect((config as ConfirmConfig).title.includes("targetAudience")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("isPKCEEnabled")).to.be.true;
       return ok({ type: "success", value: true });
     });
 
@@ -144,6 +147,7 @@ describe("CreateOauthDriver", () => {
       targetAudience: "HomeTenant",
       applicableToApps: "SpecificApp",
       configurationId: "mockedRegistrationId",
+      isPKCEEnabled: true,
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
@@ -154,8 +158,90 @@ describe("CreateOauthDriver", () => {
     }
   });
 
+  it("should throw error if try to disable PKCE", async () => {
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
+      oAuthConfigId: "mockedRegistrationId",
+      description: "mockedDescription",
+      targetUrlsShouldStartWith: ["https://test"],
+      applicableToApps: OauthRegistrationAppType.AnyApp,
+      targetAudience: OauthRegistrationTargetAudience.AnyTenant,
+      clientId: "mockedClientId",
+      clientSecret: "mockedClientSecret",
+      authorizationEndpoint: "mockedAuthorizationEndpoint",
+      tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
+      scopes: ["mockedScope"],
+      isPKCEEnabled: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "https://test",
+                  tokenUrl: "https://test",
+                  scopes: {
+                    mockedScopes: "mockedScopes",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+        {
+          api: "api2",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test2",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "https://test",
+                  tokenUrl: "https://test",
+                  scopes: {
+                    mockedScopes: "mockedScopes",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: UpdateOauthArgs = {
+      name: "test2",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      targetAudience: "HomeTenant",
+      applicableToApps: "SpecificApp",
+      configurationId: "mockedRegistrationId",
+      isPKCEEnabled: false,
+    };
+
+    const result = await updateOauthDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("OauthDisablePKCEError");
+    }
+  });
+
   it("happy path: does not update when no changes", async () => {
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "test",
       targetUrlsShouldStartWith: ["https://test"],
@@ -236,7 +322,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("happy path: should not show confirm when only devtunnel url is different", async () => {
-    sinon.stub(AppStudioClient, "updateOauthRegistration").resolves({
+    sinon.stub(teamsDevPortalClient, "updateOauthRegistration").resolves({
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test2.asse.devtunnels.ms"],
       applicableToApps: OauthRegistrationAppType.SpecificApp,
@@ -248,7 +334,7 @@ describe("CreateOauthDriver", () => {
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
       scopes: ["mockedScope"],
     });
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "test",
       targetUrlsShouldStartWith: ["https://test.asse.devtunnels.ms"],
@@ -334,7 +420,7 @@ describe("CreateOauthDriver", () => {
   });
 
   it("should throw error when user canel", async () => {
-    sinon.stub(AppStudioClient, "getOauthRegistrationById").resolves({
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves({
       oAuthConfigId: "mockedRegistrationId",
       description: "mockedDescription",
       targetUrlsShouldStartWith: ["https://test"],
@@ -427,6 +513,24 @@ describe("CreateOauthDriver", () => {
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("InvalidActionInputError");
+    }
+  });
+
+  it("should throw error if isPKCEEnabled is not boolean", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      clientId: "mockedClientId",
+      flow: "authorizationCode",
+      refreshUrl: "mockedRefreshUrl",
+      isPKCEEnabled: "invalid",
+    };
+    const result = await updateOauthDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("InvalidActionInputError");
+      expect(result.result.error.message).to.include("isPKCEEnabled");
     }
   });
 

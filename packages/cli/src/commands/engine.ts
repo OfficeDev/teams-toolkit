@@ -21,7 +21,7 @@ import {
   IncompatibleProjectError,
   VersionState,
   assembleError,
-  fillinProjectTypeProperties,
+  telemetryUtils,
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
@@ -66,6 +66,8 @@ class CLIEngine {
    * entry point of the CLI engine
    */
   async start(rootCmd: CLICommand): Promise<void> {
+    Correlator.setId();
+
     this.debugLogs = [];
 
     const root = cloneDeep(rootCmd);
@@ -96,12 +98,13 @@ class CLIEngine {
 
     const executeRes = await this.execute(context, root, remainingArgs);
     if (executeRes.isErr()) {
-      this.processResult(context, executeRes.error);
+      await this.processResult(context, executeRes.error);
     } else {
-      this.processResult(context);
+      await this.processResult(context);
     }
     if (context.command.name !== "preview" || context.globalOptionValues.help) {
       // TODO: consider to remove the hardcode
+      await CliTelemetry.flush();
       process.exit();
     }
   }
@@ -124,7 +127,7 @@ class CLIEngine {
       const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
         const projectTypeResult = res.value;
-        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
+        telemetryUtils.fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 
@@ -221,7 +224,7 @@ class CLIEngine {
         return err(res.error);
       } else {
         if (res.value.isSupport === VersionState.unsupported) {
-          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+          return err(new IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
         } else if (res.value.isSupport === VersionState.upgradeable) {
           const upgrade = await core.phantomMigrationV3(inputs);
           if (upgrade.isErr()) {
@@ -246,7 +249,6 @@ class CLIEngine {
       Progress.end(false);
       return err(assembleError(e));
     } finally {
-      await CliTelemetry.flush();
       Progress.end(true);
     }
 
@@ -499,11 +501,11 @@ class CLIEngine {
 
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
-    context.optionValues.correlationId = uuid.v4();
+    context.optionValues.correlationId = Correlator.getId(); //no need to initialize a correlationId, which is initialized by Correlator.setId()
     context.optionValues.platform = Platform.CLI;
     // set projectPath
     const projectFolderOption = context.command.options?.find(
-      (o) => o.questionName === "projectPath"
+      (o) => o.questionName === "projectPath" && o.required
     );
     if (projectFolderOption) {
       // resolve projectPath
@@ -528,8 +530,8 @@ class CLIEngine {
       context.globalOptionValues.interactive + "";
     context.telemetryProperties[TelemetryProperty.CommandVersion] =
       context.globalOptionValues.version + "";
-    context.telemetryProperties[TelemetryProperty.CorrelationId] =
-      context.optionValues.correlationId;
+    // context.telemetryProperties[TelemetryProperty.CorrelationId] =
+    //   context.optionValues.correlationId;
 
     return ok(undefined);
   }
@@ -595,7 +597,7 @@ class CLIEngine {
     }
     return ok(undefined);
   }
-  processResult(context?: CLIContext, fxError?: FxError): void {
+  async processResult(context?: CLIContext, fxError?: FxError): Promise<void> {
     if (context && context.command.telemetry) {
       if (context.optionValues.env) {
         context.telemetryProperties[TelemetryProperty.Env] = getHashedEnv(
@@ -617,6 +619,7 @@ class CLIEngine {
     }
     if (fxError) {
       this.printError(fxError);
+      await CliTelemetry.flush();
       process.exit(1);
     }
   }

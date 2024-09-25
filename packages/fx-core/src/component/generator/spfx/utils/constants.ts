@@ -28,21 +28,6 @@ export class Constants {
   public static readonly PACKAGE_JSON_FILE = "package.json";
 }
 
-export class TelemetryKey {
-  static readonly Component = "component";
-  static readonly Success = "success";
-  static readonly ErrorType = "error-type";
-  static readonly ErrorMessage = "error-message";
-  static readonly ErrorCode = "error-code";
-}
-
-export class TelemetryValue {
-  static readonly Success = "yes";
-  static readonly Fail = "no";
-  static readonly UserError = "user";
-  static readonly SystemError = "system";
-}
-
 export class ProgressTitleMessage {
   static readonly PreDeployProgressTitle = getLocalizedString(
     "plugins.spfx.buildSharepointPackage"

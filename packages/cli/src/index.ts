@@ -3,7 +3,6 @@
 
 "use strict";
 
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import * as path from "path";
 import { start as startNewUX } from "./commands/index";
@@ -12,8 +11,6 @@ import "./console/screen";
 import * as constants from "./constants";
 import cliTelemetry from "./telemetry/cliTelemetry";
 import { TelemetryProperty } from "./telemetry/cliTelemetryEvents";
-
-initializePreviewFeatureFlags();
 
 export function initTelemetryReporter(): void {
   const cliPackage = JSON.parse(fs.readFileSync(path.join(__dirname, "/../package.json"), "utf8"));

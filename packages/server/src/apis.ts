@@ -15,7 +15,6 @@ import {
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
-  OpenAIPluginManifest,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -171,10 +170,6 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<string, FxError>>;
-  loadOpenAIPluginManifestRequest: (
-    inputs: Inputs,
-    token: CancellationToken
-  ) => Promise<Result<OpenAIPluginManifest, FxError>>;
   listOpenAPISpecOperationsRequest: (
     inputs: Inputs,
     token: CancellationToken

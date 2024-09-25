@@ -2,24 +2,25 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { UpdateOauthArgs } from "./interface/updateOauthArgs";
-import { DriverContext } from "../interface/commonArgs";
 import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { logMessageKeys } from "./utility/constants";
+import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
-import { OauthNameTooLongError } from "./error/oauthNameTooLong";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import {
   OauthRegistration,
   OauthRegistrationAppType,
   OauthRegistrationTargetAudience,
 } from "../teamsApp/interfaces/OauthRegistration";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
-import { AppStudioScopes } from "../teamsApp/constants";
+import { OauthNameTooLongError } from "./error/oauthNameTooLong";
+import { UpdateOauthArgs } from "./interface/updateOauthArgs";
+import { logMessageKeys } from "./utility/constants";
 import { getandValidateOauthInfoFromSpec } from "./utility/utility";
-import { Service } from "typedi";
+import { OauthDisablePKCEError } from "./error/oauthDisablePKCEError";
 
 const actionName = "oauth/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-update";
@@ -51,10 +52,14 @@ export class UpdateOauthDriver implements StepDriver {
         throw appStudioTokenRes.error;
       }
       const appStudioToken = appStudioTokenRes.value;
-      const getOauthRes = await AppStudioClient.getOauthRegistrationById(
+      const getOauthRes = await teamsDevPortalClient.getOauthRegistrationById(
         appStudioToken,
         args.configurationId
       );
+
+      if (getOauthRes.isPKCEEnabled && !args.isPKCEEnabled) {
+        throw new OauthDisablePKCEError(actionName);
+      }
 
       const diffMsgs = this.compareOauthRegistration(getOauthRes, args, domain);
       // If there is no difference, skip the update
@@ -83,7 +88,7 @@ export class UpdateOauthDriver implements StepDriver {
       }
 
       const oauth = this.mapArgsToOauthRegistration(args, domain);
-      const updateApiKeyRes = await AppStudioClient.updateOauthRegistration(
+      await teamsDevPortalClient.updateOauthRegistration(
         appStudioToken,
         oauth,
         args.configurationId
@@ -162,6 +167,10 @@ export class UpdateOauthDriver implements StepDriver {
       invalidParameters.push("targetAudience");
     }
 
+    if (args.isPKCEEnabled && typeof args.isPKCEEnabled !== "boolean") {
+      invalidParameters.push("isPKCEEnabled");
+    }
+
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
@@ -204,6 +213,12 @@ export class UpdateOauthDriver implements StepDriver {
       );
     }
 
+    if (current.isPKCEEnabled !== input.isPKCEEnabled) {
+      diffMsgs.push(
+        `isPKCEEnabled: ${(!!current.isPKCEEnabled).toString()} => ${(!!input.isPKCEEnabled).toString()}`
+      );
+    }
+
     return diffMsgs;
   }
 
@@ -232,6 +247,7 @@ export class UpdateOauthDriver implements StepDriver {
       applicableToApps: applicableToApps,
       m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
+      isPKCEEnabled: !!args.isPKCEEnabled,
     } as OauthRegistration;
   }
 }

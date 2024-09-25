@@ -24,7 +24,7 @@ import {
   AzureStorageGetContainerPropertiesError,
   AzureStorageSetContainerPropertiesError,
 } from "../../../../error/deploy";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../common/globalVars";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 

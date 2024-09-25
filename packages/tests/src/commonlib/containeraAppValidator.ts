@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 
 import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import { EnvConstants } from "./constants";
 
+import { Env } from "../utils/env";
+import { Executor } from "../utils/executor";
 import {
   getContainerAppProperties,
-  getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
 } from "./utilities";
-import { Executor } from "../utils/executor";
-import { Env } from "../utils/env";
 
 export class ContainerAppValidator {
   private ctx: any;

@@ -90,7 +90,7 @@ describe("adaptiveCardGenerator", () => {
           {
             type: "Image",
             url: "${photo_url}",
-            $when: "${photo_url != null}",
+            $when: "${photo_url != null && photo_url != ''}",
           },
           {
             type: "TextBlock",
@@ -183,7 +183,7 @@ describe("adaptiveCardGenerator", () => {
               {
                 type: "Image",
                 url: `\${image}`,
-                $when: `\${image != null}`,
+                $when: `\${image != null && image != ''}`,
               },
             ],
           },
@@ -372,6 +372,66 @@ describe("adaptiveCardGenerator", () => {
       expect(actual).to.deep.equal(expected);
       expect(jsonPath).to.equal("$");
     });
+
+    it("should allow multiple media type if allowMultipleMediaType = true", async () => {
+      const operationItem = {
+        responses: {
+          "200": {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      type: "string",
+                    },
+                    age: {
+                      type: "number",
+                    },
+                  },
+                },
+              },
+              "application/xml": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      type: "string",
+                    },
+                    age: {
+                      type: "number",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const expected = {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "name: ${if(name, name, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "age: ${if(age, age, 'N/A')}",
+            wrap: true,
+          },
+        ],
+      };
+
+      const [actual, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem, true);
+
+      expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
+    });
   });
 
   describe("generateCardFromResponse", () => {
@@ -460,7 +520,7 @@ describe("adaptiveCardGenerator", () => {
             {
               type: "Image",
               url: "${$data}",
-              $when: "${$data != null}",
+              $when: "${$data != null && $data != ''}",
             },
           ],
         },
@@ -737,7 +797,7 @@ describe("adaptiveCardGenerator", () => {
                 {
                   type: "Image",
                   url: `\${iconUrl}`,
-                  $when: `\${iconUrl != null}`,
+                  $when: `\${iconUrl != null && iconUrl != ''}`,
                 },
               ],
             },

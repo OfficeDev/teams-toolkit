@@ -16,12 +16,14 @@ class BotSSOTestCase extends CaseFactory {
     return await validateBot(page, {
       botCommand: "show",
       expected: Env.displayName,
+      consentPrompt: true,
     });
   }
   public override async onCliValidate(page: Page): Promise<void> {
     return await validateBot(page, {
       botCommand: "show",
       expected: Env.displayName,
+      consentPrompt: true,
     });
   }
 }

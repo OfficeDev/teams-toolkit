@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, CLICommandOption, TeamsAppInputs, err } from "@microsoft/teamsfx-api";
+import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../../activate";
 import { commands } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
@@ -10,12 +11,11 @@ import {
   ProjectFolderOption,
   TeamsAppManifestFileOption,
   TeamsAppOuputPackageOption,
-  TeamsAppOutputManifestFileOption,
+  TeamsAppOutputFolderOption,
   TeamsAppPackageOption,
   ValidateMethodOption,
 } from "../../common";
 import { validateArgumentConflict } from "./update";
-import { isAsyncAppValidationEnabled } from "../../../../../fx-core/build";
 
 export const teamsappValidateCommand: CLICommand = {
   name: "validate",
@@ -42,13 +42,13 @@ function getOptions(): CLICommandOption[] {
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,
     TeamsAppOuputPackageOption,
-    TeamsAppOutputManifestFileOption,
+    TeamsAppOutputFolderOption,
     EnvOption,
     EnvFileOption,
     ProjectFolderOption,
   ];
 
-  if (isAsyncAppValidationEnabled()) {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation)) {
     options.push(ValidateMethodOption);
   }
 

@@ -11,6 +11,8 @@ import {
   cleanTeamsApp,
   DevTunnelCleanHelper,
   GraphApiCleanHelper,
+  cleanUpResourceGroup,
+  deleteResourceGroupByName,
 } from "../utils/cleanHelper";
 import { getAppName, getScreenshotName } from "../utils/nameUtil";
 import { dotenvUtil } from "../utils/envUtil";
@@ -99,7 +101,8 @@ export class TestContext {
   public async cleanResource(
     hasAadPlugin = true,
     hasBotPlugin = false,
-    envName = "local"
+    envName = "local",
+    hasResourceGroup = false
   ): Promise<void> {
     try {
       const cleanService = await GraphApiCleanHelper.create(
@@ -122,12 +125,26 @@ export class TestContext {
           await cleanService.deleteAad(botObjectId);
         }
       }
+      if (hasResourceGroup) {
+        cleanUpResourceGroup(this.appName, "local");
+      }
       await this.cleanDevTunnel();
     } catch (e) {
       console.log(`Failed to clean resource, error message: ${e.message}`);
     }
     await cleanTeamsApp(this.appName);
     await cleanAppStudio(this.appName);
+  }
+
+  public async cleanUpResourceGroup(
+    appName: string,
+    envName?: string
+  ): Promise<boolean> {
+    if (!appName) {
+      return false;
+    }
+    const name = `${appName}-${envName}-rg`;
+    return await deleteResourceGroupByName(name);
   }
 
   public async cleanDevTunnel(): Promise<void> {

@@ -6,7 +6,6 @@ import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import * as sinon from "sinon";
-import { cpUtils } from "../../../../../src";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import {
@@ -14,6 +13,7 @@ import {
   SPFxWebpartNameQuestion,
   appNameQuestion,
 } from "../../../../../src/question";
+import { cpUtils } from "../../../../../src/component/deps-checker/util/cpUtils";
 
 describe("utils", () => {
   afterEach(async () => {

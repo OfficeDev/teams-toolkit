@@ -377,7 +377,7 @@ export default function RestifyServerNotificationBot() {
             </li>
           </ul>
           <p>
-            Congratulations, you&#39;ve just created your own notification! To learn more about
+            Congratulations, you&#39;ve just created your own notification! To get more info about
             extending the notification bot template,{" "}
             <ExternalLink
               title="visit the documentation on GitHub"

@@ -33,14 +33,14 @@ on:
   schedule:
     - cron: "0 22 * * *"
 
-  pull_request_target:
+  pull_request:
 
 permissions:
   actions: read
 
 jobs:
   setup:
-    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
     environment: engineering
     permissions:
@@ -59,7 +59,7 @@ jobs:
       M365_TENANT_ID: ${{ secrets.TEST_M365_TENANT_ID }}
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME_2 }}
-      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-name }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -96,7 +96,7 @@ jobs:
 
       - name: List cases for pull request
         id: pr-cases
-        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         working-directory: packages/tests/src/e2e
         run: |
           cases=`find ./bot ./frontend -path "*.tests.ts" -and \
@@ -197,16 +197,11 @@ jobs:
             8.0.x
 
       - name: Setup Python
-        run: |
-          sudo apt-get install python3.11
-          sudo apt-get install python3-pip
-          sudo apt-get install python3.11-venv
-          python3 --version
-          pip3 --version
-
-      - uses: pnpm/action-setup@v2
+        uses: actions/setup-python@v5
         with:
-          version: 8
+          python-version: '3.11'
+
+      - uses: pnpm/action-setup@v4
 
       - name: Setup project
         run: |
@@ -218,7 +213,7 @@ jobs:
           pnpm link --global
 
       - name: Update CLI and legacy-peer-deps for PR cases
-        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         run: |
           npm install -g @microsoft/teamsapp-cli@alpha
           npm config set legacy-peer-deps false
@@ -307,7 +302,7 @@ jobs:
         if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         working-directory: packages/tests
         run: |
-          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report
 
   tear-down:
     needs: [execute-case, e2e-coverage]
@@ -340,7 +335,7 @@ jobs:
     permissions:
       actions: write
     needs: tear-down
-    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
       - name: rerun
@@ -379,7 +374,7 @@ jobs:
           while :
           do
 
-            url=https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
+            url=https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs\?per_page\=100\&page\=$page
             resp=`curl -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url`
 
             new_jobs=`echo $resp | jq -cr '.jobs'`
@@ -479,7 +474,7 @@ jobs:
 
           done <<< $cases
 
-          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/34d3400d-aa60-4ad5-9746-9d1b525da16e\/_djb2_msteams_prefix_3816426998?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $skipped_lists $passed_lists </table> <br />"
+          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/c439ae8d-3ab3-4efd-9223-87366d8c170c\/_djb2_msteams_prefix_1252604900?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>PATH</th> <th>CASE</th> <th>TARGET TYPE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $failed_lists $skipped_lists $passed_lists </table> <br />"
 
           total=$((passed+failed+skipped))
 
@@ -512,9 +507,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 8
+      - uses: pnpm/action-setup@v4
 
       - name: mv files
         working-directory: packages/tests

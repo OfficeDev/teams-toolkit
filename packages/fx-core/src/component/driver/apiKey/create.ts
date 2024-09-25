@@ -4,16 +4,16 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { teamsDevPortalClient } from "../../../client/teamsDevPortalClient";
+import { AppStudioScopes, GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { InvalidActionInputError, assembleError } from "../../../error";
-import { QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/constants";
 import { QuestionMW } from "../../middleware/questionMW";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
@@ -27,6 +27,7 @@ import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
 import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
 import { getDomain, loadStateFromEnv, validateDomain } from "./utility/utility";
+import { apiKeyFromScratchClientSecretInvalid } from "./error/apiKeyFromScratchClientSecretInvalid";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -63,7 +64,10 @@ export class CreateApiKeyDriver implements StepDriver {
 
       if (state && state.registrationId) {
         try {
-          await AppStudioClient.getApiKeyRegistrationById(appStudioToken, state.registrationId);
+          await teamsDevPortalClient.getApiKeyRegistrationById(
+            appStudioToken,
+            state.registrationId
+          );
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.skipCreateApiKey,
@@ -95,7 +99,7 @@ export class CreateApiKeyDriver implements StepDriver {
           domains
         );
 
-        const apiRegistrationRes = await AppStudioClient.createApiKeyRegistration(
+        const apiRegistrationRes = await teamsDevPortalClient.createApiKeyRegistration(
           appStudioToken,
           apiKey
         );
@@ -167,7 +171,9 @@ export class CreateApiKeyDriver implements StepDriver {
     }
 
     if (args.primaryClientSecret && !this.validateSecret(args.primaryClientSecret)) {
-      throw new ApiKeyClientSecretInvalidError(actionName);
+      throw args.primaryClientSecret === " "
+        ? new apiKeyFromScratchClientSecretInvalid(actionName)
+        : new ApiKeyClientSecretInvalidError(actionName);
     }
 
     if (args.secondaryClientSecret && !this.validateSecret(args.secondaryClientSecret)) {

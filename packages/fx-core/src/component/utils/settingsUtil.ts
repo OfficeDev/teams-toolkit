@@ -4,7 +4,7 @@
 import { FxError, Settings, Result, ok, err } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as uuid from "uuid";
-import { globalVars } from "../../core/globalVars";
+import { globalVars } from "../../common/globalVars";
 import { parseDocument } from "yaml";
 import {
   Component,

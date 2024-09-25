@@ -66,7 +66,7 @@ describe("Remote debug Tests", function () {
     async function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
-      await createNewProject("tabnsso", appName, "TypeScript");
+      await createNewProject("tabnsso", appName, { lang: "TypeScript" });
       await setSkuNameToB1(projectPath);
       await driver.sleep(Timeout.shortTimeWait);
       await provisionProject(appName, projectPath);

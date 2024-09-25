@@ -3,15 +3,15 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { isChatParticipantEnabled, manifestUtils } from "@microsoft/teamsfx-core";
+import { featureFlagManager, FeatureFlags, manifestUtils } from "@microsoft/teamsfx-core";
 
-import { isSPFxProject, workspaceUri } from "../globalVariables";
+import { isDeclarativeCopilotApp, isSPFxProject, workspaceUri } from "../globalVariables";
+import { hasAdaptiveCardInWorkspace } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
-import { hasAdaptiveCardInWorkspace } from "../utils/commonUtils";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -115,7 +115,7 @@ class TreeViewManager {
     }
   }
 
-  public updateTreeViewsOnSPFxChanged(): void {
+  public updateDevelopmentTreeView(): void {
     const developmentTreeviewProvider = this.getTreeView(
       "teamsfx-development"
     ) as CommandsTreeViewProvider;
@@ -216,6 +216,17 @@ class TreeViewManager {
             ),
           ]
         : []),
+      ...(isDeclarativeCopilotApp
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.addPluginTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.addPluginDescription"),
+              "fx-extension.addPlugin",
+              "addPlugin",
+              { name: "teamsfx-add-feature", custom: false }
+            ),
+          ]
+        : []),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.guideDescription"),
@@ -231,7 +242,7 @@ class TreeViewManager {
         undefined,
         { name: "debug-alt", custom: false }
       ),
-      ...(isChatParticipantEnabled()
+      ...(featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
         ? [
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle"),

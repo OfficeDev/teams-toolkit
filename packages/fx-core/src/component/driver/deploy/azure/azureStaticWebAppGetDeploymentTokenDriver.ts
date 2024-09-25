@@ -70,7 +70,14 @@ export class AzureStaticWebAppGetDeploymentTokenDriver implements StepDriver {
     const client = new WebSiteManagementClient(azureTokenCredential, resourceInfo.subscriptionId);
     const secrets = await client.staticSites.listStaticSiteSecrets(
       resourceInfo.resourceGroupName,
-      resourceInfo.instanceId
+      resourceInfo.instanceId,
+      {
+        requestOptions: {
+          customHeaders: {
+            "User-Agent": "TeamsToolkit",
+          },
+        },
+      }
     );
     const deploymentKey = secrets?.properties?.apiKey ?? "";
     const result: Result<Map<string, string>, FxError> = ok(new Map([[outputKey, deploymentKey]]));

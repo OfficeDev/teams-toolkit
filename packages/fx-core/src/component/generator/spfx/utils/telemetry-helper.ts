@@ -1,8 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants, TelemetryKey, TelemetryValue } from "./constants";
 import { Context, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { maskSecret } from "../../../../common/stringUtils";
+import {
+  TelemetryErrorType,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../../../common/telemetry";
+import { Constants } from "./constants";
 
 export class telemetryHelper {
   static sendSuccessEvent(
@@ -11,8 +17,8 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKey.Component] = Constants.PLUGIN_DEV_NAME;
-    properties[TelemetryKey.Success] = TelemetryValue.Success;
+    properties[TelemetryProperty.Component] = Constants.PLUGIN_DEV_NAME;
+    properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
 
     ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -24,16 +30,16 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKey.Component] = Constants.PLUGIN_DEV_NAME;
-    properties[TelemetryKey.Success] = TelemetryValue.Fail;
+    properties[TelemetryProperty.Component] = Constants.PLUGIN_DEV_NAME;
+    properties[TelemetryProperty.Success] = TelemetrySuccess.No;
 
     if (e instanceof SystemError) {
-      properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;
+      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
     } else if (e instanceof UserError) {
-      properties[TelemetryKey.ErrorType] = TelemetryValue.UserError;
+      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
     }
-    properties[TelemetryKey.ErrorMessage] = e.message;
-    properties[TelemetryKey.ErrorCode] = e.name;
+    properties[TelemetryProperty.ErrorMessage] = maskSecret(e.message);
+    properties[TelemetryProperty.ErrorCode] = e.name;
 
     ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements);
   }

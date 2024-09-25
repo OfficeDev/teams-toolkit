@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import * as prompts from "@inquirer/prompts";
-import inquirer from "inquirer";
 import {
   Colors,
+  InputTextConfig,
   LogLevel,
   MultiSelectConfig,
   SelectFileConfig,
@@ -123,6 +123,36 @@ describe("User Interaction Tests", function () {
       expect(result.isOk());
       if (result.isOk()) {
         expect(result.value.result).equals("a");
+      }
+    });
+
+    it("Add description in title", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [{ id: "id1", description: "some description", label: "label" }],
+      };
+      sandbox.stub(UI, "loadSelectDynamicData").resolves(ok({} as any));
+      sandbox.stub(UI, "singleSelect").resolves(ok("id1"));
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equal("id1");
+      }
+    });
+
+    it("No description in title", async () => {
+      const config: SingleSelectConfig = {
+        name: "test",
+        title: "test",
+        options: [{ id: "id1", label: "label" }],
+      };
+      sandbox.stub(UI, "loadSelectDynamicData").resolves(ok({} as any));
+      sandbox.stub(UI, "singleSelect").resolves(ok("id1"));
+      const result = await UI.selectOption(config);
+      expect(result.isOk());
+      if (result.isOk()) {
+        expect(result.value.result).equal("id1");
       }
     });
 
@@ -374,7 +404,7 @@ describe("User Interaction Tests", function () {
     });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
-      sandbox.stub(inquirer, "prompt").resolves({ test: "abc" });
+      sandbox.stub(prompts, "input").resolves("abc");
       const result = await UI.input("test", "Input the password", "default string");
       expect(result.isOk() ? result.value : result.error).equals("abc");
     });
@@ -464,6 +494,22 @@ describe("User Interaction Tests", function () {
       };
       const result = await UI.selectFolder(config);
       expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
+    });
+    it("Input text", async () => {
+      sandbox.stub(prompts, "input").resolves("abc");
+      sandbox.stub(UI, "interactive").value(true);
+      const config: InputTextConfig = {
+        name: "folder",
+        title: "Select a folder",
+        validation: () => {
+          return undefined;
+        },
+        additionalValidationOnAccept: () => {
+          return undefined;
+        },
+      };
+      const result = await UI.inputText(config);
+      expect(result.isOk() ? result.value.result : result.error).deep.equals("abc");
     });
   });
 

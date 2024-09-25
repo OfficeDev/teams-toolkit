@@ -10,7 +10,7 @@ import {
   getSPFxTenant,
   GraphReadUserScopes,
   SPFxScopes,
-} from "@microsoft/teamsfx-core/build/common/tools";
+} from "@microsoft/teamsfx-core";
 
 export class SharepointValidator {
   public static provider: M365TokenProvider;

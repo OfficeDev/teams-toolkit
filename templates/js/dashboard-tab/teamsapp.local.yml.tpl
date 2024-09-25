@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.7/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.5
+version: v1.7
 
 provision:
   # Creates a Teams app
@@ -18,7 +18,7 @@ provision:
   - uses: script
     with:
       run:
-        echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
+        echo "::set-teamsfx-env TAB_DOMAIN=localhost";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -31,7 +31,7 @@ provision:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+      outputFolder: ./appPackage/build
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:

@@ -1,0 +1,6 @@
+{
+  // extend your base config to share compilerOptions, etc
+  "extends": "./tsconfig.json",
+  "include": ["src/chat/api/", "test/setup.ts", "test/mock/"],
+  "exclude": ["test/migration/data"]
+}

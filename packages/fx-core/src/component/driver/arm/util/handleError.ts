@@ -4,7 +4,7 @@
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { Context, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { ConstantString } from "../../../../common/constants";
-import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
+import { getResourceGroupNameFromResourceId } from "../../../../common/stringUtils";
 import { ResourceGroupNotExistError } from "../../../../error/azure";
 import { DeployArmError, GetArmDeploymentError } from "../../../../error/arm";
 import { innerGetDeploymentError, innerGetDeploymentOperations } from "./innerHandleError";

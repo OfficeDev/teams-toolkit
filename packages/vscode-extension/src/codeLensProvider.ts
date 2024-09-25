@@ -15,17 +15,17 @@ import {
   getAllowedAppMaps,
   getPermissionMap,
 } from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import isUUID from "validator/lib/isUUID";
 import * as vscode from "vscode";
 import { environmentVariableRegex } from "./constants";
 import { commandIsRunning } from "./globalVariables";
-import { getSystemInputs } from "./handlers";
+import { getSystemInputs } from "./utils/systemEnvUtils";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
 import * as _ from "lodash";
-import * as path from "path";
+import path from "path";
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables

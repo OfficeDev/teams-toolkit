@@ -4,7 +4,9 @@
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { extractMethodNamesFromErrorStack } from "../../src/common/telemetry";
+import { TelemetryProperty, telemetryUtils } from "../../src/common/telemetry";
+import { ScriptExecutionError } from "../../src/error/script";
+import { maskSecret } from "../../src/common/stringUtils";
 
 describe("telemetry", () => {
   const sandbox = sinon.createSandbox();
@@ -41,12 +43,24 @@ describe("telemetry", () => {
         "async FxCore.ErrorHandlerMW",
         "async FxCore.<anonymous>",
       ];
-      const output = extractMethodNamesFromErrorStack(stack);
+      const output = telemetryUtils.extractMethodNamesFromErrorStack(stack);
       assert.equal(output, expectedOutput.join(" | "));
     });
     it("input undefined", async () => {
-      const output = extractMethodNamesFromErrorStack();
+      const output = telemetryUtils.extractMethodNamesFromErrorStack();
       assert.equal(output, "");
+    });
+  });
+
+  describe("fillInErrorProperties", () => {
+    it("happy path", async () => {
+      const props: any = {};
+      const error = new Error("error message");
+      telemetryUtils.fillInErrorProperties(props, new ScriptExecutionError(error, "test"));
+      assert.equal(
+        props[TelemetryProperty.ErrorData],
+        maskSecret(JSON.stringify(error, Object.getOwnPropertyNames(error)), { replace: "***" })
+      );
     });
   });
 });

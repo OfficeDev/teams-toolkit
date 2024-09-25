@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
@@ -6,19 +9,21 @@ import {
   initPage,
   validateTeamsWorkbench,
 } from "../../utils/playwrightOperation";
-import { LocalDebugSpfxTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
+import { LocalDebugTestContext } from "./localdebugContext";
+import { Timeout } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 
 describe("SPFx local debug", function () {
   this.timeout(Timeout.testCase);
-  let localDebugTestContext: LocalDebugSpfxTestContext;
+  let localDebugTestContext: LocalDebugTestContext;
 
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugSpfxTestContext("react");
+    localDebugTestContext = new LocalDebugTestContext("spfx", {
+      framework: "react",
+    });
     await localDebugTestContext.before();
   });
 
@@ -47,7 +52,7 @@ describe("SPFx local debug", function () {
         Env.username,
         Env.password
       );
-      await validateTeamsWorkbench(page, Env.displayName);
+      await validateTeamsWorkbench(page, localDebugTestContext.appName);
     }
   );
 });

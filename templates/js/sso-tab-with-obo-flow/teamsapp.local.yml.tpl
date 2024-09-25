@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.7/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.5
+version: v1.7
 
 provision:
   # Creates a new Microsoft Entra app to authenticate users if
@@ -44,6 +44,7 @@ provision:
   - uses: script
     with:
       run:
+        echo "::set-teamsfx-env TAB_HOSTNAME=localhost";
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
         echo "::set-teamsfx-env FUNC_NAME=getUserProfile";
@@ -70,7 +71,7 @@ provision:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+      outputFolder: ./appPackage/build
 
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
@@ -136,10 +137,10 @@ deploy:
         PORT: 53000
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
-        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
-        REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
-        REACT_APP_FUNC_NAME: ${{FUNC_NAME}}
-        REACT_APP_FUNC_ENDPOINT: ${{FUNC_ENDPOINT}}
+        VITE_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        VITE_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
+        VITE_FUNC_NAME: ${{FUNC_NAME}}
+        VITE_FUNC_ENDPOINT: ${{FUNC_ENDPOINT}}
 
   # Generate runtime environment variables for backend
   - uses: file/createOrUpdateEnvironmentFile
@@ -150,4 +151,4 @@ deploy:
         M365_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
         M365_TENANT_ID: ${{AAD_APP_TENANT_ID}}
         M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
-        ALLOWED_APP_IDS: 1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3
+        ALLOWED_APP_IDS: 1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3;27922004-5251-4030-b22d-91ecd9a37ea4

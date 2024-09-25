@@ -1,11 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { commands, ExtensionContext, extensions } from "vscode";
+import {
+  commands,
+  Diagnostic,
+  ExtensionContext,
+  extensions,
+  Uri,
+  Range,
+  Position,
+  languages,
+} from "vscode";
 
 import {
   err,
   FxError,
+  IDiagnosticInfo,
   InputResult,
   ok,
   Result,
@@ -13,22 +23,23 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   assembleError,
+  isValidHttpUrl,
   loadingDefaultPlaceholder,
   loadingOptionsPlaceholder,
 } from "@microsoft/teamsfx-core";
-import { Localizer, VSCodeUI } from "@microsoft/vscode-ui";
+import { InternalUIError, Localizer, sleep, VSCodeUI } from "@microsoft/vscode-ui";
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { InternalUIError } from "@microsoft/vscode-ui";
 import {
   SelectFileOrInputResultType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { isValidHttpUrl } from "@microsoft/teamsfx-core";
+import { diagnosticCollection, setDiagnosticCollection } from "../globalVariables";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
+import { FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {
@@ -76,6 +87,7 @@ export class TTKLocalizer implements Localizer {
 }
 
 export const ttkLocalizer = new TTKLocalizer();
+export let VS_CODE_UI: VsCodeUI;
 
 export class VsCodeUI extends VSCodeUI {
   context: ExtensionContext;
@@ -137,4 +149,47 @@ export class VsCodeUI extends VSCodeUI {
     }
     return res;
   }
+
+  showDiagnosticInfo(diagnostics: IDiagnosticInfo[]): void {
+    if (!featureFlagManager.getBooleanValue(FeatureFlags.ShowDiagnostics)) {
+      return;
+    }
+    if (!diagnosticCollection) {
+      const collection = languages.createDiagnosticCollection("teamstoolkit");
+      setDiagnosticCollection(collection);
+    } else {
+      diagnosticCollection.clear();
+    }
+    const diagnosticMap: Map<string, Diagnostic[]> = new Map();
+    for (const diagnostic of diagnostics) {
+      let diagnosticsOfFile = diagnosticMap.get(diagnostic.filePath);
+      if (!diagnosticsOfFile) {
+        diagnosticsOfFile = [];
+        diagnosticMap.set(diagnostic.filePath, diagnosticsOfFile);
+      }
+
+      const diagnosticInVSC = new Diagnostic(
+        new Range(
+          new Position(diagnostic.startLine, diagnostic.startIndex),
+          new Position(diagnostic.endLine, diagnostic.endIndex)
+        ),
+        diagnostic.message,
+        diagnostic.severity
+      );
+      if (diagnostic.code) {
+        diagnosticInVSC.code = {
+          value: diagnostic.code.value,
+          target: Uri.parse(diagnostic.code.link),
+        };
+      }
+      diagnosticsOfFile.push(diagnosticInVSC);
+    }
+    diagnosticMap.forEach((diags, filePath) => {
+      diagnosticCollection.set(Uri.file(filePath), diags);
+    });
+  }
+}
+
+export function initVSCodeUI(context: ExtensionContext) {
+  VS_CODE_UI = new VsCodeUI(context);
 }

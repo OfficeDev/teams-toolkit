@@ -3,7 +3,6 @@
 
 import { CryptoProvider, err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import Cryptr from "cryptr";
-import { CoreSource } from "./error";
 
 export class LocalCrypto implements CryptoProvider {
   private cryptr: Cryptr;
@@ -26,7 +25,7 @@ export class LocalCrypto implements CryptoProvider {
       return ok(this.cryptr.decrypt(ciphertext.substr(this.prefix.length)));
     } catch (e) {
       // ciphertext is broken
-      return err(new SystemError(CoreSource, "DecryptionError", "Cipher text is broken"));
+      return err(new SystemError("Core", "DecryptionError", "Cipher text is broken"));
     }
   }
 }

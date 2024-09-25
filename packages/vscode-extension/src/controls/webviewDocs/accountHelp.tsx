@@ -52,7 +52,7 @@ export default function PrepareM365Account() {
         Or, if you're a Visual Studio subscriber, create a Microsoft 365 developer account to
         resolve your account issues.{" "}
         <ExternalLink
-          title="Learn more about Microsoft 365 Developer Program"
+          title="Get more info about Microsoft 365 Developer Program"
           link="https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program"
           triggerFrom={TelemetryTriggerFrom.AccountHelp}
         />

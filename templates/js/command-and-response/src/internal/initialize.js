@@ -1,6 +1,7 @@
 const { BotBuilderCloudAdapter } = require("@microsoft/teamsfx");
 const ConversationBot = BotBuilderCloudAdapter.ConversationBot;
 const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
+const { GenericCommandHandler } = require("../genericCommandHandler");
 const config = require("./config");
 
 // Create the command bot and register the command handlers for your app.
@@ -9,14 +10,10 @@ const config = require("./config");
 const commandApp = new ConversationBot({
   // The bot id and password to create CloudAdapter.
   // See https://aka.ms/about-bot-adapter to learn more about adapters.
-  adapterConfig: {
-    MicrosoftAppId: config.botId,
-    MicrosoftAppPassword: config.botPassword,
-    MicrosoftAppType: "MultiTenant",
-  },
+  adapterConfig: config,
   command: {
     enabled: true,
-    commands: [new HelloWorldCommandHandler()],
+    commands: [new HelloWorldCommandHandler(), new GenericCommandHandler()],
   },
 });
 

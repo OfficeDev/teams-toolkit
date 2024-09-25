@@ -14,7 +14,6 @@ export enum TextType {
   Important = "important",
   Details = "details", // secondary text
   Commands = "commands", // commands, parameters, system inputs
-  Spinner = "spinner",
 }
 
 export function colorize(message: string, type: TextType): string {
@@ -39,8 +38,6 @@ export function colorize(message: string, type: TextType): string {
       return chalk.gray(message);
     case TextType.Commands:
       return chalk.blueBright(message);
-    case TextType.Spinner:
-      return chalk.yellowBright(message);
   }
 }
 

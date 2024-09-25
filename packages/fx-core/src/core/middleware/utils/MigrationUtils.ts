@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
-import { CoreSource } from "../../error";
+import { CoreSource } from "../../../error";
 
 export enum FileType {
   STATE,

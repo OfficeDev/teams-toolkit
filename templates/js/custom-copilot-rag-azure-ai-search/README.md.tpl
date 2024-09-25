@@ -25,12 +25,17 @@ This app template also demonstrates usage of techniques like:
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#useOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`. And fill in your Azure AI search key `SECRET_AZURE_SEARCH_KEY=<your--ai-search-key>` and endpoint `AZURE_SEARCH_ENDPOINT=<your-ai-search-endpoint>`.
+1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`. And fill in your Azure AI search key `SECRET_AZURE_SEARCH_KEY=<your-ai-search-key>` and endpoint `AZURE_SEARCH_ENDPOINT=<your-ai-search-endpoint>`.
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>`, deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`, and embedding deployment name `AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=<your-embedding-deployment>`. And fill in your Azure AI search key `SECRET_AZURE_SEARCH_KEY=<your-ai-search-key>` and endpoint `AZURE_SEARCH_ENDPOINT=<your-ai-search-endpoint>`.
 {{/useAzureOpenAI}}
-1. Do `npm install` and `npm run indexer:create` to create the my documents index. Once you're done using the sample it's good practice to delete the index. You can do so with the `npm run indexer:delete` command.
+{{#useOpenAI}}
+1. Do `npm install` and `npm run indexer:create -- <your-ai-search-key> <your-openai-api-key>` to create the my documents index. Once you're done using the sample it's good practice to delete the index. You can do so with the `npm run indexer:delete -- <your-ai-search-key>` command.
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+1. Do `npm install` and `npm run indexer:create -- <your-ai-search-key> <your-azure-openai-api-key>` to create the my documents index. Once you're done using the sample it's good practice to delete the index. You can do so with the `npm run indexer:delete -- <your-ai-search-key>` command.
+{{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
 1. You can send any message to get a response from the bot.
 
@@ -76,7 +81,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 - Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
 - Follow [Build a RAG Bot in Teams](https://aka.ms/teamsfx-rag-bot) to extend the template with more RAG capabilities.
-- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#microsoft-365-as-data-source).
+- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#azure-ai-search-as-data-source).
 
 ## Additional information and references
 

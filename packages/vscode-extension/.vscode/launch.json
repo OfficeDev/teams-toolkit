@@ -7,31 +7,14 @@
   "configurations": [
     {
       "name": "Run Extension",
-      "type": "pwa-extensionHost",
+      "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "resolveSourceMapLocations": [
-      ],
       "env": {
         "NODE_ENV": "development",
-        "TEAMSFX_SAMPLE_CONFIG_BRANCH": "dev",
+        "TEAMSFX_SAMPLE_CONFIG_BRANCH": "dev"
       },
-      "preLaunchTask": "npm: build"
-    },
-    {
-      "name": "Run Extension with Failpoints",
-      "type": "pwa-extensionHost",
-      "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "resolveSourceMapLocations": [
-        "${workspaceFolder}/out/**/*.js",
-        "${workspaceFolder}/../fx-core/build/**/*.js",
-        "${workspaceFolder}/../api/build/**/*.js"
-      ],
-      "env": {
-        "TEAMSFX_FAILPOINTS": "NoSubsription=true"
-      },
-      "preLaunchTask": "npm: build-failpoint"
+      "preLaunchTask": "watch"
     },
     {
       "name": "Extension Unit Tests",
@@ -43,14 +26,12 @@
       "args": [
         "${workspaceFolder}/test/**/*.test.ts",
         "--require=ts-node/register",
-        "--require=out/test/setup.js",
+        "--require=build/test/setup.js",
         "--recursive",
-        "--colors",
+        "--colors"
       ],
-      "preLaunchTask": "npm: compile",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "preLaunchTask": "npm: build:test",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import { performance } from "perf_hooks";
 import * as util from "util";
 import * as vscode from "vscode";
@@ -16,8 +16,8 @@ import {
 } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
 import {
   TelemetryEvent,
@@ -25,24 +25,27 @@ import {
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
+import { getNpmInstallLogInfo, getTestToolLogInfo } from "../utils/localEnvManagerUtils";
 import {
+  clearAADAfterLocalDebugHelpLink,
   DebugNoSessionId,
-  endLocalDebugSession,
-  getLocalDebugSession,
-  getLocalDebugSessionId,
-  getNpmInstallLogInfo,
-  getTestToolLogInfo,
-} from "./commonUtils";
-import {
   errorDetail,
   issueChooseLink,
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
-} from "./constants";
+} from "./common/debugConstants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
-import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
+import { TeamsfxDebugConfiguration } from "./common/teamsfxDebugConfiguration";
+import { allRunningTeamsfxTasks } from "./common/globalVariables";
+import {
+  getLocalDebugSession,
+  endLocalDebugSession,
+  getLocalDebugSessionId,
+} from "./common/localDebugSession";
+import { allRunningDebugSessions } from "./officeTaskHandler";
+import { deleteAad } from "./deleteAadHelper";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -55,9 +58,6 @@ class NpmInstallTaskInfo {
     return (performance.now() - this.startTime) / 1000;
   }
 }
-
-export const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
-export const allRunningDebugSessions: Set<string> = new Set<string>();
 
 const activeNpmInstallTasks = new Map<string, NpmInstallTaskInfo>();
 
@@ -93,10 +93,21 @@ function isNpmInstallTask(task: vscode.Task): boolean {
   return false;
 }
 
+function isCheckDevProxyTask(task: vscode.Task): boolean {
+  if (task.definition.type === "shell" && task.execution && <vscode.ShellExecution>task.execution) {
+    const execution = <vscode.ShellExecution>task.execution;
+    return (
+      execution.options?.cwd === "${workspaceFolder}/proxy" &&
+      execution.commandLine === "node check.js"
+    );
+  }
+  return false;
+}
+
 function isTeamsFxTransparentTask(task: vscode.Task): boolean {
   if (task.definition && task.definition.type === ProductName) {
     const command = task.definition.command as string;
-    if (Object.values(TaskCommand).includes(command)) {
+    if (Object.values(TaskCommand).includes(command as any)) {
       return true;
     }
   }
@@ -142,6 +153,9 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       if (/teamsfx\/script\/.*\.js/i.test(commandLine)) {
         return true;
       }
+    }
+    if (isCheckDevProxyTask(task)) {
+      return true;
     }
   }
 
@@ -283,6 +297,22 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
         );
         endLocalDebugSession();
       }
+    } else {
+      vscode.window
+        .showInformationMessage(
+          localize("teamstoolkit.localDebug.deleteAADNotification"),
+          localize("teamstoolkit.localDebug.learnMore")
+        )
+        .then(
+          async (result) => {
+            if (result === localize("teamstoolkit.localDebug.learnMore")) {
+              await VS_CODE_UI.openUrl(clearAADAfterLocalDebugHelpLink);
+            }
+          },
+          () => {
+            // Do nothing on reject
+          }
+        );
     }
   } else if (
     task.scope !== undefined &&
@@ -507,6 +537,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
   }
   allRunningTeamsfxTasks.clear();
   BaseTunnelTaskTerminal.stopAll();
+  void deleteAad();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {

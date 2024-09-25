@@ -29,7 +29,9 @@ describe("Time-trigger Notification Bot  Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("timeNoti", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("timeNoti", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 

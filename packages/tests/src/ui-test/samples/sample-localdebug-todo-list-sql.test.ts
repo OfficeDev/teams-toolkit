@@ -123,7 +123,7 @@ new TodoListBackendTestCase(
   [LocalDebugTaskLabel.StartFrontend, LocalDebugTaskLabel.StartBackend],
   {
     teamsAppName: "toDoList-local",
-    skipValidation: true,
+    skipValidation: false,
     testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
   }
 ).test();

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import inquirer from "inquirer";
+import * as inquirer from "@inquirer/prompts";
 import {
   InputTextConfig,
   MultiSelectConfig,
@@ -213,7 +213,7 @@ describe("UserInteraction(CLI) 2", () => {
 
   describe("selectFileOrInput", () => {
     it("happy path", async () => {
-      sandbox.stub(inquirer, "prompt").resolves({ test: "somevalue" });
+      sandbox.stub(inquirer, "input").resolves("somevalue");
       const res = await UI.selectFileOrInput({
         name: "test",
         title: "test",

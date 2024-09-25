@@ -3,13 +3,9 @@ import { Action } from '../common/Action';
 import { context } from '@actions/github';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { Issue } from '../api/api';
-import { getEmail, setOutput } from '../teamsfx-utils/utils';
+import { getEmail, setOutput, getTemplateFromPackageAndConvertToReg } from '../teamsfx-utils/utils';
 
 const githubToken = getRequiredInput('token');
-const regExp = [
-	"API call to Developer Portal failed: (.*) API name: (.*), X-Correlation-ID: (.*).",
-	"Failed to (.*) teams app in app studio, due to \\d{3}, .*",
-];
 
 class CheckAssignedIssueForAppStudio extends Action {
 	id = 'CheckAssignedIssueForAppStudio';
@@ -52,12 +48,17 @@ class CheckAssignedIssueForAppStudio extends Action {
 	}
 
 	matchAppStudioIssueError(): boolean {
-		for (const reg of regExp) {
-			const regExp = new RegExp(reg);
-			if (regExp.test(this.issue.body)) {
-				safeLog(`Issue ${this.issue.number} matched regExp ${reg}`);
-				return true;
-			}
+		const key = "error.appstudio.apiFailed.telemetry";
+		const reg = getTemplateFromPackageAndConvertToReg(key);
+		if (!reg) {
+			safeLog(`There is template for ${key} in package.nls.json, ignore`);
+			return false;
+		}
+		safeLog(`matching-reg is ${reg}`);
+		const regExp = new RegExp(reg);
+		if (regExp.test(this.issue.body)) {
+			safeLog(`Issue ${this.issue.number} matched regExp ${reg}`);
+			return true;
 		}
 		return false;
 	}

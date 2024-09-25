@@ -54,11 +54,13 @@ The following files can be customized and demonstrate an example implementation 
 
 The following are project-related files. You generally will not need to customize these files.
 
-| File                      | Contents                             |
-| ------------------------- | ------------------------------------ |
-| `src/index.css`           | The style of application entry point |
-| `src/index.tsx`           | Application entry point              |
-| `src/internal/context.ts` | TeamsFx Context                      |
+| File                      | Contents                                   |
+| ------------------------- | ------------------------------------------ |
+| `src/main.css`            | The style of React application entry point |
+| `src/main.tsx`            | The entry point for a React application    |
+| `src/internal/context.ts` | TeamsFx Context                            |
+| `index.html`              | The entry point of the application         |
+| `vite.config.ts`          | Vite configuration file                    |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -202,7 +204,7 @@ Congratulations, you've just added your own widget! To learn more about the dash
 - [Embed Power BI to dashboard](https://aka.ms/teamsfx-dashboard-new#how-to-embed-power-bi-to-dashboard)
 - [How to add a new Graph API call](https://aka.ms/teamsfx-dashboard-new#how-to-add-a-new-graph-api-call)
 - [Enable the app for multi-tenant](https://github.com/OfficeDev/TeamsFx/wiki/Multi-tenancy-Support-for-Azure-AD-app)
-- [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)
+- [Preview the app on mobile clients](https://aka.ms/teamsfx-mobile)
 
 ## Additional resources
 

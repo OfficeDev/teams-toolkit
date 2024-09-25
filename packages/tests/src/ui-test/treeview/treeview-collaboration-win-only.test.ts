@@ -15,13 +15,14 @@ import {
 import {
   RemoteDebugTestContext,
   runProvision,
+  provisionProject,
 } from "../remotedebug/remotedebugContext";
 import path = require("path");
 import { VSBrowser } from "vscode-extension-tester";
 import { Env } from "../../utils/env";
 import {
-  addCollaborators,
-  getAllCollaborators,
+  getAllCollaboratorsCLI,
+  addCollaboratorCLI,
 } from "../../utils/collaborationUtils";
 import { it } from "../../utils/it";
 
@@ -75,23 +76,34 @@ describe("Collaborator Tests", function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
       await createNewProject("tab", appName);
-      await runProvision(appName);
+      await provisionProject(appName, projectPath);
 
       {
-        const findCollaborator = await getAllCollaborators();
+        const findCollaborator = await getAllCollaboratorsCLI(projectPath);
+        console.log(findCollaborator);
         expect(findCollaborator.includes(creator as string)).to.be.true;
       }
 
-      await addCollaborators(collaborator);
-
-      {
-        const findCollaborator = await getAllCollaborators();
-        expect(
-          findCollaborator.includes((collaborator as string)?.split("@")[0])
-        ).to.be.true;
-        expect(findCollaborator.includes((creator as string)?.split("@")[0])).to
-          .be.true;
-      }
+      const teamsManifestFilePath = path.resolve(
+        projectPath,
+        "appPackage",
+        "manifest.json"
+      );
+      await addCollaboratorCLI(
+        projectPath,
+        collaborator,
+        teamsManifestFilePath
+      );
+      // cli not support
+      // {
+      //   const findCollaborator = await getAllCollaboratorsCLI(projectPath);
+      //   console.log(findCollaborator);
+      //   expect(
+      //     findCollaborator.includes((collaborator as string)?.split("@")[0])
+      //   ).to.be.true;
+      //   expect(findCollaborator.includes((creator as string)?.split("@")[0])).to
+      //     .be.true;
+      // }
     }
   );
 });

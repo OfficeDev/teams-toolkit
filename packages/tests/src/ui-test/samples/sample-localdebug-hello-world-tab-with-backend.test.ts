@@ -17,10 +17,14 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {
     page: Page,
     options?: { includeFunction: boolean }
   ): Promise<void> {
-    return await validateTab(page, {
-      displayName: Env.displayName,
-      includeFunction: options?.includeFunction,
-    });
+    return await validateTab(
+      page,
+      {
+        displayName: Env.displayName,
+        includeFunction: options?.includeFunction,
+      },
+      true
+    );
   }
   override async onCliValidate(
     page: Page,
@@ -35,15 +39,7 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {
     sampledebugContext: SampledebugContext,
     teamsAppId: string
   ): Promise<Page> {
-    return await reopenPage(
-      sampledebugContext.context!,
-      teamsAppId,
-      Env.username,
-      Env.password,
-      undefined,
-      true,
-      true
-    );
+    return await reopenPage(sampledebugContext.context!, teamsAppId);
   }
 }
 

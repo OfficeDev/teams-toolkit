@@ -18,7 +18,7 @@ import {
   TaskDefaultValue,
   TaskLabel,
   TunnelType,
-} from "../../../../common/local";
+} from "../../../../component/local";
 import {
   createResourcesTask,
   defaultFuncSymlinkDir,
@@ -39,7 +39,7 @@ import { BuildArgs } from "../../../../component/driver/interface/buildAndDeploy
 import { LocalCrypto } from "../../../crypto";
 import * as os from "os";
 import * as path from "path";
-import { NodeChecker } from "../../../../common/deps-checker/internal/nodeChecker";
+import { NodeChecker } from "../../../../component/deps-checker/internal/nodeChecker";
 
 export async function migrateTransparentPrerequisite(
   context: DebugMigrationContext

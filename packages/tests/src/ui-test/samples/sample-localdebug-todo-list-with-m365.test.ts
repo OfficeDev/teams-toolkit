@@ -41,15 +41,7 @@ class TodoListM365TestCase extends CaseFactory {
     sampledebugContext: SampledebugContext,
     teamsAppId: string
   ): Promise<Page> {
-    return await reopenPage(
-      sampledebugContext.context!,
-      teamsAppId,
-      Env.username,
-      Env.password,
-      undefined,
-      true,
-      true
-    );
+    return await reopenPage(sampledebugContext.context!, teamsAppId);
   }
 }
 

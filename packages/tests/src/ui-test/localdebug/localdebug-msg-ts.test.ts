@@ -28,7 +28,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("msg", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("msg", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 
@@ -63,7 +65,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateCreatedCard(page);
+      await validateCreatedCard(page, localDebugTestContext.appName);
     }
   );
 });

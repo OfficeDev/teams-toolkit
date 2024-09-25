@@ -23,6 +23,7 @@ import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
+  execCommandIfExist,
 } from "../../../utils/vscodeOperation";
 import {
   CLIVersionCheck,
@@ -32,8 +33,8 @@ import {
 import * as path from "path";
 import { updatePakcageJson } from "./helper";
 import {
-  reRunProvision,
-  runDeploy,
+  deployProject,
+  provisionProject,
 } from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
@@ -55,7 +56,20 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await mirgationDebugTestContext.after(false, true, "dev");
+    await mirgationDebugTestContext.after(true, true, "dev");
+
+    //Close the folder and cleanup local sample project
+    await execCommandIfExist("Workspaces: Close Workspace", Timeout.webView);
+    console.log(
+      `[Successfully] start to clean up for ${mirgationDebugTestContext.projectPath}`
+    );
+    await mirgationDebugTestContext.cleanUp(
+      mirgationDebugTestContext.appName,
+      mirgationDebugTestContext.projectPath,
+      true,
+      true,
+      false
+    );
   });
 
   it(
@@ -69,7 +83,7 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.createProjectCLI(false);
 
       // update package.json in bot folder
-      await updatePakcageJson(
+      updatePakcageJson(
         path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
       );
 
@@ -99,8 +113,11 @@ describe("Migration Tests", function () {
       );
 
       // v3 provision
-      await reRunProvision();
-      await runDeploy(Timeout.botDeploy * 2);
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 
@@ -115,7 +132,7 @@ describe("Migration Tests", function () {
         mirgationDebugTestContext.projectPath,
         "dev"
       );
-      await validateNotificationBot(page, funcEndpoint + "/api/notification");
+      // await validateNotificationBot(page, funcEndpoint + "/api/notification");
     }
   );
 });

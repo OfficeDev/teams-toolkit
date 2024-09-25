@@ -58,9 +58,14 @@ describe("Check command name in command palette and tree view content Tests", fu
       author: "xuruiyao@microsoft.com",
     },
     async function () {
-      const importPath: string =
-        testRootFolder + "\\..\\src\\ui-test\\treeview\\word-xml-addin";
-      const projectPath = path.resolve(importPath);
+      const projectPath = path.resolve(
+        testRootFolder,
+        "../",
+        "src",
+        "ui-test",
+        "treeview",
+        "word-xml-addin"
+      );
       const projectCopyPath = path.resolve(testRootFolder, appName + "copy");
       console.log("copy path: ", projectPath, " to: ", projectCopyPath);
       await fs.mkdir(projectCopyPath);

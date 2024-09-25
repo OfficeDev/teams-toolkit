@@ -39,17 +39,14 @@ export class ReleaseNote {
       }
     } else {
       const currentStableVersion = this.context.globalState.get<string>(SyncedState.Version);
+      await this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
       if (
-        currentStableVersion === undefined ||
+        currentStableVersion !== undefined &&
         versionUtil.compare(teamsToolkitVersion, currentStableVersion) === 1
       ) {
-        // if syncedVersion is undefined, then it is not existinig user
-        await this.context.globalState.update(
-          UserState.IsExisting,
-          currentStableVersion === undefined ? "no" : "yes"
-        );
+        // it is existinig user
+        await this.context.globalState.update(UserState.IsExisting, "yes");
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowWhatIsNewNotification);
-        await this.context.globalState.update(SyncedState.Version, teamsToolkitVersion);
 
         const changelog = {
           title: localize("teamstoolkit.upgrade.changelog"),

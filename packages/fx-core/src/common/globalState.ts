@@ -7,7 +7,7 @@ import * as fs from "fs-extra";
 import crypto from "crypto";
 import { ConfigFolderName, ProductName } from "@microsoft/teamsfx-api";
 import properLock from "proper-lockfile";
-import { waitSeconds } from "./tools";
+import { waitSeconds } from "./utils";
 
 const GlobalStateFileName = "state.json";
 
@@ -104,6 +104,6 @@ function ensureGlobalStateFileExists(filePath: string): void {
 function getLockFolder(projectPath: string): string {
   return path.join(
     os.tmpdir(),
-    `${ProductName}-${crypto.createHash("md5").update(projectPath).digest("hex")}`
+    `${ProductName}-${crypto.createHash("sha256").update(projectPath).digest("hex")}`
   );
 }

@@ -11,3 +11,5 @@ export * from "./PermissionGrantOptions";
 export * from "./PermissionListOptions";
 export * from "./DeployAadManifestOptions";
 export * from "./AddPluginOptions";
+export * from "./UninstallOptions";
+export * from "./SyncManifestOptions";

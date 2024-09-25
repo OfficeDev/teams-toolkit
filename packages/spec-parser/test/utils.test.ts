@@ -21,6 +21,28 @@ describe("utils", () => {
     });
   });
 
+  describe("isObjectSchema", () => {
+    it('should return true when schema.type is "object"', () => {
+      const schema: OpenAPIV3.SchemaObject = { type: "object" };
+      expect(Utils.isObjectSchema(schema)).to.be.true;
+    });
+
+    it("should return true when schema.type is not defined but schema.properties is defined", () => {
+      const schema: OpenAPIV3.SchemaObject = { properties: { prop1: { type: "string" } } };
+      expect(Utils.isObjectSchema(schema)).to.be.true;
+    });
+
+    it("should return false when schema.type is not defined and schema.properties is not defined", () => {
+      const schema: OpenAPIV3.SchemaObject = {};
+      expect(Utils.isObjectSchema(schema)).to.be.false;
+    });
+
+    it('should return false when schema.type is defined but not "object"', () => {
+      const schema: OpenAPIV3.SchemaObject = { type: "string" };
+      expect(Utils.isObjectSchema(schema)).to.be.false;
+    });
+  });
+
   describe("convertPathToCamelCase", () => {
     it("should convert a path to camel case", () => {
       const path = "this/is/a/{test}/path";
@@ -405,6 +427,35 @@ describe("utils", () => {
           "200": {
             content: {
               "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      });
+      expect(multipleMediaType).to.be.false;
+    });
+
+    it("should return the JSON response for application/json; charset=utf-8;", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json; charset=utf-8": {
                 schema: {
                   type: "object",
                   properties: {

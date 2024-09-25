@@ -5,17 +5,8 @@
     "resourceBaseName": {
       "value": "notification${{RESOURCE_SUFFIX}}"
     },
-    "botAadAppClientId": {
-      "value": "${{BOT_ID}}"
-    },
-    "botAadAppClientSecret": {
-      "value": "${{SECRET_BOT_PASSWORD}}"
-    },
     "functionAppSKU": {
       "value": "B1"
-    },
-    "storageSKU": {
-      "value": "Standard_LRS"
     },
     "botDisplayName": {
       "value": "{{appName}}"

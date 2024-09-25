@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { LocalFunc, ValidateFunc } from ".";
 import { FxError } from "../error";
-import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
 import { Inputs, OptionItem } from "../types";
 import { Colors } from "./../utils/log";
+import { LocalFunc, OnSelectionChangeFunc, StaticOptions } from "./question";
 
 /**
  * A base structure of user interaction (UI) configuration
@@ -59,6 +58,17 @@ export interface UIConfig<T> {
    * @param `command` is the command name that will be executed when current action triggered
    */
   buttons?: { icon: string; tooltip: string; command: string }[];
+
+  /**
+   * `innerStep` and `innerTotalStep` are used to describe the inner step of a group of questions
+   * `innerStep` is the sequence number of the current question in the group.
+   *  VSC will display the innerStep and innerTotalStep in the question title.
+   */
+  innerStep?: number;
+  /**
+   * `innerTotalStep` is the number of questions in the group in total
+   */
+  innerTotalStep?: number;
 }
 
 export interface ConfirmConfig extends UIConfig<boolean> {
@@ -172,6 +182,11 @@ export type SelectFileConfig = UIConfig<string> & {
     label: string;
     description?: string;
   }[];
+
+  /**
+   * Default Uri when open file selector window.
+   */
+  defaultFolder?: string | (() => Promise<string>);
 };
 
 /**
@@ -406,6 +421,11 @@ export interface UserInteraction {
   selectFileOrInput?(
     config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>>;
+
+  /**
+   * Supports in VSC only for now. Show diagnostic message in editor.
+   */
+  showDiagnosticInfo?(diagnostics: IDiagnosticInfo[]): void;
 }
 
 export interface IProgressHandler {
@@ -429,4 +449,71 @@ export interface IProgressHandler {
    * can be reused after calling end().
    */
   end: (success: boolean, hideAfterFinish?: boolean) => Promise<void>;
+}
+
+export enum DiagnosticSeverity {
+  /**
+   * Something not allowed by the rules of a language or other means.
+   */
+  Error = 0,
+
+  /**
+   * Something suspicious but allowed.
+   */
+  Warning = 1,
+
+  /**
+   * Something to inform about but not a problem.
+   */
+  Information = 2,
+
+  /**
+   * Something to hint to a better way of doing it, like proposing
+   * a refactoring.
+   */
+  Hint = 3,
+}
+
+export interface IDiagnosticInfo {
+  /**
+   * Path of file where diagnostic shows.
+   */
+  filePath: string;
+  /**
+   * Line number where diagnostic info starts.
+   */
+  startLine: number;
+  /**
+   * Index of the beginning character where diagnostic info shows
+   */
+  startIndex: number;
+  /**
+   * Line number where diagnostic info ends.
+   */
+  endLine: number;
+  /**
+   * Index of the end character where diagnostic info ends.
+   */
+  endIndex: number;
+  /**
+   * Message.
+   */
+  message: string;
+  /**
+   * Severity.
+   */
+  severity: DiagnosticSeverity;
+  /**
+   * A code or identifier for this diagnostic.
+   */
+  code?: {
+    /**
+     * Value.
+     */
+    value: string;
+    /**
+     * Link to open with more information about the diagnostic error.
+     */
+    link: string;
+  };
 }

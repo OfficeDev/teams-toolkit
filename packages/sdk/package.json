@@ -46,8 +46,8 @@
   "sideEffects": false,
   "dependencies": {
     "@azure/identity": "^4.4.1",
-    "@azure/msal-browser": "^3.23.0",
-    "@azure/msal-node": "^2.13.1",
+    "@azure/msal-browser": "^3.24.0",
+    "@azure/msal-node": "^2.14.0",
     "adaptivecards-templating": "^2.3.1",
     "adaptive-expressions": "^4.23.0",
     "axios": "^1.7.5",
@@ -63,7 +63,7 @@
     "botbuilder": "^4.23.0"
   },
   "devDependencies": {
-    "@azure/core-auth": "^1.7.2",
+    "@azure/core-auth": "^1.8.0",
     "@azure/msal-common": "^14.14.2",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@microsoft/api-extractor": "^7.47.7",

@@ -1068,6 +1068,7 @@ describe("updateForCustomApi", async () => {
             summary: "Create a pet",
             description: "",
             requestBody: {
+              required: true,
               content: {
                 "application/json": {
                   schema: {
@@ -1078,6 +1079,23 @@ describe("updateForCustomApi", async () => {
                         type: "string",
                         description: "",
                         format: "date-time",
+                      },
+                      array: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          format: "test",
+                        },
+                      },
+                      object: {
+                        type: "object",
+                        properties: {
+                          nestedObjProperty: {
+                            type: "string",
+                            description: "",
+                            format: "test",
+                          },
+                        },
                       },
                     },
                   },
@@ -1098,6 +1116,8 @@ describe("updateForCustomApi", async () => {
         expect(data).to.contains("getHello");
         expect(data).to.contains("body");
         expect(data).to.not.contains("format");
+        expect(data).to.contains("nestedObjProperty");
+        expect(data).to.contains("array");
       } else if (file === path.join("path", "src", "app", "app.ts")) {
         expect(data).to.contains(`app.ai.action("getHello"`);
         expect(data).not.to.contains("{{");

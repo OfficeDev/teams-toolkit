@@ -1084,7 +1084,7 @@ function filterSchema(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
       } else if (property.type === "array") {
         filteredSchema.properties[key] = {
           type: "array",
-          items: property.items,
+          items: filterSchema(property.items as OpenAPIV3.SchemaObject),
           description: property.description,
         };
       } else {

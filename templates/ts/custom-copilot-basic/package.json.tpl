@@ -35,7 +35,7 @@
         "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
-        "typescript": "^4.4.4",
+        "typescript": "^5.5.4",
         "nodemon": "^2.0.7",
         "shx": "^0.3.3"
     }

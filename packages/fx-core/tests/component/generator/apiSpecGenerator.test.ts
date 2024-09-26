@@ -1069,6 +1069,7 @@ describe("updateForCustomApi", async () => {
             description: "",
             requestBody: {
               required: true,
+              description: "request body description",
               content: {
                 "application/json": {
                   schema: {

@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "5.8.2-rc-hotfix.0",
+  "version": "5.8.2-rc-hotfix.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "private": true,

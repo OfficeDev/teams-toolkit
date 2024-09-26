@@ -1095,7 +1095,7 @@ function filterSchema(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
       }
     }
   } else if (schema.type === "array" && schema.items) {
-    filteredSchema.items = schema.items;
+    filteredSchema.items = filterSchema(schema.items as OpenAPIV3.SchemaObject);
   }
 
   return filteredSchema;

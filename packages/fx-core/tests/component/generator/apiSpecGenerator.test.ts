@@ -1049,6 +1049,17 @@ describe("updateForCustomApi", async () => {
                 requried: true,
                 description: "test",
               },
+              {
+                name: "query4",
+                in: "query",
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    format: "test",
+                  },
+                },
+              },
             ],
             responses: {
               "200": {

@@ -229,6 +229,6 @@ export function validateConfig(config: any): void {
  * @internal
  */
 export interface ClientCertificate {
-  thumbprint: string;
+  thumbprintSha256: string;
   privateKey: string;
 }

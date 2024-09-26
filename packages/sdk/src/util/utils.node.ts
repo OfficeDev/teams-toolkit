@@ -52,13 +52,13 @@ export function parseCertificate(
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
   }
-  const thumbprint = createHash("sha1")
+  const thumbprint = createHash("sha256")
     .update(Buffer.from(match[3], "base64"))
     .digest("hex")
     .toUpperCase();
 
   return {
-    thumbprint: thumbprint,
+    thumbprintSha256: thumbprint,
     privateKey: certificateContent,
   };
 }

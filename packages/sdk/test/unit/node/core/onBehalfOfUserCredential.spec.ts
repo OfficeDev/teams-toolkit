@@ -134,8 +134,8 @@ fakeCert
 
     // certificateContent has higher priority than clientSecret
     assert.strictEqual(
-      oboCredential.msalClient.config.auth.clientCertificate.thumbprint,
-      "06BA994A93FF2138DC51E669EB284ABAB8112153" // thumbprint is calculated from certificate content "fakeCert"
+      oboCredential.msalClient.config.auth.clientCertificate.thumbprintSha256,
+      "90AF5A3B906DCC32226BCCD6D369165CFB9F1E0FE123F0D18B7CC48261995A6C" // thumbprint is calculated from certificate content "fakeCert"
     );
     assert.strictEqual(oboCredential.msalClient.config.auth.clientSecret, "");
   });

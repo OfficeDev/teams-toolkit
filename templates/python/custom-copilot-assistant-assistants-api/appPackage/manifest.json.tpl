@@ -31,7 +31,24 @@
                 "groupChat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Solve the equation: 3x + 11= 14",
+                            "description": "Help me solve the equation: 3x + 11= 14"
+                        },
+                        {
+                            "title": "The weather of San Francisco",
+                            "description": "The weather of San Francisco"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

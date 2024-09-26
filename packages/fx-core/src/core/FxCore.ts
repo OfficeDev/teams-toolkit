@@ -1867,7 +1867,9 @@ export class FxCore {
     }
 
     const teamsManifest = manifestRes.value;
-    const declarativeGpt = teamsManifest.copilotExtensions?.declarativeCopilots?.[0];
+    const declarativeGpt = teamsManifest.copilotExtensions
+      ? teamsManifest.copilotExtensions.declarativeCopilots?.[0]
+      : teamsManifest.copilotAgents?.declarativeAgents?.[0];
     if (!declarativeGpt?.file) {
       return err(
         AppStudioResultFactory.UserError(

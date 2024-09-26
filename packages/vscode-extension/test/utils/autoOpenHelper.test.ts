@@ -6,10 +6,16 @@ import * as globalVariables from "../../src/globalVariables";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as runIconHandlers from "../../src/debug/runIconHandler";
 import * as appDefinitionUtils from "../../src/utils/appDefinitionUtils";
-import { ok } from "@microsoft/teamsfx-api";
+import { ok, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { showLocalDebugMessage } from "../../src/utils/autoOpenHelper";
+import {
+  showLocalDebugMessage,
+  ShowScaffoldingWarningSummary,
+} from "../../src/utils/autoOpenHelper";
+import VscodeLogInstance from "../../src/commonlib/log";
 import * as readmeHandlers from "../../src/handlers/readmeHandlers";
+import { manifestUtils, pluginManifestUtils } from "@microsoft/teamsfx-core";
+import * as apiSpec from "@microsoft/teamsfx-core/build/component/generator/apiSpec/helper";
 
 describe("autoOpenHelper", () => {
   const sandbox = sinon.createSandbox();
@@ -427,5 +433,113 @@ describe("autoOpenHelper", () => {
 
     chai.assert.isTrue(showMessageStub.called);
     chai.assert.isTrue(openReadMeHandlerStub.called);
+  });
+
+  it("ShowScaffoldingWarningSummary() - copilot agents", async () => {
+    const workspacePath = "/path/to/workspace";
+
+    const manifest: TeamsAppManifest = {
+      manifestVersion: "version",
+      id: "mock-app-id",
+      name: { short: "short-name" },
+      description: { short: "", full: "" },
+      version: "version",
+      icons: { outline: "outline.png", color: "color.png" },
+      accentColor: "#ffffff",
+      developer: {
+        privacyUrl: "",
+        websiteUrl: "",
+        termsOfUseUrl: "",
+        name: "",
+      },
+      staticTabs: [
+        {
+          name: "name0",
+          entityId: "index0",
+          scopes: ["personal"],
+          contentUrl: "localhost/content",
+          websiteUrl: "localhost/website",
+        },
+      ],
+      copilotAgents: {
+        plugins: [
+          {
+            id: "plugin-id",
+            file: "copilot-plugin-file",
+          },
+        ],
+      },
+    };
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sandbox
+      .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+      .resolves(ok(["/path/to/api/spec"]));
+    sandbox.stub(apiSpec, "generateScaffoldingSummary").resolves("fake summary");
+    sandbox.stub(VscodeLogInstance, "info").callsFake((message: string) => {
+      if (message !== "fake summary") {
+        throw new Error(`Unexpected message: ${message}`);
+      }
+    });
+    const fakeOutputChannel = {
+      show: sandbox.stub().resolves(),
+    };
+    sandbox.stub(VscodeLogInstance, "outputChannel").value(fakeOutputChannel);
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+    // Call the function
+    await ShowScaffoldingWarningSummary(workspacePath, "");
+  });
+
+  it("ShowScaffoldingWarningSummary() - copilot extensions", async () => {
+    const workspacePath = "/path/to/workspace";
+
+    const manifest: TeamsAppManifest = {
+      manifestVersion: "version",
+      id: "mock-app-id",
+      name: { short: "short-name" },
+      description: { short: "", full: "" },
+      version: "version",
+      icons: { outline: "outline.png", color: "color.png" },
+      accentColor: "#ffffff",
+      developer: {
+        privacyUrl: "",
+        websiteUrl: "",
+        termsOfUseUrl: "",
+        name: "",
+      },
+      staticTabs: [
+        {
+          name: "name0",
+          entityId: "index0",
+          scopes: ["personal"],
+          contentUrl: "localhost/content",
+          websiteUrl: "localhost/website",
+        },
+      ],
+      copilotExtensions: {
+        plugins: [
+          {
+            id: "plugin-id",
+            file: "copilot-plugin-file",
+          },
+        ],
+      },
+    };
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sandbox
+      .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+      .resolves(ok(["/path/to/api/spec"]));
+    sandbox.stub(apiSpec, "generateScaffoldingSummary").resolves("fake summary");
+    sandbox.stub(VscodeLogInstance, "info").callsFake((message: string) => {
+      if (message !== "fake summary") {
+        throw new Error(`Unexpected message: ${message}`);
+      }
+    });
+    const fakeOutputChannel = {
+      show: sandbox.stub().resolves(),
+    };
+    sandbox.stub(VscodeLogInstance, "outputChannel").value(fakeOutputChannel);
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
+    // Call the function
+    await ShowScaffoldingWarningSummary(workspacePath, "");
   });
 });

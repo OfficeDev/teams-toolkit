@@ -18,6 +18,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const UIREQUIREDERROR = "UiRequiredError";
   const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
   let ssoToken: SSOToken;
+
   beforeEach(async () => {
     ssoToken = await getSSOToken();
     sinon
@@ -31,6 +32,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
   });
+
   afterEach(() => {
     sinon.restore();
   });

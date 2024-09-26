@@ -47,15 +47,20 @@ export async function getSSOToken(): Promise<SSOToken> {
     formBody.push(encodedKey + "=" + encodedValue);
   }
   const body = formBody.join("&");
-  const response = await axios.post(
-    `https://login.microsoftonline.com/${env.SDK_INTEGRATION_TEST_AAD_TENANT_ID}/oauth2/v2.0/token`,
-    body,
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }
-  );
+  const response = await axios
+    .post(
+      `https://login.microsoftonline.com/${env.SDK_INTEGRATION_TEST_AAD_TENANT_ID}/oauth2/v2.0/token`,
+      body,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    )
+    .catch((e) => {
+      console.log(e);
+      throw e;
+    });
   const SSOToken = {
     token: (response.data as any)["access_token"],
     expire_time: (response.data as any)["expires_in"],

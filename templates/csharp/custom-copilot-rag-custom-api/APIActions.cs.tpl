@@ -15,10 +15,12 @@ namespace {{SafeProjectName}}
     {
         private APIClient Client;
 
-        public APIActions(string specPath)
+        public APIActions()
         {
-            Client = new APIClient(specPath);
+            Client = new APIClient("{{OPENAPI_SPEC_PATH}}");
         }
+
+        // Replace with action code
 
         private static IMessageActivity RenderCardToMessage(string cardTemplatePath, string data)
         {
@@ -48,7 +50,7 @@ namespace {{SafeProjectName}}
                 PathObject = args.ContainsKey("path") ? args["path"] : null,
                 HeaderObject = args.ContainsKey("header") ? args["header"] : null,
                 QueryObject = args.ContainsKey("query") ? args["query"] : null,
-                RequestBody = args.ContainsKey("requestBody") ? args["requestBody"] : null
+                RequestBody = args.ContainsKey("body") ? args["body"] : null
             };
             return requestParam;
         }

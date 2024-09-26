@@ -94,8 +94,7 @@ builder.Services.AddTransient<IBot>(sp =>
         Storage = sp.GetService<IStorage>(),
         AI = new(planner),
         LoggerFactory = loggerFactory,
-    },
-    "./apiSpecificationFile/openapi.yaml");
+    });
     
     bot.OnConversationUpdate("membersAdded", async (turnContext, turnState, cancellationToken) =>
     {

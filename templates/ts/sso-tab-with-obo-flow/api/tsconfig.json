@@ -2,8 +2,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "esModuleInterop": true,  
-    "allowSyntheticDefaultImports": true,  
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "nodenext",
     "outDir": "dist",
     "rootDir": ".",
     "sourceMap": true,

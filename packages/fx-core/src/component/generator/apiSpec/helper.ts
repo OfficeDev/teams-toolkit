@@ -1066,6 +1066,41 @@ async function updateAdaptiveCardForCustomApi(
   }
 }
 
+function filterSchema(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
+  const filteredSchema: any = { type: schema.type };
+
+  if (schema.description) {
+    filteredSchema.description = schema.description;
+  }
+
+  if (schema.type === "object" && schema.properties) {
+    filteredSchema.properties = {};
+    filteredSchema.required = schema.required;
+    for (const key in schema.properties) {
+      const property = schema.properties[key] as OpenAPIV3.SchemaObject;
+      if (property.type === "object") {
+        filteredSchema.properties[key] = filterSchema(property as OpenAPIV3.SchemaObject);
+        filteredSchema.required = schema.required;
+      } else if (property.type === "array") {
+        filteredSchema.properties[key] = {
+          type: "array",
+          items: filterSchema(property.items as OpenAPIV3.SchemaObject),
+          description: property.description,
+        };
+      } else {
+        filteredSchema.properties[key] = {
+          type: property.type,
+          description: property.description,
+        };
+      }
+    }
+  } else if (schema.type === "array" && schema.items) {
+    filteredSchema.items = filterSchema(schema.items as OpenAPIV3.SchemaObject);
+  }
+
+  return filteredSchema;
+}
+
 async function updateActionForCustomApi(
   specItems: SpecObject[],
   language: string,
@@ -1096,13 +1131,28 @@ async function updateActionForCustomApi(
               required: [],
             };
           }
-          parameters.properties[paramType].properties[param.name] = schema;
+          parameters.properties[paramType].properties[param.name] = filterSchema(schema);
           parameters.properties[paramType].properties[param.name].description =
             param.description ?? "";
           if (param.required) {
             parameters.properties[paramType].required.push(param.name);
             if (!parameters.required.includes(paramType)) {
               parameters.required.push(paramType);
+            }
+          }
+        }
+      }
+
+      const requestBody = item.item.requestBody as OpenAPIV3.RequestBodyObject;
+      if (requestBody) {
+        const content = requestBody.content;
+        if (content) {
+          const contentSchema = content["application/json"].schema as OpenAPIV3.SchemaObject;
+          if (Object.keys(contentSchema).length !== 0) {
+            parameters.properties["body"] = filterSchema(contentSchema);
+            parameters.properties["body"].description = requestBody.description ?? "";
+            if (requestBody.required) {
+              parameters.required.push("body");
             }
           }
         }

@@ -1016,6 +1016,132 @@ describe("updateForCustomApi", async () => {
     await CopilotPluginHelper.updateForCustomApi(newSpec, "typescript", "path", "openapi.yaml");
   });
 
+  it("happy path with spec request body and schema contains format", async () => {
+    const newSpec = {
+      openapi: "3.0.0",
+      info: {
+        title: "My API",
+        version: "1.0.0",
+      },
+      description: "test",
+      paths: {
+        "/hello": {
+          get: {
+            operationId: "getHello",
+            summary: "Returns a greeting",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+                required: true,
+              },
+              {
+                name: "query2",
+                in: "query",
+                schema: { type: "string" },
+                requried: false,
+              },
+              {
+                name: "query3",
+                in: "query",
+                schema: { type: "string" },
+                requried: true,
+                description: "test",
+              },
+              {
+                name: "query4",
+                in: "query",
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    format: "test",
+                  },
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "",
+            requestBody: {
+              required: true,
+              description: "request body description",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["date"],
+                    properties: {
+                      date: {
+                        type: "string",
+                        description: "",
+                        format: "date-time",
+                      },
+                      array: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          format: "test",
+                        },
+                      },
+                      object: {
+                        type: "object",
+                        properties: {
+                          nestedObjProperty: {
+                            type: "string",
+                            description: "",
+                            format: "test",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as OpenAPIV3.Document;
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+        expect(data).to.contains("body");
+        expect(data).to.not.contains("format");
+        expect(data).to.contains("nestedObjProperty");
+        expect(data).to.contains("array");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(newSpec, "typescript", "path", "openapi.yaml");
+  });
+
   it("happy path with spec with auth", async () => {
     const authSpec = {
       openapi: "3.0.0",

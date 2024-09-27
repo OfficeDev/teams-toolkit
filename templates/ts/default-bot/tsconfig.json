@@ -5,6 +5,7 @@
     "module": "commonjs",
     "outDir": "./lib",
     "rootDir": "./",
+    "moduleResolution": "nodenext",
     "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": "./lib/.tsbuildinfo",

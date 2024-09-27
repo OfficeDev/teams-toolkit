@@ -3,7 +3,7 @@
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoTokenInfo";
 import { UserInfo, UserTenantIdAndLoginHint } from "../models/userinfo";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { internalLogger } from "./logger";
 import { AccessToken } from "@azure/identity";
 import { AuthenticationResult } from "@azure/msal-browser";
@@ -19,7 +19,7 @@ import { AuthenticationResult } from "@azure/msal-browser";
  */
 export function parseJwt(token: string): SSOTokenInfoBase {
   try {
-    const tokenObj: SSOTokenInfoBase = jwt_decode(token);
+    const tokenObj: SSOTokenInfoBase = jwtDecode(token);
     if (!tokenObj || !tokenObj.exp) {
       throw new ErrorWithCode(
         "Decoded token is null or exp claim does not exists.",

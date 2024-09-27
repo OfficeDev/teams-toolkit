@@ -80,14 +80,14 @@ describe("Utils Tests", () => {
       .to.throw(ErrorWithCode, expectedErrorMsg)
       .with.property("code", ErrorCode.InvalidParameter);
 
-    const invalidScopes6: any = null;
+    const invalidScopes6 = null;
     expect(() => {
       validateScopesType(invalidScopes6);
     })
       .to.throw(ErrorWithCode, expectedErrorMsg)
       .with.property("code", ErrorCode.InvalidParameter);
 
-    const invalidScopes7: any = undefined;
+    const invalidScopes7 = undefined;
     expect(() => {
       validateScopesType(invalidScopes7);
     })

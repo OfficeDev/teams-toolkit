@@ -6,7 +6,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import { AppCredential, AppCredentialAuthConfig } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import {
   AADJwtPayLoad,
   convertCertificateContent,

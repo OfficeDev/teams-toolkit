@@ -85,7 +85,11 @@ const enum telemetryEvents {
   failedToGetGenerateWarning = "failed-to-get-generate-warning",
 }
 
-export function getParserOptions(type: ProjectType, isDeclarativeCopilot?: boolean): ParseOptions {
+export function getParserOptions(
+  type: ProjectType,
+  isDeclarativeCopilot?: boolean,
+  platform?: string
+): ParseOptions {
   return type === ProjectType.Copilot
     ? {
         isGptPlugin: isDeclarativeCopilot,
@@ -113,7 +117,7 @@ export function getParserOptions(type: ProjectType, isDeclarativeCopilot?: boole
       }
     : {
         projectType: type,
-        allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true, // Currently, API key auth support is actually bearer token auth
         allowMultipleParameters: true,
         allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
       };
@@ -158,7 +162,10 @@ export async function listOperations(
     : ProjectType.SME;
 
   try {
-    const specParser = new SpecParser(apiSpecUrl as string, getParserOptions(projectType));
+    const specParser = new SpecParser(
+      apiSpecUrl as string,
+      getParserOptions(projectType, undefined, inputs.platform)
+    );
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 

@@ -5,6 +5,7 @@
     "module": "commonjs",
     "outDir": "./dist",
     "rootDir": "./",
+    "moduleResolution": "nodenext",
     "sourceMap": true,
     "incremental": true,
     "resolveJsonModule": true,

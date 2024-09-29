@@ -711,7 +711,6 @@ export namespace AppStudioClient {
     const apiPath = "/api/usersettings/mtUserAppPolicy";
     const instance = axios.create({
       baseURL: region ?? getAppStudioEndpoint(),
-      timeout: 30000,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
 

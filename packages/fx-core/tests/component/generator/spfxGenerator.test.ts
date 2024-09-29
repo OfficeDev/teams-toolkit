@@ -6,6 +6,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
@@ -31,7 +32,6 @@ import {
   SPFxVersionOptionIds,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import os from "os";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");

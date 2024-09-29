@@ -195,6 +195,23 @@ export class ManifestUtil {
       if (copilotGpts && copilotGpts.length > 0) capabilities.push("copilotGpt");
     }
 
+    if ((manifest as TeamsAppManifest).copilotAgents?.plugins) {
+      const apiPlugins = (manifest as TeamsAppManifest).copilotAgents?.plugins;
+      if (
+        apiPlugins &&
+        apiPlugins.length > 0 &&
+        apiPlugins[0].file &&
+        !capabilities.includes("plugin")
+      )
+        capabilities.push("plugin");
+    }
+
+    if ((manifest as TeamsAppManifest).copilotAgents?.declarativeAgents) {
+      const copilotGpts = (manifest as TeamsAppManifest).copilotAgents?.declarativeAgents;
+      if (copilotGpts && copilotGpts.length > 0 && !capabilities.includes("copilotGpt"))
+        capabilities.push("copilotGpt");
+    }
+
     return properties;
   }
 

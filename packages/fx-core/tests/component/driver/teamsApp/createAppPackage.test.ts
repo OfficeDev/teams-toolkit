@@ -5,6 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
+import * as path from "path";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
@@ -182,6 +183,38 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.icons = {
       color: "resources/color.png",
       outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof FileNotFoundError);
+    }
+  });
+
+  it("should throw error if file not exists case 6", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+    sinon.stub(fs, "pathExists").callsFake((filePath) => {
+      if (filePath.includes("fake.json")) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+
+    const manifest = new TeamsAppManifest();
+    manifest.localizationInfo = {
+      additionalLanguages: [{ file: "aaa", languageTag: "zh" }],
+      defaultLanguageTag: "en",
+      defaultLanguageFile: "fake.json",
     };
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
 
@@ -522,6 +555,7 @@ describe("teamsApp/createAppPackage", async () => {
           file: "resources/de.json",
         },
       ],
+      defaultLanguageFile: "resources/de.json",
     };
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
 
@@ -888,6 +922,82 @@ describe("teamsApp/createAppPackage", async () => {
           aiPluginContent &&
           openapiContent.search("APP_NAME_SUFFIX") < 0 &&
           aiPluginContent.search(openapiServerPlaceholder) < 0
+      );
+      await fs.remove(args.outputZipPath);
+    }
+  });
+
+  it("version >= 1.9: happy path - API plugin", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputFolder: "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.copilotAgents = {
+      plugins: [
+        {
+          file: "resources/ai-plugin.json",
+          id: "plugin1",
+        },
+      ],
+      declarativeAgents: [
+        {
+          file: "resources/de.json",
+          id: "dc1",
+        },
+      ],
+    };
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon.stub(fs, "chmod").callsFake(async () => {});
+    const writeFileStub = sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    if (result.isErr()) {
+      console.log(result.error);
+    }
+    chai.assert.isTrue(result.isOk());
+    const outputExist = await fs.pathExists(args.outputZipPath);
+    chai.assert.isTrue(outputExist);
+    chai.assert.isTrue(writeFileStub.calledThrice);
+    if (outputExist) {
+      const zip = new AdmZip(args.outputZipPath);
+      let aiPluginContent = "";
+      let openapiContent = "";
+      let declarativeAgentsContent = "";
+
+      const entries = zip.getEntries();
+      entries.forEach((e) => {
+        const name = e.entryName;
+        if (name.endsWith("ai-plugin.json")) {
+          const data = e.getData();
+          aiPluginContent = data.toString("utf8");
+        }
+
+        if (name.endsWith("openai.yml")) {
+          const data = e.getData();
+          openapiContent = data.toString("utf8");
+        }
+
+        if (name.endsWith("de.json")) {
+          const data = e.getData();
+          declarativeAgentsContent = data.toString("utf8");
+        }
+      });
+
+      chai.assert(
+        openapiContent &&
+          aiPluginContent &&
+          openapiContent.search("APP_NAME_SUFFIX") < 0 &&
+          aiPluginContent.search(openapiServerPlaceholder) < 0 &&
+          declarativeAgentsContent
       );
       await fs.remove(args.outputZipPath);
     }
@@ -1324,6 +1434,148 @@ describe("teamsApp/createAppPackage", async () => {
             result.error.name === "MissingEnvironmentVariablesError" &&
             result.error.message.includes(openapiServerPlaceholder)
         );
+      }
+    });
+
+    it("relative path error 1", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputFolder: "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.localizationInfo = {
+        defaultLanguageTag: "en",
+        additionalLanguages: [
+          {
+            languageTag: "de",
+            file: "../migrate.manifest.json",
+          },
+        ],
+        defaultLanguageFile: "resources/de.json",
+      };
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      const writeFileStub = sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+      }
+    });
+
+    it("relative path error 2", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputFolder: "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.localizationInfo = {
+        defaultLanguageTag: "en",
+        additionalLanguages: [
+          {
+            languageTag: "de",
+            file: "resources/de.json",
+          },
+        ],
+        defaultLanguageFile: "../migrate.manifest.json",
+      };
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      const writeFileStub = sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+      }
+    });
+
+    it("zip same level dir", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputFolder: "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.composeExtensions = [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "resources/openai.yml",
+          commands: [
+            {
+              id: "GET /repairs",
+              apiResponseRenderingTemplateFile: "resources/repairs.json",
+              title: "fake",
+            },
+          ],
+          botId: "",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      manifest.localizationInfo = {
+        defaultLanguageTag: "en",
+        additionalLanguages: [
+          {
+            languageTag: "de",
+            file: "de.json",
+          },
+        ],
+        defaultLanguageFile: "de.json",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      const writeFileStub = sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isOk());
+      chai.assert(writeFileStub.calledOnce);
+      if (await fs.pathExists(args.outputZipPath)) {
+        const zip = new AdmZip(args.outputZipPath);
+
+        let openapiContent = "";
+
+        const entries = zip.getEntries();
+        for (const e of entries) {
+          const name = e.entryName;
+
+          if (name.endsWith("openai.yml")) {
+            const data = e.getData();
+            openapiContent = data.toString("utf8");
+            break;
+          }
+        }
+
+        chai.assert(
+          openapiContent != undefined &&
+            openapiContent.length > 0 &&
+            openapiContent.search(fakeUrl) >= 0 &&
+            openapiContent.search(openapiServerPlaceholder) < 0
+        );
+        await fs.remove(args.outputZipPath);
       }
     });
   });

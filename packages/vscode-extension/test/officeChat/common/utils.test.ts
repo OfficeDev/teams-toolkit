@@ -1,12 +1,12 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as fs from "fs";
-import * as chaipromised from "chai-as-promised";
+import fs from "fs";
+import chaiPromised from "chai-as-promised";
 import * as commonUtils from "../../../src/officeChat/common/utils";
-import * as generatorUtils from "@microsoft/teamsfx-core/build/component/generator/utils";
+import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
 import { AxiosResponse } from "axios";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: officeChat/common/utils", () => {
   const sandbox = sinon.createSandbox();
@@ -17,7 +17,7 @@ describe("File: officeChat/common/utils", () => {
     });
 
     it("return file response data", async () => {
-      sandbox.stub(generatorUtils, "sendRequestWithTimeout").resolves({
+      sandbox.stub(requestUtils, "sendRequestWithTimeout").resolves({
         data: "testData",
       } as AxiosResponse);
       const result = await commonUtils.fetchRawFileContent("test");
@@ -25,13 +25,13 @@ describe("File: officeChat/common/utils", () => {
     });
 
     it("return empty string", async () => {
-      sandbox.stub(generatorUtils, "sendRequestWithTimeout").resolves(undefined);
+      sandbox.stub(requestUtils, "sendRequestWithTimeout").resolves(undefined);
       const result = await commonUtils.fetchRawFileContent("test");
       chai.assert.equal(result, "");
     });
 
     it("throw error", async () => {
-      sandbox.stub(generatorUtils, "sendRequestWithTimeout").rejects();
+      sandbox.stub(requestUtils, "sendRequestWithTimeout").rejects();
       try {
         await commonUtils.fetchRawFileContent("test");
         chai.assert.fail("should not reach here");

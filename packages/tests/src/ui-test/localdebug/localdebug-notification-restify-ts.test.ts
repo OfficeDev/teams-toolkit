@@ -29,7 +29,9 @@ describe("Restify Notification Bot Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("restNoti", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("restNoti", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 

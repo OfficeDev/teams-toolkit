@@ -34,7 +34,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
           {
-            $when: "${imageUrl != null}",
+            $when: "${imageUrl != null && imageUrl != ''}",
             type: "Image",
             url: "${imageUrl}",
           },
@@ -257,7 +257,7 @@ describe("adaptiveCardWrapper", () => {
       expect(result.image).to.be.deep.equal({
         url: "${photoUrl}",
         alt: "${if(photoUrl, photoUrl, 'N/A')}",
-        $when: "${photoUrl != null}",
+        $when: "${photoUrl != null && photoUrl != ''}",
       });
     });
   });
@@ -333,7 +333,7 @@ describe("adaptiveCardWrapper", () => {
           subtitle: "${if(petId, petId, 'N/A')}",
           image: {
             url: "${imageUrl}",
-            $when: "${imageUrl != null}",
+            $when: "${imageUrl != null && imageUrl != ''}",
             alt: "${if(imageUrl, imageUrl, 'N/A')}",
           },
         },

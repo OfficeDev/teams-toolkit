@@ -1,4 +1,4 @@
-import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
+import { CLIContext, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import {
   CollaborationStateResult,
   FeatureFlags,
@@ -86,8 +86,7 @@ describe("CLI commands", () => {
   describe("getCreateCommand", async () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "false",
-        [FeatureFlags.CustomizeGpt.name]: "false",
+        [FeatureFlags.CopilotExtension.name]: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -100,10 +99,6 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
-      );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());
     });
@@ -241,7 +236,7 @@ describe("CLI commands", () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "addPlugin").resolves(ok(undefined));
       const ctx: CLIContext = {
-        command: { ...addPluginCommand, fullName: "add copilot-plugin" },
+        command: { ...addPluginCommand, fullName: "add plugin" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -253,18 +248,9 @@ describe("CLI commands", () => {
   });
 
   describe("getAddCommand", async () => {
-    it("customize GPT is not enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CustomizeGpt.name]: "false",
-      });
-
-      const commands = addCommand();
-      assert.isTrue(commands.commands?.length === 1);
-    });
-
     it("customize GPT is enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CustomizeGpt.name]: "true",
+        [FeatureFlags.CopilotExtension.name]: "true",
       });
 
       const commands = addCommand();
@@ -779,8 +765,20 @@ describe("CLI commands", () => {
     beforeEach(() => {
       sandbox.stub(logger, "warning");
     });
-    it("MissingRequiredOptionError", async () => {
-      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "uninstall").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await m365UnacquireCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("failed", async () => {
+      sandbox.stub(FxCore.prototype, "uninstall").resolves(err(new SystemError("", "", "")));
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -790,33 +788,6 @@ describe("CLI commands", () => {
       };
       const res = await m365UnacquireCommand.handler!(ctx);
       assert.isTrue(res.isErr());
-    });
-    it("success retrieveTitleId", async () => {
-      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
-      sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
-      sandbox.stub(PackageService.prototype, "unacquire").resolves();
-      const ctx: CLIContext = {
-        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-id": "aaa" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await m365UnacquireCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-    it("success", async () => {
-      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
-      sandbox.stub(PackageService.prototype, "unacquire").resolves();
-      const ctx: CLIContext = {
-        command: { ...m365UnacquireCommand, fullName: "teamsfx" },
-        optionValues: { "title-id": "aaa" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await m365UnacquireCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
     });
   });
 
@@ -946,6 +917,7 @@ describe("CLI read-only commands", () => {
   });
 
   afterEach(() => {
+    messages = [];
     sandbox.restore();
   });
   describe("AccountUtils", async () => {
@@ -1141,7 +1113,7 @@ describe("CLI read-only commands", () => {
     });
     it("json", async () => {
       mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CopilotExtension.name]: "false",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },
@@ -1152,7 +1124,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -1177,10 +1149,9 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("json: bot Copilot plugin enabled only", async () => {
+    it("json: Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CopilotExtension.name]: "true",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },
@@ -1191,24 +1162,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
-    });
-
-    it("json: API Copilot plugin feature flag enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "true",
-      });
-      const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "..." },
-        optionValues: { format: "json" },
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await listTemplatesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("copilot-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin")));
     });
   });
   describe("listSamplesCommand", async () => {

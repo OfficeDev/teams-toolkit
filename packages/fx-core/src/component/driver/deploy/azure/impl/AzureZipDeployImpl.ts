@@ -23,7 +23,7 @@ import { getLocalizedString } from "../../../../../common/localizeUtils";
 import path from "path";
 import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { DeployZipPackageError } from "../../../../../error/deploy";
-import { ErrorContextMW } from "../../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../../common/globalVars";
 import { hooks } from "@feathersjs/hooks";
 import { ReadStream } from "fs-extra";
 

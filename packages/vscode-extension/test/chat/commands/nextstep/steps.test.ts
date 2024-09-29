@@ -1,5 +1,5 @@
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { allSteps } from "../../../../src/chat/commands/nextstep/steps";
 import * as condition from "../../../../src/chat/commands/nextstep/condition";
@@ -10,7 +10,7 @@ chai.use(chaiPromised);
 const titles = {
   gettingStarted: "Getting started with Teams Toolkit",
   createOrOpenProject: "Create a new project or open an existing project",
-  summarizeReadme: "Learn more about the project with README",
+  summarizeReadme: "Get more info about the project with README",
   previewInTestTool: "Preview in Test Tool",
   signInM365Account: "Sign in to Microsoft 365 Account",
   joinM365DeveloperProgram: "Join Microsoft 365 Developer Program",

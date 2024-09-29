@@ -1,4 +1,4 @@
-const { MemoryStorage } = require("botbuilder");
+const { MemoryStorage, MessageFactory } = require("botbuilder");
 const path = require("path");
 const config = require("../config");
 
@@ -38,10 +38,25 @@ const app = new Application({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
 });
 
-app.message("/reset", resetMessage);
+app.conversationUpdate("membersAdded", async (turnContext) => {
+  const welcomeText = "How can I help you today?";
+  for (const member of turnContext.activity.membersAdded) {
+    if (member.id !== turnContext.activity.recipient.id) {
+      await turnContext.sendActivity(MessageFactory.text(welcomeText));
+    }
+  }
+});
+
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
+});
+
+app.message("reset", resetMessage);
 
 app.ai.action("createTask", createTask);
 app.ai.action("deleteTask", deleteTask);

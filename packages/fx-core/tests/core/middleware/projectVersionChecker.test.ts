@@ -9,7 +9,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { MetadataV2, VersionSource } from "../../../src/common/versionMetadata";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { moreInfoButton } from "../../../src/core/middleware/projectMigratorV3";
 import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVersionChecker";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";

@@ -7,9 +7,13 @@ import * as vscode from "vscode";
 import { CommandKey } from "../constants";
 import * as globalVariables from "../globalVariables";
 import { updateProjectStatus } from "../utils/projectStatusUtils";
-import * as commonUtils from "./commonUtils";
-import { endLocalDebugSession, getLocalDebugSessionId } from "./commonUtils";
-import { DebugSessionExists } from "./constants";
+import {
+  checkAndSkipDebugging,
+  endLocalDebugSession,
+  getLocalDebugSessionId,
+  startLocalDebugSession,
+} from "./common/localDebugSession";
+import { DebugSessionExists } from "./common/debugConstants";
 
 export const allRunningOfficeTasks: Map<string, number> = new Map<string, number>();
 export const allRunningDebugSessions: Set<string> = new Set<string>();
@@ -108,10 +112,10 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
   ) {
     const debugConfig = event.configuration;
     if (debugConfig && debugConfig.name && !debugConfig.postDebugTask) {
-      if (await commonUtils.checkAndSkipDebugging()) {
+      if (await checkAndSkipDebugging()) {
         throw new Error(DebugSessionExists);
       } else {
-        commonUtils.startLocalDebugSession();
+        startLocalDebugSession();
       }
       allRunningDebugSessions.add(event.id);
     }

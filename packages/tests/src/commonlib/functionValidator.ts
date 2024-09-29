@@ -1,22 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
-import glob from "glob";
-import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
-import { StateConfigKey, PluginId, EnvConstants } from "./constants";
+import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 import {
-  getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
   getWebappSettings,
   runWithRetry,
-  getWebappConfigs,
-  getExpectedM365ApplicationIdUri,
-  getExpectedM365ClientSecret,
 } from "./utilities";
 
 const baseUrlListDeployments = (
@@ -42,11 +37,6 @@ enum BaseConfig {
   API_ENDPOINT = "API_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
   IDENTITY_ID = "IDENTITY_ID",
-}
-
-enum SQLConfig {
-  SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
-  SQL_ENDPOINT = "SQL_ENDPOINT",
 }
 
 export class FunctionValidator {
@@ -78,23 +68,6 @@ export class FunctionValidator {
     chai.assert.exists(this.functionAppName);
 
     console.log("Successfully init validator for function.");
-  }
-
-  public static async validateScaffold(
-    projectPath: string,
-    programmingLanguage: string
-  ): Promise<void> {
-    const indexFile: { [key: string]: string } = {
-      typescript: "index.ts",
-      javascript: "index.js",
-    };
-    glob(
-      `**/${indexFile[programmingLanguage]}`,
-      { cwd: path.resolve(projectPath, "api") },
-      (err, files) => {
-        chai.assert.isAtLeast(files.length, 1);
-      }
-    );
   }
 
   public async validateProvision(): Promise<void> {

@@ -1,5 +1,5 @@
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as nextstepCommandHandler from "../../../../src/chat/commands/nextstep/nextstepCommandHandler";
@@ -18,9 +18,13 @@ import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../../sr
 chai.use(chaiPromised);
 
 describe("chat nextstep handler", () => {
-  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sinon.restore();
+  });
 
   describe("nextstepCommandHandler()", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(async () => {
       sandbox.restore();
     });

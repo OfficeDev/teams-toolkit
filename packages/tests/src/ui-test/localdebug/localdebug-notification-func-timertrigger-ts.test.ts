@@ -34,7 +34,9 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("ftNoti", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("ftNoti", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 

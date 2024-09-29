@@ -12,10 +12,10 @@ import {
   TokenCache,
   AuthorizationUrlRequest,
 } from "@azure/msal-node";
-import * as express from "express";
+import express from "express";
 import * as http from "http";
-import * as fs from "fs-extra";
-import * as path from "path";
+import fs from "fs-extra";
+import path from "path";
 import { Mutex } from "async-mutex";
 import { FxError, ok, Result, UserError, err } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
@@ -39,7 +39,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
-import { ExtensionErrors } from "../error";
+import { ExtensionErrors } from "../error/error";
 import { env, Uri } from "vscode";
 import { randomBytes } from "crypto";
 import { getExchangeCode } from "./exchangeCode";
@@ -395,7 +395,7 @@ export class CodeFlowLogin {
             )
         );
         if (!(await checkIsOnline())) {
-          return error(CheckOnlineError());
+          return err(CheckOnlineError());
         }
         await this.logout();
         if (refresh) {

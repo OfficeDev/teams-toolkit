@@ -15,11 +15,16 @@ import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
+  execCommandIfExist,
 } from "../../../utils/vscodeOperation";
 import {
   CLIVersionCheck,
   updateDeverloperInManifestFile,
 } from "../../../utils/commonUtils";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.migrationTestCase);
@@ -39,6 +44,19 @@ describe("Migration Tests", function () {
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
     await mirgationDebugTestContext.after(true, true, "dev");
+
+    //Close the folder and cleanup local sample project
+    await execCommandIfExist("Workspaces: Close Workspace", Timeout.webView);
+    console.log(
+      `[Successfully] start to clean up for ${mirgationDebugTestContext.projectPath}`
+    );
+    await mirgationDebugTestContext.cleanUp(
+      mirgationDebugTestContext.appName,
+      mirgationDebugTestContext.projectPath,
+      true,
+      true,
+      false
+    );
   });
 
   it(
@@ -70,10 +88,11 @@ describe("Migration Tests", function () {
         mirgationDebugTestContext.projectPath
       );
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      // v3 deploy
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

@@ -15,7 +15,7 @@ import {
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { pathUtils } from "../../../../src/component/utils/pathUtils";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
-import { TOOLS, setTools } from "../../../../src/core/globalVars";
+import { TOOLS, setTools } from "../../../../src/common/globalVars";
 import { MockTools } from "../../../core/utils";
 import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";

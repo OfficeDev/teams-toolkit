@@ -54,10 +54,9 @@ function syncTemplateVersion(templateVersion, templateConfigs) {
 
 function updateUseLocalFlag(templateVersion, templateConfigs) {
   if (!semver.prerelease(templateVersion) || templateVersion.includes("rc")) {
-    `================== configure useLocalFlag: false ==================`
     templateConfigs.useLocalTemplate = false;
   } else {
-    `================== configure useLocalFlag: true ==================`
     templateConfigs.useLocalTemplate = true;
   }
+  console.log(`================== configure useLocalFlag: ${templateConfigs.useLocalTemplate} ==================`)
 }

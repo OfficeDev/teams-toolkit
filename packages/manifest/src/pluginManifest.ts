@@ -88,7 +88,7 @@ export interface ResponseSemanticsObject {
     title?: string;
     subtitle?: string;
     url?: string;
-    information_protection_url?: string;
+    information_protection_label?: string;
     template_selector?: string;
     [k: string]: unknown;
   };

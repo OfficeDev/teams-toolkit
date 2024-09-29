@@ -35,7 +35,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App (Chrome)",
@@ -49,7 +50,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Attach to Local Service",

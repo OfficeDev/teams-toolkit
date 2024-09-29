@@ -259,18 +259,24 @@ export class SampledebugContext extends TestContext {
 
   public async updateManifestAppName(): Promise<void> {
     console.log("[start] update manifest file");
-    const manifestFile =
-      path.resolve(this.projectPath, "appPackage", "manifest.json") ??
-      path.resolve(this.projectPath, "appManifest", "manifest.json");
-    const manifest = await fs.readJSON(manifestFile);
-    // manifest name can't be longer than 15 characters
-    manifest.name.short =
-      this.appName.substring(0, 10) + "${{APP_NAME_SUFFIX}}";
-    fs.writeJSON(manifestFile, manifest, { spaces: 4 });
-    console.log(
-      "[finish] update manifest file successfully, appName: ",
-      manifest.name.short
-    );
+    const manifestFile = fs.pathExistsSync(
+      path.resolve(this.projectPath, "appPackage")
+    )
+      ? path.resolve(this.projectPath, "appPackage", "manifest.json")
+      : path.resolve(this.projectPath, "appManifest", "manifest.json");
+    try {
+      const manifest = await fs.readJSON(manifestFile);
+      // manifest name can't be longer than 15 characters
+      manifest.name.short =
+        this.appName.substring(0, 10) + "${{APP_NAME_SUFFIX}}";
+      fs.writeJSON(manifestFile, manifest, { spaces: 4 });
+      console.log(
+        "[finish] update manifest file successfully, appName: ",
+        manifest.name.short
+      );
+    } catch (error) {
+      console.log("[skip] manifest file not found");
+    }
   }
 
   public async openExistFolder(path: string): Promise<void> {
@@ -441,7 +447,8 @@ export class SampledebugContext extends TestContext {
     tool: "ttk" | "cli" = "cli",
     option = "",
     env: "dev" | "local" = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    skipErrorMessage?: string
   ) {
     if (tool === "cli") {
       await this.runCliProvision(
@@ -450,7 +457,8 @@ export class SampledebugContext extends TestContext {
         createRg,
         option,
         env,
-        processEnv
+        processEnv,
+        skipErrorMessage
       );
     } else {
       await runProvision(appName);
@@ -487,17 +495,26 @@ export class SampledebugContext extends TestContext {
     createRg = true,
     option = "",
     env: "dev" | "local" = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    skipErrorMessage?: string
   ) {
     if (createRg) {
       await createResourceGroup(appName, env, "westus");
     }
     const resourceGroupName = `${appName}-${env}-rg`;
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = resourceGroupName;
     await CliHelper.showVersion(projectPath, processEnv);
-    await CliHelper.provisionProject2(projectPath, option, env, {
-      ...process.env,
-      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
-    });
+    const { success, stderr, stdout } = await Executor.provision(
+      projectPath,
+      env,
+      true,
+      skipErrorMessage
+    );
+    console.log(`stdout: ${stdout}`);
+    if (!success) {
+      console.log(`stderr: ${stderr}`);
+      expect(success).to.be.true;
+    }
   }
 
   public async runCliDeploy(
@@ -508,13 +525,18 @@ export class SampledebugContext extends TestContext {
     retries?: number,
     newCommand?: string
   ) {
-    await CliHelper.deployAll(
-      projectPath,
-      option,
-      env,
-      processEnv,
-      retries,
-      newCommand
-    );
+    const { success, stderr, stdout } = await Executor.deploy(projectPath, env);
+    console.log(`stdout: ${stdout}`);
+    if (!success) {
+      console.log(`stderr: ${stderr}`);
+      expect(success).to.be.true;
+    }
+  }
+
+  public createEnvFolder(
+    folderPath: string,
+    folderName: string
+  ): Promise<void> {
+    return fs.mkdir(path.resolve(folderPath, folderName));
   }
 }

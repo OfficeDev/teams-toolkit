@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { stemmer } from "./porter2Stemmer";
-import * as stopwords from "../retrievalUtil/stop_words_english.json";
+import stopwords from "../retrievalUtil/stop_words_english.json";
 
 export type DocumentMetadata = {
   description: string;

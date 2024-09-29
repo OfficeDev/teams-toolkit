@@ -9,7 +9,7 @@ import {
   IStaticTab,
   IWebApplicationInfo,
 } from "@microsoft/teams-manifest";
-import { Platform, Stage, VsCodeEnv } from "./constants";
+import { Platform } from "./constants";
 
 /**
  * Definition of option item in single selection or multiple selection
@@ -128,29 +128,6 @@ export type ManifestCapability =
       existingApp?: boolean;
     };
 
-export enum OpenAIManifestAuthType {
-  None = "none",
-  UserHttp = "user_http",
-  ServiceHttp = "service_http",
-  OAuth = "oauth",
-}
-
-export interface OpenAIPluginManifest {
-  schema_version: string;
-  name_for_human: string;
-  name_for_model: string;
-  description_for_human: string;
-  description_for_model: string;
-  auth: { type: OpenAIManifestAuthType };
-  api: {
-    type: string;
-    url: string;
-  };
-  logo_url: string;
-  contact_email: string;
-  legal_info_url: string;
-}
-
 export interface AuthInfo {
   serverUrl: string;
   authName?: string;
@@ -176,13 +153,14 @@ export interface CreateProjectResult {
   warnings?: Warning[];
   shouldInvokeTeamsAgent?: boolean;
   projectId?: string;
+  lastCommand?: string;
 }
 
 export interface TeamsAppInputs extends InputsWithProjectPath {
   "manifest-file"?: string;
   "package-file"?: string;
   "output-package-file"?: string;
-  "output-manifest-file"?: string;
+  "output-folder"?: string;
   env?: string;
   "env-file"?: string;
 }

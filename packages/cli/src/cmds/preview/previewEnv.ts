@@ -7,7 +7,7 @@ import { Colors, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-a
 import {
   AppStudioScopes,
   assembleError,
-  CoreQuestionNames,
+  QuestionNames,
   environmentNameManager,
   envUtil,
   FxCore,
@@ -32,7 +32,7 @@ import { getColorizedString, getSystemInputs } from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
-import { openHubWebClientNew } from "./launch";
+import { openHubWebClientNew, openTeamsDesktopClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
@@ -70,6 +70,7 @@ export default class PreviewEnv {
     const execPath: string = args["exec-path"] as string;
     const browser = args.browser as constants.Browser;
     const browserArguments = (args["browser-arg"] as string[]) ?? [];
+    const desktop = args["desktop"] as boolean;
 
     cliTelemetry.withRootFolder(workspaceFolder);
     this.telemetryProperties[TelemetryProperty.PreviewType] =
@@ -92,7 +93,8 @@ export default class PreviewEnv {
           m365Host,
           browser,
           browserArguments,
-          execPath
+          execPath,
+          desktop
         ),
       (result: Result<null, FxError>, ctx: TelemetryContext) => {
         // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
@@ -114,7 +116,8 @@ export default class PreviewEnv {
     hub: HubTypes,
     browser: constants.Browser,
     browserArguments: string[],
-    execPath: string
+    execPath: string,
+    desktop: boolean
   ): Promise<Result<null, FxError>> {
     // 1. load envs
     const envRes = await envUtil.readEnv(workspaceFolder, env, false, false);
@@ -180,10 +183,28 @@ export default class PreviewEnv {
         }
       }
 
-      // 6. open hub web client
-      const launchRes = await this.launchBrowser(env, hub, urlRes.value, browser, browserArguments);
-      if (launchRes.isErr()) {
-        throw launchRes.error;
+      // 6. open hub web client or Teams desktop client
+      if (desktop && hub == HubTypes.teams) {
+        const launchRes = await this.launchDesktopClient(
+          env,
+          urlRes.value,
+          browser,
+          browserArguments
+        );
+        if (launchRes.isErr()) {
+          throw launchRes.error;
+        }
+      } else {
+        const launchRes = await this.launchBrowser(
+          env,
+          hub,
+          urlRes.value,
+          browser,
+          browserArguments
+        );
+        if (launchRes.isErr()) {
+          throw launchRes.error;
+        }
       }
       if (runCommand !== undefined && env === environmentNameManager.getLocalEnvName()) {
         cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
@@ -273,9 +294,9 @@ export default class PreviewEnv {
     const coreRes = await activate(projectPath, true);
     const core = (coreRes as any).value as FxCore;
     const inputs = getSystemInputs(projectPath, env);
-    inputs[CoreQuestionNames.M365Host] = hub;
-    inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
-    // inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation // confirm is skipped in question model
+    inputs[QuestionNames.M365Host] = hub;
+    inputs[QuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
+    // inputs[QuestionNames.ConfirmManifest] = "manifest"; // skip confirmation // confirm is skipped in question model
     return await core.previewWithManifest(inputs);
   }
 
@@ -381,6 +402,31 @@ export default class PreviewEnv {
     if (hub !== HubTypes.teams) {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
     }
+
+    return ok(null);
+  }
+
+  protected async launchDesktopClient(
+    env: string,
+    url: string,
+    browser: constants.Browser,
+    browserArgs: string[]
+  ): Promise<Result<null, FxError>> {
+    const loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+    let username = "";
+    if (
+      loginStatusRes.isOk() &&
+      loginStatusRes?.value?.accountInfo &&
+      loginStatusRes?.value?.accountInfo["unique_name"]
+    ) {
+      username = " (" + (loginStatusRes.value.accountInfo["unique_name"] as string) + ")";
+    }
+    await openTeamsDesktopClient(url, username, browser, browserArgs, this.telemetryProperties);
+
+    cliLogger.necessaryLog(
+      LogLevel.Warning,
+      util.format(constants.manifestChangesHintMessage, `--env ${env}`)
+    );
 
     return ok(null);
   }

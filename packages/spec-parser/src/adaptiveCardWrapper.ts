@@ -86,7 +86,7 @@ export function inferPreviewCardTemplate(card: AdaptiveCard): PreviewCardTemplat
     result.image = {
       url: `\${${inferredProperties.imageUrl}}`,
       alt: `\${if(${inferredProperties.imageUrl}, ${inferredProperties.imageUrl}, 'N/A')}`,
-      $when: `\${${inferredProperties.imageUrl} != null}`,
+      $when: `\${${inferredProperties.imageUrl} != null && ${inferredProperties.imageUrl} != ''}`,
     };
   }
 

@@ -7,7 +7,7 @@ import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { pathUtils } from "./pathUtils";
-import { globalVars, TOOLS } from "../../core/globalVars";
+import { globalVars, TOOLS } from "../../common/globalVars";
 import * as path from "path";
 import { EOL } from "os";
 import { TelemetryEvent } from "../../common/telemetry";
@@ -260,7 +260,7 @@ class EnvUtil {
   }
 
   extractEnvNameFromFileName(inputFileName: string): string | undefined {
-    const regex = /^\.env\.(\w+)$/;
+    const regex = /^\.env\.([\w\d-_]+)$/;
     const matches = inputFileName.match(regex);
     const envName = matches && matches[1];
     return envName || undefined;

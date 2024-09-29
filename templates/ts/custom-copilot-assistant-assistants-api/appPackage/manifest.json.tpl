@@ -1,9 +1,8 @@
 {
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-    "manifestVersion": "1.16",
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.17",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
-    "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -30,7 +29,24 @@
                 "personal"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Solve the equation: 3x + 11= 14",
+                            "description": "Help me solve the equation: 3x + 11= 14"
+                        },
+                        {
+                            "title": "The weather of San Francisco",
+                            "description": "The weather of San Francisco"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

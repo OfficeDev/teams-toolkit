@@ -6,10 +6,7 @@
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import {
-  initNoAddappPage,
-  validateSearchCmdResult,
-} from "../../utils/playwrightOperation";
+import { initPage, validateApiMeResult } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
@@ -23,10 +20,9 @@ describe("Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext(
-      "msgnewapi",
-      "typescript"
-    );
+    localDebugTestContext = new LocalDebugTestContext("msgnewapi", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 
@@ -36,9 +32,9 @@ describe("Local Debug Tests", function () {
   });
 
   it(
-    "[Javascript] Local debug for new API message extension project",
+    "[Typescript] Local debug for API Message Extension with none auth",
     {
-      testPlanCaseId: 25270400,
+      testPlanCaseId: 28253781,
       author: "v-annefu@microsoft.com",
     },
     async function () {
@@ -54,20 +50,13 @@ describe("Local Debug Tests", function () {
         "Worker process started and initialized"
       );
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
-      /*
-      const page = await initNoAddappPage(
+      const page = await initPage(
         localDebugTestContext.context!,
         teamsAppId,
         Env.username,
         Env.password
       );
-      const envName = "local";
-      //disable validation
-      await validateSearchCmdResult(
-        page,
-        localDebugTestContext.appName,
-        envName
-      );*/
+      await validateApiMeResult(page, localDebugTestContext.appName);
     }
   );
 });

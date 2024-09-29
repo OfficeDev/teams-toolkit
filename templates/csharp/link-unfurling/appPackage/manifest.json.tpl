@@ -1,9 +1,8 @@
 {
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-    "manifestVersion": "1.16",
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.17",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
-    "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -34,7 +33,7 @@
                         "compose",
                         "commandBox"
                     ],
-                    "description": "Test command to run query",
+                    "description": "Test command to run query, need to implement in the code",
                     "title": "Search",
                     "type": "query",
                     "parameters": [

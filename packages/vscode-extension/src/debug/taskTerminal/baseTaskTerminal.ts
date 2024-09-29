@@ -9,13 +9,14 @@ import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
 import { FxError, Result, SystemError, UserError, Void } from "@microsoft/teamsfx-api";
 import { assembleError, Correlator } from "@microsoft/teamsfx-core";
-import { ExtensionErrors, ExtensionSource } from "../../error";
+import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import * as globalVariables from "../../globalVariables";
-import { showError } from "../../handlers";
+import { showError } from "../../error/common";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import * as commonUtils from "../commonUtils";
 import { sendDebugAllEvent } from "../localTelemetryReporter";
+import { DebugNoSessionId } from "../common/debugConstants";
+import { getLocalDebugSession, endLocalDebugSession } from "../common/localDebugSession";
 
 export const ControlCodes = {
   CtrlC: "\u0003",
@@ -75,11 +76,11 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       }
       this.closeEmitter.fire(1);
 
-      await Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+      await Correlator.runWithId(getLocalDebugSession().id, () =>
         sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" })
       );
-      if (commonUtils.getLocalDebugSession().id !== commonUtils.DebugNoSessionId) {
-        commonUtils.endLocalDebugSession();
+      if (getLocalDebugSession().id !== DebugNoSessionId) {
+        endLocalDebugSession();
       }
     }
     this.closeEmitter.fire(0);

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import lodash from "lodash";
-import * as fs from "fs-extra";
-import { glob } from "glob";
-import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
-import { cpUtils, DebugLogger } from "../../../../common/deps-checker/util/cpUtils";
+import { exec, execSync } from "child_process";
+import * as fs from "fs-extra";
+import { glob } from "glob";
+import lodash from "lodash";
 import os from "os";
+import { cpUtils, DebugLogger } from "../../../deps-checker/util/cpUtils";
 import { Constants } from "./constants";
 
 export class Utils {

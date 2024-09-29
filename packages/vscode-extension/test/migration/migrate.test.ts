@@ -1,6 +1,6 @@
 import * as chai from "chai";
-import * as path from "path";
-import * as fs from "fs-extra";
+import path from "path";
+import fs from "fs-extra";
 import transformJs from "../../src/migration/migrationTool/replaceSDK";
 import transformTs from "../../src/migration/migrationTool/ts/replaceTsSDK";
 

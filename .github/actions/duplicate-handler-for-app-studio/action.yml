@@ -9,12 +9,6 @@ inputs:
     required: true
   adding-tags:
     description: 'the tags will be added for the issue, seperated by comma'
-  matching-reg:
-    description: 'the reg to match the error'
-    required: true
-  status-codes-ignore-api:
-    description: 'the status codes ignoring the api name, seperated by comma'
-    default: '503'
 
 runs:
   using: 'node16'

@@ -1,6 +1,6 @@
 import "mocha";
 import chai from "chai";
-import { convertToAlphanumericOnly } from "../../src/common/utils";
+import { convertToAlphanumericOnly } from "../../src/common/stringUtils";
 import { jsonUtils } from "../../src/common/jsonUtils";
 import {
   FileNotFoundError,

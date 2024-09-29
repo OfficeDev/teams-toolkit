@@ -17,7 +17,6 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { MetadataV3 } from "../../src/common/versionMetadata";
 import { ProjectModel } from "../../src/component/configManager/interface";
-import { yamlParser } from "../../src/component/configManager/parser";
 import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
 import { DotenvOutput, dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -25,7 +24,7 @@ import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
 import { environmentManager } from "../../src/core/environment";
 import { FxCore } from "../../src/core/FxCore";
-import { globalVars, setTools, TOOLS } from "../../src/core/globalVars";
+import { globalVars, setTools, TOOLS } from "../../src/common/globalVars";
 import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
 import {
@@ -37,6 +36,7 @@ import {
 } from "../../src/error/common";
 import { MockTools } from "../core/utils";
 import { parseSetOutputCommand } from "../../src/component/driver/script/scriptDriver";
+import * as yaml from "yaml";
 
 describe("envUtils", () => {
   const tools = new MockTools();
@@ -92,11 +92,9 @@ describe("envUtils", () => {
 
   describe("pathUtils.getEnvFolderPath", () => {
     it("happy path", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-        environmentFolderPath: "/home/envs",
-      };
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox
+        .stub(fs, "readFile")
+        .resolves("version: 1.0.0\nenvironmentFolderPath: /home/envs" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFolderPath(".");
@@ -106,21 +104,17 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
     });
     it("returns undefined value", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./teamsapp.yml");
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox
+        .stub(fs, "readFile")
+        .resolves("version: 1.0.0\nenvironmentFolderPath: /home/envs" as any);
       sandbox.stub(fs, "pathExists").resolves(false);
       const res = await pathUtils.getEnvFolderPath("");
       assert.isTrue(res.isOk());
@@ -132,12 +126,10 @@ describe("envUtils", () => {
 
   describe("pathUtils.getEnvFilePath", () => {
     it("happy path", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-        environmentFolderPath: "/home/envs",
-      };
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox
+        .stub(fs, "readFile")
+        .resolves("version: 1.0.0\nenvironmentFolderPath: /home/envs" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       const res = await pathUtils.getEnvFilePath(".", "dev");
       assert.isTrue(res.isOk());
@@ -146,10 +138,7 @@ describe("envUtils", () => {
       }
     });
     it("returns default value", async () => {
-      const mockProjectModel: ProjectModel = {
-        version: "1.0.0",
-      };
-      sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+      sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await pathUtils.getEnvFilePath(".", "dev");
@@ -396,6 +385,7 @@ describe("envUtils", () => {
       assert.instanceOf(res._unsafeUnwrapErr(), NoEnvFilesError);
     });
     it("environmentManager.listRemoteEnvConfigs return error", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
       sandbox.stub(fs, "readdir").resolves([] as any);
       sandbox.stub(pathUtils, "getYmlFilePath").resolves("./xxx");
       const res = await environmentManager.listRemoteEnvConfigs(".", true);

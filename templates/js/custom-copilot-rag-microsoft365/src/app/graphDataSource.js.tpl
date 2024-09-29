@@ -68,7 +68,7 @@ class GraphDataSource {
             if (!rawContent) {
                 continue;
             }
-            let doc = `${rawContent}\n\n`;
+            let doc = `${rawContent}\n Citation title:${result.resource.name}. Url:${result.resource.webUrl}\n\n`;
             let docLength = tokenizer.encode(doc).length;
             const remainingTokens = maxTokens - (length + docLength);
             if (remainingTokens <= 0) {

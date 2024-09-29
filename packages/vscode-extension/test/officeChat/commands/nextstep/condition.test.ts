@@ -4,25 +4,15 @@ import {
   isDebugSucceededAfterSourceCodeChanged,
   isDependenciesInstalled,
   isDidNoActionAfterScaffolded,
-  isFirstInstalled,
   isHaveReadMe,
   isProjectOpened,
+  isNodeInstalled,
 } from "../../../../src/officeChat/commands/nextStep/condition";
 import { OfficeWholeStatus } from "../../../../src/officeChat/commands/nextStep/types";
 import { emptyProjectStatus } from "../../../../src/utils/projectStatusUtils";
 import { CommandKey } from "../../../../src/constants";
 
 describe("offce chat nextstep conditions", () => {
-  it("isFirstInstalled", () => {
-    chai.assert.isTrue(
-      isFirstInstalled({
-        machineStatus: {
-          firstInstalled: true,
-        },
-      } as OfficeWholeStatus)
-    );
-  });
-
   it("isProjectOpened", () => {
     chai.assert.isTrue(
       isProjectOpened({
@@ -30,6 +20,30 @@ describe("offce chat nextstep conditions", () => {
       } as OfficeWholeStatus)
     );
     chai.assert.isFalse(isProjectOpened({} as OfficeWholeStatus));
+  });
+
+  describe("isNodeInstalled", () => {
+    it("isNodeInstalled", () => {
+      chai.assert.isTrue(
+        isNodeInstalled({
+          projectOpened: {
+            isNodeInstalled: true,
+          },
+          machineStatus: {},
+        } as OfficeWholeStatus)
+      );
+
+      chai.assert.isFalse(
+        isNodeInstalled({
+          projectOpened: {
+            isNodeInstalled: false,
+          },
+          machineStatus: {},
+        } as OfficeWholeStatus)
+      );
+
+      chai.assert.isFalse(isNodeInstalled({} as OfficeWholeStatus));
+    });
   });
 
   describe("isDidNoActionAfterScaffolded", () => {

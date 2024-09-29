@@ -3,7 +3,6 @@
     "manifestVersion": "devPreview",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
-    "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
@@ -31,8 +30,8 @@
     "copilotExtensions": {
         "declarativeCopilots": [            
             {
-                "id": "declarativeCopilot",
-                "file": "declarativeCopilot.json"
+                "id": "declarativeAgent",
+                "file": "declarativeAgent.json"
             }
         ]
     },

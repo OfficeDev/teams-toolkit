@@ -14,8 +14,6 @@ import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 describe("Command Controller", () => {
   const sandbox = sinon.createSandbox();
 
-  beforeEach(() => {});
-
   afterEach(() => {
     sandbox.restore();
   });

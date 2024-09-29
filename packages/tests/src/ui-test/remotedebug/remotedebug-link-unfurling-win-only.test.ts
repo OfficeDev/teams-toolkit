@@ -77,7 +77,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateUnfurlCard(page);
+      await validateUnfurlCard(page, remoteDebugTestContext.appName);
     }
   );
 });

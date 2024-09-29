@@ -7,6 +7,7 @@ export enum TelemetryEvent {
   CreateAccount = "create-account",
 
   GetStarted = "quick-start",
+  WalkThroughBuildIntelligentApps = "walkthrough-build-intelligent-apps",
 
   Samples = "samples",
 
@@ -33,9 +34,14 @@ export enum TelemetryEvent {
   AddWebpartStart = "add-web-part-start",
   AddWebpart = "add-web-part",
 
+  AddPluginStart = "add-plugin-start",
+  AddPlugin = "add-plugin",
+
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
   ValidateApplication = "validate-application",
+  SyncManifestStart = "sync-manifest-start",
+  SyncManifest = "sync-manifest",
 
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
@@ -144,6 +150,11 @@ export enum TelemetryEvent {
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
   DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
+  LaunchDesktopClientTask = "launch-desktop-client",
+
+  StartDeleteAadAfterDebug = "start-delete-aad-after-debug",
+  SuccessDeleteAadAfterDebug = "success-delete-aad-after-debug",
+  FailDeleteAadAfterDebug = "fail-delete-aad-after-debug",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -188,6 +199,12 @@ export enum TelemetryEvent {
   ShowWhatIsNewContext = "show-what-is-new-context",
 
   ShowPreivewNotification = "show-preview-notification",
+
+  ShowProvisionNotification = "show-provision-notification",
+  ClickProvision = "click-provision",
+
+  ShowManualStepRequiredNotification = "show-manual-step-required-notification",
+  ClickReadManualStep = "click-read-manual-step",
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ShowLocalPreviewNotification = "show-local-preview-notification",
@@ -272,6 +289,14 @@ export enum TelemetryEvent {
   stopAddInDebug = "stop-office-addin-debug",
   generateAddInGUID = "generate-addin-guid",
   openNewOfficeAddInProject = "open-new-office-addin-project",
+
+  CreatePluginWithManifestStart = "create-plugin-with-manifest-start",
+  CreatePluginWithManifest = "create-plugin-with-manifest",
+
+  InstallKiota = "install-kiota",
+  Configuration = "vsc-configuration",
+
+  UpdateAddPluginTreeview = "update-add-plugin-tree-view",
 }
 
 export enum TelemetryProperty {
@@ -286,7 +311,7 @@ export enum TelemetryProperty {
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
-  ErrorMessage = "error-message",
+  ErrorMessage = "err-message",
   ErrorStack = "error-stack",
   Errors = "errors",
   Hub = "hub",
@@ -383,6 +408,16 @@ export enum TelemetryProperty {
   CopilotChatParticipantId = "copilot-chat-participant-id",
   CopilotChatLocation = "copilot-chat-location",
   CopilotChatCompleteType = "copilot-chat-complete-type",
+  CopilotMatchResultType = "copilot-match-result-type",
+  CopilotChatBlockReason = "copilot-chat-block-reason",
+  CopilotChatRelatedSampleName = "copilot-chat-related-sample-name",
+  CopilotChatTimeToFirstToken = "copilot-chat-time-to-first-token",
+  CopilotChatRequestTokenPerSecond = "copilot-chat-request-token-per-second",
+  CopilotChatResponseTokenPerSecond = "copilot-chat-response-token-per-second",
+  CopilotChatRequestToken = "copilot-chat-request-token",
+  CopilotChatResponseToken = "copilot-chat-response-token",
+  KiotaInstalled = "kiota-installed",
+  ShowAddPluginTreeView = "show-add-plugin-tree-view",
 }
 
 export enum TelemetryMeasurements {

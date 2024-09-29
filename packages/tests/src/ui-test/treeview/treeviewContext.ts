@@ -3,6 +3,7 @@
 
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as os from "os";
 import { expect } from "chai";
 import {
   ActivityBar,
@@ -21,6 +22,7 @@ import {
 import {
   execCommandIfExist,
   ensureExtensionActivated,
+  inputFolderPath,
 } from "../../utils/vscodeOperation";
 import { getScreenshotName } from "../../utils/nameUtil";
 
@@ -87,11 +89,13 @@ export async function createSampleProject(
   const input = await InputBox.create();
   await input.selectQuickPick("Browse...");
   // Input folder path
-  do {
-    // input may be auto-corrected to other value, so set until it's fixed
-    await input.setText(testRootFolder);
-    await driver.sleep(Timeout.input);
-  } while ((await input.getText()) !== testRootFolder);
+  await inputFolderPath(driver, input, testRootFolder);
+  await driver.sleep(Timeout.input);
+  if (os.type() === "Windows_NT") {
+    await input.sendKeys("\\");
+  } else if (os.type() === "Linux") {
+    await input.sendKeys("/");
+  }
   await input.confirm();
   await driver.sleep(Timeout.reloadWindow);
   console.log("create sample done");
@@ -101,7 +105,6 @@ export async function checkSectionContent(
   expectedSectionName: string,
   expectedSectionItems: string[]
 ): Promise<boolean> {
-  const driver = VSBrowser.instance.driver;
   const activityBar = new ActivityBar();
   const view = await activityBar.getViewControl(Extension.displayName);
   let includeContent = false;

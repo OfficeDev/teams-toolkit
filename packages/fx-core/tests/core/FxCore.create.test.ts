@@ -6,6 +6,7 @@ import {
   CreateProjectInputs,
   err,
   FxError,
+  GeneratorResult,
   IGenerator,
   Inputs,
   ok,
@@ -14,16 +15,20 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
+import fs from "fs-extra";
 import "mocha";
 import * as os from "os";
 import sinon from "sinon";
-import { AppDefinition, DefaultTemplateGenerator, FxCore, UserCancelError } from "../../src";
+import { AppDefinition, FxCore, UserCancelError } from "../../src";
 import { coordinator } from "../../src/component/coordinator";
-import { setTools } from "../../src/core/globalVars";
-import { CapabilityOptions, ProjectTypeOptions, ScratchOptions } from "../../src/question/create";
-import { QuestionNames } from "../../src/question/questionNames";
+import { setTools } from "../../src/common/globalVars";
+import {
+  CapabilityOptions,
+  ProjectTypeOptions,
+  QuestionNames,
+  ScratchOptions,
+} from "../../src/question/constants";
 import { MockTools, randomAppName } from "./utils";
-import fs from "fs-extra";
 
 describe("FxCore.createProject", () => {
   const sandbox = sinon.createSandbox();
@@ -132,8 +137,8 @@ describe("FxCore.createProjectByCustomizedGenerator", () => {
       context: Context,
       inputs: Inputs,
       destinationPath: string
-    ): Promise<Result<undefined, FxError>> {
-      return Promise.resolve(ok(undefined));
+    ): Promise<Result<GeneratorResult, FxError>> {
+      return Promise.resolve(ok({}));
     }
   }
 

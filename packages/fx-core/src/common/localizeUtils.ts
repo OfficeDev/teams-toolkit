@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Locale } from "../core/globalVars";
+import { Locale } from "./globalVars";
 import { getResourceFolder } from "../folder";
 import * as path from "path";
 import fs from "fs-extra";

@@ -4,12 +4,19 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
 import { ProgressHelper } from "../../src/debug/progressHelper";
-import { ProgressHandler } from "../../src/progressHandler";
+import { ProgressHandler } from "../../src/debug/progressHandler";
+
+afterEach(() => {
+  // Restore the default sandbox here
+  sinon.restore();
+});
 
 describe("[debug > ProgressHelper]", () => {
   describe("ParallelProgressHelper", () => {
+    const sandbox = sinon.createSandbox();
+
     afterEach(() => {
-      sinon.restore();
+      sandbox.restore();
     });
 
     const testData = [
@@ -90,9 +97,10 @@ describe("[debug > ProgressHelper]", () => {
         expected: ["test1"],
       },
     ];
+
     testData.forEach((data) => {
       it(data.name, async () => {
-        const mockProgressHandler = sinon.createSandbox().createStubInstance(ProgressHandler);
+        const mockProgressHandler = sandbox.createStubInstance(ProgressHandler);
         const testProgressHelper = new ProgressHelper(mockProgressHandler);
         await testProgressHelper.start(data.input);
         for (const callMessage of data.calledMessage) {
@@ -100,6 +108,7 @@ describe("[debug > ProgressHelper]", () => {
         }
         const called = mockProgressHandler.next.getCalls().map(({ args }) => args[0]);
         chai.assert.deepEqual(called, data.expected);
+        sandbox.restore();
       });
     });
   });

@@ -13,8 +13,14 @@ export async function verbatimCopilotInteraction(
   response: ChatResponseStream,
   token: CancellationToken
 ) {
-  const chatRequest = await lm.sendChatRequest(model, messages, {}, token);
-  for await (const fragment of chatRequest.stream) {
+  const [vendor, family] = model.split(/-(.*)/s);
+  const chatModels = await lm.selectChatModels({ vendor, family });
+  const familyMatch = chatModels?.find((chatModel) => chatModel.family === family);
+  if (!familyMatch) {
+    throw new Error("No chat models available for the specified family");
+  }
+  const chatResponse = await familyMatch.sendRequest(messages, {}, token);
+  for await (const fragment of chatResponse.text) {
     response.markdown(fragment);
   }
 }
@@ -24,9 +30,15 @@ export async function getCopilotResponseAsString(
   messages: LanguageModelChatMessage[],
   token: CancellationToken
 ): Promise<string> {
-  const chatRequest = await lm.sendChatRequest(model, messages, {}, token);
+  const [vendor, family] = model.split(/-(.*)/s);
+  const chatModels = await lm.selectChatModels({ vendor, family });
+  const familyMatch = chatModels?.find((chatModel) => chatModel.family === family);
+  if (!familyMatch) {
+    throw new Error("No chat models available for the specified family");
+  }
+  const chatResponse = await familyMatch.sendRequest(messages, {}, token);
   let response = "";
-  for await (const fragment of chatRequest.stream) {
+  for await (const fragment of chatResponse.text) {
     response += fragment;
   }
   return response;
@@ -47,7 +59,7 @@ export function countMessageTokens(message: LanguageModelChatMessage): number {
   let numTokens = BaseTokensPerMessage;
   const tokenizer = Tokenizer.getInstance();
   for (const [key, value] of Object.entries(message)) {
-    if (!value) {
+    if (!value || key === "role") {
       continue;
     }
     numTokens += tokenizer.tokenLength(value);

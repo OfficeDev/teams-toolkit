@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { hooks } from "@feathersjs/hooks";
 import {
+  Context,
   FxError,
+  IComposeExtension,
+  IMessagingExtensionCommand,
   InputsWithProjectPath,
   ManifestCapability,
   Result,
   TeamsAppManifest,
-  IComposeExtension,
-  IMessagingExtensionCommand,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -19,25 +21,24 @@ import "reflect-metadata";
 import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import {
-  FileNotFoundError,
-  JSONSyntaxError,
-  MissingEnvironmentVariablesError,
-} from "../../../../error/common";
-import { CapabilityOptions } from "../../../../question/create";
+import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
+import { ErrorContextMW } from "../../../../common/globalVars";
+import { FileNotFoundError, JSONSyntaxError, ReadFileError } from "../../../../error/common";
+import { CapabilityOptions } from "../../../../question/constants";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { expandEnvironmentVariable } from "../../../utils/common";
+import { WrapDriverContext } from "../../util/wrapUtil";
 import {
-  BOTS_TPL_EXISTING_APP,
-  BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
-  BOTS_TPL_FOR_NOTIFICATION_V3,
-  BOTS_TPL_V3,
+  getBotsTplExistingAppBasedOnVersion,
+  getBotsTplForCommandAndResponseBasedOnVersion,
+  getBotsTplForNotificationBasedOnVersion,
+  getBotsTplBasedOnVersion,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_M365_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
-  CONFIGURABLE_TABS_TPL_EXISTING_APP,
-  CONFIGURABLE_TABS_TPL_V3,
+  getConfigurableTabsTplExistingAppBasedOnVersion,
+  getConfigurableTabsTplBasedOnVersion,
   Constants,
   STATIC_TABS_MAX_ITEMS,
   STATIC_TABS_TPL_EXISTING_APP,
@@ -46,18 +47,39 @@ import {
 } from "../constants";
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
-import { TelemetryPropertyKey } from "./telemetry";
-import { WrapDriverContext } from "../../util/wrapUtil";
-import { hooks } from "@feathersjs/hooks";
-import { ErrorContextMW } from "../../../../core/globalVars";
-import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 import { getResolvedManifest } from "./utils";
+import { ManifestType } from "../../../utils/envFunctionUtils";
+import { DriverContext } from "../../interface/commonArgs";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);
   }
+
+  readAppManifestSync(projectPath: string): Result<TeamsAppManifest, FxError> {
+    const filePath = this.getTeamsAppManifestPath(projectPath);
+    if (!fs.existsSync(filePath)) {
+      return err(new FileNotFoundError("teamsApp", filePath));
+    }
+    // Be compatible with UTF8-BOM encoding
+    // Avoid Unexpected token error at JSON.parse()
+    let content;
+    try {
+      content = fs.readFileSync(filePath, { encoding: "utf-8" });
+    } catch (e) {
+      return err(new ReadFileError(e, "ManifestUtils"));
+    }
+    content = stripBom(content);
+    const contentV3 = convertManifestTemplateToV3(content);
+    try {
+      const manifest = JSON.parse(contentV3) as TeamsAppManifest;
+      return ok(manifest);
+    } catch (e) {
+      return err(new JSONSyntaxError(filePath, e, "ManifestUtils"));
+    }
+  }
+
   @hooks([ErrorContextMW({ component: "ManifestUtils" })])
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
@@ -99,6 +121,7 @@ export class ManifestUtils {
     const appManifestRes = await this._readAppManifest(inputs["addManifestPath"]);
     if (appManifestRes.isErr()) return err(appManifestRes.error);
     const appManifest = appManifestRes.value;
+    const manifestVersion = appManifest.manifestVersion;
     for (const capability of capabilities) {
       const exceedLimit = this._capabilityExceedLimit(appManifest, capability.name);
       if (exceedLimit) {
@@ -141,11 +164,12 @@ export class ManifestUtils {
           } else {
             if (capability.existingApp) {
               appManifest.configurableTabs = appManifest.configurableTabs.concat(
-                CONFIGURABLE_TABS_TPL_EXISTING_APP
+                getConfigurableTabsTplExistingAppBasedOnVersion(manifestVersion)
               );
             } else {
-              appManifest.configurableTabs =
-                appManifest.configurableTabs.concat(CONFIGURABLE_TABS_TPL_V3);
+              appManifest.configurableTabs = appManifest.configurableTabs.concat(
+                getConfigurableTabsTplBasedOnVersion(manifestVersion)
+              );
             }
           }
           break;
@@ -155,10 +179,12 @@ export class ManifestUtils {
             appManifest.bots.push(capability.snippet);
           } else {
             if (capability.existingApp) {
-              appManifest.bots = appManifest.bots.concat(BOTS_TPL_EXISTING_APP);
+              appManifest.bots = appManifest.bots.concat(
+                getBotsTplExistingAppBasedOnVersion(manifestVersion)
+              );
             } else {
-              // import CoreQuestionNames introduces dependency cycle and breaks the whole program
-              // inputs[CoreQuestionNames.Features]
+              // import QuestionNames introduces dependency cycle and breaks the whole program
+              // inputs[QuestionNames.Features]
               if (inputs.features) {
                 const feature = inputs.features;
                 if (
@@ -166,13 +192,19 @@ export class ManifestUtils {
                   feature == CapabilityOptions.workflowBot().id
                 ) {
                   // command and response bot or workflow bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForCommandAndResponseBasedOnVersion(manifestVersion)
+                  );
                 } else if (feature === CapabilityOptions.notificationBot().id) {
                   // notification
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForNotificationBasedOnVersion(manifestVersion)
+                  );
                 } else {
                   // legacy bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplBasedOnVersion(manifestVersion)
+                  );
                 }
               } else if (inputs.scenarios) {
                 const scenariosRaw = inputs.scenarios;
@@ -182,16 +214,24 @@ export class ManifestUtils {
                   scenarios.includes(BotScenario.WorkflowBot)
                 ) {
                   // command and response bot or workflow bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForCommandAndResponseBasedOnVersion(manifestVersion)
+                  );
                 } else if (scenarios.includes(BotScenario.NotificationBot)) {
                   // notification
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplForNotificationBasedOnVersion(manifestVersion)
+                  );
                 } else {
                   // legacy bot
-                  appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+                  appManifest.bots = appManifest.bots.concat(
+                    getBotsTplBasedOnVersion(manifestVersion)
+                  );
                 }
               } else {
-                appManifest.bots = appManifest.bots.concat(BOTS_TPL_V3);
+                appManifest.bots = appManifest.bots.concat(
+                  getBotsTplBasedOnVersion(manifestVersion)
+                );
               }
             }
           }
@@ -296,7 +336,7 @@ export class ManifestUtils {
 
   async getManifestV3(
     manifestTemplatePath: string,
-    context?: WrapDriverContext,
+    context: DriverContext,
     generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -315,10 +355,10 @@ export class ManifestUtils {
     const manifestTemplateString = JSON.stringify(manifest);
 
     // Add environment variable keys to telemetry
-    const resolvedManifestRes = getResolvedManifest(
+    const resolvedManifestRes = await getResolvedManifest(
       manifestTemplateString,
       manifestTemplatePath,
-      TelemetryPropertyKey.customizedKeys,
+      ManifestType.TeamsManifest,
       context
     );
 

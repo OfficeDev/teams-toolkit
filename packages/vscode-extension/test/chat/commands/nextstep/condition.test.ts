@@ -1,5 +1,5 @@
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as condition from "../../../../src/chat/commands/nextstep/condition";
 import { WholeStatus } from "../../../../src/chat/commands/nextstep/types";
 import { CommandKey } from "../../../../src/constants";

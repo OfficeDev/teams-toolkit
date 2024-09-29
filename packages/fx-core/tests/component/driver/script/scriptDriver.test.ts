@@ -6,9 +6,10 @@ import { assert } from "chai";
 import child_process from "child_process";
 import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as sinon from "sinon";
-import * as tools from "../../../../src/common/tools";
+import * as tools from "../../../../src/common/utils";
 import {
   convertScriptErrorToFxError,
   defaultShell,
@@ -22,7 +23,6 @@ import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/
 import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -146,6 +146,10 @@ describe("getSystemEncoding", () => {
     const result = await getSystemEncoding();
     assert.equal(result, DefaultEncoding);
   });
+  it("should return utf8 for azure cli", async () => {
+    const result = await getSystemEncoding("@azure/static-web-apps-cli");
+    assert.equal(result, "utf8");
+  });
 });
 
 describe("parseSetOutputCommand", () => {
@@ -160,6 +164,18 @@ describe("parseSetOutputCommand", () => {
     assert.deepEqual(res, {
       TAB_DOMAIN: "localhost:53000",
       TAB_ENDPOINT: "https://localhost:53000",
+    });
+  });
+  it("parse value that contains space", async () => {
+    const res = parseSetOutputCommand(
+      `Write-Host ::set-teamsfx-env Test0="multi word variable"
+        Write-Host ::set-teamsfx-env Test1=' multi word variable'
+        Write-Host ::set-teamsfx-env Test2=multi+word+variable`
+    );
+    assert.deepEqual(res, {
+      Test0: "multi word variable",
+      Test1: " multi word variable",
+      Test2: "multi+word+variable",
     });
   });
 });

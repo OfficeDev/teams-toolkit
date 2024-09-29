@@ -65,7 +65,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("linkunfurl", appName, "TypeScript");
+      await createNewProject("linkunfurl", appName, { lang: "TypeScript" });
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
@@ -77,7 +77,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      await validateUnfurlCard(page);
+      await validateUnfurlCard(page, remoteDebugTestContext.appName);
     }
   );
 });

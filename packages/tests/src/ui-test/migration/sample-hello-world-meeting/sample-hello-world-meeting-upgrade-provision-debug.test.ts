@@ -27,8 +27,8 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     sampledebugContext = new SampledebugContext(
-      TemplateProject.MyFirstMetting,
-      TemplateProjectFolder.MyFirstMetting
+      TemplateProject.MyFirstMeeting,
+      TemplateProjectFolder.MyFirstMeeting
     );
     await sampledebugContext.before();
   });

@@ -63,7 +63,7 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateCreatedCard(page);
+      await validateCreatedCard(page, localDebugTestContext.appName);
     }
   );
 });

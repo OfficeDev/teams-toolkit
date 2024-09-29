@@ -8,7 +8,7 @@ import {
   getSpecialTokensByEncoder,
 } from "@microsoft/tiktokenizer";
 
-import * as path from "path";
+import path from "path";
 
 // refer to vscode copilot tokenizer solution
 export class Tokenizer {

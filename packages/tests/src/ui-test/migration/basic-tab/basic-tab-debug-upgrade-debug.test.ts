@@ -6,7 +6,6 @@ import {
   Capability,
   Notification,
   LocalDebugTaskLabel,
-  CliVersion,
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";

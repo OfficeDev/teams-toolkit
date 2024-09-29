@@ -87,7 +87,13 @@
           "permissionIds": [
               "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
           ]
-      }
+      },
+      {
+        "appId": "27922004-5251-4030-b22d-91ecd9a37ea4",
+        "permissionIds": [
+            "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
+        ]
+    }
   ],
   "identifierUris": [
       "api://${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN}}/botid-${{BOT_ID}}"

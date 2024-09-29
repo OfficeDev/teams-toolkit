@@ -16,6 +16,7 @@ class BotSSODockerTestCase extends CaseFactory {
     return await validateBot(page, {
       botCommand: "show",
       expected: Env.displayName,
+      consentPrompt: true,
     });
   }
 }

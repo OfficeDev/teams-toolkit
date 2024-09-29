@@ -15,9 +15,12 @@ import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 
 export class AdaptiveCardGenerator {
-  static generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): [AdaptiveCard, string] {
+  static generateAdaptiveCard(
+    operationItem: OpenAPIV3.OperationObject,
+    allowMultipleMediaType = false
+  ): [AdaptiveCard, string] {
     try {
-      const { json } = Utils.getResponseJson(operationItem);
+      const { json } = Utils.getResponseJson(operationItem, allowMultipleMediaType);
 
       let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
 
@@ -99,7 +102,7 @@ export class AdaptiveCardGenerator {
       return [template];
     }
     // some schema may not contain type but contain properties
-    if (schema.type === "object" || (!schema.type && schema.properties)) {
+    if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       const result: Array<TextBlockElement | ImageElement | ArrayElement> = [];
       for (const property in properties) {
@@ -152,7 +155,7 @@ export class AdaptiveCardGenerator {
             {
               type: "Image",
               url: `\${${name}}`,
-              $when: `\${${name} != null}`,
+              $when: `\${${name} != null && ${name} != ''}`,
             },
           ];
         } else {
@@ -160,7 +163,7 @@ export class AdaptiveCardGenerator {
             {
               type: "Image",
               url: "${$data}",
-              $when: "${$data != null}",
+              $when: "${$data != null && $data != ''}",
             },
           ];
         }
@@ -176,7 +179,7 @@ export class AdaptiveCardGenerator {
 
   // Find the first array property in the response schema object with the well-known name
   static getResponseJsonPathFromSchema(schema: OpenAPIV3.SchemaObject): string {
-    if (schema.type === "object" || (!schema.type && schema.properties)) {
+    if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       for (const property in properties) {
         const schema = properties[property] as OpenAPIV3.SchemaObject;

@@ -16,10 +16,10 @@ builder.Services.AddHttpContextAccessor();
 
 // Prepare Configuration for ConfigurationBotFrameworkAuthentication
 var config = builder.Configuration.Get<ConfigOptions>();
-builder.Configuration["MicrosoftAppType"] = "MultiTenant";
+builder.Configuration["MicrosoftAppType"] = config.BOT_TYPE;
 builder.Configuration["MicrosoftAppId"] = config.BOT_ID;
 builder.Configuration["MicrosoftAppPassword"] = config.BOT_PASSWORD;
-
+builder.Configuration["MicrosoftAppTenantId"] = config.BOT_TENANT_ID;
 // Create the Bot Framework Authentication to be used with the Bot Adapter.
 builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
 
@@ -92,6 +92,18 @@ builder.Services.AddTransient<IBot>(sp =>
         .WithAIOptions(new(planner))
         .WithStorage(sp.GetService<IStorage>())
         .Build();
+
+    app.OnConversationUpdate("membersAdded", async (turnContext, turnState, cancellationToken) =>
+    {
+        var welcomeText = "How can I help you today?";
+        foreach (var member in turnContext.Activity.MembersAdded)
+        {
+            if (member.Id != turnContext.Activity.Recipient.Id)
+            {
+                await turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
+            }
+        }
+    });
 
     return app;
 });

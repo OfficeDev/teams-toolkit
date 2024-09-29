@@ -205,6 +205,12 @@ export enum CompletionTriggerKind {
   TriggerForIncompleteCompletions = 2,
 }
 
+export enum TextDocumentSaveReason {
+  Manual = 1,
+  AfterDelay = 2,
+  FocusOut = 3,
+}
+
 export class MarkdownString {
   public value: string;
 
@@ -236,9 +242,7 @@ export class MarkdownString {
 
   public appendText(value: string): MarkdownString {
     // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
-    this.value += (this.supportThemeIcons ? escapeCodicons(value) : value)
-      .replace(/[\\`*_{}[\]()#+\-.!]/g, "\\$&")
-      .replace(/\n/, "\n\n");
+    this.value += this.supportThemeIcons ? escapeCodicons(value) : value;
 
     return this;
   }

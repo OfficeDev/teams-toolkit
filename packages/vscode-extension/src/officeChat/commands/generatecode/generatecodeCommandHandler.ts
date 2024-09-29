@@ -3,18 +3,21 @@
 import {
   CancellationToken,
   ChatContext,
+  ChatFollowup,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
 } from "vscode";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { localize } from "../../../utils/localizeUtils";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { Planner } from "../../common/planner";
-import { ChatTelemetryData } from "../../../chat/telemetry";
 import { isInputHarmful } from "../../utils";
 import { ICopilotChatOfficeResult } from "../../types";
+import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import followupProvider from "../../../chat/followupProvider";
 
 export default async function generatecodeCommandHandler(
   request: ChatRequest,
@@ -22,10 +25,9 @@ export default async function generatecodeCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    OfficeChatCommand.GenerateCode,
-    request.location
+    OfficeChatCommand.GenerateCode
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
@@ -33,11 +35,25 @@ export default async function generatecodeCommandHandler(
   );
 
   if (request.prompt.trim() === "") {
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(
       localize("teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer")
     );
-
-    officeChatTelemetryData.markComplete();
+    const followUps: ChatFollowup[] = [
+      {
+        label: "@office /generatecode create a chart based on the selected range in Excel",
+        command: "generatecode",
+        prompt: "create a chart based on the selected range in Excel",
+      },
+      {
+        label: "@office /generatecode insert a content control in a Word document",
+        command: "generatecode",
+        prompt: "insert a content control in a Word document",
+      },
+    ];
+    followupProvider.addFollowups(followUps);
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,
@@ -51,32 +67,22 @@ export default async function generatecodeCommandHandler(
     };
   }
 
-  if (process.env.NODE_ENV === "development") {
-    const localScenarioHandlers = await import("../../../../test/officeChat/mocks/localTuning");
-    if (request.prompt in localScenarioHandlers) {
-      const scenarioName = request.prompt as keyof typeof localScenarioHandlers;
-      await localScenarioHandlers[scenarioName](request, context, response, token);
-
-      return {
-        metadata: {
-          command: OfficeChatCommand.GenerateCode,
-          requestId: officeChatTelemetryData.requestId,
-        },
-      };
-    }
-  }
-
-  const isHarmful = await isInputHarmful(request, token);
+  const isHarmful = await isInputHarmful(request, token, officeChatTelemetryData);
   if (!isHarmful) {
-    const chatResult = await Planner.getInstance().processRequest(
-      new LanguageModelChatUserMessage(request.prompt),
-      request,
-      response,
-      token,
-      OfficeChatCommand.GenerateCode,
-      officeChatTelemetryData
-    );
-    officeChatTelemetryData.markComplete();
+    let chatResult: ICopilotChatOfficeResult = {};
+    try {
+      chatResult = await Planner.getInstance().processRequest(
+        new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+        request,
+        response,
+        token,
+        OfficeChatCommand.GenerateCode,
+        officeChatTelemetryData
+      );
+      officeChatTelemetryData.markComplete();
+    } catch (error) {
+      officeChatTelemetryData.markComplete("fail");
+    }
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,
@@ -84,8 +90,10 @@ export default async function generatecodeCommandHandler(
     );
     return chatResult;
   } else {
+    officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
-    officeChatTelemetryData.markComplete();
+    officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.RAI);
+    officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       officeChatTelemetryData.properties,

@@ -19,7 +19,7 @@ import {
 import { yamlParser } from "../../../src/component/configManager/parser";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import { metadataUtil } from "../../../src/component/utils/metadataUtil";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { MockTools } from "../../core/utils";
 import { createHash, Hash } from "crypto";
 import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";

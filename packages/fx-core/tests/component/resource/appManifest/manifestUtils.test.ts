@@ -10,6 +10,9 @@ import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/M
 import { JSONSyntaxError, MissingEnvironmentVariablesError } from "../../../../src/error/common";
 import { newEnvInfoV3 } from "../../../helpers";
 import fs from "fs-extra";
+import { createContext, setTools } from "../../../../src/common/globalVars";
+import { MockTools } from "../../../core/utils";
+import { generateDriverContext } from "../../../../src/common/utils";
 
 describe("getManifest V3", () => {
   const sandbox = sinon.createSandbox();
@@ -54,6 +57,12 @@ describe("getManifest V3", () => {
           "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
       }
   }`;
+
+  setTools(new MockTools());
+  const context = generateDriverContext(createContext(), {
+    platform: Platform.VSCode,
+    projectPath: "",
+  });
   beforeEach(async () => {
     inputs = {
       platform: Platform.VSCode,
@@ -72,7 +81,7 @@ describe("getManifest V3", () => {
     envInfo.envName = "dev";
     manifest.name.short = "${{MY_APP_NAME}}";
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    const res = await manifestUtils.getManifestV3("");
+    const res = await manifestUtils.getManifestV3("", context);
     chai.assert.isTrue(res.isErr() && res.error instanceof MissingEnvironmentVariablesError);
   });
 
@@ -80,7 +89,7 @@ describe("getManifest V3", () => {
     const manifest = new TeamsAppManifest();
     manifest.id = uuid.v4();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
-    const res = await manifestUtils.getManifestV3("");
+    const res = await manifestUtils.getManifestV3("", context);
     chai.assert.isTrue(res.isOk());
   });
 

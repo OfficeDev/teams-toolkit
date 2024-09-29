@@ -86,7 +86,7 @@ async function m365AccountStatusChangeHandler(
   } else if (status == "Switching") {
     instance.m365AccountNode.setSwitching();
   }
-  await envTreeProviderInstance.refreshRemoteEnvWarning();
+  await envTreeProviderInstance.reloadEnvironments();
   return Promise.resolve();
 }
 
@@ -100,13 +100,13 @@ async function azureAccountStatusChangeHandler(
     const username = (accountInfo?.email as string) || (accountInfo?.upn as string);
     if (username) {
       instance.azureAccountNode.setSignedIn(username);
-      await envTreeProviderInstance.refreshRemoteEnvWarning();
+      await envTreeProviderInstance.reloadEnvironments();
     }
   } else if (status === "SigningIn") {
     instance.azureAccountNode.setSigningIn();
   } else if (status === "SignedOut") {
     instance.azureAccountNode.setSignedOut();
-    await envTreeProviderInstance.refreshRemoteEnvWarning();
+    await envTreeProviderInstance.reloadEnvironments();
   }
   return Promise.resolve();
 }

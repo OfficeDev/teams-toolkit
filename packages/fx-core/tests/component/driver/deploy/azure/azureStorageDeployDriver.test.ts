@@ -6,7 +6,7 @@
  */
 import "mocha";
 import * as sinon from "sinon";
-import * as tools from "../../../../../src/common/tools";
+import * as tools from "../../../../../src/common/utils";
 import { AzureStorageDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureStorageDeployDriver";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import { TestAzureAccountProvider } from "../../../util/azureAccountMock";

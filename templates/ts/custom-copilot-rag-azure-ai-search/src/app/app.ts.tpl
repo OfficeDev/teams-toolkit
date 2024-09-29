@@ -1,9 +1,10 @@
-import { MemoryStorage } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
+import * as customSayCommand  from "./customSayCommand";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-import { Application, ActionPlanner, OpenAIModel, PromptManager, TurnState } from "@microsoft/teams-ai";
+import { AI, Application, ActionPlanner, OpenAIModel, PromptManager, TurnState } from "@microsoft/teams-ai";
 import { AzureAISearchDataSource } from "./azureAISearchDataSource";
 
 // Create AI components
@@ -55,7 +56,23 @@ const app = new Application<TurnState>({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
+});
+app.ai.action(AI.SayCommandActionName, customSayCommand.sayCommand(true));
+
+app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
+  const welcomeText = "How can I help you today?";
+  for (const member of turnContext.activity.membersAdded) {
+    if (member.id !== turnContext.activity.recipient.id) {
+      await turnContext.sendActivity(MessageFactory.text(welcomeText));
+    }
+  }
+});
+
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
 });
 
 export default app;

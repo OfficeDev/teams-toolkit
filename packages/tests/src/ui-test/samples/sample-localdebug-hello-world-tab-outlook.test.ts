@@ -12,7 +12,6 @@ import {
   reopenPage,
 } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
-import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 
 class OutlookTabTestCase extends CaseFactory {
@@ -26,15 +25,7 @@ class OutlookTabTestCase extends CaseFactory {
     sampledebugContext: SampledebugContext,
     teamsAppId: string
   ): Promise<Page> {
-    return await reopenPage(
-      sampledebugContext.context!,
-      teamsAppId,
-      Env.username,
-      Env.password,
-      undefined,
-      true,
-      true
-    );
+    return await reopenPage(sampledebugContext.context!, teamsAppId);
   }
 }
 

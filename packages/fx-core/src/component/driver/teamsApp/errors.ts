@@ -61,6 +61,14 @@ export class AppStudioError {
     ],
   };
 
+  public static readonly SyncManifestFailedError = {
+    name: "SyncManifestFailed",
+    message: (errors: string[]): [string, string] => [
+      getDefaultString("plugins.appstudio.syncManifestFailedNotice") + " " + errors.join("\n"),
+      getLocalizedString("plugins.appstudio.syncManifestFailedNotice") + " " + errors.join("\n"),
+    ],
+  };
+
   public static readonly TeamsAppPublishFailedError = {
     name: "TeamsAppPublishFailed",
     message: (

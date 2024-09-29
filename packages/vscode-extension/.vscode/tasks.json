@@ -4,10 +4,8 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "npm",
-      "script": "watch",
-      "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"],
-      "isBackground": true,
+      "label": "watch",
+      "dependsOn": ["npm: watch:tsc", "npm: watch:esbuild", "npm: watch:vite"],
       "presentation": {
         "reveal": "never"
       },
@@ -18,13 +16,67 @@
     },
     {
       "type": "npm",
-      "script": "test-watch",
+      "script": "watch:esbuild",
+      "group": "build",
+      "problemMatcher": "$esbuild-watch",
+      "isBackground": true,
+      "label": "npm: watch:esbuild",
+      "presentation": {
+        "group": "watch",
+        "reveal": "never"
+      }
+    },
+    {
+      "type": "npm",
+      "script": "watch:tsc",
+      "group": "build",
       "problemMatcher": "$tsc-watch",
       "isBackground": true,
+      "label": "npm: watch:tsc",
       "presentation": {
+        "group": "watch",
         "reveal": "never"
+      }
+    },
+    {
+      "type": "npm",
+      "script": "watch:vite",
+      "group": "build",
+      "problemMatcher": {
+        "severity": "error",
+        "applyTo": "closedDocuments",
+        "source": "vite",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^.+\\/([^\\/]+)\\.tsx:(\\d+):(\\d+): ERROR: ([\\s\\w\"]+)$",
+          "file": 1,
+          "location": 2,
+          "message": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": ".* building for production"
+          },
+          "endsPattern": {
+            "regexp": "out/src/client.js"
+          }
+        }
       },
-      "group": "build"
+      "isBackground": true,
+      "label": "npm: watch:vite",
+      "presentation": {
+        "group": "watch",
+        "reveal": "never"
+      }
+    },
+    {
+      "type": "npm",
+      "script": "build:test",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build:test",
+      "detail": "tsc --project tsconfig.test.json --incremental"
     }
   ]
 }

@@ -10,7 +10,7 @@ import {
   ProjectFolderOption,
   TeamsAppManifestFileOption,
   TeamsAppOuputPackageOption,
-  TeamsAppOutputManifestFileOption,
+  TeamsAppOutputFolderOption,
 } from "../../common";
 
 export const teamsappPackageCommand: CLICommand = {
@@ -19,7 +19,7 @@ export const teamsappPackageCommand: CLICommand = {
   options: [
     TeamsAppManifestFileOption,
     TeamsAppOuputPackageOption,
-    TeamsAppOutputManifestFileOption,
+    TeamsAppOutputFolderOption,
     EnvOption,
     EnvFileOption,
     ProjectFolderOption,

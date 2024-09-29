@@ -47,7 +47,7 @@ new TodoListSpfxTestCase(
   "local",
   [LocalDebugTaskLabel.GulpServe],
   {
-    teamsAppName: "TodoListSPFx-local",
+    teamsAppName: "fxuiTodoLilocal",
     type: "spfx",
   }
 ).test();

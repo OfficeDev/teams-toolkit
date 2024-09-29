@@ -7,12 +7,15 @@
 
 import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-import { initTeamsPage } from "../../utils/playwrightOperation";
+import {
+  initTeamsPage,
+  validateMeeting,
+} from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 
-class MyFirstMettingTestCase extends CaseFactory {
+class MyFirstMeetingTestCase extends CaseFactory {
   public override async onInitPage(
     sampledebugContext: SampledebugContext,
     teamsAppId: string,
@@ -32,17 +35,20 @@ class MyFirstMettingTestCase extends CaseFactory {
       }
     );
   }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.username);
+  }
 }
 
-new MyFirstMettingTestCase(
-  TemplateProject.MyFirstMetting,
+new MyFirstMeetingTestCase(
+  TemplateProject.MyFirstMeeting,
   14571880,
   "v-ivanchen@microsoft.com",
   "dev",
   [],
   {
-    teamsAppName: "hello-world-in-meetingdev",
+    teamsAppName: "fxuiMyFirsdev",
     type: "meeting",
-    skipValidation: true,
   }
 ).test();

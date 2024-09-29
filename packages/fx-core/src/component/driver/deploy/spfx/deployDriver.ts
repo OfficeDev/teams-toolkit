@@ -2,14 +2,16 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Result, FxError, Platform, M365TokenProvider } from "@microsoft/teamsfx-api";
+import { FxError, M365TokenProvider, Platform, Result } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import fs from "fs-extra";
 import path from "path";
 import { Service } from "typedi";
 
+import { GraphScopes } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { getSPFxToken, GraphScopes } from "../../../../common/tools";
+import { getSPFxToken } from "../../../../common/tools";
+import { ErrorContextMW } from "../../../../common/globalVars";
 import { FileNotFoundError } from "../../../../error/common";
 import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
@@ -28,7 +30,6 @@ import { DeploySPFxArgs } from "./interface/deployArgs";
 import { Constants, DeployProgressMessage } from "./utility/constants";
 import { sleep } from "./utility/sleep";
 import { SPOClient } from "./utility/spoClient";
-import { ErrorContextMW } from "../../../../core/globalVars";
 
 @Service(Constants.DeployDriverName)
 export class SPFxDeployDriver implements StepDriver {

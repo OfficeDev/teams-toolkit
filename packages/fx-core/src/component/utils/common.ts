@@ -10,10 +10,13 @@ import {
   Result,
   SystemError,
   UserError,
+  Warning,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { ExecutionResult } from "../driver/interface/stepDriver";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { SummaryConstant } from "../configManager/constant";
+import { EOL } from "os";
 
 const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
 
@@ -170,4 +173,14 @@ export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: str
   return path.isAbsolute(relativeOrAbsolutePath)
     ? relativeOrAbsolutePath
     : path.join(projectPath, relativeOrAbsolutePath);
+}
+
+export function outputScaffoldingWarningMessage(warnings: Warning[]): string {
+  const manifestWarningMessage = warnings.map((warn) => {
+    return `${SummaryConstant.NotExecuted} ${warn.content}`;
+  });
+
+  return manifestWarningMessage.length > 0
+    ? getLocalizedString("core.scaffold.warning.summary", manifestWarningMessage.join(EOL))
+    : "";
 }

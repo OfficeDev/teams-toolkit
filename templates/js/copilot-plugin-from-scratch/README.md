@@ -21,6 +21,7 @@ This app template allows Teams to interact directly with third-party data, apps,
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)` from the launch configuration dropdown.
 4. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension.
+   > Note: Please make sure to switch to New Teams when Teams web client has launched
 
 ## What's included in the template
 

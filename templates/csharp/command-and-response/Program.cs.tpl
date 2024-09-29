@@ -13,10 +13,10 @@ builder.Services.AddHttpContextAccessor();
 
 // Prepare Configuration for ConfigurationBotFrameworkAuthentication
 var config = builder.Configuration.Get<ConfigOptions>();
-builder.Configuration["MicrosoftAppType"] = "MultiTenant";
+builder.Configuration["MicrosoftAppType"] = config.BOT_TYPE;
 builder.Configuration["MicrosoftAppId"] = config.BOT_ID;
 builder.Configuration["MicrosoftAppPassword"] = config.BOT_PASSWORD;
-
+builder.Configuration["MicrosoftAppTenantId"] = config.BOT_TENANT_ID;
 // Create the Bot Framework Authentication to be used with the Bot Adapter.
 builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
 
@@ -29,6 +29,7 @@ builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 // Create command handlers and the Conversation with command-response feature enabled.
 builder.Services.AddSingleton<HelloWorldCommandHandler>();
+builder.Services.AddSingleton<GenericCommandHandler>();
 builder.Services.AddSingleton(sp =>
 {
     var options = new ConversationOptions()
@@ -36,7 +37,10 @@ builder.Services.AddSingleton(sp =>
         Adapter = sp.GetService<CloudAdapter>(),
         Command = new CommandOptions()
         {
-            Commands = new List<ITeamsCommandHandler> { sp.GetService<HelloWorldCommandHandler>() }
+            Commands = new List<ITeamsCommandHandler> { 
+                sp.GetService<HelloWorldCommandHandler>(), 
+                sp.GetService<GenericCommandHandler>() 
+            }
         }
     };
 

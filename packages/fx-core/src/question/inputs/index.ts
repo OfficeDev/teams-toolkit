@@ -11,3 +11,5 @@ export * from "./PermissionGrantInputs";
 export * from "./PermissionListInputs";
 export * from "./DeployAadManifestInputs";
 export * from "./AddPluginInputs";
+export * from "./UninstallInputs";
+export * from "./SyncManifestInputs";

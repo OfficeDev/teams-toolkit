@@ -3,19 +3,26 @@
 
 import * as vscode from "vscode";
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core";
+import { Correlator, Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import * as commonUtils from "../commonUtils";
-import { DebugSessionExists, v3PrerequisiteCheckTaskDisplayMessages } from "../constants";
+import {
+  DebugNoSessionId,
+  DebugSessionExists,
+  v3PrerequisiteCheckTaskDisplayMessages,
+} from "../common/debugConstants";
 import {
   localTelemetryReporter,
   maskArrayValue,
   sendDebugAllStartEvent,
 } from "../localTelemetryReporter";
-import { checkAndInstallForTask } from "../prerequisitesHandler";
+import { checkAndInstallForTask } from "../depsChecker/taskChecker";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import {
+  getLocalDebugSession,
+  startLocalDebugSession,
+  checkAndSkipDebugging,
+} from "../common/localDebugSession";
 
 interface PrerequisiteArgVxTestApp {
   version: string;
@@ -52,8 +59,8 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     {
       // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
       // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
-      const session = commonUtils.getLocalDebugSession();
-      if (session.id !== commonUtils.DebugNoSessionId) {
+      const session = getLocalDebugSession();
+      if (session.id !== DebugNoSessionId) {
         additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
         // Indicates in which stage (of the first F5) the user hits F5 again.
         additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
@@ -61,8 +68,8 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
       }
     }
 
-    return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
-      if (await commonUtils.checkAndSkipDebugging()) {
+    return Correlator.runWithId(startLocalDebugSession(), async () => {
+      if (await checkAndSkipDebugging()) {
         throw new Error(DebugSessionExists);
       }
       await sendDebugAllStartEvent(additionalProperties);

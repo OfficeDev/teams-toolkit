@@ -30,7 +30,7 @@ import { Page } from "playwright";
 import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
-import { ChildProcessWithoutNullStreams } from "child_process";
+import { ChildProcess, ChildProcessWithoutNullStreams } from "child_process";
 import { initDebugPort } from "../../utils/commonUtils";
 import { CliHelper } from "../cliHelper";
 
@@ -79,7 +79,10 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   },
   [LocalDebugTaskLabel.StartBot]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.StartWebhook]: async () => {
-    await waitForTerminal(LocalDebugTaskLabel.StartWebhook);
+    await waitForTerminal(
+      LocalDebugTaskLabel.StartWebhook,
+      LocalDebugTaskResult.DebuggerAttached
+    );
   },
   [LocalDebugTaskLabel.InstallNpmPackages]: async () => Promise.resolve(),
   [LocalDebugTaskLabel.ApiNpmInstall]: async () => Promise.resolve(),
@@ -110,6 +113,21 @@ const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
       LocalDebugTaskResult.DockerFinish
     );
   },
+  [LocalDebugTaskLabel.EnsureDevTunnnel]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.EnsureDevTunnnel,
+      LocalDebugTaskResult.DevtunnelSuccess
+    );
+  },
+  [LocalDebugTaskLabel.RunWatch]: async () => {
+    await waitForTerminal(
+      LocalDebugTaskLabel.RunWatch,
+      LocalDebugTaskResult.CompiledSuccess
+    );
+  },
+  [LocalDebugTaskLabel.FuncStart]: async () => {
+    await waitForTerminal(LocalDebugTaskLabel.FuncStart);
+  },
 };
 
 export abstract class CaseFactory {
@@ -133,6 +151,7 @@ export abstract class CaseFactory {
     repoPath?: string;
     container?: boolean;
     dockerFolder?: string;
+    skipDeploy?: boolean;
   };
 
   public constructor(
@@ -156,6 +175,7 @@ export abstract class CaseFactory {
       repoPath?: string;
       container?: boolean;
       dockerFolder?: string;
+      skipDeploy?: boolean;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -293,7 +313,7 @@ export abstract class CaseFactory {
       let sampledebugContext: SampledebugContext;
       let azSqlHelper: AzSqlHelper | undefined;
       let devtunnelProcess: ChildProcessWithoutNullStreams;
-      let debugProcess: ChildProcessWithoutNullStreams;
+      let debugProcess: ChildProcess;
       let dockerProcess: ChildProcessWithoutNullStreams;
       let successFlag = true;
       let envContent = "";
@@ -386,10 +406,12 @@ export abstract class CaseFactory {
                 if (options?.container) {
                   await Executor.login();
                 }
-                await sampledebugContext.deployProject(
-                  sampledebugContext.projectPath,
-                  Timeout.botDeploy
-                );
+                if (!options?.skipDeploy) {
+                  await sampledebugContext.deployProject(
+                    sampledebugContext.projectPath,
+                    Timeout.botDeploy
+                  );
+                }
               },
             };
 
@@ -447,6 +469,7 @@ export abstract class CaseFactory {
                 },
                 (error) => {
                   const errorMsg = error.toString();
+                  console.log("[error log]", errorMsg);
                   if (
                     // skip warning messages
                     errorMsg.includes(LocalDebugError.WarningError)
@@ -503,11 +526,11 @@ export abstract class CaseFactory {
 
             // ttk debug
             await debugEnvMap[env]();
-            const teamsAppId = await sampledebugContext.getTeamsAppId(env);
-            expect(teamsAppId).to.not.be.empty;
 
             // if no skip init step
             if (!options?.skipInit) {
+              const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+              expect(teamsAppId).to.not.be.empty;
               // use 2nd middleware to process typical sample
               await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
               // init

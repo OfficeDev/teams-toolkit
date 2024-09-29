@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -53,7 +56,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("spfxreact", appName);
+      await createNewProject("spfx", appName);
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
       await driver.sleep(Timeout.spfxProvision);
       await getNotification(

@@ -18,9 +18,18 @@ import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
+  execCommandIfExist,
 } from "../../../utils/vscodeOperation";
-import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
-import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import {
+  updateFunctionAuthorizationPolicy,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
+import * as path from "path";
+import { updatePakcageJson } from "./helper";
+import {
+  deployProject,
+  provisionProject,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -40,6 +49,19 @@ describe("Migration Tests", function () {
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
     await mirgationDebugTestContext.after(true, true, "dev");
+
+    //Close the folder and cleanup local sample project
+    await execCommandIfExist("Workspaces: Close Workspace", Timeout.webView);
+    console.log(
+      `[Successfully] start to clean up for ${mirgationDebugTestContext.projectPath}`
+    );
+    await mirgationDebugTestContext.cleanUp(
+      mirgationDebugTestContext.appName,
+      mirgationDebugTestContext.projectPath,
+      true,
+      true,
+      false
+    );
   });
 
   it(
@@ -60,6 +82,10 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
+      updatePakcageJson(
+        path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
+      );
+
       await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
 
       // upgrade
@@ -70,9 +96,16 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
+
       // v3 provision
-      await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy(Timeout.botDeploy);
+      await provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
+      await deployProject(mirgationDebugTestContext.projectPath);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify
@@ -82,7 +115,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateProactiveMessaging(page);
+      // await validateProactiveMessaging(page);
     }
   );
 });

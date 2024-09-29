@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { err, FxError, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, Platform, err } from "@microsoft/teamsfx-api";
 import semver from "semver";
+import { TOOLS } from "../../common/globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { MetadataV2, VersionInfo, VersionSource } from "../../common/versionMetadata";
-import { IncompatibleProjectError } from "../error";
-import { TOOLS } from "../globalVars";
+import { IncompatibleProjectError } from "../../error/common";
 import { CoreHookContext } from "../types";
 import { learnMoreLink, moreInfoButton } from "./projectMigratorV3";
 import { getProjectVersion } from "./utils/v3MigrationUtils";
@@ -47,11 +47,11 @@ function showDialog(ctx: CoreHookContext): Promise<FxError> {
       },
       () => {}
     );
-    return Promise.resolve(IncompatibleProjectError(messageKey));
+    return Promise.resolve(new IncompatibleProjectError(messageKey));
   } else if (inputs.platform === Platform.CLI) {
     const messageKey = "core.projectVersionChecker.cliUseNewVersion";
     TOOLS.logProvider.warning(getLocalizedString(messageKey));
-    return Promise.resolve(IncompatibleProjectError(messageKey));
+    return Promise.resolve(new IncompatibleProjectError(messageKey));
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
@@ -63,6 +63,6 @@ function showDialog(ctx: CoreHookContext): Promise<FxError> {
       },
       () => {}
     );
-    return Promise.resolve(IncompatibleProjectError(messageKey));
+    return Promise.resolve(new IncompatibleProjectError(messageKey));
   }
 }

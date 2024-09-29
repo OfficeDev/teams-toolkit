@@ -33,7 +33,9 @@ describe("Func Hosted Notification Bot Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("funcNoti", "typescript");
+    localDebugTestContext = new LocalDebugTestContext("funcNoti", {
+      lang: "typescript",
+    });
     await localDebugTestContext.before();
   });
 

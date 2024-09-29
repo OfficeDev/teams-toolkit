@@ -5,21 +5,16 @@ import { RecordedActions } from "../../../utils/projectStatusUtils";
 import { OfficeWholeStatus } from "./types";
 
 /**
- * if Teams Toolkit is first installed
- * @param status
- * @returns
- */
-export function isFirstInstalled(status: OfficeWholeStatus): boolean {
-  return status.machineStatus.firstInstalled;
-}
-
-/**
  * if some Teams App is opened in the workspace
  * @param status
  * @returns
  */
 export function isProjectOpened(status: OfficeWholeStatus): boolean {
   return !!status.projectOpened;
+}
+
+export function isNodeInstalled(status: OfficeWholeStatus): boolean {
+  return !!status.projectOpened && !!status.projectOpened.isNodeInstalled;
 }
 
 /**

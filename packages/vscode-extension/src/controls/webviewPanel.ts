@@ -1,15 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import * as vscode from "vscode";
 
-import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  FeatureFlags,
+  SampleConfig,
+  featureFlagManager,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
+import { GlobalKey } from "../constants";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSampleApp } from "../handlers";
+import { downloadSampleApp } from "../handlers/downloadSample";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,
@@ -17,7 +24,7 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { getTriggerFromProperty, isTriggerFromWalkThrough } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
@@ -56,14 +63,18 @@ export class WebviewPanel {
     if (!args?.length) {
       return;
     }
-    if (panelType == PanelType.SampleGallery && args.length > 1) {
+    if (panelType == PanelType.SampleGallery && args.length > 1 && typeof args[1] == "string") {
       try {
-        const sampleId = args[1] as string;
+        const sampleId = args[1];
         const panel = WebviewPanel.currentPanels.find((panel) => panel.panelType === panelType);
         if (panel) {
-          void panel.panel.webview.postMessage({
-            message: Commands.OpenDesignatedSample,
-            sampleId: sampleId,
+          void globalVariables.context.globalState.update(
+            GlobalKey.SampleGalleryInitialSample,
+            sampleId
+          );
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectSample, {
+            ...getTriggerFromProperty(args),
+            [TelemetryProperty.SampleAppName]: sampleId,
           });
         }
       } catch (e) {}
@@ -222,12 +233,21 @@ export class WebviewPanel {
         versionComparisonResult,
       };
     });
+    const initialSample = globalVariables.context.globalState.get<string>(
+      GlobalKey.SampleGalleryInitialSample,
+      ""
+    );
     if (this.panel && this.panel.webview) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
         samples: sampleData,
+        initialSample: initialSample,
         filterOptions: sampleCollection.filterOptions,
       });
+      if (initialSample != "") {
+        // reset initial sample after shown
+        await globalVariables.context.globalState.update(GlobalKey.SampleGalleryInitialSample, "");
+      }
     }
   }
 
@@ -246,6 +266,7 @@ export class WebviewPanel {
     if (this.panel && this.panel.webview) {
       let readme = this.replaceRelativeImagePaths(htmlContent, sample);
       readme = this.replaceMermaidRelatedContent(readme);
+      readme = this.addTabIndex(readme);
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleReadme,
         readme: readme,
@@ -263,9 +284,9 @@ export class WebviewPanel {
 
   private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
     const urlInfo = sample.downloadUrlInfo;
-    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/${sample.thumbnailPath}?raw=1`;
+    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/`;
     const imageRegex = /img\s+src="(?!https:\/\/camo\.githubusercontent\.com\/.)([^"]+)"/gm;
-    return htmlContent.replace(imageRegex, `img src="${imageUrl}"`);
+    return htmlContent.replace(imageRegex, `img src="${imageUrl}$1?raw=1"`);
   }
 
   private replaceMermaidRelatedContent(htmlContent: string): string {
@@ -275,12 +296,15 @@ export class WebviewPanel {
     return loaderRemovedHtmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
   }
 
+  private addTabIndex(htmlContent: string): string {
+    const tabIndexRegex = /<(p|h1|h2|h3|li)/gm;
+    return htmlContent.replace(tabIndexRegex, `<$1 tabIndex="0"`);
+  }
+
   private getWebpageTitle(panelType: PanelType): string {
     switch (panelType) {
       case PanelType.SampleGallery:
         return localize("teamstoolkit.webview.samplePageTitle");
-      case PanelType.Survey:
-        return localize("teamstoolkit.webview.surveyPageTitle");
       case PanelType.RespondToCardActions:
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:
@@ -305,12 +329,17 @@ export class WebviewPanel {
     const codiconsUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
     );
+    const stylesheetUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "client.css")
+    );
     const dompurifyUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "purify.min.js")
     );
     const mermaidUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
     );
+
+    const allowChat = featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries);
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -321,6 +350,7 @@ export class WebviewPanel {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
             <base href='${scriptBaseUri.toString()}' />
+            <link href="${stylesheetUri.toString()}" rel="stylesheet" />
             <link href="${codiconsUri.toString()}" rel="stylesheet" />
           </head>
           <body>
@@ -328,6 +358,7 @@ export class WebviewPanel {
             <script>
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
+              const shouldShowChat = '${allowChat ? "true" : "false"}';
             </script>
             <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
             <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>

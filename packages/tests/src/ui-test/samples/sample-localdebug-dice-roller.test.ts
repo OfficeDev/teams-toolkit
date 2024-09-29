@@ -11,9 +11,10 @@ import { CaseFactory } from "./sampleCaseFactory";
 class DiceRollerTestCase extends CaseFactory {}
 
 new DiceRollerTestCase(
-  TemplateProject.GraphConnectorBot,
+  TemplateProject.DiceRoller,
   21320394,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartWebServer]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartWebServer],
+  { skipInit: true }
 ).test();

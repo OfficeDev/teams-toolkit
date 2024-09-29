@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Middleware, HookContext, NextFunction } from "@feathersjs/hooks/lib";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { FxError, Result } from "@microsoft/teamsfx-api";
+import { performance } from "perf_hooks";
+import { TelemetryProperty } from "../../../common/telemetry";
 import {
   TeamsFxTelemetryConfig,
   TeamsFxTelemetryReporter,
 } from "../../utils/teamsFxTelemetryReporter";
-import { WrapDriverContext } from "../util/wrapUtil";
 import { ExecutionResult } from "../interface/stepDriver";
-import { TelemetryConstants } from "../../constants";
-import { performance } from "perf_hooks";
+import { WrapDriverContext } from "../util/wrapUtil";
 
 // Based on fx-core's design that a component should always return FxError instead of throw exception, no error handling is added
 // Will remove `/` in the componentName to avoid the value being redacted.
@@ -41,7 +41,7 @@ export function addStartAndEndTelemetry(eventName: string, componentName: string
     const telemetryConfig: TeamsFxTelemetryConfig = {
       eventName: eventName,
       properties: driverContext.telemetryProperties,
-      measurements: { [TelemetryConstants.properties.timeCost]: timeCost },
+      measurements: { [TelemetryProperty.TimeCost]: timeCost },
     };
 
     if (result.isOk()) {

@@ -1,7 +1,5 @@
 import Container from "typedi";
-import "../src/component/resource/aadApp/aadApp";
-import { ComponentNames } from "../src/component/constants";
-import { AadApp } from "../src/component/resource/aadApp/aadApp";
+import { ComponentNames } from "../src/component/migrate";
 export class PluginId {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";
@@ -13,7 +11,7 @@ export class PluginId {
   static readonly Apim = "fx-resource-apim";
 }
 
-export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+export const aadPlugin = Container.get(ComponentNames.AadApp);
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";

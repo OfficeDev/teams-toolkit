@@ -10,7 +10,7 @@ import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
 import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
-import * as tools from "../../../../../src/common/tools";
+import * as tools from "../../../../../src/common/utils";
 import * as sinon from "sinon";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import {

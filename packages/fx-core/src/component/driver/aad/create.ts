@@ -5,8 +5,8 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { Service } from "typedi";
+import { GraphScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { GraphScopes } from "../../../common/tools";
 import {
   HttpClientError,
   HttpServerError,
@@ -18,15 +18,21 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { AadAppNameTooLongError } from "./error/aadAppNameTooLongError";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
 import { SignInAudience } from "./interface/signInAudience";
 import { AadAppClient } from "./utility/aadAppClient";
-import { constants, descriptionMessageKeys, logMessageKeys } from "./utility/constants";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { telemetryKeys } from "./utility/constants";
+import {
+  constants,
+  descriptionMessageKeys,
+  logMessageKeys,
+  telemetryKeys,
+} from "./utility/constants";
+import { AadSet } from "../../../common/globalVars";
+import { MissingServiceManagementReferenceError } from "./error/missingServiceManagamentReferenceError";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -74,21 +80,41 @@ export class CreateAadAppDriver implements StepDriver {
           )
         );
         context.addTelemetryProperties({ [telemetryKeys.newAadApp]: "true" });
+
+        const tokenJson = await context.m365TokenProvider.getJsonObject({ scopes: GraphScopes });
+        const isMsftAccount =
+          tokenJson.isOk() &&
+          tokenJson.value.unique_name &&
+          (tokenJson.value.unique_name as string).endsWith("@microsoft.com");
+
         // Create new Microsoft Entra app if no client id exists
         const signInAudience = args.signInAudience
           ? args.signInAudience
           : SignInAudience.AzureADMyOrg;
+
+        // This hidden environment variable is for internal use only.
+        const serviceManagementReference =
+          args.serviceManagementReference || process.env.TTK_DEFAULT_SERVICE_MANAGEMENT_REFERENCE;
+
+        if (isMsftAccount && !serviceManagementReference) {
+          throw new MissingServiceManagementReferenceError(actionName);
+        }
+
         const aadApp = await aadAppClient.createAadApp(
           args.name,
           signInAudience,
-          args.serviceManagementReference
+          serviceManagementReference
         );
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
+        AadSet.add(aadApp.appId!);
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
         outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
 
-        const summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
+        let summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
+        if (isMsftAccount) {
+          summary += getLocalizedString(logMessageKeys.deleteAadAfterDebugging);
+        }
         context.logProvider?.info(summary);
         summaries.push(summary);
       } else {

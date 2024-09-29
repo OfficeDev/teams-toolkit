@@ -44,7 +44,7 @@ import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import { setTools } from "../../src/core/globalVars";
+import { setTools } from "../../src/common/globalVars";
 import {
   EmptyOptionError,
   InputValidationError,
@@ -239,6 +239,40 @@ describe("Question Model - Visitor Test", () => {
           expectedSequence.push(name);
         }
         question.skipSingleOption = true;
+        root.children!.push({ data: question });
+      }
+      const inputs = createInputs();
+      const res = await traverse(root, inputs, mockUI);
+      assert.isTrue(res.isOk());
+      for (let i = 1; i <= num; ++i) {
+        assert.isTrue(inputs[`${i}`] === `mocked value of ${i}`);
+      }
+      assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+
+    it("success: auto skip single option select with skipSingleOption being a function ", async () => {
+      const actualSequence: string[] = [];
+      sandbox.stub(mockUI, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+        actualSequence.push(config.name);
+        return ok({ type: "success", result: `mocked value of ${config.name}` });
+      });
+      const root: IQTreeNode = {
+        data: { type: "group" },
+        children: [],
+      };
+      const num = 10;
+      const expectedSequence: string[] = [];
+      for (let i = 1; i <= num; ++i) {
+        const name = `${i}`;
+        const question = createSingleSelectQuestion(name);
+        if (i % 2 === 0) question.staticOptions = [`mocked value of ${name}`];
+        else {
+          question.staticOptions = [`mocked value of ${name}`, `mocked value of ${name} - 2`];
+          expectedSequence.push(name);
+        }
+        question.skipSingleOption = () => {
+          return true;
+        };
         root.children!.push({ data: question });
       }
       const inputs = createInputs();
@@ -819,17 +853,33 @@ describe("Question Model - Visitor Test", () => {
       assert.isTrue(res.isOk() && res.value.type === "success");
     });
     it("selectFile", async () => {
-      sandbox.stub(tools.ui, "selectFile").resolves(ok({ type: "success", result: "a" }));
+      const uiStub = sandbox
+        .stub(tools.ui, "selectFile")
+        .resolves(ok({ type: "success", result: "a" }));
       const question: SingleFileQuestion = {
         type: "singleFile",
         name: "test",
         title: "test",
+        innerStep: 1,
+        innerTotalStep: 2,
+        defaultFolder: "./",
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const res = await questionVisitor(question, tools.ui, inputs);
+      let res = await questionVisitor(question, tools.ui, inputs);
+      assert.isTrue(uiStub.args[0][0].defaultFolder === "./");
       assert.isTrue(res.isOk() && res.value.type === "success");
+
+      question.defaultFolder = (inputs: Inputs) => {
+        return "test";
+      };
+      res = await questionVisitor(question, tools.ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+      assert.isTrue(
+        typeof uiStub.args[1][0].defaultFolder === "function" &&
+          (await uiStub.args[1][0].defaultFolder()) === "test"
+      );
     });
     it("selectFolder", async () => {
       sandbox.stub(tools.ui, "selectFolder").resolves(ok({ type: "success", result: "a" }));

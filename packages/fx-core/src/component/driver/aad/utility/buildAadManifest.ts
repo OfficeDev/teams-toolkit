@@ -1,23 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { UpdateAadAppOutput } from "../interface/updateAadAppOutput";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AadManifestHelper } from "./aadManifestHelper";
-import { MissingFieldInManifestUserError } from "../error/invalidFieldInManifestError";
 import isUUID from "validator/lib/isUUID";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { logMessageKeys } from "../utility/constants";
-import { DriverContext } from "../../interface/commonArgs";
-import { AADManifest } from "../interface/AADManifest";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
-import { getUuid } from "../../../../common/tools";
+import { getUuid } from "../../../../common/stringUtils";
 import {
   FileNotFoundError,
   JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../../error/common";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+import { DriverContext } from "../../interface/commonArgs";
+import { MissingFieldInManifestUserError } from "../error/invalidFieldInManifestError";
+import { AADManifest } from "../interface/AADManifest";
+import { UpdateAadAppOutput } from "../interface/updateAadAppOutput";
+import { logMessageKeys } from "../utility/constants";
+import { AadManifestHelper } from "./aadManifestHelper";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";

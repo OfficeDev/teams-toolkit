@@ -3,8 +3,9 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
-  CopilotPluginEnable = "developCopilotPlugin",
+  CopilotExtensionEnable = "developCopilotPlugin",
   LogLevel = "logLevel",
+  EnableMicrosoftKiota = "enableMicrosoftKiota",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -21,6 +22,11 @@ export enum PrereleaseState {
   Version = "teamsToolkit:prerelease:version",
 }
 
+export enum ResourceInfo {
+  Subscription = "Subscription",
+  ResourceGroup = "Resource Group",
+}
+
 export enum GlobalKey {
   OpenWalkThrough = "fx-extension.openWalkThrough",
   OpenReadMe = "fx-extension.openReadMe",
@@ -28,12 +34,15 @@ export enum GlobalKey {
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   CreateWarnings = "CreateWarnings",
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
+  SampleGalleryInitialSample = "teamsToolkit:sampleGallery:initialSample",
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
 export enum CommandKey {
   Create = "fx-extension.create",
   OpenWelcome = "fx-extension.openWelcome",
+  BuildIntelligentAppsWalkthrough = "fx-extension.buildIntelligentAppsWalkthrough",
+  CheckCopilotAccess = "fx-extension.checkCopilotAccess",
   OpenDocument = "fx-extension.openDocument",
   OpenSamples = "fx-extension.openSamples",
   DownloadSample = "fx-extension.downloadSample",
@@ -63,3 +72,6 @@ export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
 export const TerminalName = "Teams Toolkit";
 
 export const InstallCopilotChatLink = "https://aka.ms/install-github-copilot-chat";
+
+export const KiotaExtensionId = "ms-graph.kiota";
+export const KiotaMinVersion = "1.18.100000002";

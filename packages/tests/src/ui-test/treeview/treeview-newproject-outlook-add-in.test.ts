@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Darren Miller <darrmill@microsoft.com>
  */
@@ -8,13 +11,11 @@ import { Timeout } from "../../utils/constants";
 import { TreeViewTestContext } from "./treeviewContext";
 import { createNewProject } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
-import { getNodeVersion } from "../../utils/getNodeVersion";
 
 describe("New project Tests", function () {
   this.timeout(Timeout.testCase);
   let treeViewTestContext: TreeViewTestContext;
   let testRootFolder: string;
-  let nodeVersion: string | null;
   const appNameCopySuffix = "copy";
   let newAppFolderName: string;
   let projectPath: string;
@@ -24,7 +25,6 @@ describe("New project Tests", function () {
     this.timeout(Timeout.prepareTestCase);
     treeViewTestContext = new TreeViewTestContext("treeview");
     testRootFolder = treeViewTestContext.testRootFolder;
-    nodeVersion = await getNodeVersion();
     await treeViewTestContext.before();
   });
 

@@ -52,6 +52,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             <span slot="start" className="codicon codicon-search"></span>
           </VSCodeTextField>
           <Dropdown
+            ariaLabel="Select to filter platform capability:"
             placeholder="Platform capability"
             multiSelect
             options={typeOptions}
@@ -63,6 +64,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             dropdownWidth="auto"
           />
           <Dropdown
+            ariaLabel="Select to filter programming language:"
             placeholder="Language"
             multiSelect
             options={languageOptions}
@@ -74,6 +76,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             dropdownWidth="auto"
           />
           <Dropdown
+            ariaLabel="Select to filter technology:"
             placeholder="Technology"
             multiSelect
             options={techniqueOptions}

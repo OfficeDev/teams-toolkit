@@ -8,8 +8,8 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const addPluginCommand: CLICommand = {
-  name: "copilot-plugin",
-  description: commands["add.copilot-plugin"].description,
+  name: "plugin",
+  description: commands["add.plugin"].description,
   options: [...AddPluginOptions, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.AddCopilotPlugin,

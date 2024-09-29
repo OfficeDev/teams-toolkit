@@ -9,7 +9,7 @@ import {
   TemplateFolderName,
   ok,
 } from "@microsoft/teamsfx-api";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 import { exec } from "child_process";
 import * as dotenv from "dotenv";

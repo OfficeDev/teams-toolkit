@@ -14,14 +14,14 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Container } from "typedi";
 import * as util from "util";
+import { AppStudioScopes } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
 import { FileNotFoundError, MissingRequiredInputError } from "../../../error/common";
 import { resolveString } from "../../configManager/lifecycle";
-import { createDriverContext } from "../../utils";
 import { envUtil } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
+import { createDriverContext } from "../util/utils";
 import { ConfigureTeamsAppDriver, actionName as configureTeamsAppActionName } from "./configure";
 import { Constants } from "./constants";
 import {
@@ -33,6 +33,7 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import {
   actionName as PublishAppPackageActionName,
   PublishAppPackageDriver,
@@ -40,7 +41,6 @@ import {
 import { manifestUtils } from "./utils/ManifestUtils";
 import { ValidateManifestDriver } from "./validate";
 import { ValidateAppPackageDriver } from "./validateAppPackage";
-import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
 import { ValidateWithTestCasesDriver } from "./validateTestCases";
 
 class TeamsAppMgr {
@@ -156,19 +156,13 @@ class TeamsAppMgr {
         "build",
         env ? `appPackage.${env}.zip` : "appPackage.zip"
       );
-    inputs["output-manifest-file"] =
-      inputs["output-manifest-file"] ||
-      path.join(
-        inputs.projectPath,
-        "appPackage",
-        "build",
-        env ? `manifest.${env}.json` : "manifest.json"
-      );
+    inputs["output-folder"] =
+      inputs["output-folder"] || path.join(inputs.projectPath, "appPackage", "build");
 
     const packageArgs: CreateAppPackageArgs = {
       manifestPath: inputs["manifest-file"],
       outputZipPath: inputs["output-package-file"],
-      outputJsonPath: inputs["output-manifest-file"],
+      outputFolder: inputs["output-folder"],
     };
     const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
     const driverContext: DriverContext = createDriverContext(inputs);

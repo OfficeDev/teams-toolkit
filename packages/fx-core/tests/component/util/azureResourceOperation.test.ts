@@ -1,14 +1,14 @@
-import * as sinon from "sinon";
-import "mocha";
-import * as tools from "../../../src/common/tools";
-import {
-  getAzureAccountCredential,
-  generateSasToken,
-} from "../../../src/component/utils/azureResourceOperation";
-import { TestAzureAccountProvider } from "./azureAccountMock";
+import { ListAccountSasResponse, StorageAccounts } from "@azure/arm-storage";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { ListAccountSasResponse, StorageAccounts } from "@azure/arm-storage";
+import "mocha";
+import * as sinon from "sinon";
+import * as tools from "../../../src/common/utils";
+import {
+  generateSasToken,
+  getAzureAccountCredential,
+} from "../../../src/component/utils/azureResourceOperation";
+import { TestAzureAccountProvider } from "./azureAccountMock";
 chai.use(chaiAsPromised);
 
 describe("Azure Resource Operation test", () => {

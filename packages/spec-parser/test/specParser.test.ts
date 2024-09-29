@@ -11,7 +11,7 @@ import { ErrorType, ProjectType, ValidationStatus, WarningType } from "../src/in
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
-import { OpenAPIV3 } from "openapi-types";
+import { OpenAPI, OpenAPIV3 } from "openapi-types";
 import { SpecFilter } from "../src/specFilter";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
@@ -20,6 +20,7 @@ import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { SMEValidator } from "../src/validators/smeValidator";
 import { ValidatorFactory } from "../src/validators/validatorFactory";
+import { createHash } from "crypto";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -133,16 +134,15 @@ describe("SpecParser", () => {
 
       const result = await specParser.validate();
 
-      expect(result).to.deep.equal({
-        status: ValidationStatus.Warning,
-        errors: [],
-        warnings: [
-          {
-            type: WarningType.ConvertSwaggerToOpenAPI,
-            content: ConstantString.ConvertSwaggerToOpenAPI,
-          },
-        ],
-      });
+      expect(result.warnings).to.deep.equal([
+        {
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: ConstantString.ConvertSwaggerToOpenAPI,
+        },
+      ]);
+      expect(result.status).equal(ValidationStatus.Warning);
+      expect(result.errors).to.be.an("array").that.is.empty;
+
       sinon.assert.calledOnce(dereferenceStub);
     });
 
@@ -221,16 +221,14 @@ describe("SpecParser", () => {
 
       const result = await specParser.validate();
 
-      expect(result).to.deep.equal({
-        status: ValidationStatus.Error,
-        errors: [
-          {
-            type: ErrorType.SwaggerNotSupported,
-            content: ConstantString.SwaggerNotSupported,
-          },
-        ],
-        warnings: [],
-      });
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.status).equal(ValidationStatus.Error);
+      expect(result.errors).to.deep.equal([
+        {
+          type: ErrorType.SwaggerNotSupported,
+          content: ConstantString.SwaggerNotSupported,
+        },
+      ]);
     });
 
     it("should return an error result object if no server information", async function () {
@@ -250,6 +248,7 @@ describe("SpecParser", () => {
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: "",
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -275,6 +274,7 @@ describe("SpecParser", () => {
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -304,6 +304,7 @@ describe("SpecParser", () => {
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -324,6 +325,7 @@ describe("SpecParser", () => {
         errors: [
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -381,6 +383,9 @@ describe("SpecParser", () => {
 
       expect(result.errors[0].type).equal(ErrorType.RemoteRefNotSupported);
       expect(result.status).equal(ValidationStatus.Error);
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
     });
 
     it("should return an warning result object if missing operation id", async function () {
@@ -439,6 +444,7 @@ describe("SpecParser", () => {
           },
         ],
         errors: [],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -504,6 +510,7 @@ describe("SpecParser", () => {
             ],
           },
         ],
+        specHash: createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex"),
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -557,6 +564,9 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
       sinon.assert.calledOnce(dereferenceStub);
     });
 
@@ -609,7 +619,112 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
       sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return a valid result if one api contains circular reference", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "Pet Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        components: {
+          schemas: {
+            Circular: {
+              type: "object",
+              properties: {
+                item: {
+                  $ref: "#/components/schemas/Circular",
+                },
+              },
+            },
+            Pet: {
+              type: "object",
+              properties: {
+                item: {
+                  type: "string",
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "getPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              tags: ["pet"],
+              operationId: "postPet",
+              summary: "Post pet information from the store",
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Circular",
+                    },
+                  },
+                },
+              },
+              responses: {
+                "200": {
+                  description: "postPet",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(spec as any, { projectType: ProjectType.Copilot });
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
     });
 
     it("should only create validator once if already created", async () => {
@@ -715,6 +830,9 @@ describe("SpecParser", () => {
       );
       expect(result.errors[0].data).equal("3.1.0");
       expect(result.status).equal(ValidationStatus.Error);
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
 
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -768,6 +886,9 @@ describe("SpecParser", () => {
       expect(result.status).to.equal(ValidationStatus.Valid);
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
+      expect(result.specHash).to.equal(
+        createHash("sha256").update(JSON.stringify(spec.servers)).digest("hex")
+      );
       sinon.assert.calledOnce(dereferenceStub);
     });
 
@@ -839,7 +960,14 @@ describe("SpecParser", () => {
       const pluginFilePath = "ai-plugin.json";
 
       try {
-        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFilePath, signal);
+        await specParser.generateForCopilot(
+          manifestPath,
+          filter,
+          specPath,
+          pluginFilePath,
+          undefined,
+          signal
+        );
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
@@ -865,7 +993,14 @@ describe("SpecParser", () => {
           return Promise.resolve();
         });
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFilePath, signal);
+        await specParser.generateForCopilot(
+          manifestPath,
+          filter,
+          specPath,
+          pluginFilePath,
+          undefined,
+          signal
+        );
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
@@ -901,6 +1036,7 @@ describe("SpecParser", () => {
           filter,
           outputSpecPath,
           pluginFilePath,
+          undefined,
           signal
         );
 
@@ -938,6 +1074,7 @@ describe("SpecParser", () => {
           filter,
           outputSpecPath,
           pluginFilePath,
+          undefined,
           signal
         );
 
@@ -1036,6 +1173,86 @@ describe("SpecParser", () => {
         expect(err.errorType).to.equal(ErrorType.GenerateFailed);
         expect(err.message).to.equal("Error: outputFile error");
       }
+    });
+
+    it("should generate adaptivecard for existing plugin manifest", async () => {
+      const pluginManifest = {
+        schema_version: "1",
+        name_for_human: "test",
+        description_for_human: "test",
+      };
+      const pluginManifestWithAdaptiveCard = {
+        schema_version: "1",
+        name_for_human: "test",
+        description_for_human: "test",
+        functions: [
+          {
+            name: "test",
+          },
+        ],
+      };
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").callsFake((path, data) => {
+        if (path === "pluginFilePath") {
+          expect(data.function).to.not.be.undefined;
+          expect(data.function[0].name).to.equal("test");
+        }
+      });
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+      sinon.stub(fs, "readJSON").resolves(pluginManifest);
+
+      const updateManifestWithAiPluginStub = sinon
+        .stub(ManifestUpdater, "updateManifestWithAiPlugin")
+        .resolves([{}, pluginManifestWithAdaptiveCard, []] as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const pluginFilePath = "ai-plugin.json";
+      const result = await specParser.generateForCopilot(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        pluginFilePath,
+        "existingPluginManifest"
+      );
+
+      expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(updateManifestWithAiPluginStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledTwice).to.be.true;
     });
   });
 
@@ -1221,6 +1438,7 @@ describe("SpecParser", () => {
         paths: {
           "/hello": {
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -1296,6 +1514,7 @@ describe("SpecParser", () => {
           "/hello": {
             description: "additional description",
             get: {
+              operationId: "helloApi",
               responses: {
                 200: {
                   content: {
@@ -1942,13 +2161,17 @@ describe("SpecParser", () => {
               name: "api_key",
               in: "header",
             },
+            BearerAuth: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         paths: {
           "/pets": {
             get: {
               operationId: "getPetById",
-              security: [{ api_key: [] }],
+              security: [{ api_key: [], BearerAuth: [] }],
             },
           },
           "/user/{userId}": {
@@ -2002,28 +2225,43 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /pets",
-            server: "",
+            server: "https://server1",
             operationId: "getPetById",
+            auth: {
+              authScheme: {
+                type: "multipleAuth",
+              },
+              name: "api_key, BearerAuth",
+            },
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
           },
           {
             api: "GET /user/{userId}",
             server: "https://server1",
+
             operationId: "getUserById",
             isValid: true,
             reason: [],
           },
           {
             api: "POST /user/{userId}",
-            server: "",
+            auth: {
+              authScheme: {
+                in: "header",
+                name: "api_key",
+                type: "apiKey",
+              },
+              name: "api_key",
+            },
+            server: "https://server1",
             operationId: "createUser",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
           },
           {
             api: "POST /store/order",
-            server: "",
+            server: "https://server1",
             operationId: "placeOrder",
             reason: ["response-json-is-empty", "no-parameter"],
             isValid: false,
@@ -2754,7 +2992,7 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /user/{userId}",
-            server: "",
+            server: "https://server1",
             operationId: "getUserUserId",
             isValid: false,
             reason: ["missing-operation-id"],
@@ -2907,7 +3145,12 @@ describe("SpecParser", () => {
       };
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .callsFake(async (api: string | OpenAPI.Document) => {
+          expect((api as OpenAPIV3.Document).servers![0].url == "https://server1");
+          return api as any;
+        });
 
       const result = await specParser.list();
 
@@ -2949,6 +3192,182 @@ describe("SpecParser", () => {
         expect(err.errorType).to.equal(ErrorType.GetSpecFailed);
         expect(err.message).to.equal("Error: parse error");
       }
+    });
+
+    it("should works fine when filter spec", async () => {
+      const spec = {
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      };
+      const specParser = new SpecParser(spec as any);
+
+      const filter = ["get /user/{userId}"];
+      const result = await specParser.getFilteredSpecs(filter);
+      expect(result[0]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/User",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
+      expect(result[1]).to.deep.equal({
+        openapi: "3.0.2",
+        info: {
+          title: "User Service",
+          version: "1.0.0",
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "test",
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          schemas: {
+            User: {
+              type: "object",
+            },
+          },
+        },
+      });
     });
   });
 });

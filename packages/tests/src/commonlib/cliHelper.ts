@@ -5,11 +5,20 @@ import {
   execAsync,
   execAsyncWithRetry,
   editDotEnvFile,
-} from "../e2e/commonUtils";
-import { Resource, ResourceToDeploy } from "./constants";
+  getKeyVaultNameFromResourceId,
+  getProvisionParameterValueByKey,
+  getKeyVaultSecretReference,
+} from "./utilities";
+import {
+  PluginId,
+  provisionParametersKey,
+  Resource,
+  ResourceToDeploy,
+  StateConfigKey,
+} from "./constants";
 import { TemplateProjectFolder } from "../utils/constants";
 import { Capability } from "../utils/constants";
-import path from "path";
+import * as path from "path";
 
 export class CliHelper {
   static async addEnv(
@@ -213,6 +222,7 @@ export class CliHelper {
       }
     }
   }
+
   static async openTemplateProject(
     appName: string,
     testFolder: string,
@@ -367,4 +377,60 @@ export class CliHelper {
     // }
     return value;
   }
+}
+
+export async function getExpectedM365ClientSecret(
+  ctx: any,
+  projectPath: string,
+  env: string,
+  activeResourcePlugins: string[]
+): Promise<string> {
+  let m365ClientSecret: string;
+  if (activeResourcePlugins.includes(PluginId.KeyVault)) {
+    const vaultName = getKeyVaultNameFromResourceId(
+      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+    );
+    const secretName =
+      (await getProvisionParameterValueByKey(
+        projectPath,
+        env,
+        provisionParametersKey.m365ClientSecretName
+      )) ?? "m365ClientSecret";
+    m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
+  } else {
+    m365ClientSecret = await CliHelper.getUserSettings(
+      `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
+      projectPath,
+      env
+    );
+  }
+  return m365ClientSecret;
+}
+
+export async function getExpectedBotClientSecret(
+  ctx: any,
+  projectPath: string,
+  env: string,
+  activeResourcePlugins: string[]
+): Promise<string> {
+  let botClientSecret: string;
+  if (activeResourcePlugins.includes(PluginId.KeyVault)) {
+    const vaultName = getKeyVaultNameFromResourceId(
+      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+    );
+    const secretName =
+      (await getProvisionParameterValueByKey(
+        projectPath,
+        env,
+        provisionParametersKey.botClientSecretName
+      )) ?? "botClientSecret";
+    botClientSecret = getKeyVaultSecretReference(vaultName, secretName);
+  } else {
+    botClientSecret = await CliHelper.getUserSettings(
+      `${PluginId.Bot}.${StateConfigKey.botPassword}`,
+      projectPath,
+      env
+    );
+  }
+  return botClientSecret;
 }

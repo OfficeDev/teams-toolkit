@@ -6,13 +6,17 @@ import {
   AzureAccountProvider,
   err,
   FxError,
+  Inputs,
   InputsWithProjectPath,
+  IQTreeNode,
   ok,
   OptionItem,
   Result,
+  SingleSelectQuestion,
+  TextInputQuestion,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../../core/globalVars";
+import { TOOLS } from "../../common/globalVars";
 import {
   CheckResourceGroupExistenceError,
   CreateResourceGroupError,
@@ -22,10 +26,11 @@ import {
   ListResourceGroupsError,
   ResourceGroupConflictError,
 } from "../../error/azure";
-import { resourceGroupQuestionNode } from "../../question/other";
-import { QuestionNames } from "../../question/questionNames";
+import { QuestionNames, recommendedLocations } from "../../question/constants";
 import { traverse } from "../../ui/visitor";
 import { SolutionSource } from "../constants";
+import { getLocalizedString } from "../../common/localizeUtils";
+import { InputValidationError } from "../../error";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -36,39 +41,154 @@ export type ResourceGroupInfo = {
   location: string;
 };
 
-export const recommendedLocations = [
-  "South Africa North",
-  "Australia East",
-  "Central India",
-  "East Asia",
-  "Japan East",
-  "Korea Central",
-  "Southeast Asia",
-  "Canada Central",
-  "France Central",
-  "Germany West Central",
-  "Italy North",
-  "North Europe",
-  "Norway East",
-  "Poland Central",
-  "Sweden Central",
-  "Switzerland North",
-  "UK South",
-  "West Europe",
-  "Israel Central",
-  "Qatar Central",
-  "UAE North",
-  "Brazil South",
-  "Central US",
-  "East US",
-  "East US 2",
-  "South Central US",
-  "West US 2",
-  "West US 3",
-];
-
 // TODO: use the emoji plus sign like Azure Functions extension
-const newResourceGroupOption = "+ New resource group";
+export const newResourceGroupOption = "+ New resource group";
+/**
+ * select existing resource group or create new resource group
+ */
+export function selectResourceGroupQuestion(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string
+): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.TargetResourceGroupName,
+    title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
+    staticOptions: [{ id: newResourceGroupOption, label: newResourceGroupOption }],
+    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
+      const rmClient = await resourceGroupHelper.createRmClient(
+        azureAccountProvider,
+        subscriptionId
+      );
+      const listRgRes = await resourceGroupHelper.listResourceGroups(rmClient);
+      if (listRgRes.isErr()) throw listRgRes.error;
+      const rgList = listRgRes.value;
+      const options: OptionItem[] = rgList.map((rg) => {
+        return {
+          id: rg[0],
+          label: rg[0],
+          description: rg[1],
+        };
+      });
+      const existingResourceGroupNames = rgList.map((rg) => rg[0]);
+      inputs.existingResourceGroupNames = existingResourceGroupNames; // cache existing resource group names for valiation usage
+      return [{ id: newResourceGroupOption, label: newResourceGroupOption }, ...options];
+    },
+    skipSingleOption: true,
+    returnObject: true,
+    forgetLastValue: true,
+  };
+}
+
+export function selectResourceGroupLocationQuestion(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string
+): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.NewResourceGroupLocation,
+    title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
+    staticOptions: [],
+    dynamicOptions: async (inputs: Inputs) => {
+      const rmClient = await resourceGroupHelper.createRmClient(
+        azureAccountProvider,
+        subscriptionId
+      );
+      const getLocationsRes = await resourceGroupHelper.getLocations(
+        azureAccountProvider,
+        rmClient
+      );
+      if (getLocationsRes.isErr()) {
+        throw getLocationsRes.error;
+      }
+      const recommended = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) >= 0;
+      });
+      const others = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) < 0;
+      });
+      return [
+        ...recommended.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString(
+              "core.QuestionNewResourceGroupLocation.group.recommended"
+            ),
+          } as OptionItem;
+        }),
+        ...others.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString("core.QuestionNewResourceGroupLocation.group.others"),
+          } as OptionItem;
+        }),
+      ];
+    },
+    default: "Central US",
+  };
+}
+
+export function validateResourceGroupName(input: string, inputs?: Inputs): string | undefined {
+  const name = input;
+  // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
+  const match = name.match(/^[-\w._()]+$/);
+  if (!match) {
+    return getLocalizedString("core.QuestionNewResourceGroupName.validation");
+  }
+
+  // To avoid the issue in CLI that using async func for validation and filter will make users input answers twice,
+  // we check the existence of a resource group from the list rather than call the api directly for now.
+  // Bug: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/15066282
+  // GitHub issue: https://github.com/SBoudrias/Inquirer.js/issues/1136
+  if (inputs?.existingResourceGroupNames) {
+    const maybeExist =
+      inputs.existingResourceGroupNames.findIndex(
+        (o: string) => o.toLowerCase() === input.toLowerCase()
+      ) >= 0;
+    if (maybeExist) {
+      return `resource group already exists: ${name}`;
+    }
+  }
+  return undefined;
+}
+
+export function newResourceGroupNameQuestion(defaultResourceGroupName: string): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.NewResourceGroupName,
+    title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
+    placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
+    // default resource group name will change with env name
+    forgetLastValue: true,
+    default: defaultResourceGroupName,
+    validation: {
+      validFunc: validateResourceGroupName,
+    },
+  };
+}
+
+export function resourceGroupQuestionNode(
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string,
+  defaultResourceGroupName: string
+): IQTreeNode {
+  return {
+    data: selectResourceGroupQuestion(azureAccountProvider, subscriptionId),
+    children: [
+      {
+        condition: { equals: newResourceGroupOption },
+        data: newResourceGroupNameQuestion(defaultResourceGroupName),
+        children: [
+          {
+            data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
+          },
+        ],
+      },
+    ],
+  };
+}
 
 class ResourceGroupHelper {
   async createNewResourceGroup(
@@ -250,7 +370,11 @@ class ResourceGroupHelper {
     const targetResourceGroupName = targetResourceGroupNameOptionItem.id;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
       return err(
-        new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
+        new InputValidationError(
+          "targetResourceGroupName",
+          "Invalid targetResourceGroupName",
+          "ResourceGroupHelper"
+        )
       );
     }
     if (targetResourceGroupName === newResourceGroupOption) {

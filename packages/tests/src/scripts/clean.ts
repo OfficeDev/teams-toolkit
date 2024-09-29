@@ -14,10 +14,10 @@ import {
 import { getAppNamePrefix } from "../utils/nameUtil";
 import { delay } from "../utils/retryHandler";
 
-const appStudioAppNamePrefixList: string[] = [Project.namePrefix];
-const appNamePrefixList: string[] = [Project.namePrefix];
-const aadNamePrefixList: string[] = [Project.namePrefix];
-const rgNamePrefixList: string[] = [Project.namePrefix];
+const appStudioAppNamePrefixList: string[] = [Project.namePrefix, "vs"];
+const appNamePrefixList: string[] = [Project.namePrefix, "vs"];
+const aadNamePrefixList: string[] = [Project.namePrefix, "vs"];
+const rgNamePrefixList: string[] = [Project.namePrefix, "vs"];
 const excludePrefix: string = getAppNamePrefix();
 
 async function main() {

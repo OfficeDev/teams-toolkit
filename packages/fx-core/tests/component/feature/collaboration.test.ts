@@ -13,8 +13,8 @@ import {
 } from "../../plugins/solution/util";
 import { AadAppClient } from "../../../src/component/driver/aad/utility/aadAppClient";
 import axios from "axios";
-import { AppStudioClient } from "../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { AppUser } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
+import { teamsDevPortalClient } from "../../../src/client/teamsDevPortalClient";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -310,7 +310,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("grant permission: should add owner", async () => {
-    sandbox.stub(AppStudioClient, "grantPermission").resolves();
+    sandbox.stub(teamsDevPortalClient, "grantPermission").resolves();
 
     const result = await teamsCollaboration.grantPermission(
       context,
@@ -321,14 +321,14 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("list collaborator: should return all owners", async () => {
-    sandbox.stub(AppStudioClient, "getUserList").resolves([expectedUserInfo]);
+    sandbox.stub(teamsDevPortalClient, "getUserList").resolves([expectedUserInfo]);
 
     const result = await teamsCollaboration.listCollaborator(context, expectedAppId);
     expect(result.isOk() && result.value[0].resourceId == expectedAppId).to.be.true;
   });
 
   it("check permission: should return admin if user is teams app owner", async () => {
-    sandbox.stub(AppStudioClient, "checkPermission").resolves("Administrator");
+    sandbox.stub(teamsDevPortalClient, "checkPermission").resolves("Administrator");
 
     const result = await teamsCollaboration.checkPermission(
       context,
@@ -339,7 +339,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("check permission: should return no permission if user is not Microsoft Entra owner", async () => {
-    sandbox.stub(AppStudioClient, "checkPermission").resolves("No permission");
+    sandbox.stub(teamsDevPortalClient, "checkPermission").resolves("No permission");
 
     const result = await teamsCollaboration.checkPermission(
       context,
@@ -350,7 +350,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("list collaborator errors: should return HttpClientError for 4xx errors", async () => {
-    sandbox.stub(AppStudioClient, "getUserList").rejects({
+    sandbox.stub(teamsDevPortalClient, "getUserList").rejects({
       innerError: {
         message: "Request failed with status code 400",
         response: {
@@ -365,7 +365,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("list collaborator errors: should return AppIdNotExist for 404 errors", async () => {
-    sandbox.stub(AppStudioClient, "getUserList").rejects({
+    sandbox.stub(teamsDevPortalClient, "getUserList").rejects({
       innerError: {
         message: "Request failed with status code 404",
         response: {
@@ -380,7 +380,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("list collaborator errors: should return HttpServerError for 5xx errors", async () => {
-    sandbox.stub(AppStudioClient, "getUserList").rejects({
+    sandbox.stub(teamsDevPortalClient, "getUserList").rejects({
       innerError: {
         message: "Request failed with status code 500",
         response: {
@@ -395,7 +395,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("list collaborator errors: should return unhandledErrors", async () => {
-    sandbox.stub(AppStudioClient, "getUserList").rejects({
+    sandbox.stub(teamsDevPortalClient, "getUserList").rejects({
       message: "Request failed with status code 500",
     });
 
@@ -404,7 +404,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("grant permission errors: should return HttpClientError for 4xx errors", async () => {
-    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "grantPermission").rejects({
       innerError: {
         message: "Request failed with status code 400",
         response: {
@@ -423,7 +423,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("grant permission errors: should return AppIdNotExist for 404 errors", async () => {
-    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "grantPermission").rejects({
       innerError: {
         message: "Request failed with status code 404",
         response: {
@@ -442,7 +442,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("grant permission errors: should return HttpServerError for 5xx errors", async () => {
-    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "grantPermission").rejects({
       innerError: {
         message: "Request failed with status code 500",
         response: {
@@ -461,7 +461,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("grant permission errors: should return unhandledErrors", async () => {
-    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "grantPermission").rejects({
       message: "Request failed with status code 500",
     });
 
@@ -474,7 +474,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("check permission errors: should return HttpClientError for 4xx errors", async () => {
-    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "checkPermission").rejects({
       innerError: {
         message: "Request failed with status code 400",
         response: {
@@ -493,7 +493,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("check permission errors: should return AppIdNotExist for 404 errors", async () => {
-    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "checkPermission").rejects({
       innerError: {
         message: "Request failed with status code 404",
         response: {
@@ -512,7 +512,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("check permission errors: should return HttpServerError for 5xx errors", async () => {
-    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "checkPermission").rejects({
       innerError: {
         message: "Request failed with status code 500",
         response: {
@@ -531,7 +531,7 @@ describe("TeamsCollaboration", async () => {
   });
 
   it("check permission errors: should return unhandledErrors", async () => {
-    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+    sandbox.stub(teamsDevPortalClient, "checkPermission").rejects({
       message: "Request failed with status code 500",
     });
 

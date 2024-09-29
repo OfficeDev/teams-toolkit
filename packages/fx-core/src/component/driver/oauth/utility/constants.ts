@@ -11,6 +11,6 @@ export const logMessageKeys = {
   successUpdateOauth: "driver.oauth.log.successUpdateOauth",
 };
 
-export const maxSecretLength = 128;
+export const maxSecretLength = 512;
 export const minSecretLength = 10;
 export const maxDomainPerOauth = 1;

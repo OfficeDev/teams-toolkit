@@ -3,7 +3,6 @@
 
 import {
   AppPackageFolderName,
-  AzureAccountProvider,
   BuildFolderName,
   ConfirmQuestion,
   DynamicPlatforms,
@@ -11,37 +10,41 @@ import {
   Inputs,
   ManifestUtil,
   MultiSelectQuestion,
-  OptionItem,
   Platform,
   SingleFileQuestion,
   SingleSelectQuestion,
   TextInputQuestion,
-  UserError,
+  FolderQuestion,
+  CLIPlatforms,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString } from "../common/constants";
+import { AppStudioScopes, ConstantString } from "../common/constants";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
-import { AppStudioScopes } from "../common/tools";
 import { Constants } from "../component/driver/add/utility/constants";
-import { recommendedLocations, resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentNameManager } from "../core/environmentName";
-import { TOOLS } from "../core/globalVars";
+import { TOOLS } from "../common/globalVars";
+import {
+  ApiPluginStartOptions,
+  HubOptions,
+  QuestionNames,
+  TeamsAppValidationOptions,
+} from "./constants";
 import {
   SPFxFrameworkQuestion,
   SPFxImportFolderQuestion,
   SPFxWebpartNameQuestion,
   apiOperationQuestion,
+  apiPluginStartQuestion,
   apiSpecLocationQuestion,
+  pluginApiSpecQuestion,
+  pluginManifestQuestion,
 } from "./create";
-import { QuestionNames } from "./questionNames";
-import { isAsyncAppValidationEnabled } from "../common/featureFlags";
-import { getAbsolutePath } from "../component/utils/common";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
-import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
-import { AppStudioError } from "../component/driver/teamsApp/errors";
+import { UninstallInputs } from "./inputs";
+import * as os from "os";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -373,7 +376,7 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
 function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
   const options = [TeamsAppValidationOptions.schema(), TeamsAppValidationOptions.package()];
 
-  if (isAsyncAppValidationEnabled()) {
+  if (featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation)) {
     options.push(TeamsAppValidationOptions.testCases());
   }
 
@@ -394,36 +397,6 @@ export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
       },
     ],
   };
-}
-
-export class TeamsAppValidationOptions {
-  static schema(): OptionItem {
-    return {
-      id: "validateAgainstSchema",
-      label: getLocalizedString("core.selectValidateMethodQuestion.validate.schemaOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.schemaOptionDescription"
-      ),
-    };
-  }
-  static package(): OptionItem {
-    return {
-      id: "validateAgainstPackage",
-      label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
-      ),
-    };
-  }
-  static testCases(): OptionItem {
-    return {
-      id: "validateWithTestCases",
-      label: getLocalizedString("core.selectValidateMethodQuestion.validate.testCasesOption"),
-      description: getLocalizedString(
-        "core.selectValidateMethodQuestion.validate.testCasesOptionDescription"
-      ),
-    };
-  }
 }
 
 function selectTeamsAppPackageQuestion(): SingleFileQuestion {
@@ -456,36 +429,6 @@ export function selectTeamsAppPackageQuestionNode(): IQTreeNode {
   return {
     data: selectTeamsAppPackageQuestion(),
   };
-}
-
-export enum HubTypes {
-  teams = "teams",
-  outlook = "outlook",
-  office = "office",
-}
-
-export class HubOptions {
-  static teams(): OptionItem {
-    return {
-      id: "teams",
-      label: "Teams",
-    };
-  }
-  static outlook(): OptionItem {
-    return {
-      id: "outlook",
-      label: "Outlook",
-    };
-  }
-  static office(): OptionItem {
-    return {
-      id: "office",
-      label: "the Microsoft 365 app",
-    };
-  }
-  static all(): OptionItem[] {
-    return [this.teams(), this.outlook(), this.office()];
-  }
 }
 
 function selectM365HostQuestion(): SingleSelectQuestion {
@@ -796,232 +739,37 @@ export function createNewEnvQuestionNode(): IQTreeNode {
   };
 }
 
-export const newResourceGroupOption = "+ New resource group";
-
-/**
- * select existing resource group or create new resource group
- */
-function selectResourceGroupQuestion(
-  azureAccountProvider: AzureAccountProvider,
-  subscriptionId: string
-): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: QuestionNames.TargetResourceGroupName,
-    title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
-    staticOptions: [{ id: newResourceGroupOption, label: newResourceGroupOption }],
-    dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-      const rmClient = await resourceGroupHelper.createRmClient(
-        azureAccountProvider,
-        subscriptionId
-      );
-      const listRgRes = await resourceGroupHelper.listResourceGroups(rmClient);
-      if (listRgRes.isErr()) throw listRgRes.error;
-      const rgList = listRgRes.value;
-      const options: OptionItem[] = rgList.map((rg) => {
-        return {
-          id: rg[0],
-          label: rg[0],
-          description: rg[1],
-        };
-      });
-      const existingResourceGroupNames = rgList.map((rg) => rg[0]);
-      inputs.existingResourceGroupNames = existingResourceGroupNames; // cache existing resource group names for valiation usage
-      return [{ id: newResourceGroupOption, label: newResourceGroupOption }, ...options];
-    },
-    skipSingleOption: true,
-    returnObject: true,
-    forgetLastValue: true,
-  };
-}
-
-export function validateResourceGroupName(input: string, inputs?: Inputs): string | undefined {
-  const name = input;
-  // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
-  const match = name.match(/^[-\w._()]+$/);
-  if (!match) {
-    return getLocalizedString("core.QuestionNewResourceGroupName.validation");
-  }
-
-  // To avoid the issue in CLI that using async func for validation and filter will make users input answers twice,
-  // we check the existence of a resource group from the list rather than call the api directly for now.
-  // Bug: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/15066282
-  // GitHub issue: https://github.com/SBoudrias/Inquirer.js/issues/1136
-  if (inputs?.existingResourceGroupNames) {
-    const maybeExist =
-      inputs.existingResourceGroupNames.findIndex(
-        (o: string) => o.toLowerCase() === input.toLowerCase()
-      ) >= 0;
-    if (maybeExist) {
-      return `resource group already exists: ${name}`;
-    }
-  }
-  return undefined;
-}
-
-export function newResourceGroupNameQuestion(defaultResourceGroupName: string): TextInputQuestion {
-  return {
-    type: "text",
-    name: QuestionNames.NewResourceGroupName,
-    title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
-    placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
-    // default resource group name will change with env name
-    forgetLastValue: true,
-    default: defaultResourceGroupName,
-    validation: {
-      validFunc: validateResourceGroupName,
-    },
-  };
-}
-
-function selectResourceGroupLocationQuestion(
-  azureAccountProvider: AzureAccountProvider,
-  subscriptionId: string
-): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: QuestionNames.NewResourceGroupLocation,
-    title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
-    staticOptions: [],
-    dynamicOptions: async (inputs: Inputs) => {
-      const rmClient = await resourceGroupHelper.createRmClient(
-        azureAccountProvider,
-        subscriptionId
-      );
-      const getLocationsRes = await resourceGroupHelper.getLocations(
-        azureAccountProvider,
-        rmClient
-      );
-      if (getLocationsRes.isErr()) {
-        throw getLocationsRes.error;
-      }
-      const recommended = getLocationsRes.value.filter((location) => {
-        return recommendedLocations.indexOf(location) >= 0;
-      });
-      const others = getLocationsRes.value.filter((location) => {
-        return recommendedLocations.indexOf(location) < 0;
-      });
-      return [
-        ...recommended.map((location) => {
-          return {
-            id: location,
-            label: location,
-            groupName: getLocalizedString(
-              "core.QuestionNewResourceGroupLocation.group.recommended"
-            ),
-          } as OptionItem;
-        }),
-        ...others.map((location) => {
-          return {
-            id: location,
-            label: location,
-            groupName: getLocalizedString("core.QuestionNewResourceGroupLocation.group.others"),
-          } as OptionItem;
-        }),
-      ];
-    },
-    default: "Central US",
-  };
-}
-
-export function resourceGroupQuestionNode(
-  azureAccountProvider: AzureAccountProvider,
-  subscriptionId: string,
-  defaultResourceGroupName: string
-): IQTreeNode {
-  return {
-    data: selectResourceGroupQuestion(azureAccountProvider, subscriptionId),
-    children: [
-      {
-        condition: { equals: newResourceGroupOption },
-        data: newResourceGroupNameQuestion(defaultResourceGroupName),
-        children: [
-          {
-            data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
-          },
-        ],
-      },
-    ],
-  };
-}
-
-export class PluginAvailabilityOptions {
-  static action(): OptionItem {
-    return {
-      id: "action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
-    };
-  }
-  static copilotPlugin(): OptionItem {
-    return {
-      id: "copilot-plugin",
-      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
-    };
-  }
-  static copilotPluginAndAction(): OptionItem {
-    return {
-      id: "copilot-plugin-and-action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
-    };
-  }
-
-  static all(): OptionItem[] {
-    return [
-      PluginAvailabilityOptions.copilotPlugin(),
-      PluginAvailabilityOptions.action(),
-      PluginAvailabilityOptions.copilotPluginAndAction(),
-    ];
-  }
-}
-
-export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
-  return {
-    name: QuestionNames.PluginAvailability,
-    title: getLocalizedString("core.question.pluginAvailability.title"),
-    cliDescription: "Select plugin availability.",
-    type: "singleSelect",
-    staticOptions: PluginAvailabilityOptions.all(),
-    dynamicOptions: async (inputs: Inputs) => {
-      const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
-      const absolutePath = getAbsolutePath(teamsManifestPath, inputs.projectPath!);
-      const manifestRes = await manifestUtils._readAppManifest(absolutePath);
-      if (manifestRes.isErr()) {
-        throw manifestRes.error;
-      }
-      const commonProperties = ManifestUtil.parseCommonProperties(manifestRes.value);
-      if (!commonProperties.capabilities.includes("copilotGpt")) {
-        throw AppStudioResultFactory.UserError(
-          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
-          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
-            "declarativeCopilots",
-            teamsManifestPath
-          )
-        );
-      }
-
-      if (commonProperties.capabilities.includes("plugin")) {
-        // A project can have only one plugin.
-        return [PluginAvailabilityOptions.action()];
-      } else {
-        return PluginAvailabilityOptions.all();
-      }
-    },
-  };
-}
-
 // add Plugin to a declarative Copilot project
 export function addPluginQuestionNode(): IQTreeNode {
   return {
-    data: selectTeamsAppManifestQuestion(),
+    data: apiPluginStartQuestion(true),
     children: [
       {
-        data: selectPluginAvailabilityQuestion(),
+        data: pluginManifestQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.existingPlugin().id,
+        },
+      },
+      {
+        data: pluginApiSpecQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.existingPlugin().id,
+        },
       },
       {
         data: apiSpecLocationQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.apiSpec().id,
+        },
       },
       {
         data: apiOperationQuestion(true, true),
+        condition: {
+          equals: ApiPluginStartOptions.apiSpec().id,
+        },
+      },
+      {
+        data: selectTeamsAppManifestQuestion(),
       },
     ],
   };
@@ -1047,7 +795,7 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          if (input.length < 10 || input.length > 128) {
+          if (input.length < 10 || input.length > 512) {
             return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
           }
 
@@ -1099,16 +847,147 @@ export function oauthQuestion(): IQTreeNode {
       {
         data: oauthClientSecretQuestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret;
+          return (
+            !inputs.isPKCEEnabled &&
+            !inputs.clientSecret &&
+            (!inputs.identityProvider || inputs.identityProvider === "Custom")
+          );
         },
       },
       {
         data: oauthConfirmQestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret || !inputs.clientId;
+          return (
+            !inputs.isPKCEEnabled &&
+            (!inputs.clientSecret || !inputs.clientId) &&
+            (!inputs.identityProvider || inputs.identityProvider === "Custom")
+          );
         },
       },
     ],
+  };
+}
+
+export function uninstallQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: uninstallModeQuestion(),
+        condition: () => {
+          return true;
+        },
+        children: [
+          {
+            data: {
+              type: "text",
+              name: QuestionNames.ManifestId,
+              title: getLocalizedString("core.uninstallQuestion.manifestId"),
+            },
+            condition: (input: UninstallInputs) => {
+              return input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeManifestId;
+            },
+          },
+          {
+            data: {
+              type: "text",
+              name: QuestionNames.Env,
+              title: getLocalizedString("core.uninstallQuestion.env"),
+            },
+            condition: (input: UninstallInputs) => {
+              return input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeEnv;
+            },
+            children: [
+              {
+                data: uninstallProjectPathQuestion(),
+                condition: () => {
+                  return true;
+                },
+              },
+            ],
+          },
+          {
+            data: uninstallOptionQuestion(),
+            condition: (input: UninstallInputs) => {
+              return (
+                input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeManifestId ||
+                input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeEnv
+              );
+            },
+          },
+          {
+            data: {
+              type: "text",
+              name: QuestionNames.TitleId,
+              title: getLocalizedString("core.uninstallQuestion.titleId"),
+            },
+            condition: (input: UninstallInputs) => {
+              return input[QuestionNames.UninstallMode] === QuestionNames.UninstallModeTitleId;
+            },
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function uninstallModeQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.UninstallMode,
+    title: getLocalizedString("core.uninstallQuestion.chooseMode"),
+    type: "singleSelect",
+    staticOptions: [
+      {
+        id: QuestionNames.UninstallModeManifestId,
+        label: getLocalizedString("core.uninstallQuestion.manifestIdMode"),
+        detail: getLocalizedString("core.uninstallQuestion.manifestIdMode.detail"),
+      },
+      {
+        id: QuestionNames.UninstallModeEnv,
+        label: getLocalizedString("core.uninstallQuestion.envMode"),
+        detail: getLocalizedString("core.uninstallQuestion.envMode.detail"),
+      },
+      {
+        id: QuestionNames.UninstallModeTitleId,
+        label: getLocalizedString("core.uninstallQuestion.titleIdMode"),
+        detail: getLocalizedString("core.uninstallQuestion.titleIdMode.detail"),
+      },
+    ],
+    default: QuestionNames.UninstallModeManifestId,
+  };
+}
+
+function uninstallOptionQuestion(): MultiSelectQuestion {
+  return {
+    name: QuestionNames.UninstallOptions,
+    title: getLocalizedString("core.uninstallQuestion.chooseOption"),
+    type: "multiSelect",
+    staticOptions: [
+      {
+        id: QuestionNames.UninstallOptionM365,
+        label: getLocalizedString("core.uninstallQuestion.m365Option"),
+      },
+      {
+        id: QuestionNames.UninstallOptionTDP,
+        label: getLocalizedString("core.uninstallQuestion.tdpOption"),
+      },
+      {
+        id: QuestionNames.UninstallOptionBot,
+        label: getLocalizedString("core.uninstallQuestion.botOption"),
+      },
+    ],
+  };
+}
+function uninstallProjectPathQuestion(): FolderQuestion {
+  return {
+    type: "folder",
+    name: QuestionNames.ProjectPath,
+    title: getLocalizedString("core.uninstallQuestion.projectPath"),
+    cliDescription: "Project Path for uninstall",
+    placeholder: "./",
+    default: "./",
   };
 }
 
@@ -1152,7 +1031,7 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): string | undefined => {
-        if (input.length < 10 || input.length > 128) {
+        if (input.length < 10 || input.length > 512) {
           return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
         }
 
@@ -1169,5 +1048,44 @@ function oauthClientSecretQuestion(): TextInputQuestion {
         return;
       },
     },
+  };
+}
+
+export function syncManifestQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: {
+          type: "folder",
+          name: QuestionNames.ProjectPath,
+          title: getLocalizedString("core.syncManifest.projectPath"),
+          cliDescription: "Project Path",
+          placeholder: "./",
+          default: (inputs: Inputs) =>
+            CLIPlatforms.includes(inputs.platform)
+              ? "./"
+              : path.join(os.homedir(), ConstantString.RootFolder),
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.Env,
+          title: getLocalizedString("core.syncManifest.env"),
+          cliDescription: "Target Teams Toolkit Environment",
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.TeamsAppId,
+          title: getLocalizedString("core.syncManifest.teamsAppId"),
+          cliDescription: "Teams App ID (optional)",
+        },
+      },
+    ],
   };
 }

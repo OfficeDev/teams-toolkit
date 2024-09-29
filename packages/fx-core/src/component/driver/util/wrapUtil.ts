@@ -3,7 +3,6 @@
 
 import { err, FxError, IProgressHandler, ok, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { ErrorConstants } from "../../constants";
 import { BaseComponentInnerError } from "../../error/componentError";
 import { TeamsFxTelemetryReporter } from "../../utils/teamsFxTelemetryReporter";
 import { logMessageKeys } from "../aad/utility/constants";
@@ -106,7 +105,10 @@ export async function wrapRun(
     return actionRes;
   }
 }
-
+const ErrorConstants = {
+  unhandledError: "UnhandledError",
+  unhandledErrorMessage: "Unhandled Error",
+};
 function getError(context: WrapDriverContext, error: any): FxError {
   let fxError: FxError;
   if (error instanceof BaseComponentInnerError) {

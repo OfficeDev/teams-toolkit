@@ -15,12 +15,13 @@
     "sourceMap": true,
     "declarationMap": true,
     "strict": true,
+    "useUnknownInCatchVariables": false,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
     "declaration": true,
-    "plugins": [{ "transform": "../failpoint-ts/transformer/transformer.ts" }]
+    "plugins": []
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/tests/*"]

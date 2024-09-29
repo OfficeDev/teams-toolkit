@@ -5,18 +5,25 @@
     "resourceBaseName": {
       "value": "bot${{RESOURCE_SUFFIX}}"
     },
-    "botAadAppClientId": {
-      "value": "${{BOT_ID}}"
-    },
-    "botAadAppClientSecret": {
-      "value": "${{SECRET_BOT_PASSWORD}}"
-    },
+    {{#useOpenAI}}
     "openAIKey": {
       "value": "${{SECRET_OPENAI_API_KEY}}"
     },
     "openAIAssistantId": {
       "value": "${{OPENAI_ASSISTANT_ID}}"
     },
+    {{/useOpenAI}}
+    {{#useAzureOpenAI}}
+    "azureOpenaiKey": {
+      "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
+    },
+    "azureOpenaiEndpoint" : {
+      "value": "${{AZURE_OPENAI_ENDPOINT}}"
+    },
+    "azureOpenaiAssistantId": {
+      "value": "${{AZURE_OPENAI_ASSISTANT_ID}}"
+    },
+    {{/useAzureOpenAI}}
     "webAppSKU": {
       "value": "B1"
     },

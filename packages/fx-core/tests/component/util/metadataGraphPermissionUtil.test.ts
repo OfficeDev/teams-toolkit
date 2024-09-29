@@ -5,7 +5,7 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import { ExecutionResult, ProjectModel } from "../../../src/component/configManager/interface";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { setTools } from "../../../src/core/globalVars";
+import { setTools } from "../../../src/common/globalVars";
 import { MockTools } from "../../core/utils";
 import { metadataGraphPermissionUtil } from "../../../src/component/utils/metadataGraphPermssion";
 import { TelemetryProperty } from "../../../src/common/telemetry";

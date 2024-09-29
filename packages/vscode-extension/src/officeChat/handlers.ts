@@ -1,25 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
+import fs from "fs-extra";
+import path from "path";
+import os from "os";
 import {
   CancellationToken,
   ChatContext,
+  ChatFollowup,
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
-  ChatUserActionEvent,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
+  LanguageModelChatMessageRole,
   ProviderResult,
+  QuickPickItem,
   Uri,
-  commands,
   window,
-  workspace,
 } from "vscode";
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
 import { Correlator } from "@microsoft/teamsfx-core";
 import followupProvider from "../chat/followupProvider";
-import { ChatTelemetryData } from "../chat/telemetry";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -34,6 +35,9 @@ import { verbatimCopilotInteraction } from "../chat/utils";
 import { localize } from "../utils/localizeUtils";
 import { ICopilotChatOfficeResult } from "./types";
 import { ITelemetryData } from "../chat/types";
+import { OfficeChatTelemetryData } from "./telemetry";
+import { ConstantString } from "@microsoft/teamsfx-core/build/common/constants";
+import { openOfficeDevFolder } from "../utils/workspaceUtils";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
@@ -59,18 +63,35 @@ async function officeDefaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = OfficeChatTelemetryData.createByParticipant(
     officeChatParticipantId,
-    "",
-    request.location
+    ""
   );
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
-  const messages = [defaultOfficeSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+
+  if (!request.prompt) {
+    throw new Error(`
+Please specify a question when using this command.
+
+Usage: @office Ask questions about Office Add-ins development.`);
+  }
+  const messages = [
+    defaultOfficeSystemPrompt(),
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, request.prompt),
+  ];
   officeChatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
+  const followUps: ChatFollowup[] = [
+    {
+      label: "@office /create an Excel hello world add-in",
+      command: "create",
+      prompt: "an Excel hello world add-in",
+    },
+  ];
+  followupProvider.addFollowups(followUps);
 
   officeChatTelemetryData.markComplete();
   ExtTelemetry.sendTelemetryEvent(
@@ -81,26 +102,42 @@ async function officeDefaultHandler(
   return { metadata: { command: undefined, requestId: officeChatTelemetryData.requestId } };
 }
 
-export async function chatCreateOfficeProjectCommandHandler(folder: string) {
+export async function chatCreateOfficeProjectCommandHandler(
+  folder: string,
+  requestId: string,
+  matchResultInfo: string,
+  appId: string
+) {
+  const officeChatTelemetryData = OfficeChatTelemetryData.get(requestId);
+  if (officeChatTelemetryData) {
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChatClickButton,
+      {
+        ...officeChatTelemetryData.properties,
+        [TelemetryProperty.CopilotMatchResultType]: matchResultInfo,
+      },
+      officeChatTelemetryData.measurements
+    );
+  }
   // Let user choose the project folder
   let dstPath = "";
-  let folderChoice: string | undefined = undefined;
-  if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
-    folderChoice = await window.showQuickPick([
-      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace"),
-      localize("teamstoolkit.qm.browse"),
-    ]);
-    if (!folderChoice) {
-      return;
-    }
-    if (
-      folderChoice ===
-      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace")
-    ) {
-      dstPath = workspace.workspaceFolders[0].uri.fsPath;
-    }
+  let folderChoice: QuickPickItem | undefined = undefined;
+  const defaultFolder = path.join(os.homedir(), ConstantString.RootFolder);
+  folderChoice = await window.showQuickPick([
+    {
+      label: localize("teamstoolkit.qm.defaultFolder"),
+      description: defaultFolder,
+    },
+    {
+      label: localize("teamstoolkit.qm.browse"),
+    },
+  ]);
+  if (!folderChoice) {
+    return;
   }
-  if (dstPath === "") {
+  if (folderChoice.label === localize("teamstoolkit.qm.defaultFolder")) {
+    dstPath = defaultFolder;
+  } else {
     const customFolder = await window.showOpenDialog({
       title: localize("teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.title"),
       openLabel: localize("teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.label"),
@@ -114,18 +151,14 @@ export async function chatCreateOfficeProjectCommandHandler(folder: string) {
     dstPath = customFolder[0].fsPath;
   }
   try {
-    await fs.copy(folder, dstPath);
-    if (
-      folderChoice !==
-      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace")
-    ) {
-      void commands.executeCommand("vscode.openFolder", Uri.file(dstPath));
-    } else {
-      void window.showInformationMessage(
-        localize("teamstoolkit.chatParticipants.officeAddIn.create.successfullyCreated")
-      );
-      void commands.executeCommand("workbench.view.extension.teamsfx");
+    let workDir = path.join(dstPath, appId);
+    let suffix = 1;
+    while (fs.pathExistsSync(workDir) && fs.readdirSync(workDir).length > 0) {
+      workDir = path.join(dstPath, `${appId}_${suffix++}`);
     }
+    fs.ensureDirSync(workDir);
+    await fs.copy(folder, workDir);
+    await openOfficeDevFolder(Uri.file(workDir), true);
   } catch (error) {
     console.error("Error copying files:", error);
     void window.showErrorMessage(
@@ -142,6 +175,14 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
       [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
       [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
       [TelemetryProperty.CorrelationId]: Correlator.getId(),
+      [TelemetryProperty.HostType]:
+        OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+          TelemetryProperty.HostType
+        ] ?? "",
+      [TelemetryProperty.CopilotChatRelatedSampleName]:
+        OfficeChatTelemetryData.get(result.metadata?.requestId ?? "")?.properties[
+          TelemetryProperty.CopilotChatRelatedSampleName
+        ] ?? "",
     },
     measurements: {
       [TelemetryProperty.CopilotChatFeedbackHelpful]: e.kind,
@@ -150,25 +191,6 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatFeedback,
-    telemetryData.properties,
-    telemetryData.measurements
-  );
-}
-
-export function handleOfficeUserAction(e: ChatUserActionEvent): void {
-  const result = e.result as ICopilotChatOfficeResult;
-  const telemetryData: ITelemetryData = {
-    properties: {
-      [TelemetryProperty.CopilotChatRequestId]: result.metadata?.requestId ?? "",
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
-      [TelemetryProperty.CorrelationId]: Correlator.getId(),
-      [TelemetryProperty.CopilotChatUserAction]: e.action.kind,
-    },
-    measurements: {},
-  };
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatUserAction,
     telemetryData.properties,
     telemetryData.measurements
   );

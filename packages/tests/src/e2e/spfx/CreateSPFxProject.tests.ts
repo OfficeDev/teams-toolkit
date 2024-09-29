@@ -158,6 +158,15 @@ describe("Start a new project", function () {
         // Validate publish result
         await AppStudioValidator.validatePublish(teamsAppId!);
       }
+
+      {
+        // preview
+        const result = await Executor.preview(
+          projectPath,
+          environmentNameManager.getDefaultEnvName()
+        );
+        expect(result.success).to.be.true;
+      }
     }
   );
 

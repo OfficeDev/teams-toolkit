@@ -57,7 +57,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Teams (Chrome)",
@@ -71,7 +72,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Outlook (Edge)",
@@ -85,7 +87,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Outlook (Chrome)",
@@ -99,7 +102,8 @@
                 "group": "all",
                 "hidden": true
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Attach to Local Service",

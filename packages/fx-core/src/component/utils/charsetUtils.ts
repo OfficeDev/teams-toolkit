@@ -194,7 +194,8 @@ const appleLanguageToEncoding: Record<string, string> = {
 
 export const DefaultEncoding = "utf-8";
 
-export async function getSystemEncoding(): Promise<string> {
+export async function getSystemEncoding(cmd?: string): Promise<string> {
+  if (cmd?.includes("@azure/static-web-apps-cli")) return "utf8";
   if (os.platform() === "win32") {
     return new Promise((resolve, reject) => {
       child_process.exec("chcp", { encoding: "utf8" }, (error, stdout) => {

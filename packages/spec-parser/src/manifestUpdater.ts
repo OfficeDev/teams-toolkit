@@ -43,7 +43,7 @@ export class ManifestUpdater {
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
 
     const useCopilotExtensionsInSchema = await ManifestUtil.useCopilotExtensionsInSchema(manifest);
-    if (useCopilotExtensionsInSchema) {
+    if (manifest.copilotExtensions || useCopilotExtensionsInSchema) {
       manifest.copilotExtensions = manifest.copilotExtensions || {};
       if (!options.isGptPlugin) {
         manifest.copilotExtensions.plugins = [

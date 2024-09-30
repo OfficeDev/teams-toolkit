@@ -20,7 +20,7 @@ describe("useGraphWithCredential() hook tests", () => {
     jest.clearAllMocks();
   });
 
-  it("call function after initialized", async () => {
+  it("call function after initialized without options", async () => {
     jest
       .spyOn(teamsfxlib, "TeamsUserCredential")
       .mockImplementation((): teamsfxlib.TeamsUserCredential => {
@@ -54,6 +54,56 @@ describe("useGraphWithCredential() hook tests", () => {
         expect(result.current.error).toBe(undefined);
         expect(result.current.loading).toBe(false);
         expect(graphScope && graphScope[0]).toBe("User.Read");
+      },
+      { interval: 1 },
+    );
+  });
+
+  it("call function after initialized with options", async () => {
+    jest
+      .spyOn(teamsfxlib, "TeamsUserCredential")
+      .mockImplementation((): teamsfxlib.TeamsUserCredential => {
+        return {
+          async login(): Promise<void> {},
+          async getToken(): Promise<null> {
+            return null;
+          },
+          async getUserInfo(): Promise<UserInfo> {
+            return { displayName: "testUser" } as UserInfo;
+          },
+        };
+      });
+
+    const teamsUserCredential = new teamsfxlib.TeamsUserCredential({
+      clientId: "clientId",
+      initiateLoginEndpoint: "initiateLoginEndpoint",
+    });
+    let graphScope: string[] | undefined;
+    let fetchedCredential: teamsfxlib.TeamsUserCredential | undefined;
+    const { result } = renderHook(() =>
+      useGraphWithCredential(
+        (graph: Client, credential: teamsfxlib.TeamsUserCredential, scope: string[]) => {
+          graphScope = scope;
+          fetchedCredential = credential;
+          return Promise.resolve(fetchedCredential.getUserInfo());
+        },
+        {
+          scope: ["User.Read.All"],
+          credential: teamsUserCredential,
+        },
+      ),
+    );
+
+    expect(result.current.reload).toBeDefined();
+    expect(result.current.data).toBe(undefined);
+    expect(result.current.error).toBe(undefined);
+    expect(result.current.loading).toBe(true);
+    await waitFor(
+      () => {
+        expect(result.current.data).toStrictEqual({ displayName: "testUser" });
+        expect(result.current.error).toBe(undefined);
+        expect(result.current.loading).toBe(false);
+        expect(graphScope && graphScope[0]).toBe("User.Read.All");
       },
       { interval: 1 },
     );
@@ -170,6 +220,49 @@ describe("useGraphWithCredential() hook tests", () => {
             "in the popup window, you may be using unmatched version for TeamsFx SDK (version >= 0.5.0) and Teams Toolkit (version < 3.3.0) or " +
             `cli (version < 0.11.0). Please refer to the help link for how to fix the issue: https://aka.ms/teamsfx-auth-code-flow`,
         );
+      },
+      { interval: 1 },
+    );
+  });
+
+  it("throws unknown error", async () => {
+    jest
+      .spyOn(teamsfxlib, "TeamsUserCredential")
+      .mockImplementation((): teamsfxlib.TeamsUserCredential => {
+        return {
+          async login(): Promise<void> {
+            throw new ErrorWithCode("CancelledByUser");
+          },
+          async getToken(): Promise<null> {
+            return null;
+          },
+          async getUserInfo(): Promise<UserInfo> {
+            return {} as UserInfo;
+          },
+        };
+      });
+    let graphScope: string[] | undefined;
+    const { result } = renderHook(() =>
+      useGraphWithCredential(
+        (graph: Client, credential: teamsfxlib.TeamsUserCredential, scope: string[]) => {
+          graphScope = scope;
+          const error = new Error("unknown error");
+          return Promise.reject(error);
+        },
+      ),
+    );
+
+    expect(result.current.reload).toBeDefined();
+    expect(result.current.data).toBe(undefined);
+    expect(result.current.error).toBe(undefined);
+    expect(result.current.loading).toBe(true);
+
+    await waitFor(
+      () => {
+        expect(result.current.data).toBe(undefined);
+        expect(result.current.error).toStrictEqual(new Error("unknown error"));
+        expect(result.current.loading).toBe(false);
+        expect(graphScope && graphScope[0]).toBe("User.Read");
       },
       { interval: 1 },
     );

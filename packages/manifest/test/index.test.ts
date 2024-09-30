@@ -112,10 +112,8 @@ describe("Manifest manipulation", async () => {
 
     it("should return true when copilotExtensions exist in schema definitions", async () => {
       const mockSchema = {
-        value: {
-          definitions: {
-            copilotExtensions: {},
-          },
+        properties: {
+          copilotExtensions: {},
         },
       };
 
@@ -127,22 +125,8 @@ describe("Manifest manipulation", async () => {
 
     it("should return false when copilotExtensions do not exist in schema definitions", async () => {
       const mockSchema = {
-        value: {
-          definitions: {},
-        },
+        properties: {},
       };
-      fetchSchemaStub.resolves(mockSchema);
-
-      const result = await ManifestUtil.useCopilotExtensionsInSchema({} as any);
-
-      chai.assert.isFalse(result);
-    });
-
-    it("should return false when schema definitions are undefined", async () => {
-      const mockSchema = {
-        value: {},
-      };
-
       fetchSchemaStub.resolves(mockSchema);
 
       const result = await ManifestUtil.useCopilotExtensionsInSchema({} as any);

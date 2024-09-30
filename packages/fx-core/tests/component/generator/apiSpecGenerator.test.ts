@@ -818,9 +818,20 @@ describe("updateForCustomApi", async () => {
 
   it("happy path: csharp", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    const mockWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "APIActions.cs")) {
+        expect(data).to.contains(`[Action("GetHello")]`);
+        expect(data).to.contains(`public async Task<string> GetHelloAsync`);
+        expect(data).to.contains("openapi.yaml");
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("# Replace with action code");
+      }
+    });
+
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
-    expect(mockWriteFile.notCalled).to.be.true;
   });
 
   it("happy path with spec without path", async () => {

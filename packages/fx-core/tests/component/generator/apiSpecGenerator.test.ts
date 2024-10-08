@@ -818,9 +818,20 @@ describe("updateForCustomApi", async () => {
 
   it("happy path: csharp", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    const mockWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "APIActions.cs")) {
+        expect(data).to.contains(`[Action("GetHello")]`);
+        expect(data).to.contains(`public async Task<string> GetHelloAsync`);
+        expect(data).to.contains("openapi.yaml");
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("# Replace with action code");
+      }
+    });
+
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
-    expect(mockWriteFile.notCalled).to.be.true;
   });
 
   it("happy path with spec without path", async () => {
@@ -1484,6 +1495,36 @@ describe("listOperations", async () => {
       expect(res.error.length).to.be.equal(1);
       expect(res.error[0].type).to.be.equal(ErrorType.AddedAPINotInOriginalSpec);
     }
+  });
+
+  it("should not allow auth for VS project", async () => {
+    const inputs = {
+      platform: Platform.VS,
+    };
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+      specHash: "xxx",
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "1",
+          server: "https://test",
+          operationId: "id1",
+          isValid: false,
+          reason: [ErrorType.AuthTypeIsNotSupported],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 0,
+    });
+
+    const res = await CopilotPluginHelper.listOperations(context, "", inputs, true, false, "");
+    expect(res.isOk()).to.be.true;
   });
 });
 

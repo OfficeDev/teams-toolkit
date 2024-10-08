@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
-using rentu_vs_ai_bot_test;
 using RestSharp.Authenticators;
 
 namespace OpenAPIClient

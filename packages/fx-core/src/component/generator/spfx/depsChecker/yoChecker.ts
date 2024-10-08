@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import fs from "fs-extra";
-import * as path from "path";
-import * as os from "os";
 import {
   ConfigFolderName,
   Context,
@@ -15,14 +12,17 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { DependencyChecker } from "./dependencyChecker";
+import fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import { NpmInstallError } from "../../../../error";
+import { cpUtils } from "../../../deps-checker/util/cpUtils";
+import { DependencyValidateError } from "../error";
+import { Constants } from "../utils/constants";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
-import { DependencyValidateError } from "../error";
-import { cpUtils } from "../../../deps-checker/util/cpUtils";
 import { getExecCommand, getShellOptionValue, Utils } from "../utils/utils";
-import { Constants } from "../utils/constants";
-import { NpmInstallError } from "../../../../error";
+import { DependencyChecker } from "./dependencyChecker";
 
 const name = Constants.YeomanPackageName;
 const displayName = `${name}`;

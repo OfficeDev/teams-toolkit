@@ -8,23 +8,34 @@ import {
   validateScopesType,
   parseAccessTokenFromAuthCodeTokenResponse,
   getTenantIdAndLoginHintFromSsoToken,
+  parseJwt,
+  validateConfig,
 } from "../../src/util/utils";
 
 describe("Utils Tests", () => {
   /**
    * {
-   * "oid": "fake-oid",
-   *  "name": "fake-name",
-   *  "ver": "1.0",
-   *  "exp": 1537234948,
-   *  "upn": "fake-upn",
-   *  "tid": "fake-tid",
-   *  "aud": "fake-aud"
-     }
-   */
+   *  oid: "fake-oid",
+   *  name: "fake-name",
+   *  ver: "1.0",
+   *  exp: 1537234948,
+   *  upn: "fake-upn",
+   *  tid: "fake-tid",
+   *  aud: "fake-aud",
+   *  iss: "fake-iss",
+   *  iat: 1537234948,
+   *  nbf: 1537234948,
+   *  aio: "fake-aio",
+   *  rh: "fake-rh",
+   *  scp: "fake-scp",
+   *  sub: "fake-sub",
+   *  uti: "fake-uti",
+   * }
+   **/
+
   const fakeSSOTokenFull =
     // eslint-disable-next-line no-secrets/no-secrets
-    "eyJhbGciOiJIUzI1NiJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE1MzcyMzQ5NDgsInVwbiI6ImZha2UtdXBuIiwidGlkIjoiZmFrZS10aWQiLCJhdWQiOiJmYWtlLWF1ZCJ9.rLK5VlJK1FsGZJD0yb-ussSjl2Z4sSqG1Nhj7NqjNs4";
+    "eyJhbGciOiJIUzI1NiJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE1MzcyMzQ5NDgsInVwbiI6ImZha2UtdXBuIiwidGlkIjoiZmFrZS10aWQiLCJhdWQiOiJmYWtlLWF1ZCIsImlzcyI6ImZha2UtaXNzIiwiaWF0IjoxNTM3MjM0OTQ4LCJuYmYiOjE1MzcyMzQ5NDgsImFpbyI6ImZha2UtYWlvIiwicmgiOiJmYWtlLXJoIiwic2NwIjoiZmFrZS1zY3AiLCJzdWIiOiJmYWtlLXN1YiIsInV0aSI6ImZha2UtdXRpIn0.nTgx3IdZR-hqFSUiVwFx0L4kZxMPQ0sk-xI_UgexAGw";
 
   function getAuthCodeTokenResponse(accessToken: string): AuthenticationResult {
     return {
@@ -42,6 +53,48 @@ describe("Utils Tests", () => {
       correlationId: "fake-correlation-id",
     };
   }
+
+  it("should correctly parse a valid JWT token", () => {
+    const expectedPayload = {
+      oid: "fake-oid",
+      name: "fake-name",
+      ver: "1.0",
+      exp: 1537234948,
+      upn: "fake-upn",
+      tid: "fake-tid",
+      aud: "fake-aud",
+      iss: "fake-iss",
+      iat: 1537234948,
+      nbf: 1537234948,
+      aio: "fake-aio",
+      rh: "fake-rh",
+      scp: "fake-scp",
+      sub: "fake-sub",
+      uti: "fake-uti",
+    };
+
+    const decodedPayload = parseJwt(fakeSSOTokenFull);
+
+    assert.deepEqual(decodedPayload, expectedPayload);
+  });
+
+  it("should throw an error for an invalid JWT token", () => {
+    // decoded - {}
+    // eslint-disable-next-line no-secrets/no-secrets
+    const invalidToken = "eyJhbGciOiJIUzI1NiJ9.e30.ZRrHA1JJJW8opsbCGfG_HACGpVUMN_a9IV7pAx_Zmeo";
+
+    try {
+      parseJwt(invalidToken);
+    } catch (error) {
+      if (error instanceof Error) {
+        assert.equal(
+          error.message,
+          "Parse jwt token failed in node env with error: Decoded token is null or exp claim does not exists."
+        );
+        assert.equal(error.name, "ErrorWithCode.InternalError");
+      }
+    }
+  });
 
   it("validateScopesType should throw InvalidParameter error with invalid scopes", () => {
     const invalidScopes = [1, 2];

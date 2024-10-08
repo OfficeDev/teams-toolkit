@@ -136,6 +136,30 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
     mockedEnvRestore();
   });
 
+  it("should add TeamsBotSsoPrompt and WaterfallDialog to the dialog set", () => {
+    // Arrange
+    const mockStorage = new MemoryStorage();
+    const mockSsoPromptSettings: TeamsBotSsoPromptSettings = {
+      scopes: requiredScopes,
+    };
+    const mockDialogName = "testDialog";
+
+    const botSsoExecutionDialog = new BotSsoExecutionDialog(
+      mockStorage,
+      mockSsoPromptSettings,
+      OnBehalfOfCredentialAuthConfig,
+      initiateLoginEndpoint,
+      mockDialogName
+    );
+
+    // Act
+    const dialogs = botSsoExecutionDialog.dialogs;
+
+    // Assert
+    assert.isNotNull(dialogs.find(mockDialogName + "TeamsFxSsoPrompt"));
+    assert.isNotNull(dialogs.find(mockDialogName + "CommandRouteDialog"));
+  });
+
   it("sso execution dialog should response 'Cannot find command' error when command doesn't exist", async function () {
     this.timeout(500);
     const adapter: TestAdapter = await initializeTestEnv();

@@ -2277,6 +2277,58 @@ describe("SpecGenerator", async () => {
       assert.isTrue(generateBasedOnSpec.calledOnce);
     });
 
+    it("generateCustomCopilot for csharp: success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        getTemplateInfosState: {
+          templateName: "custom-copilot-rag-custom-api",
+          isPlugin: false,
+          uri: "https://test.com",
+          isYaml: false,
+          type: ProjectType.TeamsAi,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "getFilteredSpecs").resolves([
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+      ]);
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generate")
+        .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
+    });
+
     it("generateCustomCopilot: CLI with warning", async () => {
       const inputs: Inputs = {
         platform: Platform.CLI,

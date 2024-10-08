@@ -61,6 +61,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
 import * as commonUtils from "../../../src/common/utils";
 import * as helper from "../../../src/component/generator/apiSpec/helper";
+import { fail } from "assert";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -844,6 +845,32 @@ describe("updateForCustomApi", async () => {
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
+  });
+
+  it("unknown language: unknown", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "APIActions.cs")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("actions.json")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("skprompt.txt")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("getHello.json")) {
+        fail("actions.json should not be created for unknown language");
+      }
+    });
+
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(spec, "unknown", "path", "openapi.yaml");
   });
 
   it("happy path with spec without path", async () => {

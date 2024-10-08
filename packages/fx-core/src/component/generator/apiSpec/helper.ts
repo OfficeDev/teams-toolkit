@@ -1036,7 +1036,12 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
-const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+const commonLanguages = [
+  ProgrammingLanguage.TS,
+  ProgrammingLanguage.JS,
+  ProgrammingLanguage.PY,
+  ProgrammingLanguage.CSharp,
+];
 
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
@@ -1058,7 +1063,10 @@ async function updateAdaptiveCardForCustomApi(
   destinationPath: string
 ): Promise<void> {
   if (commonLanguages.includes(language as ProgrammingLanguage)) {
-    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    let adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    if (language === ProgrammingLanguage.CSharp) {
+      adaptiveCardsFolderPath = path.join(destinationPath, "adaptiveCards");
+    }
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
@@ -1358,7 +1366,10 @@ export async function updateForCustomApi(
   destinationPath: string,
   openapiSpecFileName: string
 ): Promise<void> {
-  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  let chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  if (language === ProgrammingLanguage.CSharp) {
+    chatFolder = path.join(destinationPath, "prompts", "Chat");
+  }
   await fs.ensureDir(chatFolder);
 
   // 1. update prompt folder

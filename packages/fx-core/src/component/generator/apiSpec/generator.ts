@@ -312,7 +312,19 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       const openapiSpecFileName = getTemplateInfosState.isYaml
         ? DefaultApiSpecYamlFileName
         : DefaultApiSpecJsonFileName;
-      const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+
+      let openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+
+      if (getTemplateInfosState.templateName === forCustomCopilotRagCustomApi) {
+        const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+        if (language === ProgrammingLanguage.CSharp) {
+          openapiSpecPath = path.join(
+            destinationPath,
+            DefaultApiSpecFolderName,
+            openapiSpecFileName
+          );
+        }
+      }
 
       await fs.ensureDir(apiSpecFolderPath);
 

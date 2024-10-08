@@ -61,6 +61,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
 import * as commonUtils from "../../../src/common/utils";
 import * as helper from "../../../src/component/generator/apiSpec/helper";
+import { fail } from "assert";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -826,12 +827,50 @@ describe("updateForCustomApi", async () => {
         expect(data).not.to.contains("{{");
         expect(data).not.to.contains("# Replace with action code");
       }
+
+      if (file.toString().endsWith("actions.json")) {
+        expect(file == path.join("path", "prompts", "Chat", "actions.json")).to.be.true;
+      }
+
+      if (file.toString().endsWith("skprompt.txt")) {
+        expect(file == path.join("path", "prompts", "Chat", "skprompt.txt")).to.be.true;
+      }
+
+      if (file.toString().endsWith("getHello.json")) {
+        expect(file == path.join("path", "adaptiveCards", "getHello.json")).to.be.true;
+      }
     });
 
     sandbox
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
+  });
+
+  it("unknown language: unknown", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "APIActions.cs")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("actions.json")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("skprompt.txt")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("getHello.json")) {
+        fail("actions.json should not be created for unknown language");
+      }
+    });
+
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(spec, "unknown", "path", "openapi.yaml");
   });
 
   it("happy path with spec without path", async () => {
@@ -2218,6 +2257,58 @@ describe("SpecGenerator", async () => {
         platform: Platform.VSCode,
         projectPath: "path",
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        getTemplateInfosState: {
+          templateName: "custom-copilot-rag-custom-api",
+          isPlugin: false,
+          uri: "https://test.com",
+          isYaml: false,
+          type: ProjectType.TeamsAi,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "getFilteredSpecs").resolves([
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+      ]);
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generate")
+        .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
+    });
+
+    it("generateCustomCopilot for csharp: success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
         [QuestionNames.ApiSpecLocation]: "test.yaml",
         [QuestionNames.ApiOperation]: ["operation1"],
         getTemplateInfosState: {

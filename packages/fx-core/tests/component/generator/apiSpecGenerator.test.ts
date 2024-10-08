@@ -1530,6 +1530,7 @@ describe("listOperations", async () => {
   it("should not allow auth for VS copilot project", async () => {
     const inputs = {
       platform: Platform.VS,
+      "api-plugin-type": "api-spec",
     };
     sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
     sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();

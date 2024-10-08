@@ -826,6 +826,18 @@ describe("updateForCustomApi", async () => {
         expect(data).not.to.contains("{{");
         expect(data).not.to.contains("# Replace with action code");
       }
+
+      if (file.toString().endsWith("actions.json")) {
+        expect(file == path.join("path", "prompts", "Chat", "actions.json")).to.be.true;
+      }
+
+      if (file.toString().endsWith("skprompt.txt")) {
+        expect(file == path.join("path", "prompts", "Chat", "skprompt.txt")).to.be.true;
+      }
+
+      if (file.toString().endsWith("getHello.json")) {
+        expect(file == path.join("path", "adaptiveCards", "getHello.json")).to.be.true;
+      }
     });
 
     sandbox

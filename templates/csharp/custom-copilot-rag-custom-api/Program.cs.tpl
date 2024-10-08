@@ -68,7 +68,7 @@ builder.Services.AddTransient<IBot>(sp =>
         PromptFolder = "./Prompts"
     });
 
-    prompts.AddFunction("get_actions", async (context, memory, functions, tokenizer, args) =>
+    prompts.AddFunction("getAction", async (context, memory, functions, tokenizer, args) =>
     {
         var skpromptContent = File.ReadAllText("./Prompts/chat/actions.json");
         return await Task.FromResult(skpromptContent);

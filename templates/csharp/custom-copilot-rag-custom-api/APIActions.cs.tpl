@@ -56,9 +56,9 @@ namespace {{SafeProjectName}}
         }
 
         [Action(AIConstants.UnknownActionName)]
-        public async Task<string> UnknownAction([ActionTurnContext] TurnContext turnContext, [ActionName] string action)
+        public async Task<string> UnknownActionAsync([ActionTurnContext] TurnContext turnContext, [ActionName] string action)
         {
-            await turnContext.SendActivityAsync(MessageFactory.Text("[lights off]"));
+            await turnContext.SendActivityAsync(MessageFactory.Text("Unable to find a matching API to call"));
             return "unknown action";
         }
     }

@@ -1252,8 +1252,8 @@ async def {{operationId}}(
   return "success"
   `,
   cs: `
-        [Action("{{actionName}}")]
-        public async Task<string> {{actionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
+        [Action("{{operationId}}")]
+        public async Task<string> {{functionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
         {
             try
             {
@@ -1347,16 +1347,26 @@ async function updateCodeForCustomApi(
         .replace(/{{operationId}}/g, item.item.operationId!)
         .replace(/{{apiPath}}/g, item.pathUrl)
         .replace(/{{apiMethod}}/g, Utils.updateFirstLetter(item.method))
-        .replace(/{{actionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
+        .replace(/{{functionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
       actionsCode.push(code);
     }
 
     const apiActionCsFilePath = path.join(destinationPath, "APIActions.cs");
     const apiActionCsFileContent = (await fs.readFile(apiActionCsFilePath)).toString();
     const updateApiActionCsFileContent = apiActionCsFileContent
-      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("{{OPENAPI_SPEC_PATH}}", "apiSpecificationFile/" + openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(apiActionCsFilePath, updateApiActionCsFileContent);
+
+    const files = await fs.readdir(destinationPath);
+    const projectFileName = files.find((file) => file.endsWith(".csproj"));
+    const projectFilePath = path.join(destinationPath, projectFileName!);
+    const projectFileContent = (await fs.readFile(projectFilePath)).toString();
+    const updateProjectFileContent = projectFileContent.replace(
+      /{{OPENAPI_SPEC_PATH}}/g,
+      openapiSpecFileName
+    );
+    await fs.writeFile(projectFilePath, updateProjectFileContent);
   }
 }
 

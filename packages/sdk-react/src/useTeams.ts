@@ -41,7 +41,7 @@ export function useTeams(options?: {
   },
   {
     setTheme: (theme: string | undefined) => void;
-  }
+  },
 ] {
   const [loading, setLoading] = useState<boolean | undefined>(undefined);
   const [inTeams, setInTeams] = useState<boolean | undefined>(undefined);
@@ -49,7 +49,7 @@ export function useTeams(options?: {
   const [theme, setTheme] = useState<Theme>(teamsLightTheme);
   const [themeString, setThemeString] = useState<string>("default");
   const [initialTheme] = useState<string | undefined>(
-    options && options.initialTheme ? options.initialTheme : getTheme()
+    options && options.initialTheme ? options.initialTheme : getTheme(),
   );
   const [context, setContext] = useState<app.Context | undefined>(undefined);
   const themeChangeHandler = (theme: string | undefined) => {

@@ -53,7 +53,7 @@ export type TeamsContextWithCredential = {
  * @public
  */
 export function useTeamsUserCredential(
-  authConfig: TeamsUserCredentialAuthConfig
+  authConfig: TeamsUserCredentialAuthConfig,
 ): TeamsContextWithCredential {
   const [result] = useTeams({});
   const { data, error, loading } = useData(() => {

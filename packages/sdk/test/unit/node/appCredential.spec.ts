@@ -4,7 +4,7 @@
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import { AppCredential } from "../../../src";
+import { AppCredential, AppCredentialAuthConfig } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 
@@ -62,8 +62,8 @@ fakeCert
     assert.strictEqual(credential.msalClient.config.auth.clientId, clientId);
     assert.strictEqual(credential.msalClient.config.auth.authority, authorityHost + "/" + tenantId);
     assert.strictEqual(
-      credential.msalClient.config.auth.clientCertificate.thumbprint,
-      "06BA994A93FF2138DC51E669EB284ABAB8112153" // thumbprint is calculated from certificate content "fakeCert"
+      credential.msalClient.config.auth.clientCertificate.thumbprintSha256,
+      "90AF5A3B906DCC32226BCCD6D369165CFB9F1E0FE123F0D18B7CC48261995A6C" // thumbprint is calculated from certificate content "fakeCert"
     );
     assert.strictEqual(credential.msalClient.config.auth.clientSecret, "");
   });
@@ -75,7 +75,7 @@ fakeCert
       certificateContent: certificateContent,
       authorityHost: authorityHost,
       tenantId: tenantId,
-    });
+    } as unknown as AppCredentialAuthConfig);
 
     // certificateContent has higher priority than clientSecret
     assert.exists(credential.msalClient);
@@ -84,7 +84,7 @@ fakeCert
 
   it("create AppCredential instance should throw InvalidConfiguration when configuration is not valid", function () {
     expect(() => {
-      new AppCredential({});
+      new AppCredential({} as unknown as AppCredentialAuthConfig);
     })
       .to.throw(
         ErrorWithCode,
@@ -93,7 +93,7 @@ fakeCert
       .with.property("code", ErrorCode.InvalidConfiguration);
 
     expect(() => {
-      new AppCredential({ clientId: clientId });
+      new AppCredential({ clientId: clientId } as unknown as AppCredentialAuthConfig);
     })
       .to.throw(
         ErrorWithCode,
@@ -102,7 +102,7 @@ fakeCert
       .with.property("code", ErrorCode.InvalidConfiguration);
 
     expect(() => {
-      new AppCredential({ tenantId: tenantId });
+      new AppCredential({ tenantId: tenantId } as unknown as AppCredentialAuthConfig);
     })
       .to.throw(
         ErrorWithCode,
@@ -111,7 +111,7 @@ fakeCert
       .with.property("code", ErrorCode.InvalidConfiguration);
 
     expect(() => {
-      new AppCredential({ authorityHost: authorityHost });
+      new AppCredential({ authorityHost: authorityHost } as unknown as AppCredentialAuthConfig);
     })
       .to.throw(
         ErrorWithCode,

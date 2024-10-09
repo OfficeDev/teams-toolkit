@@ -33,9 +33,13 @@ describe("useTeamsUserCredential() hook tests", () => {
 
     jest.spyOn(teamsfxlib, "TeamsUserCredential").mockImplementation((): TeamsUserCredential => {
       return {
-        async login(): Promise<any> {},
-        async getToken(): Promise<any> {},
-        async getUserInfo(): Promise<any> {},
+        async login(): Promise<void> {},
+        async getToken(): Promise<null> {
+          return null;
+        },
+        async getUserInfo(): Promise<teamsfxlib.UserInfo> {
+          return {} as teamsfxlib.UserInfo;
+        },
       };
     });
   });
@@ -60,7 +64,7 @@ describe("useTeamsUserCredential() hook tests", () => {
         expect(result.current.inTeams).toBe(true);
         expect(result.current.themeString).toBe("default");
       },
-      { interval: 1 }
+      { interval: 1 },
     );
   });
 
@@ -69,7 +73,7 @@ describe("useTeamsUserCredential() hook tests", () => {
       return { error: "useData error", loading: false };
     });
     const { result } = renderHook(() => useTeamsUserCredential(authConfig));
-    expect(result.current.teamsUserCredential).toBeUndefined;
+    expect(result.current.teamsUserCredential).toBe(undefined);
     expect(result.current.error).toBe("useData error");
     expect(result.current.loading).toBe(false);
     expect(result.current.inTeams).toBe(true);

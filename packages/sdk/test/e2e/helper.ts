@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as msal from "@azure/msal-node";
-import mockedEnv from "mocked-env";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
-import { AuthenticationConfiguration } from "../../src";
 const urljoin = require("url-join");
 
 export function extractIntegrationEnvVariables() {
@@ -74,6 +72,7 @@ export async function getAccessToken(
   return response!.accessToken;
 }
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID is the Test AAD app mocking Teams first party app.
  * This function mocks the sso token get from Teams
@@ -104,38 +103,6 @@ export async function getSsoTokenFromTeams(): Promise<string> {
     process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!,
     `api://localhost:53000/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}/access_as_user`
   );
-}
-
-/**
- * Mapping environment variables from CI process to current environment for demo.
- * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
- */
-export function MockEnvironmentVariable(): () => void {
-  return mockedEnv({
-    M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-    M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
-    M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
-    M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
-    INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
-    M365_APPLICATION_ID_URI: `api://localhost:53000/${process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID}`,
-  });
-}
-
-export function MockAuthenticationConfiguration(): AuthenticationConfiguration {
-  return {
-    clientId: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-    clientSecret: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
-    tenantId: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
-    authorityHost: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
-  };
-}
-
-/**
- * restore the mapping process environment variables.
- * once invoke this method, all mock environment above will be restored.
- */
-export function RestoreEnvironmentVariable(restore: () => void): void {
-  restore();
 }
 
 /**

@@ -3,7 +3,6 @@
 
 import { CloudAdapter } from "botbuilder";
 import {
-  NotificationTargetStorage,
   BotSsoConfig,
   CommandOptions,
   CardActionOptions,
@@ -33,20 +32,6 @@ export interface NotificationOptions {
    * It's recommended to use your own store for production environment.
    */
   store?: ConversationReferenceStore;
-  /**
-   * An optional storage to persist bot notification target references.
-   *
-   * @remarks
-   * If `storage` is not provided, a default local file storage will be used,
-   * which stores notification target references into:
-   *   - `.notification.localstore.json` if running locally
-   *   - `${process.env.TEMP}/.notification.localstore.json` if `process.env.RUNNING_ON_AZURE` is set to "1"
-   *
-   * It's recommended to use your own shared storage for production environment.
-   *
-   * @deprecated Use `store` to customize the way to persist bot notification target references instead.
-   */
-  storage?: NotificationTargetStorage;
 }
 
 /**

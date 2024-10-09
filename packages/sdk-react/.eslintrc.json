@@ -9,11 +9,7 @@
     "es6": true,
     "jest/globals": true
   },
-  "extends": [
-    "plugin:react/recommended",
-    "standard",
-    "plugin:jest/recommended"
-  ],
+  "extends": ["plugin:react/recommended", "standard", "plugin:jest/recommended"],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -25,22 +21,11 @@
     },
     "ecmaVersion": 2018
   },
-  "plugins": [
-    "react",
-    "@typescript-eslint",
-    "react-hooks",
-    "jest"
-  ],
+  "plugins": ["react", "@typescript-eslint", "react-hooks", "jest"],
   "rules": {
     "object-shorthand": 2,
-    "quotes": [
-      "error",
-      "double"
-    ],
-    "semi": [
-      "error",
-      "always"
-    ],
+    "quotes": ["error", "double"],
+    "semi": ["error", "always"],
     "indent": [
       "error",
       4,

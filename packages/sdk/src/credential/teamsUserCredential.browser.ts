@@ -6,10 +6,7 @@ import { GetTeamsUserTokenOptions } from "../models/teamsUserTokenOptions";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { app, authentication } from "@microsoft/teams-js";
-import {
-  AuthenticationConfiguration,
-  TeamsUserCredentialAuthConfig,
-} from "../models/configuration";
+import { TeamsUserCredentialAuthConfig } from "../models/configuration";
 import {
   validateScopesType,
   getUserInfoFromSsoToken,
@@ -32,7 +29,7 @@ const loginPageHeight = 535;
  * Can only be used within Teams.
  */
 export class TeamsUserCredential implements TokenCredential {
-  private readonly config: AuthenticationConfiguration;
+  private readonly config: TeamsUserCredentialAuthConfig;
   private ssoToken: AccessToken | null;
   private initialized: boolean;
   private msalInstance?: PublicClientApplication;
@@ -57,30 +54,7 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  constructor(authConfig: TeamsUserCredentialAuthConfig);
-  // eslint-disable-next-line no-secrets/no-secrets
-  /**
-   * Constructor of TeamsUserCredential.
-   * @deprecated
-   * @example
-   * ```typescript
-   * const config: AuthenticationConfiguration = {
-   *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
-   *    clientId: "xxx"
-   * }
-   * // Use default configuration provided by Teams Toolkit
-   * const credential = new TeamsUserCredential();
-   * // Use a customized configuration
-   * const anotherCredential = new TeamsUserCredential(config);
-   * ```
-   *
-   * @param {TeamsUserCredentialAuthConfig} authConfig - The authentication configuration.
-   *
-   * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
-   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   */
-  constructor(authConfig: AuthenticationConfiguration);
-  constructor(authConfig: TeamsUserCredentialAuthConfig | AuthenticationConfiguration) {
+  constructor(authConfig: TeamsUserCredentialAuthConfig) {
     internalLogger.info("Create teams user credential");
     this.config = this.loadAndValidateConfig(authConfig);
     this.ssoToken = null;
@@ -307,7 +281,7 @@ export class TeamsUserCredential implements TokenCredential {
 
     const msalConfig = {
       auth: {
-        clientId: this.config.clientId!,
+        clientId: this.config.clientId,
         authority: `https://login.microsoftonline.com/${this.tid}`,
       },
       cache: {
@@ -384,8 +358,8 @@ export class TeamsUserCredential implements TokenCredential {
    * @returns Authentication configuration
    */
   private loadAndValidateConfig(
-    config: AuthenticationConfiguration | TeamsUserCredentialAuthConfig
-  ): AuthenticationConfiguration {
+    config: TeamsUserCredentialAuthConfig
+  ): TeamsUserCredentialAuthConfig {
     internalLogger.verbose("Validate authentication configuration");
     if (config.initiateLoginEndpoint && config.clientId) {
       return config;

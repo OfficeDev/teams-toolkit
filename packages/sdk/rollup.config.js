@@ -5,7 +5,7 @@ import pkg from "./package.json";
 
 const deps = Object.keys(Object.assign({}, pkg.peerDependencies, pkg.dependencies));
 
-const nodeDeps = [...deps, "crypto", "fs", "path"];
+const nodeDeps = [...deps, "crypto", "fs", "path", "https"];
 
 /**
  * ES5 Builds

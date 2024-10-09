@@ -21,7 +21,6 @@ import {
 import { CommandMessage, BotSsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
 import { TeamsBotSsoPromptTokenResponse } from "../../bot/teamsBotSsoPromptTokenResponse";
-import { TeamsFx } from "../../core/teamsfx";
 import { formatString } from "../../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
@@ -49,19 +48,6 @@ export class BotSsoExecutionDialog extends ComponentDialog {
    * Creates a new instance of the BotSsoExecutionDialog.
    * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
    * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
-   * @param {@link TeamsFx} teamsfx instance for authentication
-   * @param {string} dialogName custom dialog name
-   */
-  constructor(
-    dedupStorage: Storage,
-    ssoPromptSettings: TeamsBotSsoPromptSettings,
-    teamsfx: TeamsFx,
-    dialogName?: string
-  );
-  /**
-   * Creates a new instance of the BotSsoExecutionDialog.
-   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
-   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
    * @param {@link OnBehalfOfCredentialAuthConfig} authConfig The authentication configuration.
    * @param {string} initiateLoginEndpoint Login URL for Teams to redirect to.
    * @param {string} dialogName custom dialog name
@@ -72,15 +58,8 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     authConfig: OnBehalfOfCredentialAuthConfig,
     initiateLoginEndpoint: string,
     dialogName?: string
-  );
-  constructor(
-    dedupStorage: Storage,
-    ssoPromptSettings: TeamsBotSsoPromptSettings,
-    authConfig: TeamsFx | OnBehalfOfCredentialAuthConfig,
-    ...args: any
   ) {
-    super(((authConfig as TeamsFx).getCredential ? args[0] : args[1]) ?? DIALOG_NAME);
-    const dialogName: string = (authConfig as TeamsFx).getCredential ? args[0] : args[1];
+    super(dialogName ?? DIALOG_NAME);
 
     if (dialogName) {
       DIALOG_NAME = dialogName;
@@ -88,26 +67,14 @@ export class BotSsoExecutionDialog extends ComponentDialog {
       COMMAND_ROUTE_DIALOG = dialogName + COMMAND_ROUTE_DIALOG;
     }
 
-    let ssoDialog: TeamsBotSsoPrompt;
-    if ((authConfig as TeamsFx).getCredential) {
-      ssoDialog = new TeamsBotSsoPrompt(
-        authConfig as TeamsFx,
-        TEAMS_SSO_PROMPT_ID,
-        ssoPromptSettings
-      );
-    } else {
-      ssoDialog = new TeamsBotSsoPrompt(
-        authConfig as OnBehalfOfCredentialAuthConfig,
-        args[0],
-        TEAMS_SSO_PROMPT_ID,
-        ssoPromptSettings
-      );
-    }
-
+    const ssoDialog = new TeamsBotSsoPrompt(
+      authConfig,
+      initiateLoginEndpoint,
+      TEAMS_SSO_PROMPT_ID,
+      ssoPromptSettings
+    );
     this.addDialog(ssoDialog);
-
     this.initialDialogId = COMMAND_ROUTE_DIALOG;
-
     this.dedupStorage = dedupStorage;
     this.dedupStorageKeys = [];
 

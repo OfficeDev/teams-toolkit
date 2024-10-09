@@ -54,7 +54,7 @@ const createReducer =
  */
 export function useData<T>(
   fetchDataAsync: () => Promise<T>,
-  options?: { autoLoad: boolean }
+  options?: { autoLoad: boolean },
 ): Data<T> {
   const auto = options?.autoLoad ?? true;
   const [{ data, loading, error }, dispatch] = useReducer(createReducer<T>(), {

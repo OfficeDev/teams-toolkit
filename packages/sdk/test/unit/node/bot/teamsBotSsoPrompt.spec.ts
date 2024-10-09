@@ -22,22 +22,19 @@ import {
   TeamsBotSsoPrompt,
   TeamsBotSsoPromptTokenResponse,
   OnBehalfOfUserCredential,
+  OnBehalfOfCredentialAuthConfig,
   ErrorWithCode,
   ErrorCode,
   TeamsBotSsoPromptSettings,
-  TeamsFx,
-  IdentityType,
 } from "../../../../src";
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import mockedEnv from "mocked-env";
 import { AccessToken } from "@azure/identity";
 import { promisify } from "util";
 import { TeamsInfo } from "botbuilder";
 
 chaiUse(chaiPromises);
-let mockedEnvRestore: () => void;
 
 describe("TeamsBotSsoPrompt Tests - Node", () => {
   const sleep = promisify(setTimeout);
@@ -55,6 +52,13 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   const invokeResponseActivityType = "invokeResponse";
   const id = "fake_id";
   const exchangeToken = "fake_exchange_token";
+
+  const OnBehalfOfCredentialAuthConfig = {
+    authorityHost: authorityHost,
+    clientId: clientId,
+    clientSecret: clientSecret,
+    tenantId: tenantId,
+  };
 
   /**
    * {
@@ -89,14 +93,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
-      M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
-      M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost,
-    });
-
     // Mock onBehalfOfUserCredential implementation
     const onBehalfOfUserCredentialStub_GetToken = sandbox.stub(
       OnBehalfOfUserCredential.prototype,
@@ -129,7 +125,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
 
   afterEach(function () {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function () {
@@ -357,7 +352,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     await adapter.send("Hello").assertReply((activity) => {
       // Assert bot send out OAuthCard
       assert.strictEqual(
-        activity.attachments![0].content.buttons[0].value,
+        activity.attachments?.[0].content.buttons[0].value,
         `${initiateLoginEndpoint}?scope=${encodeURI(
           requiredScopes.join(" ")
         )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=`
@@ -372,37 +367,33 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     };
 
     expect(() => {
-      new TeamsBotSsoPrompt(new TeamsFx(), TeamsBotSsoPromptId, settings);
+      new TeamsBotSsoPrompt(
+        OnBehalfOfCredentialAuthConfig,
+        initiateLoginEndpoint,
+        TeamsBotSsoPromptId,
+        settings
+      );
     })
       .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
-  it("create TeamsBotSsoPrompt instance should throw IdentityTypeNotSupported error with invalid identity type", async function () {
-    const settings: any = {
-      scopes: requiredScopes,
-    };
-
-    expect(() => {
-      new TeamsBotSsoPrompt(new TeamsFx(IdentityType.App), TeamsBotSsoPromptId, settings);
-    })
-      .to.throw(ErrorWithCode, "Application identity is not supported in TeamsBotSsoPrompt")
-      .with.property("code", ErrorCode.IdentityTypeNotSupported);
-  });
-
   it("create TeamsBotSsoPrompt instance should throw InvalidConfiguration error with empty configuration", async function () {
-    mockedEnvRestore();
-    mockedEnvRestore = mockedEnv({});
     const settings: any = {
       scopes: requiredScopes,
     };
 
     expect(() => {
-      new TeamsBotSsoPrompt(new TeamsFx(), TeamsBotSsoPromptId, settings);
+      new TeamsBotSsoPrompt(
+        {} as OnBehalfOfCredentialAuthConfig,
+        "",
+        TeamsBotSsoPromptId,
+        settings
+      );
     })
       .to.throw(
         ErrorWithCode,
-        "initiateLoginEndpoint, clientId, tenantId in configuration is invalid: undefined."
+        "clientId, clientSecret or certificateContent, tenantId, authorityHost in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
   });
@@ -410,15 +401,15 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   function createReply(type: ActivityTypes, activity: Partial<Activity>): Partial<Activity> {
     return {
       type: type,
-      from: { id: activity.recipient!.id, name: activity.recipient!.name },
-      recipient: { id: activity.from!.id, name: activity.from!.name },
+      from: { id: activity.recipient?.id as string, name: activity.recipient?.name as string },
+      recipient: { id: activity.from?.id as string, name: activity.from?.name as string },
       replyToId: activity.id,
       serviceUrl: activity.serviceUrl,
       channelId: activity.channelId,
       conversation: {
-        isGroup: activity.conversation!.isGroup,
-        id: activity.conversation!.id,
-        name: activity.conversation!.name,
+        isGroup: activity.conversation?.isGroup as boolean,
+        id: activity.conversation?.id as string,
+        name: activity.conversation?.name as string,
         conversationType: "personal",
         tenantId: tenantId,
       },
@@ -428,14 +419,14 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   function assertTeamsSsoOauthCardActivity(activity: Partial<Activity>): void {
     assert.isArray(activity.attachments);
     assert.strictEqual(activity.attachments?.length, 1);
-    assert.strictEqual(activity.attachments![0].contentType, CardFactory.contentTypes.oauthCard);
+    assert.strictEqual(activity.attachments?.[0].contentType, CardFactory.contentTypes.oauthCard);
     assert.strictEqual(activity.inputHint, InputHints.AcceptingInput);
 
-    assert.strictEqual(activity.attachments![0].content.buttons[0].type, ActionTypes.Signin);
-    assert.strictEqual(activity.attachments![0].content.buttons[0].title, "Teams SSO Sign In");
+    assert.strictEqual(activity.attachments?.[0].content.buttons[0].type, ActionTypes.Signin);
+    assert.strictEqual(activity.attachments?.[0].content.buttons[0].title, "Teams SSO Sign In");
 
     assert.strictEqual(
-      activity.attachments![0].content.buttons[0].value,
+      activity.attachments?.[0].content.buttons[0].value,
       `${initiateLoginEndpoint}?scope=${encodeURI(
         requiredScopes.join(" ")
       )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=${userPrincipalName}`
@@ -479,8 +470,14 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       endOnInvalidMessage: endOnInvalidMessage,
     };
 
-    const teamsfx = new TeamsFx();
-    dialogs.add(new TeamsBotSsoPrompt(teamsfx, TeamsBotSsoPromptId, settings));
+    dialogs.add(
+      new TeamsBotSsoPrompt(
+        OnBehalfOfCredentialAuthConfig,
+        initiateLoginEndpoint,
+        TeamsBotSsoPromptId,
+        settings
+      )
+    );
 
     // Initialize TestAdapter.
     const adapter: TestAdapter = new TestAdapter(async (turnContext) => {

@@ -13,7 +13,7 @@ describe("useData() hook tests", () => {
     const { result } = renderHook(() =>
       useData<string>(() => {
         return Promise.resolve("data");
-      })
+      }),
     );
     expect(result.current.reload).toBeDefined();
     expect(result.current.data).toBe(undefined);
@@ -26,7 +26,7 @@ describe("useData() hook tests", () => {
         expect(result.current.error).toBe(undefined);
         expect(result.current.loading).toBe(false);
       },
-      { interval: 1 }
+      { interval: 1 },
     );
   });
 
@@ -34,7 +34,7 @@ describe("useData() hook tests", () => {
     const { result } = renderHook(() =>
       useData<string>(() => {
         return Promise.reject("test error");
-      })
+      }),
     );
     expect(result.current.reload).toBeDefined();
     expect(result.current.data).toBe(undefined);
@@ -47,7 +47,7 @@ describe("useData() hook tests", () => {
         expect(result.current.error).toBe("test error");
         expect(result.current.loading).toBe(false);
       },
-      { interval: 1 }
+      { interval: 1 },
     );
   });
 });

@@ -3,11 +3,10 @@
 
 import { formatString } from "../../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
-import { TeamsFx } from "../../core/teamsfx.browser";
 import { BotSsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { StatePropertyAccessor, TurnContext, Storage } from "botbuilder";
 import { OnBehalfOfCredentialAuthConfig } from "../../models/configuration";
-import { TeamsBotSsoPromptSettings } from "../../index.browser";
+import { TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt.browser";
 /*
  * Sso execution dialog, use to handle sso command
  */
@@ -21,12 +20,6 @@ export class BotSsoExecutionDialog {
   constructor(
     dedupStorage: Storage,
     ssoPromptSettings: TeamsBotSsoPromptSettings,
-    teamsfx: TeamsFx,
-    dialogName?: string
-  );
-  constructor(
-    dedupStorage: Storage,
-    ssoPromptSettings: TeamsBotSsoPromptSettings,
     authConfig: OnBehalfOfCredentialAuthConfig,
     initiateLoginEndpoint: string,
     dialogName?: string
@@ -34,7 +27,7 @@ export class BotSsoExecutionDialog {
   constructor(
     dedupStorage: Storage,
     ssoPromptSettings: TeamsBotSsoPromptSettings,
-    authConfig: TeamsFx | OnBehalfOfCredentialAuthConfig,
+    authConfig: OnBehalfOfCredentialAuthConfig,
     ...args: any
   ) {
     throw new ErrorWithCode(
@@ -43,6 +36,7 @@ export class BotSsoExecutionDialog {
     );
   }
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * Add TeamsFxBotSsoCommandHandler instance
    * @param handler {@link BotSsoExecutionDialogHandler} callback function
@@ -61,7 +55,7 @@ export class BotSsoExecutionDialog {
    * @param context The context object for the current turn.
    * @param accessor The instance of StatePropertyAccessor for dialog system.
    */
-  public async run(context: TurnContext, accessor: StatePropertyAccessor) {
+  public run(context: TurnContext, accessor: StatePropertyAccessor) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported
@@ -73,7 +67,7 @@ export class BotSsoExecutionDialog {
    *
    * @param context Context for the current turn of conversation.
    */
-  protected async onEndDialog(context: TurnContext) {
+  protected onEndDialog(context: TurnContext) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported

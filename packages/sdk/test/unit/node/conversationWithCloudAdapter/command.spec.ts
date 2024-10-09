@@ -7,16 +7,13 @@ import * as sinon from "sinon";
 import { CommandBot } from "../../../../src/conversationWithCloudAdapter/command";
 import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
 import { TestCommandHandler, TestSsoCommandHandler } from "../conversation/testUtils";
-import mockedEnv from "mocked-env";
 import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { BotSsoConfig } from "../../../../src";
 
 describe("CommandBot Tests - Node", () => {
-  let mockedEnvRestore: () => void;
-
   const sandbox = sinon.createSandbox();
   let adapter: CloudAdapter;
-  let middlewares: any[];
+  let middlewares: unknown[];
 
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
@@ -26,18 +23,15 @@ describe("CommandBot Tests - Node", () => {
   const ssoConfig: BotSsoConfig = {
     aad: {
       scopes: ["User.Read"],
+      clientId,
+      clientSecret,
+      tenantId,
+      authorityHost,
+      initiateLoginEndpoint,
     },
   };
 
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
-      M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
-      M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost,
-    });
-
     middlewares = [];
     const stubContext = sandbox.createStubInstance(TurnContext);
     const stubAdapter = sandbox.createStubInstance(CloudAdapter);
@@ -58,11 +52,10 @@ describe("CommandBot Tests - Node", () => {
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("create command bot should add correct middleware", () => {
-    const commandBot = new CommandBot(adapter);
+    new CommandBot(adapter);
     assert.isTrue(middlewares[0] instanceof CommandResponseMiddleware);
   });
 
@@ -98,7 +91,7 @@ describe("CommandBot Tests - Node", () => {
 
   it("create sso command bot should add correct activity handler", () => {
     const defaultSsoHandler = new DefaultBotSsoExecutionActivityHandler(ssoConfig);
-    const commandBot = new CommandBot(
+    new CommandBot(
       adapter,
       {
         ssoCommands: [new TestSsoCommandHandler("test")],

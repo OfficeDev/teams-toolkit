@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
-import { AppCredentialAuthConfig, AuthenticationConfiguration } from "../models/configuration";
+import { AppCredentialAuthConfig } from "../models/configuration";
 import { internalLogger } from "../util/logger";
 import { validateScopesType, formatString, getScopesArray } from "../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
@@ -35,20 +35,7 @@ export class AppCredential implements TokenCredential {
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  constructor(authConfig: AppCredentialAuthConfig);
-  /**
-   * Constructor of AppCredential.
-   *
-   * @remarks
-   * Only works in in server side.
-   *
-   * @param {AuthenticationConfiguration} authConfig - The authentication configuration. Use environment variables if not provided.
-   *
-   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
-   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   */
-  constructor(authConfig: AuthenticationConfiguration);
-  constructor(authConfig: AppCredentialAuthConfig | AuthenticationConfiguration) {
+  constructor(authConfig: AppCredentialAuthConfig) {
     internalLogger.info("Create M365 tenant credential");
 
     const config = this.loadAndValidateConfig(authConfig);
@@ -122,9 +109,7 @@ export class AppCredential implements TokenCredential {
    *
    * @returns Authentication configuration
    */
-  private loadAndValidateConfig(
-    config: AuthenticationConfiguration | AppCredentialAuthConfig
-  ): AuthenticationConfiguration | AppCredentialAuthConfig {
+  private loadAndValidateConfig(config: AppCredentialAuthConfig): AppCredentialAuthConfig {
     internalLogger.verbose("Validate authentication configuration");
 
     if (

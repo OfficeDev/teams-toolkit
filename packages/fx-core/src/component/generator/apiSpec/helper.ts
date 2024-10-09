@@ -94,9 +94,9 @@ export function getParserOptions(
     ? {
         isGptPlugin: isDeclarativeCopilot,
         allowAPIKeyAuth: false,
-        allowBearerTokenAuth: true,
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true,
         allowMultipleParameters: true,
-        allowOauth2: true,
+        allowOauth2: !!platform && platform === Platform.VS ? false : true,
         projectType: ProjectType.Copilot,
         allowMissingId: true,
         allowSwagger: true,

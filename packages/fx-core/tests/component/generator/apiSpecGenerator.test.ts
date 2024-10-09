@@ -1565,6 +1565,37 @@ describe("listOperations", async () => {
     const res = await CopilotPluginHelper.listOperations(context, "", inputs, true, false, "");
     expect(res.isOk()).to.be.true;
   });
+
+  it("should not allow auth for VS copilot project", async () => {
+    const inputs = {
+      platform: Platform.VS,
+      "api-plugin-type": "api-spec",
+    };
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+      specHash: "xxx",
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "1",
+          server: "https://test",
+          operationId: "id1",
+          isValid: false,
+          reason: [ErrorType.AuthTypeIsNotSupported],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 0,
+    });
+
+    const res = await CopilotPluginHelper.listOperations(context, "", inputs, true, false, "");
+    expect(res.isOk()).to.be.true;
+  });
 });
 
 describe("SpecGenerator", async () => {

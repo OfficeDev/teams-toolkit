@@ -45,6 +45,7 @@ import {
   QuestionNames,
 } from "../../../src/question";
 import { MockTools } from "../../core/utils";
+import { envUtil } from "../../../src/component/utils/envUtil";
 
 describe("OfficeAddinGenerator for Outlook Addin", function () {
   const testFolder = path.resolve("./tmp");
@@ -1031,6 +1032,24 @@ describe("OfficeAddinGeneratorNew", () => {
       sandbox.stub(OfficeAddinGenerator, "doScaffolding").resolves(err(new UserCancelError()));
       const res = await generator.getTemplateInfos(context, inputs, "./");
       chai.assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("post()", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it(`happy`, async () => {
+      sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "dev2"]));
+      const reset = sandbox.stub(envUtil, "resetEnv").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.OfficeAddinFolder] = "testfolder";
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(reset.calledTwice);
     });
   });
 });

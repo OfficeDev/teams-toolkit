@@ -1051,6 +1051,27 @@ describe("OfficeAddinGeneratorNew", () => {
       chai.assert.isTrue(res.isOk());
       chai.assert.isTrue(reset.calledTwice);
     });
+    it(`not import`, async () => {
+      const reset = sandbox.stub(envUtil, "resetEnv").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(reset.notCalled);
+    });
+    it(`list env error`, async () => {
+      sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
+      const reset = sandbox.stub(envUtil, "resetEnv").resolves();
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      const res = await generator.post(context, inputs, "./");
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(reset.notCalled);
+    });
   });
 });
 

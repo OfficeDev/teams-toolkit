@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+  "$schema": "https://aka.ms/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
   "manifestVersion": "1.19",
   "id": "${{TEAMS_APP_ID}}",
   "packageName": "com.microsoft.teams.extension",

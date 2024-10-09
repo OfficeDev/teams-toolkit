@@ -4,6 +4,27 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### September 17, 2024
+
+#### Enhancement
+
+- Updated terminology for creating `Copilot Extension` and `Custom Engine Copilot` to enhance clarity.
+- Updated `Declarative Agent` and `API Plugin` app template to point to the latest manifest schema.
+
+### September 12, 2024
+
+#### New Features
+- **External File Support for Declarative Copilot Instructions**: Developers now have the ability to use an external file to author instructions for their declarative copilots and reference it in the manifest file. This greatly improves the authoring experience for longer instructions compared to using JSON files.
+![External File](https://github.com/user-attachments/assets/fa13711c-fe8c-4155-bd7f-9e0a8e0ed606)
+
+- **Plugin Integration for Declarative Copilot**: Teams Toolkit now allows developers to add a plugin as a skill to the declarative copilot. Developers can either add a new API plugin using an OpenAPI description document or reference an existing API plugin via its manifest file.
+![Add Plugin](https://github.com/user-attachments/assets/009a63d0-8bc0-4449-8ba6-cef25779c140)
+
+#### Bug Fixes:
+- Upgraded the axios dependency used in Teams Toolkit to version 1.7.6 to fix a vulnerability issue. [#12306](https://github.com/OfficeDev/teams-toolkit/pull/12306)
+- Changed a string for better clarity when creating an `AI Agent` without Assistant API. [#12266](https://github.com/OfficeDev/teams-toolkit/pull/12266)
+
+
 ### August 14, 2024
 
 #### New Features

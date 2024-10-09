@@ -68,7 +68,10 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("aiagentnew", appName, { aiType: "OpenAI" });
+      await createNewProject("aiagentnew", appName, {
+        aiType: "OpenAI",
+        aiManagement: "Build from Scratch",
+      });
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");

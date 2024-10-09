@@ -131,14 +131,6 @@
             "args": {
                 "url": "teams.microsoft.com"
             }
-        },
-        {
-            "label": "Start Teams App in Desktop Client (Remote)",
-            "type": "teamsfx",
-            "command": "launch-desktop-client",
-            "args": {
-                "url": "teams.microsoft.com"
-            }
         }
         {{/DeclarativeCopilot}}
         {{#DeclarativeCopilot}}

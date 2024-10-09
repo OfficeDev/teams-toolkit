@@ -23,6 +23,8 @@ export interface ValidateResult {
    * An array of error results generated during validation.
    */
   errors: ErrorResult[];
+
+  specHash?: string;
 }
 
 export interface SpecValidationResult {
@@ -326,4 +328,9 @@ export interface InferredProperties {
   title?: string;
   subtitle?: string;
   imageUrl?: string;
+}
+
+export interface ExistingPluginManifestInfo {
+  manifestPath: string;
+  specPath: string;
 }

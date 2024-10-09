@@ -15,16 +15,14 @@ name: $(Date:yyyyMMdd).$(Rev:r)
 variables:
 - name: 1espt.codesignvalidation.enforced
   value: false
-- name: GitHubPat
-  value: 
-- name: OneLocBuildPat
-  value: 
 - name: PipelineClassification_Audited
   value: Production
 - name: PipelineGovernanceStatus_Audited
   value: true
 - name: policy_service.build_task_injection.enabled
   value: true
+- name: TeamName
+  value: 'TeamsFx'
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:

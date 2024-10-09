@@ -265,6 +265,10 @@ export class MockUserInteraction implements UserInteraction {
   async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
     return ok({ type: "success", result: true });
   }
+
+  async openFile(filePath: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
+  }
 }
 
 export class MockTools implements Tools {

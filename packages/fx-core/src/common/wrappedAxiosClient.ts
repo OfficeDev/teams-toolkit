@@ -84,7 +84,7 @@ export class WrappedAxiosClient {
    * @returns
    */
   public static onRejected(error: AxiosError) {
-    const method = error.request.method;
+    const method = error.request.method as string;
     const fullPath = `${(error.request.host as string) ?? ""}${
       (error.request.path as string) ?? ""
     }`;
@@ -135,7 +135,8 @@ export class WrappedAxiosClient {
       }: ${innerError.message as string} `;
       properties[TelemetryProperty.ErrorMessage] = finalMessage;
       properties[TelemetryProperty.MOSTraceId] = tracingId;
-      properties[TelemetryProperty.MOSPATH] = fullPath;
+      const relativePath = (error.request.path || "") as string;
+      properties[TelemetryProperty.MOSPATH] = method + " " + relativePath.replace(/\//g, "__");
     }
 
     TOOLS?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
@@ -188,20 +189,24 @@ export class WrappedAxiosClient {
         return APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP;
       }
       if (fullPath.match(new RegExp("/api/publishing/.*"))) {
-        if (method.toUpperCase() === HttpMethod.GET) {
-          return APP_STUDIO_API_NAMES.GET_PUBLISHED_APP;
-        }
-        if (method.toUpperCase() === HttpMethod.POST) {
-          return APP_STUDIO_API_NAMES.PUBLISH_APP;
-        }
+        return APP_STUDIO_API_NAMES.GET_PUBLISHED_APP;
+      }
+      if (fullPath.match(new RegExp("/api/publishing"))) {
+        return APP_STUDIO_API_NAMES.PUBLISH_APP;
+      }
+      if (fullPath.match(new RegExp("/api/usersettings/mtUserAppPolicy"))) {
+        return APP_STUDIO_API_NAMES.CHECK_SIDELOADING_STATUS;
       }
       if (fullPath.match(new RegExp("/api/v1.0/apiSecretRegistrations/.*"))) {
         if (method.toUpperCase() === HttpMethod.GET) {
           return APP_STUDIO_API_NAMES.GET_API_KEY;
         }
-        if (method.toUpperCase() === HttpMethod.POST) {
-          return APP_STUDIO_API_NAMES.CREATE_API_KEY;
+        if (method.toUpperCase() === HttpMethod.PATCH) {
+          return APP_STUDIO_API_NAMES.UPDATE_API_KEY;
         }
+      }
+      if (fullPath.match(new RegExp("/api/v1.0/apiSecretRegistrations"))) {
+        return APP_STUDIO_API_NAMES.CREATE_API_KEY;
       }
       if (
         fullPath.match(
@@ -248,6 +253,17 @@ export class WrappedAxiosClient {
         )
       ) {
         return APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT;
+      }
+      if (fullPath.match(new RegExp("/api/v1.0/oAuthConfigurations/.*"))) {
+        if (method.toUpperCase() === HttpMethod.GET) {
+          return APP_STUDIO_API_NAMES.GET_OAUTH;
+        }
+        if (method.toUpperCase() === HttpMethod.PATCH) {
+          return APP_STUDIO_API_NAMES.UPDATE_OAUTH;
+        }
+      }
+      if (fullPath.match(new RegExp("/api/v1.0/oAuthConfigurations"))) {
+        return APP_STUDIO_API_NAMES.CREATE_OAUTH;
       }
     }
     if (

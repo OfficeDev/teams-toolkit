@@ -11,10 +11,10 @@ import { CaseFactory } from "./sampleCaseFactory";
 class DiceRollerTestCase extends CaseFactory {}
 
 new DiceRollerTestCase(
-  TemplateProject.GraphConnectorBot,
+  TemplateProject.DiceRoller,
   24121529,
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { skipValidation: true }
+  { skipInit: true }
 ).test();

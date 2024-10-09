@@ -59,6 +59,8 @@ export enum TemplateProject {
   LargeScaleBot = "Large Scale Notification Bot",
   BotSSODocker = "Containerized Bot App with SSO Enabled",
   HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
+  FoodCatalog = "Ingest Custom API Data into Microsoft 365 with a Microsoft Graph Connector",
+  RedditLink = "Format Reddit Link into Adaptive Card",
 }
 
 export enum TemplateProjectFolder {
@@ -93,6 +95,8 @@ export enum TemplateProjectFolder {
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   LargeScaleBot = "large-scale-notification",
   HelloWorldTabDocker = "hello-world-tab-docker",
+  FoodCatalog = "nodejs-typescript-food-catalog",
+  RedditLink = "nodejs",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -134,6 +138,8 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.BotSSODocker]: TemplateProjectFolder.BotSSODocker,
     [TemplateProject.HelloWorldTabDocker]:
       TemplateProjectFolder.HelloWorldTabDocker,
+    [TemplateProject.FoodCatalog]: TemplateProjectFolder.FoodCatalog,
+    [TemplateProject.RedditLink]: TemplateProjectFolder.RedditLink,
   };
 
 export enum Resource {
@@ -393,6 +399,9 @@ export enum LocalDebugTaskLabel {
   StartWebServer = "Start web server",
   DockerRun = "docker-run: debug",
   DockerTask = "docker",
+  EnsureDevTunnnel = "Ensure DevTunnel",
+  RunWatch = "Run watch",
+  FuncStart = "func: host start",
 }
 
 export class LocalDebugTaskResult {
@@ -408,6 +417,7 @@ export class LocalDebugTaskResult {
   static readonly DebuggerAttached = "Debugger attached";
   static readonly WebServerSuccess = "press h to show help";
   static readonly DockerFinish = "press any key to close it";
+  static readonly DevtunnelSuccess = "Ready to accept connections for tunnel:";
 }
 
 export enum LocalDebugTaskLabel2 {
@@ -453,7 +463,7 @@ export class Notification {
 }
 
 export class CreateProjectQuestion {
-  static readonly CustomCopilot = "Custom Engine Copilot";
+  static readonly CustomCopilot = "Custom Engine Agent";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";

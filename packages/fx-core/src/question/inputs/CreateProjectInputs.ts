@@ -31,7 +31,7 @@ export interface CreateProjectInputs extends Inputs {
     | "search-message-extension"
     | "link-unfurling"
     | "api-plugin"
-    | "declarative-copilot"
+    | "declarative-agent"
     | "custom-copilot-basic"
     | "custom-copilot-rag"
     | "custom-copilot-agent"
@@ -59,10 +59,14 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-folder"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
-  /** @description Create Declarative Copilot */
+  /** @description Create Declarative Agent */
   "with-plugin"?: "no" | "yes";
   /** @description Create API Plugin */
-  "api-plugin-type"?: "new-api" | "api-spec";
+  "api-plugin-type"?: "new-api" | "api-spec" | "existing-plugin";
+  /** @description Import Manifest File */
+  "plugin-manifest-path"?: string;
+  /** @description Import OpenAPI Description Document */
+  "plugin-opeanapi-spec-path"?: string;
   /** @description Authentication Type */
   "api-auth"?: "none" | "api-key" | "microsoft-entra" | "oauth";
   /** @description Chat With Your Data */

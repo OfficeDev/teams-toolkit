@@ -169,7 +169,7 @@ describe("chat utils", () => {
 
     it("count empty message", () => {
       const message = new vscodeMocks.chat.LanguageModelChatMessage(
-        vscodeMocks.chat.LanguageModelChatMessageRole.System,
+        vscodeMocks.chat.LanguageModelChatMessageRole.User,
         ""
       );
       const result = utils.countMessageTokens(message);
@@ -178,7 +178,7 @@ describe("chat utils", () => {
 
     it("count message without name", () => {
       const message = new vscodeMocks.chat.LanguageModelChatMessage(
-        vscodeMocks.chat.LanguageModelChatMessageRole.System,
+        vscodeMocks.chat.LanguageModelChatMessageRole.User,
         "testContent1"
       );
       const result = utils.countMessageTokens(message);
@@ -221,7 +221,7 @@ describe("chat utils", () => {
     it("count messages", () => {
       const messages = [
         new vscodeMocks.chat.LanguageModelChatMessage(
-          vscodeMocks.chat.LanguageModelChatMessageRole.System,
+          vscodeMocks.chat.LanguageModelChatMessageRole.User,
           "testContent1"
         ),
         new vscodeMocks.chat.LanguageModelChatMessage(

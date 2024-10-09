@@ -447,7 +447,8 @@ export class SampledebugContext extends TestContext {
     tool: "ttk" | "cli" = "cli",
     option = "",
     env: "dev" | "local" = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    skipErrorMessage?: string
   ) {
     if (tool === "cli") {
       await this.runCliProvision(
@@ -456,7 +457,8 @@ export class SampledebugContext extends TestContext {
         createRg,
         option,
         env,
-        processEnv
+        processEnv,
+        skipErrorMessage
       );
     } else {
       await runProvision(appName);
@@ -493,7 +495,8 @@ export class SampledebugContext extends TestContext {
     createRg = true,
     option = "",
     env: "dev" | "local" = "dev",
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    skipErrorMessage?: string
   ) {
     if (createRg) {
       await createResourceGroup(appName, env, "westus");
@@ -501,7 +504,17 @@ export class SampledebugContext extends TestContext {
     const resourceGroupName = `${appName}-${env}-rg`;
     process.env["AZURE_RESOURCE_GROUP_NAME"] = resourceGroupName;
     await CliHelper.showVersion(projectPath, processEnv);
-    await Executor.provision(projectPath, env, true);
+    const { success, stderr, stdout } = await Executor.provision(
+      projectPath,
+      env,
+      true,
+      skipErrorMessage
+    );
+    console.log(`stdout: ${stdout}`);
+    if (!success) {
+      console.log(`stderr: ${stderr}`);
+      expect(success).to.be.true;
+    }
   }
 
   public async runCliDeploy(
@@ -512,6 +525,18 @@ export class SampledebugContext extends TestContext {
     retries?: number,
     newCommand?: string
   ) {
-    await Executor.deploy(projectPath, env);
+    const { success, stderr, stdout } = await Executor.deploy(projectPath, env);
+    console.log(`stdout: ${stdout}`);
+    if (!success) {
+      console.log(`stderr: ${stderr}`);
+      expect(success).to.be.true;
+    }
+  }
+
+  public createEnvFolder(
+    folderPath: string,
+    folderName: string
+  ): Promise<void> {
+    return fs.mkdir(path.resolve(folderPath, folderName));
   }
 }

@@ -10,6 +10,7 @@ import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import {
   initTeamsPage,
   reopenTeamsPage,
+  validateMeeting,
 } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
@@ -59,6 +60,14 @@ class MyFirstMeetingTestCase extends CaseFactory {
       }
     );
   }
+
+  override async onCliValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.username);
+  }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.username);
+  }
 }
 
 new MyFirstMeetingTestCase(
@@ -70,7 +79,6 @@ new MyFirstMeetingTestCase(
   {
     teamsAppName: "fxuiMyFirslocal",
     type: "meeting",
-    skipValidation: true,
     debug: "cli",
   }
 ).test();

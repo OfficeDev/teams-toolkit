@@ -162,6 +162,7 @@ export enum TelemetryEvent {
   DependencyApi = "dependency-api",
   AppStudioApi = "app-studio-api",
   MOSApi = "ttk-mos-api",
+  ViewPluginManifestAfterAdded = "view-plugin-manifest-after-added",
 }
 
 export enum ProjectTypeProps {
@@ -228,6 +229,15 @@ export enum ProjectMigratorGuideStatus {
   Reload = "reload",
   LearnMore = "learn-more",
   Cancel = "cancel",
+}
+
+export enum ApiSpecTelemetryPropertis {
+  SpecNotValidDetails = "spec-not-valid-details",
+  InvalidApiSpec = "invalid-api-spec",
+}
+
+export function getQuestionValidationErrorEventName(questionName: string) {
+  return `invalid-${questionName}`;
 }
 
 export function sendTelemetryEvent(

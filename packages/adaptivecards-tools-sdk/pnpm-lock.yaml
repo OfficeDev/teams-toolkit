@@ -7,13 +7,13 @@ settings:
 dependencies:
   adaptive-expressions:
     specifier: ^4.20.0
-    version: 4.20.0
+    version: 4.22.3
   adaptivecards:
     specifier: ~2.10.0
     version: 2.10.0
   adaptivecards-templating:
     specifier: ^2.1.0
-    version: 2.1.0(adaptive-expressions@4.20.0)
+    version: 2.1.0(adaptive-expressions@4.22.3)
   markdown-it:
     specifier: ^13.0.2
     version: 13.0.2
@@ -495,8 +495,8 @@ packages:
     hasBin: true
     dev: true
 
-  /adaptive-expressions@4.20.0:
-    resolution: {integrity: sha512-/m0gXtwb75iK0UBftwoK8La7Ch/TqfrT5doAoLya1VAaeOEIzDzHIbMe1G6B7/N+Nn/waZFMexrqDW7d01lbdA==}
+  /adaptive-expressions@4.22.3:
+    resolution: {integrity: sha512-ks2kYbmVIWtYVRV8Sh9snCEDPtoFutL1W1p/AHfKz3Z0VCxCaDYU/QooVUxVFgOvvMOCWi1yYNFW3UlMaNs99g==}
     dependencies:
       '@microsoft/recognizers-text-data-types-timex-expression': 1.3.0
       '@types/atob-lite': 2.0.2
@@ -511,7 +511,7 @@ packages:
       btoa-lite: 1.0.0
       d3-format: 1.4.5
       dayjs: 1.11.10
-      fast-xml-parser: 4.3.3
+      fast-xml-parser: 4.4.1
       jspath: 0.4.0
       lodash.isequal: 4.5.0
       lru-cache: 5.1.1
@@ -519,12 +519,12 @@ packages:
       xpath: 0.0.32
     dev: false
 
-  /adaptivecards-templating@2.1.0(adaptive-expressions@4.20.0):
+  /adaptivecards-templating@2.1.0(adaptive-expressions@4.22.3):
     resolution: {integrity: sha512-XrO6PlGHT3Tfi8hlCYmholiwKUMOR5t/Y4pFqtNVKXJn5HUdE9A4LdZMhg9tnwjXqJ51t1XVHGm9nOLEDVICPg==}
     peerDependencies:
       adaptive-expressions: ^4.11.0
     dependencies:
-      adaptive-expressions: 4.20.0
+      adaptive-expressions: 4.22.3
     dev: false
 
   /adaptivecards@2.10.0:
@@ -1284,8 +1284,8 @@ packages:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
 
-  /fast-xml-parser@4.3.3:
-    resolution: {integrity: sha512-coV/D1MhrShMvU6D0I+VAK3umz6hUaxxhL0yp/9RjfiYUfAv14rDhGQL+PLForhMdr0wq3PiV07WtkkNjJjNHg==}
+  /fast-xml-parser@4.4.1:
+    resolution: {integrity: sha512-xkjOecfnKGkSsOwtZ5Pz7Us/T6mrbPQrq0nh+aCO5V9nk5NLWmasAHumTKjiPJPWANe+kAZ84Jc8ooJkzZ88Sw==}
     hasBin: true
     dependencies:
       strnum: 1.0.5

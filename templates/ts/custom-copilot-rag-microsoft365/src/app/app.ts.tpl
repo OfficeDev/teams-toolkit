@@ -1,9 +1,10 @@
 import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
+import * as customSayCommand  from "./customSayCommand";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-import { Application, ActionPlanner, OpenAIModel, PromptManager, TurnState } from "@microsoft/teams-ai";
+import { AI, Application, ActionPlanner, OpenAIModel, PromptManager, TurnState } from "@microsoft/teams-ai";
 import { GraphDataSource } from "./graphDataSource";
 
 // Create AI components
@@ -40,6 +41,7 @@ const app = new Application<TurnState>({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
   authentication: {
     settings: {
@@ -58,15 +60,7 @@ const app = new Application<TurnState>({
     autoSignIn: true,
   }
 });
-
-app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
-  const welcomeText = "How can I help you today?";
-  for (const member of turnContext.activity.membersAdded) {
-    if (member.id !== turnContext.activity.recipient.id) {
-      await turnContext.sendActivity(MessageFactory.text(welcomeText));
-    }
-  }
-});
+app.ai.action(AI.SayCommandActionName, customSayCommand.sayCommand(true));
 
 app.authentication.get("graph").onUserSignInSuccess(async (context, state) => {
   // Successfully logged in
@@ -77,6 +71,11 @@ app.authentication.get("graph").onUserSignInFailure(async (context, state, error
   // Failed to login
   await context.sendActivity("Failed to login");
   await context.sendActivity(`Error message: ${error.message}`);
+});
+
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
 });
 
 export default app;

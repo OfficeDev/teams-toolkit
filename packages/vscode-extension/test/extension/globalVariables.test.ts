@@ -122,4 +122,23 @@ describe("Global Variables", () => {
       chai.expect(res).to.be.false;
     });
   });
+
+  it("updateIsDeclarativeCopilotApp", () => {
+    const manifest = new TeamsAppManifest();
+    let res = globalVariables.updateIsDeclarativeCopilotApp(manifest);
+    chai.assert.isFalse(res);
+
+    res = globalVariables.updateIsDeclarativeCopilotApp({
+      ...manifest,
+      copilotExtensions: {
+        declarativeCopilots: [
+          {
+            id: "1",
+            file: "test",
+          },
+        ],
+      },
+    });
+    chai.assert.isTrue(res);
+  });
 });

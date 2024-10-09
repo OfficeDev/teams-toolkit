@@ -38,10 +38,6 @@ bot_app = Application[TurnState](
         ai=AIOptions(planner=planner),
     )
 )
-
-@bot_app.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext, state: TurnState):
-    await context.send_activity("How can I help you today?")
     
 @bot_app.ai.action("getCurrentWeather")
 async def get_current_weather(context: TurnContext, state: TurnState):

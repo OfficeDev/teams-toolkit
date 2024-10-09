@@ -45,7 +45,7 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
 builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new AzureOpenAIModelOptions(
         config.Azure.OpenAIApiKey,
-        config.Azure.OpenAIDeploymentName
+        config.Azure.OpenAIDeploymentName,
         config.Azure.OpenAIEndpoint
     )
     {
@@ -74,7 +74,7 @@ builder.Services.AddTransient<IBot>(sp =>
             prompts: prompts,
             defaultPrompt: async (context, state, planner) =>
             {
-                PromptTemplate template = prompts.GetPrompt("Chat");
+                PromptTemplate template = prompts.GetPrompt("chat");
                 return await Task.FromResult(template);
             }
         )

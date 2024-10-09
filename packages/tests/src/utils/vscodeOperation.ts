@@ -547,6 +547,7 @@ export async function createNewProject(
     lang?: "JavaScript" | "TypeScript" | "Python";
     spfxFrameworkType?: "React" | "None" | "Minimal";
     aiType?: "Azure OpenAI" | "OpenAI";
+    aiManagement?: "Build from Scratch" | "Build with Assistants API";
     testRootFolder?: string;
     appNameCopySuffix?: string;
     dataOption?:
@@ -566,6 +567,9 @@ export async function createNewProject(
     ? option.testRootFolder
     : path.resolve(__dirname, "../../resource/");
   const aiType = option?.aiType ? option.aiType : "OpenAI";
+  const aiManagement = option?.aiManagement
+    ? option.aiManagement
+    : "Build with Assistants API";
   const spfxFrameworkType = option?.spfxFrameworkType
     ? option.spfxFrameworkType
     : "React";
@@ -761,7 +765,9 @@ export async function createNewProject(
     }
     case "workflow": {
       await input.selectQuickPick(CreateProjectQuestion.Bot);
-      await input.selectQuickPick("Sequential Workflow in Chat");
+      // await input.selectQuickPick("Sequential Workflow in Chat");
+      await input.setText("Sequential Workflow in Chat");
+      await input.confirm();
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);
@@ -861,15 +867,18 @@ export async function createNewProject(
     case "aiagentassist": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("AI Agent");
+      // await input.selectQuickPick("AI Agent");
+      await input.setText("AI Agent");
+      await input.confirm();
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("Build with Assistants API");
+      await input.selectQuickPick(aiManagement);
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);
       await driver.sleep(Timeout.input);
-      // input fake OpenAI Key
-      await input.setText("fake");
+      await input.setText(aiType);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
       await driver.sleep(Timeout.input);
       await input.confirm();
       await driver.sleep(Timeout.input);
@@ -878,9 +887,11 @@ export async function createNewProject(
     case "aiagentnew": {
       await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("AI Agent");
+      // await input.selectQuickPick("AI Agent");
+      await input.setText("AI Agent");
+      await input.confirm();
       await driver.sleep(Timeout.input);
-      await input.selectQuickPick("Build New");
+      await input.selectQuickPick(aiManagement);
       await driver.sleep(Timeout.input);
       // Choose programming language
       await input.selectQuickPick(lang);

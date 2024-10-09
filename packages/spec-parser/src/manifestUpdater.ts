@@ -8,6 +8,7 @@ import path from "path";
 import {
   AuthInfo,
   ErrorType,
+  ExistingPluginManifestInfo,
   ParseOptions,
   ProjectType,
   WarningResult,
@@ -34,7 +35,8 @@ export class ManifestUpdater {
     apiPluginFilePath: string,
     spec: OpenAPIV3.Document,
     options: ParseOptions,
-    authInfo?: AuthInfo
+    authInfo?: AuthInfo,
+    existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
@@ -59,7 +61,8 @@ export class ManifestUpdater {
       apiPluginFilePath,
       appName,
       authInfo,
-      options
+      options,
+      existingPluginManifestInfo
     );
 
     return [manifest, apiPlugin, warnings];
@@ -98,7 +101,8 @@ export class ManifestUpdater {
     apiPluginFilePath: string,
     appName: string,
     authInfo: AuthInfo | undefined,
-    options: ParseOptions
+    options: ParseOptions,
+    existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[PluginManifestSchema, WarningResult[]]> {
     const warnings: WarningResult[] = [];
     const functions: FunctionObject[] = [];
@@ -155,7 +159,7 @@ export class ManifestUpdater {
               if (requestBody) {
                 const requestJsonBody = requestBody.content!["application/json"];
                 const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-                if (requestBodySchema.type === "object") {
+                if (Utils.isObjectSchema(requestBodySchema)) {
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
                     ManifestUpdater.checkSchema(schema, method, pathUrl);
@@ -252,6 +256,11 @@ export class ManifestUpdater {
     let apiPlugin: PluginManifestSchema;
     if (await fs.pathExists(apiPluginFilePath)) {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
+    } else if (
+      existingPluginManifestInfo &&
+      (await fs.pathExists(existingPluginManifestInfo.manifestPath))
+    ) {
+      apiPlugin = await fs.readJSON(existingPluginManifestInfo.manifestPath);
     } else {
       apiPlugin = {
         $schema: ConstantString.PluginManifestSchema,
@@ -276,6 +285,16 @@ export class ManifestUpdater {
     }
 
     apiPlugin.runtimes = apiPlugin.runtimes || [];
+    // Need to delete previous runtime since spec path has changed
+    if (existingPluginManifestInfo) {
+      const relativePath = ManifestUpdater.getRelativePath(
+        existingPluginManifestInfo.manifestPath,
+        existingPluginManifestInfo.specPath
+      );
+      apiPlugin.runtimes = apiPlugin.runtimes.filter(
+        (runtime) => runtime.spec.url !== relativePath
+      );
+    }
     const index = apiPlugin.runtimes.findIndex(
       (runtime) =>
         runtime.spec.url === specRelativePath &&

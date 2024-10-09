@@ -373,7 +373,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case, 'reddit-link') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false && contains(matrix.test-case, 'food-catalog') == false && contains(matrix.test-case, 'outlook-signature') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -381,7 +381,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples from another repo
-        if: contains(matrix.test-case, 'proactive-message') && contains(matrix.test-case,  'upgrade') == false
+        if: (contains(matrix.test-case, 'proactive-message') || contains(matrix.test-case, 'reddit-link')) && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
@@ -393,6 +393,22 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: microsoft/teams-ai
+          ref: main
+          path: ./packages/tests/resource
+
+      - name: Download samples food catalog
+        if: contains(matrix.test-case, 'food-catalog')
+        uses: actions/checkout@v3
+        with:
+          repository: pnp/graph-connectors-samples
+          ref: main
+          path: ./packages/tests/resource
+
+      - name: Download samples outlook signature
+        if: contains(matrix.test-case, 'outlook-signature')
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/Office-Add-in-samples
           ref: main
           path: ./packages/tests/resource
 

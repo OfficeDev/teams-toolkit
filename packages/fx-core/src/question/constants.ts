@@ -44,6 +44,7 @@ export enum QuestionNames {
   FromExistingApi = "from-existing-api", // group name for creating an App from existing api
   ApiSpecLocation = "openapi-spec-location",
   ApiOperation = "api-operation",
+  ApiPluginManifestPath = "external-api-plugin-manifest-path", // manifest path for creating project from existing plugin manifest. Use in Kiota integration, etc.
   MeArchitectureType = "me-architecture",
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
@@ -56,9 +57,13 @@ export enum QuestionNames {
   CustomCopilotAssistant = "custom-copilot-agent",
   LLMService = "llm-service",
   OpenAIKey = "openai-key",
+  OpenAIEmbeddingModel = "openai-embedding-model",
   AzureOpenAIKey = "azure-openai-key",
   AzureOpenAIEndpoint = "azure-openai-endpoint",
   AzureOpenAIDeploymentName = "azure-openai-deployment-name",
+  AzureOpenAIEmbeddingDeploymentName = "azure-openai-embedding-deployment-name",
+  AzureAISearchApiKey = "azure-ai-search-api-key",
+  AzureAISearchEndpoint = "azure-ai-search-endpoint",
 
   Features = "features",
   Env = "env",
@@ -78,6 +83,7 @@ export enum QuestionNames {
   ConfirmAadManifest = "confirmAadManifest",
   OutputZipPathParamName = "output-zip-path",
   OutputManifestParamName = "output-manifest-path",
+  OutputFolderParamName = "output-folder",
   M365Host = "m365-host",
 
   ManifestPath = "manifest-path",
@@ -97,11 +103,13 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
-  PluginAvailability = "plugin-availability",
 
   SyncManifest = "sync-manifest",
   ApiPluginType = "api-plugin-type",
   WithPlugin = "with-plugin",
+  ImportPlugin = "import-plugin",
+  PluginManifestFilePath = "plugin-manifest-path",
+  PluginOpenApiSpecFilePath = "plugin-opeanapi-spec-path",
 }
 
 export const AppNamePattern =
@@ -179,7 +187,7 @@ export class ScratchOptions {
 
 export class ProjectTypeOptions {
   static getCreateGroupName(): string | undefined {
-    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+    return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
       ? getLocalizedString("core.createProjectQuestion.projectType.createGroup.title")
       : undefined;
   }
@@ -231,6 +239,17 @@ export class ProjectTypeOptions {
     };
   }
 
+  static officeMetaOS(platform?: Platform): OptionItem {
+    return {
+      id: "office-meta-os-type",
+      label: `${platform === Platform.VSCode ? "$(teamsfx-m365) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.officeAddin.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
+      groupName: ProjectTypeOptions.getCreateGroupName(),
+    };
+  }
+
   static officeAddin(platform?: Platform): OptionItem {
     return {
       id: "office-addin-type",
@@ -244,6 +263,7 @@ export class ProjectTypeOptions {
 
   static officeAddinAllIds(platform?: Platform): string[] {
     return [
+      ProjectTypeOptions.officeMetaOS(platform).id,
       ProjectTypeOptions.officeAddin(platform).id,
       ProjectTypeOptions.outlookAddin(platform).id,
     ];
@@ -251,7 +271,7 @@ export class ProjectTypeOptions {
 
   static copilotExtension(platform?: Platform): OptionItem {
     return {
-      id: "copilot-extension-type",
+      id: "copilot-agent-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
@@ -562,6 +582,7 @@ export class CapabilityOptions {
   static officeAddinDynamicCapabilities(projectType: string, host?: string): OptionItem[] {
     const items: OptionItem[] = [];
     const isOutlookAddin = projectType === ProjectTypeOptions.outlookAddin().id;
+    const isMetaOSAddin = projectType === ProjectTypeOptions.officeMetaOS().id;
     const isOfficeAddin = projectType === ProjectTypeOptions.officeAddin().id;
 
     const pushToItems = (option: any) => {
@@ -573,10 +594,12 @@ export class CapabilityOptions {
       });
     };
 
-    if (isOutlookAddin || isOfficeAddin) {
+    if (isOutlookAddin || isMetaOSAddin || isOfficeAddin) {
       pushToItems("json-taskpane");
       if (isOutlookAddin) {
         items.push(CapabilityOptions.outlookAddinImport());
+      } else if (isMetaOSAddin) {
+        items.push(CapabilityOptions.officeAddinImport());
       } else {
         items.push(CapabilityOptions.officeContentAddin());
         items.push(CapabilityOptions.officeAddinImport());
@@ -597,11 +620,16 @@ export class CapabilityOptions {
     return items;
   }
 
-  static copilotExtensions(inputs?: Inputs): OptionItem[] {
+  static copilotExtensions(inputs?: Inputs, isStatic?: boolean): OptionItem[] {
+    if (isStatic) {
+      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    }
     if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [CapabilityOptions.apiPlugin()];
-    } else {
+    } else if (isCopilotExtensionEnabled()) {
       return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    } else {
+      return [CapabilityOptions.declarativeCopilot()];
     }
   }
 
@@ -631,7 +659,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.copilotExtensions(inputs),
+      ...CapabilityOptions.copilotExtensions(inputs, true),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
@@ -651,9 +679,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isCopilotExtensionEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotExtensions());
-    }
+    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
@@ -718,7 +744,7 @@ export class CapabilityOptions {
   // copilot extension - declarative copilot
   static declarativeCopilot(): OptionItem {
     return {
-      id: "declarative-copilot",
+      id: "declarative-agent",
       label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
       detail: getLocalizedString(
         "core.createProjectQuestion.projectType.declarativeCopilot.detail"
@@ -752,6 +778,9 @@ export class CapabilityOptions {
       ),
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotBasicOption.detail"
+      ),
+      description: getLocalizedString(
+        "core.createProjectQuestion.capability.customEngineAgent.description"
       ),
     };
   }
@@ -1139,35 +1168,6 @@ export const recommendedLocations = [
   "West US 3",
 ];
 
-export class PluginAvailabilityOptions {
-  static action(): OptionItem {
-    return {
-      id: "action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilot"),
-    };
-  }
-  static copilotPlugin(): OptionItem {
-    return {
-      id: "api-plugin",
-      label: getLocalizedString("core.pluginAvailability.copilotForM365"),
-    };
-  }
-  static copilotPluginAndAction(): OptionItem {
-    return {
-      id: "api-plugin-and-action",
-      label: getLocalizedString("core.pluginAvailability.declarativeCopilotAndM365"),
-    };
-  }
-
-  static all(): OptionItem[] {
-    return [
-      PluginAvailabilityOptions.copilotPlugin(),
-      PluginAvailabilityOptions.action(),
-      PluginAvailabilityOptions.copilotPluginAndAction(),
-    ];
-  }
-}
-
 export class TeamsAppValidationOptions {
   static schema(): OptionItem {
     return {
@@ -1268,7 +1268,35 @@ export class ApiPluginStartOptions {
     };
   }
 
-  static all(): OptionItem[] {
-    return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
+  static existingPlugin(): OptionItem {
+    return {
+      id: "existing-plugin",
+      label: getLocalizedString("core.createProjectQuestion.apiPlugin.importPlugin.label"),
+      detail: getLocalizedString("core.createProjectQuestion.apiPlugin.importPlugin.detail"),
+    };
+  }
+
+  static staticAll(doesProjectExists?: boolean): OptionItem[] {
+    return doesProjectExists
+      ? [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()]
+      : [
+          ApiPluginStartOptions.newApi(),
+          ApiPluginStartOptions.apiSpec(),
+          ApiPluginStartOptions.existingPlugin(),
+        ];
+  }
+
+  static all(inputs: Inputs, doesProjectExists?: boolean): OptionItem[] {
+    if (doesProjectExists) {
+      return [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()];
+    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+      return [
+        ApiPluginStartOptions.newApi(),
+        ApiPluginStartOptions.apiSpec(),
+        ApiPluginStartOptions.existingPlugin(),
+      ];
+    } else {
+      return [ApiPluginStartOptions.newApi(), ApiPluginStartOptions.apiSpec()];
+    }
   }
 }

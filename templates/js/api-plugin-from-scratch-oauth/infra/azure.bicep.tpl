@@ -13,7 +13,6 @@ param location string = resourceGroup().location
 param serverfarmsName string = resourceBaseName
 param functionAppName string = resourceBaseName
 
-
 // Compute resources for Azure Functions
 resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: serverfarmsName
@@ -76,8 +75,14 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
 var apiEndpoint = 'https://${functionApp.properties.defaultHostName}'
 var oauthAuthority = uri(aadAppOauthAuthorityHost, aadAppTenantId)
 var aadApplicationIdUri = 'api://${aadAppClientId}'
+{{#MicrosoftEntra}}
+var aadApplicationIdUriWithDomain = 'api://${functionApp.properties.defaultHostName}/${aadAppClientId}'
+{{/MicrosoftEntra}}
 
 // Configure Azure Functions to use Azure AD for authentication.
+{{#MicrosoftEntra}}
+var clientIdForTGS = 'ab3be6b7-f5df-413d-ac2d-abf1e3fd9c0b'
+{{/MicrosoftEntra}}
 resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: functionApp
   name: 'authsettingsV2'
@@ -94,9 +99,20 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
           clientId: aadAppClientId
         }
         validation: {
+{{#MicrosoftEntra}}
+          defaultAuthorizationPolicy: {
+            allowedApplications: [
+              aadAppClientId
+              clientIdForTGS
+            ]
+          }
+{{/MicrosoftEntra}}
           allowedAudiences: [
             aadAppClientId
             aadApplicationIdUri
+{{#MicrosoftEntra}}
+            aadApplicationIdUriWithDomain
+{{/MicrosoftEntra}}
           ]
         }
       }

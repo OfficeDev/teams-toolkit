@@ -32,6 +32,7 @@ import {
   telemetryKeys,
 } from "./utility/constants";
 import { AadSet } from "../../../common/globalVars";
+import { MissingServiceManagementReferenceError } from "./error/missingServiceManagamentReferenceError";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -79,14 +80,30 @@ export class CreateAadAppDriver implements StepDriver {
           )
         );
         context.addTelemetryProperties({ [telemetryKeys.newAadApp]: "true" });
+
+        const tokenJson = await context.m365TokenProvider.getJsonObject({ scopes: GraphScopes });
+        const isMsftAccount =
+          tokenJson.isOk() &&
+          tokenJson.value.unique_name &&
+          (tokenJson.value.unique_name as string).endsWith("@microsoft.com");
+
         // Create new Microsoft Entra app if no client id exists
         const signInAudience = args.signInAudience
           ? args.signInAudience
           : SignInAudience.AzureADMyOrg;
+
+        // This hidden environment variable is for internal use only.
+        const serviceManagementReference =
+          args.serviceManagementReference || process.env.TTK_DEFAULT_SERVICE_MANAGEMENT_REFERENCE;
+
+        if (isMsftAccount && !serviceManagementReference) {
+          throw new MissingServiceManagementReferenceError(actionName);
+        }
+
         const aadApp = await aadAppClient.createAadApp(
           args.name,
           signInAudience,
-          args.serviceManagementReference
+          serviceManagementReference
         );
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
@@ -95,12 +112,7 @@ export class CreateAadAppDriver implements StepDriver {
         outputs = mapStateToEnv(aadAppState, outputEnvVarNames, [OutputKeys.clientSecret]);
 
         let summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
-        const tokenJson = await context.m365TokenProvider.getJsonObject({ scopes: GraphScopes });
-        if (
-          tokenJson.isOk() &&
-          tokenJson.value.unique_name &&
-          (tokenJson.value.unique_name as string).includes("@microsoft.com")
-        ) {
+        if (isMsftAccount) {
           summary += getLocalizedString(logMessageKeys.deleteAadAfterDebugging);
         }
         context.logProvider?.info(summary);

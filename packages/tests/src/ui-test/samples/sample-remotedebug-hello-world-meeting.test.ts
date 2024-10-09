@@ -7,7 +7,10 @@
 
 import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-import { initTeamsPage } from "../../utils/playwrightOperation";
+import {
+  initTeamsPage,
+  validateMeeting,
+} from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
@@ -32,6 +35,10 @@ class MyFirstMeetingTestCase extends CaseFactory {
       }
     );
   }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.username);
+  }
 }
 
 new MyFirstMeetingTestCase(
@@ -43,6 +50,5 @@ new MyFirstMeetingTestCase(
   {
     teamsAppName: "fxuiMyFirsdev",
     type: "meeting",
-    skipValidation: true,
   }
 ).test();

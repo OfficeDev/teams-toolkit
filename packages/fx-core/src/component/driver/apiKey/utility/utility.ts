@@ -32,7 +32,7 @@ export async function getDomain(
     allowMultipleParameters: true,
   });
   const listResult = await parser.list();
-  const operations = listResult.APIs.filter((value) => value.isValid);
+  const operations = listResult.APIs;
   const domains = operations
     .filter((value) => {
       const auth = value.auth;

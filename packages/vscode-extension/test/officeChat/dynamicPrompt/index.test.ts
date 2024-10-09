@@ -39,7 +39,7 @@ describe("File: dynamicPrompt/index", () => {
       chai
         .expect(result.messages[0])
         .deep.equal(
-          new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.System, "test")
+          new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.User, "test")
         );
     });
 

@@ -31,7 +31,24 @@
                 "groupChat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Create task:remind drink tonight",
+                            "description": "Create a task for me to remind me drink water tonight"
+                        },
+                        {
+                            "title": "Delete all my current tasks",
+                            "description": "Delete all my current tasks"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

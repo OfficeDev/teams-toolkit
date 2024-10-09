@@ -13,6 +13,7 @@ import {
   ok,
   err,
   Colors,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { copilotGptManifestUtils } from "../../../../src/component/driver/teamsApp/utils/CopilotGptManifestUtils";
 import {
@@ -29,6 +30,8 @@ import { WrapDriverContext } from "../../../../src/component/driver/util/wrapUti
 import { createContext, setTools } from "../../../../src/common/globalVars";
 import { generateDriverContext } from "../../../../src/common/utils";
 import { MockTools } from "../../../core/utils";
+import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
+import path from "path";
 
 describe("copilotGptManifestUtils", () => {
   const sandbox = sinon.createSandbox();
@@ -391,6 +394,92 @@ describe("copilotGptManifestUtils", () => {
       ) as Array<{ content: string; color: Colors }>;
       chai.assert.isTrue(res.find((item) => item.content.includes("errorAction2")) !== undefined);
       chai.assert.isTrue(res.find((item) => item.content.includes("errorAction1")) !== undefined);
+    });
+  });
+
+  describe("getManifestPath", async () => {
+    setTools(new MockTools());
+    const context = generateDriverContext(createContext(), {
+      platform: Platform.VSCode,
+      projectPath: "",
+    });
+
+    it("get manifest success", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotExtensions: {
+            declarativeCopilots: [
+              {
+                file: "test",
+                id: "1",
+              },
+            ],
+          },
+        } as any)
+      );
+      sandbox.stub(path, "dirname").returns("testFolder");
+      sandbox.stub(path, "resolve").returns("testFolder/test");
+
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value, "testFolder/test");
+      }
+    });
+
+    it("read Teams manifest error", async () => {
+      sandbox
+        .stub(manifestUtils, "_readAppManifest")
+        .resolves(err(new UserError("readError", "readError", "", "")));
+
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "readError");
+      }
+    });
+
+    it("missing file property", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotExtensions: {
+            declarativeCopilots: [
+              {
+                id: "1",
+              },
+            ],
+          },
+        } as any)
+      );
+
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, AppStudioError.TeamsAppRequiredPropertyMissingError.name);
+      }
+    });
+  });
+
+  describe("getDefaultNextAvailablePluginManifestPath", async () => {
+    setTools(new MockTools());
+    const context = generateDriverContext(createContext(), {
+      platform: Platform.VSCode,
+      projectPath: "",
+    });
+
+    it("Success on second try", async () => {
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+      const res = await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath("test");
+      chai.assert.equal(res, path.join("test", "ai-plugin_2.json"));
+    });
+
+    it("Success on first try", async () => {
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+      const res = await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath("test");
+      chai.assert.equal(res, path.join("test", "ai-plugin_1.json"));
     });
   });
 });

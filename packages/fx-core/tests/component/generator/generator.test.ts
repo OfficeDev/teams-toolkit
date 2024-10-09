@@ -107,7 +107,7 @@ describe("Generator utils", () => {
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
-      await fs.rm(tmpDir, { recursive: true });
+      await fs.remove(tmpDir);
     }
     mockedEnvRestore();
   });
@@ -521,7 +521,7 @@ describe("Generator error", async () => {
 
   afterEach(async () => {
     if (await fs.pathExists(tmpDir)) {
-      await fs.rm(tmpDir, { recursive: true });
+      await fs.remove(tmpDir);
     }
     sandbox.restore();
   });
@@ -784,7 +784,7 @@ describe("render template", () => {
     afterEach(async () => {
       sandbox.restore();
       if (await fs.pathExists(tmpDir)) {
-        await fs.rm(tmpDir, { recursive: true });
+        await fs.remove(tmpDir);
       }
       mockedEnvRestore();
     });
@@ -939,6 +939,20 @@ describe("render template", () => {
       }
       assert.equal(vars.azureOpenAIEndpoint, "test-endpoint");
       assert.equal(vars.azureOpenAIDeploymentName, "test-deployment");
+    });
+
+    it("template variables with custom copilot - AI Search for csharp", async () => {
+      inputs.projectId = "test-id";
+      inputs[QuestionNames.AzureOpenAIKey] = "test-key";
+      inputs[QuestionNames.AzureAISearchApiKey] = "test-search-key";
+      inputs[QuestionNames.AzureAISearchEndpoint] = "test-search-endpoint";
+      inputs[QuestionNames.OpenAIEmbeddingModel] = "test-openai-embedding-model";
+      inputs[QuestionNames.AzureOpenAIEmbeddingDeploymentName] = "test-azure-embedding-deployment";
+      const vars = getTemplateReplaceMap(inputs);
+      assert.isTrue(vars.azureAISearchApiKey.startsWith("crypto_"));
+      assert.equal(vars.azureAISearchEndpoint, "test-search-endpoint");
+      assert.equal(vars.openAIEmbeddingModel, "test-openai-embedding-model");
+      assert.equal(vars.azureOpenAIEmbeddingDeploymentName, "test-azure-embedding-deployment");
     });
 
     it("template variables when contains auth", async () => {
@@ -1181,7 +1195,7 @@ describe("Generate sample using download directory", () => {
     sandbox.restore();
     mockedEnvRestore();
     if (await fs.pathExists(tmpDir)) {
-      await fs.rm(tmpDir, { recursive: true });
+      await fs.remove(tmpDir);
     }
   });
 
@@ -1250,7 +1264,7 @@ describe("Generate sample using download directory", () => {
   });
 
   it("clean up if downloading failed", async () => {
-    const rmStub = sandbox.stub(fs, "rm").resolves();
+    const rmStub = sandbox.stub(fs, "remove").resolves();
     const existsStub = sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(generatorUtils, "downloadDirectory").rejects();
     const result = await Generator.generateSample(ctx, tmpDir, "test");

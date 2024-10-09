@@ -8,6 +8,7 @@ import {
   ok,
   Result,
   Stage,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   ApiPluginStartOptions,
@@ -15,6 +16,8 @@ import {
   assembleError,
   AuthSvcScopes,
   CapabilityOptions,
+  featureFlagManager,
+  FeatureFlags,
   isUserCancelError,
   isValidOfficeAddInProject,
   QuestionNames,
@@ -24,7 +27,11 @@ import * as vscode from "vscode";
 import M365TokenInstance from "../commonlib/m365Login";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
 import envTreeProviderInstance from "../treeview/environmentTreeViewProvider";
 import { localize } from "../utils/localizeUtils";
 import { getSystemInputs } from "../utils/systemEnvUtils";
@@ -32,6 +39,11 @@ import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { openFolder, openOfficeDevFolder } from "../utils/workspaceUtils";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
 import { runCommand } from "./sharedOpts";
+import { ExtensionSource } from "../error/error";
+import VsCodeLogInstance from "../commonlib/log";
+import * as versionUtil from "../utils/versionUtil";
+import { KiotaExtensionId, KiotaMinVersion } from "../constants";
+import * as stringUtil from "util";
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
@@ -51,6 +63,16 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   }
 
   const res = result.value as CreateProjectResult;
+
+  // For Kiota integration
+  if (
+    featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+    res.projectPath === "" &&
+    res.lastCommand
+  ) {
+    return handleTriggerKiotaCommand(args, res);
+  }
+
   if (res.shouldInvokeTeamsAgent) {
     await invokeTeamsAgent([TelemetryTriggerFrom.CreateAppQuestionFlow]);
     return result;
@@ -218,4 +240,72 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;
+}
+
+function handleTriggerKiotaCommand(
+  args: any[],
+  result: CreateProjectResult
+): Result<CreateProjectResult, FxError> {
+  if (!validateKiotaInstallation()) {
+    void vscode.window
+      .showInformationMessage(
+        stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion),
+        "Install Kiota",
+        "Cancel"
+      )
+      .then((selection) => {
+        if (selection === "Install Kiota") {
+          // Open market place to install kiota
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InstallKiota, {
+            ...getTriggerFromProperty(args),
+          });
+          void vscode.commands.executeCommand("extension.open", "ms-graph.kiota");
+        } else {
+          return err(
+            new UserError(
+              ExtensionSource,
+              "KiotaNotInstalled",
+              stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion)
+            )
+          );
+        }
+      });
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.KiotaInstalled]: "No",
+      ...getTriggerFromProperty(args),
+    });
+    VsCodeLogInstance.error(
+      stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion)
+    );
+    return ok({ projectPath: "" });
+  } else {
+    void vscode.commands.executeCommand("kiota.openApiExplorer.searchOrOpenApiDescription", {
+      kind: "Plugin",
+      type: "ApiPlugin",
+      source: "ttk",
+      ttkContext: {
+        lastCommand: result.lastCommand,
+      },
+    });
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.KiotaInstalled]: "Yes",
+      ...getTriggerFromProperty(args),
+    });
+    return ok(result);
+  }
+}
+
+function validateKiotaInstallation(): boolean {
+  const installed = vscode.extensions.getExtension(KiotaExtensionId);
+  if (!installed) {
+    return false;
+  }
+
+  const kiotaVersion = installed.packageJSON.version;
+  if (!kiotaVersion) {
+    return false;
+  }
+
+  return versionUtil.compare(kiotaVersion, KiotaMinVersion) !== -1;
 }

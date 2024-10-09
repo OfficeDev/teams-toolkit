@@ -589,11 +589,9 @@ export class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async submitAppValidationRequest(
     token: string,
-    teamsAppId: string,
-    timeoutSeconds = 20
+    teamsAppId: string
   ): Promise<AsyncAppValidationResponse> {
     const requester = this.createRequesterWithToken(token);
-    requester.defaults.timeout = timeoutSeconds * 1000;
     try {
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/v1.0/appvalidations/appdefinition/validate`, {
@@ -637,11 +635,9 @@ export class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getAppValidationById(
     token: string,
-    appValidationId: string,
-    timeoutSeconds = 20
+    appValidationId: string
   ): Promise<AsyncAppValidationResultsResponse> {
     const requester = this.createRequesterWithToken(token);
-    requester.defaults.timeout = timeoutSeconds * 1000;
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/v1.0/appvalidations/${appValidationId}`)

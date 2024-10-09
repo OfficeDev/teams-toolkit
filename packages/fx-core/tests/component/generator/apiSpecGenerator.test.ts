@@ -821,7 +821,7 @@ describe("updateForCustomApi", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(fs, "writeFile").callsFake((file, data) => {
       if (file == path.join("path", "APIActions.cs")) {
-        expect(data).to.contains(`[Action("GetHello")]`);
+        expect(data).to.contains(`[Action("getHello")]`);
         expect(data).to.contains(`public async Task<string> GetHelloAsync`);
         expect(data).to.contains("openapi.yaml");
         expect(data).not.to.contains("{{");
@@ -844,6 +844,9 @@ describe("updateForCustomApi", async () => {
     sandbox
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+
+    //sandbox fs.readdir(destinationPath)
+    sandbox.stub(fs, "readdir").resolves(["MyApp.csproj"] as any);
     await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
   });
 

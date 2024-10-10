@@ -37,7 +37,6 @@ export class VsCodeLogProvider implements LogProvider {
     if (!VsCodeLogProvider.instance) {
       VsCodeLogProvider.instance = new VsCodeLogProvider();
     }
-
     return VsCodeLogProvider.instance;
   }
 
@@ -80,6 +79,10 @@ export class VsCodeLogProvider implements LogProvider {
    * @Sample [2021-03-15T03:41:04.961Z] [Info] - [Extension] Initialize successfully.
    */
   log(logLevel: LogLevel, message: string): void {
+    if (logLevel == LogLevel.Debug) {
+      console.log("debug ====================");
+      console.log(`this log level: ${this.logLevel}`);
+    }
     try {
       if (logLevel < this.logLevel) return;
       if (logLevel >= LogLevel.Warning) this.outputChannel.show();

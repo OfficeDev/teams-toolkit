@@ -6,7 +6,7 @@ import { SystemError } from "@microsoft/teamsfx-api";
 import { AxiosInstance } from "axios";
 import { HelpLinks } from "../common/constants";
 import { ErrorContextMW, TOOLS } from "../common/globalVars";
-import { getLocalizedString } from "../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -56,6 +56,7 @@ import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,
 } from "../error/teamsApp";
+import { Exception } from "handlebars";
 
 export class RetryHandler {
   public static RETRIES = 6;
@@ -156,16 +157,18 @@ export class TeamsDevPortalClient {
         );
         return app;
       } else {
-        throw new Error(`Cannot create teams app`);
+        throw this.wrapException(
+          new Exception("Cannot create teams app"),
+          APP_STUDIO_API_NAMES.CREATE_APP
+        );
       }
     } catch (e: any) {
       if (e.response?.status === 409) {
-        const error = AppStudioResultFactory.UserError(
-          AppStudioError.TeamsAppCreateConflictError.name,
-          AppStudioError.TeamsAppCreateConflictError.message(),
-          HelpLinks.SwitchTenant
+        throw this.wrapException(
+          e,
+          APP_STUDIO_API_NAMES.CREATE_APP,
+          getDefaultString("error.appstudio.teamsAppCreateConflict")
         );
-        throw error;
       }
       // Corner case: The provided app ID conflict with an existing published app
       // See Developer Portal PR: 507264
@@ -173,11 +176,11 @@ export class TeamsDevPortalClient {
         e.response?.status == 422 &&
         e.response?.data.includes("App already exists and published")
       ) {
-        const error = AppStudioResultFactory.UserError(
-          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name,
-          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()
+        throw this.wrapException(
+          e,
+          APP_STUDIO_API_NAMES.CREATE_APP,
+          getDefaultString("error.appstudio.teamsAppCreateConflictWithPublishedApp")
         );
-        throw error;
       }
       // Corner case: App Id must be a GUID
       if (
@@ -189,11 +192,11 @@ export class TeamsDevPortalClient {
           throw manifest.error;
         } else {
           const teamsAppId = manifest.value.id;
-          const error = AppStudioResultFactory.UserError(
-            AppStudioError.InvalidTeamsAppIdError.name,
-            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)
+          throw this.wrapException(
+            e,
+            APP_STUDIO_API_NAMES.CREATE_APP,
+            getDefaultString("error.teamsApp.InvalidAppIdError", teamsAppId)
           );
-          throw error;
         }
       }
       const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
@@ -695,7 +698,10 @@ export class TeamsDevPortalClient {
           error,
           error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
           apiName,
-          error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+          getLocalizedString(
+            "error.appstudio.apiFailed.reason.common",
+            error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+          )
         ),
         {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -936,10 +942,17 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, apiName) as SystemError;
     }
   }
-  wrapException(e: any, apiName: string): Error {
+  wrapException(
+    e: any,
+    apiName: string,
+    potentialReason = getDefaultString("error.appstudio.apiFailed.reason.common")
+  ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
+    const extraData = `${potentialReason} ${
+      e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : ""
+    }`;
+
     const error = new DeveloperPortalAPIFailedError(e, correlationId, apiName, extraData);
     return error;
   }

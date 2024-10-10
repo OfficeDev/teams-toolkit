@@ -16,6 +16,7 @@ import {
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
 import { HttpMethod } from "../component/constant/commonConstant";
+import { getLocalizedString } from "./localizeUtils";
 
 /**
  * This client will send telemetries to record API request trace
@@ -27,7 +28,10 @@ export class WrappedAxiosClient {
     instance.interceptors.request.use((request) => this.onRequest(request));
 
     // eslint-disable-next-line prettier/prettier
-    instance.interceptors.response.use((response) => this.onResponse(response), (error) => this.onRejected(error));
+    instance.interceptors.response.use(
+      (response) => this.onResponse(response),
+      (error) => this.onRejected(error)
+    );
 
     return instance;
   }
@@ -114,7 +118,10 @@ export class WrappedAxiosClient {
     if (eventName === TelemetryEvent.AppStudioApi) {
       const correlationId = error.response?.headers[Constants.CORRELATION_ID] ?? "undefined";
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      const extraData = error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : "";
+      const extraData = getLocalizedString(
+        "error.appstudio.apiFailed.reason.common",
+        error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+      );
       const TDPApiFailedError = new DeveloperPortalAPIFailedError(
         error,
         correlationId,

@@ -17,6 +17,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import { workspaceUri } from "../globalVariables";
+import VSCodeLogger from "../commonlib/log";
 
 const TelemetryTestLoggerFile = "telemetryTest.log";
 
@@ -117,6 +118,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {
       this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements);
+      void VSCodeLogger.debug(
+        `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(
+          properties
+        )}, measurements: ${JSON.stringify(measurements)}`
+      );
     }
   }
 
@@ -144,6 +150,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       this.logTelemetryEvent(eventName, properties, measurements);
     } else {
       this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+      void VSCodeLogger.debug(
+        `sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(
+          properties
+        )}, measurements: ${JSON.stringify(measurements)}`
+      );
     }
   }
 

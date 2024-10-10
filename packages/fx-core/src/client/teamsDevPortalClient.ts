@@ -167,7 +167,8 @@ export class TeamsDevPortalClient {
         throw this.wrapException(
           e,
           APP_STUDIO_API_NAMES.CREATE_APP,
-          getDefaultString("error.appstudio.teamsAppCreateConflict")
+          AppStudioError.TeamsAppCreateConflictError.message()[0],
+          AppStudioError.TeamsAppCreateConflictError.message()[1]
         );
       }
       // Corner case: The provided app ID conflict with an existing published app
@@ -179,7 +180,8 @@ export class TeamsDevPortalClient {
         throw this.wrapException(
           e,
           APP_STUDIO_API_NAMES.CREATE_APP,
-          getDefaultString("error.appstudio.teamsAppCreateConflictWithPublishedApp")
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[0],
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[1]
         );
       }
       // Corner case: App Id must be a GUID
@@ -195,7 +197,8 @@ export class TeamsDevPortalClient {
           throw this.wrapException(
             e,
             APP_STUDIO_API_NAMES.CREATE_APP,
-            getDefaultString("error.teamsApp.InvalidAppIdError", teamsAppId)
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[0],
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[1]
           );
         }
       }
@@ -219,10 +222,12 @@ export class TeamsDevPortalClient {
         TOOLS.logProvider.error("Cannot get the app definitions");
       }
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);
     }
-    throw new Error("Cannot get the app definitions");
+    throw this.wrapException(
+      new Exception("Cannot get the app definitions"),
+      APP_STUDIO_API_NAMES.LIST_APPS
+    );
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async deleteApp(appStudioToken: string, teamsAppId: string): Promise<boolean> {
@@ -245,11 +250,14 @@ export class TeamsDevPortalClient {
         }
       }
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
     }
-    throw new Error("Cannot delete the app: " + teamsAppId);
+    throw this.wrapException(
+      new Exception("Cannot delete the app: " + teamsAppId),
+      APP_STUDIO_API_NAMES.DELETE_APP
+    );
   }
+  // todo: start here
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getApp(token: string, teamsAppId: string): Promise<AppDefinition> {
     let requester: AxiosInstance;
@@ -945,7 +953,8 @@ export class TeamsDevPortalClient {
   wrapException(
     e: any,
     apiName: string,
-    potentialReason = getDefaultString("error.appstudio.apiFailed.reason.common")
+    potentialReason = getDefaultString("error.appstudio.apiFailed.reason.common"),
+    disPlayMessage?: string
   ): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -953,7 +962,13 @@ export class TeamsDevPortalClient {
       e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : ""
     }`;
 
-    const error = new DeveloperPortalAPIFailedError(e, correlationId, apiName, extraData);
+    const error = new DeveloperPortalAPIFailedError(
+      e,
+      correlationId,
+      apiName,
+      extraData,
+      disPlayMessage
+    );
     return error;
   }
 }

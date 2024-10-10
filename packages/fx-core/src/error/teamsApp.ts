@@ -13,8 +13,16 @@ import { Constants } from "../component/driver/teamsApp/constants";
 import { matchDnsError } from "./common";
 
 export class DeveloperPortalAPIFailedError extends SystemError {
-  constructor(e: any, correlationId: string, apiName: string, extraData: string) {
-    const displayMessage = matchDnsError(e.message);
+  constructor(
+    e: any,
+    correlationId: string,
+    apiName: string,
+    extraData: string,
+    displayMessage?: string
+  ) {
+    if (!displayMessage) {
+      displayMessage = matchDnsError(e.message);
+    }
     const errorOptions: SystemErrorOptions = {
       source: Constants.PLUGIN_NAME,
       error: e,

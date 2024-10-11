@@ -233,7 +233,6 @@
   "core.option.github": "Open a GitHub guide",
   "core.option.inProduct": "Open an in-product guide",
   "core.TabOption.label": "Tab",
-  "core.generator.officeAddin.importProject.title": "Importing Existing Outlook Add-in Project",
   "core.generator.officeAddin.importProject.copyFiles": "Copying files...",
   "core.generator.officeAddin.importProject.convertProject": "Converting project...",
   "core.generator.officeAddin.importProject.updateManifest": "Modifying manifest...",

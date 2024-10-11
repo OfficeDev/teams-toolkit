@@ -108,10 +108,9 @@ export class OfficeAddinGenerator {
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
-    const importProgressStr =
-      projectType === ProjectTypeOptions.officeAddin().id
-        ? getLocalizedString("core.generator.officeAddin.importOfficeProject.title")
-        : getLocalizedString("core.generator.officeAddin.importProject.title");
+    const importProgressStr = getLocalizedString(
+      "core.generator.officeAddin.importOfficeProject.title"
+    );
     const importProgress = context.userInteraction.createProgressBar(importProgressStr, 3);
 
     process.chdir(addinRoot);

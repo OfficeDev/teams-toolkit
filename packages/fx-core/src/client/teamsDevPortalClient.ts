@@ -158,7 +158,7 @@ export class TeamsDevPortalClient {
         return app;
       } else {
         throw this.wrapException(
-          new Exception("Cannot create teams app"),
+          new Exception("cannot create teams app"),
           APP_STUDIO_API_NAMES.CREATE_APP
         );
       }
@@ -228,7 +228,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);
     }
     throw this.wrapException(
-      new Exception("Cannot get the app definitions"),
+      new Exception("cannot get the app definitions"),
       APP_STUDIO_API_NAMES.LIST_APPS
     );
   }
@@ -256,7 +256,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
     }
     throw this.wrapException(
-      new Exception("Cannot delete the app: " + teamsAppId),
+      new Exception("cannot delete the app: " + teamsAppId),
       APP_STUDIO_API_NAMES.DELETE_APP
     );
   }
@@ -285,7 +285,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
     }
     throw this.wrapException(
-      new Exception(`Cannot get the app definition with app ID ${teamsAppId}`),
+      new Exception(`cannot get the app definition with app ID ${teamsAppId}`),
       APP_STUDIO_API_NAMES.GET_APP
     );
   }
@@ -398,7 +398,7 @@ export class TeamsDevPortalClient {
         }
       } else {
         throw this.wrapException(
-          new Exception("Empty response"),
+          new Exception("empty response"),
           APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")[0],
@@ -463,7 +463,7 @@ export class TeamsDevPortalClient {
         }
       } else {
         throw this.wrapException(
-          new Exception("Empty response"),
+          new Exception("empty response"),
           APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)[0],
@@ -978,7 +978,7 @@ export class TeamsDevPortalClient {
     disPlayMessage?: string
   ): Error {
     e.name = name;
-    const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+    const correlationId = e.response?.headers?.[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     const extraData = `${potentialReason} ${
       e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : ""

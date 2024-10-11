@@ -149,7 +149,7 @@
   "plugins.appstudio.previewOnly": "Preview only",
   "plugins.appstudio.previewAndUpdate": "Preview and update",
   "plugins.appstudio.overwriteAndUpdate": "Overwrite and update",
-  "plugins.appstudio.emptyAppPackage": "Unable to find any files in the app %s package.",
+  "plugins.appstudio.emptyAppPackage": "unable to find any files in the app %s package.",
   "plugins.appstudio.unprocessedFile": "Teams Toolkit did not process %s.",
   "plugins.appstudio.viewDeveloperPortal": "View in Developer Portal",
   "plugins.bot.questionHostTypeTrigger.title": "Select triggers",

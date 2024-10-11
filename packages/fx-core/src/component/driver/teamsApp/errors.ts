@@ -77,11 +77,11 @@ export class AppStudioError {
       correlationId?: string
     ): [string, string] => [
       getDefaultString("error.appstudio.publishFailed", teamsAppId) +
-        `Request path: ${requestPath}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : ""),
+        ` Request path: ${requestPath}` +
+        (correlationId ? ` X-Correlation-ID: ${correlationId}` : ""),
       getLocalizedString("error.appstudio.publishFailed", teamsAppId) +
-        `Request path: ${requestPath}` +
-        (correlationId ? `X-Correlation-ID: ${correlationId}` : ""),
+        ` Request path: ${requestPath}` +
+        (correlationId ? ` X-Correlation-ID: ${correlationId}` : ""),
     ],
   };
 

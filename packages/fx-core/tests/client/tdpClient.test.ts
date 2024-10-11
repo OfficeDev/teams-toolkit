@@ -142,7 +142,8 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (e) {
-        chai.assert.equal(e.name, AppStudioError.TeamsAppPublishFailedError.name);
+        chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
       }
     });
     it("API Failure", async () => {
@@ -293,7 +294,10 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.TeamsAppPublishConflictError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(
+          error.message.includes(AppStudioError.TeamsAppPublishConflictError.name)
+        );
       }
     });
   });
@@ -341,7 +345,8 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.TeamsAppCreateConflictError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(error.message.includes(AppStudioError.TeamsAppCreateConflictError.name));
       }
     });
 
@@ -360,9 +365,9 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(
-          error.name,
-          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(
+          error.message.includes(AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name)
         );
       }
     });
@@ -407,7 +412,8 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, AppStudioError.InvalidTeamsAppIdError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(error.message.includes(AppStudioError.InvalidTeamsAppIdError.name));
       }
     });
 
@@ -545,7 +551,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getApp(token, "anotherId");
       } catch (e) {
-        chai.assert.isTrue(e.message.includes("Cannot get the app definition with app ID"));
+        chai.assert.isTrue(e.message.includes("cannot get the app definition with app ID"));
       }
     });
   });
@@ -1277,7 +1283,11 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.equal(e.message, "Cannot get the app definitions");
+        chai.assert.isTrue(
+          e.message.includes(
+            "Unable to make API call to Developer Portal: API failed, cannot get the app definitions, API name: list-app, X-Correlation-ID: undefined. This may be due to a temporary service error. Try again after a few minutes."
+          )
+        );
       }
     });
   });
@@ -1335,7 +1345,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.equal(e.message, "Cannot delete the app: " + "testid");
+        chai.assert.isTrue(e.message.includes("cannot delete the app: " + "testid"));
       }
     });
   });

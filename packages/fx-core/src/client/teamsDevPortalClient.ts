@@ -378,16 +378,15 @@ export class TeamsDevPortalClient {
               return await this.publishTeamsAppUpdate(token, teamsAppId, file);
             } catch (e: any) {
               if (e instanceof DeveloperPortalAPIFailedError) {
-                throw e;
-              } else {
-                // Update Published app failed as well
                 throw this.wrapException(
-                  e,
+                  this.wrapResponse(undefined, response),
                   APP_STUDIO_API_NAMES.PUBLISH_APP,
                   AppStudioError.TeamsAppPublishConflictError.name,
                   AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[0],
                   AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[1]
                 );
+              } else {
+                throw e;
               }
             }
           }

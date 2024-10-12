@@ -37,7 +37,7 @@
                 "id": "${{BOT_ID}}"
             }
         ]
-    }
+    },
     {{/CEAEnabled}}
     "bots": [
         {

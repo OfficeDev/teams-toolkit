@@ -29,6 +29,7 @@
         "full": "full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
+    {{#CEAEnabled}}
     "copilotAgents": {
         "customEngineAgents": [
             {
@@ -36,7 +37,8 @@
                 "id": "${{BOT_ID}}"
             }
         ]
-    }
+    },
+    {{/CEAEnabled}}
     "bots": [
         {
             "botId": "${{BOT_ID}}",

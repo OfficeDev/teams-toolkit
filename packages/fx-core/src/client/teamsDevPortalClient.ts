@@ -3,7 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks";
 import { SystemError } from "@microsoft/teamsfx-api";
-import { AxiosInstance } from "axios";
+import { AxiosInstance, AxiosResponse } from "axios";
 import { HelpLinks } from "../common/constants";
 import { ErrorContextMW, TOOLS } from "../common/globalVars";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -205,8 +205,7 @@ export class TeamsDevPortalClient {
           );
         }
       }
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
     }
   }
 
@@ -378,30 +377,30 @@ export class TeamsDevPortalClient {
             try {
               return await this.publishTeamsAppUpdate(token, teamsAppId, file);
             } catch (e: any) {
-              // Update Published app failed as well
-              throw this.wrapException(
-                e,
-                APP_STUDIO_API_NAMES.PUBLISH_APP,
-                AppStudioError.TeamsAppPublishConflictError.name,
-                AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[0],
-                AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[1]
-              );
+              if (e instanceof DeveloperPortalAPIFailedError) {
+                throw e;
+              } else {
+                // Update Published app failed as well
+                throw this.wrapException(
+                  e,
+                  APP_STUDIO_API_NAMES.PUBLISH_APP,
+                  AppStudioError.TeamsAppPublishConflictError.name,
+                  AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[0],
+                  AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[1]
+                );
+              }
             }
           }
-
-          const error = new Error(response?.data.error.message);
-          (error as any).response = response;
-          (error as any).request = response.request;
-          throw this.wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
+          throw this.wrapException(
+            this.wrapResponse(undefined, response),
+            APP_STUDIO_API_NAMES.PUBLISH_APP
+          );
         } else {
           return response.data.id;
         }
       } else {
-        const error = new Error("empty response");
-        (error as any).response = response;
-        (error as any).request = response?.request;
         throw this.wrapException(
-          error,
+          this.wrapResponse(new Exception("empty response"), response),
           APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")[0],
@@ -457,10 +456,10 @@ export class TeamsDevPortalClient {
       const requestPath = `${response?.request?.method} ${response?.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
-          const error = new Error(response.data.error?.message || response.data.errorMessage);
-          (error as any).response = response;
-          (error as any).request = response.request;
-          throw this.wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+          throw this.wrapException(
+            this.wrapResponse(undefined, response),
+            APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP
+          );
         } else {
           return response.data.teamsAppId;
         }
@@ -474,7 +473,7 @@ export class TeamsDevPortalClient {
         );
       }
     } catch (error: any) {
-      if (error instanceof SystemError) {
+      if (error instanceof DeveloperPortalAPIFailedError) {
         throw error;
       } else {
         throw this.wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
@@ -855,11 +854,8 @@ export class TeamsDevPortalClient {
         return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
-        const error = new Error(response?.data.error.message);
-        (error as any).response = response;
-        (error as any).request = response?.request;
         throw this.wrapException(
-          error,
+          this.wrapResponse(undefined, response),
           APP_STUDIO_API_NAMES.GET_BOT,
           getDefaultString("error.appstudio.apiFailed.name.common"),
           "Failed to get data"
@@ -879,11 +875,8 @@ export class TeamsDevPortalClient {
         return <IBotRegistration[]>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
-        const error = new Error(response?.data.error.message);
-        (error as any).response = response;
-        (error as any).request = response?.request;
         throw this.wrapException(
-          error,
+          this.wrapResponse(undefined, response),
           APP_STUDIO_API_NAMES.LIST_BOT,
           getDefaultString("error.appstudio.apiFailed.name.common"),
           "Failed to get data"
@@ -972,6 +965,14 @@ export class TeamsDevPortalClient {
       e.teamsfxUrlName = TeamsFxUrlNames[apiName];
       throw this.wrapException(e, apiName) as SystemError;
     }
+  }
+  wrapResponse(e?: Exception, response?: AxiosResponse<any, any>): any {
+    const error = new Error(
+      e?.message || response?.data.error.message || response?.data.errorMessage
+    );
+    (error as any).response = response;
+    (error as any).request = response?.request;
+    return error;
   }
   wrapException(
     e: any,

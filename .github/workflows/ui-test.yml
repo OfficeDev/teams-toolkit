@@ -335,7 +335,7 @@ jobs:
           npx playwright install
 
       - name: Download TTK
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ttk
           path: ./packages/tests
@@ -554,7 +554,7 @@ jobs:
           npx ts-node src/scripts/testPlan.ts archive $testplanid
       
       - name: Download TestPlan
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           path: ./packages/tests/mocha-results
 

@@ -397,8 +397,11 @@ export class TeamsDevPortalClient {
           return response.data.id;
         }
       } else {
+        const error = new Error("empty response");
+        (error as any).response = response;
+        (error as any).request = response?.request;
         throw this.wrapException(
-          new Exception("empty response"),
+          error,
           APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")[0],

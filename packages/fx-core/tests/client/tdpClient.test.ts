@@ -134,6 +134,17 @@ describe("TeamsDevPortalClient Test", () => {
       const res = await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       chai.assert.equal(res, response.data.id);
     });
+    it("return undefined response", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(fakeAxiosInstance, "post").resolves(undefined);
+      try {
+        await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
+      } catch (e) {
+        chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
+      }
+    });
     it("return no data", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -144,6 +155,24 @@ describe("TeamsDevPortalClient Test", () => {
       } catch (e) {
         chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
         chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
+      }
+    });
+    it("return no data with correlation id", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      const xCorrelationId = "fakeCorrelationId";
+      const response = {
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "post").resolves(response);
+      try {
+        await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
+      } catch (e) {
+        chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
+        chai.assert.isTrue(e.message.includes(xCorrelationId));
       }
     });
     it("API Failure", async () => {

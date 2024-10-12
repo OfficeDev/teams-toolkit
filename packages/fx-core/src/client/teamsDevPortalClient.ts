@@ -983,10 +983,13 @@ export class TeamsDevPortalClient {
     e.name = name;
     const correlationId = e.response?.headers?.[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const extraData = `${potentialReason} ${
+    let extraData = `${potentialReason} ${
       e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : ""
     }`;
-
+    // add status code in extra data if the message does not have it.
+    if (!e.message?.toLowerCase().includes("status code") && e.response?.status) {
+      extraData = `Status code: ${e.response.status as string}. ${extraData}`;
+    }
     const error = new DeveloperPortalAPIFailedError(
       e,
       correlationId,

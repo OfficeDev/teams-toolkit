@@ -16,7 +16,7 @@ import {
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
 import { HttpMethod } from "../component/constant/commonConstant";
-import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { getDefaultString } from "./localizeUtils";
 
 /**
  * This client will send telemetries to record API request trace

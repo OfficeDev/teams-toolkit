@@ -1,7 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, Platform, ManifestUtil, Colors } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  ok,
+  err,
+  Platform,
+  ManifestUtil,
+  Colors,
+  TeamsAppManifest,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { EOL } from "os";
@@ -334,6 +344,74 @@ export class ValidateManifestDriver implements StepDriver {
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );
+    }
+    return ok(undefined);
+  }
+
+  private async validateLocalizatoinFiles(
+    args: ValidateManifestArgs,
+    context: WrapDriverContext,
+    manifest: TeamsAppManifest
+  ): Promise<Result<any, FxError>> {
+    const errors: string[] = [];
+    const additionalLanguages = manifest.localizationInfo?.additionalLanguages;
+    if (!additionalLanguages || additionalLanguages.length == 0) {
+      return ok(undefined);
+    }
+    for (const language of additionalLanguages) {
+      const filePath = language?.file;
+      if (!filePath) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              getLocalizedString("error.appstudio.localizationFile.pathNotDefined", filePath),
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+      const localizationFileDir = path.dirname(
+        getAbsolutePath(args.manifestPath, context.projectPath)
+      );
+      const localizationFilePath = getAbsolutePath(filePath, localizationFileDir);
+      const manifestRes = await manifestUtils.getManifestV3(localizationFilePath, context);
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const localizationFile = manifestRes.value;
+      try {
+        const validationRes = await ManifestUtil.validateManifest(localizationFile);
+        if (validationRes.length > 0) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.ValidationFailedError.name,
+              AppStudioError.ValidationFailedError.message([
+                getLocalizedString(
+                  "error.appstudio.localizationFile.validationFailed",
+                  filePath,
+                  validationRes.join(EOL)
+                ),
+              ]),
+              HelpLinks.WhyNeedProvision
+            )
+          );
+        }
+      } catch (e: any) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              getLocalizedString(
+                "error.appstudio.localizationFile.validationException",
+                filePath,
+                e.message
+              ),
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
     }
     return ok(undefined);
   }

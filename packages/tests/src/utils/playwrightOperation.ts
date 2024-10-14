@@ -1040,11 +1040,17 @@ export async function validateReactTab(
 
 export async function validateReactOutlookTab(
   page: Page,
+  url: string,
   displayName: string,
   includeFunction?: boolean
 ) {
-  try {
+  await RetryHandler.retry(async () => {
+    await Promise.all([page.goto(url), page.waitForNavigation()]);
     await page.waitForTimeout(Timeout.longTimeWait);
+    await page.waitForSelector('div[aria-label="hosted-app-tabs"]');
+  }, 3);
+
+  try {
     const frameElementHandle = await page.waitForSelector(
       'iframe[data-tid="app-host-iframe"]'
     );

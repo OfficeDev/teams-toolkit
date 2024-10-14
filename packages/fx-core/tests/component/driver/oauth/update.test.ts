@@ -117,6 +117,7 @@ describe("CreateOauthDriver", () => {
                 authorizationCode: {
                   authorizationUrl: "https://test",
                   tokenUrl: "https://test",
+                  refreshUrl: "https://test",
                   scopes: {
                     mockedScopes: "mockedScopes",
                   },
@@ -137,6 +138,10 @@ describe("CreateOauthDriver", () => {
       expect((config as ConfirmConfig).title.includes("m365AppId")).to.be.true;
       expect((config as ConfirmConfig).title.includes("targetAudience")).to.be.true;
       expect((config as ConfirmConfig).title.includes("isPKCEEnabled")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("authorizationEndpoint")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("tokenExchangeEndpoint")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("tokenRefreshEndpoint")).to.be.true;
+      expect((config as ConfirmConfig).title.includes("scopes")).to.be.true;
       return ok({ type: "success", value: true });
     });
 
@@ -251,7 +256,7 @@ describe("CreateOauthDriver", () => {
       clientSecret: "mockedClientSecret",
       authorizationEndpoint: "mockedAuthorizationEndpoint",
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
-      scopes: ["mockedScope"],
+      scopes: ["mockedScopes"],
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -265,8 +270,8 @@ describe("CreateOauthDriver", () => {
               type: "oauth2",
               flows: {
                 authorizationCode: {
-                  authorizationUrl: "https://test",
-                  tokenUrl: "https://test",
+                  authorizationUrl: "mockedAuthorizationEndpoint",
+                  tokenUrl: "mockedTokenExchangeEndpoint",
                   scopes: {
                     mockedScopes: "mockedScopes",
                   },
@@ -290,7 +295,7 @@ describe("CreateOauthDriver", () => {
                   authorizationUrl: "https://test",
                   tokenUrl: "https://test",
                   scopes: {
-                    mockedScopes: "mockedScopes",
+                    mockedScopes: "mockedScope",
                   },
                 },
               },
@@ -344,7 +349,7 @@ describe("CreateOauthDriver", () => {
       clientSecret: "mockedClientSecret",
       authorizationEndpoint: "mockedAuthorizationEndpoint",
       tokenExchangeEndpoint: "mockedTokenExchangeEndpoint",
-      scopes: ["mockedScope"],
+      scopes: ["mockedScopes"],
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
       APIs: [
@@ -358,8 +363,8 @@ describe("CreateOauthDriver", () => {
               type: "oauth2",
               flows: {
                 authorizationCode: {
-                  authorizationUrl: "https://test",
-                  tokenUrl: "https://test",
+                  authorizationUrl: "mockedAuthorizationEndpoint",
+                  tokenUrl: "mockedTokenExchangeEndpoint",
                   scopes: {
                     mockedScopes: "mockedScopes",
                   },

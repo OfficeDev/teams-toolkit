@@ -274,7 +274,7 @@ describe("DeveloperPortalAPIFailed error", function () {
       "apiName",
       "extraData"
     );
-    assert.isTrue(error instanceof SystemError);
+    assert.isTrue(error instanceof UserError);
     assert.isTrue(!!error.displayMessage);
     assert.isFalse(!!error.helpLink);
   });

@@ -469,7 +469,7 @@ export class TeamsDevPortalClient {
       } else {
         throw this.wrapException(
           new Error("empty response"),
-          APP_STUDIO_API_NAMES.PUBLISH_APP,
+          APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)[0],
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)[1]

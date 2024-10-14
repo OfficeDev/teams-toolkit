@@ -35,17 +35,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="apiSpecificationFile\openapi.yaml">
+    <Content Remove="apiSpecificationFile\{{OPENAPI_SPEC_PATH}}" />
+    <Content Include="apiSpecificationFile\{{OPENAPI_SPEC_PATH}}">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
 
-  <!-- Exclude local settings from publish -->
-  <ItemGroup>
+    <!-- Exclude local settings from publish -->
     <Content Remove="appsettings.Development.json" />
     <Content Include="appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

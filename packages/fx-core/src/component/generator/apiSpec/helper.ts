@@ -94,9 +94,9 @@ export function getParserOptions(
     ? {
         isGptPlugin: isDeclarativeCopilot,
         allowAPIKeyAuth: false,
-        allowBearerTokenAuth: true,
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true,
         allowMultipleParameters: true,
-        allowOauth2: true,
+        allowOauth2: !!platform && platform === Platform.VS ? false : true,
         projectType: ProjectType.Copilot,
         allowMissingId: true,
         allowSwagger: true,
@@ -1036,7 +1036,12 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
-const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+const commonLanguages = [
+  ProgrammingLanguage.TS,
+  ProgrammingLanguage.JS,
+  ProgrammingLanguage.PY,
+  ProgrammingLanguage.CSharp,
+];
 
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
@@ -1058,7 +1063,10 @@ async function updateAdaptiveCardForCustomApi(
   destinationPath: string
 ): Promise<void> {
   if (commonLanguages.includes(language as ProgrammingLanguage)) {
-    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    let adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    if (language === ProgrammingLanguage.CSharp) {
+      adaptiveCardsFolderPath = path.join(destinationPath, "adaptiveCards");
+    }
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
@@ -1244,8 +1252,8 @@ async def {{operationId}}(
   return "success"
   `,
   cs: `
-        [Action("{{actionName}}")]
-        public async Task<string> {{actionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
+        [Action("{{operationId}}")]
+        public async Task<string> {{functionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
         {
             try
             {
@@ -1339,16 +1347,26 @@ async function updateCodeForCustomApi(
         .replace(/{{operationId}}/g, item.item.operationId!)
         .replace(/{{apiPath}}/g, item.pathUrl)
         .replace(/{{apiMethod}}/g, Utils.updateFirstLetter(item.method))
-        .replace(/{{actionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
+        .replace(/{{functionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
       actionsCode.push(code);
     }
 
     const apiActionCsFilePath = path.join(destinationPath, "APIActions.cs");
     const apiActionCsFileContent = (await fs.readFile(apiActionCsFilePath)).toString();
     const updateApiActionCsFileContent = apiActionCsFileContent
-      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("{{OPENAPI_SPEC_PATH}}", "apiSpecificationFile/" + openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(apiActionCsFilePath, updateApiActionCsFileContent);
+
+    const files = await fs.readdir(destinationPath);
+    const projectFileName = files.find((file) => file.endsWith(".csproj"));
+    const projectFilePath = path.join(destinationPath, projectFileName!);
+    const projectFileContent = (await fs.readFile(projectFilePath)).toString();
+    const updateProjectFileContent = projectFileContent.replace(
+      /{{OPENAPI_SPEC_PATH}}/g,
+      openapiSpecFileName
+    );
+    await fs.writeFile(projectFilePath, updateProjectFileContent);
   }
 }
 
@@ -1358,7 +1376,10 @@ export async function updateForCustomApi(
   destinationPath: string,
   openapiSpecFileName: string
 ): Promise<void> {
-  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  let chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  if (language === ProgrammingLanguage.CSharp) {
+    chatFolder = path.join(destinationPath, "prompts", "Chat");
+  }
   await fs.ensureDir(chatFolder);
 
   // 1. update prompt folder

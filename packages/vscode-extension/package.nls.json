@@ -36,7 +36,7 @@
   "teamstoolkit.capabilities.untrustedWorkspaces.description": "The Teams Toolkit extension supports limited features in untrusted workspaces.",
   "teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription": "Unable to get login code for token exchange. Log in with another account.",
   "teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle": "Login Code Error",
-  "teamstoolkit.codeFlowLogin.loginComponent": "Log In",
+  "teamstoolkit.codeFlowLogin.loginComponent": "Login",
   "teamstoolkit.codeFlowLogin.loginFailureDescription": "Unable to get user login information. Log in with another account.",
   "teamstoolkit.codeFlowLogin.loginFailureTitle": "Login unsuccessful",
   "teamstoolkit.codeFlowLogin.loginPortConflictDescription": "There was a delay in finding a login port. Please try again.",

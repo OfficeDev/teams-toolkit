@@ -598,10 +598,7 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      const message =
-        getDefaultString(displayMessages.errorMessageKey) +
-        " " +
-        displayMessages.showDetailMessage();
+      const message = failures.map((f) => f.error?.message || "").join(", ");
 
       // show failure summary in display message
       const displayMessage =

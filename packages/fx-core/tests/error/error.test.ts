@@ -264,7 +264,7 @@ describe("DeveloperPortalAPIFailed error", function () {
       "extraData"
     );
     assert.isTrue(error instanceof SystemError);
-    assert.isTrue(error.displayMessage);
+    assert.isTrue(!!error.displayMessage);
   });
 
   it("user error", () => {
@@ -275,7 +275,7 @@ describe("DeveloperPortalAPIFailed error", function () {
       "extraData"
     );
     assert.isTrue(error instanceof SystemError);
-    assert.isTrue(error.displayMessage);
-    assert.isFalse(error.helpLink);
+    assert.isTrue(!!error.displayMessage);
+    assert.isFalse(!!error.helpLink);
   });
 });

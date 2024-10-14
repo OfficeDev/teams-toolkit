@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
     <PackageReference Include="Microsoft.Teams.AI" Version="1.5.*" />
     <PackageReference Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <!-- Exclude local settings from publish -->

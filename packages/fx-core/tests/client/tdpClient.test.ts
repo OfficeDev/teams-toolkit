@@ -35,6 +35,7 @@ import { ErrorNames } from "../../src/component/resource/botService/constants";
 import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
 import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
+import { getDefaultString } from "../../src/common/localizeUtils";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
@@ -397,6 +398,31 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
         chai.assert.isTrue(
           error.message.includes(AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name)
+        );
+      }
+    });
+
+    it("422 conflict with unknown data", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          status: 422,
+          data: "Unknown",
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "post").throws(error);
+
+      try {
+        await teamsDevPortalClient.importApp(token, Buffer.from(""));
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.isFalse(
+          error.message.includes(AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name)
+        );
+        chai.assert.isTrue(
+          error.message.includes(getDefaultString("error.appstudio.apiFailed.name.common"))
         );
       }
     });

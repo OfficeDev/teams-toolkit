@@ -721,7 +721,7 @@ export class TeamsDevPortalClient {
           error,
           error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
           apiName,
-          getLocalizedString(
+          getDefaultString(
             "error.appstudio.apiFailed.reason.common",
             error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
           )

@@ -12,7 +12,7 @@ import { ErrorCategory } from "./types";
 import { Constants } from "../component/driver/teamsApp/constants";
 import { matchDnsError } from "./common";
 
-export class DeveloperPortalAPIFailedError extends SystemError {
+export class DeveloperPortalAPIFailedSystemError extends SystemError {
   constructor(
     e: any,
     correlationId: string,
@@ -37,6 +37,35 @@ export class DeveloperPortalAPIFailedError extends SystemError {
       ),
       displayMessage: displayMessage || getLocalizedString("error.appstudio.apiFailed"),
       categories: [ErrorCategory.Unhandled, apiName],
+    };
+    super(errorOptions);
+  }
+}
+
+export class DeveloperPortalAPIFailedUserError extends UserError {
+  constructor(
+    e: any,
+    correlationId: string,
+    apiName: string,
+    extraData: string,
+    displayMessage?: string,
+    helpLink?: string
+  ) {
+    const errorOptions: UserErrorOptions = {
+      source: Constants.PLUGIN_NAME,
+      error: e,
+      message: getDefaultString(
+        // github issue workflow uses this template for matching. Please send a heads-up to the owner of workflows if you want to change it.
+        "error.appstudio.apiFailed.telemetry",
+        e.name,
+        e.message,
+        apiName,
+        correlationId,
+        extraData
+      ),
+      displayMessage: displayMessage || getLocalizedString("error.appstudio.apiFailed"),
+      categories: [ErrorCategory.Unhandled, apiName],
+      helpLink: helpLink,
     };
     super(errorOptions);
   }

@@ -54,9 +54,9 @@ import { Messages } from "../component/resource/botService/messages";
 import { CommonStrings, ConfigNames } from "../component/resource/botService/strings";
 import {
   CheckSideloadingPermissionFailedError,
-  DeveloperPortalAPIFailedError,
+  DeveloperPortalAPIFailedSystemError,
+  DeveloperPortalAPIFailedUserError,
 } from "../error/teamsApp";
-import { Exception } from "handlebars";
 
 export class RetryHandler {
   public static RETRIES = 6;
@@ -158,7 +158,7 @@ export class TeamsDevPortalClient {
         return app;
       } else {
         throw this.wrapException(
-          new Exception("cannot create teams app"),
+          new Error("cannot create teams app"),
           APP_STUDIO_API_NAMES.CREATE_APP
         );
       }
@@ -169,7 +169,9 @@ export class TeamsDevPortalClient {
           APP_STUDIO_API_NAMES.CREATE_APP,
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message()[0],
-          AppStudioError.TeamsAppCreateConflictError.message()[1]
+          AppStudioError.TeamsAppCreateConflictError.message()[1],
+          true,
+          HelpLinks.SwitchTenant
         );
       }
       // Corner case: The provided app ID conflict with an existing published app
@@ -183,7 +185,8 @@ export class TeamsDevPortalClient {
           APP_STUDIO_API_NAMES.CREATE_APP,
           AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name,
           AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[0],
-          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[1]
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[1],
+          true
         );
       }
       // Corner case: App Id must be a GUID
@@ -201,7 +204,8 @@ export class TeamsDevPortalClient {
             APP_STUDIO_API_NAMES.CREATE_APP,
             AppStudioError.InvalidTeamsAppIdError.name,
             AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[0],
-            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[1]
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[1],
+            true
           );
         }
       }
@@ -227,7 +231,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);
     }
     throw this.wrapException(
-      new Exception("cannot get the app definitions"),
+      new Error("cannot get the app definitions"),
       APP_STUDIO_API_NAMES.LIST_APPS
     );
   }
@@ -255,7 +259,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
     }
     throw this.wrapException(
-      new Exception("cannot delete the app: " + teamsAppId),
+      new Error("cannot delete the app: " + teamsAppId),
       APP_STUDIO_API_NAMES.DELETE_APP
     );
   }
@@ -284,7 +288,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
     }
     throw this.wrapException(
-      new Exception(`cannot get the app definition with app ID ${teamsAppId}`),
+      new Error(`cannot get the app definition with app ID ${teamsAppId}`),
       APP_STUDIO_API_NAMES.GET_APP
     );
   }
@@ -311,7 +315,7 @@ export class TeamsDevPortalClient {
         return response.data;
       } else {
         throw this.wrapException(
-          new Exception(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId)),
+          new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId)),
           APP_STUDIO_API_NAMES.GET_APP_PACKAGE
         );
       }
@@ -377,7 +381,7 @@ export class TeamsDevPortalClient {
             try {
               return await this.publishTeamsAppUpdate(token, teamsAppId, file);
             } catch (e: any) {
-              if (e instanceof DeveloperPortalAPIFailedError) {
+              if (e instanceof DeveloperPortalAPIFailedSystemError) {
                 throw this.wrapException(
                   this.wrapResponse(undefined, response),
                   APP_STUDIO_API_NAMES.PUBLISH_APP,
@@ -399,7 +403,7 @@ export class TeamsDevPortalClient {
         }
       } else {
         throw this.wrapException(
-          this.wrapResponse(new Exception("empty response"), response),
+          this.wrapResponse(new Error("empty response"), response),
           APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")[0],
@@ -438,7 +442,7 @@ export class TeamsDevPortalClient {
         );
       } else {
         throw this.wrapException(
-          new Exception("API failed"),
+          new Error("API failed"),
           APP_STUDIO_API_NAMES.GET_PUBLISHED_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(
@@ -464,7 +468,7 @@ export class TeamsDevPortalClient {
         }
       } else {
         throw this.wrapException(
-          new Exception("empty response"),
+          new Error("empty response"),
           APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)[0],
@@ -472,7 +476,7 @@ export class TeamsDevPortalClient {
         );
       }
     } catch (error: any) {
-      if (error instanceof DeveloperPortalAPIFailedError) {
+      if (error instanceof DeveloperPortalAPIFailedSystemError) {
         throw error;
       } else {
         throw this.wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
@@ -965,7 +969,7 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, apiName) as SystemError;
     }
   }
-  wrapResponse(e?: Exception, response?: AxiosResponse<any, any>): any {
+  wrapResponse(e?: Error, response?: AxiosResponse<any, any>): any {
     const error = new Error(
       e?.message || response?.data.error.message || response?.data.errorMessage
     );
@@ -978,7 +982,9 @@ export class TeamsDevPortalClient {
     apiName: string,
     name = getDefaultString("error.appstudio.apiFailed.name.common"),
     potentialReason = getDefaultString("error.appstudio.apiFailed.reason.common"),
-    disPlayMessage?: string
+    disPlayMessage?: string,
+    isUserError = false,
+    helpLink?: string
   ): Error {
     e.name = name;
     const correlationId = e.response?.headers?.[Constants.CORRELATION_ID];
@@ -990,13 +996,25 @@ export class TeamsDevPortalClient {
     if (!e.message?.toLowerCase().includes("status code") && e.response?.status) {
       extraData = `Status code: ${e.response.status as string}. ${extraData}`;
     }
-    const error = new DeveloperPortalAPIFailedError(
-      e,
-      correlationId,
-      apiName,
-      extraData,
-      disPlayMessage
-    );
+    let error;
+    if (isUserError) {
+      error = new DeveloperPortalAPIFailedUserError(
+        e,
+        correlationId,
+        apiName,
+        extraData,
+        disPlayMessage,
+        helpLink
+      );
+    } else {
+      error = new DeveloperPortalAPIFailedSystemError(
+        e,
+        correlationId,
+        apiName,
+        extraData,
+        disPlayMessage
+      );
+    }
     return error;
   }
 }

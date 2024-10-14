@@ -14,7 +14,7 @@ import {
   TelemetryPropertyValue,
 } from "../component/driver/teamsApp/utils/telemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "./telemetry";
-import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
+import { DeveloperPortalAPIFailedSystemError } from "../error/teamsApp";
 import { HttpMethod } from "../component/constant/commonConstant";
 import { getDefaultString } from "./localizeUtils";
 
@@ -119,7 +119,7 @@ export class WrappedAxiosClient {
         "error.appstudio.apiFailed.reason.common",
         error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
       );
-      const TDPApiFailedError = new DeveloperPortalAPIFailedError(
+      const TDPApiFailedError = new DeveloperPortalAPIFailedSystemError(
         error,
         correlationId,
         apiName,

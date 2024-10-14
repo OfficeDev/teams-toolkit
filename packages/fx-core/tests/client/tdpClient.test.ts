@@ -32,10 +32,14 @@ import { AppStudioResultFactory } from "../../src/component/driver/teamsApp/resu
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { IBotRegistration } from "../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
 import { ErrorNames } from "../../src/component/resource/botService/constants";
-import { DeveloperPortalAPIFailedError } from "../../src/error/teamsApp";
+import {
+  DeveloperPortalAPIFailedSystemError,
+  DeveloperPortalAPIFailedUserError,
+} from "../../src/error/teamsApp";
 import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
 import { getDefaultString } from "../../src/common/localizeUtils";
+import { HelpLinks } from "../../src/common/constants";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
@@ -142,7 +146,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (e) {
-        chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(e.name, DeveloperPortalAPIFailedSystemError.name);
         chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
       }
     });
@@ -154,7 +158,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (e) {
-        chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(e.name, DeveloperPortalAPIFailedSystemError.name);
         chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
       }
     });
@@ -171,7 +175,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (e) {
-        chai.assert.equal(e.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(e.name, DeveloperPortalAPIFailedSystemError.name);
         chai.assert.isTrue(e.message.includes(AppStudioError.TeamsAppPublishFailedError.name));
         chai.assert.isTrue(e.message.includes(xCorrelationId));
       }
@@ -189,7 +193,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -212,7 +216,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
         chai.assert.include(error.message, xCorrelationId);
       }
     });
@@ -324,7 +328,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsApp(token, "fakeId", Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
         chai.assert.isTrue(
           error.message.includes(AppStudioError.TeamsAppPublishConflictError.name)
         );
@@ -375,8 +379,9 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedUserError.name);
         chai.assert.isTrue(error.message.includes(AppStudioError.TeamsAppCreateConflictError.name));
+        chai.assert.equal(error.helpLink, HelpLinks.SwitchTenant);
       }
     });
 
@@ -395,7 +400,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedUserError.name);
         chai.assert.isTrue(
           error.message.includes(AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name)
         );
@@ -417,7 +422,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
         chai.assert.isFalse(
           error.message.includes(AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name)
         );
@@ -445,7 +450,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -467,7 +472,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedUserError.name);
         chai.assert.isTrue(error.message.includes(AppStudioError.InvalidTeamsAppIdError.name));
       }
     });
@@ -517,7 +522,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -535,7 +540,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.importApp(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -567,7 +572,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getApp(token, appDef.teamsAppId!);
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -589,7 +594,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getApp(token, appDef.teamsAppId!);
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       } finally {
         teamsDevPortalClient.setRegionEndpoint(undefined as unknown as string);
       }
@@ -674,7 +679,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getAppPackage(token, appDef.teamsAppId!);
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -688,7 +693,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getAppPackage(token, appDef.teamsAppId!);
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedSystemError);
       }
     });
   });
@@ -734,7 +739,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.partnerCenterAppPackageValidation(token, Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -777,7 +782,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.checkExistsInTenant(token, appDef.teamsAppId!);
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -881,7 +886,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -916,7 +921,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.grantPermission(token, appDef.teamsAppId!, appUser);
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedSystemError);
       }
     });
     it("response no data", async () => {
@@ -1071,7 +1076,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getApiKeyRegistrationById(token, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -1125,7 +1130,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.createApiKeyRegistration(token, appApiRegistration);
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1149,7 +1154,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.updateApiKeyRegistration(token, appApiRegistration, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -1211,7 +1216,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.createOauthRegistration(token, fakeOauthRegistration);
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1243,7 +1248,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getOauthRegistrationById(token, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1279,7 +1284,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.updateOauthRegistration(token, fakeOauthRegistration, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1322,7 +1327,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.listApps(token);
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedSystemError);
       }
     });
     it("Error - no data", async () => {
@@ -1384,7 +1389,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.deleteApp(token, "testid");
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedSystemError);
       }
     });
     it("Error - no data", async () => {
@@ -1449,7 +1454,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.submitAppValidationRequest(token, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1493,7 +1498,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getAppValidationRequestList(token, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
 
@@ -1510,7 +1515,7 @@ describe("TeamsDevPortalClient Test", () => {
       try {
         await teamsDevPortalClient.getAppValidationById(token, "fakeId");
       } catch (error) {
-        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1582,7 +1587,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.getBotRegistration("anything", "anything");
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1699,7 +1704,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.createBotRegistration("anything", sampleBot);
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1799,7 +1804,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.updateBotRegistration("anything", sampleBot);
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedError.name);
+        chai.assert.isTrue(e.name === DeveloperPortalAPIFailedSystemError.name);
       }
     });
   });
@@ -1877,7 +1882,7 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.listBots("anything");
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedSystemError);
       }
     });
   });

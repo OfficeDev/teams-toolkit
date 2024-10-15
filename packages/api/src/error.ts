@@ -19,6 +19,8 @@ export interface FxError extends Error {
 
   categories?: string[];
 
+  telemetryProperties?: Record<string, string>;
+
   /**
    * recommended operation for user to fix the error
    * e.g. "debug-in-test-tool"
@@ -37,6 +39,7 @@ export interface ErrorOptionBase {
   userData?: any;
   displayMessage?: string;
   categories?: string[];
+  telemetryProperties?: Record<string, string>;
   /**
    * whether to skip process (such as mask secret tokens) in telemetry collection
    */
@@ -80,6 +83,8 @@ export class UserError extends Error implements FxError {
   displayMessage?: string;
 
   categories?: string[];
+
+  telemetryProperties?: Record<string, string>;
 
   /**
    * whether to skip process (such as mask secret tokens) in telemetry collection
@@ -138,6 +143,7 @@ export class UserError extends Error implements FxError {
     this.timestamp = new Date();
     this.categories = option.categories;
     this.skipProcessInTelemetry = option.skipProcessInTelemetry;
+    this.telemetryProperties = option.telemetryProperties;
   }
 }
 
@@ -172,6 +178,8 @@ export class SystemError extends Error implements FxError {
   displayMessage?: string;
 
   categories?: string[];
+
+  telemetryProperties?: Record<string, string>;
 
   /**
    * whether to skip process (such as mask secret tokens) in telemetry collection
@@ -230,5 +238,6 @@ export class SystemError extends Error implements FxError {
     this.timestamp = new Date();
     this.categories = option.categories;
     this.skipProcessInTelemetry = option.skipProcessInTelemetry;
+    this.telemetryProperties = option.telemetryProperties;
   }
 }

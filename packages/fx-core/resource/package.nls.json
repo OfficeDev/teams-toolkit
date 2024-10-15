@@ -819,7 +819,7 @@
   "error.yaml.InvalidYmlActionNameError": "Action '%s' not found, yaml file: %s",
   "error.yaml.LifeCycleUndefinedError": "Lifecycle '%s' is undefined, yaml file: %s",
   "error.yaml.InvalidActionInputError": "The '%s' action cannot be completed as the following parameter(s): %s, are either missing or have an invalid value in the provided yaml file: %s. Ensure that the required parameters are provided and have valid values and try again.",
-  "error.common.InstallSoftwareError": "Unable to install %s. You can install it manually and restart Visual Studio Code if you are using the Toolkit in Visual Studio Code.",
+  "error.common.InstallSoftwareError": "Unable to install %s. You can install manually and restart Visual Studio Code if you are using the Toolkit in Visual Studio Code.",
   "error.common.VersionError": "Unable to find a version satisfying the version range %s.",
   "error.common.MissingEnvironmentVariablesError": "Missing environment variables '%s' for file: %s. Please edit the .env file '%s' or '%s', or adjust system environment variables. For new Teams Toolkit projects, make sure you've run provision or debug to set these variables correctly.",
   "error.common.InvalidProjectError": "This command only works for project created by Teams Toolkit. 'teamsapp.yml' or 'teamsapp.local.yml' not found",
@@ -919,5 +919,13 @@
   "driver.oauth.log.skipUpdateOauth": "Skip updating OAuth registration as the same property exists.",
   "driver.oauth.confirm.update": "The following parameters will be updated:\n%s\nDo you want to continue?",
   "driver.oauth.log.successUpdateOauth": "OAuth registration updated successfully!",
-  "driver.oauth.info.update": "OAuth registration updated successfully! The following parameters have been updated:\n%s"
+  "driver.oauth.info.update": "OAuth registration updated successfully! The following parameters have been updated:\n%s",
+  "error.dep.PortsConflictError": "Port occupation check failed. Candidate ports to check: %s. The following ports are occupied: %s. Please close them and try again.",
+  "error.dep.SideloadingDisabledError": "Your Microsoft 365 account admin hasn't enabled custom app upload permission.\n· Contact your Teams admin to fix this. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites\n· For help, visit the Microsoft Teams documentation. To create a free testing tenant, click \"Custom App Upload Disabled\" label under your account.",
+  "error.dep.CopilotDisabledError": "Microsoft 365 account administrator hasn't enabled Copilot access for this account. Contact your Teams administrator to resolve this issue by enrolling in Microsoft 365 Copilot Early Access program. Visit: https://aka.ms/PluginsEarlyAccess",
+  "error.dep.NodejsNotFoundError": "Unable to find Node.js. Go to https://nodejs.org to install LTS Node.js.",
+  "error.dep.NodejsNotLtsError": "Node.js (%s) is not a LTS version (%s). Go to https://nodejs.org to install LTS Node.js.",
+  "error.dep.NodejsNotRecommendedError": "Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to https://nodejs.org to install a supported Node.js.",
+  "error.dep.VxTestAppInvalidInstallOptionsError": "Invalid argument for video extensibility test app prerequisites checker. Please review tasks.json file to ensure all arguments are correctly formatted and valid.",
+  "error.dep.VxTestAppValidationError": "Unable to validate video extensibility test app after installation."
 }

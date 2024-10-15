@@ -16,19 +16,19 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
+  CopilotDisabledError,
   DependencyStatus,
   DepsCheckerError,
   DepsManager,
   DepsType,
+  ErrorCategory,
   LocalEnvManager,
-  NodeNotFoundError,
-  NodeNotLtsError,
+  PackageService,
+  PortsConflictError,
+  SideloadingDisabledError,
   TelemetryContext,
-  V3NodeNotSupportedError,
   assembleError,
   getSideloadingStatus,
-  ErrorCategory,
-  PackageService,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 import * as util from "util";
@@ -36,36 +36,36 @@ import * as vscode from "vscode";
 import { signedOut } from "../../commonlib/common/constant";
 import VsCodeLogInstance from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
+import { PanelType } from "../../controls/PanelType";
+import { WebviewPanel } from "../../controls/webviewPanel";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
-import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { tools, workspaceUri } from "../../globalVariables";
 import { checkCopilotCallback } from "../../handlers/accounts/checkAccessCallback";
-import { ProgressHandler } from "../progressHandler";
+import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { Step } from "../common/step";
+import { localize } from "../../utils/localizeUtils";
 import { DisplayMessages, RecommendedOperations } from "../common/debugConstants";
-import { doctorConstant } from "./doctorConstant";
-import { vscodeLogger } from "./vscodeLogger";
-import { vscodeTelemetry } from "./vscodeTelemetry";
-import { localTelemetryReporter } from "../localTelemetryReporter";
-import { ProgressHelper } from "../progressHelper";
-import { WebviewPanel } from "../../controls/webviewPanel";
-import { PanelType } from "../../controls/PanelType";
-import {
-  ResultStatus,
-  Checker,
-  ProgressMessage,
-  copilotCheckServiceScope,
-  DepsDisplayName,
-} from "./prerequisitesCheckerConstants";
+import { Step } from "../common/step";
 import {
   CheckResult,
-  PrerequisiteOrderedChecker,
-  PrerequisiteCheckerInfo,
   PortCheckerInfo,
+  PrerequisiteCheckerInfo,
+  PrerequisiteOrderedChecker,
 } from "../common/types";
+import { localTelemetryReporter } from "../localTelemetryReporter";
+import { ProgressHandler } from "../progressHandler";
+import { ProgressHelper } from "../progressHelper";
+import { doctorConstant } from "./doctorConstant";
+import {
+  Checker,
+  DepsDisplayName,
+  ProgressMessage,
+  ResultStatus,
+  copilotCheckServiceScope,
+} from "./prerequisitesCheckerConstants";
+import { vscodeLogger } from "./vscodeLogger";
+import { vscodeTelemetry } from "./vscodeTelemetry";
 
 export async function _checkAndInstall(
   displayMessages: DisplayMessages,
@@ -162,27 +162,11 @@ async function checkPort(
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
       if (portsInUse.length > 0) {
         ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
-        const message = util.format(
-          // eslint-disable-next-line no-secrets/no-secrets
-          getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
-        );
-        const displayMessage = util.format(
-          // eslint-disable-next-line no-secrets/no-secrets
-          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
-        );
-
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
           failureMsg: doctorConstant.Port,
-          error: new UserError(
-            ExtensionSource,
-            ExtensionErrors.PortAlreadyInUse,
-            message,
-            displayMessage
-          ),
+          error: new PortsConflictError(ports, portsInUse, ExtensionSource),
         };
       }
       return {
@@ -314,14 +298,7 @@ async function ensureCopilotAccess(
       ctx.properties[TelemetryProperty.DebugHasCopilotAccess] = String(!!hasCopilotAccess);
       if (hasCopilotAccess === false) {
         // copilot disabled
-        return err(
-          new UserError(
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesNoCopilotAccessError,
-            getDefaultString("teamstoolkit.accountTree.copilotWarningTooltip"),
-            localize("teamstoolkit.accountTree.copilotWarningTooltip")
-          )
-        );
+        return err(new CopilotDisabledError(ExtensionSource));
       }
 
       return ok(undefined);
@@ -351,14 +328,7 @@ async function ensureSideloding(
       ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = String(!!isSideloadingEnabled);
       if (isSideloadingEnabled === false) {
         // sideloading disabled
-        return err(
-          new UserError(
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesSideloadingDisabledError,
-            getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-            localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
-          )
-        );
+        return err(new SideloadingDisabledError(ExtensionSource));
       }
 
       return ok(undefined);
@@ -510,36 +480,12 @@ async function checkNode(
 
 function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
   if (dep) {
-    if (error instanceof NodeNotFoundError) {
-      handleNodeNotFoundError(error);
-    }
-    if (error instanceof V3NodeNotSupportedError) {
-      handleNodeNotLtsError(error);
-    }
-    if (error instanceof NodeNotLtsError) {
-      handleV3NodeNotSupportedError(error);
-    }
+    if (error.displayMessage)
+      error.displayMessage = `${error.displayMessage as string}${os.EOL}${
+        doctorConstant.WhiteSpace
+      }${doctorConstant.RestartVSCode}`;
   }
-  return error instanceof DepsCheckerError
-    ? new UserError({
-        error,
-        source: ExtensionSource,
-        name: ExtensionErrors.PrerequisitesValidationError,
-        helpLink: error.helpLink,
-      })
-    : assembleError(error);
-}
-
-function handleNodeNotFoundError(error: NodeNotFoundError) {
-  error.message = `${doctorConstant.NodeNotFound}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
-}
-
-function handleV3NodeNotSupportedError(error: V3NodeNotSupportedError) {
-  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
-}
-
-function handleNodeNotLtsError(error: V3NodeNotSupportedError) {
-  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+  return error instanceof DepsCheckerError ? error : assembleError(error);
 }
 
 async function handleCheckResults(
@@ -609,20 +555,29 @@ async function handleCheckResults(
         localize(displayMessages.errorDisplayMessageKey) +
         " " +
         displayMessages.showDetailDisplayMessage();
-
-      const errorOptions: UserErrorOptions = {
-        source: ExtensionSource,
-        name: displayMessages.errorName,
-        message: message,
-        displayMessage: displayMessage,
-        helpLink: displayMessages.errorHelpLink,
-      };
-      const userError = new UserError(errorOptions);
-      // Recommend to open test tool if M365 account check failed
-      if (failures.find((f) => f.checker === Checker.M365Account)) {
-        userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+      const firstFailure = failures[0];
+      const firstError = firstFailure.error as UserError;
+      if (firstError) {
+        firstError.helpLink = displayMessages.errorHelpLink;
+        if (firstFailure.checker === Checker.M365Account) {
+          firstError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+        }
+        throw firstError;
+      } else {
+        const errorOptions: UserErrorOptions = {
+          source: ExtensionSource,
+          name: displayMessages.errorName,
+          message: message,
+          displayMessage: displayMessage,
+          helpLink: displayMessages.errorHelpLink,
+        };
+        const userError = new UserError(errorOptions);
+        // Recommend to open test tool if M365 account check failed
+        if (failures.find((f) => f.checker === Checker.M365Account)) {
+          userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+        }
+        throw userError;
       }
-      throw userError;
     }
   }
 }

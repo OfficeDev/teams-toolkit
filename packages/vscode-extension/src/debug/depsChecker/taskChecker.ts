@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result, Void, FxError, err, ok, UserError, SystemError } from "@microsoft/teamsfx-api";
-import { DepsType, Prerequisite, TelemetryContext } from "@microsoft/teamsfx-core";
+import { DepsType, maskSecret, Prerequisite, TelemetryContext } from "@microsoft/teamsfx-core";
 import { getLocalDebugSession } from "../common/localDebugSession";
 import { v3PrerequisiteCheckTaskDisplayMessages } from "../common/debugConstants";
 import { localTelemetryReporter } from "../localTelemetryReporter";
@@ -84,7 +84,7 @@ function addCheckResultsForTelemetry(
 ): void {
   const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
   properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
-  properties[TelemetryProperty.DebugCheckResults] = resultRaw;
+  properties[TelemetryProperty.DebugCheckResults] = maskSecret(resultRaw, { replace: "***" });
   // only the raw event contains error message
   errorProps.push(TelemetryProperty.DebugCheckResults);
 }

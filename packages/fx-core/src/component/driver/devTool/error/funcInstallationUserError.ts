@@ -3,8 +3,8 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { camelCase } from "lodash";
-import { DepsCheckerError } from "../../../deps-checker/depsError";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { DepsCheckerError } from "../../../../error/depCheck";
 
 const errorCode = "FuncInstallationError";
 const messageKey = "driver.prerequisite.error.funcInstallationError";

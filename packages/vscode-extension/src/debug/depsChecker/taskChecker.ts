@@ -82,9 +82,9 @@ function addCheckResultsForTelemetry(
   properties: { [key: string]: string },
   errorProps: string[]
 ): void {
-  const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
-  properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
-  properties[TelemetryProperty.DebugCheckResults] = maskSecret(resultRaw, { replace: "***" });
+  // const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
+  // properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
+  // properties[TelemetryProperty.DebugCheckResults] = maskSecret(resultRaw, { replace: "***" });
   // only the raw event contains error message
   errorProps.push(TelemetryProperty.DebugCheckResults);
 }

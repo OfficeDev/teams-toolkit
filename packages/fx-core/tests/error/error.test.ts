@@ -28,6 +28,10 @@ import {
 import { BaseComponentInnerError } from "../../src/component/error/componentError";
 import { InvalidYamlSchemaError } from "../../src/error/yml";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import {
+  DeveloperPortalAPIFailedSystemError,
+  DeveloperPortalAPIFailedUserError,
+} from "../../src/error/teamsApp";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -248,5 +252,30 @@ describe("matchDnsError", function () {
   it("undefined", () => {
     const res = matchDnsError();
     assert.equal(res, undefined);
+  });
+});
+
+describe("DeveloperPortalAPIFailed error", function () {
+  it("system error", () => {
+    const error = new DeveloperPortalAPIFailedSystemError(
+      new Error("test"),
+      "correlationId",
+      "apiName",
+      "extraData"
+    );
+    assert.isTrue(error instanceof SystemError);
+    assert.isTrue(!!error.displayMessage);
+  });
+
+  it("user error", () => {
+    const error = new DeveloperPortalAPIFailedUserError(
+      new Error("test"),
+      "correlationId",
+      "apiName",
+      "extraData"
+    );
+    assert.isTrue(error instanceof UserError);
+    assert.isTrue(!!error.displayMessage);
+    assert.isFalse(!!error.helpLink);
   });
 });

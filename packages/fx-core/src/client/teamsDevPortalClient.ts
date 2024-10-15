@@ -3,10 +3,10 @@
 
 import { hooks } from "@feathersjs/hooks";
 import { SystemError } from "@microsoft/teamsfx-api";
-import { AxiosInstance } from "axios";
+import { AxiosInstance, AxiosResponse } from "axios";
 import { HelpLinks } from "../common/constants";
 import { ErrorContextMW, TOOLS } from "../common/globalVars";
-import { getLocalizedString } from "../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -54,7 +54,8 @@ import { Messages } from "../component/resource/botService/messages";
 import { CommonStrings, ConfigNames } from "../component/resource/botService/strings";
 import {
   CheckSideloadingPermissionFailedError,
-  DeveloperPortalAPIFailedError,
+  DeveloperPortalAPIFailedSystemError,
+  DeveloperPortalAPIFailedUserError,
 } from "../error/teamsApp";
 
 export class RetryHandler {
@@ -156,16 +157,22 @@ export class TeamsDevPortalClient {
         );
         return app;
       } else {
-        throw new Error(`Cannot create teams app`);
+        throw this.wrapException(
+          new Error("cannot create teams app"),
+          APP_STUDIO_API_NAMES.CREATE_APP
+        );
       }
     } catch (e: any) {
       if (e.response?.status === 409) {
-        const error = AppStudioResultFactory.UserError(
+        throw this.wrapException(
+          e,
+          APP_STUDIO_API_NAMES.CREATE_APP,
           AppStudioError.TeamsAppCreateConflictError.name,
-          AppStudioError.TeamsAppCreateConflictError.message(),
+          AppStudioError.TeamsAppCreateConflictError.message()[0],
+          AppStudioError.TeamsAppCreateConflictError.message()[1],
+          true,
           HelpLinks.SwitchTenant
         );
-        throw error;
       }
       // Corner case: The provided app ID conflict with an existing published app
       // See Developer Portal PR: 507264
@@ -173,11 +180,14 @@ export class TeamsDevPortalClient {
         e.response?.status == 422 &&
         e.response?.data.includes("App already exists and published")
       ) {
-        const error = AppStudioResultFactory.UserError(
+        throw this.wrapException(
+          e,
+          APP_STUDIO_API_NAMES.CREATE_APP,
           AppStudioError.TeamsAppCreateConflictWithPublishedAppError.name,
-          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[0],
+          AppStudioError.TeamsAppCreateConflictWithPublishedAppError.message()[1],
+          true
         );
-        throw error;
       }
       // Corner case: App Id must be a GUID
       if (
@@ -189,15 +199,17 @@ export class TeamsDevPortalClient {
           throw manifest.error;
         } else {
           const teamsAppId = manifest.value.id;
-          const error = AppStudioResultFactory.UserError(
+          throw this.wrapException(
+            e,
+            APP_STUDIO_API_NAMES.CREATE_APP,
             AppStudioError.InvalidTeamsAppIdError.name,
-            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[0],
+            AppStudioError.InvalidTeamsAppIdError.message(teamsAppId)[1],
+            true
           );
-          throw error;
         }
       }
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP);
     }
   }
 
@@ -216,10 +228,12 @@ export class TeamsDevPortalClient {
         TOOLS.logProvider.error("Cannot get the app definitions");
       }
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.LIST_APPS);
     }
-    throw new Error("Cannot get the app definitions");
+    throw this.wrapException(
+      new Error("cannot get the app definitions"),
+      APP_STUDIO_API_NAMES.LIST_APPS
+    );
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async deleteApp(appStudioToken: string, teamsAppId: string): Promise<boolean> {
@@ -242,10 +256,12 @@ export class TeamsDevPortalClient {
         }
       }
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.DELETE_APP);
     }
-    throw new Error("Cannot delete the app: " + teamsAppId);
+    throw this.wrapException(
+      new Error("cannot delete the app: " + teamsAppId),
+      APP_STUDIO_API_NAMES.DELETE_APP
+    );
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getApp(token: string, teamsAppId: string): Promise<AppDefinition> {
@@ -269,10 +285,12 @@ export class TeamsDevPortalClient {
         }
       }
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
     }
-    throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
+    throw this.wrapException(
+      new Error(`cannot get the app definition with app ID ${teamsAppId}`),
+      APP_STUDIO_API_NAMES.GET_APP
+    );
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getBotId(token: string, teamsAppId: string): Promise<string | undefined> {
@@ -296,11 +314,13 @@ export class TeamsDevPortalClient {
         TOOLS.logProvider?.info("Download app package successfully");
         return response.data;
       } else {
-        throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));
+        throw this.wrapException(
+          new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId)),
+          APP_STUDIO_API_NAMES.GET_APP_PACKAGE
+        );
       }
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
     }
   }
 
@@ -361,36 +381,40 @@ export class TeamsDevPortalClient {
             try {
               return await this.publishTeamsAppUpdate(token, teamsAppId, file);
             } catch (e: any) {
-              // Update Published app failed as well
-              const error = AppStudioResultFactory.SystemError(
-                AppStudioError.TeamsAppPublishConflictError.name,
-                AppStudioError.TeamsAppPublishConflictError.message(teamsAppId),
-                e
-              );
-              throw error;
+              if (e instanceof DeveloperPortalAPIFailedSystemError) {
+                throw this.wrapException(
+                  this.wrapResponse(undefined, response),
+                  APP_STUDIO_API_NAMES.PUBLISH_APP,
+                  AppStudioError.TeamsAppPublishConflictError.name,
+                  AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[0],
+                  AppStudioError.TeamsAppPublishConflictError.message(teamsAppId)[1]
+                );
+              } else {
+                throw e;
+              }
             }
           }
-
-          const error = new Error(response?.data.error.message);
-          (error as any).response = response;
-          (error as any).request = response.request;
-          const exception = this.wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
-          throw exception;
+          throw this.wrapException(
+            this.wrapResponse(undefined, response),
+            APP_STUDIO_API_NAMES.PUBLISH_APP
+          );
         } else {
           return response.data.id;
         }
       } else {
-        throw AppStudioResultFactory.SystemError(
+        throw this.wrapException(
+          this.wrapResponse(new Error("empty response"), response),
+          APP_STUDIO_API_NAMES.PUBLISH_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")[0],
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, "POST /api/publishing")[1]
         );
       }
     } catch (e: any) {
       if (e instanceof SystemError) {
         throw e;
       } else {
-        const error = this.wrapException(e, APP_STUDIO_API_NAMES.PUBLISH_APP);
-        throw error;
+        throw this.wrapException(e, APP_STUDIO_API_NAMES.PUBLISH_APP);
       }
     }
   }
@@ -417,38 +441,45 @@ export class TeamsDevPortalClient {
           })
         );
       } else {
-        throw AppStudioResultFactory.SystemError(
+        throw this.wrapException(
+          new Error("API failed"),
+          APP_STUDIO_API_NAMES.GET_PUBLISHED_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
           AppStudioError.TeamsAppPublishFailedError.message(
             teamsAppId,
             `GET /api/publishing/${teamsAppId}`
-          )
+          )[0],
+          AppStudioError.TeamsAppPublishFailedError.message(
+            teamsAppId,
+            `GET /api/publishing/${teamsAppId}`
+          )[1]
         );
       }
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const requestPath = `${response?.request?.method} ${response?.request?.path}`;
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
-          const error = new Error(response.data.error?.message || response.data.errorMessage);
-          (error as any).response = response;
-          (error as any).request = response.request;
-          const exception = this.wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
-          throw exception;
+          throw this.wrapException(
+            this.wrapResponse(undefined, response),
+            APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP
+          );
         } else {
           return response.data.teamsAppId;
         }
       } else {
-        throw AppStudioResultFactory.SystemError(
+        throw this.wrapException(
+          new Error("empty response"),
+          APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP,
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)[0],
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, requestPath)[1]
         );
       }
     } catch (error: any) {
-      if (error instanceof SystemError) {
+      if (error instanceof DeveloperPortalAPIFailedSystemError) {
         throw error;
       } else {
-        const exception = this.wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
-        throw exception;
+        throw this.wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
       }
     }
   }
@@ -544,8 +575,7 @@ export class TeamsDevPortalClient {
         throw new Error(ErrorMessages.GrantPermissionFailed);
       }
     } catch (err) {
-      const error = this.wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
-      throw error;
+      throw this.wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
     }
   }
   /**
@@ -565,8 +595,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
     }
   }
 
@@ -589,11 +618,9 @@ export class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async submitAppValidationRequest(
     token: string,
-    teamsAppId: string,
-    timeoutSeconds = 20
+    teamsAppId: string
   ): Promise<AsyncAppValidationResponse> {
     const requester = this.createRequesterWithToken(token);
-    requester.defaults.timeout = timeoutSeconds * 1000;
     try {
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/v1.0/appvalidations/appdefinition/validate`, {
@@ -603,8 +630,7 @@ export class TeamsDevPortalClient {
       );
       return <AsyncAppValidationResponse>response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION);
     }
   }
 
@@ -623,8 +649,7 @@ export class TeamsDevPortalClient {
       );
       return <AsyncAppValidationDetailsResponse>response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
     }
   }
   /**
@@ -637,19 +662,16 @@ export class TeamsDevPortalClient {
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
   async getAppValidationById(
     token: string,
-    appValidationId: string,
-    timeoutSeconds = 20
+    appValidationId: string
   ): Promise<AsyncAppValidationResultsResponse> {
     const requester = this.createRequesterWithToken(token);
-    requester.defaults.timeout = timeoutSeconds * 1000;
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/v1.0/appvalidations/${appValidationId}`)
       );
       return <AsyncAppValidationResultsResponse>response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
     }
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
@@ -699,7 +721,10 @@ export class TeamsDevPortalClient {
           error,
           error.response?.headers?.[Constants.CORRELATION_ID] ?? "",
           apiName,
-          error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+          getDefaultString(
+            "error.appstudio.apiFailed.reason.common",
+            error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : ""
+          )
         ),
         {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -729,8 +754,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_API_KEY);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_API_KEY);
     }
   }
 
@@ -751,8 +775,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_API_KEY);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_API_KEY);
     }
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "TeamsDevPortalClient" })])
@@ -771,8 +794,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
     }
   }
 
@@ -788,8 +810,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.GET_OAUTH);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.GET_OAUTH);
     }
   }
 
@@ -805,8 +826,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_OAUTH);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.CREATE_OAUTH);
     }
   }
 
@@ -823,8 +843,7 @@ export class TeamsDevPortalClient {
       );
       return response?.data;
     } catch (e) {
-      const error = this.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
-      throw error;
+      throw this.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
     }
   }
 
@@ -838,7 +857,12 @@ export class TeamsDevPortalClient {
         return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
-        throw new Error("Failed to get data");
+        throw this.wrapException(
+          this.wrapResponse(undefined, response),
+          APP_STUDIO_API_NAMES.GET_BOT,
+          getDefaultString("error.appstudio.apiFailed.name.common"),
+          "Failed to get data"
+        );
       }
     } catch (e) {
       this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
@@ -854,7 +878,12 @@ export class TeamsDevPortalClient {
         return <IBotRegistration[]>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
-        throw new Error("Failed to get data");
+        throw this.wrapException(
+          this.wrapResponse(undefined, response),
+          APP_STUDIO_API_NAMES.LIST_BOT,
+          getDefaultString("error.appstudio.apiFailed.name.common"),
+          "Failed to get data"
+        );
       }
     } catch (e) {
       this.handleBotFrameworkError(e, APP_STUDIO_API_NAMES.LIST_BOT);
@@ -940,11 +969,52 @@ export class TeamsDevPortalClient {
       throw this.wrapException(e, apiName) as SystemError;
     }
   }
-  wrapException(e: any, apiName: string): Error {
-    const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+  wrapResponse(e?: Error, response?: AxiosResponse<any, any>): any {
+    const error = new Error(
+      e?.message || response?.data.error.message || response?.data.errorMessage
+    );
+    (error as any).response = response;
+    (error as any).request = response?.request;
+    return error;
+  }
+  wrapException(
+    e: any,
+    apiName: string,
+    name = getDefaultString("error.appstudio.apiFailed.name.common"),
+    potentialReason = getDefaultString("error.appstudio.apiFailed.reason.common"),
+    disPlayMessage?: string,
+    isUserError = false,
+    helpLink?: string
+  ): Error {
+    e.name = name;
+    const correlationId = e.response?.headers?.[Constants.CORRELATION_ID];
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
-    const error = new DeveloperPortalAPIFailedError(e, correlationId, apiName, extraData);
+    let extraData = `${potentialReason} ${
+      e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : ""
+    }`;
+    // add status code in extra data if the message does not have it.
+    if (!e.message?.toLowerCase().includes("status code") && e.response?.status) {
+      extraData = `Status code: ${e.response.status as string}. ${extraData}`;
+    }
+    let error;
+    if (isUserError) {
+      error = new DeveloperPortalAPIFailedUserError(
+        e,
+        correlationId,
+        apiName,
+        extraData,
+        disPlayMessage,
+        helpLink
+      );
+    } else {
+      error = new DeveloperPortalAPIFailedSystemError(
+        e,
+        correlationId,
+        apiName,
+        extraData,
+        disPlayMessage
+      );
+    }
     return error;
   }
 }

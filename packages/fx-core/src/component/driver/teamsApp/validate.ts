@@ -106,6 +106,16 @@ export class ValidateManifestDriver implements StepDriver {
       );
     }
 
+    // validate localization files
+    const localizationFilesValidationRes = await this.validateLocalizatoinFiles(
+      args,
+      context,
+      manifest
+    );
+    if (localizationFilesValidationRes.isErr()) {
+      return err(localizationFilesValidationRes.error);
+    }
+
     let declarativeCopilotValidationResult;
     let pluginValidationResult;
     let pluginPath = "";
@@ -348,12 +358,11 @@ export class ValidateManifestDriver implements StepDriver {
     return ok(undefined);
   }
 
-  private async validateLocalizatoinFiles(
+  public async validateLocalizatoinFiles(
     args: ValidateManifestArgs,
     context: WrapDriverContext,
     manifest: TeamsAppManifest
   ): Promise<Result<any, FxError>> {
-    const errors: string[] = [];
     const additionalLanguages = manifest.localizationInfo?.additionalLanguages;
     if (!additionalLanguages || additionalLanguages.length == 0) {
       return ok(undefined);
@@ -375,7 +384,8 @@ export class ValidateManifestDriver implements StepDriver {
         getAbsolutePath(args.manifestPath, context.projectPath)
       );
       const localizationFilePath = getAbsolutePath(filePath, localizationFileDir);
-      const manifestRes = await manifestUtils.getManifestV3(localizationFilePath, context);
+
+      const manifestRes = await manifestUtils._readAppManifest(localizationFilePath);
       if (manifestRes.isErr()) {
         return err(manifestRes.error);
       }

@@ -220,6 +220,117 @@ describe("teamsApp/validateManifest", async () => {
     }
   });
 
+  describe("validateLocalizatoinFiles", async () => {
+    const teamsAppDriver = new ValidateManifestDriver();
+    const mockedDriverContext: any = {
+      projectPath: "./",
+    };
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("should return ok when no additionalLanguages in manifest", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [] } } as any;
+
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isOk());
+    });
+
+    it("should return error when language file path is not defined", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [{ file: undefined }] } } as any;
+
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, AppStudioError.ValidationFailedError.name);
+      }
+    });
+
+    it("should return error when manifest file cannot be found", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
+
+      sinon
+        .stub(manifestUtils, "_readAppManifest")
+        .resolves(err(new SystemError("error", "error", "", "")));
+
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, "error");
+      }
+    });
+
+    it("should return error when validation fails", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
+      const fakeLocalizationFile = {};
+
+      sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
+      sinon.stub(ManifestUtil, "validateManifest").resolves(["Validation error"]);
+
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, AppStudioError.ValidationFailedError.name);
+      }
+    });
+
+    it("should return error when validation throws exception", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
+      const fakeLocalizationFile = {};
+
+      sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
+      sinon.stub(ManifestUtil, "validateManifest").throws(new Error("validation exception"));
+
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, AppStudioError.ValidationFailedError.name);
+      }
+    });
+
+    it("should return ok when localization file is valid", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
+      const fakeLocalizationFile = {};
+
+      sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
+      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isOk());
+    });
+  });
+
   describe("validate Copilot extensions", async () => {
     it("validate with errors returned", async () => {
       const teamsManifest: TeamsAppManifest = new TeamsAppManifest();

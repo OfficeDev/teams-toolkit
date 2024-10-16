@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, UserError } from "@microsoft/teamsfx-api";
+import { UserError } from "@microsoft/teamsfx-api";
 
 export interface DepsChecker {
   getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus>;

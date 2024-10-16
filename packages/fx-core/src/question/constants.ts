@@ -730,6 +730,7 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.projectType.declarativeCopilot.detail"
       ),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 

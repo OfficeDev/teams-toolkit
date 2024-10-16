@@ -7,7 +7,7 @@
 import * as path from "path";
 import semver from "semver";
 import { Service } from "typedi";
-import { FxError, Result, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 import {
   DependencyStatus,
   EmptyLogger,
@@ -201,11 +201,7 @@ export class ToolsInstallDriverImpl {
     this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
 
     if (!funcStatus.isInstalled && funcStatus.error) {
-      throw new FuncInstallationUserError(
-        ACTION_NAME,
-        funcStatus.error,
-        (funcStatus.error as UserError)?.helpLink
-      );
+      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error, funcStatus.error.helpLink);
     } else if (funcStatus.error) {
       this.context.logProvider.warning(funcStatus.error.message);
       this.context.addSummary(
@@ -244,7 +240,7 @@ export class ToolsInstallDriverImpl {
       throw new DotnetInstallationUserError(
         ACTION_NAME,
         dotnetStatus.error,
-        (dotnetStatus.error as UserError)?.helpLink
+        dotnetStatus.error.helpLink
       );
     } else if (dotnetStatus.error) {
       this.context.logProvider.warning(dotnetStatus.error?.message);
@@ -292,7 +288,7 @@ export class ToolsInstallDriverImpl {
       throw new TestToolInstallationUserError(
         ACTION_NAME,
         status.error,
-        (status.error as UserError)?.helpLink || v3DefaultHelpLink
+        status.error?.helpLink || v3DefaultHelpLink
       );
     } else {
       this.context.addSummary(Summaries.testToolSuccess(status.details.binFolders));

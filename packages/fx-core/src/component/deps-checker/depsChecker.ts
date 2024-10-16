@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError } from "@microsoft/teamsfx-api";
+import { FxError, UserError } from "@microsoft/teamsfx-api";
 
 export interface DepsChecker {
   getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus>;
@@ -20,7 +20,7 @@ export type DependencyStatus = {
     binFolders?: string[];
   };
   telemetryProperties?: { [key: string]: string };
-  error?: FxError;
+  error?: UserError;
 };
 
 export interface DepsInfo {

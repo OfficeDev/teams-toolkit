@@ -119,8 +119,8 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
   const query =
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView ||
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
-      ? "@teams "
-      : "@teams /create ";
+      ? "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app development."
+      : "@teamsapp Find relevant templates or samples to build your Teams app as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
   let res;
 
   const isExtensionInstalled = githubCopilotInstalled();

@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.19" />
     <PackageReference Include="Microsoft.Teams.AI" Version="1.5.*" />
     <PackageReference Include="RestSharp" Version="112.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>

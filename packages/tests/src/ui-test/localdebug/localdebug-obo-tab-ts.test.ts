@@ -5,7 +5,11 @@
  * @author Kuojian Lu <kuojianlu@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  clearNotifications,
+  startDebugging,
+  waitForTerminal,
+} from "../../utils/vscodeOperation";
 import {
   initPage,
   validateReactOutlookTab,
@@ -16,6 +20,7 @@ import {
   Timeout,
   LocalDebugTaskLabel,
   LocalDebugError,
+  LocalDebugTaskResult,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -60,12 +65,12 @@ describe("Local Debug M365 Tests", function () {
       try {
         await waitForTerminal(
           LocalDebugTaskLabel.StartBackend,
-          "Worker process started and initialized"
+          LocalDebugTaskResult.FunctionStarted
         );
-
+        await clearNotifications();
         await waitForTerminal(
           LocalDebugTaskLabel.StartFrontend,
-          "Compiled successfully!"
+          LocalDebugTaskResult.FrontendReady
         );
       } catch (error) {
         const errorMsg = error.toString();
@@ -91,10 +96,8 @@ describe("Local Debug M365 Tests", function () {
       await localDebugTestContext.validateLocalStateForTab();
       await validateReactTab(page, Env.displayName, true);
       const m365AppId = await localDebugTestContext.getM365AppId();
-      await page.goto(
-        `https://outlook.office.com/host/${m365AppId}/index?login_hint=${Env.username}`
-      );
-      await validateReactOutlookTab(page, Env.displayName, true);
+      const url = `https://outlook.office.com/host/${m365AppId}/index?login_hint=${Env.username}`;
+      await validateReactOutlookTab(page, url, Env.displayName, true);
     }
   );
 });

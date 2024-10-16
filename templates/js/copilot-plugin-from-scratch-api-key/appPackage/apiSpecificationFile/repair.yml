@@ -26,7 +26,6 @@ paths:
           required: false
       security:
         - apiKey: []
-          required: false
       responses:
         '200':
           description: A list of repairs

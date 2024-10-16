@@ -36,6 +36,10 @@ import {
   VxTestAppInvalidInstallOptionsError,
   VxTestAppValidationError,
 } from "../../src/error/depCheck";
+import {
+  DeveloperPortalAPIFailedSystemError,
+  DeveloperPortalAPIFailedUserError,
+} from "../../src/error/teamsApp";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -301,5 +305,30 @@ describe("VxTestAppValidationError", function () {
   it("happy", () => {
     const err = new VxTestAppValidationError("src");
     assert.deepEqual(err.source, "src");
+  });
+});
+
+describe("DeveloperPortalAPIFailed error", function () {
+  it("system error", () => {
+    const error = new DeveloperPortalAPIFailedSystemError(
+      new Error("test"),
+      "correlationId",
+      "apiName",
+      "extraData"
+    );
+    assert.isTrue(error instanceof SystemError);
+    assert.isTrue(!!error.displayMessage);
+  });
+
+  it("user error", () => {
+    const error = new DeveloperPortalAPIFailedUserError(
+      new Error("test"),
+      "correlationId",
+      "apiName",
+      "extraData"
+    );
+    assert.isTrue(error instanceof UserError);
+    assert.isTrue(!!error.displayMessage);
+    assert.isFalse(!!error.helpLink);
   });
 });

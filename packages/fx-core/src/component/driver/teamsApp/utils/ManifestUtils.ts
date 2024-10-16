@@ -107,8 +107,12 @@ export class ManifestUtils {
   }
 
   getTeamsAppManifestPath(projectPath: string): string {
-    const filePath = path.join(projectPath, "appPackage", "manifest.json");
-    return filePath;
+    // Samples from https://github.com/OfficeDev/Microsoft-Teams-Samples have the manifest in appManifest folder
+    const filePath = path.join(projectPath, "appManifest", "manifest.json");
+    if (fs.existsSync(filePath)) {
+      return filePath;
+    }
+    return path.join(projectPath, "appPackage", "manifest.json");
   }
 
   async addCapabilities(

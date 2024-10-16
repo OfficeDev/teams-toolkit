@@ -27,8 +27,8 @@
         "identity",
         "messageTeamMembers"
     ],
-    "copilotExtensions": {
-        "declarativeCopilots": [            
+    "copilotAgents": {
+        "declarativeAgents": [            
             {
                 "id": "declarativeAgent",
                 "file": "declarativeAgent.json"

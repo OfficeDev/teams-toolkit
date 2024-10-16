@@ -289,7 +289,7 @@ describe("CopilotDisabledError", function () {
 
 describe("NodejsNotLtsError", function () {
   it("happy", () => {
-    const err = new NodejsNotLtsError("src");
+    const err = new NodejsNotLtsError("nodejs-v18", "src");
     assert.deepEqual(err.source, "src");
   });
 });

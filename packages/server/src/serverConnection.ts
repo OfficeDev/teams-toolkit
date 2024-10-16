@@ -510,7 +510,7 @@ export default class ServerConnection implements IServerConnection {
               ? {
                   error: {
                     message: depStatus.error.message,
-                    helpLink: (depStatus.error as UserError).helpLink,
+                    helpLink: (depStatus.error as UserError).helpLink || "",
                   },
                 }
               : {}),

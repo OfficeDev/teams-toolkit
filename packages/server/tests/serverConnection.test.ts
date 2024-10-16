@@ -510,7 +510,10 @@ describe("serverConnections", () => {
       isInstalled: true,
       command: "mock command",
       details: {},
-      error: err,
+      error: {
+        message: err.message,
+        helpLink: err.helpLink,
+      },
     });
   });
   it("checkAndInstallTestTool error", async () => {

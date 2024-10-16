@@ -15,7 +15,7 @@ import {
 import {
   DependencyStatus,
   DepsManager,
-  NodeNotFoundError,
+  NodejsNotFoundError,
   QuestionNames,
   SyncManifestInputs,
   teamsDevPortalClient,
@@ -494,11 +494,12 @@ describe("serverConnections", () => {
   });
   it("checkAndInstallTestTool DepenendencyStatus error", async () => {
     const connection = new ServerConnection(msgConn);
+    const err = new NodejsNotFoundError();
     sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({
       isInstalled: true,
       command: "mock command",
       details: {},
-      error: new NodeNotFoundError("mock message", "mock help link"),
+      error: err,
     } as DependencyStatus);
     const res = await connection.checkAndInstallTestTool(
       {} as TestToolInstallOptions & { correlationId: string },
@@ -509,10 +510,7 @@ describe("serverConnections", () => {
       isInstalled: true,
       command: "mock command",
       details: {},
-      error: {
-        message: "mock message",
-        helpLink: "mock help link",
-      },
+      error: err,
     });
   });
   it("checkAndInstallTestTool error", async () => {

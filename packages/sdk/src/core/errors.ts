@@ -96,11 +96,6 @@ export enum ErrorCode {
   InvalidResponse = "InvalidResponse",
 
   /**
-   * Identity type error.
-   */
-  IdentityTypeNotSupported = "IdentityTypeNotSupported",
-
-  /**
    * Authentication info already exists error.
    */
   AuthorizationInfoAlreadyExists = "AuthorizationInfoAlreadyExists",
@@ -146,9 +141,6 @@ export class ErrorMessage {
   // SsoActivityHandlerIsUndefined Error
   static readonly SsoActivityHandlerIsNull =
     "Sso command can only be used or added when sso activity handler is not undefined";
-
-  // IdentityTypeNotSupported Error
-  static readonly IdentityTypeNotSupported = "{0} identity is not supported in {1}";
 
   // AuthorizationInfoError
   static readonly AuthorizationHeaderAlreadyExists = "Authorization header already exists!";

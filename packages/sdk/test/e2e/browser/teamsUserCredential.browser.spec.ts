@@ -6,7 +6,7 @@ import { AccessToken } from "@azure/core-auth";
 import * as sinon from "sinon";
 import { TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
 import { getSSOToken, AADJwtPayLoad, SSOToken, getGraphToken } from "../helper.browser";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
 chai.use(chaiPromises);
@@ -18,6 +18,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const UIREQUIREDERROR = "UiRequiredError";
   const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
   let ssoToken: SSOToken;
+
   beforeEach(async () => {
     ssoToken = await getSSOToken();
     sinon
@@ -31,6 +32,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
   });
+
   afterEach(() => {
     sinon.restore();
   });

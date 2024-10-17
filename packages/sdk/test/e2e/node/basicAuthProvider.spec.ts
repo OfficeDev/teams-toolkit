@@ -46,7 +46,7 @@ describe("BasicAuthProvider Tests - Node", () => {
 
     // Assert
     assert.equal(res.data.url, "/foo");
-    const header = res.data.requestHeader!["authorization"] as string;
+    const header = res.data.requestHeader?.["authorization"] as string;
     assert.isTrue(header.startsWith("Basic "));
     const token = header.split(/\s+/).pop() || "";
     const auth = Buffer.from(token, "base64").toString();

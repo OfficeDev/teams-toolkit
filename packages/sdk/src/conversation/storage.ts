@@ -5,7 +5,6 @@ import { ConversationReference } from "botbuilder";
 import * as fs from "fs";
 import * as path from "path";
 import {
-  NotificationTargetStorage,
   ConversationReferenceStore,
   ConversationReferenceStoreAddOptions,
   PagedData,
@@ -14,7 +13,7 @@ import {
 /**
  * @internal
  */
-export class LocalFileStorage implements NotificationTargetStorage {
+export class DefaultConversationReferenceStore implements ConversationReferenceStore {
   private readonly localFileName =
     process.env.TEAMSFX_NOTIFICATION_STORE_FILENAME ?? ".notification.localstore.json";
   private readonly filePath: string;
@@ -23,37 +22,29 @@ export class LocalFileStorage implements NotificationTargetStorage {
     this.filePath = path.resolve(fileDir, this.localFileName);
   }
 
-  async read(key: string): Promise<{ [key: string]: unknown } | undefined> {
-    if (!(await this.storeFileExists())) {
-      return undefined;
+  public async add(
+    key: string,
+    reference: Partial<ConversationReference>,
+    options: ConversationReferenceStoreAddOptions
+  ): Promise<boolean> {
+    if (options.overwrite || !(await this.storeFileExists())) {
+      if (!(await this.storeFileExists())) {
+        await this.writeToFile({ [key]: reference });
+      } else {
+        const data = await this.readFromFile();
+        await this.writeToFile(Object.assign(data, { [key]: reference }));
+      }
+      return true;
     }
 
-    const data = await this.readFromFile();
-
-    return data[key];
+    return false;
   }
 
-  async list(): Promise<{ [key: string]: unknown }[]> {
+  public async remove(key: string, reference: Partial<ConversationReference>): Promise<boolean> {
     if (!(await this.storeFileExists())) {
-      return [];
+      return false;
     }
 
-    const data = await this.readFromFile();
-
-    return Object.entries(data).map((entry) => entry[1] as { [key: string]: unknown });
-  }
-
-  async write(key: string, object: { [key: string]: unknown }): Promise<void> {
-    if (!(await this.storeFileExists())) {
-      await this.writeToFile({ [key]: object });
-      return;
-    }
-
-    const data = await this.readFromFile();
-    await this.writeToFile(Object.assign(data, { [key]: object }));
-  }
-
-  async delete(key: string): Promise<void> {
     if (await this.storeFileExists()) {
       const data = await this.readFromFile();
       if (data[key] !== undefined) {
@@ -61,6 +52,28 @@ export class LocalFileStorage implements NotificationTargetStorage {
         await this.writeToFile(data);
       }
     }
+    return true;
+  }
+
+  public async list(
+    pageSize?: number,
+    continuationToken?: string
+  ): Promise<PagedData<Partial<ConversationReference>>> {
+    if (!(await this.storeFileExists())) {
+      return {
+        data: [],
+        continuationToken: "",
+      };
+    }
+
+    const fileData = await this.readFromFile();
+    const data: { [key: string]: unknown }[] = Object.entries(fileData).map(
+      (entry) => entry[1] as { [key: string]: unknown }
+    );
+    return {
+      data,
+      continuationToken: "",
+    };
   }
 
   private storeFileExists(): Promise<boolean> {
@@ -110,56 +123,5 @@ export class LocalFileStorage implements NotificationTargetStorage {
         reject(error);
       }
     });
-  }
-}
-
-/**
- * @internal
- */
-export class DefaultConversationReferenceStore implements ConversationReferenceStore {
-  private readonly storage: NotificationTargetStorage;
-
-  constructor(storage: NotificationTargetStorage) {
-    this.storage = storage;
-  }
-
-  async add(
-    key: string,
-    reference: Partial<ConversationReference>,
-    options: ConversationReferenceStoreAddOptions
-  ): Promise<boolean> {
-    if (options.overwrite) {
-      await this.storage.write(key, reference);
-      return true;
-    }
-
-    const ref = await this.storage.read(key);
-    if (ref === undefined) {
-      await this.storage.write(key, reference);
-      return true;
-    }
-
-    return false;
-  }
-
-  async remove(key: string, reference: Partial<ConversationReference>): Promise<boolean> {
-    const ref = await this.storage.read(key);
-    if (ref === undefined) {
-      return false;
-    }
-
-    await this.storage.delete(key);
-    return true;
-  }
-
-  async list(
-    pageSize?: number,
-    continuationToken?: string
-  ): Promise<PagedData<Partial<ConversationReference>>> {
-    const data = await this.storage.list();
-    return {
-      data,
-      continuationToken: "",
-    };
   }
 }

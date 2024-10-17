@@ -24,7 +24,6 @@ import {
   ErrorWithCode,
   ErrorCode,
   TeamsBotSsoPromptSettings,
-  TeamsFx,
   BotSsoExecutionDialog,
   TeamsBotSsoPromptTokenResponse,
   CommandMessage,
@@ -58,6 +57,13 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
   const invokeResponseActivityType = "invokeResponse";
   const id = "fake_id";
   const exchangeToken = "fake_exchange_token";
+
+  const OnBehalfOfCredentialAuthConfig = {
+    authorityHost: authorityHost,
+    clientId: clientId,
+    clientSecret: clientSecret,
+    tenantId: tenantId,
+  };
 
   /**
    * {
@@ -128,6 +134,30 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
   afterEach(function () {
     sandbox.restore();
     mockedEnvRestore();
+  });
+
+  it("should add TeamsBotSsoPrompt and WaterfallDialog to the dialog set", () => {
+    // Arrange
+    const mockStorage = new MemoryStorage();
+    const mockSsoPromptSettings: TeamsBotSsoPromptSettings = {
+      scopes: requiredScopes,
+    };
+    const mockDialogName = "testDialog";
+
+    const botSsoExecutionDialog = new BotSsoExecutionDialog(
+      mockStorage,
+      mockSsoPromptSettings,
+      OnBehalfOfCredentialAuthConfig,
+      initiateLoginEndpoint,
+      mockDialogName
+    );
+
+    // Act
+    const dialogs = botSsoExecutionDialog.dialogs;
+
+    // Assert
+    assert.isNotNull(dialogs.find(mockDialogName + "TeamsFxSsoPrompt"));
+    assert.isNotNull(dialogs.find(mockDialogName + "CommandRouteDialog"));
   });
 
   it("sso execution dialog should response 'Cannot find command' error when command doesn't exist", async function () {
@@ -336,14 +366,14 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
   function assertTeamsSsoOauthCardActivity(activity: Partial<Activity>): void {
     assert.isArray(activity.attachments);
     assert.strictEqual(activity.attachments?.length, 1);
-    assert.strictEqual(activity.attachments![0].contentType, CardFactory.contentTypes.oauthCard);
+    assert.strictEqual(activity.attachments?.[0].contentType, CardFactory.contentTypes.oauthCard);
     assert.strictEqual(activity.inputHint, InputHints.AcceptingInput);
 
-    assert.strictEqual(activity.attachments![0].content.buttons[0].type, ActionTypes.Signin);
-    assert.strictEqual(activity.attachments![0].content.buttons[0].title, "Teams SSO Sign In");
+    assert.strictEqual(activity.attachments?.[0].content.buttons[0].type, ActionTypes.Signin);
+    assert.strictEqual(activity.attachments?.[0].content.buttons[0].title, "Teams SSO Sign In");
 
     assert.strictEqual(
-      activity.attachments![0].content.buttons[0].value,
+      activity.attachments?.[0].content.buttons[0].value,
       `${initiateLoginEndpoint}?scope=${encodeURI(
         requiredScopes.join(" ")
       )}&clientId=${clientId}&tenantId=${tenantId}&loginHint=${userPrincipalName}`
@@ -385,13 +415,17 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
       convoState.createProperty("dialogState");
     const dialogs: DialogSet = new DialogSet(dialogState);
 
-    const teamsfx = new TeamsFx();
     const ssoPromptSettings: TeamsBotSsoPromptSettings = {
       scopes: requiredScopes,
       timeout: timeout_value,
       endOnInvalidMessage: endOnInvalidMessage,
     };
-    const ssoExecutionDialog = new BotSsoExecutionDialog(storage, ssoPromptSettings, teamsfx);
+    const ssoExecutionDialog = new BotSsoExecutionDialog(
+      storage,
+      ssoPromptSettings,
+      OnBehalfOfCredentialAuthConfig,
+      initiateLoginEndpoint
+    );
     const testHandler = new TestSsoCommandHandler(triggerPatterns, testSsoHandlerResponseMessage);
     ssoExecutionDialog.addCommand(
       async (

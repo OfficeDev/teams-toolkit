@@ -139,6 +139,19 @@ export class CreateAppPackageDriver implements StepDriver {
         }
       }
     }
+    if (manifest.localizationInfo && manifest.localizationInfo.defaultLanguageFile) {
+      const file = manifest.localizationInfo.defaultLanguageFile;
+      const fileName = `${appDirectory}/${file}`;
+      if (!(await fs.pathExists(fileName))) {
+        return err(
+          new FileNotFoundError(
+            actionName,
+            fileName,
+            "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+          )
+        );
+      }
+    }
 
     const zip = new AdmZip();
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
@@ -165,6 +178,16 @@ export class CreateAppPackageDriver implements StepDriver {
         const dir = path.dirname(file);
         zip.addLocalFile(fileName, dir === "." ? "" : dir);
       }
+    }
+    if (manifest.localizationInfo && manifest.localizationInfo.defaultLanguageFile) {
+      const file = manifest.localizationInfo.defaultLanguageFile;
+      const fileName = path.resolve(appDirectory, file);
+      const relativePath = path.relative(appDirectory, fileName);
+      if (relativePath.startsWith("..")) {
+        return err(new InvalidFileOutsideOfTheDirectotryError(fileName));
+      }
+      const dir = path.dirname(file);
+      zip.addLocalFile(fileName, dir === "." ? "" : dir);
     }
 
     // API ME, API specification and Adaptive card templates
@@ -218,9 +241,11 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
-    const plugins = manifest.copilotExtensions?.plugins;
-    // API plugin
+    const plugins = manifest.copilotExtensions
+      ? manifest.copilotExtensions.plugins
+      : manifest.copilotAgents?.plugins;
     if (plugins?.length && plugins[0].file) {
+      // API plugin
       const addFilesRes = await this.addPlugin(
         zip,
         plugins[0].file,
@@ -233,8 +258,9 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
-    const declarativeCopilots = manifest.copilotExtensions?.declarativeCopilots;
-
+    const declarativeCopilots = manifest.copilotExtensions
+      ? manifest.copilotExtensions.declarativeCopilots
+      : manifest.copilotAgents?.declarativeAgents;
     // Copilot GPT
     if (declarativeCopilots?.length && declarativeCopilots[0].file) {
       const copilotGptManifestFile = path.resolve(appDirectory, declarativeCopilots[0].file);

@@ -99,9 +99,11 @@ export class ValidateManifestDriver implements StepDriver {
     let declarativeCopilotValidationResult;
     let pluginValidationResult;
     let pluginPath = "";
-    if (manifest.copilotExtensions) {
+    if (manifest.copilotExtensions || manifest.copilotAgents) {
       // plugin
-      const plugins = manifest.copilotExtensions.plugins;
+      const plugins = manifest.copilotExtensions
+        ? manifest.copilotExtensions.plugins
+        : manifest.copilotAgents!.plugins;
       if (plugins?.length && plugins[0].file) {
         pluginPath = path.join(path.dirname(manifestPath), plugins[0].file);
 
@@ -122,15 +124,17 @@ export class ValidateManifestDriver implements StepDriver {
       }
 
       // Declarative Copilot
-      const declaraitveCopilots = manifest.copilotExtensions.declarativeCopilots;
-      if (declaraitveCopilots?.length && declaraitveCopilots[0].file) {
+      const declarativeCopilots = manifest.copilotExtensions
+        ? manifest.copilotExtensions.declarativeCopilots
+        : manifest.copilotAgents!.declarativeAgents;
+      if (declarativeCopilots?.length && declarativeCopilots[0].file) {
         const declarativeCopilotPath = path.join(
           path.dirname(manifestPath),
-          declaraitveCopilots[0].file
+          declarativeCopilots[0].file
         );
 
         const declarativeCopilotValidationRes = await copilotGptManifestUtils.validateAgainstSchema(
-          declaraitveCopilots[0],
+          declarativeCopilots[0],
           declarativeCopilotPath,
           context
         );

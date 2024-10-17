@@ -18,7 +18,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import fse from "fs-extra";
 import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
@@ -39,6 +38,7 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
+import { envUtil } from "../../utils/envUtil";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -262,5 +262,25 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
     return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
+  }
+
+  async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
+    if (fromFolder) {
+      // reset all env files
+      const envRes = await envUtil.listEnv(destinationPath);
+      if (envRes.isOk()) {
+        const envs = envRes.value;
+        for (const env of envs) {
+          await envUtil.resetEnv(destinationPath, env, ["TEAMSFX_ENV", "APP_NAME_SUFFIX"]);
+        }
+      }
+    }
+    return ok({});
   }
 }

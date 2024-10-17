@@ -428,6 +428,65 @@ describe("copilotGptManifestUtils", () => {
       }
     });
 
+    it("get manifest success - copilot agent", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotAgents: {
+            declarativeAgents: [
+              {
+                file: "test",
+                id: "1",
+              },
+            ],
+          },
+        } as any)
+      );
+      sandbox.stub(path, "dirname").returns("testFolder");
+      sandbox.stub(path, "resolve").returns("testFolder/test");
+
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value, "testFolder/test");
+      }
+    });
+
+    it("declarativeAgents error 1", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotAgents: {},
+        } as any)
+      );
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof UserError);
+      }
+    });
+
+    it("declarativeAgents error 2", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof UserError);
+      }
+    });
+
+    it("declarativeCopilots error 1", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotExtensions: {},
+        } as any)
+      );
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof UserError);
+      }
+    });
+
     it("read Teams manifest error", async () => {
       sandbox
         .stub(manifestUtils, "_readAppManifest")

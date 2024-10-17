@@ -315,7 +315,9 @@ export class ManifestUtils {
     manifest: TeamsAppManifest,
     manifestPath: string
   ): Promise<Result<string, FxError>> {
-    const pluginFile = manifest.copilotExtensions?.plugins?.[0]?.file;
+    const pluginFile = manifest.copilotExtensions
+      ? manifest.copilotExtensions.plugins?.[0]?.file
+      : manifest.copilotAgents?.plugins?.[0]?.file;
     if (pluginFile) {
       const plugin = path.resolve(path.dirname(manifestPath), pluginFile);
       const doesFileExist = await fs.pathExists(plugin);

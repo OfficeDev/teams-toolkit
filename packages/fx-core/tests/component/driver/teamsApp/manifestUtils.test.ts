@@ -14,6 +14,7 @@ import {
   Platform,
   ManifestCapability,
   IBot,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   getBotsTplBasedOnVersion,
@@ -250,6 +251,92 @@ describe("ManifestUtils", () => {
     const capabilities: ManifestCapability[] = [{ name: "Bot" }];
     const result = await manifestUtils.addCapabilities(inputs, capabilities);
     assert.isTrue(result.isOk());
+  });
+  it("getPluginFilePath success", async () => {
+    const mockManifest = {
+      copilotAgents: {
+        plugins: [
+          {
+            id: "id-fake",
+            file: "fake",
+          },
+        ],
+      },
+    };
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    sinon.stub(fs, "pathExists").resolves(true);
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isOk());
+  });
+  it("getPluginFilePath error 1", async () => {
+    const mockManifest = {};
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserError);
+    }
+  });
+  it("getPluginFilePath error 2", async () => {
+    const mockManifest = {
+      copilotAgents: {},
+    };
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserError);
+    }
+  });
+  it("getPluginFilePath error 3", async () => {
+    const mockManifest = {
+      copilotAgents: {
+        plugins: [],
+      },
+    };
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserError);
+    }
+  });
+  it("getPluginFilePath error 4", async () => {
+    const mockManifest = {
+      copilotAgents: {
+        plugins: [undefined],
+      },
+    };
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserError);
+    }
+  });
+  it("getPluginFilePath error 5", async () => {
+    const mockManifest = {
+      copilotExtensions: {},
+    };
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserError);
+    }
+  });
+  it("getPluginFilePath error 6", async () => {
+    const mockManifest = {
+      copilotExtensions: {
+        plugins: [],
+      },
+    };
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(mockManifest as any));
+    const res = await manifestUtils.getPluginFilePath(mockManifest as any, "fake");
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof UserError);
+    }
   });
 });
 

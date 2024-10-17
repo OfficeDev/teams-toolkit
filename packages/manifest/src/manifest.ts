@@ -364,6 +364,7 @@ export interface ILocalizationInfo {
    * The language tag of the strings in this top level manifest file.
    */
   defaultLanguageTag: string;
+  defaultLanguageFile?: string;
   additionalLanguages?: {
     languageTag: string;
     /**
@@ -583,5 +584,16 @@ export class TeamsAppManifest implements AppManifest {
      * Pointer to declarative Copilot.
      */
     declarativeCopilots?: IDeclarativeCopilot[];
+  };
+
+  copilotAgents?: {
+    /**
+     * Pointer to plugins.
+     */
+    plugins?: IPlugin[];
+    /**
+     * Pointer to declarative Copilot.
+     */
+    declarativeAgents?: IDeclarativeCopilot[];
   };
 }

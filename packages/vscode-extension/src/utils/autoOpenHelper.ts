@@ -170,7 +170,12 @@ export async function ShowScaffoldingWarningSummary(
             createWarnings,
             teamsManifest,
             path.relative(workspacePath, apiSpecFilePathRes.value[0]),
-            path.join(AppPackageFolderName, teamsManifest.copilotExtensions!.plugins![0].file),
+            path.join(
+              AppPackageFolderName,
+              teamsManifest.copilotExtensions
+                ? teamsManifest.copilotExtensions.plugins![0].file
+                : teamsManifest.copilotAgents!.plugins![0].file
+            ),
             workspacePath
           );
         }

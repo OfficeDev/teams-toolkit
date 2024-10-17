@@ -34,7 +34,7 @@ async function main() {
     for (const aad of aadList) {
       for (const name of aadNamePrefixList) {
         if (
-          aad.displayName?.startsWith("ada")
+          aad.displayName?.startsWith("adaptive")
         ) {
           console.log(aad.displayName);
           await cleanService.deleteAad(aad.id!);

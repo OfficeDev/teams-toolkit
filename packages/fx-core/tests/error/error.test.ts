@@ -29,6 +29,14 @@ import { BaseComponentInnerError } from "../../src/component/error/componentErro
 import { InvalidYamlSchemaError } from "../../src/error/yml";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 import {
+  CopilotDisabledError,
+  NodejsNotLtsError,
+  PortsConflictError,
+  SideloadingDisabledError,
+  VxTestAppInvalidInstallOptionsError,
+  VxTestAppValidationError,
+} from "../../src/error/depCheck";
+import {
   DeveloperPortalAPIFailedSystemError,
   DeveloperPortalAPIFailedUserError,
 } from "../../src/error/teamsApp";
@@ -252,6 +260,51 @@ describe("matchDnsError", function () {
   it("undefined", () => {
     const res = matchDnsError();
     assert.equal(res, undefined);
+  });
+});
+
+describe("PortsConflictError", function () {
+  it("happy", () => {
+    const err = new PortsConflictError([8801, 8802], [8801]);
+    assert.deepEqual(err.telemetryProperties, {
+      ports: [8801, 8802].join(", "),
+      "occupied-ports": [8801].join(", "),
+    });
+  });
+});
+
+describe("SideloadingDisabledError", function () {
+  it("happy", () => {
+    const err = new SideloadingDisabledError("src");
+    assert.deepEqual(err.source, "src");
+  });
+});
+
+describe("CopilotDisabledError", function () {
+  it("happy", () => {
+    const err = new CopilotDisabledError("src");
+    assert.deepEqual(err.source, "src");
+  });
+});
+
+describe("NodejsNotLtsError", function () {
+  it("happy", () => {
+    const err = new NodejsNotLtsError("nodejs-v18", "src");
+    assert.deepEqual(err.source, "src");
+  });
+});
+
+describe("VxTestAppInvalidInstallOptionsError", function () {
+  it("happy", () => {
+    const err = new VxTestAppInvalidInstallOptionsError("src");
+    assert.deepEqual(err.source, "src");
+  });
+});
+
+describe("VxTestAppValidationError", function () {
+  it("happy", () => {
+    const err = new VxTestAppValidationError("src");
+    assert.deepEqual(err.source, "src");
   });
 });
 

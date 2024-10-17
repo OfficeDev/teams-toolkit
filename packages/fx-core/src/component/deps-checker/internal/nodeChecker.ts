@@ -1,24 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, UserError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import semver from "semver";
 import {
+  DepsCheckerError,
+  NodejsNotFoundError,
+  NodejsNotLtsError,
+  NodejsNotRecommendedError,
+} from "../../../error";
+import {
   nodeNotFoundHelpLink,
   v3NodeNotFoundHelpLink,
-  v3NodeNotLtsHelpLink,
   v3NodeNotSupportedHelpLink,
 } from "../constant/helpLink";
-import { Messages } from "../constant/message";
 import { DepsCheckerEvent } from "../constant/telemetry";
-import { DependencyStatus, DepsChecker, DepsType, BaseInstallOptions } from "../depsChecker";
-import {
-  DepsCheckerError,
-  NodeNotFoundError,
-  NodeNotLtsError,
-  V3NodeNotSupportedError,
-} from "../depsError";
+import { BaseInstallOptions, DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { cpUtils } from "../util/cpUtils";
@@ -44,7 +43,7 @@ export abstract class NodeChecker implements DepsChecker {
   protected abstract getVersionNotSupportedError(
     supportedVersions: string[],
     version: NodeVersion
-  ): DepsCheckerError;
+  ): UserError;
   protected abstract readonly _minErrorVersion: number;
   protected abstract readonly _maxErrorVersion: number;
 
@@ -71,7 +70,7 @@ export abstract class NodeChecker implements DepsChecker {
           DepsCheckerEvent.nodeNotFound,
           "Node.js can't be found."
         );
-        const error = new NodeNotFoundError(Messages.NodeNotFound(), this._nodeNotFoundHelpLink);
+        const error = new NodejsNotFoundError();
         return await this.getDepsInfo(false, supportedVersions, undefined, error);
       }
       this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
@@ -122,7 +121,7 @@ export abstract class NodeChecker implements DepsChecker {
     isInstalled: boolean,
     supportedVersions: string[],
     installVersion?: string,
-    error?: DepsCheckerError
+    error?: FxError
   ): Promise<DependencyStatus> {
     return {
       name: NodeName,
@@ -204,12 +203,9 @@ export class LtsNodeChecker extends NodeChecker {
   protected getVersionNotSupportedError(
     supportedVersions: string[],
     version: NodeVersion
-  ): DepsCheckerError {
+  ): UserError {
     const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(", ");
-    return new NodeNotLtsError(
-      Messages.NodeNotLts(version.version, supportedVersionsString),
-      v3NodeNotLtsHelpLink
-    );
+    return new NodejsNotLtsError(version.version, supportedVersionsString);
   }
 }
 
@@ -256,11 +252,8 @@ export class ProjectNodeChecker extends NodeChecker {
   protected getVersionNotSupportedError(
     supportedVersions: string[],
     version: NodeVersion
-  ): DepsCheckerError {
+  ): UserError {
     const supportedVersionsString = supportedVersions.join(", ");
-    return new V3NodeNotSupportedError(
-      Messages.V3NodeNotSupported(version.version, supportedVersionsString),
-      v3NodeNotSupportedHelpLink
-    );
+    return new NodejsNotRecommendedError(version.version, supportedVersionsString);
   }
 }

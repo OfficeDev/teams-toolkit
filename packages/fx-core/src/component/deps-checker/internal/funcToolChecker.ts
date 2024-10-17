@@ -4,24 +4,24 @@
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
+import { ConfigFolderName, err, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import semver from "semver";
 import * as uuid from "uuid";
-import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { v3DefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
+import { DepsCheckerError, InstallSoftwareError, NodejsNotFoundError } from "../../../error";
+import { v3DefaultHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
+import { TelemetryProperties } from "../constant/telemetry";
 import { DependencyStatus, DepsChecker, DepsType, FuncInstallOptions } from "../depsChecker";
-import { DepsCheckerError, LinuxNotSupportedError, NodeNotFoundError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { cpUtils } from "../util/cpUtils";
 import { createSymlink, rename, unlinkSymlink } from "../util/fileHelper";
 import { isLinux, isWindows } from "../util/system";
 import { NodeChecker } from "./nodeChecker";
-import { TelemetryProperties } from "../constant/telemetry";
 
 type FuncVersion = {
   majorVersion: number;
@@ -51,7 +51,7 @@ export class FuncToolChecker implements DepsChecker {
   public async getDepsInfo(
     funcVersion: FuncVersion | undefined,
     binFolder: string | undefined,
-    error?: DepsCheckerError
+    error?: UserError
   ): Promise<DependencyStatus> {
     return Promise.resolve({
       name: funcToolName,
@@ -97,7 +97,7 @@ export class FuncToolChecker implements DepsChecker {
 
       return installationInfo;
     } catch (error) {
-      if (error instanceof DepsCheckerError) {
+      if (error instanceof UserError) {
         return await this.getDepsInfo(undefined, undefined, error);
       }
       return await this.getDepsInfo(
@@ -156,7 +156,7 @@ export class FuncToolChecker implements DepsChecker {
   private async getNodeVersion(): Promise<string> {
     const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
     if (!nodeVersion) {
-      throw new NodeNotFoundError(Messages.NodeNotFound(), v3NodeNotFoundHelpLink);
+      throw new NodejsNotFoundError();
     }
     return nodeVersion;
   }
@@ -296,10 +296,7 @@ export class FuncToolChecker implements DepsChecker {
     symlinkDir: string | undefined
   ): Promise<DependencyStatus> {
     if (isLinux()) {
-      throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound().split("@SupportedPackages").join(funcToolName),
-        v3DefaultHelpLink
-      );
+      throw new InstallSoftwareError(funcToolName, v3DefaultHelpLink);
     }
     if (!(await this.hasNPM())) {
       throw new DepsCheckerError(Messages.needInstallNpm(), v3DefaultHelpLink);

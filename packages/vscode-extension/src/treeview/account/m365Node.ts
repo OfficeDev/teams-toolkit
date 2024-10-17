@@ -9,6 +9,8 @@ import { DynamicNode } from "../dynamicNode";
 import { AccountItemStatus, loadingIcon, m365Icon } from "./common";
 import { CopilotNode } from "./copilotNode";
 import { SideloadingNode } from "./sideloadingNode";
+import { tools } from "../../globalVariables";
+import { listAllTenants } from "@microsoft/teamsfx-core/build/common/tools";
 
 export class M365AccountNode extends DynamicNode {
   public status: AccountItemStatus;
@@ -23,12 +25,19 @@ export class M365AccountNode extends DynamicNode {
     this.copilotNode = new CopilotNode(this.eventEmitter, "");
   }
 
-  public setSignedIn(upn: string) {
+  public async setSignedIn(upn: string, tid: string) {
     if (this.status === AccountItemStatus.SignedIn) {
       return;
     }
     this.status = AccountItemStatus.SignedIn;
+
     this.label = upn;
+    const tenants = await listAllTenants(tools.tokenProvider.m365TokenProvider);
+    for (const tenant of tenants) {
+      if (tenant.tenantId === tid && tenant.displayName) {
+        this.label = `${upn} (${tenant.displayName as string})`;
+      }
+    }
     this.contextValue = "signedinM365";
     // refresh
     this.eventEmitter.fire(undefined);

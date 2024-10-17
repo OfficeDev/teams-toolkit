@@ -8,10 +8,31 @@ import {
 import { FxError, M365TokenProvider, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { teamsDevPortalClient } from "../client/teamsDevPortalClient";
-import { GraphReadUserScopes, SPFxScopes } from "./constants";
+import { AzureScopes, GraphReadUserScopes, SPFxScopes } from "./constants";
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
   return teamsDevPortalClient.getSideloadingStatus(token);
+}
+
+export async function listAllTenants(
+  m365TokenProvider: M365TokenProvider
+): Promise<Record<string, any>[]> {
+  const tokenRes = await m365TokenProvider.getAccessToken({ scopes: AzureScopes });
+  if (tokenRes.isOk() && tokenRes.value) {
+    const RM_ENDPOINT = "https://management.azure.com/tenants?api-version=2022-06-01";
+    if (tokenRes.value.length > 0) {
+      try {
+        const response = await axios.get(RM_ENDPOINT, {
+          headers: { Authorization: `Bearer ${tokenRes.value}` },
+        });
+        return response.data.value;
+      } catch (error) {
+        return [];
+      }
+    }
+  }
+
+  return [];
 }
 
 export async function getSPFxTenant(graphToken: string): Promise<string> {

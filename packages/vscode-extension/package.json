@@ -62,9 +62,6 @@
     "workspaceContains:/**/manifest.json",
     "workspaceContains:/manifest*.xml"
   ],
-  "enabledApiProposals": [
-    "languageModelSystem"
-  ],
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
@@ -220,42 +217,42 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -906,6 +903,12 @@
         "category": "Teams"
       },
       {
+        "command": "fx-extension.addPlugin",
+        "title": "%teamstoolkit.commandsTreeViewProvider.addPluginTitle%",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
+        "category": "Teams"
+      },
+      {
         "command": "fx-extension.openOfficeDevLifecycleLink",
         "title": "%teamstoolkit.commands.lifecycleLink.title%",
         "icon": "$(info)"
@@ -929,7 +932,7 @@
         "command": "fx-extension.invokeChat",
         "title": "%teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle%",
         "category": "Teams",
-        "enablement": "fx-extension.isChatParticipantEnabled"
+        "enablement": "fx-extension.isChatParticipantUIEntriesEnabled"
       },
       {
         "command": "fx-extension.syncManifest",
@@ -1466,7 +1469,7 @@
             }
           }
         ],
-        "when": "!fx-extension.isChatParticipantEnabled"
+        "when": "!fx-extension.isChatParticipantUIEntriesEnabled"
       },
       {
         "id": "teamsToolkitGetStartedWithChat",
@@ -1527,7 +1530,7 @@
             }
           }
         ],
-        "when": "fx-extension.isChatParticipantEnabled"
+        "when": "fx-extension.isChatParticipantUIEntriesEnabled"
       }
     ],
     "configuration": {
@@ -1556,21 +1559,6 @@
       }
     },
     "chatParticipants": [
-      {
-        "id": "ms-teams-vscode-extension.teams",
-        "name": "teams",
-        "description": "%teamstoolkit.chatParticipants.teams.description%",
-        "commands": [
-          {
-            "name": "create",
-            "description": "%teamstoolkit.chatParticipants.create.description%"
-          },
-          {
-            "name": "nextstep",
-            "description": "%teamstoolkit.chatParticipants.nextStep.description%"
-          }
-        ]
-      },
       {
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
@@ -1687,7 +1675,7 @@
     "typemoq": "^1.3.1",
     "typescript": "4.7.4",
     "uuid": "^8.3.2",
-    "vite": "^5.3.3",
+    "vite": "^5.3.6",
     "vite-plugin-svgr": "^4.2.0"
   },
   "dependencies": {

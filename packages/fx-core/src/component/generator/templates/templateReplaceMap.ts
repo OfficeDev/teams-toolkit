@@ -15,9 +15,14 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
   const llmService: string | undefined = inputs[QuestionNames.LLMService];
   let openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
   let azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
+  let azureAISearchApiKey: string | undefined = inputs[QuestionNames.AzureAISearchApiKey];
   const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
   const azureOpenAIDeploymentName: string | undefined =
     inputs[QuestionNames.AzureOpenAIDeploymentName];
+  const azureAISearchEndpoint: string | undefined = inputs[QuestionNames.AzureAISearchEndpoint];
+  const openAIEmbeddingModel: string | undefined = inputs[QuestionNames.OpenAIEmbeddingModel];
+  const azureOpenAIEmbeddingDeploymentName: string | undefined =
+    inputs[QuestionNames.AzureOpenAIEmbeddingDeploymentName];
 
   if (inputs.projectId !== undefined && (openAIKey || azureOpenAIKey)) {
     const cryptoProvider = new LocalCrypto(inputs.projectId);
@@ -28,6 +33,10 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
     if (azureOpenAIKey) {
       const result = cryptoProvider.encrypt(azureOpenAIKey);
       azureOpenAIKey = (result as any).value;
+    }
+    if (azureAISearchApiKey) {
+      const result = cryptoProvider.encrypt(azureAISearchApiKey);
+      azureAISearchApiKey = (result as any).value;
     }
   }
 
@@ -50,8 +59,13 @@ export function getTemplateReplaceMap(inputs: Inputs): { [key: string]: string }
     originalOpenAIKey: inputs[QuestionNames.OpenAIKey] ?? "",
     azureOpenAIKey: azureOpenAIKey ?? "",
     originalAzureOpenAIKey: inputs[QuestionNames.AzureOpenAIKey] ?? "",
+    azureAISearchApiKey: azureAISearchApiKey ?? "",
+    originalAzureAISearchApiKey: inputs[QuestionNames.AzureAISearchApiKey] ?? "",
     azureOpenAIEndpoint: azureOpenAIEndpoint ?? "",
     azureOpenAIDeploymentName: azureOpenAIDeploymentName ?? "",
+    azureOpenAIEmbeddingDeploymentName: azureOpenAIEmbeddingDeploymentName ?? "",
+    azureAISearchEndpoint: azureAISearchEndpoint ?? "",
+    openAIEmbeddingModel: openAIEmbeddingModel ?? "",
     isNewProjectTypeEnabled: featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType)
       ? "true"
       : "",

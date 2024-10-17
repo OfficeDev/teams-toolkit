@@ -31,7 +31,24 @@
                 "groupChat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "How can you help me?",
+                            "description": "A sample prompt"
+                        },
+                        {
+                            "title": "How to develop TeamsToolkit app?",
+                            "description": "How can I develop apps with Teams Toolkit?"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

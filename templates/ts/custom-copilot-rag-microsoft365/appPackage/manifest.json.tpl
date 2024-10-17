@@ -31,7 +31,28 @@
                 "groupChat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "List Contoso history in table",
+                            "description": "Tell me the history of Contoso Electronics, format in a table."
+                        },
+                        {
+                            "title": "Compare Contoso Electronics plan",
+                            "description": "Compare different Contoso Electronics benefit package plans"
+                        },
+                        {
+                            "title": "Summarize PerksPlus Program",
+                            "description": "Summarize Contoso Electronics PerksPlus Program"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

@@ -209,7 +209,7 @@ ${spec.appendix.codeExplanation
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userPrompt),
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.System, defaultSystemPrompt),
+      new LanguageModelChatMessage(LanguageModelChatMessageRole.User, defaultSystemPrompt),
     ];
     let copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
@@ -317,7 +317,7 @@ ${spec.appendix.codeExplanation
     if (sampleCode.length > 0) {
       messages.push(
         new LanguageModelChatMessage(
-          LanguageModelChatMessageRole.System,
+          LanguageModelChatMessageRole.User,
           getCodeSamplePrompt(sampleCode)
         )
       );
@@ -429,7 +429,7 @@ ${spec.appendix.codeExplanation
           referenceUserPrompt = customFunctionSystemPrompt;
         }
         messages.push(
-          new LanguageModelChatMessage(LanguageModelChatMessageRole.System, referenceUserPrompt)
+          new LanguageModelChatMessage(LanguageModelChatMessageRole.User, referenceUserPrompt)
         );
         break;
       default:
@@ -462,9 +462,7 @@ ${spec.appendix.codeExplanation
 
       Let's think step by step.
       `;
-      messages.push(
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.System, samplePrompt)
-      );
+      messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.User, samplePrompt));
     }
     // Because of the token window limitation, we have to cut off the messages if it exceeds the limitation
     msgCount = countMessagesTokens(messages);

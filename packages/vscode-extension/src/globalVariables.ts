@@ -13,7 +13,7 @@ import {
   isManifestOnlyOfficeAddinProject,
   manifestUtils,
 } from "@microsoft/teamsfx-core";
-import { Tools } from "@microsoft/teamsfx-api";
+import { TeamsAppManifest, Tools } from "@microsoft/teamsfx-api";
 
 /**
  * Common variables used throughout the extension. They must be initialized in the activate() method of extension.ts
@@ -84,6 +84,12 @@ export function checkIsDeclarativeCopilotApp(directory: string): boolean {
   } else {
     return false;
   }
+}
+
+export function updateIsDeclarativeCopilotApp(manifest: TeamsAppManifest): boolean {
+  const value = manifestUtils.getCapabilities(manifest).includes("copilotGpt");
+  isDeclarativeCopilotApp = value;
+  return isDeclarativeCopilotApp;
 }
 
 export function setCommandIsRunning(isRunning: boolean) {

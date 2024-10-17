@@ -84,7 +84,7 @@ export class WrappedAxiosClient {
    * @returns
    */
   public static onRejected(error: AxiosError) {
-    const method = error.request.method;
+    const method = error.request.method as string;
     const fullPath = `${(error.request.host as string) ?? ""}${
       (error.request.path as string) ?? ""
     }`;
@@ -135,7 +135,8 @@ export class WrappedAxiosClient {
       }: ${innerError.message as string} `;
       properties[TelemetryProperty.ErrorMessage] = finalMessage;
       properties[TelemetryProperty.MOSTraceId] = tracingId;
-      properties[TelemetryProperty.MOSPATH] = fullPath;
+      const relativePath = (error.request.path || "") as string;
+      properties[TelemetryProperty.MOSPATH] = method + " " + relativePath.replace(/\//g, "__");
     }
 
     TOOLS?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);

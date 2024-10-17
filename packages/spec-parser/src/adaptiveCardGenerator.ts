@@ -102,7 +102,7 @@ export class AdaptiveCardGenerator {
       return [template];
     }
     // some schema may not contain type but contain properties
-    if (schema.type === "object" || (!schema.type && schema.properties)) {
+    if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       const result: Array<TextBlockElement | ImageElement | ArrayElement> = [];
       for (const property in properties) {
@@ -179,7 +179,7 @@ export class AdaptiveCardGenerator {
 
   // Find the first array property in the response schema object with the well-known name
   static getResponseJsonPathFromSchema(schema: OpenAPIV3.SchemaObject): string {
-    if (schema.type === "object" || (!schema.type && schema.properties)) {
+    if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       for (const property in properties) {
         const schema = properties[property] as OpenAPIV3.SchemaObject;

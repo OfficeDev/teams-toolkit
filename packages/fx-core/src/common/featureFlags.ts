@@ -13,6 +13,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly OfficeMetaOS = "TEAMSFX_OFFICE_METAOS";
   static readonly CopilotExtension = "DEVELOP_COPILOT_EXTENSION";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
@@ -23,6 +24,7 @@ export class FeatureFlagName {
   static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
+  static readonly ChatParticipantUIEntries = "TEAMSFX_CHAT_PARTICIPANT_ENTRIES";
   static readonly SMEOAuth = "SME_OAUTH";
   static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
@@ -52,6 +54,10 @@ export class FeatureFlags {
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
+  static readonly OfficeMetaOS = {
+    name: FeatureFlagName.OfficeMetaOS,
+    defaultValue: "false",
+  };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,
     defaultValue: "false",
@@ -63,6 +69,10 @@ export class FeatureFlags {
   static readonly NewProjectType = { name: FeatureFlagName.NewProjectType, defaultValue: "true" };
   static readonly ChatParticipant = {
     name: FeatureFlagName.ChatParticipant,
+    defaultValue: "false",
+  };
+  static readonly ChatParticipantUIEntries = {
+    name: FeatureFlagName.ChatParticipantUIEntries,
     defaultValue: "false",
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };

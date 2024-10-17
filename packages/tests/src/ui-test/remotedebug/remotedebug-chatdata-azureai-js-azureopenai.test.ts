@@ -169,7 +169,7 @@ describe("Remote debug Tests", function () {
           throw new Error("Failed to install packages");
         }
 
-        const insertDataCmd = "npm run indexer:create";
+        const insertDataCmd = `npm run indexer:create -- '${searchKey}' '${searchEndpoint}'`;
         const { success: insertDataSuccess } = await Executor.execute(
           insertDataCmd,
           projectPath

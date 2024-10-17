@@ -26,9 +26,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Prompts\Chat\skprompt.txt">
+    <Content Include="Prompts\chat\skprompt.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Exclude local settings from publish -->
+  <ItemGroup>
+    <Content Remove="appsettings.Development.json" />
+    <Content Include="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>None</CopyToPublishDirectory>
+    </Content>
+    <Content Remove="appsettings.TestTool.json" />
+    <Content Include="appsettings.TestTool.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>None</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 </Project>

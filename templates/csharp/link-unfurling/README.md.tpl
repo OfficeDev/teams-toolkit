@@ -3,9 +3,8 @@
 ## Quick Start
 
 {{#enableTestToolByDefault}}
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-2. In the launched browser, select the Add button to load the app in Teams
-3. You can unfurl links from ".botframework.com" domain.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.
+2. You can unfurl links from ".botframework.com" domain.
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel

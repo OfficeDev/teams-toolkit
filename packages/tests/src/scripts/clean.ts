@@ -32,14 +32,12 @@ async function main() {
   const aadList = await cleanService.listAad();
   if (aadList) {
     for (const aad of aadList) {
-      for (const name of aadNamePrefixList) {
         if (
-          aad.displayName?.startsWith("adaptive")
+          aad.displayName?.startsWith("share")
         ) {
           console.log(aad.displayName);
           await cleanService.deleteAad(aad.id!);
         }
-      }
     }
   }
 }

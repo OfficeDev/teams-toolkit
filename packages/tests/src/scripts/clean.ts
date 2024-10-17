@@ -16,7 +16,7 @@ import { delay } from "../utils/retryHandler";
 
 const appStudioAppNamePrefixList: string[] = [Project.namePrefix, "vs"];
 const appNamePrefixList: string[] = [Project.namePrefix, "vs"];
-const aadNamePrefixList: string[] = [Project.namePrefix, "vs"];
+const aadNamePrefixList: string[] = ["adaptive", "vs"];
 const rgNamePrefixList: string[] = [Project.namePrefix, "vs"];
 const excludePrefix: string = getAppNamePrefix();
 

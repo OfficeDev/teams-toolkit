@@ -1,7 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, Platform, ManifestUtil, Colors } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  ok,
+  err,
+  Platform,
+  ManifestUtil,
+  Colors,
+  TeamsAppManifest,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { EOL } from "os";
@@ -94,6 +104,16 @@ export class ValidateManifestDriver implements StepDriver {
           HelpLinks.WhyNeedProvision
         )
       );
+    }
+
+    // validate localization files
+    const localizationFilesValidationRes = await this.validateLocalizatoinFiles(
+      args,
+      context,
+      manifest
+    );
+    if (localizationFilesValidationRes.isErr()) {
+      return err(localizationFilesValidationRes.error);
     }
 
     let declarativeCopilotValidationResult;
@@ -334,6 +354,85 @@ export class ValidateManifestDriver implements StepDriver {
           "https://aka.ms/teamsfx-actions/teamsapp-validate"
         )
       );
+    }
+    return ok(undefined);
+  }
+
+  public async validateLocalizatoinFiles(
+    args: ValidateManifestArgs,
+    context: WrapDriverContext,
+    manifest: TeamsAppManifest
+  ): Promise<Result<any, FxError>> {
+    const additionalLanguages = manifest.localizationInfo?.additionalLanguages;
+    if (!additionalLanguages || additionalLanguages.length == 0) {
+      return ok(undefined);
+    }
+    for (const language of additionalLanguages) {
+      const filePath = language?.file;
+      if (!filePath) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              getLocalizedString("error.appstudio.localizationFile.pathNotDefined", filePath),
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+      const localizationFileDir = path.dirname(
+        getAbsolutePath(args.manifestPath, context.projectPath)
+      );
+      const localizationFilePath = getAbsolutePath(filePath, localizationFileDir);
+
+      const manifestRes = await manifestUtils._readAppManifest(localizationFilePath);
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const localizationFile = manifestRes.value;
+      try {
+        const schema = await ManifestUtil.fetchSchema(localizationFile);
+        // the current localization schema has invalid regex sytax, we will skip some properties validation temporarily
+        delete schema.patternProperties[
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.description$"
+        ];
+        delete schema.patternProperties[
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.templateText$"
+        ];
+        const validationRes = await ManifestUtil.validateManifestAgainstSchema(
+          localizationFile,
+          schema
+        );
+        if (validationRes.length > 0) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.ValidationFailedError.name,
+              AppStudioError.ValidationFailedError.message([
+                getLocalizedString(
+                  "error.appstudio.localizationFile.validationFailed",
+                  filePath,
+                  validationRes.join(EOL)
+                ),
+              ]),
+              HelpLinks.WhyNeedProvision
+            )
+          );
+        }
+      } catch (e: any) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              getLocalizedString(
+                "error.appstudio.localizationFile.validationException",
+                filePath,
+                e.message
+              ),
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
     }
     return ok(undefined);
   }

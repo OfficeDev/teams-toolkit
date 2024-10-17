@@ -33,7 +33,7 @@ async function main() {
   if (aadList) {
     for (const aad of aadList) {
         if (
-          aad.displayName?.startsWith("share")
+          aad.displayName?.startsWith("ada")
         ) {
           console.log(aad.displayName);
           await cleanService.deleteAad(aad.id!);

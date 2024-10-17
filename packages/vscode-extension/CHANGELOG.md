@@ -76,6 +76,14 @@ Below is a comprehensive list of new features, enhancements, and bug fixes imple
 - Fixed an issue to enable shell option in Windows platform to avoid [command injection via args parameters](https://nodejs.org/en/blog/vulnerability/april-2024-security-releases-2#command-injection-via-args-parameter-of-child_processspawn-without-shell-option-enabled-on-windows-cve-2024-27980---high). [#11699](https://github.com/OfficeDev/teams-toolkit/pull/11699)
 - Fixed an issue where provision summary logs are printed twice. [#11658](https://github.com/OfficeDev/teams-toolkit/pull/11658)
 
+## 5.8.2 - Sep 26, 2024
+
+Hotfix version.
+
+- Fixed an issue ([#12143](https://github.com/OfficeDev/teams-toolkit/issues/12143)) where users may encounter an error (`SPFx.LatestPackageInstallFailed`) when creating a Tab with SPFx project.
+- Resolved an issue ([#12384](https://github.com/OfficeDev/teams-toolkit/issues/12384)) where users may encounter an error (`AppStudioPlugin.TeamsAppCreateConflict`) during local debugging.
+- Updated TypeScript from `4.4.4` to `5.5.4` to avoid build failures for `Custom Engine Agent` templates in [#12462](https://github.com/OfficeDev/teams-toolkit/pull/12462).
+
 ## 5.8.1 - May 27, 2024
 
 Hotfix version.

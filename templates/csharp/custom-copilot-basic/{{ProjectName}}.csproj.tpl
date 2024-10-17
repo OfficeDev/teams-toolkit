@@ -20,9 +20,9 @@
 
 {{/isNewProjectTypeEnabled}}
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bot.Builder" Version="4.22.7" />
-    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
-    <PackageReference Include="Microsoft.Teams.AI" Version="1.5.*" />
+    <PackageReference Include="Microsoft.Bot.Builder" Version="4.22.9" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.9" />
+    <PackageReference Include="Microsoft.Teams.AI" Version="1.7.*" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 

@@ -282,7 +282,7 @@ describe("teamsApp/validateManifest", async () => {
       const fakeLocalizationFile = {};
 
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
-      sinon.stub(ManifestUtil, "validateManifest").resolves(["Validation error"]);
+      sinon.stub(ManifestUtil, "validateManifestAgainstSchema").resolves(["Validation error"]);
 
       const result = await teamsAppDriver.validateLocalizatoinFiles(
         args,
@@ -301,7 +301,9 @@ describe("teamsApp/validateManifest", async () => {
       const fakeLocalizationFile = {};
 
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
-      sinon.stub(ManifestUtil, "validateManifest").throws(new Error("validation exception"));
+      sinon
+        .stub(ManifestUtil, "validateManifestAgainstSchema")
+        .throws(new Error("validation exception"));
 
       const result = await teamsAppDriver.validateLocalizatoinFiles(
         args,
@@ -317,10 +319,13 @@ describe("teamsApp/validateManifest", async () => {
     it("should return ok when localization file is valid", async () => {
       const args: ValidateManifestArgs = { manifestPath: "fakepath" };
       const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
-      const fakeLocalizationFile = {};
+      const fakeLocalizationFile = {
+        $schema:
+          "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.Localization.schema.json",
+      };
 
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
-      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+      sinon.stub(ManifestUtil, "validateManifestAgainstSchema").resolves([]);
 
       const result = await teamsAppDriver.validateLocalizatoinFiles(
         args,

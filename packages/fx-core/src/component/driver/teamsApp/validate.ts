@@ -391,7 +391,18 @@ export class ValidateManifestDriver implements StepDriver {
       }
       const localizationFile = manifestRes.value;
       try {
-        const validationRes = await ManifestUtil.validateManifest(localizationFile);
+        const schema = await ManifestUtil.fetchSchema(localizationFile);
+        // the current localization schema has invalid regex sytax, we will skip some properties validation temporarily
+        delete schema.patternProperties[
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.description$"
+        ];
+        delete schema.patternProperties[
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.templateText$"
+        ];
+        const validationRes = await ManifestUtil.validateManifestAgainstSchema(
+          localizationFile,
+          schema
+        );
         if (validationRes.length > 0) {
           return err(
             AppStudioResultFactory.UserError(

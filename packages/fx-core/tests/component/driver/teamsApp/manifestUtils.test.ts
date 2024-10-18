@@ -435,3 +435,39 @@ describe("readAppManifestSync", () => {
     assert.isTrue(res.isErr() && res.error instanceof ReadFileError);
   });
 });
+
+describe("trimManifestShortName", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("Success", async () => {
+    const teamsManifest = new TeamsAppManifest();
+    teamsManifest.name.short = "shortname abcdefghijklmn123456${{APP_NAME_SUFFIX}}";
+    sandbox.stub(fs, "readJson").resolves(teamsManifest);
+    sandbox.stub(fs, "writeFile").resolves();
+    const res = await manifestUtils.trimManifestShortName("projectPath");
+    assert.isTrue(res.isOk());
+    assert.equal(teamsManifest.name.short, "shortnameabcdefghijklmn12${{APP_NAME_SUFFIX}}");
+  });
+  it("Success no suffix", async () => {
+    const teamsManifest = new TeamsAppManifest();
+    teamsManifest.name.short = "shortname abcdefghijklmn123456";
+    sandbox.stub(fs, "readJson").resolves(teamsManifest);
+    sandbox.stub(fs, "writeFile").resolves();
+    const res = await manifestUtils.trimManifestShortName("projectPath");
+    assert.isTrue(res.isOk());
+    assert.equal(teamsManifest.name.short, "shortnameabcdefghijklmn12");
+  });
+  it("No need to trim", async () => {
+    const teamsManifest = new TeamsAppManifest();
+    teamsManifest.name.short = "shortname abcdefghijklmn${{APP_NAME_SUFFIX}}";
+    sandbox.stub(fs, "readJson").resolves(teamsManifest);
+    sandbox.stub(fs, "writeFile").resolves();
+    const res = await manifestUtils.trimManifestShortName("projectPath");
+    assert.isTrue(res.isOk());
+    assert.equal(teamsManifest.name.short, "shortname abcdefghijklmn${{APP_NAME_SUFFIX}}");
+  });
+});

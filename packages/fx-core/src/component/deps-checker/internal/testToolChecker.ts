@@ -1,16 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ConfigFolderName, err, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import fetch from "node-fetch";
 import * as os from "os";
 import * as path from "path";
-import * as url from "url";
 import semver from "semver";
+import maxSatisfying from "semver/ranges/max-satisfying";
+import * as url from "url";
 import * as uuid from "uuid";
-import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { v3DefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
+import { DepsCheckerError, NodejsNotFoundError } from "../../../error";
+import { v3DefaultHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
+import { TelemetryProperties } from "../constant/telemetry";
 import {
   DependencyStatus,
   DepsChecker,
@@ -18,14 +22,10 @@ import {
   TestToolInstallOptions,
   TestToolReleaseType,
 } from "../depsChecker";
-import { DepsCheckerError, NodeNotFoundError } from "../depsError";
-import { createSymlink, rename, unlinkSymlink, cleanup } from "../util/fileHelper";
-import { isWindows } from "../util/system";
-import { TelemetryProperties } from "../constant/telemetry";
 import { cpUtils } from "../util";
-import fetch from "node-fetch";
-import maxSatisfying from "semver/ranges/max-satisfying";
 import { downloadToTempFile, unzip } from "../util/downloadHelper";
+import { cleanup, createSymlink, rename, unlinkSymlink } from "../util/fileHelper";
+import { isWindows } from "../util/system";
 
 enum InstallType {
   Global = "global",
@@ -128,7 +128,7 @@ export class TestToolChecker implements DepsChecker {
     let installationInfo: TestToolDependencyStatus;
     try {
       if (installOptions.releaseType === TestToolReleaseType.Npm && !(await this.hasNode())) {
-        throw new NodeNotFoundError(Messages.NodeNotFound(), v3NodeNotFoundHelpLink);
+        throw new NodejsNotFoundError();
       }
       installationInfo = await this.getInstallationInfo(installOptions);
       if (!installationInfo.isInstalled) {
@@ -152,7 +152,7 @@ export class TestToolChecker implements DepsChecker {
 
       return installationInfo;
     } catch (error: any) {
-      if (error instanceof DepsCheckerError) {
+      if (error instanceof UserError) {
         return await this.createFailureDepsInfo(installOptions.versionRange, error);
       }
       return await this.createFailureDepsInfo(

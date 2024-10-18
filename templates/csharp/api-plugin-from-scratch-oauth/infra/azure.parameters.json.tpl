@@ -11,11 +11,6 @@
     "aadAppClientId": {
       "value": "${{AAD_APP_CLIENT_ID}}"
     },
-{{^MicrosoftEntra}}
-    "aadAppClientSecret": {
-      "value": "${{SECRET_AAD_APP_CLIENT_SECRET}}"
-    },
-{{/MicrosoftEntra}}
     "aadAppTenantId": {
       "value": "${{AAD_APP_TENANT_ID}}"
     },

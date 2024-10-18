@@ -34,6 +34,7 @@ import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 describe("coordinator create", () => {
   const sandbox = sinon.createSandbox();
@@ -43,6 +44,7 @@ describe("coordinator create", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "trimManifestShortName").resolves(ok(undefined));
     generator = sandbox
       .stub(DefaultTemplateGenerator.prototype, <any>"scaffolding")
       .resolves(ok(undefined));

@@ -29,9 +29,9 @@ export function useGraphWithCredential<T>(
   fetchGraphDataAsync: (
     graph: Client,
     credential: TeamsUserCredential,
-    scope: string[]
+    scope: string[],
   ) => Promise<T>,
-  options?: GraphOptionWithCredential
+  options?: GraphOptionWithCredential,
 ): Data<T> {
   let credential: TeamsUserCredential;
   if (!options?.credential) {

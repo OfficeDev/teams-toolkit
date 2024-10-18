@@ -64,7 +64,7 @@ describe("useTeamsUserCredential() hook tests", () => {
         expect(result.current.inTeams).toBe(true);
         expect(result.current.themeString).toBe("default");
       },
-      { interval: 1 }
+      { interval: 1 },
     );
   });
 

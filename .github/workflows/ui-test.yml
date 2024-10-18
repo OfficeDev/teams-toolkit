@@ -579,7 +579,7 @@ jobs:
            -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
 
   report:
-    if: ${{ (github.event_name == 'workflow_dispatch' && needs.setup.outputs.email-receiver) || (github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5))) }}
+    if: ${{ always() }}
     needs: [setup, main]
     runs-on: ubuntu-latest
     defaults:
@@ -691,7 +691,7 @@ jobs:
           fi    
 
           echo "body=$body" >> $GITHUB_OUTPUT
-          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "to=v-helzha@microsoft.com" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail

@@ -447,15 +447,13 @@ jobs:
         if: matrix.os != 'windows-latest'
         working-directory: packages/tests
         run: |
-          vsix=`find . -type f -name "*.vsix" | sed 's|.*/\(.*\)|\1|'`
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable TeamsDevApp.ms-teams-vscode-extension
 
       - name: Install vsix(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
-          $vsix = (Get-ChildItem *.vsix | Select-Object -ExpandProperty Name)
-          npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file $vsix
+          npx extest install-from-marketplace --storage .test-resources --extensions_dir .test-resources --type stable TeamsDevApp.ms-teams-vscode-extension
 
       - name: Setup OpenAI key(unix)
         if: ${{ matrix.os == 'ubuntu-latest' && github.event_name != 'schedule' }}

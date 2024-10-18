@@ -58,7 +58,7 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto][JS][Azure OpenAI] Remote debug for Custom Copilot Rag Custom Api",
+    "[auto][JS][OpenAI] Remote debug for Custom Copilot Rag Custom Api",
     {
       testPlanCaseId: 28891605,
       author: "v-annefu@microsoft.com",

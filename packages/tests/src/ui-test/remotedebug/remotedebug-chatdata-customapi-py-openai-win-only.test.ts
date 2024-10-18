@@ -88,24 +88,54 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      if (isRealKey) {
-        await validateCustomapi(page, {
-          hasWelcomeMessage: false,
-          hasCommandReplyValidation: true,
-          botCommand: "Get repairs for Karin",
-          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
-          expectedReplyMessage: "assignedTo: Karin",
-          timeout: Timeout.longTimeWait,
-        });
-      } else {
-        await validateCustomapi(page, {
-          hasWelcomeMessage: false,
-          hasCommandReplyValidation: true,
-          botCommand: "helloWorld",
-          expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
-          expectedReplyMessage: ValidationContent.AiBotErrorMessage,
-          timeout: Timeout.longTimeWait,
-        });
+      try {
+        if (isRealKey) {
+          await validateCustomapi(page, {
+            hasWelcomeMessage: false,
+            hasCommandReplyValidation: true,
+            botCommand: "Get repairs for Karin",
+            expectedWelcomeMessage:
+              ValidationContent.AiChatBotWelcomeInstruction,
+            expectedReplyMessage: "assignedTo: Karin",
+            timeout: Timeout.longTimeWait,
+          });
+        } else {
+          await validateCustomapi(page, {
+            hasWelcomeMessage: false,
+            hasCommandReplyValidation: true,
+            botCommand: "helloWorld",
+            expectedWelcomeMessage:
+              ValidationContent.AiChatBotWelcomeInstruction,
+            expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+            timeout: Timeout.longTimeWait,
+          });
+        }
+      } catch {
+        await RetryHandler.retry(async () => {
+          await deployProject(projectPath, Timeout.botDeploy);
+          await driver.sleep(Timeout.longTimeWait);
+          if (isRealKey) {
+            await validateCustomapi(page, {
+              hasWelcomeMessage: false,
+              hasCommandReplyValidation: true,
+              botCommand: "Get repairs for Karin",
+              expectedWelcomeMessage:
+                ValidationContent.AiChatBotWelcomeInstruction,
+              expectedReplyMessage: "assignedTo: Karin",
+              timeout: Timeout.longTimeWait,
+            });
+          } else {
+            await validateCustomapi(page, {
+              hasWelcomeMessage: false,
+              hasCommandReplyValidation: true,
+              botCommand: "helloWorld",
+              expectedWelcomeMessage:
+                ValidationContent.AiChatBotWelcomeInstruction,
+              expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+              timeout: Timeout.longTimeWait,
+            });
+          }
+        }, 2);
       }
     }
   );

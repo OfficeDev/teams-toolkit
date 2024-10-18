@@ -7,7 +7,7 @@
 import * as fs from "fs-extra";
 import { v3DefaultHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
-import { DepsCheckerError } from "../depsError";
+import { DepsCheckerError } from "../../../error/depCheck";
 
 export async function unlinkSymlink(linkFilePath: string): Promise<void> {
   try {

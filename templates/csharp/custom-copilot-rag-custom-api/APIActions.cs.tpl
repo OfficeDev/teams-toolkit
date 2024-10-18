@@ -15,10 +15,12 @@ namespace {{SafeProjectName}}
     {
         private APIClient Client;
 
-        public APIActions(string specPath)
+        public APIActions()
         {
-            Client = new APIClient(specPath);
+            Client = new APIClient("{{OPENAPI_SPEC_PATH}}");
         }
+
+        // Replace with action code
 
         private static IMessageActivity RenderCardToMessage(string cardTemplatePath, string data)
         {
@@ -48,15 +50,15 @@ namespace {{SafeProjectName}}
                 PathObject = args.ContainsKey("path") ? args["path"] : null,
                 HeaderObject = args.ContainsKey("header") ? args["header"] : null,
                 QueryObject = args.ContainsKey("query") ? args["query"] : null,
-                RequestBody = args.ContainsKey("requestBody") ? args["requestBody"] : null
+                RequestBody = args.ContainsKey("body") ? args["body"] : null
             };
             return requestParam;
         }
 
         [Action(AIConstants.UnknownActionName)]
-        public async Task<string> UnknownAction([ActionTurnContext] TurnContext turnContext, [ActionName] string action)
+        public async Task<string> UnknownActionAsync([ActionTurnContext] TurnContext turnContext, [ActionName] string action)
         {
-            await turnContext.SendActivityAsync(MessageFactory.Text("[lights off]"));
+            await turnContext.SendActivityAsync(MessageFactory.Text("Unable to find a matching API to call"));
             return "unknown action";
         }
     }

@@ -38,10 +38,12 @@ paths:
       description: Returns a list of repairs with their details and images
       security:
 {{#MicrosoftEntra}}
-        - aadAuthCode: []
+        - aadAuthCode:
+          - api://${{OPENAPI_SERVER_DOMAIN}}/${{AAD_APP_CLIENT_ID}}/repairs_read
 {{/MicrosoftEntra}}
 {{^MicrosoftEntra}}
-        - oAuth2AuthCode: []
+        - oAuth2AuthCode:
+          - api://${{AAD_APP_CLIENT_ID}}/repairs_read
 {{/MicrosoftEntra}}
       parameters:
         - name: assignedTo

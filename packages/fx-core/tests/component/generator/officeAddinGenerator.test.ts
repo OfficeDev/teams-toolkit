@@ -1034,6 +1034,7 @@ describe("OfficeAddinGeneratorNew", () => {
       chai.assert.isTrue(res.isErr());
     });
   });
+
   describe("post()", () => {
     afterEach(() => {
       sandbox.restore();

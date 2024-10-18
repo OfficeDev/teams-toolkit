@@ -31,7 +31,7 @@ export async function repair(
   // Get the assignedTo query parameter.
   const assignedTo = req.query.get("assignedTo");
 
-  // If the assignedTo query parameter is not provided, return the response.
+  // If the assignedTo query parameter is not provided, return an empty array.
   if (!assignedTo) {
     return res;
   }

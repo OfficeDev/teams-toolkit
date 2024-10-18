@@ -94,9 +94,9 @@ export function getParserOptions(
     ? {
         isGptPlugin: isDeclarativeCopilot,
         allowAPIKeyAuth: false,
-        allowBearerTokenAuth: true,
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true,
         allowMultipleParameters: true,
-        allowOauth2: true,
+        allowOauth2: !!platform && platform === Platform.VS ? false : true,
         projectType: ProjectType.Copilot,
         allowMissingId: true,
         allowSwagger: true,
@@ -1036,7 +1036,12 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
-const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+const commonLanguages = [
+  ProgrammingLanguage.TS,
+  ProgrammingLanguage.JS,
+  ProgrammingLanguage.PY,
+  ProgrammingLanguage.CSharp,
+];
 
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
@@ -1058,7 +1063,10 @@ async function updateAdaptiveCardForCustomApi(
   destinationPath: string
 ): Promise<void> {
   if (commonLanguages.includes(language as ProgrammingLanguage)) {
-    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    let adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    if (language === ProgrammingLanguage.CSharp) {
+      adaptiveCardsFolderPath = path.join(destinationPath, "adaptiveCards");
+    }
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
@@ -1071,6 +1079,41 @@ async function updateAdaptiveCardForCustomApi(
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }
   }
+}
+
+function filterSchema(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
+  const filteredSchema: any = { type: schema.type };
+
+  if (schema.description) {
+    filteredSchema.description = schema.description;
+  }
+
+  if (schema.type === "object" && schema.properties) {
+    filteredSchema.properties = {};
+    filteredSchema.required = schema.required;
+    for (const key in schema.properties) {
+      const property = schema.properties[key] as OpenAPIV3.SchemaObject;
+      if (property.type === "object") {
+        filteredSchema.properties[key] = filterSchema(property as OpenAPIV3.SchemaObject);
+        filteredSchema.required = schema.required;
+      } else if (property.type === "array") {
+        filteredSchema.properties[key] = {
+          type: "array",
+          items: filterSchema(property.items as OpenAPIV3.SchemaObject),
+          description: property.description,
+        };
+      } else {
+        filteredSchema.properties[key] = {
+          type: property.type,
+          description: property.description,
+        };
+      }
+    }
+  } else if (schema.type === "array" && schema.items) {
+    filteredSchema.items = filterSchema(schema.items as OpenAPIV3.SchemaObject);
+  }
+
+  return filteredSchema;
 }
 
 async function updateActionForCustomApi(
@@ -1103,13 +1146,28 @@ async function updateActionForCustomApi(
               required: [],
             };
           }
-          parameters.properties[paramType].properties[param.name] = schema;
+          parameters.properties[paramType].properties[param.name] = filterSchema(schema);
           parameters.properties[paramType].properties[param.name].description =
             param.description ?? "";
           if (param.required) {
             parameters.properties[paramType].required.push(param.name);
             if (!parameters.required.includes(paramType)) {
               parameters.required.push(paramType);
+            }
+          }
+        }
+      }
+
+      const requestBody = item.item.requestBody as OpenAPIV3.RequestBodyObject;
+      if (requestBody) {
+        const content = requestBody.content;
+        if (content) {
+          const contentSchema = content["application/json"].schema as OpenAPIV3.SchemaObject;
+          if (Object.keys(contentSchema).length !== 0) {
+            parameters.properties["body"] = filterSchema(contentSchema);
+            parameters.properties["body"].description = requestBody.description ?? "";
+            if (requestBody.required) {
+              parameters.required.push("body");
             }
           }
         }
@@ -1193,6 +1251,28 @@ async def {{operationId}}(
     await context.send_activity(message)
   return "success"
   `,
+  cs: `
+        [Action("{{operationId}}")]
+        public async Task<string> {{functionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
+        {
+            try
+            {
+                RequestParams requestParam = ParseRequestParams(args);
+
+                var response = await Client.CallAsync("{{apiPath}}", Method.{{apiMethod}}, requestParam);
+                var data = response.Content;
+
+                var cardTemplatePath = "./adaptiveCards/{{operationId}}.json";
+                var message = RenderCardToMessage(cardTemplatePath, data);
+
+                await turnContext.SendActivityAsync(message);
+            }
+            catch (Exception ex) {
+                await turnContext.SendActivityAsync("Failed to call API with error:  " + ex.Message);
+            }
+
+            return "complete";
+        }`,
 };
 
 const AuthCode = {
@@ -1259,6 +1339,34 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("# Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(botFilePath, updateBotFileContent);
+  } else if (language === ProgrammingLanguage.CSharp) {
+    const actionsCode = [];
+    const codeTemplate = ActionCode["cs"];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace(/{{apiPath}}/g, item.pathUrl)
+        .replace(/{{apiMethod}}/g, Utils.updateFirstLetter(item.method))
+        .replace(/{{functionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
+      actionsCode.push(code);
+    }
+
+    const apiActionCsFilePath = path.join(destinationPath, "APIActions.cs");
+    const apiActionCsFileContent = (await fs.readFile(apiActionCsFilePath)).toString();
+    const updateApiActionCsFileContent = apiActionCsFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", "apiSpecificationFile/" + openapiSpecFileName)
+      .replace("// Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(apiActionCsFilePath, updateApiActionCsFileContent);
+
+    const files = await fs.readdir(destinationPath);
+    const projectFileName = files.find((file) => file.endsWith(".csproj"));
+    const projectFilePath = path.join(destinationPath, projectFileName!);
+    const projectFileContent = (await fs.readFile(projectFilePath)).toString();
+    const updateProjectFileContent = projectFileContent.replace(
+      /{{OPENAPI_SPEC_PATH}}/g,
+      openapiSpecFileName
+    );
+    await fs.writeFile(projectFilePath, updateProjectFileContent);
   }
 }
 
@@ -1268,7 +1376,10 @@ export async function updateForCustomApi(
   destinationPath: string,
   openapiSpecFileName: string
 ): Promise<void> {
-  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  let chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  if (language === ProgrammingLanguage.CSharp) {
+    chatFolder = path.join(destinationPath, "prompts", "Chat");
+  }
   await fs.ensureDir(chatFolder);
 
   // 1. update prompt folder

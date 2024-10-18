@@ -74,7 +74,9 @@ describe("invokeTeamsAgent", async () => {
 
     chai.assert.isTrue(res.isOk());
     chai.assert.equal(commandStub.callCount, 3);
-    chai.assert.equal(commandStub.getCall(2).args[1].query, "@teams ");
+    chai.assert.isTrue(
+      (commandStub.getCall(2).args[1].query as string).startsWith("@teamsapp Use ")
+    );
   });
 
   it("install Github Copilot, wait and invoke Teams Agent", async () => {

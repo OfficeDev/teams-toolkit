@@ -18,7 +18,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import fse from "fs-extra";
 import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";

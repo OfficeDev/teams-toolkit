@@ -32,10 +32,12 @@ export class M365AccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedIn;
 
     this.label = upn;
-    const tenants = await listAllTenants(tools.tokenProvider.m365TokenProvider);
-    for (const tenant of tenants) {
-      if (tenant.tenantId === tid && tenant.displayName) {
-        this.label = `${upn} (${tenant.displayName as string})`;
+    if (featureFlagManager.getBooleanValue(FxCoreFeatureFlags.MultiTenant)) {
+      const tenants = await listAllTenants(tools.tokenProvider.m365TokenProvider);
+      for (const tenant of tenants) {
+        if (tenant.tenantId === tid && tenant.displayName) {
+          this.label = `${upn} (${tenant.displayName as string})`;
+        }
       }
     }
     this.contextValue = "signedinM365";

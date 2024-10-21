@@ -185,7 +185,19 @@ export async function initPage(
     console.log("click add button");
     let addBtn;
     try {
-      addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+      try {
+        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+      } catch {
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
+        } catch {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("add_page"),
+            fullPage: true,
+          });
+          throw "error to add app";
+        }
+      }
       await addBtn?.click();
       if (options?.dashboardFlag) {
         const dialog = await page.waitForSelector("div[role='dialog']");

@@ -275,7 +275,21 @@ export function getCapabilities(manifest: any): string[] {
   }
   if (
     manifest.copilotExtensions?.declarativeCopilots &&
-    manifest.copilotExtensions.declarativeCopilots > 0
+    manifest.copilotExtensions.declarativeCopilots.length > 0
+  ) {
+    capabilities.push("copilotGpt");
+  }
+  if (
+    manifest.copilotAgents?.plugins &&
+    manifest.copilotAgents.plugins.length > 0 &&
+    !capabilities.includes("plugin")
+  ) {
+    capabilities.push("plugin");
+  }
+  if (
+    manifest.copilotAgents?.declarativeAgents &&
+    manifest.copilotAgents.declarativeAgents.length > 0 &&
+    !capabilities.includes("copilotGpt")
   ) {
     capabilities.push("copilotGpt");
   }

@@ -7,7 +7,7 @@
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType, assembleError } from "@microsoft/teamsfx-core";
-import * as path from "path";
+import path from "path";
 import * as vscode from "vscode";
 import { checkPrerequisitesForGetStarted } from "../debug/depsChecker/getStartedChecker";
 import { vscodeLogger } from "../debug/depsChecker/vscodeLogger";

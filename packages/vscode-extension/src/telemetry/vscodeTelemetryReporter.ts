@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import * as os from "os";
-import * as path from "path";
+import path from "path";
 // eslint-disable-next-line import/default
 import Reporter from "@vscode/extension-telemetry";
 import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
@@ -17,6 +17,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { configure, getLogger, Logger } from "log4js";
 import { workspaceUri } from "../globalVariables";
+import VSCodeLogger from "../commonlib/log";
 
 const TelemetryTestLoggerFile = "telemetryTest.log";
 
@@ -37,9 +38,9 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
 
   private sharedProperties: { [key: string]: string } = {};
 
-  constructor(key: string, extensionVersion: string, extensionId: string) {
+  constructor(key: string, extensionVersion: string, extensionId: string, reporter?: Reporter) {
     super(async () => await this.reporter.dispose());
-    this.reporter = new Reporter(extensionId, extensionVersion, key, true);
+    this.reporter = reporter ?? new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
     this.testFeatureFlag = featureFlagManager.getBooleanValue(FeatureFlags.TelemetryTest);
     if (this.testFeatureFlag) {
@@ -94,7 +95,9 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     }
 
     this.checkAndOverwriteSharedProperty(properties);
-    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    if (properties[TelemetryProperty.CorrelationId] == undefined) {
+      properties[TelemetryProperty.CorrelationId] = Correlator.getId();
+    }
 
     const featureFlags = featureFlagManager.listEnabled();
     properties[TelemetryProperty.FeatureFlags] = featureFlags ? featureFlags.join(";") : "";
@@ -115,6 +118,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       this.logTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     } else {
       this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements);
+      void VSCodeLogger.debug(
+        `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(
+          properties
+        )}, measurements: ${JSON.stringify(measurements)}`
+      );
     }
   }
 
@@ -142,6 +150,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       this.logTelemetryEvent(eventName, properties, measurements);
     } else {
       this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+      void VSCodeLogger.debug(
+        `sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(
+          properties
+        )}, measurements: ${JSON.stringify(measurements)}`
+      );
     }
   }
 

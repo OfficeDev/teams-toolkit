@@ -17,7 +17,10 @@ import * as sinon from "sinon";
 import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClient";
 import { setTools } from "../../../../src/common/globalVars";
 import * as commonTools from "../../../../src/common/utils";
-import { Constants } from "../../../../src/component/driver/teamsApp/constants";
+import {
+  Constants,
+  GeneralValidationErrorId,
+} from "../../../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import {
   AsyncAppValidationResponse,
@@ -278,6 +281,109 @@ describe("teamsApp/validateManifest", async () => {
       }
     });
 
+    it("validate with errors returned - copilot agent", async () => {
+      const teamsManifest: TeamsAppManifest = new TeamsAppManifest();
+      teamsManifest.copilotAgents = {
+        declarativeAgents: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+        plugins: [
+          {
+            id: "fakeId",
+            file: "fakeFile",
+          },
+        ],
+      };
+
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(teamsManifest));
+      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+      sinon.stub(pluginManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error1"],
+        })
+      );
+      sinon.stub(pluginManifestUtils, "logValidationErrors").returns("errorMessage1");
+
+      sinon.stub(copilotGptManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error2"],
+          actionValidationResult: [
+            {
+              id: "fakeId",
+              filePath: "fakeFile",
+              validationResult: ["error3"],
+            },
+          ],
+        })
+      );
+      sinon.stub(copilotGptManifestUtils, "logValidationErrors").returns("errorMessage2");
+
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        showMessage: true,
+      };
+
+      mockedDriverContext.platform = Platform.VSCode;
+      mockedDriverContext.projectPath = "test";
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, AppStudioError.ValidationFailedError.name);
+      }
+    });
+
+    it("skip plugin validation", async () => {
+      const teamsManifest: TeamsAppManifest = new TeamsAppManifest();
+      teamsManifest.copilotAgents = {};
+
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(teamsManifest));
+      sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+      sinon.stub(pluginManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error1"],
+        })
+      );
+      sinon.stub(pluginManifestUtils, "logValidationErrors").returns("errorMessage1");
+
+      sinon.stub(copilotGptManifestUtils, "validateAgainstSchema").resolves(
+        ok({
+          id: "fakeId",
+          filePath: "fakeFile",
+          validationResult: ["error2"],
+          actionValidationResult: [
+            {
+              id: "fakeId",
+              filePath: "fakeFile",
+              validationResult: ["error3"],
+            },
+          ],
+        })
+      );
+      sinon.stub(copilotGptManifestUtils, "logValidationErrors").returns("errorMessage2");
+
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        showMessage: true,
+      };
+
+      mockedDriverContext.platform = Platform.VSCode;
+      mockedDriverContext.projectPath = "test";
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isOk());
+    });
     it("plugin manifest validation error", async () => {
       const teamsManifest: TeamsAppManifest = new TeamsAppManifest();
       teamsManifest.copilotExtensions = {
@@ -401,6 +507,7 @@ describe("teamsApp/validateAppPackage", async () => {
 
   afterEach(() => {
     sinon.restore();
+    (mockedDriverContext.logProvider as MockedLogProvider).msg = "";
   });
 
   it("file not found - app package", async () => {
@@ -430,6 +537,32 @@ describe("teamsApp/validateAppPackage", async () => {
         {
           id: "fakeId",
           content: "Reserved Tab Name property should not be specified.",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid TypeB Plugin document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid DC document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content with code missing",
           filePath: "",
           shortCodeNumber: 123,
           validationCategory: "tab",
@@ -492,6 +625,13 @@ describe("teamsApp/validateAppPackage", async () => {
 
     result = (await teamsAppDriver.execute(args, contextWithoutUI)).result;
     chai.assert(result.isErr());
+
+    const msg = (mockedDriverContext.logProvider as MockedLogProvider).msg;
+    chai.assert(
+      msg.includes("Invalid API Plugin document") &&
+        msg.includes("Invalid DC document") &&
+        msg.includes("content with code missing")
+    );
   });
 
   it("validate app package - no error", async () => {
@@ -604,6 +744,32 @@ describe("teamsApp/validateAppPackage", async () => {
         {
           id: "fakeId",
           content: "Reserved Tab Name property should not be specified.",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid TypeB Plugin document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content",
+          code: "Invalid DC document",
+          filePath: "",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+        {
+          id: GeneralValidationErrorId,
+          content: "content with code missing",
           filePath: "",
           shortCodeNumber: 123,
           validationCategory: "tab",

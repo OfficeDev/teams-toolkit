@@ -110,9 +110,9 @@ export class AzSqlHelper {
   static async login() {
     let command = "";
     if (os.type() === "Windows_NT") {
-      command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"'`;
+      command = `az login -u ${Env["azureAccountName"]} -p '"${Env["azureAccountPassword"]}"' --allow-no-subscriptions --only-show-errors`;
     } else {
-      command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+      command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}' --allow-no-subscriptions --only-show-errors`;
     }
     await Executor.execute(command, process.cwd());
     // set subscription
@@ -192,7 +192,6 @@ export class AzSqlHelper {
     return { success: true, stdout: resourceGroups };
   }
 }
-
 export class AzServiceBusHelper {
   public resourceGroupName: string;
   public namespaceName: string;
@@ -279,6 +278,50 @@ export class AzServiceBusHelper {
   }
 }
 
+export class AzSearchHelper {
+  public resourceGroupName: string;
+  public searchName: string;
+  public location: string;
+  public endpoint: string;
+  public apiKey: string;
+
+  constructor(resourceGroupName: string, location?: string) {
+    this.resourceGroupName = resourceGroupName;
+    this.searchName = `mysearch-${Math.floor(Math.random() * 100000)}`;
+    this.endpoint = "https://" + this.searchName + ".search.windows.net";
+    this.location = location || "westus";
+    this.apiKey = "";
+  }
+
+  public async createSearch() {
+    // login
+    await AzSqlHelper.login();
+
+    // create resource group
+    console.log("Creating resource group: ", this.resourceGroupName, "...");
+    const { success: resourceGroupSuccess } = await this.createResourceGroup();
+    expect(resourceGroupSuccess).to.be.true;
+
+    // create azure ai search
+    const command = `az search service create --name ${this.searchName} --resource-group ${this.resourceGroupName} --location ${this.location} --sku Standard`;
+
+    await Executor.execute(command, process.cwd());
+
+    const showKeyCmd = `az search admin-key show --resource-group ${this.resourceGroupName} --service-name ${this.searchName} --query primaryKey`;
+    const { success, stdout } = await Executor.execute(
+      showKeyCmd,
+      process.cwd()
+    );
+    expect(success).to.be.true;
+    this.apiKey = stdout.trim();
+  }
+
+  public async createResourceGroup() {
+    const command = `az group create -n ${this.resourceGroupName} -l ${this.location}`;
+    return await Executor.execute(command, process.cwd());
+  }
+}
+
 export async function cleanRG() {
   const { stdout } = await AzSqlHelper.listResourceGroup("fxui");
   for (const rg of stdout) {
@@ -288,32 +331,8 @@ export async function cleanRG() {
 
 // for local test
 async function main() {
-  const sqlCommands = [
-    `CREATE TABLE [TeamPostEntity](
-        [PostID] [int] PRIMARY KEY IDENTITY,
-        [ContentUrl] [nvarchar](400) NOT NULL,
-        [CreatedByName] [nvarchar](50) NOT NULL,
-        [CreatedDate] [datetime] NOT NULL,
-        [Description] [nvarchar](500) NOT NULL,
-        [IsRemoved] [bit] NOT NULL,
-        [Tags] [nvarchar](100) NULL,
-        [Title] [nvarchar](100) NOT NULL,
-        [TotalVotes] [int] NOT NULL,
-        [Type] [int] NOT NULL,
-        [UpdatedDate] [datetime] NOT NULL,
-        [UserID] [uniqueidentifier] NOT NULL
-     );`,
-    `CREATE TABLE [UserVoteEntity](
-      [VoteID] [int] PRIMARY KEY IDENTITY,
-      [PostID] [int] NOT NULL,
-      [UserID] [uniqueidentifier] NOT NULL
-    );`,
-  ];
-  const sqlHelper = new AzSqlHelper("fxui-rg", sqlCommands);
-  await sqlHelper.createSql();
-
-  console.log(`Sql admin: ${sqlHelper.sqlAdmin}`);
-  console.log(`Sql password: ${sqlHelper.sqlPassword}`);
-  console.log(`Sql endpoint: ${sqlHelper.sqlEndpoint}`);
-  console.log(`Sql database name: ${sqlHelper.sqlDatabaseName}`);
+  const searchHelper = new AzSearchHelper("fxui-rg");
+  await searchHelper.createSearch();
+  console.log("endpoint: ", searchHelper.endpoint);
+  console.log("apiKey: ", searchHelper.apiKey);
 }

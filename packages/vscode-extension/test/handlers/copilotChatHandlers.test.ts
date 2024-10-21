@@ -2,10 +2,11 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
+import VsCodeLogInstance from "../../src/commonlib/log";
 import * as handlers from "../../src/handlers/copilotChatHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
-import VsCodeLogInstance from "../../src/commonlib/log";
+import * as versionUtils from "../../src/utils/versionUtil";
 
 after(() => {
   sinon.restore();
@@ -37,6 +38,7 @@ describe("invokeTeamsAgent", async () => {
       dispose: () => {},
     });
   });
+
   it("no need to install Github Copilot", async () => {
     sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
     sandbox.stub(vscode.commands, "executeCommand").resolves();
@@ -50,7 +52,7 @@ describe("invokeTeamsAgent", async () => {
 
   it("install Github Copilot and invoke Teams Agent", async () => {
     clock = sandbox.useFakeTimers();
-    sandbox.stub(vscode, "version").value("1.88.0-insiders");
+    sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox
       .stub(vscode.extensions, "getExtension")
       .onFirstCall()
@@ -72,12 +74,14 @@ describe("invokeTeamsAgent", async () => {
 
     chai.assert.isTrue(res.isOk());
     chai.assert.equal(commandStub.callCount, 3);
-    chai.assert.equal(commandStub.getCall(2).args[1].query, "@teams ");
+    chai.assert.isTrue(
+      (commandStub.getCall(2).args[1].query as string).startsWith("@teamsapp Use ")
+    );
   });
 
   it("install Github Copilot, wait and invoke Teams Agent", async () => {
     clock = sandbox.useFakeTimers();
-    sandbox.stub(vscode, "version").value("1.88.0-insiders");
+    sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox
       .stub(vscode.extensions, "getExtension")
       .onFirstCall()
@@ -100,7 +104,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("Install github copilot extension error", async () => {
-    sandbox.stub(vscode, "version").value("1.88.0");
+    sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox.stub(vscode.extensions, "getExtension").onFirstCall().returns(undefined);
     const commandStub = sandbox
       .stub(vscode.commands, "executeCommand")
@@ -126,7 +130,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("Install github copilot extension cancel", async () => {
-    sandbox.stub(vscode, "version").value("1.88.0");
+    sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     const loggerStub = sandbox.stub(VsCodeLogInstance, "error").resolves();
     sandbox
       .stub(vscode.extensions, "getExtension")
@@ -154,7 +158,7 @@ describe("invokeTeamsAgent", async () => {
 
   it("Verify installation error", async () => {
     clock = sandbox.useFakeTimers();
-    sandbox.stub(vscode, "version").value("1.88.0-insiders");
+    sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
     const commandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
     sandbox
@@ -173,7 +177,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("invoke Copilot chat error", async () => {
-    sandbox.stub(vscode, "version").value("1.88.0");
+    sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
     const commandStub = sandbox
       .stub(vscode.commands, "executeCommand")

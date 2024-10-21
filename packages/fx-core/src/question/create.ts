@@ -11,17 +11,19 @@ import {
   OptionItem,
   Platform,
   SingleFileOrInputQuestion,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   StaticOptions,
   TextInputQuestion,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import { cloneDeep } from "lodash";
 import * as os from "os";
 import * as path from "path";
-import { ConstantString } from "../common/constants";
+import { ConstantString, SpecParserSource } from "../common/constants";
 import { Correlator } from "../common/correlator";
 import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { createContext } from "../common/globalVars";
@@ -39,7 +41,7 @@ import {
   needTabAndBotCode,
   needTabCode,
 } from "../component/driver/teamsApp/utils/utils";
-import { listOperations } from "../component/generator/apiSpec/helper";
+import { getParserOptions, listOperations } from "../component/generator/apiSpec/helper";
 import {
   IOfficeAddinHostConfig,
   OfficeAddinProjectConfig,
@@ -47,14 +49,22 @@ import {
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { Constants } from "../component/generator/spfx/utils/constants";
 import { Utils } from "../component/generator/spfx/utils/utils";
-import { EmptyOptionError, FileNotFoundError, assembleError } from "../error";
+import {
+  CoreSource,
+  EmptyOptionError,
+  FileNotFoundError,
+  FileNotSupportError,
+  assembleError,
+} from "../error";
 import {
   ApiAuthOptions,
+  ApiPluginStartOptions,
   AppNamePattern,
   CapabilityOptions,
   CliQuestionName,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
+  DeclarativeCopilotTypeOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,
@@ -65,6 +75,14 @@ import {
   capabilitiesHavePythonOption,
   getRuntime,
 } from "./constants";
+import { ErrorType, ProjectType, SpecParser } from "@microsoft/m365-spec-parser";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
+import { validateSourcePluginManifest } from "../component/generator/copilotExtension/helper";
+import {
+  ApiSpecTelemetryPropertis,
+  getQuestionValidationErrorEventName,
+  sendTelemetryErrorEvent,
+} from "../common/telemetry";
 
 export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
@@ -81,18 +99,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
-
-      if (
-        CLIPlatforms.includes(inputs.platform) &&
-        featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)
-      ) {
-        // Show in CLI only
-        staticOptions.push(ProjectTypeOptions.customizeGpt());
-      }
-
-      if (featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)) {
-        staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
-      }
+      staticOptions.push(ProjectTypeOptions.copilotExtension(inputs.platform));
 
       if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
         staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
@@ -110,7 +117,9 @@ export function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
-        if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
+        if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeMetaOS)) {
+          staticOptions.push(ProjectTypeOptions.officeMetaOS(inputs.platform));
+        } else if (featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin)) {
           staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
         } else {
           staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
@@ -119,7 +128,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
 
       if (
         inputs.platform === Platform.VSCode &&
-        featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant) &&
+        featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries) &&
         !inputs.teamsAppFromTdp
       ) {
         staticOptions.push(ProjectTypeOptions.startWithGithubCopilot());
@@ -182,14 +191,15 @@ export function capabilityQuestion(): SingleSelectQuestion {
           );
         case ProjectTypeOptions.outlookAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
+        case ProjectTypeOptions.officeMetaOS().id:
         case ProjectTypeOptions.officeAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
-        case ProjectTypeOptions.copilotPlugin().id:
-          return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
+        case ProjectTypeOptions.copilotExtension().id:
+          return getLocalizedString(
+            "core.createProjectQuestion.projectType.copilotExtension.title"
+          );
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
-        case ProjectTypeOptions.customizeGpt().id:
-          return getLocalizedString("core.createProjectQuestion.declarativeCopilotType.title");
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
@@ -231,20 +241,18 @@ export function capabilityQuestion(): SingleSelectQuestion {
           projectType,
           inputs[QuestionNames.OfficeAddinHost]
         );
-      } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
-        return CapabilityOptions.copilotPlugins();
+      } else if (projectType === ProjectTypeOptions.copilotExtension().id) {
+        return CapabilityOptions.copilotExtensions();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {
         return CapabilityOptions.customCopilots();
-      } else if (projectType === ProjectTypeOptions.customizeGpt().id) {
-        return CapabilityOptions.customizeGptOptions();
       } else {
         return CapabilityOptions.all(inputs);
       }
     },
     placeholder: (inputs: Inputs) => {
-      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.copilotPlugin().id) {
+      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.copilotExtension().id) {
         return getLocalizedString(
-          "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+          "core.createProjectQuestion.projectType.copilotExtension.placeholder"
         );
       } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.customCopilot().id) {
         return getLocalizedString(
@@ -254,7 +262,9 @@ export function capabilityQuestion(): SingleSelectQuestion {
       return getLocalizedString("core.createCapabilityQuestion.placeholder");
     },
     forgetLastValue: true,
-    skipSingleOption: true,
+    skipSingleOption: (inputs: Inputs): boolean => {
+      return isFromDevPortal(inputs);
+    },
   };
 }
 
@@ -271,7 +281,7 @@ export function meArchitectureQuestion(): SingleSelectQuestion {
     },
     default: MeArchitectureOptions.newApi().id,
     placeholder: getLocalizedString(
-      "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+      "core.createProjectQuestion.projectType.copilotExtension.placeholder"
     ),
     forgetLastValue: true,
     skipSingleOption: true,
@@ -549,6 +559,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
   if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
+    if (projectType === ProjectTypeOptions.officeMetaOS().id) {
+      return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
+    }
     if (capabilities.endsWith("-manifest")) {
       return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
     }
@@ -573,21 +586,14 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     ) &&
     !(
       capabilities == CapabilityOptions.customCopilotRag().id &&
-      (inputs[CapabilityOptions.customCopilotRag().id] ==
-        CustomCopilotRagOptions.microsoft365().id ||
-        inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.customApi().id)
+      inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.microsoft365().id
     )
   ) {
     // support python language
     return [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
       { id: ProgrammingLanguage.TS, label: "TypeScript" },
-      {
-        id: ProgrammingLanguage.PY,
-        label: "Python",
-        detail: "",
-        description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
-      },
+      { id: ProgrammingLanguage.PY, label: "Python" },
     ];
   } else {
     // other cases
@@ -1005,7 +1011,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
           const result = isValidHttpUrl(input.trim())
             ? undefined
             : inputs?.platform === Platform.CLI
-            ? "Please enter a valid HTTP URL without authentication to access your OpenAPI description document or enter a file path of your local OpenAPI description document."
+            ? "Please enter a valid HTTP URL to access your OpenAPI description document or enter a file path of your local OpenAPI description document."
             : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
           return Promise.resolve(result);
         },
@@ -1044,10 +1050,12 @@ export function apiAuthQuestion(): SingleSelectQuestion {
       const options: OptionItem[] = [ApiAuthOptions.none()];
       if (inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.newApi().id) {
         options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.microsoftEntra());
-      } else if (
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id
-      ) {
-        options.push(ApiAuthOptions.apiKey(), ApiAuthOptions.oauth());
+      } else if (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id) {
+        options.push(ApiAuthOptions.apiKey());
+        if (featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginAAD)) {
+          options.push(ApiAuthOptions.microsoftEntra());
+        }
+        options.push(ApiAuthOptions.oauth());
       }
       return options;
     },
@@ -1065,8 +1073,7 @@ export function apiOperationQuestion(
   const isPlugin = (inputs?: Inputs): boolean => {
     return (
       isAddPlugin ||
-      (!!inputs &&
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id)
+      (!!inputs && inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id)
     );
   };
 
@@ -1083,14 +1090,15 @@ export function apiOperationQuestion(
       : "Select operation(s) Teams can interact with.",
     cliShortName: "o",
     placeholder: (inputs: Inputs) => {
-      const isPlugin =
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
+      const isPlugin = inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id;
       if (!includeExistingAPIs) {
         placeholder = getLocalizedString(
           "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
         );
       } else if (isPlugin) {
-        placeholder = ""; // TODO: add placeholder for api plugin
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.plugin.placeholder"
+        );
       } else {
         placeholder = getLocalizedString(
           "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
@@ -1109,7 +1117,8 @@ export function apiOperationQuestion(
         if (
           input.length < 1 ||
           (input.length > 10 &&
-            inputs[QuestionNames.CustomCopilotRag] != CustomCopilotRagOptions.customApi().id)
+            inputs[QuestionNames.CustomCopilotRag] !== CustomCopilotRagOptions.customApi().id &&
+            inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.copilotExtension().id)
         ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
@@ -1212,20 +1221,20 @@ function llmServiceQuestion(): SingleSelectQuestion {
     ],
     dynamicOptions: (inputs: Inputs) => {
       const options: OptionItem[] = [];
-      if (inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api") {
-        options.push({
+      options.push(
+        {
           id: "llm-service-azure-openai",
           label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
           detail: getLocalizedString(
             "core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"
           ),
-        });
-      }
-      options.push({
-        id: "llm-service-openai",
-        label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
-        detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
-      });
+        },
+        {
+          id: "llm-service-openai",
+          label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
+          detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
+        }
+      );
       return options;
     },
     skipSingleOption: true,
@@ -1276,6 +1285,163 @@ function azureOpenAIDeploymentNameQuestion(): TextInputQuestion {
     placeholder: getLocalizedString(
       "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.placeholder"
     ),
+  };
+}
+
+function declarativeCopilotPluginQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.WithPlugin,
+    title: getLocalizedString("core.createProjectQuestion.declarativeCopilot.title"),
+    placeholder: getLocalizedString("core.createProjectQuestion.declarativeCopilot.placeholder"),
+    cliDescription: "Whether to add API plugin for your declarative Copilot.",
+    staticOptions: DeclarativeCopilotTypeOptions.all(),
+    default: DeclarativeCopilotTypeOptions.noPlugin().id,
+  };
+}
+
+export function apiPluginStartQuestion(doesProjectExists?: boolean): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.ApiPluginType,
+    title: (inputs: Inputs) => {
+      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
+        doesProjectExists
+        ? getLocalizedString("core.createProjectQuestion.addApiPlugin.title")
+        : getLocalizedString("core.createProjectQuestion.createApiPlugin.title");
+    },
+    placeholder: (inputs: Inputs) => {
+      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
+        doesProjectExists
+        ? getLocalizedString("core.createProjectQuestion.addApiPlugin.placeholder")
+        : getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.placeholder");
+    },
+    cliDescription: "API plugin type.",
+    staticOptions: ApiPluginStartOptions.staticAll(doesProjectExists),
+    dynamicOptions: (inputs: Inputs) => {
+      return ApiPluginStartOptions.all(inputs, doesProjectExists);
+    },
+    default: ApiPluginStartOptions.newApi().id,
+  };
+}
+
+export function pluginManifestQuestion(): SingleFileQuestion {
+  const correlationId = Correlator.getId();
+  return {
+    type: "singleFile",
+    name: QuestionNames.PluginManifestFilePath,
+    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.pluginManifest.title"),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.addExistingPlugin.pluginManifest.placeholder"
+    ),
+    cliDescription: "Plugin manifest path.",
+    filters: {
+      files: ["json"],
+    },
+    defaultFolder: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform) ? "./" : os.homedir(),
+    validation: {
+      validFunc: async (input: string) => {
+        const manifestRes = await pluginManifestUtils.readPluginManifestFile(input.trim());
+        if (manifestRes.isErr()) {
+          sendTelemetryErrorEvent(
+            CoreSource,
+            getQuestionValidationErrorEventName(QuestionNames.PluginManifestFilePath),
+            manifestRes.error,
+            {
+              "correlation-id": correlationId,
+            }
+          );
+          return (manifestRes.error as UserError).displayMessage;
+        } else {
+          const manifest = manifestRes.value;
+
+          const checkRes = validateSourcePluginManifest(
+            manifest,
+            QuestionNames.PluginManifestFilePath
+          );
+          if (checkRes.isErr()) {
+            sendTelemetryErrorEvent(
+              CoreSource,
+              getQuestionValidationErrorEventName(QuestionNames.PluginManifestFilePath),
+              checkRes.error,
+              {
+                "correlation-id": correlationId,
+              }
+            );
+            return checkRes.error.displayMessage;
+          }
+        }
+      },
+    },
+  };
+}
+
+export function pluginApiSpecQuestion(): SingleFileQuestion {
+  const correlationId = Correlator.getId();
+  return {
+    type: "singleFile",
+    name: QuestionNames.PluginOpenApiSpecFilePath,
+    title: getLocalizedString("core.createProjectQuestion.addExistingPlugin.apiSpec.title"),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.addExistingPlugin.openApiSpec.placeholder"
+    ),
+    cliDescription: "OpenAPI description document used for your API plugin.",
+    filters: {
+      files: ["json", "yml", "yaml"],
+    },
+    defaultFolder: (inputs: Inputs) =>
+      CLIPlatforms.includes(inputs.platform)
+        ? "./"
+        : path.dirname(inputs[QuestionNames.PluginManifestFilePath] as string),
+    validation: {
+      validFunc: async (input: string, inputs?: Inputs) => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+        const filePath = input.trim();
+
+        const ext = path.extname(filePath).toLowerCase();
+        if (![".json", ".yml", ".yaml"].includes(ext)) {
+          const error = new FileNotSupportError(CoreSource, ["json", "yml", "yaml"].join(", "));
+          sendTelemetryErrorEvent(
+            CoreSource,
+            getQuestionValidationErrorEventName(QuestionNames.PluginOpenApiSpecFilePath),
+            error,
+            {
+              "correlation-id": correlationId,
+            }
+          );
+          return error.displayMessage;
+        }
+
+        const specParser = new SpecParser(filePath, getParserOptions(ProjectType.Copilot));
+        const validationRes = await specParser.validate();
+        const invalidSpecError = validationRes.errors.find(
+          (o) => o.type === ErrorType.SpecNotValid
+        );
+
+        if (invalidSpecError) {
+          const error = new UserError(
+            SpecParserSource,
+            ApiSpecTelemetryPropertis.InvalidApiSpec,
+            invalidSpecError.content,
+            invalidSpecError.content
+          );
+          sendTelemetryErrorEvent(
+            CoreSource,
+            getQuestionValidationErrorEventName(QuestionNames.PluginOpenApiSpecFilePath),
+            error,
+            {
+              "correlation-id": correlationId,
+              [ApiSpecTelemetryPropertis.SpecNotValidDetails]: invalidSpecError.content,
+            }
+          );
+        }
+
+        return invalidSpecError?.content;
+      },
+    },
   };
 }
 
@@ -1340,10 +1506,37 @@ export function capabilitySubTree(): IQTreeNode {
         data: meArchitectureQuestion(),
       },
       {
+        condition: { equals: CapabilityOptions.declarativeCopilot().id },
+        data: declarativeCopilotPluginQuestion(),
+      },
+      {
+        condition: (inputs: Inputs) => {
+          return (
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
+            inputs[QuestionNames.WithPlugin] === DeclarativeCopilotTypeOptions.withPlugin().id
+          );
+        },
+        data: apiPluginStartQuestion(),
+      },
+      {
+        condition: (inputs: Inputs) => {
+          return inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.existingPlugin().id;
+        },
+        data: { type: "group", name: QuestionNames.ImportPlugin },
+        children: [
+          {
+            data: pluginManifestQuestion(),
+          },
+          {
+            data: pluginApiSpecQuestion(),
+          },
+        ],
+      },
+      {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
+            inputs[QuestionNames.ApiPluginType] == ApiPluginStartOptions.newApi().id
           );
         },
         data: apiAuthQuestion(),
@@ -1358,9 +1551,18 @@ export function capabilitySubTree(): IQTreeNode {
         // from API spec
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
-            inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+            (inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
+              inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
+              inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) &&
+            !(
+              // Only skip this project when need to rediect to Kiota: 1. Feature flag enabled 2. Creating plugin/declarative copilot from existing spec
+              (
+                featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+                inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
+                (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
+                  inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id)
+              )
+            )
           );
         },
         data: { type: "group", name: QuestionNames.FromExistingApi },
@@ -1370,6 +1572,9 @@ export function capabilitySubTree(): IQTreeNode {
           },
           {
             data: apiOperationQuestion(),
+            condition: (inputs: Inputs) => {
+              return !inputs[QuestionNames.ApiPluginManifestPath];
+            },
           },
         ],
       },
@@ -1387,8 +1592,9 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             (!!inputs[QuestionNames.Capabilities] &&
-              inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
-              inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
+              inputs[QuestionNames.WithPlugin] !== DeclarativeCopilotTypeOptions.noPlugin().id &&
+              inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.apiSpec().id &&
+              inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.existingPlugin().id &&
               inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
               inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
               inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id) ||
@@ -1445,10 +1651,30 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // root folder
         data: folderQuestion(),
+        condition: (inputs: Inputs) => {
+          // Only skip this project when need to rediect to Kiota: 1. Feature flag enabled 2. Creating plugin/declarative copilot from existing spec 3. No plugin manifest path
+          return !(
+            featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
+            (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
+              inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) &&
+            !inputs[QuestionNames.ApiPluginManifestPath]
+          );
+        },
       },
       {
         // app name
         data: appNameQuestion(),
+        condition: (inputs: Inputs) => {
+          // Only skip this project when need to rediect to Kiota: 1. Feature flag enabled 2. Creating plugin/declarative copilot from existing spec 3. No plugin manifest path
+          return !(
+            featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
+            (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
+              inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) &&
+            !inputs[QuestionNames.ApiPluginManifestPath]
+          );
+        },
       },
     ],
     condition: (inputs: Inputs) => {

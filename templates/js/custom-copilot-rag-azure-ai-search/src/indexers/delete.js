@@ -2,7 +2,10 @@ const { AzureKeyCredential, SearchIndexClient } = require("@azure/search-documen
 const { deleteIndex } = require("./utils");
 
 const index = "my-documents";
-const searchApiKey = process.env.SECRET_AZURE_SEARCH_KEY;
+const searchApiKey = process.argv[2];
+if (!searchApiKey) {
+  throw new Error("Missing input Azure AI Search Key");
+}
 const searchApiEndpoint = process.env.AZURE_SEARCH_ENDPOINT;
 const credentials = new AzureKeyCredential(searchApiKey);
 

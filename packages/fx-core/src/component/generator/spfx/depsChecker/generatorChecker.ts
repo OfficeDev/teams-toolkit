@@ -21,7 +21,7 @@ import { DependencyValidateError } from "../error";
 import { Constants } from "../utils/constants";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
-import { getExecCommand, Utils } from "../utils/utils";
+import { getExecCommand, getShellOptionValue, Utils } from "../utils/utils";
 import { DependencyChecker } from "./dependencyChecker";
 
 const name = Constants.GeneratorPackageName;
@@ -177,7 +177,7 @@ export class GeneratorChecker implements DependencyChecker {
       await cpUtils.executeCommand(
         undefined,
         this._logger,
-        { timeout: timeout, shell: false },
+        { timeout: timeout, shell: getShellOptionValue() },
         getExecCommand("npm"),
         "install",
         `${name}@${version}`,

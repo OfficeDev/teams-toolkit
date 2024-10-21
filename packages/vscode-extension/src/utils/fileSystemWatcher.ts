@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import { initializeGlobalVariables, context } from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -36,7 +36,7 @@ export function addFileSystemWatcher(workspacePath: string) {
 
 export function refreshSPFxTreeOnFileChanged() {
   initializeGlobalVariables(context);
-  TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
+  TreeViewManagerInstance.updateDevelopmentTreeView();
 }
 
 export async function sendSDKVersionTelemetry(filePath: string) {

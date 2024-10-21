@@ -5,6 +5,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectCapability Include="ProjectConfigurationsDeclaredDimensions" />
-    <ProjectCapability Include="CopilotPlugin" />
+    <ProjectCapability Include="ApiPlugin" />
   </ItemGroup>
 </Project>

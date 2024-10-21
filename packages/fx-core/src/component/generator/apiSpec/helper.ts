@@ -27,10 +27,10 @@ import {
   AppPackageFolderName,
   Context,
   FxError,
-  IMessagingExtensionCommand,
   Inputs,
   ManifestTemplateFileName,
   ManifestUtil,
+  Platform,
   Result,
   SystemError,
   TeamsAppManifest,
@@ -39,56 +39,89 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import axios, { AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { OpenAPIV3 } from "openapi-types";
 import { EOL } from "os";
 import path from "path";
 import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { sendRequestWithRetry } from "../../../common/requestUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { assembleError, MissingRequiredInputError } from "../../../error";
 import {
+  apiPluginApiSpecOptionId,
   CustomCopilotRagOptions,
   ProgrammingLanguage,
   QuestionNames,
-  apiPluginApiSpecOptionId,
 } from "../../../question/constants";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
+import {
+  ApiSpecTelemetryPropertis,
+  sendTelemetryErrorEvent,
+  TelemetryProperty,
+} from "../../../common/telemetry";
+import * as util from "util";
+import { SpecParserSource } from "../../../common/constants";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
-  specNotValidDetails = "spec-not-valid-details",
   validationWarnings = "validation-warnings",
   validApisCount = "valid-apis-count",
   allApisCount = "all-apis-count",
+  specHash = "spec-hash",
   bearerTokenAuthCount = "bearer-token-auth-count",
   oauth2AuthCount = "oauth2-auth-count",
   otherAuthCount = "other-auth-count",
   isFromAddingApi = "is-from-adding-api",
+  failedReason = "failed-reason",
+  generateType = "generate-type",
+  projectType = "project-type",
 }
 
 const enum telemetryEvents {
   validateApiSpec = "validate-api-spec",
   listApis = "spec-parser-list-apis-result",
+  failedToGetGenerateWarning = "failed-to-get-generate-warning",
 }
 
-export const copilotPluginParserOptions: ParseOptions = {
-  allowAPIKeyAuth: false,
-  allowBearerTokenAuth: true,
-  allowMultipleParameters: true,
-  allowOauth2: true,
-  projectType: ProjectType.Copilot,
-  allowMissingId: true,
-  allowSwagger: true,
-  allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  allowResponseSemantics: true,
-  allowConversationStarters: true,
-  allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
-};
+export function getParserOptions(
+  type: ProjectType,
+  isDeclarativeCopilot?: boolean,
+  platform?: string
+): ParseOptions {
+  return type === ProjectType.Copilot
+    ? {
+        isGptPlugin: isDeclarativeCopilot,
+        allowAPIKeyAuth: false,
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true,
+        allowMultipleParameters: true,
+        allowOauth2: !!platform && platform === Platform.VS ? false : true,
+        projectType: ProjectType.Copilot,
+        allowMissingId: true,
+        allowSwagger: true,
+        allowMethods: [
+          "get",
+          "post",
+          "put",
+          "delete",
+          "patch",
+          "head",
+          "connect",
+          "options",
+          "trace",
+        ],
+        allowResponseSemantics: true,
+        allowConversationStarters: true,
+        allowConfirmation: false, // confirmation is not stable for public preview in Sydney, so it's temporarily set to false
+      }
+    : {
+        projectType: type,
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true, // Currently, API key auth support is actually bearer token auth
+        allowMultipleParameters: true,
+        allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
+      };
+}
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
@@ -96,11 +129,6 @@ export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
-
-export const defaultApiSpecFolderName = "apiSpecificationFile";
-export const defaultApiSpecYamlFileName = "openapi.yaml";
-export const defaultApiSpecJsonFileName = "openapi.json";
-export const defaultPluginManifestFileName = "ai-plugin.json";
 
 export interface ErrorResult {
   /**
@@ -124,36 +152,31 @@ export async function listOperations(
   shouldLogWarning = true,
   existingCorrelationId?: string
 ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-  const isPlugin =
-    inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId ||
-    !!inputs[QuestionNames.PluginAvailability];
+  const isPlugin = inputs[QuestionNames.ApiPluginType] === apiPluginApiSpecOptionId;
   const isCustomApi =
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
+  const projectType = isPlugin
+    ? ProjectType.Copilot
+    : isCustomApi
+    ? ProjectType.TeamsAi
+    : ProjectType.SME;
 
   try {
     const specParser = new SpecParser(
       apiSpecUrl as string,
-      isPlugin
-        ? copilotPluginParserOptions
-        : isCustomApi
-        ? {
-            projectType: ProjectType.TeamsAi,
-          }
-        : {
-            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: true,
-            allowOauth2: featureFlagManager.getBooleanValue(FeatureFlags.SMEOAuth),
-          }
+      getParserOptions(projectType, undefined, inputs.platform)
     );
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
     logValidationResults(
+      projectType,
       validationRes.errors,
       validationRes.warnings,
       context,
       shouldLogWarning,
       false,
+      validationRes.specHash,
       existingCorrelationId
     );
     if (validationRes.status === ValidationStatus.Error) {
@@ -161,6 +184,15 @@ export async function listOperations(
     }
 
     const listResult: ListAPIResult = await specParser.list();
+
+    const invalidAPIs = listResult.APIs.filter((value) => !value.isValid);
+    for (const invalidAPI of invalidAPIs) {
+      context.logProvider.warning(
+        `${invalidAPI.api} ${getLocalizedString(
+          "core.copilotPlugin.list.unsupportedBecause"
+        )} ${invalidAPI.reason.map(mapInvalidReasonToMessage).join(", ")}`
+      );
+    }
 
     const bearerTokenAuthAPIs = listResult.APIs.filter(
       (api) => api.auth && Utils.isBearerTokenAuth(api.auth.authScheme)
@@ -179,12 +211,14 @@ export async function listOperations(
 
     let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
+      [telemetryProperties.generateType]: projectType.toString(),
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
       [telemetryProperties.bearerTokenAuthCount]: bearerTokenAuthAPIs.length.toString(),
       [telemetryProperties.oauth2AuthCount]: oauth2AuthAPIs.length.toString(),
       [telemetryProperties.otherAuthCount]: otherAuthAPIs.length.toString(),
+      [telemetryProperties.specHash]: validationRes.specHash!,
     });
 
     // Filter out exsiting APIs
@@ -229,7 +263,16 @@ export async function listOperations(
             inputs
           );
 
-          logValidationResults(errors, [], context, true, false, existingCorrelationId);
+          logValidationResults(
+            projectType,
+            errors,
+            [],
+            context,
+            true,
+            false,
+            validationRes.specHash,
+            existingCorrelationId
+          );
           return err(errors);
         }
 
@@ -247,7 +290,16 @@ export async function listOperations(
             ],
             inputs
           );
-          logValidationResults(errors, [], context, true, false, existingCorrelationId);
+          logValidationResults(
+            projectType,
+            errors,
+            [],
+            context,
+            true,
+            false,
+            validationRes.specHash,
+            existingCorrelationId
+          );
           return err(errors);
         }
       } else {
@@ -340,17 +392,133 @@ export async function listPluginExistingOperations(
     );
   }
 
-  const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
+  const specParser = new SpecParser(apiSpecFilePath, getParserOptions(ProjectType.Copilot));
   const listResult = await specParser.list();
   return listResult.APIs.map((o) => o.api);
 }
 
+interface SpecParserOutputFilePath {
+  destinationApiSpecFilePath: string;
+  pluginManifestFilePath?: string;
+  responseTemplateFolder?: string;
+}
+
+interface SpecParserGenerateResult {
+  warnings: WarningResult[];
+}
+export async function generateFromApiSpec(
+  specParser: SpecParser,
+  teamsManifestPath: string,
+  inputs: Inputs,
+  context: Context,
+  sourceComponent: string,
+  projectType: ProjectType,
+  outputFilePath: SpecParserOutputFilePath
+): Promise<Result<SpecParserGenerateResult, FxError>> {
+  const operations =
+    featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+    inputs[QuestionNames.ApiPluginManifestPath]
+      ? (await specParser.list()).APIs.filter((value) => value.isValid).map((value) => value.api)
+      : (inputs[QuestionNames.ApiOperation] as string[]);
+  const validationRes = await specParser.validate();
+  const warnings = validationRes.warnings;
+  const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
+
+  if (operationIdWarning && operationIdWarning.data) {
+    const apisMissingOperationId = (operationIdWarning.data as string[]).filter((api) =>
+      operations.includes(api)
+    );
+    if (apisMissingOperationId.length > 0) {
+      operationIdWarning.content = util.format(
+        getLocalizedString("core.common.MissingOperationId"),
+        apisMissingOperationId.join(", ")
+      );
+      delete operationIdWarning.data;
+    } else {
+      warnings.splice(warnings.indexOf(operationIdWarning), 1);
+    }
+  }
+
+  const specVersionWarning = warnings.find((w) => w.type === WarningType.ConvertSwaggerToOpenAPI);
+  if (specVersionWarning) {
+    specVersionWarning.content = ""; // We don't care content of this warning
+  }
+
+  if (validationRes.status === ValidationStatus.Error) {
+    logValidationResults(
+      projectType,
+      validationRes.errors,
+      warnings,
+      context,
+      false,
+      true,
+      validationRes.specHash
+    );
+    const errorMessage =
+      inputs.platform === Platform.VSCode
+        ? getLocalizedString(
+            "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+          )
+        : getLocalizedString("core.createProjectQuestion.apiSpec.multipleValidationErrors.message");
+    return err(new UserError(sourceComponent, invalidApiSpecErrorName, errorMessage, errorMessage));
+  }
+
+  try {
+    const generateResult =
+      projectType === ProjectType.Copilot
+        ? await specParser.generateForCopilot(
+            teamsManifestPath,
+            operations,
+            outputFilePath.destinationApiSpecFilePath,
+            outputFilePath.pluginManifestFilePath!,
+            inputs[QuestionNames.ApiPluginManifestPath]
+          )
+        : await specParser.generate(
+            teamsManifestPath,
+            operations,
+            outputFilePath.destinationApiSpecFilePath,
+            projectType === ProjectType.TeamsAi ? undefined : outputFilePath.responseTemplateFolder
+          );
+
+    // Send SpecParser.generate() warnings
+    context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
+      [telemetryProperties.generateType]: projectType.toString(),
+      [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+      [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
+        .map((w) => w.type.toString() + ": " + w.content)
+        .join(";"),
+      [TelemetryProperty.Component]: sourceComponent,
+    });
+
+    if (generateResult.warnings && generateResult.warnings.length > 0) {
+      generateResult.warnings.find((o) => {
+        if (o.type === WarningType.OperationOnlyContainsOptionalParam) {
+          o.content = ""; // We don't care content of this warning
+        }
+      });
+      warnings.push(...generateResult.warnings);
+    }
+
+    return ok({ warnings });
+  } catch (e) {
+    let error: FxError;
+    if (e instanceof SpecParserError) {
+      error = convertSpecParserErrorToFxError(e);
+    } else {
+      error = assembleError(e, sourceComponent);
+    }
+    return err(error);
+  }
+}
+
 export function logValidationResults(
+  projectType: ProjectType,
   errors: ErrorResult[],
   warnings: WarningResult[],
   context: Context,
   shouldLogWarning: boolean,
   shouldSkipTelemetry: boolean,
+  specHash?: string,
   existingCorrelationId?: string
 ): void {
   if (!shouldSkipTelemetry) {
@@ -363,11 +531,16 @@ export function logValidationResults(
       [telemetryProperties.validationWarnings]: warnings
         .map((warn: WarningResult) => formatTelemetryValidationProperty(warn))
         .join(";"),
+      [telemetryProperties.projectType]: projectType.toString(),
     };
+
+    if (specHash) {
+      properties[telemetryProperties.specHash] = specHash;
+    }
 
     const specNotValidError = errors.find((error) => error.type === ErrorType.SpecNotValid);
     if (specNotValidError) {
-      properties[telemetryProperties.specNotValidDetails] = specNotValidError.content;
+      properties[ApiSpecTelemetryPropertis.SpecNotValidDetails] = specNotValidError.content;
     }
 
     if (existingCorrelationId) {
@@ -421,11 +594,22 @@ export function logValidationResults(
   void context.logProvider.info(outputMessage);
 }
 
-export function generateScaffoldingSummary(
+/**
+ * Generate scaffolding warning summary.
+ * @param warnings warnings returned from spec-parser.
+ * @param teamsManifest Teams manifest.
+ * @param apiSpecFilePath API spec path relative of project path.
+ * @param pluginManifestPath Plugin manifest path relative of project path.
+ * @param projectPath Project path.
+ * @returns Warning message.
+ */
+export async function generateScaffoldingSummary(
   warnings: Warning[],
   teamsManifest: TeamsAppManifest,
-  apiSpecFilePath: string
-): string {
+  apiSpecFilePath: string,
+  pluginManifestPath: string | undefined,
+  projectPath: string
+): Promise<string> {
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(
     warnings,
     apiSpecFilePath,
@@ -436,7 +620,23 @@ export function generateScaffoldingSummary(
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
 
-  if (apiSpecWarningMessage.length || manifestWarningMessage.length) {
+  let pluginWarningMessage: string[] = [];
+  if (pluginManifestPath) {
+    const pluginManifestWarningResult = await validatePluginManifestLength(
+      pluginManifestPath,
+      projectPath,
+      warnings
+    );
+    pluginWarningMessage = pluginManifestWarningResult.map((warn) => {
+      return `${SummaryConstant.NotExecuted} ${warn}`;
+    });
+  }
+
+  if (
+    apiSpecWarningMessage.length ||
+    manifestWarningMessage.length ||
+    pluginWarningMessage.length
+  ) {
     let details = "";
     if (apiSpecWarningMessage.length) {
       details += EOL + apiSpecWarningMessage.join(EOL);
@@ -444,6 +644,10 @@ export function generateScaffoldingSummary(
 
     if (manifestWarningMessage.length) {
       details += EOL + manifestWarningMessage.join(EOL);
+    }
+
+    if (pluginWarningMessage.length) {
+      details += EOL + pluginWarningMessage.join(EOL);
     }
 
     return getLocalizedString("core.copilotPlugin.scaffold.summary", details);
@@ -592,6 +796,64 @@ function validateTeamsManifestLength(
   return resultWarnings;
 }
 
+async function validatePluginManifestLength(
+  pluginManifestPath: string,
+  projectPath: string,
+  warnings: Warning[]
+): Promise<string[]> {
+  const functionDescriptionLimit = 100;
+  const resultWarnings: string[] = [];
+
+  const manifestRes = await pluginManifestUtils.readPluginManifestFile(
+    path.join(projectPath, pluginManifestPath)
+  );
+  if (manifestRes.isErr()) {
+    sendTelemetryErrorEvent(
+      "spec-generator",
+      telemetryEvents.failedToGetGenerateWarning,
+      manifestRes.error
+    );
+    return [];
+  }
+
+  // validate function description
+  const functions = manifestRes.value.functions;
+  const functionDescriptionWarnings = warnings
+    .filter((w) => w.type === WarningType.FuncDescriptionTooLong)
+    .map((w) => w.data);
+  if (functions) {
+    functions.forEach((func) => {
+      if (!func.description) {
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.pluginManifest.missingFunctionDescription",
+            func.name
+          ) +
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.pluginManifest.missingFunctionDescription.mitigation",
+              func.name,
+              pluginManifestPath
+            )
+        );
+      } else if (functionDescriptionWarnings.includes(func.name)) {
+        resultWarnings.push(
+          getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.pluginManifest.functionDescription.lengthExceeding",
+            func.name,
+            functionDescriptionLimit
+          ) +
+            getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.pluginManifest.functionDescription.lengthExceeding.mitigation",
+              func.name,
+              pluginManifestPath
+            )
+        );
+      }
+    });
+  }
+  return resultWarnings;
+}
+
 function formatLengthExceedingErrorMessage(field: string, limit: number): string {
   return (
     getLocalizedString(
@@ -608,26 +870,12 @@ function formatLengthExceedingErrorMessage(field: string, limit: number): string
 }
 
 export function convertSpecParserErrorToFxError(error: SpecParserError): FxError {
-  return new SystemError("SpecParser", error.errorType.toString(), error.message, error.message);
-}
-
-export async function isYamlSpecFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
+  return new SystemError(
+    SpecParserSource,
+    error.errorType.toString(),
+    error.message,
+    error.message
+  );
 }
 
 export function formatValidationErrors(
@@ -685,7 +933,7 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
 }
 
 function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs): string {
-  const isPlugin = inputs[QuestionNames.Capabilities] === apiPluginApiSpecOptionId;
+  const isPlugin = inputs[QuestionNames.ApiPluginType] === apiPluginApiSpecOptionId;
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
@@ -788,12 +1036,19 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
+const commonLanguages = [
+  ProgrammingLanguage.TS,
+  ProgrammingLanguage.JS,
+  ProgrammingLanguage.PY,
+  ProgrammingLanguage.CSharp,
+];
+
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
@@ -807,17 +1062,58 @@ async function updateAdaptiveCardForCustomApi(
   language: string,
   destinationPath: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
-    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
+    let adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    if (language === ProgrammingLanguage.CSharp) {
+      adaptiveCardsFolderPath = path.join(destinationPath, "adaptiveCards");
+    }
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
       const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
-      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
+      const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
+      if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
+        (card.body[0] as any).$data = `\${${jsonPath}}`;
+      }
       const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
       await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }
   }
+}
+
+function filterSchema(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
+  const filteredSchema: any = { type: schema.type };
+
+  if (schema.description) {
+    filteredSchema.description = schema.description;
+  }
+
+  if (schema.type === "object" && schema.properties) {
+    filteredSchema.properties = {};
+    filteredSchema.required = schema.required;
+    for (const key in schema.properties) {
+      const property = schema.properties[key] as OpenAPIV3.SchemaObject;
+      if (property.type === "object") {
+        filteredSchema.properties[key] = filterSchema(property as OpenAPIV3.SchemaObject);
+        filteredSchema.required = schema.required;
+      } else if (property.type === "array") {
+        filteredSchema.properties[key] = {
+          type: "array",
+          items: filterSchema(property.items as OpenAPIV3.SchemaObject),
+          description: property.description,
+        };
+      } else {
+        filteredSchema.properties[key] = {
+          type: property.type,
+          description: property.description,
+        };
+      }
+    }
+  } else if (schema.type === "array" && schema.items) {
+    filteredSchema.items = filterSchema(schema.items as OpenAPIV3.SchemaObject);
+  }
+
+  return filteredSchema;
 }
 
 async function updateActionForCustomApi(
@@ -825,7 +1121,7 @@ async function updateActionForCustomApi(
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+  if (commonLanguages.includes(language as ProgrammingLanguage)) {
     const actionsFilePath = path.join(chatFolder, "actions.json");
     const actions = [];
 
@@ -850,13 +1146,28 @@ async function updateActionForCustomApi(
               required: [],
             };
           }
-          parameters.properties[paramType].properties[param.name] = schema;
+          parameters.properties[paramType].properties[param.name] = filterSchema(schema);
           parameters.properties[paramType].properties[param.name].description =
             param.description ?? "";
           if (param.required) {
             parameters.properties[paramType].required.push(param.name);
             if (!parameters.required.includes(paramType)) {
               parameters.required.push(paramType);
+            }
+          }
+        }
+      }
+
+      const requestBody = item.item.requestBody as OpenAPIV3.RequestBodyObject;
+      if (requestBody) {
+        const content = requestBody.content;
+        if (content) {
+          const contentSchema = content["application/json"].schema as OpenAPIV3.SchemaObject;
+          if (Object.keys(contentSchema).length !== 0) {
+            parameters.properties["body"] = filterSchema(contentSchema);
+            parameters.properties["body"].description = requestBody.description ?? "";
+            if (requestBody.required) {
+              parameters.required.push("body");
             }
           }
         }
@@ -910,6 +1221,58 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
   return "result";
 });
   `,
+  python: `
+@bot_app.ai.action("{{operationId}}")
+async def {{operationId}}(
+  context: ActionTurnContext[Dict[str, Any]],
+  state: AppTurnState,
+):
+  parameters = context.data
+  path = parameters.get("path", {})
+  body = parameters.get("body", None)
+  query = parameters.get("query", {})
+  resp = client.{{operationId}}(**path, json=body, _headers={}, _params=query, _cookies={})
+
+  if resp.status_code != 200:
+    await context.send_activity(resp.reason)
+  else:
+    card_template_path = os.path.join(current_dir, 'adaptiveCards/{{operationId}}.json')
+    with open(card_template_path) as card_template_file:
+        adaptive_card_template = card_template_file.read()
+
+    renderer = AdaptiveCardRenderer(adaptive_card_template)
+
+    json_resoponse_str = resp.text
+    rendered_card_str = renderer.render(json_resoponse_str)
+    rendered_card_json = json.loads(rendered_card_str)
+    card = CardFactory.adaptive_card(rendered_card_json)
+    message = MessageFactory.attachment(card)
+    
+    await context.send_activity(message)
+  return "success"
+  `,
+  cs: `
+        [Action("{{operationId}}")]
+        public async Task<string> {{functionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
+        {
+            try
+            {
+                RequestParams requestParam = ParseRequestParams(args);
+
+                var response = await Client.CallAsync("{{apiPath}}", Method.{{apiMethod}}, requestParam);
+                var data = response.Content;
+
+                var cardTemplatePath = "./adaptiveCards/{{operationId}}.json";
+                var message = RenderCardToMessage(cardTemplatePath, data);
+
+                await turnContext.SendActivityAsync(message);
+            }
+            catch (Exception ex) {
+                await turnContext.SendActivityAsync("Failed to call API with error:  " + ex.Message);
+            }
+
+            return "complete";
+        }`,
 };
 
 const AuthCode = {
@@ -958,6 +1321,52 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
+  } else if (language === ProgrammingLanguage.PY) {
+    // Update code in bot.py
+    const actionsCode = [];
+    const codeTemplate = ActionCode["python"];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace(/{{pathUrl}}/g, item.pathUrl)
+        .replace(/{{method}}/g, item.method);
+      actionsCode.push(code);
+    }
+
+    const botFilePath = path.join(destinationPath, "src", "bot.py");
+    const botFileContent = (await fs.readFile(botFilePath)).toString();
+    const updateBotFileContent = botFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("# Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(botFilePath, updateBotFileContent);
+  } else if (language === ProgrammingLanguage.CSharp) {
+    const actionsCode = [];
+    const codeTemplate = ActionCode["cs"];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace(/{{apiPath}}/g, item.pathUrl)
+        .replace(/{{apiMethod}}/g, Utils.updateFirstLetter(item.method))
+        .replace(/{{functionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
+      actionsCode.push(code);
+    }
+
+    const apiActionCsFilePath = path.join(destinationPath, "APIActions.cs");
+    const apiActionCsFileContent = (await fs.readFile(apiActionCsFilePath)).toString();
+    const updateApiActionCsFileContent = apiActionCsFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", "apiSpecificationFile/" + openapiSpecFileName)
+      .replace("// Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(apiActionCsFilePath, updateApiActionCsFileContent);
+
+    const files = await fs.readdir(destinationPath);
+    const projectFileName = files.find((file) => file.endsWith(".csproj"));
+    const projectFilePath = path.join(destinationPath, projectFileName!);
+    const projectFileContent = (await fs.readFile(projectFilePath)).toString();
+    const updateProjectFileContent = projectFileContent.replace(
+      /{{OPENAPI_SPEC_PATH}}/g,
+      openapiSpecFileName
+    );
+    await fs.writeFile(projectFilePath, updateProjectFileContent);
   }
 }
 
@@ -967,7 +1376,10 @@ export async function updateForCustomApi(
   destinationPath: string,
   openapiSpecFileName: string
 ): Promise<void> {
-  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  let chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  if (language === ProgrammingLanguage.CSharp) {
+    chatFolder = path.join(destinationPath, "prompts", "Chat");
+  }
   await fs.ensureDir(chatFolder);
 
   // 1. update prompt folder

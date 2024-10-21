@@ -114,6 +114,7 @@ import {
   refreshEnvironment,
 } from "./handlers/envHandlers";
 import {
+  addPluginHandler,
   addWebpartHandler,
   copilotPluginAddAPIHandler,
   createNewProjectHandler,
@@ -125,6 +126,7 @@ import {
 import {
   buildPackageHandler,
   publishInDeveloperPortalHandler,
+  syncManifestHandler,
   updatePreviewManifest,
   validateManifestHandler,
 } from "./handlers/manifestHandlers";
@@ -196,17 +198,16 @@ import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/project
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
+import { manifestListener } from "./manifestListener";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const value =
-    IsChatParticipantEnabled &&
-    semver.gte(vscode.version, "1.90.0-insider") &&
-    vscode.version.includes("insider");
+  const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
-  configMgr.registerConfigChangeCallback();
-
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
+
+  configMgr.registerConfigChangeCallback();
 
   initVSCodeUI(context);
   initializeGlobalVariables(context);
@@ -221,8 +222,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerInternalCommands(context);
 
   if (featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)) {
-    registerChatParticipant(context);
-
     registerOfficeChatParticipant(context);
   }
 
@@ -243,11 +242,11 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant entries
+  // control whether to show chat participant ui entries
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isChatParticipantEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)
+    "fx-extension.isChatParticipantUIEntriesEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.
@@ -255,7 +254,7 @@ export async function activate(context: vscode.ExtensionContext) {
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotPlugin)
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotExtension)
   );
 
   await vscode.commands.executeCommand(
@@ -270,6 +269,11 @@ export async function activate(context: vscode.ExtensionContext) {
     isOfficeManifestOnlyProject
   );
 
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isSyncManifestEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.SyncManifest)
+  );
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
@@ -314,6 +318,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
   if (vscode.workspace.isTrusted) {
     registerLanguageFeatures(context);
+    context.subscriptions.push(manifestListener());
   }
 
   registerDebugConfigProviders(context);
@@ -524,6 +529,15 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(validatePrerequisitesCmd);
 
   registerInCommandController(context, CommandKeys.SigninAzure, signinAzureCallback);
+
+  // Register createPluginWithManifest command
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
+    const createPluginWithManifestCommand = vscode.commands.registerCommand(
+      "fx-extension.createprojectfromkiota",
+      () => Correlator.run(createPluginWithManifest)
+    );
+    context.subscriptions.push(createPluginWithManifestCommand);
+  }
 }
 
 /**
@@ -578,6 +592,8 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   registerInCommandController(context, "fx-extension.OpenAdaptiveCardExt", installAdaptiveCardExt);
 
   registerInCommandController(context, "fx-extension.addWebpart", addWebpartHandler, "addWebpart");
+
+  registerInCommandController(context, "fx-extension.addPlugin", addPluginHandler, "addPlugin");
 }
 
 function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
@@ -678,6 +694,10 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(checkCopilotCallback, args)
   );
   context.subscriptions.push(checkCopilotCallbackCmd);
+
+  if (featureFlagManager.getBooleanValue(FeatureFlags.SyncManifest)) {
+    registerInCommandController(context, "fx-extension.syncManifest", syncManifestHandler);
+  }
 }
 
 /**

@@ -8,6 +8,7 @@ import path from "path";
 import {
   AuthInfo,
   ErrorType,
+  ExistingPluginManifestInfo,
   ParseOptions,
   ProjectType,
   WarningResult,
@@ -23,6 +24,7 @@ import {
   PluginManifestSchema,
   FunctionObject,
   AuthObject,
+  ManifestUtil,
 } from "@microsoft/teams-manifest";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapResponseSemantics } from "./adaptiveCardWrapper";
@@ -34,20 +36,35 @@ export class ManifestUpdater {
     apiPluginFilePath: string,
     spec: OpenAPIV3.Document,
     options: ParseOptions,
-    authInfo?: AuthInfo
+    authInfo?: AuthInfo,
+    existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
-    manifest.copilotExtensions = manifest.copilotExtensions || {};
-    // Insert plugins in manifest.json if it is plugin for Copilot.
-    if (!options.isGptPlugin) {
-      manifest.copilotExtensions.plugins = [
-        {
-          file: apiPluginRelativePath,
-          id: ConstantString.DefaultPluginId,
-        },
-      ];
-      ManifestUpdater.updateManifestDescription(manifest, spec);
+
+    const useCopilotExtensionsInSchema = await ManifestUtil.useCopilotExtensionsInSchema(manifest);
+    if (manifest.copilotExtensions || useCopilotExtensionsInSchema) {
+      manifest.copilotExtensions = manifest.copilotExtensions || {};
+      if (!options.isGptPlugin) {
+        manifest.copilotExtensions.plugins = [
+          {
+            file: apiPluginRelativePath,
+            id: ConstantString.DefaultPluginId,
+          },
+        ];
+        ManifestUpdater.updateManifestDescription(manifest, spec);
+      }
+    } else {
+      manifest.copilotAgents = manifest.copilotAgents || {};
+      if (!options.isGptPlugin) {
+        (manifest as any).copilotAgents.plugins = [
+          {
+            file: apiPluginRelativePath,
+            id: ConstantString.DefaultPluginId,
+          },
+        ];
+        ManifestUpdater.updateManifestDescription(manifest, spec);
+      }
     }
 
     const appName = this.removeEnvs(manifest.name.short);
@@ -59,7 +76,8 @@ export class ManifestUpdater {
       apiPluginFilePath,
       appName,
       authInfo,
-      options
+      options,
+      existingPluginManifestInfo
     );
 
     return [manifest, apiPlugin, warnings];
@@ -98,7 +116,8 @@ export class ManifestUpdater {
     apiPluginFilePath: string,
     appName: string,
     authInfo: AuthInfo | undefined,
-    options: ParseOptions
+    options: ParseOptions,
+    existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[PluginManifestSchema, WarningResult[]]> {
     const warnings: WarningResult[] = [];
     const functions: FunctionObject[] = [];
@@ -155,7 +174,7 @@ export class ManifestUpdater {
               if (requestBody) {
                 const requestJsonBody = requestBody.content!["application/json"];
                 const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-                if (requestBodySchema.type === "object") {
+                if (Utils.isObjectSchema(requestBodySchema)) {
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
                     ManifestUpdater.checkSchema(schema, method, pathUrl);
@@ -174,9 +193,27 @@ export class ManifestUpdater {
                 }
               }
 
+              let funcDescription = operationItem.description || operationItem.summary || "";
+              if (funcDescription.length > ConstantString.FunctionDescriptionMaxLens) {
+                warnings.push({
+                  type: WarningType.FuncDescriptionTooLong,
+                  content: Utils.format(
+                    ConstantString.FuncDescriptionTooLong,
+                    safeFunctionName,
+                    funcDescription.length.toString(),
+                    ConstantString.FunctionDescriptionMaxLens.toString()
+                  ),
+                  data: safeFunctionName,
+                });
+                funcDescription = funcDescription.slice(
+                  0,
+                  ConstantString.FunctionDescriptionMaxLens
+                );
+              }
+
               const funcObj: FunctionObject = {
                 name: safeFunctionName,
-                description: description,
+                description: funcDescription,
               };
 
               if (options.allowResponseSemantics) {
@@ -234,6 +271,11 @@ export class ManifestUpdater {
     let apiPlugin: PluginManifestSchema;
     if (await fs.pathExists(apiPluginFilePath)) {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
+    } else if (
+      existingPluginManifestInfo &&
+      (await fs.pathExists(existingPluginManifestInfo.manifestPath))
+    ) {
+      apiPlugin = await fs.readJSON(existingPluginManifestInfo.manifestPath);
     } else {
       apiPlugin = {
         $schema: ConstantString.PluginManifestSchema,
@@ -258,6 +300,16 @@ export class ManifestUpdater {
     }
 
     apiPlugin.runtimes = apiPlugin.runtimes || [];
+    // Need to delete previous runtime since spec path has changed
+    if (existingPluginManifestInfo) {
+      const relativePath = ManifestUpdater.getRelativePath(
+        existingPluginManifestInfo.manifestPath,
+        existingPluginManifestInfo.specPath
+      );
+      apiPlugin.runtimes = apiPlugin.runtimes.filter(
+        (runtime) => runtime.spec.url !== relativePath
+      );
+    }
     const index = apiPlugin.runtimes.findIndex(
       (runtime) =>
         runtime.spec.url === specRelativePath &&

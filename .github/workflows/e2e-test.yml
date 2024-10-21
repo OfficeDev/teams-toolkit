@@ -33,14 +33,14 @@ on:
   schedule:
     - cron: "0 22 * * *"
 
-  pull_request_target:
+  pull_request:
 
 permissions:
   actions: read
 
 jobs:
   setup:
-    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
     environment: engineering
     permissions:
@@ -59,7 +59,7 @@ jobs:
       M365_TENANT_ID: ${{ secrets.TEST_M365_TENANT_ID }}
       CI_ENABLED: "true"
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME_2 }}
-      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-name }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.target-testplan-id }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -96,7 +96,7 @@ jobs:
 
       - name: List cases for pull request
         id: pr-cases
-        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         working-directory: packages/tests/src/e2e
         run: |
           cases=`find ./bot ./frontend -path "*.tests.ts" -and \
@@ -197,12 +197,9 @@ jobs:
             8.0.x
 
       - name: Setup Python
-        run: |
-          sudo apt-get install python3.11
-          sudo apt-get install python3-pip
-          sudo apt-get install python3.11-venv
-          python3 --version
-          pip3 --version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
       - uses: pnpm/action-setup@v4
 
@@ -216,7 +213,7 @@ jobs:
           pnpm link --global
 
       - name: Update CLI and legacy-peer-deps for PR cases
-        if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
+        if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         run: |
           npm install -g @microsoft/teamsapp-cli@alpha
           npm config set legacy-peer-deps false
@@ -305,7 +302,7 @@ jobs:
         if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         working-directory: packages/tests
         run: |
-          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
+          npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report
 
   tear-down:
     needs: [execute-case, e2e-coverage]
@@ -338,7 +335,7 @@ jobs:
     permissions:
       actions: write
     needs: tear-down
-    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
+    if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
     steps:
       - name: rerun

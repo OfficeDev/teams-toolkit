@@ -156,19 +156,13 @@ class TeamsAppMgr {
         "build",
         env ? `appPackage.${env}.zip` : "appPackage.zip"
       );
-    inputs["output-manifest-file"] =
-      inputs["output-manifest-file"] ||
-      path.join(
-        inputs.projectPath,
-        "appPackage",
-        "build",
-        env ? `manifest.${env}.json` : "manifest.json"
-      );
+    inputs["output-folder"] =
+      inputs["output-folder"] || path.join(inputs.projectPath, "appPackage", "build");
 
     const packageArgs: CreateAppPackageArgs = {
       manifestPath: inputs["manifest-file"],
       outputZipPath: inputs["output-package-file"],
-      outputJsonPath: inputs["output-manifest-file"],
+      outputFolder: inputs["output-folder"],
     };
     const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
     const driverContext: DriverContext = createDriverContext(inputs);

@@ -1,4 +1,4 @@
-import { MemoryStorage } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
 
@@ -35,7 +35,13 @@ const app = new Application({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
+});
+
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
 });
 
 export default app;

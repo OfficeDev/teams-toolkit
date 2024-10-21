@@ -86,8 +86,7 @@ describe("CLI commands", () => {
   describe("getCreateCommand", async () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "false",
-        [FeatureFlags.CustomizeGpt.name]: "false",
+        [FeatureFlags.CopilotExtension.name]: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -249,18 +248,9 @@ describe("CLI commands", () => {
   });
 
   describe("getAddCommand", async () => {
-    it("customize GPT is not enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CustomizeGpt.name]: "false",
-      });
-
-      const commands = addCommand();
-      assert.isTrue(commands.commands?.length === 1);
-    });
-
     it("customize GPT is enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CustomizeGpt.name]: "true",
+        [FeatureFlags.CopilotExtension.name]: "true",
       });
 
       const commands = addCommand();
@@ -927,6 +917,7 @@ describe("CLI read-only commands", () => {
   });
 
   afterEach(() => {
+    messages = [];
     sandbox.restore();
   });
   describe("AccountUtils", async () => {
@@ -1122,7 +1113,7 @@ describe("CLI read-only commands", () => {
     });
     it("json", async () => {
       mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CopilotExtension.name]: "false",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },
@@ -1133,7 +1124,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
+      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin")));
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
@@ -1160,7 +1151,7 @@ describe("CLI read-only commands", () => {
 
     it("json: Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
+        [FeatureFlags.CopilotExtension.name]: "true",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },
@@ -1171,7 +1162,7 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin-existing-api")));
+      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin")));
     });
   });
   describe("listSamplesCommand", async () => {

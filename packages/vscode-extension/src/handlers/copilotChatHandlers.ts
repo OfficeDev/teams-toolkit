@@ -18,6 +18,7 @@ import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { localize } from "../utils/localizeUtils";
 import { showOutputChannelHandler } from "./showOutputChannel";
 import { InstallCopilotChatLink } from "../constants";
+import { isVSCodeInsiderVersion } from "../utils/versionUtil";
 
 const githubCopilotChatExtensionId = "github.copilot-chat";
 
@@ -64,7 +65,6 @@ export async function installGithubCopilotChatExtension(
   };
   ExtTelemetry.sendTelemetryEvent(eventName, telemetryProperties);
   try {
-    const vscodeVersion = vscode.version;
     const confirmRes = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.askInstallCopilot"),
       localize("teamstoolkit.handlers.askInstallCopilot.install"),
@@ -80,7 +80,7 @@ export async function installGithubCopilotChatExtension(
         "workbench.extensions.installExtension",
         githubCopilotChatExtensionId,
         {
-          installPreReleaseVersion: vscodeVersion.includes("insider"), // VSCode insider need to install Github Copilot Chat of pre-release version
+          installPreReleaseVersion: isVSCodeInsiderVersion(), // VSCode insider need to install Github Copilot Chat of pre-release version
           enable: true,
         }
       );
@@ -119,8 +119,8 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
   const query =
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView ||
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
-      ? "@teams "
-      : "@teams /create ";
+      ? "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app development."
+      : "@teamsapp Find relevant templates or samples to build your Teams app as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
   let res;
 
   const isExtensionInstalled = githubCopilotInstalled();
@@ -130,7 +130,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     VsCodeLogInstance.info(
       util.format(
         localize("teamstoolkit.handlers.installExtension.output"),
-        "Github Copilot Chat",
+        "GitHub Copilot Chat",
         InstallCopilotChatLink
       )
     );

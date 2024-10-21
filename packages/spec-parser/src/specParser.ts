@@ -32,6 +32,8 @@ import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 import { ValidatorFactory } from "./validators/validatorFactory";
 import { Validator } from "./validators/validator";
+import { PluginManifestSchema } from "@microsoft/teams-manifest";
+import { createHash } from "crypto";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -82,6 +84,8 @@ export class SpecParser {
    */
   async validate(): Promise<ValidateResult> {
     try {
+      let hash = "";
+
       try {
         await this.loadSpec();
         if (!this.parser.$refs.circular) {
@@ -95,7 +99,13 @@ export class SpecParser {
           status: ValidationStatus.Error,
           warnings: [],
           errors: [{ type: ErrorType.SpecNotValid, content: (e as Error).toString() }],
+          specHash: hash,
         };
+      }
+
+      if (this.unResolveSpec!.servers) {
+        const serverString = JSON.stringify(this.unResolveSpec!.servers);
+        hash = createHash("sha256").update(serverString).digest("hex");
       }
 
       const errors: ErrorResult[] = [];
@@ -108,6 +118,7 @@ export class SpecParser {
           errors: [
             { type: ErrorType.SwaggerNotSupported, content: ConstantString.SwaggerNotSupported },
           ],
+          specHash: hash,
         };
       }
 
@@ -146,6 +157,7 @@ export class SpecParser {
         status: status,
         warnings: warnings,
         errors: errors,
+        specHash: hash,
       };
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -284,6 +296,7 @@ export class SpecParser {
     filter: string[],
     outputSpecPath: string,
     pluginFilePath: string,
+    existingPluginFilePath?: string,
     signal?: AbortSignal
   ): Promise<GenerateResult> {
     const result: GenerateResult = {
@@ -304,6 +317,12 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
+      const existingPluginManifestInfo = existingPluginFilePath
+        ? {
+            manifestPath: existingPluginFilePath,
+            specPath: this.pathOrSpec as string,
+          }
+        : undefined;
       const [updatedManifest, apiPlugin, warnings] =
         await ManifestUpdater.updateManifestWithAiPlugin(
           manifestPath,
@@ -311,7 +330,8 @@ export class SpecParser {
           pluginFilePath,
           newSpec,
           this.options,
-          authInfo
+          authInfo,
+          existingPluginManifestInfo
         );
 
       result.warnings.push(...warnings);

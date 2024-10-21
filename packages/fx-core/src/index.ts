@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-"use strict";
 
 /**
  * File structure of this package:
@@ -30,6 +29,7 @@ export {
   featureFlagManager,
   isFeatureFlagEnabled,
   FeatureFlagName,
+  isCopilotExtensionEnabled,
 } from "./common/featureFlags";
 export { globalStateGet, globalStateUpdate } from "./common/globalState";
 export { getDefaultString, getLocalizedString } from "./common/localizeUtils";
@@ -67,7 +67,6 @@ export {
 export { CoreDepsLoggerAdapter } from "./component/deps-checker/coreDepsLoggerAdapter";
 export { CoreDepsTelemetryAdapter } from "./component/deps-checker/coreDepsTelemetryAdapter";
 export * from "./component/deps-checker/depsChecker";
-export * from "./component/deps-checker/depsError";
 export { DepsLogger, EmptyLogger } from "./component/deps-checker/depsLogger";
 export { DepsManager } from "./component/deps-checker/depsManager";
 export { DepsTelemetry, EmptyTelemetry } from "./component/deps-checker/depsTelemetry";
@@ -89,6 +88,7 @@ export { loadTeamsFxDevScript } from "./component/local/packageJsonHelper";
 export { Hub } from "./component/m365/constants";
 export { PackageService } from "./component/m365/packageService";
 export { MosServiceEndpoint, MosServiceScope } from "./component/m365/serviceConstant";
+export { outputScaffoldingWarningMessage } from "./component/utils/common";
 export { DotenvOutput, envUtil } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";
 export { pathUtils } from "./component/utils/pathUtils";
@@ -105,3 +105,5 @@ export * from "./question/inputs";
 export * from "./question/options";
 export * from "./component/middleware/actionExecutionMW";
 export { TemplateInfo } from "./component/generator/templates/templateInfo";
+export { AadSet } from "./common/globalVars";
+export { KiotaLastCommands } from "./component/constants";

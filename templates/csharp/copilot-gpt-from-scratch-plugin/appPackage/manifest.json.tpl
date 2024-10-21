@@ -1,6 +1,6 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
-  "manifestVersion": "devPreview",
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.19",
   "id": "${{TEAMS_APP_ID}}",
   "packageName": "com.microsoft.teams.extension",
   "version": "1.0.0",
@@ -23,11 +23,11 @@
     "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze."
   },
   "accentColor": "#FFFFFF",
-  "copilotExtensions": {
-    "declarativeCopilots": [
+  "copilotAgents": {
+    "declarativeAgents": [
       {
-        "id": "repairDeclarativeCopilot",
-        "file": "repairDeclarativeCopilot.json"
+        "id": "repairDeclarativeAgent",
+        "file": "repairDeclarativeAgent.json"
       }
     ],
     "plugins": [

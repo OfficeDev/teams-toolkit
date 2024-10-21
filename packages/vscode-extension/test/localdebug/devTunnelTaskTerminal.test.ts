@@ -5,9 +5,9 @@
  */
 
 import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as fs from "fs-extra";
-import * as path from "path";
+import chaiAsPromised from "chai-as-promised";
+import fs from "fs-extra";
+import path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";

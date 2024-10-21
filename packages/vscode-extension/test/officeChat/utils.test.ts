@@ -1,6 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as chaipromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as vscode from "vscode";
 import * as utils from "../../src/officeChat/utils";
 import * as chatUtils from "../../src/chat/utils";
@@ -11,7 +11,7 @@ import { Spec } from "../../src/officeChat/common/skills/spec";
 import { OfficeChatTelemetryData } from "../../src/officeChat/telemetry";
 import * as requestUtils from "@microsoft/teamsfx-core/build/common/requestUtils";
 
-chai.use(chaipromised);
+chai.use(chaiPromised);
 
 describe("File: officeChat/utils.ts", () => {
   const sandbox = sinon.createSandbox();
@@ -167,7 +167,7 @@ describe("File: officeChat/utils.ts", () => {
           downloadUrlInfo: {
             owner: "OfficeDev",
             repository: "Office-Samples",
-            ref: "main",
+            ref: "agent",
             dir: "Excel-Add-in-ShapeAPI-Dashboard",
           },
           id: "Excel-Add-in-ShapeAPI-Dashboard",
@@ -180,7 +180,7 @@ describe("File: officeChat/utils.ts", () => {
           thumbnailPath: "assets/thumbnail.png",
           suggested: false,
           gifUrl:
-            "https://raw.githubusercontent.com/OfficeDev/Office-Samples/main/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif",
+            "https://raw.githubusercontent.com/OfficeDev/Office-Samples/agent/Excel-Add-in-ShapeAPI-Dashboard/assets/sampleDemo.gif",
           gifPath: "assets/sampleDemo.gif",
           onboardDate: date,
           shortId: "Shape API dashboard",

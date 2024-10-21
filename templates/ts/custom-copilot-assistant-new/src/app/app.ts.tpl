@@ -1,4 +1,4 @@
-import { MemoryStorage } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
 
@@ -38,10 +38,16 @@ const app = new Application<ApplicationTurnState>({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
 });
 
-app.message("/reset", resetMessage);
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
+});
+
+app.message("reset", resetMessage);
 
 app.ai.action("createTask", createTask);
 app.ai.action("deleteTask", deleteTask);

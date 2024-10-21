@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.7/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.5
+version: v1.7
 
 environmentFolderPath: ./env
 
@@ -17,7 +17,12 @@ provision:
       # defined here.
       name: {{appName}}-aad
       # If the value is false, the action will not generate client secret for you
+{{#MicrosoftEntra}}
+      generateClientSecret: false
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
       generateClientSecret: true
+{{/MicrosoftEntra}}
       # Authenticate users with a Microsoft work or school account in your
       # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
@@ -27,7 +32,9 @@ provision:
       clientId: AAD_APP_CLIENT_ID
       # Environment variable that starts with `SECRET_` will be stored to the
       # .env.{envName}.user environment file
+{{^MicrosoftEntra}}
       clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+{{/MicrosoftEntra}}
       objectId: AAD_APP_OBJECT_ID
       tenantId: AAD_APP_TENANT_ID
       authority: AAD_APP_OAUTH_AUTHORITY
@@ -79,6 +86,18 @@ provision:
 
   - uses: oauth/register
     with:
+{{#MicrosoftEntra}}
+      name: aadAuthCode
+      flow: authorizationCode
+      appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
+      identityProvider: MicrosoftEntra
+    writeToEnvironmentFile:
+      configurationId: AADAUTHCODE_CONFIGURATION_ID
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
       name: oAuth2AuthCode
       flow: authorizationCode
       appId: ${{TEAMS_APP_ID}}
@@ -88,6 +107,7 @@ provision:
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
     writeToEnvironmentFile:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+{{/MicrosoftEntra}}
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
@@ -95,7 +115,13 @@ provision:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+      outputFolder: ./appPackage/build
+
+  # Validate app package using validation rules
+  - uses: teamsApp/validateAppPackage
+    with:
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
@@ -146,7 +172,12 @@ publish:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+      outputFolder: ./appPackage/build
+  # Validate app package using validation rules
+  - uses: teamsApp/validateAppPackage
+    with:
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.

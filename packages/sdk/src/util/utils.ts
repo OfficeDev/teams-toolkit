@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ErrorWithCode, ErrorCode } from "../core/errors";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoTokenInfo";
 import { UserInfo, UserTenantIdAndLoginHint } from "../models/userinfo";
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { internalLogger } from "./logger";
 import { AccessToken } from "@azure/identity";
 import { AuthenticationResult } from "@azure/msal-browser";
@@ -19,7 +19,7 @@ import { AuthenticationResult } from "@azure/msal-browser";
  */
 export function parseJwt(token: string): SSOTokenInfoBase {
   try {
-    const tokenObj: SSOTokenInfoBase = jwt_decode(token);
+    const tokenObj: SSOTokenInfoBase = jwtDecode(token);
     if (!tokenObj || !tokenObj.exp) {
       throw new ErrorWithCode(
         "Decoded token is null or exp claim does not exists.",
@@ -188,7 +188,47 @@ export function getAuthority(authorityHost: string, tenantId: string): string {
 /**
  * @internal
  */
+export function validateConfig(config: any): void {
+  if (
+    config.clientId &&
+    (config.clientSecret || config.certificateContent) &&
+    config.tenantId &&
+    config.authorityHost
+  ) {
+    return;
+  }
+
+  const missingValues = [];
+
+  if (!config.clientId) {
+    missingValues.push("clientId");
+  }
+
+  if (!config.clientSecret && !config.certificateContent) {
+    missingValues.push("clientSecret or certificateContent");
+  }
+
+  if (!config.tenantId) {
+    missingValues.push("tenantId");
+  }
+
+  if (!config.authorityHost) {
+    missingValues.push("authorityHost");
+  }
+
+  const errorMsg = formatString(
+    ErrorMessage.InvalidConfiguration,
+    missingValues.join(", "),
+    "undefined"
+  );
+  internalLogger.error(errorMsg);
+  throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
+}
+
+/**
+ * @internal
+ */
 export interface ClientCertificate {
-  thumbprint: string;
+  thumbprintSha256: string;
   privateKey: string;
 }

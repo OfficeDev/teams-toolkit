@@ -9,7 +9,7 @@ import {
   SelectFolderConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
-import * as path from "path";
+import path from "path";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { showError, wrapError } from "../error/common";

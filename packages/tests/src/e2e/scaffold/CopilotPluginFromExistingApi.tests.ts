@@ -42,7 +42,7 @@ describe("Create Copilot plugin", () => {
     async function () {
       const env = Object.assign({}, process.env);
 
-      env["DEVELOP_COPILOT_PLUGIN"] = "true";
+      env["DEVELOP_COPILOT_EXTENSION"] = "true";
 
       const apiSpecPath = path.join(__dirname, "../", "testApiSpec.yml");
 
@@ -51,9 +51,9 @@ describe("Create Copilot plugin", () => {
       await CliHelper.createProjectWithCapability(
         appName,
         testFolder,
-        Capability.CopilotPluginFromExistingAPI,
+        Capability.ApiPlugin,
         env,
-        `--openapi-spec-location ${apiSpecPath} --api-operation "DELETE /repairs,GET /repairs,PATCH /repairs"`
+        `--api-plugin-type  api-spec --openapi-spec-location ${apiSpecPath} --api-operation "DELETE /repairs,GET /repairs,PATCH /repairs"`
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

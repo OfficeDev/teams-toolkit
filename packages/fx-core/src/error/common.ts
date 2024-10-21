@@ -654,4 +654,15 @@ export class NpmInstallError extends SystemError {
   }
 }
 
+export class FileNotSupportError extends UserError {
+  constructor(source: string, validFormat: string) {
+    super(
+      "Core",
+      "FailedToParseResourceIdError",
+      getDefaultString("error.UnsupportedFileFormat", validFormat),
+      getLocalizedString("error.UnsupportedFileFormat", validFormat)
+    );
+  }
+}
+
 export const CoreSource = "Core";

@@ -79,6 +79,17 @@ export interface BaseQuestion {
   totalSteps?: number;
 
   /**
+   * `innerStep` and `innerTotalStep` are used to describe the inner step of a group of questions
+   * `innerStep` is the sequence number of the current question in the group.
+   *  VSC will display the innerStep and innerTotalStep in the question title.
+   */
+  innerStep?: number;
+  /**
+   * `innerTotalStep` is the number of questions in the group in total
+   */
+  innerTotalStep?: number;
+
+  /**
    * if true, the toolkit will not remember the value as default value
    */
   forgetLastValue?: boolean;
@@ -215,7 +226,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * if true: single select question will be automatically answered with the single option;
    * if false: use still need to do the selection manually even there is no other choice.
    */
-  skipSingleOption?: boolean;
+  skipSingleOption?: boolean | LocalFunc<boolean>;
 
   /**
    * the command is only for CLI option description
@@ -394,6 +405,11 @@ export interface SingleFileQuestion extends UserInputQuestion {
    * ```
    */
   filters?: { [name: string]: string[] };
+
+  /**
+   * Default Uri when open file selector window.
+   */
+  defaultFolder?: string | LocalFunc<string | undefined>;
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {

@@ -77,3 +77,4 @@ export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
 export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
+export const SpecParserSource = "SpecParser";

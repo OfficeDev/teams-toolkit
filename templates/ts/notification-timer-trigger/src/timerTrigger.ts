@@ -1,5 +1,5 @@
 import { AzureFunction, Context } from "@azure/functions";
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import * as ACData from "adaptivecards-templating";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { CardData } from "./cardModels";
 import { notificationApp } from "./internal/initialize";
@@ -28,11 +28,13 @@ const timerTrigger: AzureFunction = async function (context: Context, myTimer: a
 
     for (const target of installations) {
       await target.sendAdaptiveCard(
-        AdaptiveCards.declare<CardData>(notificationTemplate).render({
-          title: "New Event Occurred!",
-          appName: "Contoso App Notification",
-          description: `This is a sample time-triggered notification (${timeStamp}).`,
-          notificationUrl: "https://aka.ms/teamsfx-notification-new",
+        new ACData.Template(notificationTemplate).expand({
+          $root: {
+            title: "New Event Occurred!",
+            appName: "Contoso App Notification",
+            description: `This is a sample time-triggered notification (${timeStamp}).`,
+            notificationUrl: "https://aka.ms/teamsfx-notification-new",
+          },
         })
       );
 

@@ -1,6 +1,6 @@
 import * as sinon from "sinon";
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import * as vsc_ui from "../../src/qm/vsc_ui";
 import * as vscode from "vscode";

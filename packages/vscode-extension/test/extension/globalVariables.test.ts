@@ -1,10 +1,12 @@
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import { ExtensionContext, Uri } from "vscode";
 
 import * as globalVariables from "../../src/globalVariables";
 import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { err, ok, SystemError, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { manifestUtils } from "@microsoft/teamsfx-core";
 
 describe("Global Variables", () => {
   describe("isSPFxProject", () => {
@@ -83,5 +85,60 @@ describe("Global Variables", () => {
 
       chai.expect(globalVariables.isTeamsFxProject).equals(false);
     });
+  });
+
+  describe("isDeclarativeCopilotApp", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Declarative copilot project", () => {
+      const teamsManifest = new TeamsAppManifest();
+      teamsManifest.copilotExtensions = {
+        declarativeCopilots: [{ id: "1", file: "testFile" }],
+      };
+      sandbox.stub(manifestUtils, "readAppManifestSync").returns(ok(teamsManifest));
+
+      const res = globalVariables.checkIsDeclarativeCopilotApp("projectPath");
+      chai.expect(res).to.be.true;
+    });
+
+    it("Not declarative copilot project", () => {
+      const teamsManifest = new TeamsAppManifest();
+      sandbox.stub(manifestUtils, "readAppManifestSync").returns(ok(teamsManifest));
+
+      const res = globalVariables.checkIsDeclarativeCopilotApp("projectPath");
+      chai.expect(res).to.be.false;
+    });
+
+    it("Error: return false", () => {
+      sandbox
+        .stub(manifestUtils, "readAppManifestSync")
+        .returns(err(new SystemError("error", "error", "error", "error")));
+
+      const res = globalVariables.checkIsDeclarativeCopilotApp("projectPath");
+      chai.expect(res).to.be.false;
+    });
+  });
+
+  it("updateIsDeclarativeCopilotApp", () => {
+    const manifest = new TeamsAppManifest();
+    let res = globalVariables.updateIsDeclarativeCopilotApp(manifest);
+    chai.assert.isFalse(res);
+
+    res = globalVariables.updateIsDeclarativeCopilotApp({
+      ...manifest,
+      copilotExtensions: {
+        declarativeCopilots: [
+          {
+            id: "1",
+            file: "test",
+          },
+        ],
+      },
+    });
+    chai.assert.isTrue(res);
   });
 });

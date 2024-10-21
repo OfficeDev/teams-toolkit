@@ -106,12 +106,20 @@ export async function runCommand(
         result = await core.validateApplication(inputs);
         break;
       }
+      case Stage.syncManifest: {
+        result = await core.syncManifest(inputs);
+        break;
+      }
       case Stage.createAppPackage: {
         result = await core.createAppPackage(inputs);
         break;
       }
       case Stage.copilotPluginAddAPI: {
         result = await core.copilotPluginAddAPI(inputs);
+        break;
+      }
+      case Stage.addPlugin: {
+        result = await core.addPlugin(inputs);
         break;
       }
       default:

@@ -5,14 +5,12 @@ import { assert } from "chai";
 import { ConversationState, MemoryStorage, TurnContext, UserState } from "botbuilder";
 import * as sinon from "sinon";
 import { CustomStorage } from "../testUtils";
-import mockedEnv from "mocked-env";
 import { DefaultBotSsoExecutionActivityHandler } from "../../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { BotSsoExecutionDialog } from "../../../../../src/conversation/sso/botSsoExecutionDialog";
 import { BotSsoConfig } from "../../../../../src/conversation/interface";
 
+// eslint-disable-next-line no-secrets/no-secrets
 describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
-  let mockedEnvRestore: () => void;
-
   const sandbox = sinon.createSandbox();
 
   const clientId = "fake_client_id";
@@ -23,21 +21,16 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
   const ssoConfig: BotSsoConfig = {
     aad: {
       scopes: ["User.Read"],
+      clientId,
+      clientSecret,
+      tenantId,
+      authorityHost,
+      initiateLoginEndpoint,
     },
   };
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
-      M365_CLIENT_ID: clientId,
-      M365_CLIENT_SECRET: clientSecret,
-      M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost,
-    });
-  });
 
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("create default sso execution activity handler should work", () => {
@@ -71,6 +64,11 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
       },
       aad: {
         scopes: ["User.Read"],
+        clientId,
+        clientSecret,
+        tenantId,
+        authorityHost,
+        initiateLoginEndpoint,
       },
     };
     const defaultBotSsoExecutionActivityHandler: any = new DefaultBotSsoExecutionActivityHandler(

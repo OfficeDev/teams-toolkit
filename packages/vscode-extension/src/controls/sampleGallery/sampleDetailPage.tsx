@@ -58,7 +58,7 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
     const header = (
       <>
         <div className="header">
-          <h2>{sample.title}</h2>
+          <h2 tabIndex={0}>{sample.title}</h2>
           <div className="buttons">
             <VSCodeButton
               onClick={() =>
@@ -82,7 +82,7 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
           {sample.tags.map((value: string) => {
             return (
               <div className="tag" key={value}>
-                <span>{value}</span>
+                <span tabIndex={0}>{value}</span>
               </div>
             );
           })}
@@ -111,6 +111,7 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
         ) : (
           <div
             className="readme"
+            tabIndex={0}
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(this.state.readme) }}
           ></div>
         )}

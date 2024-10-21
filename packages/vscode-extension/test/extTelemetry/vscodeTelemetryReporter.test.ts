@@ -4,8 +4,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+// eslint-disable-next-line import/default
+import TelemetryReporter from "@vscode/extension-telemetry";
 import * as sinon from "sinon";
-import * as chai from "chai";
 import { VSCodeTelemetryReporter } from "../../src/telemetry/vscodeTelemetryReporter";
 import { MockTelemetryReporter } from "../mocks/mockTools";
 import { featureFlagManager } from "@microsoft/teamsfx-core";
@@ -16,20 +17,28 @@ describe("vscodeTelemetryReporter", () => {
   let tester: VSCodeTelemetryReporter;
   const sandbox = sinon.createSandbox();
   const reporterStub = new MockTelemetryReporter();
-  const sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
-  const sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
-  const sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");
+  let sendTelemetryEventSpy: sinon.SinonSpy;
+  let sendTelemetryExceptionSpy: sinon.SinonSpy;
+  let sendTelemetryErrorEventSpy: sinon.SinonSpy;
 
-  before(() => {
-    tester = new VSCodeTelemetryReporter("test", "1.0.0-rc.1", "test");
+  beforeEach(() => {
+    tester = new VSCodeTelemetryReporter(
+      "test",
+      "1.0.0-rc.1",
+      "test",
+      reporterStub as unknown as TelemetryReporter
+    );
     tester.addSharedProperty("project-id", "");
     tester.addSharedProperty("programming-language", "");
     tester.addSharedProperty("host-type", "");
     tester.addSharedProperty("is-from-sample", "");
-    chai.util.addProperty(tester, "reporter", () => reporterStub);
+
+    sendTelemetryEventSpy = sandbox.spy(reporterStub, "sendTelemetryEvent");
+    sendTelemetryExceptionSpy = sandbox.spy(reporterStub, "sendTelemetryException");
+    sendTelemetryErrorEventSpy = sandbox.spy(reporterStub, "sendTelemetryErrorEvent");
   });
 
-  after(() => {
+  afterEach(() => {
     tester.dispose();
     sandbox.restore();
   });
@@ -76,6 +85,35 @@ describe("vscodeTelemetryReporter", () => {
         "error-stack": "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)",
         "project-id": "",
         "correlation-id": "",
+        "feature-flags": featureFlags,
+        "programming-language": "",
+        "host-type": "",
+        "is-from-sample": "",
+      },
+      { numericMeasure: 123 }
+    );
+  });
+
+  it("sendTelemetryErrorEvent: not overwrite correlationId if existing", () => {
+    tester.sendTelemetryErrorEvent(
+      "sampleErrorEvent",
+      {
+        stringProp: "some string",
+        "error-stack": "some user stack trace at (C:/fake_path/fake_file:1:1)",
+        "correlation-id": "fakeId",
+      },
+      { numericMeasure: 123 },
+      ["error-stack"]
+    );
+
+    sinon.assert.calledOnceWithMatch(
+      sendTelemetryErrorEventSpy,
+      "sampleErrorEvent",
+      {
+        stringProp: "some string",
+        "error-stack": "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)",
+        "project-id": "",
+        "correlation-id": "fakeId",
         "feature-flags": featureFlags,
         "programming-language": "",
         "host-type": "",

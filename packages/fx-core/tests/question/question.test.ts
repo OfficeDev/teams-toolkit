@@ -37,7 +37,7 @@ import { CollaborationConstants, CollaborationUtil } from "../../src/core/collab
 import { setTools } from "../../src/common/globalVars";
 import { SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
-  PluginAvailabilityOptions,
+  ApiPluginStartOptions,
   QuestionNames,
   TeamsAppValidationOptions,
 } from "../../src/question/constants";
@@ -51,7 +51,6 @@ import {
   selectAadAppManifestQuestionNode,
   selectAadManifestQuestion,
   selectLocalTeamsAppManifestQuestion,
-  selectPluginAvailabilityQuestion,
   selectTeamsAppManifestQuestion,
 } from "../../src/question/other";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -1030,10 +1029,7 @@ describe("apiKeyQuestion", async () => {
     const question = apiSpecApiKeyQuestion();
     const validation = (question.data as TextInputQuestion).validation;
     const result = (validation as FuncValidation<string>).validFunc("abc");
-    assert.equal(
-      result,
-      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
-    );
+    assert.equal(result, "Invalid client secret. It should be 10 to 512 characters long.");
   });
 });
 
@@ -1167,10 +1163,7 @@ describe("oauthQuestion", async () => {
     const question = oauthQuestion().children![1];
     const validation = (question.data as TextInputQuestion).validation;
     const result = (validation as FuncValidation<string>).validFunc("abc");
-    assert.equal(
-      result,
-      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
-    );
+    assert.equal(result, "Invalid client secret. It should be 10 to 512 characters long.");
   });
 
   it("client id additionalValidationOnAccept passed", async () => {
@@ -1198,19 +1191,13 @@ describe("oauthQuestion", async () => {
 
 describe("addPluginQuestionNode", async () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   afterEach(() => {
     sandbox.restore();
     mockedEnvRestore();
   });
 
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CustomizeGpt]: "true",
-    });
-  });
-
-  it("success: can add a plugin or an action", async () => {
+  it("success: can add a plugin from api spec", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
       capabilities: ["copilotGpt"],
@@ -1236,16 +1223,16 @@ describe("addPluginQuestionNode", async () => {
     ) => {
       questionNames.push(question.name);
       await callFuncs(question, inputs);
-      if (QuestionNames.TeamsAppManifestFilePath) {
+      if (question.name === QuestionNames.TeamsAppManifestFilePath) {
         return ok({
           type: "success",
           result: "manifest.json",
         });
-      } else if (QuestionNames.PluginAvailability) {
+      } else if (question.name == QuestionNames.ApiPluginType) {
         const select = question as SingleSelectQuestion;
         const options = await select.dynamicOptions!(inputs);
-        assert.isTrue(options.length === 3);
-        return ok({ type: "success", result: PluginAvailabilityOptions.action().id });
+        //assert.isTrue(options.length === 2);
+        return ok({ type: "success", result: ApiPluginStartOptions.apiSpec().id });
       } else if (question.name === QuestionNames.ApiSpecLocation) {
         return ok({ type: "success", result: "test.yaml" });
       } else if (question.name === QuestionNames.ApiOperation) {
@@ -1257,20 +1244,17 @@ describe("addPluginQuestionNode", async () => {
 
     await traverse(node, inputs, ui, undefined, visitor);
     assert.deepEqual(questionNames, [
-      QuestionNames.TeamsAppManifestFilePath,
-      QuestionNames.PluginAvailability,
+      QuestionNames.ApiPluginType,
       QuestionNames.ApiSpecLocation,
       QuestionNames.ApiOperation,
+      QuestionNames.TeamsAppManifestFilePath,
     ]);
   });
 
-  it("success: can add an action only", async () => {
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.CustomizeGpt]: "true",
-    });
+  it("success: can add a plugin from existing plugin", async () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
     sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
-      capabilities: ["copilotGpt", "plugin"],
+      capabilities: ["copilotGpt"],
       isApiME: false,
       isSPFx: false,
       id: "1",
@@ -1293,24 +1277,20 @@ describe("addPluginQuestionNode", async () => {
     ) => {
       questionNames.push(question.name);
       await callFuncs(question, inputs);
-      if (QuestionNames.TeamsAppManifestFilePath) {
+      if (question.name == QuestionNames.TeamsAppManifestFilePath) {
         return ok({
           type: "success",
           result: "manifest.json",
         });
-      } else if (QuestionNames.PluginAvailability) {
+      } else if (question.name == QuestionNames.ApiPluginType) {
         const select = question as SingleSelectQuestion;
         const options = await select.dynamicOptions!(inputs);
-        assert.isTrue(options.length === 1);
-        assert.isTrue((options[0] as OptionItem).id === PluginAvailabilityOptions.action().id);
-        return ok({ type: "success", result: PluginAvailabilityOptions.action().id });
-      } else if (question.name === QuestionNames.ApiSpecLocation) {
+        assert.isTrue(options.length === 2);
+        return ok({ type: "success", result: ApiPluginStartOptions.existingPlugin().id });
+      } else if (question.name === QuestionNames.PluginManifestFilePath) {
         return ok({ type: "success", result: "test.yaml" });
-      } else if (question.name === QuestionNames.ApiOperation) {
-        const select = question as MultiSelectQuestion;
-        const cliDescription = select.cliDescription;
-        assert.isTrue(cliDescription?.includes("Copilot"));
-        return ok({ type: "success", result: "[GET /repairs]" });
+      } else if (question.name === QuestionNames.PluginOpenApiSpecFilePath) {
+        return ok({ type: "success", result: "test.json" });
       }
       return ok({ type: "success", result: undefined });
     };
@@ -1318,62 +1298,10 @@ describe("addPluginQuestionNode", async () => {
 
     await traverse(node, inputs, ui, undefined, visitor);
     assert.deepEqual(questionNames, [
+      QuestionNames.ApiPluginType,
+      QuestionNames.PluginManifestFilePath,
+      QuestionNames.PluginOpenApiSpecFilePath,
       QuestionNames.TeamsAppManifestFilePath,
-      QuestionNames.PluginAvailability,
-      QuestionNames.ApiSpecLocation,
-      QuestionNames.ApiOperation,
     ]);
-  });
-
-  describe("selectPluginAvailabilityQuestion", async () => {
-    it("error: cannot add as the project is not declarative Copilot", async () => {
-      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as TeamsAppManifest));
-      sandbox.stub(ManifestUtil, "parseCommonProperties").returns({
-        capabilities: [],
-        isApiME: false,
-        isSPFx: false,
-        id: "1",
-        version: "1",
-        manifestVersion: "",
-        isApiMeAAD: false,
-      });
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: "./test",
-      };
-
-      const question = selectPluginAvailabilityQuestion();
-      let error;
-      try {
-        await question.dynamicOptions!(inputs);
-      } catch (e) {
-        error = e;
-      }
-
-      console.log(error);
-      assert.isTrue(error !== undefined);
-    });
-
-    it("error: readManifestError", async () => {
-      sandbox
-        .stub(manifestUtils, "_readAppManifest")
-        .resolves(err(new UserError("error", "error", "error", "error")));
-
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-        projectPath: "./test",
-      };
-
-      const question = selectPluginAvailabilityQuestion();
-      let error;
-      try {
-        await question.dynamicOptions!(inputs);
-      } catch (e) {
-        error = e;
-      }
-
-      console.log(error);
-      assert.isTrue(error !== undefined);
-    });
   });
 });

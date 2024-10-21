@@ -14,7 +14,12 @@ It showcases how to build an AI agent in Teams capable of helping users accompli
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 {{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
+{{#useAzureOpenAI}}
+> - An account with [Azure OpenAI](https://aka.ms/oai/access).
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
 > - An account with [OpenAI](https://platform.openai.com/).
+{{/useOpenAI}}
 >
 > **Note**
 >
@@ -22,18 +27,26 @@ It showcases how to build an AI agent in Teams capable of helping users accompli
 
 ### Create your own OpenAI Assistant
 
+{{#useOpenAI}}
 Before running or debugging your bot, please follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+Before running or debugging your bot, please follow these steps to setup your own [Azure OpenAI Assistant](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/assistant).
+{{/useAzureOpenAI}}
 
 **If you haven't setup any Assistant yet**
 
 > This app template provides script `src/creator.js` to help create assistant. You can change the instructions and settings in the script to customize the assistant.
 > 
+{{#useOpenAI}}
 > After creation, you can change and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
+{{/useOpenAI}}
 
 1. Open terminal and run command `npm install` to install all dependency packages
    ```
    > npm install
    ```
+{{#useOpenAI}}
 1. After `npm install` completed, run command `npm run assistant:create -- <your-openai-api-key>`
    ```
    > npm run assistant:create -- xxxxxx
@@ -52,6 +65,34 @@ Before running or debugging your bot, please follow these steps to setup your ow
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
    OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+1. After `npm install` completed, fill in both Azure OpenAI API Endpoint and Azure OpenAI API Deployment name into `src/creator.js`
+   ```
+   const azureOpenAIEndpoint="<your-azure-openai-endpoint>";
+   const azureOpenAIDeploymentName="<your-azure-openai-delopyment-name>";
+   ```
+1. Run command `npm run assistant:create -- <your-azure-openai-api-key>`
+   ```
+   > npm run assistant:create -- xxxxxx
+   ```
+1. The above command will output something like "*Created a new assistant with an ID of: **asst_xxx...***"
+1. Fill in Azure OpenAI API Key, endpoint, and the created Assistant ID into `env/.env.*.user`
+   ```
+   SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
+   AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
+   AZURE_OPENAI_ASSISTANT_ID=<your-azure-openai-assistant-id>
+   ```
+
+**If you already have an Assistant created**
+
+1. Fill in Azure OpenAI API Key, endpoint, and the created Assistant ID into `env/.env.*.user`
+   ```
+   SECRET_AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
+   AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
+   AZURE_OPENAI_ASSISTANT_ID=<your-azure-openai-assistant-id>
+   ```
+{{/useAzureOpenAI}}
 
 ### Run Teams Bot locally
 

@@ -335,7 +335,7 @@ describe("Wrapped Axios Client Test", () => {
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
 
     apiName = WrappedAxiosClient.convertUrlToApiName(
-      getAppStudioEndpoint() + `/api/publishing/${fakeId}`,
+      getAppStudioEndpoint() + `/api/publishing`,
       "POST"
     );
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.PUBLISH_APP);
@@ -347,6 +347,12 @@ describe("Wrapped Axios Client Test", () => {
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
 
     apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/usersettings/mtUserAppPolicy`,
+      "GET"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.CHECK_SIDELOADING_STATUS);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
       getAppStudioEndpoint() + `/api/v1.0/apiSecretRegistrations/${fakeId}`,
       "GET"
     );
@@ -354,6 +360,12 @@ describe("Wrapped Axios Client Test", () => {
 
     apiName = WrappedAxiosClient.convertUrlToApiName(
       getAppStudioEndpoint() + `/api/v1.0/apiSecretRegistrations/${fakeId}`,
+      "PATCH"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/apiSecretRegistrations`,
       "POST"
     );
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.CREATE_API_KEY);
@@ -387,6 +399,52 @@ describe("Wrapped Axios Client Test", () => {
       "POST"
     );
     chai.assert.equal(apiName, APP_STUDIO_API_NAMES.CREATE_BOT);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/appvalidations/appdefinition/validate`,
+      "POST"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.SUBMIT_APP_VALIDATION);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() +
+        `/api/v1.0/appvalidations/appdefinitions/efe81961-44bc-49ae-99f8-1476caef994c`,
+      "GET"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/appvalidations/2512d616-8aac-461f-8af0-23e9b09ec650`,
+      "GET"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/oAuthConfigurations`,
+      "POST"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.CREATE_OAUTH);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/oAuthConfigurations/${fakeId}`,
+      "GET"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.GET_OAUTH);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/oAuthConfigurations/${fakeId}`,
+      "PATCH"
+    );
+    chai.assert.equal(apiName, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(
+      getAppStudioEndpoint() + `/api/v1.0/oAuthConfigurations/${fakeId}`,
+      ""
+    );
+    chai.assert.notEqual(apiName, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
+
+    apiName = WrappedAxiosClient.convertUrlToApiName(getAppStudioEndpoint() + `unknown`, "GET");
+    chai.assert.equal(apiName, (getAppStudioEndpoint() + `unknown`).replace(/\//g, `-`));
 
     apiName = WrappedAxiosClient.convertUrlToApiName(
       "https://authsvc.teams.microsoft.com/v1.0/users/region",

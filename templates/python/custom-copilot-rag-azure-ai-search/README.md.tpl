@@ -36,15 +36,26 @@ This app template also demonstrates usage of techniques like:
 1. In file *env/.env.local.user*, fill in your Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT`.
 
 ### Setting up index and documents
-1. Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT` are loaded from *env/.env.local.user*. Please make sure you have already configured them.
-1. Use command `python src/indexers/setup.py` to create index and upload documents in `src/indexers/data`.
+1. Azure Search endpoint `AZURE_SEARCH_ENDPOINT` is loaded from *env/.env.local.user*. Please make sure you have already configured it.
+{{#useAzureOpenAI}}
+1. Use the following command with your api key to create index and upload documents in `src/indexers/data`.
+    ```
+    python src/indexers/setup.py --api-key <your-azure-openai-api-key> --ai-search-key <your-azure-ai-search-key>
+    ```
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+1. Use the following command with your api key to create index and upload documents in `src/indexers/data`.
+    ```
+    python src/indexers/setup.py --api-key <your-openai-api-key> --ai-search-key <your-azure-ai-search-key>
+    ```
+{{/useOpenAI}}
 1. You will see the following information indicated the success of setup:
     ```
     Create index succeeded. If it does not exist, wait for 5 seconds...
     Upload new documents succeeded. If they do not exist, wait for several seconds...
     setup finished
     ```
-1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python src/indexers/delete.py`.
+1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python src/indexers/delete.py --ai-search-key <your-azure-ai-search-key>`.
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -95,6 +106,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | - | - |
 |`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+|`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
 ## Extend the template
 
@@ -110,4 +122,6 @@ You can refer to the section [integrate-vectorization](https://github.com/Office
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
 ## Known issue
+- If you use `Debug in Test Tool` to local debug, you might get an error `InternalServiceError: connect ECONNREFUSED 127.0.0.1:3978` in Test Tool console log or error message `Error: Cannot connect to your app,
+please make sure your app is running or restart your app` in log panel of Test Tool web page. You can wait for Python launch console ready and then refresh the front end web page.
 - When you use `Launch Remote in Teams` to remote debug after deployment, you might loose interaction with your bot. This is because the remote service needs to restart. Please wait for several minutes to retry it.

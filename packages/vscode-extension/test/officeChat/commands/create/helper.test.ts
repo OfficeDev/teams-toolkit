@@ -1,10 +1,10 @@
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import * as tmp from "tmp";
-import * as fs from "fs-extra";
-import * as path from "path";
+import tmp from "tmp";
+import fs from "fs-extra";
+import path from "path";
 import * as util from "../../../../src/chat/utils";
 import * as officeChatUtils from "../../../../src/officeChat/utils";
 import * as officeChathelper from "../../../../src/officeChat/commands/create/helper";
@@ -58,7 +58,7 @@ describe("File: office chat create helper", () => {
     });
 
     it("has matched office sample project", async () => {
-      sandbox.stub(util, "getCopilotResponseAsString").resolves('{ "addin": "test" }');
+      sandbox.stub(util, "getCopilotResponseAsString").resolves('{ "id": "test", "score": 1.0 }');
       const token = new CancellationToken();
       const result = await officeChathelper.matchOfficeProject(
         { prompt: "test" } as vscode.ChatRequest,

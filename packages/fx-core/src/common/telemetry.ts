@@ -29,6 +29,7 @@ export enum TelemetryProperty {
   ErrorName = "error-name",
   ErrorSource = "error-source",
   ErrorStack = "err-stack",
+  ErrorData = "err-data",
   ErrorStage = "error-stage",
   SampleAppName = "sample-app-name",
   ProjectId = "project-id",
@@ -86,6 +87,7 @@ export enum TelemetryProperty {
 
   TDPTraceId = "tdp-trace-id",
   MOSTraceId = "mos-trace-id",
+  MOSPATH = "mos-api-path",
 }
 
 export const TelemetryConstants = {
@@ -160,6 +162,7 @@ export enum TelemetryEvent {
   DependencyApi = "dependency-api",
   AppStudioApi = "app-studio-api",
   MOSApi = "ttk-mos-api",
+  ViewPluginManifestAfterAdded = "view-plugin-manifest-after-added",
 }
 
 export enum ProjectTypeProps {
@@ -228,6 +231,15 @@ export enum ProjectMigratorGuideStatus {
   Cancel = "cancel",
 }
 
+export enum ApiSpecTelemetryPropertis {
+  SpecNotValidDetails = "spec-not-valid-details",
+  InvalidApiSpec = "invalid-api-spec",
+}
+
+export function getQuestionValidationErrorEventName(questionName: string) {
+  return `invalid-${questionName}`;
+}
+
 export function sendTelemetryEvent(
   component: string,
   eventName: string,
@@ -275,7 +287,9 @@ class TelemetryUtils {
       : maskSecret(error.message);
     props[TelemetryProperty.ErrorStack] = this.extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
     props[TelemetryProperty.ErrorName] = error.name;
-
+    if (error.name === "ScriptExecutionError") {
+      props[TelemetryProperty.ErrorData] = maskSecret(error.userData as string); // collect error details for script execution error
+    }
     // append global context properties
     props[TelemetryProperty.ErrorComponent] = globalVars.component;
     props[TelemetryProperty.ErrorStage] = globalVars.stage;
@@ -290,6 +304,10 @@ class TelemetryUtils {
       props[TelemetryProperty.ErrorCat1] = error.categories[0];
       props[TelemetryProperty.ErrorCat2] = error.categories[1];
       props[TelemetryProperty.ErrorCat3] = error.categories[2];
+    }
+
+    if (error.telemetryProperties) {
+      assign(props, error.telemetryProperties);
     }
   }
 

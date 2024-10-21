@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import * as vscode from "vscode";
 
 import {
@@ -266,6 +266,7 @@ export class WebviewPanel {
     if (this.panel && this.panel.webview) {
       let readme = this.replaceRelativeImagePaths(htmlContent, sample);
       readme = this.replaceMermaidRelatedContent(readme);
+      readme = this.addTabIndex(readme);
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleReadme,
         readme: readme,
@@ -283,9 +284,9 @@ export class WebviewPanel {
 
   private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
     const urlInfo = sample.downloadUrlInfo;
-    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/${sample.thumbnailPath}?raw=1`;
+    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/`;
     const imageRegex = /img\s+src="(?!https:\/\/camo\.githubusercontent\.com\/.)([^"]+)"/gm;
-    return htmlContent.replace(imageRegex, `img src="${imageUrl}"`);
+    return htmlContent.replace(imageRegex, `img src="${imageUrl}$1?raw=1"`);
   }
 
   private replaceMermaidRelatedContent(htmlContent: string): string {
@@ -293,6 +294,11 @@ export class WebviewPanel {
     const loaderRegex = /<span(.*)>\s.*\s*<circle(.*)<\/circle>\s.*<\/path>\s.*\s*<\/span>/gm;
     const loaderRemovedHtmlContent = htmlContent.replace(loaderRegex, "");
     return loaderRemovedHtmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
+  }
+
+  private addTabIndex(htmlContent: string): string {
+    const tabIndexRegex = /<(p|h1|h2|h3|li)/gm;
+    return htmlContent.replace(tabIndexRegex, `<$1 tabIndex="0"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {
@@ -323,6 +329,9 @@ export class WebviewPanel {
     const codiconsUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
     );
+    const stylesheetUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "client.css")
+    );
     const dompurifyUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "purify.min.js")
     );
@@ -330,7 +339,7 @@ export class WebviewPanel {
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
     );
 
-    const allowChat = featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
+    const allowChat = featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries);
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -341,6 +350,7 @@ export class WebviewPanel {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
             <base href='${scriptBaseUri.toString()}' />
+            <link href="${stylesheetUri.toString()}" rel="stylesheet" />
             <link href="${codiconsUri.toString()}" rel="stylesheet" />
           </head>
           <body>

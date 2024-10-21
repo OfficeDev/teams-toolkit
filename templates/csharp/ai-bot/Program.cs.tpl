@@ -93,6 +93,18 @@ builder.Services.AddTransient<IBot>(sp =>
         .WithStorage(sp.GetService<IStorage>())
         .Build();
 
+    app.OnConversationUpdate("membersAdded", async (turnContext, turnState, cancellationToken) =>
+    {
+        var welcomeText = "How can I help you today?";
+        foreach (var member in turnContext.Activity.MembersAdded)
+        {
+            if (member.Id != turnContext.Activity.Recipient.Id)
+            {
+                await turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
+            }
+        }
+    });
+
     return app;
 });
 

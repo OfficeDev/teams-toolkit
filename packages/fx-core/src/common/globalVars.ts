@@ -84,3 +84,5 @@ export function createContext(): Context {
   };
   return context;
 }
+
+export const AadSet: Set<string> = new Set<string>();

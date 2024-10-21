@@ -75,10 +75,7 @@ export default async function officeNextStepCommandHandler(
     if (s.description instanceof Function) {
       s.description = s.description(status);
     }
-    const stepDescription = await describeOfficeStep(s, token, officeChatTelemetryData);
-    officeChatTelemetryData.responseChatMessages.push(
-      new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, stepDescription)
-    );
+    const stepDescription = s.description;
     const title = s.docLink ? `[${s.title}](${s.docLink})` : s.title;
     if (steps.length > 1) {
       response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);
@@ -112,23 +109,4 @@ export default async function officeNextStepCommandHandler(
       requestId: officeChatTelemetryData.requestId,
     },
   };
-}
-
-export async function describeOfficeStep(
-  step: NextStep,
-  token: CancellationToken,
-  telemetryMetadata: IChatTelemetryData
-): Promise<string> {
-  const messages = [
-    describeOfficeStepSystemPrompt(),
-    new LanguageModelChatMessage(
-      LanguageModelChatMessageRole.User,
-      `The content is '${JSON.stringify({
-        description: step.description as string,
-      })}'.`
-    ),
-  ];
-
-  telemetryMetadata.chatMessages.push(...messages);
-  return await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
 }

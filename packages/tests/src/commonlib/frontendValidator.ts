@@ -6,8 +6,8 @@ import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
-import path from "path";
-import { EnvConstants } from "../commonlib/constants";
+import * as path from "path";
+import { EnvConstants } from "./constants";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,

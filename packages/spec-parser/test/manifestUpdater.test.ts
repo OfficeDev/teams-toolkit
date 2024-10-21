@@ -12,8 +12,11 @@ import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningType } from "../
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
 import { PluginManifestSchema } from "@microsoft/teams-manifest";
-
+import { ManifestUtil } from "@microsoft/teams-manifest";
 describe("updateManifestWithAiPlugin", () => {
+  beforeEach(() => {
+    sinon.stub(ManifestUtil, "useCopilotExtensionsInSchema").resolves(false);
+  });
   afterEach(() => {
     sinon.restore();
   });
@@ -62,7 +65,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -122,7 +125,174 @@ describe("updateManifestWithAiPlugin", () => {
       expect(warnings).to.deep.equal([]);
     });
 
-    it("should generate response semantics based on the response", async () => {
+    it("should generate response semantics based on the response - 1", async () => {
+      const spec: any = {
+        openapi: "3.0.2",
+        info: {
+          title: "My API",
+          description: "My API description",
+        },
+        servers: [
+          {
+            url: "/v3",
+          },
+        ],
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "getPets",
+              summary: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              parameters: [
+                {
+                  name: "limit",
+                  description: "Maximum number of pets to return",
+                  required: true,
+                  schema: {
+                    type: "integer",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                          description: {
+                            type: "string",
+                          },
+                          imageUrl: {
+                            type: "string",
+                          },
+                          id: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const manifestPath = "/path/to/your/manifest.json";
+      const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+      const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+      const originalManifest = {
+        name: { short: "Original Name", full: "Original Full Name" },
+        description: { short: "Original Short Description", full: "Original Full Description" },
+      };
+      const expectedManifest = {
+        name: { short: "Original Name", full: "Original Full Name" },
+        description: { short: "My API", full: "My API description" },
+        copilotAgents: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
+      };
+
+      const expectedPlugins: PluginManifestSchema = {
+        $schema: ConstantString.PluginManifestSchema,
+        schema_version: "v2.1",
+        name_for_human: "Original Name",
+        namespace: "originalname",
+        description_for_human: "My API description",
+        functions: [
+          {
+            name: "getPets",
+            description: "Returns all pets from the system that the user has access to",
+            capabilities: {
+              response_semantics: {
+                data_path: "$",
+                properties: {
+                  subtitle: "$.description",
+                  title: "$.name",
+                  url: "$.imageUrl",
+                },
+                static_template: {
+                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  body: [
+                    {
+                      text: "name: ${if(name, name, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                    {
+                      text: "description: ${if(description, description, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                    {
+                      $when: "${imageUrl != null && imageUrl != ''}",
+                      type: "Image",
+                      url: "${imageUrl}",
+                    },
+                    {
+                      text: "id: ${if(id, id, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                  ],
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                },
+              },
+            },
+          },
+        ],
+        runtimes: [
+          {
+            type: "OpenApi",
+            auth: {
+              type: "None",
+            },
+            spec: {
+              url: "spec/outputSpec.yaml",
+            },
+            run_for_functions: ["getPets"],
+          },
+        ],
+      };
+      sinon.stub(fs, "readJSON").resolves(originalManifest);
+      sinon
+        .stub(fs, "pathExists")
+        .withArgs(manifestPath)
+        .resolves(true)
+        .withArgs(pluginFilePath)
+        .resolves(false);
+
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+        allowResponseSemantics: true,
+      };
+      const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec,
+        options
+      );
+
+      expect(manifest).to.deep.equal(expectedManifest);
+      expect(apiPlugin).to.deep.equal(expectedPlugins);
+      expect(warnings).to.deep.equal([]);
+    });
+
+    it("should generate response semantics based on the response - 2", async () => {
+      sinon.restore();
+      sinon.stub(ManifestUtil, "useCopilotExtensionsInSchema").resolves(true);
       const spec: any = {
         openapi: "3.0.2",
         info: {
@@ -348,7 +518,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -489,7 +659,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -679,7 +849,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -929,7 +1099,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1102,7 +1272,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1251,7 +1421,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1390,7 +1560,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1534,7 +1704,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -1666,7 +1836,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1827,7 +1997,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1983,7 +2153,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2044,6 +2214,141 @@ describe("updateManifestWithAiPlugin", () => {
     expect(manifest).to.deep.equal(expectedManifest);
     expect(apiPlugin).to.deep.equal(expectedPlugins);
     expect(warnings).to.deep.equal([]);
+  });
+
+  it("should update ai-plugin function correctly if description is undefined or description length > 100", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description:
+              "Create a new pet in the store with a long description that is over 100 characters, which should be truncated",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      copilotAgents: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Get all pets",
+        },
+        {
+          name: "createPet",
+          description:
+            "Create a new pet in the store with a long description that is over 100 characters, which should be t",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([
+      {
+        content:
+          "The description of the function 'createPet' is too long. The current length is 108 characters, while the maximum allowed length is 100 characters.",
+        data: "createPet",
+        type: "function-description-too-long",
+      },
+    ]);
   });
 
   it("should use safe function name if operation id contains special characters", async () => {
@@ -2110,7 +2415,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2233,7 +2538,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -2312,7 +2617,6 @@ describe("updateManifestWithAiPlugin", () => {
           "/pets": {
             get: {
               operationId: "getPets",
-              summary: "Get all pets",
               parameters: [
                 {
                   name: "limit",
@@ -2418,7 +2722,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -2436,9 +2740,6 @@ describe("updateManifestWithAiPlugin", () => {
         description_for_human: "<Please add description of the plugin>",
         capabilities: {
           conversation_starters: [
-            {
-              text: "Get all pets",
-            },
             {
               text: "Create a pet using pet name",
             },
@@ -2573,7 +2874,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -2602,7 +2903,7 @@ describe("updateManifestWithAiPlugin", () => {
             description: "Returns all pets from the system that the user has access to",
           },
           {
-            description: "",
+            description: "Create a pet",
             name: "createPet",
           },
         ],
@@ -2729,7 +3030,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2904,7 +3205,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3040,7 +3341,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3206,7 +3507,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3338,7 +3639,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3426,7 +3727,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3630,6 +3931,507 @@ describe("updateManifestWithAiPlugin", () => {
           })
       );
     }
+  });
+
+  it("should update existing manifest", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+    const existingPluginManifestPath = "/path/to/your/pluginManifest.json";
+    const specPath = "/path/to/your/spec.yaml";
+    const relativePath = ManifestUpdater.getRelativePath(existingPluginManifestPath, specPath);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      copilotAgents: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
+    };
+    const originalPluginManifest = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: relativePath,
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").callsFake(async (path) => {
+      if (path === manifestPath) {
+        return Promise.resolve(originalManifest);
+      } else if (path === existingPluginManifestPath) {
+        return Promise.resolve(originalPluginManifest);
+      } else {
+        return Promise.resolve({});
+      }
+    });
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false)
+      .withArgs(existingPluginManifestPath)
+      .resolves(true);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options,
+      undefined,
+      {
+        manifestPath: existingPluginManifestPath,
+        specPath: specPath,
+      }
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should update existing manifest and use old copilotExtensions property if it exist", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+    const existingPluginManifestPath = "/path/to/your/pluginManifest.json";
+    const specPath = "/path/to/your/spec.yaml";
+    const relativePath = ManifestUpdater.getRelativePath(existingPluginManifestPath, specPath);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      copilotExtensions: {
+        plugins: [{ file: "ai-plugin-old.json", id: "plugin_1" }],
+      },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
+    };
+    const originalPluginManifest = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: relativePath,
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").callsFake(async (path) => {
+      if (path === manifestPath) {
+        return Promise.resolve(originalManifest);
+      } else if (path === existingPluginManifestPath) {
+        return Promise.resolve(originalPluginManifest);
+      } else {
+        return Promise.resolve({});
+      }
+    });
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false)
+      .withArgs(existingPluginManifestPath)
+      .resolves(true);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options,
+      undefined,
+      {
+        manifestPath: existingPluginManifestPath,
+        specPath: specPath,
+      }
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should not change manifest if it is declarative copilot", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+    const existingPluginManifestPath = "/path/to/your/pluginManifest.json";
+    const specPath = "/path/to/your/spec.yaml";
+    const relativePath = ManifestUpdater.getRelativePath(existingPluginManifestPath, specPath);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      copilotExtensions: {
+        declarativeCopilots: [
+          {
+            id: "repairDeclarativeCopilot",
+            file: "repairDeclarativeCopilot.json",
+          },
+        ],
+      },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      copilotExtensions: {
+        declarativeCopilots: [
+          {
+            id: "repairDeclarativeCopilot",
+            file: "repairDeclarativeCopilot.json",
+          },
+        ],
+      },
+    };
+    const originalPluginManifest = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: relativePath,
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").callsFake(async (path) => {
+      if (path === manifestPath) {
+        return Promise.resolve(originalManifest);
+      } else if (path === existingPluginManifestPath) {
+        return Promise.resolve(originalPluginManifest);
+      } else {
+        return Promise.resolve({});
+      }
+    });
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false)
+      .withArgs(existingPluginManifestPath)
+      .resolves(true);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+      isGptPlugin: true,
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options,
+      undefined,
+      {
+        manifestPath: existingPluginManifestPath,
+        specPath: specPath,
+      }
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
   });
 });
 
@@ -4925,12 +5727,14 @@ describe("generateCommands", () => {
               content: {
                 "application/json": {
                   schema: {
-                    type: "object",
                     required: ["name"],
                     properties: {
                       name: {
                         type: "string",
                         description: "Name of the pet",
+                      },
+                      unknown: {
+                        type: "unknown",
                       },
                     },
                   },

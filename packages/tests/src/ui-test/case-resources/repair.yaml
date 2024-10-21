@@ -1,0 +1,137 @@
+openapi: 3.0.0
+info:
+  title: Repair Service
+  description: A simple service to manage repairs
+  version: 1.0.0
+servers:
+  - url: https://customcopilotapikey.azurewebsites.net
+    description: The repair api server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+paths:
+  /assignRepair:
+    post:
+      operationId: assignRepair
+      summary: >-
+        Assign repair to technician for the customer based on car type and
+        repair type
+      description: >-
+        Assign repair to technician for the customer based on car type and
+        repair type
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: carType
+          in: query
+          description: Car type to repair
+          schema:
+            type: string
+          required: true
+        - name: repairType
+          in: query
+          description: Repair type for the car
+          schema:
+            type: string
+          required: true
+        - name: customerName
+          in: query
+          description: Customer name
+          schema:
+            type: string
+          required: true
+        - name: customerPhoneNumber
+          in: query
+          description: Customer phone number
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: The response that represents an appointment for the repair
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Id of the repair
+                  title:
+                    type: string
+                    description: The short summary of the repair
+                  assignedTo:
+                    type: string
+                    description: The engineer who is responsible for the repair
+                  customerPhoneNumber:
+                    type: string
+                    description: The phone number of the customer
+                  date:
+                    type: string
+                    format: date-time
+                    description: >-
+                      The date and time when the repair is scheduled or
+                      completed
+                  image:
+                    type: string
+                    format: uri
+                    description: >-
+                      The URL of the image of the item to be repaired or the
+                      repair process
+                  apiKey:
+                    type: string
+                    description: The api key from bearer token
+  /findRepair:
+    get:
+      operationId: findRepair
+      summary: Find repair by customer name
+      description: Find repair by customer name
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerName
+          in: query
+          description: Customer name
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: The response that represent an appointment for the repair
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Id of the repair
+                  title:
+                    type: string
+                    description: The short summary of the repair
+                  assignedTo:
+                    type: string
+                    description: The engineer who is responsible for the repair
+                  customerPhoneNumber:
+                    type: string
+                    description: The phone number of the customer
+                  customerName:
+                    type: string
+                    description: The customer name
+                  date:
+                    type: string
+                    format: date-time
+                    description: >-
+                      The date and time when the repair is scheduled or
+                      completed
+                  image:
+                    type: string
+                    format: uri
+                    description: >-
+                      The URL of the image of the item to be repaired or the
+                      repair process
+                  apiKey:
+                    type: string
+                    description: The api key from bearer token

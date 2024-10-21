@@ -28,6 +28,20 @@ import {
 import { DefaultLocalizer, Localizer } from "./localize";
 import { getValidationFunction, validate, validationUtils } from "./validationUtils";
 
+async function isAutoSkipSelect(q: Question, inputs: Inputs): Promise<boolean> {
+  let skipSingle = false;
+  if (q.type === "singleSelect" || q.type === "multiSelect") {
+    if (q.skipSingleOption !== undefined) {
+      if (typeof q.skipSingleOption === "function") {
+        skipSingle = await q.skipSingleOption(inputs);
+      } else {
+        skipSingle = q.skipSingleOption;
+      }
+    }
+  }
+  return skipSingle;
+}
+
 export class QuestionModelEngine {
   localizer: Localizer;
   constructor(localizer?: Localizer) {
@@ -56,11 +70,13 @@ export class QuestionModelEngine {
       return ok({ type: "skip", result: inputs[question.name] });
     }
 
+    const skipSingle = await isAutoSkipSelect(question, inputs);
+
     // non-interactive mode
     if (inputs.nonInteractive) {
       // first priority: use single option as value
       if (question.type === "singleSelect" || question.type === "multiSelect") {
-        if (question.skipSingleOption) {
+        if (skipSingle) {
           const options = await loadOptions(question, inputs);
           if (options.length === 0) {
             return err(new EmptyOptionsError(question.name, "questionVisitor"));
@@ -167,7 +183,7 @@ export class QuestionModelEngine {
             )
           );
         }
-        if (question.skipSingleOption && question.staticOptions.length === 1) {
+        if (skipSingle && question.staticOptions.length === 1) {
           const returnResult = getSingleOption(question, question.staticOptions);
           return ok({ type: "skip", result: returnResult });
         }
@@ -189,7 +205,7 @@ export class QuestionModelEngine {
           totalSteps: totalSteps,
           buttons: question.buttons,
           validation: validationFunc,
-          skipSingleOption: question.skipSingleOption,
+          skipSingleOption: skipSingle,
         });
       } else {
         const validationFunc = question.validation
@@ -207,7 +223,7 @@ export class QuestionModelEngine {
           step: step,
           totalSteps: totalSteps,
           validation: validationFunc,
-          skipSingleOption: question.skipSingleOption,
+          skipSingleOption: skipSingle,
         });
       }
     } else if (question.type === "multiFile") {
@@ -228,6 +244,16 @@ export class QuestionModelEngine {
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
+      let defaultFolder;
+      if (question.defaultFolder) {
+        if (typeof question.defaultFolder === "function") {
+          defaultFolder = async () => {
+            return await (question as any).defaultFolder(inputs);
+          };
+        } else {
+          defaultFolder = question.defaultFolder;
+        }
+      }
       return await ui.selectFile({
         name: question.name,
         title: title,
@@ -238,6 +264,7 @@ export class QuestionModelEngine {
         totalSteps: totalSteps,
         validation: validationFunc,
         filters: question.filters,
+        defaultFolder,
       });
     } else if (question.type === "folder") {
       const validationFunc = question.validation

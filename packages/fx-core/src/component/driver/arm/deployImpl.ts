@@ -83,7 +83,9 @@ export class ArmDeployImpl {
     if (!azureToken) {
       throw new InvalidAzureCredentialError();
     }
-    this.client = new ResourceManagementClient(azureToken, this.args.subscriptionId);
+    this.client = new ResourceManagementClient(azureToken, this.args.subscriptionId, {
+      userAgentOptions: { userAgentPrefix: "TeamsToolkit" },
+    });
   }
 
   async deployTemplates(): Promise<Result<deploymentOutput[], FxError>> {

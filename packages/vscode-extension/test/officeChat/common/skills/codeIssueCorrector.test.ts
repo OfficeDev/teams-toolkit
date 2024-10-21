@@ -145,12 +145,12 @@ describe("CodeIssueCorrector", () => {
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
     const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: "some sample message",
       name: undefined,
     };
     const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: sampleCodeLong,
       name: undefined,
     };
@@ -193,12 +193,12 @@ describe("CodeIssueCorrector", () => {
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
     const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: "some sample message",
       name: undefined,
     };
     const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: sampleCodeLong,
       name: undefined,
     };
@@ -251,12 +251,12 @@ describe("CodeIssueCorrector", () => {
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
     const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: "some sample message",
       name: undefined,
     };
     const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: sampleCodeLong,
       name: undefined,
     };
@@ -309,12 +309,12 @@ describe("CodeIssueCorrector", () => {
     `.repeat(20);
     const corrector = new CodeIssueCorrector();
     const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: "some sample message",
       name: undefined,
     };
     const fakeSampleCodeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: sampleCodeLong,
       name: undefined,
     };
@@ -360,7 +360,7 @@ describe("CodeIssueCorrector", () => {
   it("fixIssueAsync error with code length reduced too much", async () => {
     const corrector = new CodeIssueCorrector();
     const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: "some sample message",
       name: undefined,
     };
@@ -402,7 +402,7 @@ describe("CodeIssueCorrector", () => {
   it("fixIssueAsync return newCodeStr", async () => {
     const corrector = new CodeIssueCorrector();
     const fakeLanguageModelChatSystemMessage: LanguageModelChatMessage = {
-      role: LanguageModelChatMessageRole.System,
+      role: LanguageModelChatMessageRole.User,
       content: "some sample message",
       name: undefined,
     };

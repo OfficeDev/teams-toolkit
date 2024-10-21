@@ -10,12 +10,13 @@ import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import {
   initTeamsPage,
   reopenTeamsPage,
+  validateMeeting,
 } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 
-class MyFirstMettingTestCase extends CaseFactory {
+class MyFirstMeetingTestCase extends CaseFactory {
   public override async onInitPage(
     sampledebugContext: SampledebugContext,
     teamsAppId: string,
@@ -59,10 +60,18 @@ class MyFirstMettingTestCase extends CaseFactory {
       }
     );
   }
+
+  override async onCliValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.username);
+  }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateMeeting(page, Env.username);
+  }
 }
 
-new MyFirstMettingTestCase(
-  TemplateProject.MyFirstMetting,
+new MyFirstMeetingTestCase(
+  TemplateProject.MyFirstMeeting,
   9958524,
   "v-ivanchen@microsoft.com",
   "local",
@@ -70,7 +79,6 @@ new MyFirstMettingTestCase(
   {
     teamsAppName: "fxuiMyFirslocal",
     type: "meeting",
-    skipValidation: true,
     debug: "cli",
   }
 ).test();

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as sinon from "sinon";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as chai from "chai";
 import * as globalVariables from "../../src/globalVariables";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";

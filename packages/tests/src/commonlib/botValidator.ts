@@ -8,18 +8,20 @@ import * as fs from "fs";
 import * as path from "path";
 
 import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
-import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
 import { EnvConstants, PluginId, StateConfigKey } from "./constants";
 
 import {
-  getExpectedBotClientSecret,
   getExpectedM365ApplicationIdUri,
-  getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getWebappSettings,
+  getActivePluginsFromProjectSetting,
 } from "./utilities";
+import {
+  getExpectedM365ClientSecret,
+  getExpectedBotClientSecret,
+} from "./cliHelper";
 
 const baseUrlListDeployments = (
   subscriptionId: string,
@@ -46,13 +48,16 @@ enum BaseConfig {
   IDENTITY_ID = "IDENTITY_ID",
   M365_TENANT_ID = "M365_TENANT_ID",
 }
+
 enum FunctionConfig {
   API_ENDPOINT = "API_ENDPOINT",
 }
+
 enum SQLConfig {
   SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
   SQL_ENDPOINT = "SQL_ENDPOINT",
 }
+
 export class BotValidator {
   private ctx: any;
   private projectPath: string;

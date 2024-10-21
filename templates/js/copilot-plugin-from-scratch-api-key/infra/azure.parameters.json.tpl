@@ -7,7 +7,7 @@
     },
     "functionAppSKU": {
       "value": "Y1"
-    }
+    },
     "apiKey": {
       "value": "${{SECRET_API_KEY}}"
     }

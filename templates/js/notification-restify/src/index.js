@@ -1,6 +1,6 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
 const { notificationApp } = require("./internal/initialize");
-const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 const { TeamsBot } = require("./teamsBot");
 const restify = require("restify");
 
@@ -29,11 +29,13 @@ server.post(
 
       for (const target of installations) {
         await target.sendAdaptiveCard(
-          AdaptiveCards.declare(notificationTemplate).render({
-            title: "New Event Occurred!",
-            appName: "Contoso App Notification",
-            description: `This is a sample http-triggered notification to ${target.type}`,
-            notificationUrl: "https://aka.ms/teamsfx-notification-new",
+          new ACData.Template(notificationTemplate).expand({
+            $root: {
+              title: "New Event Occurred!",
+              appName: "Contoso App Notification",
+              description: `This is a sample http-triggered notification to ${target.type}`,
+              notificationUrl: "https://aka.ms/teamsfx-notification-new",
+            },
           })
         );
 

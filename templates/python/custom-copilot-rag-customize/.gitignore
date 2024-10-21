@@ -1,6 +1,7 @@
 # TeamsFx files
 env/.env.*.user
 env/.env.local
+env/.env.testtool
 .env
 appPackage/build
 
@@ -11,6 +12,7 @@ __pycache__/
 # others
 .deployment/
 node_modules/
+devTools/*.log
 
 # Dev tool directories
 /devTools/

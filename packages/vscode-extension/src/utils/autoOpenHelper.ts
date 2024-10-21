@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
+import path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import {
   Warning,
   AppPackageFolderName,
@@ -19,6 +19,7 @@ import {
   generateScaffoldingSummary,
   globalStateGet,
   globalStateUpdate,
+  outputScaffoldingWarningMessage,
 } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
@@ -165,19 +166,32 @@ export async function ShowScaffoldingWarningSummary(
             apiSpecFilePathRes.error
           );
         } else {
-          message = generateScaffoldingSummary(
+          message = await generateScaffoldingSummary(
             createWarnings,
             teamsManifest,
-            path.relative(workspacePath, apiSpecFilePathRes.value[0])
+            path.relative(workspacePath, apiSpecFilePathRes.value[0]),
+            path.join(
+              AppPackageFolderName,
+              teamsManifest.copilotExtensions
+                ? teamsManifest.copilotExtensions.plugins![0].file
+                : teamsManifest.copilotAgents!.plugins![0].file
+            ),
+            workspacePath
           );
         }
-      }
-      if (commonProperties.isApiME) {
-        message = generateScaffoldingSummary(
+      } else if (
+        commonProperties.isApiME &&
+        teamsManifest.composeExtensions![0].apiSpecificationFile
+      ) {
+        message = await generateScaffoldingSummary(
           createWarnings,
-          manifestRes.value,
-          teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
+          teamsManifest,
+          path.join(AppPackageFolderName, teamsManifest.composeExtensions![0].apiSpecificationFile),
+          undefined,
+          workspacePath
         );
+      } else {
+        message = outputScaffoldingWarningMessage(createWarnings);
       }
 
       if (message) {

@@ -57,7 +57,7 @@ describe("office steps: officeNextStepCommandHandler", () => {
     );
     chai.assert.isTrue(
       response.markdown.calledOnceWith(
-        `This command provides guidance on your next steps based on your workspace.\n\nE.g. If you're unsure what to do after creating a project, simply ask Copilot by using @office /nextstep.`
+        "This `/nextstep` command provides guidance on your next steps based on your workspace.\n\nE.g. To use this command, simply ask Copilot by using `@office /nextstep`."
       )
     );
   });
@@ -76,9 +76,6 @@ describe("office steps: officeNextStepCommandHandler", () => {
         priority: 1,
       } as NextStep,
     ]);
-    const getCopilotResponseAsStringStub = sandbox
-      .stub(util, "getCopilotResponseAsString")
-      .resolves("");
     const followupProviderStub = sandbox.stub(TeamsFollowupProvider.prototype, "addFollowups");
 
     const response = {
@@ -91,7 +88,6 @@ describe("office steps: officeNextStepCommandHandler", () => {
       response as unknown as vscode.ChatResponseStream,
       token
     );
-    chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
     chai.assert.equal(response.markdown.callCount, 1);
     chai.assert.isTrue(followupProviderStub.calledOnce);
   });
@@ -137,9 +133,6 @@ describe("office steps: officeNextStepCommandHandler", () => {
         priority: 1,
       } as NextStep,
     ]);
-    const getCopilotResponseAsStringStub = sandbox
-      .stub(util, "getCopilotResponseAsString")
-      .resolves("");
     const followupProviderStub = sandbox.stub(TeamsFollowupProvider.prototype, "addFollowups");
 
     const response = {
@@ -153,7 +146,6 @@ describe("office steps: officeNextStepCommandHandler", () => {
       response as unknown as vscode.ChatResponseStream,
       token
     );
-    chai.assert.isTrue(getCopilotResponseAsStringStub.calledTwice);
     chai.assert.isTrue(response.markdown.calledThrice);
     chai.assert.isTrue(response.button.calledThrice);
     chai.assert.isTrue(followupProviderStub.calledOnce);

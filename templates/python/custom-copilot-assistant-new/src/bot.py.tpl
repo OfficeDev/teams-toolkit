@@ -55,10 +55,6 @@ bot_app = Application[AppTurnState](
     )
 )
 
-@bot_app.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext, state: TurnState):
-    await context.send_activity("How can I help you today?")
-    
 @bot_app.turn_state_factory
 async def turn_state_factory(context: TurnContext):
     return await AppTurnState.load(context, storage)

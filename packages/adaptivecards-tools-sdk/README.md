@@ -1,5 +1,7 @@
 # AdaptiveCards SDK for TypeScript/JavaScript
 
+> This package will be deprecated by 2025-08. Please use [adaptivecards-templating](https://www.npmjs.com/package/adaptivecards-templating) instead.
+
 Adaptivecards-tools sdk aims to reduce developer's efforts to render an Adaptive Card in your project, especially for Adaptive Card with Data, provide type safety check.
 
 ## Getting started

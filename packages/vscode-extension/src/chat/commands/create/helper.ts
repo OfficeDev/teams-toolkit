@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { includes } from "lodash";
-import * as path from "path";
+import path from "path";
 import * as tmp from "tmp";
 
 import {
@@ -28,7 +28,7 @@ import {
   getCopilotResponseAsString,
   getSampleDownloadUrlInfo,
 } from "../../utils";
-import * as teamsTemplateMetadata from "./templateMetadata.json";
+import teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 
 const TOKEN_LIMITS = 2700;

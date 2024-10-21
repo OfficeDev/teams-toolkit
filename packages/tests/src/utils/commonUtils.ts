@@ -310,6 +310,27 @@ export function editDotEnvFile(
   }
 }
 
+/**
+ * Change SWA's SKU to Standard to avoid test error
+ * @param filePath
+ */
+export function editSWASku(filePath: string): void {
+  if (!fs.existsSync(filePath)) {
+    return;
+  }
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  try {
+    const jsonContent = JSON.parse(fileContent);
+    if (jsonContent?.parameters?.staticWebAppSku?.value === "Free") {
+      jsonContent["parameters"]["staticWebAppSku"]["value"] = "Standard";
+      // write back to file
+      fs.writeFileSync(filePath, JSON.stringify(jsonContent));
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 export async function CLIVersionCheck(
   version: "V2" | "V3",
   projectPath: string

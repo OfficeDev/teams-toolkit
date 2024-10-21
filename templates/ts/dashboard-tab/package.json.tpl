@@ -4,6 +4,7 @@
     "engines": {
         "node": "16 || 18"
     },
+    "type": "module",
     "private": true,
     "dependencies": {
         "@fluentui/react-charting": "^5.14.10",
@@ -14,22 +15,23 @@
         "@microsoft/teamsfx-react": "^3.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-router-dom": "^6.8.0",
-        "react-scripts": "^5.0.1"
+        "react-router-dom": "^6.8.0"
     },
     "devDependencies": {
         "@types/node": "^18.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "@types/react-router-dom": "^5.3.3",
+        "@vitejs/plugin-basic-ssl": "^1.1.0",
+        "@vitejs/plugin-react": "^4.3.1",
         "env-cmd": "^10.1.0",
-        "typescript": "^4.1.2"
+        "typescript": "^5.5.3",
+        "vite": "^5.4.0"
     },
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "eject": "react-scripts eject",
+        "start": "vite",
+        "build": "tsc && vite build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "eslintConfig": {

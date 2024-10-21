@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 "use strict";
-import * as chai from "chai";
-import * as spies from "chai-spies";
+import chai from "chai";
+import spies from "chai-spies";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 

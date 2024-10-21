@@ -1,5 +1,5 @@
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
+import chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as buildDynamicPrompt from "../../../src/officeChat/dynamicPrompt";
@@ -39,7 +39,7 @@ describe("File: dynamicPrompt/index", () => {
       chai
         .expect(result.messages[0])
         .deep.equal(
-          new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.System, "test")
+          new vscode.LanguageModelChatMessage(vscode.LanguageModelChatMessageRole.User, "test")
         );
     });
 

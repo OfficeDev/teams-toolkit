@@ -7,7 +7,7 @@ import * as React from "react";
 
 import { Image } from "@fluentui/react";
 
-import Turtle from "../../../img/webview/sample/turtle.svg";
+import Turtle from "../../../img/webview/sample/turtle.svg?react";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { SampleProps } from "./ISamples";
 
@@ -45,7 +45,7 @@ export default class SampleCard extends React.Component<SampleProps, { imageUrl:
         <label className="hidden-label" id="tagLabel">
           sample app tags:
         </label>
-        <div className="tagSection" aria-labelledby="tagLabel">
+        <div className="tagSection">
           {sample.tags &&
             sample.tags.map((value: string) => {
               return (

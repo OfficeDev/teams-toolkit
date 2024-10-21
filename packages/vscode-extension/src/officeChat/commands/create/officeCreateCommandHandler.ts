@@ -4,6 +4,7 @@
 import {
   CancellationToken,
   ChatContext,
+  ChatFollowup,
   ChatRequest,
   ChatResponseStream,
   LanguageModelChatMessage,
@@ -22,6 +23,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
 import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
 import { OfficeChatTelemetryBlockReasonEnum, OfficeChatTelemetryData } from "../../telemetry";
+import followupProvider from "../../../chat/followupProvider";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -41,6 +43,19 @@ export default async function officeCreateCommandHandler(
   if (request.prompt.trim() === "") {
     officeChatTelemetryData.setTimeToFirstToken();
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.create.noPromptAnswer"));
+    const followUps: ChatFollowup[] = [
+      {
+        label: "@office /create an Excel hello world add-in",
+        command: "create",
+        prompt: "an Excel hello world add-in",
+      },
+      {
+        label: "@office /create a Word add-in that inserts comments",
+        command: "create",
+        prompt: "a Word add-in that inserts comments",
+      },
+    ];
+    followupProvider.addFollowups(followUps);
     officeChatTelemetryData.setBlockReason(OfficeChatTelemetryBlockReasonEnum.UnsupportedInput);
     officeChatTelemetryData.markComplete("fail");
     ExtTelemetry.sendTelemetryEvent(
@@ -85,21 +100,33 @@ export default async function officeCreateCommandHandler(
           );
           const folder = sampleInfos.path;
           const hostType = sampleInfos.host.toLowerCase();
-          const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+          const sampleTitle = localize("teamstoolkit.chatParticipants.officeAddIn.create.project");
           officeChatTelemetryData.setHostType(hostType);
           response.button({
             command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-            arguments: [folder, officeChatTelemetryData.requestId, matchedResult.type],
+            arguments: [
+              folder,
+              officeChatTelemetryData.requestId,
+              matchedResult.type,
+              matchedResult.id,
+            ],
             title: sampleTitle,
           });
         } else {
           const tmpHostType = (matchedResult.data as any)?.["addin-host"].toLowerCase();
           const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
-          const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
+          const templateTitle = localize(
+            "teamstoolkit.chatParticipants.officeAddIn.create.project"
+          );
           officeChatTelemetryData.setHostType(tmpHostType);
           response.button({
             command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
-            arguments: [tmpFolder, officeChatTelemetryData.requestId, matchedResult.type],
+            arguments: [
+              tmpFolder,
+              officeChatTelemetryData.requestId,
+              matchedResult.type,
+              matchedResult.id,
+            ],
             title: templateTitle,
           });
         }

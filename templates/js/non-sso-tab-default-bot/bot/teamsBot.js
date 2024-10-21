@@ -3,7 +3,7 @@ const querystring = require("querystring");
 const { TeamsActivityHandler, CardFactory, TurnContext } = require("botbuilder");
 const rawWelcomeCard = require("./adaptiveCards/welcome.json");
 const rawLearnCard = require("./adaptiveCards/learn.json");
-const cardTools = require("@microsoft/adaptivecards-tools");
+const ACData = require("adaptivecards-templating");
 
 class TeamsBot extends TeamsActivityHandler {
   constructor() {
@@ -24,13 +24,12 @@ class TeamsBot extends TeamsActivityHandler {
       // Trigger command by IM text
       switch (txt) {
         case "welcome": {
-          const card = cardTools.AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
-          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
+          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(rawWelcomeCard)] });
           break;
         }
         case "learn": {
           this.likeCountObj.likeCount = 0;
-          const card = cardTools.AdaptiveCards.declare(rawLearnCard).render(this.likeCountObj);
+          const card = new ACData.Template(rawLearnCard).expand({ $root: this.likeCountObj });
           await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
           break;
         }
@@ -51,8 +50,7 @@ class TeamsBot extends TeamsActivityHandler {
       const membersAdded = context.activity.membersAdded;
       for (let cnt = 0; cnt < membersAdded.length; cnt++) {
         if (membersAdded[cnt].id) {
-          const card = cardTools.AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
-          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
+          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(rawWelcomeCard)] });
           break;
         }
       }
@@ -66,7 +64,7 @@ class TeamsBot extends TeamsActivityHandler {
     // The verb "userlike" is sent from the Adaptive Card defined in adaptiveCards/learn.json
     if (invokeValue.action.verb === "userlike") {
       this.likeCountObj.likeCount++;
-      const card = cardTools.AdaptiveCards.declare(rawLearnCard).render(this.likeCountObj);
+      const card = new ACData.Template(rawLearnCard).expand({ $root: this.likeCountObj });
       await context.updateActivity({
         type: "message",
         id: context.activity.replyToId,

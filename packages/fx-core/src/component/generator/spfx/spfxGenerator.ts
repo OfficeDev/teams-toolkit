@@ -60,7 +60,7 @@ import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
-import { Utils } from "./utils/utils";
+import { getShellOptionValue, Utils } from "./utils/utils";
 
 export class SPFxGenerator {
   @hooks([
@@ -350,6 +350,7 @@ export class SPFxGenerator {
           {
             timeout: 2 * 60 * 1000,
             env: yoEnv,
+            shell: getShellOptionValue(),
           },
           "yo",
           ...args
@@ -708,21 +709,24 @@ export class SPFxGenerator {
         );
         for (let i = 1; i < webparts.length; i++) {
           const webpart = webparts[i];
-          const webpartManifestPath = path.join(
-            webpartsDir,
-            webpart,
-            `${webpart.split(path.sep).pop() as string}WebPart.manifest.json`
+          const webpartManifestFile = (await fs.readdir(path.join(webpartsDir, webpart))).find(
+            (file) => file.endsWith("WebPart.manifest.json")
           );
-          if (!(await fs.pathExists(webpartManifestPath))) {
+
+          if (webpartManifestFile === undefined) {
             importDetails.push(
-              ` [${i}] Web part manifest doesn't exist at ${webpartManifestPath}, skip...`
+              ` [${i}] Web part manifest doesn't exist at ${path.join(
+                webpartsDir,
+                webpart,
+                `${webpart as string}WebPart.manifest.json`
+              )}, skip...`
             );
             continue;
           }
 
           const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
           const webpartManifest = JSON.parse(
-            (await fs.readFile(webpartManifestPath, "utf8"))
+            (await fs.readFile(path.join(webpartsDir, webpart, webpartManifestFile), "utf8"))
               .toString()
               .replace(matchHashComment, "")
               .trim()

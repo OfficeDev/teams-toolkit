@@ -11,6 +11,7 @@ import "./teamsApp/validateTestCases";
 import "./teamsApp/configure";
 import "./teamsApp/copyAppPackageToSPFx";
 import "./teamsApp/publishAppPackage";
+import "./teamsApp/syncManifest";
 import "./aad/create";
 import "./aad/update";
 import "./arm/deploy";

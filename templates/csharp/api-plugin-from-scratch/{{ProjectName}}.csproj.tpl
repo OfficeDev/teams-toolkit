@@ -11,7 +11,7 @@
 {{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
-    <ProjectCapability Include="CopilotPlugin" />
+    <ProjectCapability Include="ApiPlugin" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@
 
 import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
 import { FeatureFlags, featureFlagManager } from "@microsoft/teamsfx-core";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { glob } from "glob";
 import * as os from "os";
 import { getProjectMetadata } from "../chat/commands/nextstep/helper";
@@ -106,7 +106,7 @@ export async function getLaunchJSON(folder: string): Promise<string | undefined>
 }
 
 export function getWalkThroughId(): string {
-  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant)
+  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
     ? "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
     : "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted";
 }

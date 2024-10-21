@@ -6,7 +6,7 @@ import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/ex
 import { projectCreator } from "../../../../src/officeChat/common/skills/projectCreator";
 import path = require("path");
 import * as helper from "../../../../src/chat/commands/create/helper";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as vscode from "vscode";
 import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
 import { CreateProjectResult, ok } from "@microsoft/teamsfx-api";

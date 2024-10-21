@@ -2,7 +2,7 @@ import { Stage, UserError } from "@microsoft/teamsfx-api";
 import { maskSecret, telemetryUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as sinon from "sinon";
 import { Uri } from "vscode";
 import * as globalVariables from "../../src/globalVariables";
@@ -90,6 +90,11 @@ describe("ExtTelemetry", () => {
     it("Stage.copilotPluginAddAPI", () => {
       const stage = Stage.copilotPluginAddAPI;
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CopilotPluginAddAPI);
+    });
+
+    it("Stage.syncManifest", () => {
+      const stage = Stage.syncManifest;
+      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.SyncManifest);
     });
 
     it("unknown", () => {

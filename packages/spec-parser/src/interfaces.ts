@@ -23,6 +23,8 @@ export interface ValidateResult {
    * An array of error results generated during validation.
    */
   errors: ErrorResult[];
+
+  specHash?: string;
 }
 
 export interface SpecValidationResult {
@@ -137,6 +139,7 @@ export enum WarningType {
   GenerateCardFailed = "generate-card-failed",
   OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
   ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
+  FuncDescriptionTooLong = "function-description-too-long",
   Unknown = "unknown",
 }
 
@@ -325,4 +328,9 @@ export interface InferredProperties {
   title?: string;
   subtitle?: string;
   imageUrl?: string;
+}
+
+export interface ExistingPluginManifestInfo {
+  manifestPath: string;
+  specPath: string;
 }

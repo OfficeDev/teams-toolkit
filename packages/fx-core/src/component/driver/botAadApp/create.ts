@@ -26,6 +26,9 @@ import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPassw
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { logMessageKeys, progressBarKeys } from "./utility/constants";
+import { GraphScopes } from "../../../common/constants";
+import { AadSet } from "../../../common/globalVars";
+import { MissingServiceManagementReferenceError } from "../aad/error/missingServiceManagamentReferenceError";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -96,14 +99,28 @@ export class CreateBotAadAppDriver implements StepDriver {
         throw new UnexpectedEmptyBotPasswordError(actionName, helpLink);
       }
 
+      const tokenJson = await context.m365TokenProvider.getJsonObject({ scopes: GraphScopes });
+      const isMsftAccount =
+        tokenJson.isOk() &&
+        tokenJson.value.unique_name &&
+        (tokenJson.value.unique_name as string).endsWith("@microsoft.com");
+
       const startTime = performance.now();
       if (!botAadAppState.botId) {
         context.logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
+
+        // This hidden environment variable is for internal use only.
+        const serviceManagementReference = process.env.TTK_DEFAULT_SERVICE_MANAGEMENT_REFERENCE;
+        if (isMsftAccount && !serviceManagementReference) {
+          throw new MissingServiceManagementReferenceError(actionName);
+        }
         const aadApp = await aadAppClient.createAadApp(
           args.name,
-          SignInAudience.AzureADMultipleOrgs
+          SignInAudience.AzureADMultipleOrgs,
+          serviceManagementReference
         );
         botAadAppState.botId = aadApp.appId!;
+        AadSet.add(aadApp.appId!);
         botAadAppState.botPassword = await aadAppClient.generateClientSecret(aadApp.id!);
         context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateBotAadApp));
       } else {
@@ -113,10 +130,13 @@ export class CreateBotAadAppDriver implements StepDriver {
 
       const outputs = mapStateToEnv(botAadAppState, outputEnvVarNames);
 
-      const successCreateBotAadLog = getLocalizedString(
+      let successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
         botAadAppState.botId
       );
+      if (isMsftAccount) {
+        successCreateBotAadLog += getLocalizedString(logMessageKeys.deleteAadAfterDebugging);
+      }
       const useExistingBotAadLog = getLocalizedString(
         logMessageKeys.useExistingBotAad,
         botAadAppState.botId

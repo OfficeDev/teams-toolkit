@@ -15,6 +15,7 @@ import {
   SingleSelectQuestion,
   TextInputQuestion,
   FolderQuestion,
+  CLIPlatforms,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -22,17 +23,13 @@ import { AppStudioScopes, ConstantString } from "../common/constants";
 import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { Constants } from "../component/driver/add/utility/constants";
-import { AppStudioError } from "../component/driver/teamsApp/errors";
-import { AppStudioResultFactory } from "../component/driver/teamsApp/results";
-import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
-import { getAbsolutePath } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentNameManager } from "../core/environmentName";
 import { TOOLS } from "../common/globalVars";
 import {
+  ApiPluginStartOptions,
   HubOptions,
-  PluginAvailabilityOptions,
   QuestionNames,
   TeamsAppValidationOptions,
 } from "./constants";
@@ -41,9 +38,13 @@ import {
   SPFxImportFolderQuestion,
   SPFxWebpartNameQuestion,
   apiOperationQuestion,
+  apiPluginStartQuestion,
   apiSpecLocationQuestion,
+  pluginApiSpecQuestion,
+  pluginManifestQuestion,
 } from "./create";
 import { UninstallInputs } from "./inputs";
+import * as os from "os";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -738,54 +739,37 @@ export function createNewEnvQuestionNode(): IQTreeNode {
   };
 }
 
-export function selectPluginAvailabilityQuestion(): SingleSelectQuestion {
-  return {
-    name: QuestionNames.PluginAvailability,
-    title: getLocalizedString("core.question.pluginAvailability.title"),
-    cliDescription: "Select plugin availability.",
-    type: "singleSelect",
-    staticOptions: PluginAvailabilityOptions.all(),
-    dynamicOptions: async (inputs: Inputs) => {
-      const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
-      const absolutePath = getAbsolutePath(teamsManifestPath, inputs.projectPath!);
-      const manifestRes = await manifestUtils._readAppManifest(absolutePath);
-      if (manifestRes.isErr()) {
-        throw manifestRes.error;
-      }
-      const commonProperties = ManifestUtil.parseCommonProperties(manifestRes.value);
-      if (!commonProperties.capabilities.includes("copilotGpt")) {
-        throw AppStudioResultFactory.UserError(
-          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
-          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
-            "declarativeCopilots",
-            teamsManifestPath
-          )
-        );
-      }
-
-      if (commonProperties.capabilities.includes("plugin")) {
-        // A project can have only one plugin.
-        return [PluginAvailabilityOptions.action()];
-      } else {
-        return PluginAvailabilityOptions.all();
-      }
-    },
-  };
-}
-
 // add Plugin to a declarative Copilot project
 export function addPluginQuestionNode(): IQTreeNode {
   return {
-    data: selectTeamsAppManifestQuestion(),
+    data: apiPluginStartQuestion(true),
     children: [
       {
-        data: selectPluginAvailabilityQuestion(),
+        data: pluginManifestQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.existingPlugin().id,
+        },
+      },
+      {
+        data: pluginApiSpecQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.existingPlugin().id,
+        },
       },
       {
         data: apiSpecLocationQuestion(),
+        condition: {
+          equals: ApiPluginStartOptions.apiSpec().id,
+        },
       },
       {
         data: apiOperationQuestion(true, true),
+        condition: {
+          equals: ApiPluginStartOptions.apiSpec().id,
+        },
+      },
+      {
+        data: selectTeamsAppManifestQuestion(),
       },
     ],
   };
@@ -811,7 +795,7 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       forgetLastValue: true,
       validation: {
         validFunc: (input: string): string | undefined => {
-          if (input.length < 10 || input.length > 128) {
+          if (input.length < 10 || input.length > 512) {
             return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
           }
 
@@ -863,13 +847,21 @@ export function oauthQuestion(): IQTreeNode {
       {
         data: oauthClientSecretQuestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret;
+          return (
+            !inputs.isPKCEEnabled &&
+            !inputs.clientSecret &&
+            (!inputs.identityProvider || inputs.identityProvider === "Custom")
+          );
         },
       },
       {
         data: oauthConfirmQestion(),
         condition: (inputs: Inputs) => {
-          return !inputs.clientSecret || !inputs.clientId;
+          return (
+            !inputs.isPKCEEnabled &&
+            (!inputs.clientSecret || !inputs.clientId) &&
+            (!inputs.identityProvider || inputs.identityProvider === "Custom")
+          );
         },
       },
     ],
@@ -1039,7 +1031,7 @@ function oauthClientSecretQuestion(): TextInputQuestion {
     forgetLastValue: true,
     validation: {
       validFunc: (input: string): string | undefined => {
-        if (input.length < 10 || input.length > 128) {
+        if (input.length < 10 || input.length > 512) {
           return getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
         }
 
@@ -1056,5 +1048,44 @@ function oauthClientSecretQuestion(): TextInputQuestion {
         return;
       },
     },
+  };
+}
+
+export function syncManifestQuestionNode(): IQTreeNode {
+  return {
+    data: {
+      type: "group",
+    },
+    children: [
+      {
+        data: {
+          type: "folder",
+          name: QuestionNames.ProjectPath,
+          title: getLocalizedString("core.syncManifest.projectPath"),
+          cliDescription: "Project Path",
+          placeholder: "./",
+          default: (inputs: Inputs) =>
+            CLIPlatforms.includes(inputs.platform)
+              ? "./"
+              : path.join(os.homedir(), ConstantString.RootFolder),
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.Env,
+          title: getLocalizedString("core.syncManifest.env"),
+          cliDescription: "Target Teams Toolkit Environment",
+        },
+      },
+      {
+        data: {
+          type: "text",
+          name: QuestionNames.TeamsAppId,
+          title: getLocalizedString("core.syncManifest.teamsAppId"),
+          cliDescription: "Teams App ID (optional)",
+        },
+      },
+    ],
   };
 }

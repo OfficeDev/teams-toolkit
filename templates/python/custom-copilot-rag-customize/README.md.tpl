@@ -73,6 +73,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | - | - |
 |`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+|`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
 ## Extend the template
 
@@ -86,4 +87,6 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
 ## Known issue
+- If you use `Debug in Test Tool` to local debug, you might get an error `InternalServiceError: connect ECONNREFUSED 127.0.0.1:3978` in Test Tool console log or error message `Error: Cannot connect to your app,
+please make sure your app is running or restart your app` in log panel of Test Tool web page. You can wait for Python launch console ready and then refresh the front end web page.
 - When you use `Launch Remote in Teams` to remote debug after deployment, you might loose interaction with your bot. This is because the remote service needs to restart. Please wait for several minutes to retry it.

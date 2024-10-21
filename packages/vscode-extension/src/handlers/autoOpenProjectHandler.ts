@@ -23,7 +23,6 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
-    await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
 
     if (workspaceUri?.fsPath) {

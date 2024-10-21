@@ -166,6 +166,18 @@ describe("parseSetOutputCommand", () => {
       TAB_ENDPOINT: "https://localhost:53000",
     });
   });
+  it("parse value that contains space", async () => {
+    const res = parseSetOutputCommand(
+      `Write-Host ::set-teamsfx-env Test0="multi word variable"
+        Write-Host ::set-teamsfx-env Test1=' multi word variable'
+        Write-Host ::set-teamsfx-env Test2=multi+word+variable`
+    );
+    assert.deepEqual(res, {
+      Test0: "multi word variable",
+      Test1: " multi word variable",
+      Test2: "multi+word+variable",
+    });
+  });
 });
 
 describe("getStderrHandler", () => {

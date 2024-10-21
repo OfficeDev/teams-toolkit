@@ -57,10 +57,6 @@ bot_app = Application[TurnState](
     )
 )
 
-@bot_app.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext, state: TurnState):
-    await context.send_activity("How can I help you today?")
-
 @bot_app.error
 async def on_error(context: TurnContext, error: Exception):
     # This check writes out errors to console log .vs. app insights.

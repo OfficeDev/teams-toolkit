@@ -126,7 +126,7 @@
                 "group": "group 1: Teams",
                 "order": 6
             },
-            "internalConsoleOptions": "neverOpen",
+            "internalConsoleOptions": "neverOpen"
         }
     ],
     "compounds": [

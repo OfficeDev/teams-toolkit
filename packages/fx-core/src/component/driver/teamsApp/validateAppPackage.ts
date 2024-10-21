@@ -33,7 +33,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { Constants } from "./constants";
+import { Constants, GeneralValidationErrorId } from "./constants";
 import { AppStudioError } from "./errors";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { AppStudioResultFactory } from "./results";
@@ -155,7 +155,10 @@ export class ValidateAppPackageDriver implements StepDriver {
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
-            content: `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
+            content:
+              error.id === GeneralValidationErrorId && error.code
+                ? `${this.processErrorCode(error.code)}`
+                : `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
             color: Colors.BRIGHT_WHITE,
           });
           if (error.helpUrl) {
@@ -212,11 +215,15 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            let message = `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
-              "error.teamsApp.validate.details",
-              error.filePath,
-              error.title
-            )} \n`;
+            const errorContent =
+              error.id === GeneralValidationErrorId && error.code
+                ? this.processErrorCode(error.code)
+                : `${error.content} \n${getLocalizedString(
+                    "error.teamsApp.validate.details",
+                    error.filePath,
+                    error.title
+                  )}`;
+            let message = `${SummaryConstant.Failed} ${errorContent}\n`;
             if (error.helpUrl) {
               message += getLocalizedString("core.option.learnMore", error.helpUrl);
             }
@@ -352,5 +359,14 @@ export class ValidateAppPackageDriver implements StepDriver {
       );
     }
     return ok(undefined);
+  }
+
+  private processErrorCode(errorCode: string): string {
+    if (errorCode.startsWith("Invalid TypeB ")) {
+      // A temporary solution to update the error message.
+      return errorCode.substring(0, 8) + "API " + errorCode.substring(14);
+    } else {
+      return errorCode;
+    }
   }
 }

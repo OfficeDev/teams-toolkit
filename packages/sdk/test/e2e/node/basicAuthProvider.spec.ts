@@ -4,6 +4,7 @@
 import { assert } from "chai";
 import { BasicAuthProvider, createApiClient } from "../../../src";
 import * as http from "http";
+const escape = require("escape-html");
 
 describe("BasicAuthProvider Tests - Node", () => {
   const host = "localhost";
@@ -11,10 +12,13 @@ describe("BasicAuthProvider Tests - Node", () => {
   const apiBaseUrl = `http://${host}:${port}`;
   const server = http.createServer((req, res) => {
     res.writeHead(200);
-    const data = {
-      requestHeader: req.headers,
-      url: req.url,
+    const data: { requestHeader: { [key: string]: string }; url: string } = {
+      requestHeader: {},
+      url: req.url!,
     };
+    for (const [key, value] of Object.entries(req.headers)) {
+      data.requestHeader[key] = escape(value);
+    }
     res.end(JSON.stringify(data));
   });
 
@@ -42,7 +46,7 @@ describe("BasicAuthProvider Tests - Node", () => {
 
     // Assert
     assert.equal(res.data.url, "/foo");
-    const header = res.data.requestHeader!["authorization"] as string;
+    const header = res.data.requestHeader?.["authorization"] as string;
     assert.isTrue(header.startsWith("Basic "));
     const token = header.split(/\s+/).pop() || "";
     const auth = Buffer.from(token, "base64").toString();

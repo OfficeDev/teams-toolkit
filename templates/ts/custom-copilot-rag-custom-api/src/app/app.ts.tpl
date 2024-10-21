@@ -1,4 +1,4 @@
-import { MemoryStorage } from "botbuilder";
+import { MemoryStorage, MessageFactory, TurnContext } from "botbuilder";
 import * as path from "path";
 import config from "../config";
 
@@ -34,11 +34,26 @@ const app = new Application({
   storage,
   ai: {
     planner,
+    enable_feedback_loop: true,
   },
 });
 
+app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
+  const welcomeText = "How can I help you today?";
+  for (const member of turnContext.activity.membersAdded) {
+    if (member.id !== turnContext.activity.recipient.id) {
+      await turnContext.sendActivity(MessageFactory.text(welcomeText));
+    }
+  }
+});
+
+app.feedbackLoop(async (context, state, feedbackLoopData) => {
+  //add custom feedback process logic here
+  console.log("Your feedback is " + JSON.stringify(context.activity.value));
+});
+
 import { generateAdaptiveCard, addAuthConfig } from "./utility";
-import { TurnContext, ConversationState } from "botbuilder";
+import { ConversationState } from "botbuilder";
 import { TurnState, Memory } from "@microsoft/teams-ai";
 import yaml from "js-yaml";
 import { OpenAPIClientAxios, Document } from "openapi-client-axios";

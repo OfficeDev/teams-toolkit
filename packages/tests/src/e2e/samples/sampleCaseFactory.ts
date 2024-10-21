@@ -6,8 +6,8 @@
  */
 
 import { expect } from "chai";
-import fs from "fs-extra";
-import path from "path";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
   getTestFolder,
@@ -22,10 +22,10 @@ import { TemplateProjectFolder } from "../../utils/constants";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 import {
   AadValidator,
-  FrontendValidator,
   BotValidator,
   FunctionValidator,
   ContainerAppValidator,
+  StaticSiteValidator,
 } from "../../commonlib";
 import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 
@@ -164,11 +164,6 @@ export abstract class CaseFactory {
             const bot = new BotValidator(context, projectPath, env);
             await bot.validateProvisionV3(false);
           }
-          if (validate.includes("tab")) {
-            // Validate Tab Frontend
-            const frontend = FrontendValidator.init(context);
-            await FrontendValidator.validateProvision(frontend);
-          }
           if (validate.includes("aad")) {
             // Validate Aad App
             const aad = AadValidator.init(context, false, m365Login);
@@ -220,6 +215,10 @@ export abstract class CaseFactory {
           if (validate.includes("aca")) {
             const aca = new ContainerAppValidator(context);
             await aca.validateContainerAppStatus();
+          }
+          if (validate.includes("tab")) {
+            const staticSite = StaticSiteValidator.init(context);
+            await StaticSiteValidator.validateDeploy(staticSite);
           }
         }
 

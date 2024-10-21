@@ -210,7 +210,7 @@ jobs:
       TEAMSFX_TELEMETRY_TEST: true
     strategy:
       fail-fast: false
-      max-parallel: 50
+      max-parallel: 80
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:

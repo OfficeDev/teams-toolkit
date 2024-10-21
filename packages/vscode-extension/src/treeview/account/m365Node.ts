@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { featureFlagManager, FeatureFlags as FxCoreFeatureFlags } from "@microsoft/teamsfx-core";
+import { AzureScopes, featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
@@ -32,11 +32,16 @@ export class M365AccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedIn;
 
     this.label = upn;
-    if (featureFlagManager.getBooleanValue(FxCoreFeatureFlags.MultiTenant)) {
-      const tenants = await listAllTenants(tools.tokenProvider.m365TokenProvider);
-      for (const tenant of tenants) {
-        if (tenant.tenantId === tid && tenant.displayName) {
-          this.label = `${upn} (${tenant.displayName as string})`;
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
+        scopes: AzureScopes,
+      });
+      if (tokenRes.isOk() && tokenRes.value) {
+        const tenants = await listAllTenants(tokenRes.value);
+        for (const tenant of tenants) {
+          if (tenant.tenantId === tid && tenant.displayName) {
+            this.label = `${upn} (${tenant.displayName as string})`;
+          }
         }
       }
     }

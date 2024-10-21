@@ -100,7 +100,11 @@ async function azureAccountStatusChangeHandler(
   if (status === "SignedIn") {
     const username = (accountInfo?.email as string) || (accountInfo?.upn as string);
     if (username) {
-      instance.azureAccountNode.setSignedIn(username);
+      await instance.azureAccountNode.setSignedIn(
+        token as string,
+        accountInfo?.tid as string,
+        username
+      );
       await envTreeProviderInstance.reloadEnvironments();
     }
   } else if (status === "SigningIn") {

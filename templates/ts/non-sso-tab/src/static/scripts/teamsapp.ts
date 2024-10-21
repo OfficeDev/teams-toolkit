@@ -1,3 +1,5 @@
+import * as microsoftTeams from "@microsoft/teams-js";
+
 (function () {
   "use strict";
 

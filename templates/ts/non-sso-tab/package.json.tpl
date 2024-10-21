@@ -18,7 +18,8 @@
         "nodemon": "^2.0.21",
         "ts-node": "^10.9.1",
         "typescript": "^4.1.2",
-        "shx": "^0.3.3"
+        "shx": "^0.3.3",
+        "@microsoft/teams-js": "^2.29.0"
     },
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",

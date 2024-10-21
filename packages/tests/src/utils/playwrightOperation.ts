@@ -186,16 +186,26 @@ export async function initPage(
     let addBtn;
     try {
       addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-    } catch {
-      try {
-        addBtn = await page?.waitForSelector("button>span:has-text('Open')");
-      } catch {
-        await page.screenshot({
-          path: getPlaywrightScreenshotPath("add_page"),
-          fullPage: true,
+      if (options?.dashboardFlag) {
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        await dialog.screenshot({
+          path: getPlaywrightScreenshotPath("dialog"),
         });
-        throw "error to add app";
+        const openBtn = await dialog?.waitForSelector(
+          "button:has-text('open')"
+        );
+        console.log("click open button");
+        await openBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        await page.waitForSelector("div[role='dialog']", { state: "detached" });
+        console.log("successful to add teams app!!!");
       }
+    } catch {
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("add_page"),
+        fullPage: true,
+      });
+      throw "error to add app";
     }
 
     // dashboard template will have a popup

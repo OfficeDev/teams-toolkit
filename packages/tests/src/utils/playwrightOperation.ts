@@ -204,13 +204,17 @@ export async function initPage(
       const [popup] = await Promise.all([
         page
           .waitForEvent("popup")
-          .then((popup) =>
-            popup
+          .then((popup) => {
+            popup.screenshot({
+              path: getPlaywrightScreenshotPath("popup_page"),
+              fullPage: true,
+            });
+            return popup
               .waitForEvent("close", {
                 timeout: Timeout.playwrightConsentPopupPage,
               })
-              .catch(() => popup)
-          )
+              .catch(() => popup);
+          })
           .catch(() => {}),
         addBtn?.click(),
       ]);
@@ -2395,7 +2399,7 @@ export async function validateBasicDashboardTab(page: Page) {
 export async function validateDashboardTab(page: Page) {
   try {
     console.log("start to verify dashboard tab");
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );

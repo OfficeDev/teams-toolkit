@@ -20,7 +20,6 @@
             "bot-upgrade-debug",
             "sample-remotedebug-todo-list-with-spfx",
             "sample-remotedebug-todo-list-with-m365",
-            "sample-localdebug-react-retail-dashboard",
             "sample-localdebug-spfx-productivity-dashboard",
             "sample-remotedebug-react-retail-dashboard",
             "sample-remotedebug-spfx-productivity-dashboard",
@@ -131,7 +130,8 @@
             "basic-tab-provision-upgrade-provision-debug",
             "bot-provision-upgrade-provision-debug",
             "sample-localdebug-todo-list-with-spfx",
-            "sample-localdebug-todo-list-with-m365"
+            "sample-localdebug-todo-list-with-m365",
+            "sample-localdebug-react-retail-dashboard"
         ]
     },
     {

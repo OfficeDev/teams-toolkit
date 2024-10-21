@@ -309,9 +309,9 @@ describe("teamsApp/validateManifest", async () => {
         mockedDriverContext,
         manifest
       );
-      chai.assert(result.isErr());
-      if (result.isErr()) {
-        chai.assert.equal(result.error.name, AppStudioError.ValidationFailedError.name);
+      chai.assert(result.isOk());
+      if (result.isOk()) {
+        chai.assert.isTrue(result.value.error[0].includes("Validation error"));
       }
     });
 
@@ -336,17 +336,35 @@ describe("teamsApp/validateManifest", async () => {
       }
     });
 
+    it("should not throw error if schema does not have patternProperties", async () => {
+      const args: ValidateManifestArgs = { manifestPath: "fakepath" };
+      const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
+      sinon.stub(ManifestUtil, "fetchSchema").resolves({} as any);
+      sinon.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+      sinon.stub(ManifestUtil, "validateManifestAgainstSchema").resolves([] as any);
+      const result = await teamsAppDriver.validateLocalizatoinFiles(
+        args,
+        mockedDriverContext,
+        manifest
+      );
+      chai.assert(result.isOk());
+    });
+
     it("should return ok when localization file is valid", async () => {
       const args: ValidateManifestArgs = { manifestPath: "fakepath" };
       const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
       const fakeLocalizationFile = {
         $schema:
           "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.Localization.schema.json",
+        "name.short": "name short",
+        "name.full": "name full",
+        "description.short": "desp short",
+        "description.full": "desp full",
+        "staticTabs[0].name": "static tab name",
+        "activities.activityTypes[0].description": "aa",
       };
 
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
-      sinon.stub(ManifestUtil, "validateManifestAgainstSchema").resolves([]);
-
       const result = await teamsAppDriver.validateLocalizatoinFiles(
         args,
         mockedDriverContext,

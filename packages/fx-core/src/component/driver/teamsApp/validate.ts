@@ -32,6 +32,7 @@ import { InvalidActionInputError } from "../../../error/common";
 import path from "path";
 import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 import { pluginManifestUtils } from "./utils/PluginManifestUtils";
+import { secretMasker } from "../../../common/secretmasker/masker";
 
 const actionName = "teamsApp/validateManifest";
 
@@ -190,6 +191,7 @@ export class ValidateManifestDriver implements StepDriver {
 
     const allErrorCount =
       manifestValidationResult.length +
+      localizationFilesValidationRes.value.error.length +
       (declarativeCopilotValidationResult?.validationResult.length ?? 0) +
       (pluginValidationResult?.validationResult.length ?? 0) +
       actionErrorCount;
@@ -223,6 +225,23 @@ export class ValidateManifestDriver implements StepDriver {
             color: Colors.BRIGHT_WHITE,
           });
           manifestValidationResult.map((error: string) => {
+            outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
+            outputMessage.push({
+              content: `${error}\n`,
+              color: Colors.BRIGHT_WHITE,
+            });
+          });
+        }
+        if (localizationFilesValidationRes.value.error.length > 0) {
+          outputMessage.push({
+            content:
+              getDefaultString(
+                "driver.teamsApp.summary.validateTeamsManifest.checkPath",
+                localizationFilesValidationRes.value.filePath
+              ) + "\n",
+            color: Colors.BRIGHT_WHITE,
+          });
+          localizationFilesValidationRes.value.error.map((error: string) => {
             outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
             outputMessage.push({
               content: `${error}\n`,
@@ -273,6 +292,21 @@ export class ValidateManifestDriver implements StepDriver {
             teamsManifestErrors;
         }
 
+        if (localizationFilesValidationRes.value.error.length > 0) {
+          const localizationErrors = localizationFilesValidationRes.value.error
+            .map((error: string) => {
+              return `${SummaryConstant.Failed} ${error}`;
+            })
+            .join(EOL);
+          outputMessage +=
+            EOL +
+            getLocalizedString(
+              "driver.teamsApp.summary.validateTeamsManifest.checkPath",
+              localizationFilesValidationRes.value.filePath
+            ) +
+            EOL +
+            localizationErrors;
+        }
         if (declarativeCopilotValidationResult) {
           const validationMessage = copilotGptManifestUtils.logValidationErrors(
             declarativeCopilotValidationResult,
@@ -361,10 +395,10 @@ export class ValidateManifestDriver implements StepDriver {
     args: ValidateManifestArgs,
     context: WrapDriverContext,
     manifest: TeamsAppManifest
-  ): Promise<Result<any, FxError>> {
+  ): Promise<Result<{ error: string[]; filePath?: string }, FxError>> {
     const additionalLanguages = manifest.localizationInfo?.additionalLanguages;
     if (!additionalLanguages || additionalLanguages.length == 0) {
-      return ok(undefined);
+      return ok({ error: [] });
     }
     for (const language of additionalLanguages) {
       const filePath = language?.file;
@@ -374,8 +408,7 @@ export class ValidateManifestDriver implements StepDriver {
             AppStudioError.ValidationFailedError.name,
             AppStudioError.ValidationFailedError.message([
               getLocalizedString("error.appstudio.localizationFile.pathNotDefined", filePath),
-            ]),
-            HelpLinks.WhyNeedProvision
+            ])
           )
         );
       }
@@ -391,31 +424,32 @@ export class ValidateManifestDriver implements StepDriver {
       const localizationFile = manifestRes.value;
       try {
         const schema = await ManifestUtil.fetchSchema(localizationFile);
-        // the current localization schema has invalid regex sytax, we will skip some properties validation temporarily
-        delete schema.patternProperties[
-          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.description$"
-        ];
-        delete schema.patternProperties[
-          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.templateText$"
-        ];
+        // the current localization schema has invalid regex sytax, we need to manually fix the properties temporarily
+        const activityDespString =
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.description$";
+        const fixedActivityDespString =
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b\\]\\.description$";
+        if (schema.patternProperties?.[activityDespString]) {
+          schema.patternProperties[fixedActivityDespString] =
+            schema.patternProperties[activityDespString];
+          delete schema.patternProperties[activityDespString];
+        }
+        const activityTemplateString =
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b]\\.templateText$";
+        const fixedActivityTemplateString =
+          "^activities.activityTypes\\[\\b([0-9]|[1-8][0-9]|9[0-9]|1[01][0-9]|12[0-7])\\b\\]\\.templateText$";
+        if (schema.patternProperties?.[activityTemplateString]) {
+          schema.patternProperties[fixedActivityTemplateString] =
+            schema.patternProperties[activityTemplateString];
+          delete schema.patternProperties[activityTemplateString];
+        }
+
         const validationRes = await ManifestUtil.validateManifestAgainstSchema(
           localizationFile,
           schema
         );
         if (validationRes.length > 0) {
-          return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.ValidationFailedError.name,
-              AppStudioError.ValidationFailedError.message([
-                getLocalizedString(
-                  "error.appstudio.localizationFile.validationFailed",
-                  filePath,
-                  validationRes.join(EOL)
-                ),
-              ]),
-              HelpLinks.WhyNeedProvision
-            )
-          );
+          return ok({ error: validationRes, filePath: localizationFilePath });
         }
       } catch (e: any) {
         return err(
@@ -427,12 +461,11 @@ export class ValidateManifestDriver implements StepDriver {
                 filePath,
                 e.message
               ),
-            ]),
-            HelpLinks.WhyNeedProvision
+            ])
           )
         );
       }
     }
-    return ok(undefined);
+    return ok({ error: [] });
   }
 }

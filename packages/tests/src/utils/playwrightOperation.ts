@@ -186,6 +186,7 @@ export async function initPage(
     let addBtn;
     try {
       addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+      await addBtn?.click();
       if (options?.dashboardFlag) {
         const dialog = await page.waitForSelector("div[role='dialog']");
         await dialog.screenshot({

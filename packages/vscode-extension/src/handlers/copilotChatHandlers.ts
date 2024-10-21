@@ -95,13 +95,18 @@ export async function installGithubCopilotChatExtension(
 
       return ok({ installCopilot: true });
     } else if (confirmRes === localize("teamstoolkit.handlers.askInstallCopilot.installTeamsApp")) {
-      await VS_CODE_UI.openUrl(teamsAgentLink);
-      ExtTelemetry.sendTelemetryEvent(eventName, {
-        ...telemetryProperties,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.InstallTarget]: installationTarget.teamsAgent,
-      });
-      return ok({ installCopilot: false });
+      const openUrlRes = await VS_CODE_UI.openUrl(teamsAgentLink);
+      if (openUrlRes.isOk()) {
+        ExtTelemetry.sendTelemetryEvent(eventName, {
+          ...telemetryProperties,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          [TelemetryProperty.InstallTarget]: installationTarget.teamsAgent,
+        });
+        return ok({ installCopilot: false });
+      } else {
+        ExtTelemetry.sendTelemetryErrorEvent(eventName, openUrlRes.error, telemetryProperties);
+        return err(openUrlRes.error);
+      }
     } else {
       const error = new UserCancelError(eventName, "cancel");
       ExtTelemetry.sendTelemetryErrorEvent(eventName, error, telemetryProperties);

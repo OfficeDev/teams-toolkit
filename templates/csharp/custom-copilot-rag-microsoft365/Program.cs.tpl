@@ -7,6 +7,9 @@ using Microsoft.Teams.AI.AI.Models;
 using Microsoft.Teams.AI.AI.Planners;
 using Microsoft.Teams.AI.AI.Prompts;
 using Microsoft.Teams.AI.State;
+using Microsoft.Identity.Client;
+using Microsoft.Identity.Web;
+using {{SafeProjectName}}.Model;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,9 +29,9 @@ builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFramew
 // Create the Cloud Adapter with error handling enabled.
 // Note: some classes expect a BotAdapter and some expect a BotFrameworkHttpAdapter, so
 // register the same adapter instance for both types.
-builder.Services.AddSingleton<CloudAdapter, AdapterWithErrorHandler>();
-builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp => sp.GetService<CloudAdapter>());
-builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
+builder.Services.AddSingleton<TeamsAdapter, AdapterWithErrorHandler>();
+builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp => sp.GetService<TeamsAdapter>());
+builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<TeamsAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
@@ -55,6 +58,19 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
 ));
 {{/useAzureOpenAI}}
 
+builder.Services.AddSingleton(sp =>
+{
+    IConfidentialClientApplication app = ConfidentialClientApplicationBuilder.Create(config.AAD_APP_CLIENT_ID)
+                                        .WithClientSecret(config.AAD_APP_CLIENT_SECRET)
+                                        .WithTenantId(config.AAD_APP_TENANT_ID)
+                                        .WithLegacyCacheCompatibility(false)
+                                        .Build();
+    app.AddInMemoryTokenCache(); // For development purpose only, use distributed cache in production environment
+    return app;
+});
+
+GraphDataSource myDataSource = new GraphDataSource("graph-ai-search");
+
 // Create the bot as transient. In this case the ASP Controller is expecting an IBot.
 builder.Services.AddTransient<IBot>(sp =>
 {
@@ -66,9 +82,10 @@ builder.Services.AddTransient<IBot>(sp =>
     {
         PromptFolder = "./Prompts"
     });
+    prompts.AddDataSource("graph-ai-search", myDataSource);
 
     // Create ActionPlanner
-    ActionPlanner<TurnState> planner = new(
+    ActionPlanner<AppState> planner = new(
         options: new(
             model: sp.GetService<OpenAIModel>(),
             prompts: prompts,
@@ -82,9 +99,19 @@ builder.Services.AddTransient<IBot>(sp =>
         loggerFactory: loggerFactory
     );
 
-    Application<TurnState> app = new ApplicationBuilder<TurnState>()
+    IStorage storage = sp.GetService<IStorage>()!;
+    TeamsAdapter adapter = sp.GetService<TeamsAdapter>()!;
+    IConfidentialClientApplication msal = sp.GetService<IConfidentialClientApplication>();
+    string signInLink = $"https://{config.BOT_DOMAIN}/auth-start.html";
+    AuthenticationOptions<AppState> options = new();
+    options.AutoSignIn = (context, cancellationToken) => Task.FromResult(true);
+    options.AddAuthentication("graph", new TeamsSsoSettings(new string[] { "Files.Read.All" }, signInLink, msal));
+
+    Application<AppState> app = new ApplicationBuilder<AppState>()
         .WithAIOptions(new(planner))
         .WithStorage(sp.GetService<IStorage>())
+        .WithTurnStateFactory(() => new AppState())
+        .WithAuthentication(adapter, options)
         .Build();
 
     app.OnConversationUpdate("membersAdded", async (turnContext, turnState, cancellationToken) =>
@@ -97,6 +124,18 @@ builder.Services.AddTransient<IBot>(sp =>
                 await turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
             }
         }
+    });
+    
+    app.Authentication.Get("graph").OnUserSignInSuccess(async (turnContext, turnState) =>
+    {
+        // Successfully logged in
+        await turnContext.SendActivityAsync("You are successfully logged in. You can send a new message to talk to the bot.");
+    });
+    app.Authentication.Get("graph").OnUserSignInFailure(async (turnContext, turnState, error) =>
+    {
+        // Failed to login
+        await turnContext.SendActivityAsync("Failed to login");
+        await turnContext.SendActivityAsync($"Error message: { error.Message}");
     });
 
     return app;

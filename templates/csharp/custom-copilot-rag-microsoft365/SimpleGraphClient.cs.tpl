@@ -1,7 +1,7 @@
 using Microsoft.Graph;
 using System.Net.Http.Headers;
 
-namespace RagM3651010
+namespace {{SafeProjectName}}
 {
     public class SimpleGraphClient
     {

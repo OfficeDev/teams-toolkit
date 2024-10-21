@@ -1,6 +1,6 @@
 ﻿using Microsoft.Teams.AI.State;
 
-namespace RagM3651010.Model
+namespace {{SafeProjectName}}.Model
 {
     // Extend the turn state by configuring custom strongly typed state classes.
     public class AppState : TurnState

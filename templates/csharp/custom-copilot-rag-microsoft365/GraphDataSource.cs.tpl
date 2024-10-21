@@ -8,7 +8,7 @@ using Microsoft.Teams.AI.State;
 using System.Reflection.Metadata;
 using System.Text;
 
-namespace RagM3651010
+namespace {{SafeProjectName}}
 {
     public class GraphDataSource : IDataSource
     {

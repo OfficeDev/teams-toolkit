@@ -24,6 +24,12 @@ param webAppName string = resourceBaseName
 param identityName string = resourceBaseName
 param location string = resourceGroup().location
 
+param aadAppClientId string
+param aadAppTenantId string
+param aadAppOauthAuthorityHost string
+@secure()
+param aadAppClientSecret string
+
 resource identity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   location: location
   name: identityName
@@ -49,48 +55,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     httpsOnly: true
     siteConfig: {
       alwaysOn: true
-      appSettings: [
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1'
-        }
-        {
-          name: 'RUNNING_ON_AZURE'
-          value: '1'
-        }
-        {
-          name: 'BOT_ID'
-          value: identity.properties.clientId
-        }
-        {
-          name: 'BOT_TENANT_ID'
-          value: identity.properties.tenantId
-        }
-        {
-          name: 'BOT_TYPE'
-          value: 'UserAssignedMsi'
-        }
-{{#useOpenAI}}
-        {
-          name: 'OpenAI__ApiKey'
-          value: openAIApiKey
-        }
-{{/useOpenAI}}
-{{#useAzureOpenAI}}
-        {
-          name: 'Azure__OpenAIApiKey'
-          value: azureOpenAIApiKey
-        }
-        {
-          name: 'Azure__OpenAIEndpoint'
-          value: azureOpenAIEndpoint
-        }
-        {
-          name: 'Azure__OpenAIDeploymentName'
-          value: azureOpenAIDeploymentName
-        }
-{{/useAzureOpenAI}}
-      ]
       ftpsState: 'FtpsOnly'
     }
   }
@@ -99,6 +63,31 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     userAssignedIdentities: {
       '${identity.id}': {}
     }
+  }
+}
+
+resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
+  name: '${webAppName}/appsettings'
+  properties: {
+    WEBSITE_NODE_DEFAULT_VERSION: '~18'
+    WEBSITE_RUN_FROM_PACKAGE: '1'
+    BOT_ID: identity.properties.clientId
+    BOT_TENANT_ID: identity.properties.tenantId
+    BOT_TYPE: 'UserAssignedMsi'
+    BOT_DOMAIN: webApp.properties.defaultHostName
+    AAD_APP_CLIENT_ID: aadAppClientId
+    AAD_APP_CLIENT_SECRET: aadAppClientSecret
+    AAD_APP_TENANT_ID: aadAppTenantId
+    AAD_APP_OAUTH_AUTHORITY_HOST: aadAppOauthAuthorityHost
+    RUNNING_ON_AZURE: '1'
+{{#useAzureOpenAI}}
+    Azure__OpenAIApiKey: azureOpenAIApiKey
+    Azure__OpenAIEndpoint: azureOpenAIEndpoint
+    Azure__OpenAIDeploymentName: azureOpenAIDeploymentName
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+    OpenAI__ApiKey: openAIApiKey
+{{/useOpenAI}}
   }
 }
 

@@ -26,6 +26,18 @@
       },
       "botDisplayName": {
         "value": "{{appName}}"
+      },
+      "aadAppClientId": {
+        "value": "${{AAD_APP_CLIENT_ID}}"
+      },
+      "aadAppClientSecret": {
+        "value": "${{SECRET_AAD_APP_CLIENT_SECRET}}"
+      },
+      "aadAppTenantId": {
+        "value": "${{AAD_APP_TENANT_ID}}"
+      },
+      "aadAppOauthAuthorityHost": {
+        "value": "${{AAD_APP_OAUTH_AUTHORITY_HOST}}"
       }
     }
   }

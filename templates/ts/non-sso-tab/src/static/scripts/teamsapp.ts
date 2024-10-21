@@ -1,4 +1,5 @@
 import * as microsoftTeams from "@microsoft/teams-js";
+import { HostName } from "@microsoft/teams-js";
 
 (function () {
   "use strict";
@@ -12,7 +13,7 @@ import * as microsoftTeams from "@microsoft/teams-js";
     });
   });
 
-  function updateHubState(hubName) {
+  function updateHubState(hubName: HostName) {
     if (hubName) {
       document.getElementById("hubState").innerHTML = "in " + hubName;
     }

@@ -10,7 +10,6 @@ import {
   ManifestUtil,
   Colors,
   TeamsAppManifest,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";

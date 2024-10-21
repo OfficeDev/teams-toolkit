@@ -203,6 +203,23 @@ describe("teamsApp/validateManifest", async () => {
   });
 
   it("validation error - download failed", async () => {
+    sinon.stub(ManifestUtil, "validateManifest").resolves([]);
+    sinon.stub(ManifestUtil, "validateManifestAgainstSchema").throws("error");
+    const args: ValidateManifestArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert(result.error.name, AppStudioError.ValidationFailedError.name);
+    }
+  });
+
+  it("validation error - localization file validation failed", async () => {
     sinon
       .stub(ManifestUtil, "validateManifest")
       .throws(new Error(`Failed to get manifest at url due to: unknown error`));
@@ -279,7 +296,10 @@ describe("teamsApp/validateManifest", async () => {
     it("should return error when validation fails", async () => {
       const args: ValidateManifestArgs = { manifestPath: "fakepath" };
       const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;
-      const fakeLocalizationFile = {};
+      const fakeLocalizationFile = {
+        $schema:
+          "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.Localization.schema.json",
+      };
 
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(fakeLocalizationFile as any));
       sinon.stub(ManifestUtil, "validateManifestAgainstSchema").resolves(["Validation error"]);

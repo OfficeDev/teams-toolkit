@@ -21,7 +21,7 @@ describe("AzureNode", () => {
 
   it("setSignedIn", async () => {
     const azureNode = new AzureAccountNode(eventEmitter);
-    await azureNode.setSignedIn("test upn");
+    await azureNode.setSignedIn("", "", "test upn");
     const treeItem = await azureNode.getTreeItem();
 
     chai.assert.equal(treeItem.iconPath, azureIcon);
@@ -33,8 +33,8 @@ describe("AzureNode", () => {
 
   it("setSignedIn with same account", async () => {
     const azureNode = new AzureAccountNode(eventEmitter);
-    await azureNode.setSignedIn("test upn");
-    await azureNode.setSignedIn("test upn");
+    await azureNode.setSignedIn("", "", "test upn");
+    await azureNode.setSignedIn("", "", "test upn");
     const treeItem = await azureNode.getTreeItem();
 
     chai.assert.equal(treeItem.iconPath, azureIcon);
@@ -46,8 +46,8 @@ describe("AzureNode", () => {
 
   it("setSignedIn with different account", async () => {
     const azureNode = new AzureAccountNode(eventEmitter);
-    await azureNode.setSignedIn("test upn");
-    await azureNode.setSignedIn("test upn2");
+    await azureNode.setSignedIn("", "", "test upn");
+    await azureNode.setSignedIn("", "", "test upn2");
     const treeItem = await azureNode.getTreeItem();
 
     chai.assert.equal(treeItem.iconPath, azureIcon);

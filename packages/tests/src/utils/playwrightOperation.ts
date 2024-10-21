@@ -199,20 +199,6 @@ export async function initPage(
         }
       }
       await addBtn?.click();
-      if (options?.dashboardFlag) {
-        const dialog = await page.waitForSelector("div[role='dialog']");
-        await dialog.screenshot({
-          path: getPlaywrightScreenshotPath("dialog"),
-        });
-        const openBtn = await dialog?.waitForSelector(
-          "button:has-text('Open')"
-        );
-        console.log("click open button");
-        await openBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        await page.waitForSelector("div[role='dialog']", { state: "detached" });
-        console.log("successful to add teams app!!!");
-      }
     } catch {
       await page.screenshot({
         path: getPlaywrightScreenshotPath("add_page"),
@@ -221,50 +207,6 @@ export async function initPage(
       throw "error to add app";
     }
 
-    // dashboard template will have a popup
-    if (options?.dashboardFlag) {
-      console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) => {
-            popup.screenshot({
-              path: getPlaywrightScreenshotPath("popup_page"),
-              fullPage: true,
-            });
-            return popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup);
-          })
-          .catch(() => {}),
-        addBtn?.click(),
-      ]);
-      console.log("after popup");
-
-      if (popup && !popup?.isClosed()) {
-        // input password
-        console.log(`fill in password`);
-        await popup.fill(
-          "input.input[type='password'][name='passwd']",
-          password
-        );
-        // sign in
-        await Promise.all([
-          popup.click("input.button[type='submit'][value='Sign in']"),
-          popup.waitForNavigation(),
-        ]);
-        await popup.click("input.button[type='submit'][value='Accept']");
-        try {
-          await popup?.close();
-        } catch (error) {
-          console.log("popup is closed");
-        }
-      }
-    } else {
-      await addBtn?.click();
-    }
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
     try {

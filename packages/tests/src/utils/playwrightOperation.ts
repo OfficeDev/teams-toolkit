@@ -205,7 +205,7 @@ export async function initPage(
           path: getPlaywrightScreenshotPath("dialog"),
         });
         const openBtn = await dialog?.waitForSelector(
-          "button:has-text('open')"
+          "button:has-text('Open')"
         );
         console.log("click open button");
         await openBtn?.click();

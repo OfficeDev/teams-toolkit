@@ -315,47 +315,7 @@ export async function reopenPage(
           throw "error to add app";
         }
       }
-
-      // dashboard template will have a popup
-      if (options?.dashboardFlag && password) {
-        console.log("Before popup");
-        const [popup] = await Promise.all([
-          page
-            .waitForEvent("popup")
-            .then((popup) =>
-              popup
-                .waitForEvent("close", {
-                  timeout: Timeout.playwrightConsentPopupPage,
-                })
-                .catch(() => popup)
-            )
-            .catch(() => {}),
-          addBtn?.click(),
-        ]);
-        console.log("after popup");
-
-        if (popup && !popup?.isClosed()) {
-          // input password
-          console.log(`fill in password`);
-          await popup.fill(
-            "input.input[type='password'][name='passwd']",
-            password
-          );
-          // sign in
-          await Promise.all([
-            popup.click("input.button[type='submit'][value='Sign in']"),
-            popup.waitForNavigation(),
-          ]);
-          await popup.click("input.button[type='submit'][value='Accept']");
-          try {
-            await popup?.close();
-          } catch (error) {
-            console.log("popup is closed");
-          }
-        }
-      } else {
-        await addBtn?.click();
-      }
+      await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("[success] app loaded");
       // verify add page is closed

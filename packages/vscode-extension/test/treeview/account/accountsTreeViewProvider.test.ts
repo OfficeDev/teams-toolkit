@@ -80,7 +80,19 @@ describe("AccountTreeViewProvider", () => {
     const m365SignedInStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "setSignedIn");
     const updateChecksStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "updateChecks");
     await m365StatusChange("SignedIn", "token", { upn: "upn" });
-    chai.assert.isTrue(m365SignedInStub.calledOnce);
+    chai.assert.isTrue(m365SignedInStub.calledOnceWithExactly("upn", ""));
+    chai.assert.isTrue(updateChecksStub.calledOnce);
+
+    m365SignedInStub.reset();
+    updateChecksStub.reset();
+    await m365StatusChange("SignedIn", "token", { tid: "tid" });
+    chai.assert.isTrue(m365SignedInStub.calledOnceWithExactly("", "tid"));
+    chai.assert.isTrue(updateChecksStub.calledOnce);
+
+    m365SignedInStub.reset();
+    updateChecksStub.reset();
+    await m365StatusChange("SignedIn", "token", { upn: "upn", tid: "tid" });
+    chai.assert.isTrue(m365SignedInStub.calledOnceWithExactly("upn", "tid"));
     chai.assert.isTrue(updateChecksStub.calledOnce);
 
     const m365SwitchingStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "setSwitching");
@@ -97,6 +109,10 @@ describe("AccountTreeViewProvider", () => {
     const azureSignedInStub = sandbox.stub(AccountTreeViewProvider.azureAccountNode, "setSignedIn");
     await azureStatusChange("SignedIn", "token", { upn: "upn" });
     chai.assert.isTrue(azureSignedInStub.calledOnce);
+
+    azureSignedInStub.reset();
+    await azureStatusChange("SignedIn", "token", { upn: "upn", tid: "tid" });
+    chai.assert.isTrue(azureSignedInStub.calledOnceWithExactly("token", "tid", "upn"));
 
     const azureSigningInStub = sandbox.stub(
       AccountTreeViewProvider.azureAccountNode,

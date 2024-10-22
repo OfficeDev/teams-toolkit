@@ -337,9 +337,14 @@
       ],
       "view/item/context": [
         {
+          "command": "fx-extension.m365SwitchTenant",
+          "when": "fx-extension.isMultiTenantEnabled && view == teamsfx-accounts && viewItem == signedinM365",
+          "group": "inline@1"
+        },
+        {
           "command": "fx-extension.signOut",
           "when": "view == teamsfx-accounts && viewItem == signedinM365",
-          "group": "inline@1"
+          "group": "inline@2"
         },
         {
           "command": "fx-extension.azureAccountSignOutHelp",
@@ -349,7 +354,7 @@
         {
           "command": "fx-extension.m365AccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinM365",
-          "group": "inline@2"
+          "group": "inline@3"
         },
         {
           "command": "fx-extension.refreshSideloading",
@@ -568,6 +573,10 @@
         },
         {
           "command": "fx-extension.selectAndDebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.m365SwitchTenant",
           "when": "false"
         },
         {
@@ -890,6 +899,11 @@
         "command": "fx-extension.checkCopilotAccess",
         "title": "%teamstoolkit.commands.checkCopilotAccess%",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.m365SwitchTenant",
+        "title": "%teamstoolkit.commands.switchTenant.title%",
+        "icon": "$(arrow-swap)"
       },
       {
         "command": "fx-extension.signOut",

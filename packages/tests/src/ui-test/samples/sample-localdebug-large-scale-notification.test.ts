@@ -42,10 +42,10 @@ class LargeNotiTestCase extends CaseFactory {
       `.env.${env}.user`
     );
     let envUserFileString = fs.readFileSync(envUserFile, "utf-8");
-    envUserFileString += `\nSTORAGE_ACCOUNT_KEY=${process.env["STORAGE_ACCOUNT_KEY"]}`;
+    envUserFileString += `\nSECRET_STORAGE_ACCOUNT_KEY=${process.env["STORAGE_ACCOUNT_KEY"]}`;
     fs.writeFileSync(envUserFile, envUserFileString);
     console.log(
-      `add STORAGE_ACCOUNT_KEY ${process.env["STORAGE_ACCOUNT_KEY"]} to .env.${env}.user file`
+      `add SECRET_STORAGE_ACCOUNT_KEY ${process.env["STORAGE_ACCOUNT_KEY"]} to .env.${env}.user file`
     );
 
     // add connect string into local.setting.json

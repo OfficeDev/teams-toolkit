@@ -112,6 +112,13 @@ export class ManifestUtils {
     if (fs.existsSync(filePath)) {
       return filePath;
     }
+
+    // Samples from https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature have the manifest in root folder
+    const officeAddinManifestPath = path.join(projectPath, "manifest.json");
+    if (fs.existsSync(officeAddinManifestPath)) {
+      return officeAddinManifestPath;
+    }
+
     return path.join(projectPath, "appPackage", "manifest.json");
   }
 

@@ -154,6 +154,9 @@ export async function sendDebugAllEvent(
     [TelemetryMeasurements.DebugServicesGapDuration]: servicesGap,
   };
 
+  properties["debug-checked-ports"] = globalVariables.LocalDebugPorts.checkPorts.join(",");
+  properties["debug-closed-ports"] = globalVariables.LocalDebugPorts.closedPorts.join(",");
+
   if (error === undefined) {
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAll, properties, measurements);
   } else {

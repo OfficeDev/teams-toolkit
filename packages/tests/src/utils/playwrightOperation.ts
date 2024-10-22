@@ -183,31 +183,39 @@ export async function initPage(
     ]);
     await page.waitForTimeout(Timeout.longTimeWait);
     console.log("click add button");
-    let addBtn;
+    let addInBtn;
     try {
-      try {
-        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-      } catch {
-        try {
-          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
-        } catch {
-          await page.screenshot({
-            path: getPlaywrightScreenshotPath("add_page"),
-            fullPage: true,
-          });
-          throw "error to add app";
-        }
-      }
-      await addBtn?.click();
+      addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
     } catch {
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("add_page"),
-        fullPage: true,
-      });
-      throw "error to add app";
+      console.log("No Add button. try Open button");
+      try {
+        addInBtn = await page?.waitForSelector("button>span:has-text('Open')");
+      } catch {
+        await page.screenshot({
+          path: getPlaywrightScreenshotPath("add_page"),
+          fullPage: true,
+        });
+        throw "error to add app";
+      }
     }
-
+    await addInBtn?.click();
     await page.waitForTimeout(Timeout.shortTimeLoading);
+
+    try {
+      // teams app add
+      const dialog = await page.waitForSelector("div[role='dialog']");
+      const openBtn = await dialog?.waitForSelector("button:has-text('Open')");
+      console.log("click 'open' button");
+      await openBtn?.click();
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+
+      await page?.waitForSelector("div[role='dialog']", {
+        state: "detached",
+      });
+      console.log("successful to add teams app!!!");
+    } catch (error) {
+      console.log("no need to add to a team step");
+    }
     // verify add page is closed
     try {
       await page?.waitForSelector("button>span:has-text('Add')", {
@@ -218,16 +226,6 @@ export async function initPage(
         state: "detached",
       });
     }
-    try {
-      const openApp = await page?.waitForSelector(
-        "button[data-testid='open-app'][data-tid='open-app']"
-      );
-      console.log("clicked open app");
-      await openApp.click();
-    } catch {
-      console.log("No Open App button");
-    }
-    console.log("[success] app loaded");
     await page.waitForTimeout(Timeout.longTimeWait);
   });
 
@@ -301,12 +299,15 @@ export async function reopenPage(
     await page.waitForTimeout(Timeout.shortTimeLoading);
     if (addApp) {
       console.log("click add button");
-      let addBtn;
+      let addInBtn;
       try {
-        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
       } catch {
+        console.log("No Add button. try Open button");
         try {
-          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
+          addInBtn = await page?.waitForSelector(
+            "button>span:has-text('Open')"
+          );
         } catch {
           await page.screenshot({
             path: getPlaywrightScreenshotPath("add_page"),
@@ -315,9 +316,27 @@ export async function reopenPage(
           throw "error to add app";
         }
       }
-      await addBtn?.click();
+      await addInBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("[success] app loaded");
+      // verify add page is closed
+      try {
+        // teams app add
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        const openBtn = await dialog?.waitForSelector(
+          "button:has-text('Open')"
+        );
+        console.log("click 'open' button");
+        await openBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        await page?.waitForSelector("div[role='dialog']", {
+          state: "detached",
+        });
+        console.log("successful to add teams app!!!");
+      } catch (error) {
+        console.log("no need to add to a team step");
+      }
       // verify add page is closed
       try {
         await page?.waitForSelector("button>span:has-text('Add')", {
@@ -327,15 +346,6 @@ export async function reopenPage(
         await page?.waitForSelector("button>span:has-text('Open')", {
           state: "detached",
         });
-      }
-      try {
-        const openApp = await page?.waitForSelector(
-          "button[data-testid='open-app'][data-tid='open-app']"
-        );
-        console.log("clicked open app");
-        await openApp.click();
-      } catch {
-        console.log("No Open App button");
       }
     }
     await page.waitForTimeout(Timeout.longTimeWait);

@@ -205,9 +205,16 @@ export async function initPage(
       // teams app add
       const dialog = await page.waitForSelector("div[role='dialog']");
       const openBtn = await dialog?.waitForSelector("button:has-text('Open')");
+      await dialog.screenshot({
+        path: getPlaywrightScreenshotPath("dialog_show"),
+      });
+
       console.log("click 'open' button");
       await openBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
+      await dialog.screenshot({
+        path: getPlaywrightScreenshotPath("dialog_detatched"),
+      });
 
       await page?.waitForSelector("div[role='dialog']", {
         state: "detached",
@@ -2334,7 +2341,7 @@ export async function validateBasicDashboardTab(page: Page) {
 export async function validateDashboardTab(page: Page) {
   try {
     console.log("start to verify dashboard tab");
-    await page.waitForTimeout(Timeout.longTimeWait);
+    await page.waitForTimeout(Timeout.activatingExtension);
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );

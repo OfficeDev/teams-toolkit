@@ -5,6 +5,7 @@ import path from "path";
 import { performance } from "perf_hooks";
 import * as util from "util";
 import * as vscode from "vscode";
+
 import { ProductName, UserError } from "@microsoft/teamsfx-api";
 import {
   Correlator,

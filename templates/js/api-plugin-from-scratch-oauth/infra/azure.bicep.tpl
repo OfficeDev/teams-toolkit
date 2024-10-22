@@ -3,10 +3,6 @@
 param resourceBaseName string
 param functionAppSKU string
 param aadAppClientId string
-{{^MicrosoftEntra}}
-@secure()
-param aadAppClientSecret string
-{{/MicrosoftEntra}}
 param aadAppTenantId string
 param aadAppOauthAuthorityHost string
 param location string = resourceGroup().location
@@ -48,24 +44,6 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~18' // Set NodeJS version to 18.x
-        }
-        {
-          name: 'M365_CLIENT_ID'
-          value: aadAppClientId
-        }
-{{^MicrosoftEntra}}
-        {
-          name: 'M365_CLIENT_SECRET'
-          value: aadAppClientSecret
-        }
-{{/MicrosoftEntra}}
-        {
-          name: 'M365_TENANT_ID'
-          value: aadAppTenantId
-        }
-        {
-          name: 'M365_AUTHORITY_HOST'
-          value: aadAppOauthAuthorityHost
         }
       ]
       ftpsState: 'FtpsOnly'

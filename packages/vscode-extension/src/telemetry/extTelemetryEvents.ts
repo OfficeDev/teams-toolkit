@@ -418,6 +418,7 @@ export enum TelemetryProperty {
   CopilotChatResponseToken = "copilot-chat-response-token",
   KiotaInstalled = "kiota-installed",
   ShowAddPluginTreeView = "show-add-plugin-tree-view",
+  InstallTarget = "install-target",
 }
 
 export enum TelemetryMeasurements {

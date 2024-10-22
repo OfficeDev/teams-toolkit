@@ -101,9 +101,6 @@ export class OfficeAddinGenerator {
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
-    const language = toLower(inputs[QuestionNames.ProgrammingLanguage]) as
-      | "javascript"
-      | "typescript";
     const projectType = inputs[QuestionNames.ProjectType];
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
@@ -140,7 +137,6 @@ export class OfficeAddinGenerator {
           );
         }
         // from template
-        const framework = getOfficeAddinFramework(inputs);
         const templateConfig = getOfficeAddinTemplateConfig();
         const projectLink =
           projectType === ProjectTypeOptions.officeMetaOS().id

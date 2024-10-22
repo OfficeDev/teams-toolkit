@@ -19,7 +19,7 @@ import {
 import { OauthNameTooLongError } from "./error/oauthNameTooLong";
 import { UpdateOauthArgs } from "./interface/updateOauthArgs";
 import { logMessageKeys } from "./utility/constants";
-import { getandValidateOauthInfoFromSpec } from "./utility/utility";
+import { getandValidateOauthInfoFromSpec, OauthInfo } from "./utility/utility";
 import { OauthDisablePKCEError } from "./error/oauthDisablePKCEError";
 
 const actionName = "oauth/update"; // DO NOT MODIFY the name
@@ -44,7 +44,6 @@ export class UpdateOauthDriver implements StepDriver {
       this.validateArgs(args);
 
       const authInfo = await getandValidateOauthInfoFromSpec(args, context, actionName);
-      const domain = authInfo.domain;
       const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,
       });
@@ -61,7 +60,7 @@ export class UpdateOauthDriver implements StepDriver {
         throw new OauthDisablePKCEError(actionName);
       }
 
-      const diffMsgs = this.compareOauthRegistration(getOauthRes, args, domain);
+      const diffMsgs = this.compareOauthRegistration(getOauthRes, args, authInfo);
       // If there is no difference, skip the update
       if (!diffMsgs || diffMsgs.length === 0) {
         const summary = getLocalizedString(logMessageKeys.skipUpdateOauth);
@@ -76,7 +75,9 @@ export class UpdateOauthDriver implements StepDriver {
 
       // If there is difference, ask user to confirm the update
       // Skip confirm if only targetUrlsShouldStartWith is different when the url contains devtunnel
-      if (!this.shouldSkipConfirm(diffMsgs, getOauthRes.targetUrlsShouldStartWith, domain)) {
+      if (
+        !this.shouldSkipConfirm(diffMsgs, getOauthRes.targetUrlsShouldStartWith, authInfo.domain)
+      ) {
         const userConfirm = await context.ui!.confirm!({
           name: "confirm-update-oauth",
           title: getLocalizedString("driver.oauth.confirm.update", diffMsgs.join(",\n")),
@@ -87,7 +88,7 @@ export class UpdateOauthDriver implements StepDriver {
         }
       }
 
-      const oauth = this.mapArgsToOauthRegistration(args, domain);
+      const oauth = this.mapArgsToOauthRegistration(args, authInfo);
       await teamsDevPortalClient.updateOauthRegistration(
         appStudioToken,
         oauth,
@@ -179,7 +180,7 @@ export class UpdateOauthDriver implements StepDriver {
   private compareOauthRegistration(
     current: OauthRegistration,
     input: UpdateOauthArgs,
-    domain: string[]
+    authInfo: OauthInfo
   ): string[] {
     const diffMsgs: string[] = [];
     if (current.description !== input.name) {
@@ -201,6 +202,7 @@ export class UpdateOauthDriver implements StepDriver {
     }
 
     // Compare domain
+    const domain = authInfo.domain;
     if (
       current.targetUrlsShouldStartWith.length !== domain.length ||
       !current.targetUrlsShouldStartWith.every((value) => domain.includes(value)) ||
@@ -213,7 +215,46 @@ export class UpdateOauthDriver implements StepDriver {
       );
     }
 
-    if (current.isPKCEEnabled !== input.isPKCEEnabled) {
+    // TODO: Need to separate the logic for different flows
+    // Compare authorizationEndpoint
+    if (
+      authInfo.authorizationEndpoint &&
+      current.authorizationEndpoint !== authInfo.authorizationEndpoint
+    ) {
+      diffMsgs.push(
+        `authorizationEndpoint: ${current.authorizationEndpoint} => ${authInfo.authorizationEndpoint}`
+      );
+    }
+
+    // Compare tokenExchangeEndpoint
+    if (
+      authInfo.tokenExchangeEndpoint &&
+      current.tokenExchangeEndpoint !== authInfo.tokenExchangeEndpoint
+    ) {
+      diffMsgs.push(
+        `tokenExchangeEndpoint: ${current.tokenExchangeEndpoint} => ${authInfo.tokenExchangeEndpoint}`
+      );
+    }
+
+    // Compare tokenRefreshEndpoint
+    if (current.tokenRefreshEndpoint !== authInfo.tokenRefreshEndpoint) {
+      diffMsgs.push(
+        `tokenRefreshEndpoint: ${current.tokenRefreshEndpoint ?? "Undefined"} => ${
+          authInfo.tokenRefreshEndpoint ?? "Undefined"
+        }`
+      );
+    }
+
+    // Compare scopes
+    if (!this.compareScopes(current.scopes, authInfo.scopes)) {
+      diffMsgs.push(
+        `scopes: ${current.scopes.join(",")} => ${
+          authInfo.scopes ? authInfo.scopes.join(",") : "Undefined"
+        }`
+      );
+    }
+
+    if (!!current.isPKCEEnabled !== !!input.isPKCEEnabled) {
       diffMsgs.push(
         `isPKCEEnabled: ${(!!current.isPKCEEnabled).toString()} => ${(!!input.isPKCEEnabled).toString()}`
       );
@@ -233,7 +274,10 @@ export class UpdateOauthDriver implements StepDriver {
     );
   }
 
-  private mapArgsToOauthRegistration(args: UpdateOauthArgs, domain: string[]): OauthRegistration {
+  private mapArgsToOauthRegistration(
+    args: UpdateOauthArgs,
+    authInfo: OauthInfo
+  ): OauthRegistration {
     const targetAudience = args.targetAudience
       ? (args.targetAudience as OauthRegistrationTargetAudience)
       : undefined;
@@ -243,11 +287,24 @@ export class UpdateOauthDriver implements StepDriver {
 
     return {
       description: args.name,
-      targetUrlsShouldStartWith: domain,
+      targetUrlsShouldStartWith: authInfo.domain,
       applicableToApps: applicableToApps,
       m365AppId: applicableToApps === OauthRegistrationAppType.SpecificApp ? args.appId : "",
       targetAudience: targetAudience,
       isPKCEEnabled: !!args.isPKCEEnabled,
+      authorizationEndpoint: authInfo.authorizationEndpoint,
+      tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,
+      tokenRefreshEndpoint: authInfo.tokenRefreshEndpoint,
+      scopes: authInfo.scopes ?? [],
     } as OauthRegistration;
+  }
+
+  private compareScopes(current: string[], input: string[] | undefined): boolean {
+    return (
+      !!input &&
+      current.length === input.length &&
+      current.every((value) => input.includes(value)) &&
+      input.every((value) => current.includes(value))
+    );
   }
 }

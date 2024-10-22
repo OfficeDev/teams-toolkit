@@ -14,6 +14,7 @@ import {
   Result,
   Stage,
   Tools,
+  UserError,
   Void,
   err,
   ok,
@@ -506,7 +507,12 @@ export default class ServerConnection implements IServerConnection {
             command: depStatus.command,
             details: depStatus.details,
             ...(depStatus.error !== undefined
-              ? { error: { message: depStatus.error.message, helpLink: depStatus.error.helpLink } }
+              ? {
+                  error: {
+                    message: depStatus.error.message,
+                    helpLink: (depStatus.error as UserError).helpLink || "",
+                  },
+                }
               : {}),
           });
         } catch (error: unknown) {

@@ -6,14 +6,13 @@ import chai from "chai";
 import "mocha";
 import * as sinon from "sinon";
 import { DepsType } from "../../../../src/component/deps-checker/depsChecker";
-import { DepsCheckerError } from "../../../../src/component/deps-checker/depsError";
 import { DotnetChecker } from "../../../../src/component/deps-checker/internal/dotnetChecker";
 import { FuncToolChecker } from "../../../../src/component/deps-checker/internal/funcToolChecker";
 import { TestToolChecker } from "../../../../src/component/deps-checker/internal/testToolChecker";
 import { ToolsInstallDriver } from "../../../../src/component/driver/devTool/installDriver";
 import { InstallToolArgs } from "../../../../src/component/driver/devTool/interfaces/InstallToolArgs";
 import { LocalCertificateManager } from "../../../../src/component/local/localCertificateManager";
-import { CoreSource } from "../../../../src/error";
+import { CoreSource, DepsCheckerError } from "../../../../src/error";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 
 describe("Tools Install Driver test", () => {

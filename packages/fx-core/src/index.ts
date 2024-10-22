@@ -67,7 +67,6 @@ export {
 export { CoreDepsLoggerAdapter } from "./component/deps-checker/coreDepsLoggerAdapter";
 export { CoreDepsTelemetryAdapter } from "./component/deps-checker/coreDepsTelemetryAdapter";
 export * from "./component/deps-checker/depsChecker";
-export * from "./component/deps-checker/depsError";
 export { DepsLogger, EmptyLogger } from "./component/deps-checker/depsLogger";
 export { DepsManager } from "./component/deps-checker/depsManager";
 export { DepsTelemetry, EmptyTelemetry } from "./component/deps-checker/depsTelemetry";

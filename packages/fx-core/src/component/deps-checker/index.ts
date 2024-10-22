@@ -4,7 +4,6 @@
 
 export * from "./checkerFactory";
 export * from "./depsChecker";
-export * from "./depsError";
 export * from "./depsLogger";
 export * from "./depsManager";
 export * from "./depsTelemetry";

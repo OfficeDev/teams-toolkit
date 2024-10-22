@@ -22,12 +22,13 @@
   <ItemGroup>
     <PackageReference Include="AdaptiveCards" Version="3.1.0" />
     <PackageReference Include="AdaptiveCards.Templating" Version="1.5.0" />
-    <PackageReference Include="Microsoft.Bot.Builder" Version="4.22.7" />
-    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.7" />
+    <PackageReference Include="Microsoft.Bot.Builder" Version="4.22.9" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.9" />
     <PackageReference Include="Microsoft.OpenApi" Version="1.6.19" />
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.6.19" />
-    <PackageReference Include="Microsoft.Teams.AI" Version="1.5.*" />
+    <PackageReference Include="Microsoft.Teams.AI" Version="1.7.*" />
     <PackageReference Include="RestSharp" Version="112.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,17 +36,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="apiSpecificationFile\openapi.yaml">
+    <Content Remove="apiSpecificationFile\{{OPENAPI_SPEC_PATH}}" />
+    <Content Include="apiSpecificationFile\{{OPENAPI_SPEC_PATH}}">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
-  </ItemGroup>
 
-  <!-- Exclude local settings from publish -->
-  <ItemGroup>
+    <!-- Exclude local settings from publish -->
     <Content Remove="appsettings.Development.json" />
     <Content Include="appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

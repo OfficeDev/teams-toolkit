@@ -9,44 +9,14 @@ import {
   InvokeResponseErrorCode,
   MessageResponse,
   NotificationTarget,
-  NotificationTargetStorage,
   NotificationTargetType,
   TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
-
 import { InvokeResponseFactory } from "../../../../src/conversation/invokeResponseFactory";
 import { TeamsBotSsoPromptTokenResponse } from "../../../../src";
-
-export class TestStorage implements NotificationTargetStorage {
-  public items: any = {};
-
-  read(key: string): Promise<{ [key: string]: unknown } | undefined> {
-    return new Promise((resolve) => resolve(this.items[key]));
-  }
-
-  list(): Promise<{ [key: string]: unknown }[]> {
-    return new Promise((resolve) =>
-      resolve(Object.entries(this.items).map((entry) => entry[1] as { [key: string]: unknown }))
-    );
-  }
-
-  write(key: string, object: { [key: string]: unknown }): Promise<void> {
-    return new Promise((resolve) => {
-      this.items[key] = object;
-      resolve();
-    });
-  }
-
-  delete(key: string): Promise<void> {
-    return new Promise((resolve) => {
-      delete this.items[key];
-      resolve();
-    });
-  }
-}
 
 export class TestTarget implements NotificationTarget {
   public content: any;
@@ -101,7 +71,7 @@ export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
 export class TestCommandHandler implements TeamsFxBotCommandHandler {
   public readonly triggerPatterns: TriggerPatterns;
 
-  public isInvoked: boolean = false;
+  public isInvoked = false;
   public lastReceivedMessage: CommandMessage | undefined;
 
   constructor(patterns: TriggerPatterns) {
@@ -119,7 +89,7 @@ export class TestCommandHandler implements TeamsFxBotCommandHandler {
 }
 
 export class MockCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
-  isInvoked: boolean = false;
+  isInvoked = false;
   triggerVerb: string;
   adaptiveCardResponse: AdaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
   invokeResponse: InvokeResponse;
@@ -144,7 +114,7 @@ export class MockCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
 }
 
 export class MockCardActionHandlerWithErrorResponse implements TeamsFxAdaptiveCardActionHandler {
-  isInvoked: boolean = false;
+  isInvoked = false;
   triggerVerb: string;
   invokeResponse: InvokeResponse;
   actionData: any;

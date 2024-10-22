@@ -5,7 +5,6 @@ import path from "path";
 import { performance } from "perf_hooks";
 import * as util from "util";
 import * as vscode from "vscode";
-
 import { ProductName, UserError } from "@microsoft/teamsfx-api";
 import {
   Correlator,
@@ -46,7 +45,7 @@ import {
 } from "./common/localDebugSession";
 import { allRunningDebugSessions } from "./officeTaskHandler";
 import { deleteAad } from "./deleteAadHelper";
-
+import detectPort from "detect-port";
 class NpmInstallTaskInfo {
   private startTime: number;
 
@@ -232,7 +231,7 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
       const session = getLocalDebugSession();
       if (session.id !== DebugNoSessionId) {
         if (session.failedServices.length > 0) {
-          terminateAllRunningTeamsfxTasks();
+          await terminateAllRunningTeamsfxTasks();
           // TODO: send test tool log file
           await sendDebugAllEvent(
             new UserError({
@@ -283,7 +282,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       // This is the final task for test tool.
       // If this task exits (even exitCode is 0) before being successfully started, the debug fails.
       if (currentSession.id !== DebugNoSessionId) {
-        terminateAllRunningTeamsfxTasks();
+        await terminateAllRunningTeamsfxTasks();
         await sendDebugAllEvent(
           new UserError({
             source: ExtensionSource,
@@ -320,7 +319,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
     event.exitCode !== 0 &&
     event.exitCode !== -1
   ) {
-    terminateAllRunningTeamsfxTasks();
+    await terminateAllRunningTeamsfxTasks();
   } else if (isNpmInstallTask(task)) {
     try {
       const taskInfo = activeNpmInstallTasks.get(task.name);
@@ -440,7 +439,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             )
           );
         }
-        terminateAllRunningTeamsfxTasks();
+        await terminateAllRunningTeamsfxTasks();
       }
     } catch {
       // ignore any error
@@ -500,7 +499,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         // Handle cases that some services failed immediately after start.
         const currentSession = getLocalDebugSession();
         if (currentSession.id !== DebugNoSessionId && currentSession.failedServices.length > 0) {
-          terminateAllRunningTeamsfxTasks();
+          await terminateAllRunningTeamsfxTasks();
           await vscode.debug.stopDebugging();
           await sendDebugAllEvent(
             new UserError({
@@ -525,7 +524,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
   }
 }
 
-export function terminateAllRunningTeamsfxTasks(): void {
+export async function terminateAllRunningTeamsfxTasks(): Promise<void> {
   for (const task of allRunningTeamsfxTasks) {
     try {
       if (task[1] > 0) {
@@ -535,12 +534,27 @@ export function terminateAllRunningTeamsfxTasks(): void {
       // ignore and keep killing others
     }
   }
+  if (globalVariables.LocalDebugPorts.checkPorts.length > 0) {
+    // check ports
+    const closedPorts: number[] = [];
+    for (const port of globalVariables.LocalDebugPorts.checkPorts) {
+      const port2 = await detectPort(port);
+      if (port2 === port) {
+        closedPorts.push(port);
+      }
+    }
+    void VsCodeLogInstance.info(
+      `Open ports: ${globalVariables.LocalDebugPorts.checkPorts.join(
+        ","
+      )}, closed ports: ${closedPorts.join(",")}`
+    );
+  }
   allRunningTeamsfxTasks.clear();
   BaseTunnelTaskTerminal.stopAll();
   void deleteAad();
 }
 
-function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
+async function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (allRunningDebugSessions.has(event.id)) {
     // a valid debug session
     // send stop-debug event telemetry
@@ -548,7 +562,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
       [TelemetryProperty.DebugSessionId]: event.id,
     });
 
-    terminateAllRunningTeamsfxTasks();
+    await terminateAllRunningTeamsfxTasks();
 
     allRunningDebugSessions.delete(event.id);
     if (allRunningDebugSessions.size == 0) {

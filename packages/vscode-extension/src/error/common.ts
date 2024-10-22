@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { UserError, SystemError, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import { isUserCancelError, ConcurrentError } from "@microsoft/teamsfx-core";
+import { isUserCancelError, ConcurrentError, PortsConflictError } from "@microsoft/teamsfx-core";
 import { Uri, commands, window } from "vscode";
 import {
   RecommendedOperations,
@@ -59,6 +59,16 @@ export async function showError(e: UserError | SystemError) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const buttons = recommendTestTool ? [runTestTool, help] : [help];
+    if (e instanceof PortsConflictError) {
+      buttons.push({
+        title: "Kill Process",
+        run: async () => {},
+      });
+      buttons.push({
+        title: "Change port",
+        run: async () => {},
+      });
+    }
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       ...buttons

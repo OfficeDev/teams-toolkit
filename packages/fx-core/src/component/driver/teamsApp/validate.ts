@@ -32,7 +32,6 @@ import { InvalidActionInputError } from "../../../error/common";
 import path from "path";
 import { copilotGptManifestUtils } from "./utils/CopilotGptManifestUtils";
 import { pluginManifestUtils } from "./utils/PluginManifestUtils";
-import { secretMasker } from "../../../common/secretmasker/masker";
 
 const actionName = "teamsApp/validateManifest";
 

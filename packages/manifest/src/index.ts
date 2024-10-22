@@ -83,7 +83,7 @@ export class ManifestUtil {
       return Promise.resolve(
         validate.errors?.map(
           (error) =>
-            `${error.instancePath} ${error.message || ""} ${
+            `${error.instancePath} ${error.message || ""}. Details: ${
               error.params ? JSON.stringify(error.params) : ""
             }`
         )

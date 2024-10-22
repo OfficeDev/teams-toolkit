@@ -211,7 +211,13 @@ export async function initPage(
       });
 
       console.log("click 'open' button");
-      await openBtn?.click();
+      await openBtn?.click({ force: true });
+      try {
+        console.log("click 'open' button again");
+        await openBtn?.click({ force: true });
+      } catch (error) {
+        console.log("no need to click 'open' button again");
+      }
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
       await page?.waitForSelector("div[role='dialog']", {

@@ -1,8 +1,10 @@
-# Overview of the AI Chat Bot template
+# Overview of the Chat With Your Data (Using Microsoft 365 Data) template
 
-This template showcases a bot app that responds to user questions like an AI assistant. This enables your users to talk with the AI assistant in Teams to find information.
-
-The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
+This app template showcases how to build one of the most powerful applications enabled by LLM - sophisticated question-answering (Q&A) chat bots that can answer questions about specific source information right in the Microsoft Teams.
+This app template also demonstrates usage of techniques like: 
+- [Retrieval Augmented Generation](https://python.langchain.com/docs/use_cases/question_answering/#what-is-rag), or RAG.
+- [Microsoft Graph Search API](https://learn.microsoft.com/graph/search-concept-overview)
+- [Teams AI Library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview)
 
 ## Quick Start
 
@@ -15,29 +17,6 @@ The app template is built using the Teams AI library, which provides the capabil
 {{#useAzureOpenAI}}
 > - [Azure OpenAI](https://aka.ms/oai/access) resource
 {{/useAzureOpenAI}}
-
-### Debug bot app in Teams App Test Tool
-{{#useOpenAI}}
-1. Ensure your OpenAI API Key is filled in `appsettings.TestTool.json`.
-    ```
-    "OpenAI": {
-      "ApiKey": "<your-openai-api-key>"
-    }
-    ```
-{{/useOpenAI}}
-{{#useAzureOpenAI}}
-1. Ensure your Azure OpenAI settings are filled in `appsettings.TestTool.json`.
-    ```
-    "Azure": {
-      "OpenAIApiKey": "<your-azure-openai-api-key>",
-      "OpenAIEndpoint": "<your-azure-openai-endpoint>",
-      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
-    }
-    ```
-{{/useAzureOpenAI}}
-1. Select `Teams App Test Tool (browser)` in debug dropdown menu.
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
-1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response.
 
 ### Debug bot app in Teams Web Client
 {{#useOpenAI}}
@@ -54,6 +33,7 @@ The app template is built using the Teams AI library, which provides the capabil
     AZURE_OPENAI_DEPLOYMENT_NAME="<your-azure-openai-deployment-name>"
     ```
 {{/useAzureOpenAI}}
+1. Microsoft Graph Search API is available for searching SharePoint content, thus you just need to ensure your document in *src/data/\*.txt* is [uploaded to SharePoint / OneDrive](https://support.microsoft.com/office/upload-files-and-folders-to-a-library-da549fb1-1fcb-4167-87d0-4693e93cb7a0), no extra data ingestion required.
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel.
 1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies.
 1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
@@ -61,11 +41,14 @@ The app template is built using the Teams AI library, which provides the capabil
 1. In the launched browser, select the Add button to load the app in Teams.
 1. In the chat bar, type and send anything to your bot to trigger a response.
 
+![M365 RAG Bot](https://github.com/OfficeDev/TeamsFx/assets/13211513/c2fff68c-53ce-445a-a101-97f0c127b825)
+
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ## Extend the AI Chat Bot template with more AI capabilities
 
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Chat Bot template with more AI capabilities.
+- You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Chat Bot template with more AI capabilities.
+- Understand more about [how to add additional APIs](https://aka.ms/teamsfx-rag-bot#add-more-api-for-custom-api-as-data-source).
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

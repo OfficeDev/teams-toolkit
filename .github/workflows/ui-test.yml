@@ -201,6 +201,7 @@ jobs:
       AZURE_SUBSCRIPTION_NAME: ${{ secrets.TEST_SUBSCRIPTION_NAME }}
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      STORAGE_ACCOUNT_KEY: ${{ secrets.TEST_STORAGE_ACCOUNT_KEY }}
 
       AZURE_OPENAI_DEPLOYMENT_NAME: "gpt-4-32k"
       AZURE_OPENAI_ENDPOINT: "https://aoai-jasozdr.openai.azure.com/"

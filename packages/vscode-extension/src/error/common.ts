@@ -17,6 +17,57 @@ import { isTestToolEnabledProject } from "../utils/projectChecker";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
+import { processUtil } from "../utils/processUtil";
+import fs from "fs-extra";
+import path from "path";
+import detectPort from "detect-port";
+
+async function replacePortInPackageJson(filePath: string, oldPort: number, newPort: number) {
+  // Read the file content
+  const content = await fs.readFile(filePath, "utf-8");
+  // Regular expression to match the --inspect=<oldPort>
+  const portRegex = new RegExp(`--inspect=${oldPort}`, "g");
+  // Replace the old port with the new port
+  const updatedContent = content.replace(portRegex, `--inspect=${newPort}`);
+  // Write the updated content back to package.json
+  await fs.writeFile(filePath, updatedContent, "utf-8");
+  console.log(`Port replaced from ${oldPort} to ${newPort} in ${filePath}`);
+}
+async function replacePortInLaunchJson(filePath: string, oldPort: number, newPort: number) {
+  // Read the file content
+  const content = await fs.readFile(filePath, "utf-8");
+  // Regular expression to match the --inspect=<oldPort>
+  const portRegex = new RegExp(`"port"\\s*:\\s*${oldPort}\s*`, "g");
+  // Replace the old port with the new port
+  const updatedContent = content.replace(portRegex, `"port": ${newPort}`);
+  // Write the updated content back to package.json
+  await fs.writeFile(filePath, updatedContent, "utf-8");
+  console.log(`Port replaced from ${oldPort} to ${newPort} in ${filePath}`);
+}
+async function replacePortInTaskJson(filePath: string, oldPort: number, newPort: number) {
+  // Read the file content
+  const content = await fs.readFile(filePath, "utf-8");
+
+  // Regular expression to match the old port number in the portOccupancy array
+  const portRegex = new RegExp(`\\b${oldPort}\\b`, "g");
+
+  // Replace the old port with the new port
+  const updatedContent = content.replace(portRegex, `${newPort}`);
+
+  // Write the updated content back to the file
+  await fs.writeFile(filePath, updatedContent, "utf-8");
+
+  console.log(`Port replaced from ${oldPort} to ${newPort} in ${filePath}`);
+}
+
+async function replaceInspectPort(projectPath: string, oldPort: number, newPort: number) {
+  const taskJson = path.join(projectPath, ".vscode", "tasks.json");
+  const launchJson = path.join(projectPath, ".vscode", "launch.json");
+  const packageJson = path.join(projectPath, "package.json");
+  await replacePortInTaskJson(taskJson, oldPort, newPort);
+  await replacePortInPackageJson(packageJson, oldPort, newPort);
+  await replacePortInLaunchJson(launchJson, oldPort, newPort);
+}
 
 export async function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
@@ -62,11 +113,27 @@ export async function showError(e: UserError | SystemError) {
     if (e instanceof PortsConflictError) {
       buttons.push({
         title: "Kill Process",
-        run: async () => {},
+        run: async () => {
+          const error = e;
+          const ports = (error.telemetryProperties?.["occupied-ports"] || "")
+            .split(",")
+            .map((p) => parseInt(p));
+          for (const port of ports) {
+            await processUtil.killProcessOnPort(port);
+          }
+        },
       });
       buttons.push({
         title: "Change port",
-        run: async () => {},
+        run: async () => {
+          const error = e;
+          const ports = (error.telemetryProperties?.["occupied-ports"] || "")
+            .split(",")
+            .map((p) => parseInt(p));
+          const oldPort = ports[0];
+          const newPort = await detectPort(oldPort);
+          await replaceInspectPort(workspaceUri!.fsPath, oldPort, newPort);
+        },
       });
     }
     const button = await window.showErrorMessage(

@@ -7,6 +7,8 @@ import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { localize } from "../../utils/localizeUtils";
 import { DynamicNode } from "../dynamicNode";
 import { AccountItemStatus, azureIcon, loadingIcon } from "./common";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
+import { listAllTenants } from "@microsoft/teamsfx-core/build/common/tools";
 
 export class AzureAccountNode extends DynamicNode {
   public status: AccountItemStatus;
@@ -17,12 +19,20 @@ export class AzureAccountNode extends DynamicNode {
     this.contextValue = "signinAzure";
   }
 
-  public setSignedIn(upn: string) {
+  public async setSignedIn(token: string, tid: string, upn: string) {
     if (this.status === AccountItemStatus.SignedIn && this.label === upn) {
       return false;
     }
     this.status = AccountItemStatus.SignedIn;
     this.label = upn;
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      const tenants = await listAllTenants(token);
+      for (const tenant of tenants) {
+        if (tenant.tenantId === tid && tenant.displayName) {
+          this.label = `${upn} (${tenant.displayName as string})`;
+        }
+      }
+    }
     this.contextValue = "signedinAzure";
     this.eventEmitter.fire(undefined);
     return false;

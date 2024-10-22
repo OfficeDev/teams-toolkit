@@ -19,21 +19,21 @@ class DashboardTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
     return await validateDashboardTab(page);
   }
-  // public override async onCliValidate(page: Page): Promise<void> {
-  //   return await validateDashboardTab(page);
-  // }
-  // public override async onReopenPage(
-  //   sampledebugContext: SampledebugContext,
-  //   teamsAppId: string
-  // ): Promise<Page> {
-  //   return await reopenPage(
-  //     sampledebugContext.context!,
-  //     teamsAppId,
-  //     Env.username,
-  //     Env.password,
-  //     { dashboardFlag: true }
-  //   );
-  // }
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateDashboardTab(page);
+  }
+  public override async onReopenPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ): Promise<Page> {
+    return await reopenPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      { dashboardFlag: true }
+    );
+  }
 }
 
 new DashboardTestCase(
@@ -48,6 +48,6 @@ new DashboardTestCase(
   ],
   {
     dashboardFlag: true,
-    // debug: "cli",
+    debug: "cli",
   }
 ).test();

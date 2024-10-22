@@ -32,9 +32,8 @@ export let core: FxCore;
 export let tools: Tools;
 export let diagnosticCollection: vscode.DiagnosticCollection; // Collection of diagnositcs after running app validation.
 export let deleteAadInProgress = false;
-export const LocalDebugPorts: { checkPorts: number[]; closedPorts: number[] } = {
+export const LocalDebugPorts: { checkPorts: number[] } = {
   checkPorts: [],
-  closedPorts: [],
 };
 
 if (vscode.workspace && vscode.workspace.workspaceFolders) {

@@ -25,6 +25,7 @@ import { getLocalDebugSession } from "./common/localDebugSession";
 import { updateProjectStatus } from "../utils/projectStatusUtils";
 import { CommandKey } from "../constants";
 import { TeamsFxTaskType } from "./common/debugConstants";
+import detectPort from "detect-port";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -154,8 +155,15 @@ export async function sendDebugAllEvent(
     [TelemetryMeasurements.DebugServicesGapDuration]: servicesGap,
   };
 
+  const closedPorts: number[] = [];
+  for (const port of globalVariables.LocalDebugPorts.checkPorts) {
+    const port2 = await detectPort(port);
+    if (port2 === port) {
+      closedPorts.push(port);
+    }
+  }
   properties["debug-checked-ports"] = globalVariables.LocalDebugPorts.checkPorts.join(",");
-  properties["debug-closed-ports"] = globalVariables.LocalDebugPorts.closedPorts.join(",");
+  properties["debug-closed-ports"] = closedPorts.join(",");
 
   if (error === undefined) {
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAll, properties, measurements);

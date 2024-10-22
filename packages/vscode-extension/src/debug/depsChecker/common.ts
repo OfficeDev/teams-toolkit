@@ -39,7 +39,7 @@ import M365TokenInstance from "../../commonlib/m365Login";
 import { PanelType } from "../../controls/PanelType";
 import { WebviewPanel } from "../../controls/webviewPanel";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
-import { tools, workspaceUri } from "../../globalVariables";
+import { LocalDebugPorts, tools, workspaceUri } from "../../globalVariables";
 import { checkCopilotCallback } from "../../handlers/accounts/checkAccessCallback";
 import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
@@ -152,6 +152,7 @@ async function checkPort(
   displayMessage: string,
   additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
+  LocalDebugPorts.checkPorts = ports;
   return await runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckPorts,
     additionalTelemetryProperties,

@@ -329,6 +329,27 @@ describe("teamsApp/validateManifest", async () => {
       }
     });
 
+    it("should output errors when validation fails - CLI", async () => {
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.invalid.localization.manifest.json",
+      };
+      const mockedCLIDriverContext: any = {
+        m365TokenProvider: new MockedM365Provider(),
+        logProvider: new MockedLogProvider(),
+        ui: new MockedUserInteraction(),
+        projectPath: "./",
+        platform: Platform.CLI,
+      };
+      process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+      const result = (await teamsAppDriver.execute(args, mockedCLIDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error.message.includes("2 failed"));
+      }
+    });
+
     it("should return error when validation throws exception", async () => {
       const args: ValidateManifestArgs = { manifestPath: "fakepath" };
       const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;

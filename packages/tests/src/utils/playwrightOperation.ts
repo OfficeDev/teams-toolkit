@@ -12,6 +12,7 @@ import fs from "fs";
 import { dotenvUtil } from "./envUtil";
 import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
 import { Env } from "./env";
+import { err } from "@microsoft/teamsfx-api";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -205,22 +206,20 @@ export async function initPage(
       // teams app add
       const dialog = await page.waitForSelector("div[role='dialog']");
       const openBtn = await dialog?.waitForSelector("button:has-text('Open')");
-      await dialog.screenshot({
+      await openBtn.screenshot({
         path: getPlaywrightScreenshotPath("dialog_show"),
       });
 
       console.log("click 'open' button");
       await openBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
-      await dialog.screenshot({
-        path: getPlaywrightScreenshotPath("dialog_detatched"),
-      });
 
       await page?.waitForSelector("div[role='dialog']", {
         state: "detached",
       });
       console.log("successful to add teams app!!!");
     } catch (error) {
+      console.log(error);
       console.log("no need to add to a team step");
     }
     // verify add page is closed

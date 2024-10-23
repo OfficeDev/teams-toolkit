@@ -102,10 +102,6 @@ export class AdaptiveCardGenerator {
         counter
       );
 
-      if (obj.length === 0) {
-        return [];
-      }
-
       const template = {
         type: ConstantString.ContainerType,
         $data: name ? `\${${name}}` : "${$root}",

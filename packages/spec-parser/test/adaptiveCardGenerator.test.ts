@@ -462,11 +462,7 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(
-        schema as any,
-        name,
-        parentArrayName
-      );
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name);
 
       expect(actual).to.deep.equal(expected);
     });

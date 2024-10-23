@@ -50,7 +50,10 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
     } else {
       error = result.error;
     }
+  } else if (tokenRes.isErr()) {
+    error = tokenRes.error;
   }
+
   if (error == undefined) {
     error = new SystemError(
       ExtensionSource,

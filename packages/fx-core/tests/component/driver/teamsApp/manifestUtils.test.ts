@@ -7,6 +7,7 @@ import {
   ManifestUtils,
 } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
+import path from "path";
 import {
   TeamsAppManifest,
   InputsWithProjectPath,
@@ -433,6 +434,38 @@ describe("readAppManifestSync", () => {
 
     const res = manifestUtils.readAppManifestSync("projectPath");
     assert.isTrue(res.isErr() && res.error instanceof ReadFileError);
+  });
+});
+
+describe("getTeamsAppManifestPath", () => {
+  const sandbox = sinon.createSandbox();
+  const projectPath = "projectPath";
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("return manifest path under appManifest", () => {
+    sandbox.stub(fs, "existsSync").returns(true);
+    const res = manifestUtils.getTeamsAppManifestPath(projectPath);
+    assert.equal(res, path.join(projectPath, "appManifest", "manifest.json"));
+  });
+
+  it("return manifest path under root directory", () => {
+    sandbox.stub(fs, "existsSync").callsFake((inputPath) => {
+      if (inputPath === path.join(projectPath, "appManifest", "manifest.json")) {
+        return false;
+      }
+      return true;
+    });
+    const res = manifestUtils.getTeamsAppManifestPath(projectPath);
+    assert.equal(res, path.join(projectPath, "manifest.json"));
+  });
+
+  it("return manifest path under appPackage", () => {
+    sandbox.stub(fs, "existsSync").returns(false);
+    const res = manifestUtils.getTeamsAppManifestPath(projectPath);
+    assert.equal(res, path.join(projectPath, "appPackage", "manifest.json"));
   });
 });
 

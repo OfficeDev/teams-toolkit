@@ -24,7 +24,7 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
   const tokenRes = await M365TokenInstance.getAccessToken({
     scopes: AzureScopes,
   });
-  if (tokenRes.isOk() && tokenRes.value) {
+  if (tokenRes.isOk()) {
     const config: SingleSelectConfig = {
       name: "SwitchTenant",
       title: localize("teamstoolkit.handlers.switchtenant.quickpick.title"),
@@ -50,16 +50,8 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
     } else {
       error = result.error;
     }
-  } else if (tokenRes.isErr()) {
+  } else {
     error = tokenRes.error;
-  }
-
-  if (error == undefined) {
-    error = new SystemError(
-      ExtensionSource,
-      "SwitchTenantFailed",
-      localize("teamstoolkit.handlers.switchtenant.error")
-    );
   }
 
   if (!isUserCancelError(error)) {

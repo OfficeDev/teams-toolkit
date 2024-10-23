@@ -65,6 +65,19 @@ describe("onSwitchM365Tenant", () => {
 
     chai.assert.isTrue(sendTelemetryEventStub.calledTwice);
     chai.assert.isTrue(sendTelemetryErrorEventStub.notCalled);
+    const items = await selectOptionStub.args[0][0].options();
+    chai.assert.deepEqual(items, [
+      {
+        id: "0022fd51-06f5-4557-8a34-69be98de6e20",
+        label: "MSFT",
+        description: "t815h.onmicrosoft.com",
+      },
+      {
+        id: "313ef12c-d7cb-4f01-af90-1b113db5aa9a",
+        label: "Cisco",
+        description: "Cisco561.onmicrosoft.com",
+      },
+    ]);
   });
 });
 

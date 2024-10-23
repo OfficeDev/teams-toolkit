@@ -468,35 +468,4 @@ export class Utils {
 
     return serverUrl;
   }
-
-  static limitACBodyProperties(body: AdaptiveCardBody, maxCount: number): AdaptiveCardBody {
-    const result: AdaptiveCardBody = [];
-    let currentCount = 0;
-
-    for (const element of body) {
-      if (element.type === ConstantString.ContainerType) {
-        const items = this.limitACBodyProperties(
-          (element as ArrayElement).items,
-          maxCount - currentCount
-        );
-
-        result.push({
-          type: ConstantString.ContainerType,
-          $data: (element as ArrayElement).$data,
-          items: items,
-        });
-
-        currentCount += items.length;
-      } else {
-        result.push(element);
-        currentCount++;
-      }
-
-      if (currentCount >= maxCount) {
-        break;
-      }
-    }
-
-    return result;
-  }
 }

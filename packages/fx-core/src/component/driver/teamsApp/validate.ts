@@ -114,6 +114,8 @@ export class ValidateManifestDriver implements StepDriver {
     if (localizationFilesValidationRes.isErr()) {
       return err(localizationFilesValidationRes.error);
     }
+    telemetryProperties[TelemetryPropertyKey.localizationValidationErrors] =
+      localizationFilesValidationRes.value.error.map((r: string) => r.replace(/\//g, "")).join(";");
 
     let declarativeCopilotValidationResult;
     let pluginValidationResult;

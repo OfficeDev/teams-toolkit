@@ -399,11 +399,20 @@ export class ValidateManifestDriver implements StepDriver {
     context: WrapDriverContext,
     manifest: TeamsAppManifest
   ): Promise<Result<{ error: string[]; filePath?: string }, FxError>> {
-    const additionalLanguages = manifest.localizationInfo?.additionalLanguages;
-    if (!additionalLanguages || additionalLanguages.length == 0) {
+    if (
+      manifest.localizationInfo?.additionalLanguages?.length == 0 &&
+      !manifest.localizationInfo?.defaultLanguageFile
+    ) {
       return ok({ error: [] });
     }
-    for (const language of additionalLanguages) {
+    const languageList = manifest.localizationInfo?.additionalLanguages || [];
+    if (manifest.localizationInfo?.defaultLanguageFile) {
+      languageList.push({
+        languageTag: manifest.localizationInfo.defaultLanguageTag,
+        file: manifest.localizationInfo.defaultLanguageFile,
+      });
+    }
+    for (const language of languageList) {
       const filePath = language?.file;
       if (!filePath) {
         return err(

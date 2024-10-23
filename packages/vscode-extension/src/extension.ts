@@ -200,7 +200,7 @@ import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
-import { onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
+import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
@@ -981,6 +981,12 @@ function registerAccountMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(onSwitchM365Tenant, [TelemetryTriggerFrom.SideBar])
   );
   context.subscriptions.push(m365SwitchTenant);
+
+  const azureSwitchTenant = vscode.commands.registerCommand(
+    "fx-extension.azureSwitchTenant",
+    (...args) => Correlator.run(onSwitchAzureTenant, [TelemetryTriggerFrom.SideBar])
+  );
+  context.subscriptions.push(azureSwitchTenant);
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {

@@ -25,30 +25,30 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
     scopes: AzureScopes,
   });
   if (tokenRes.isOk() && tokenRes.value) {
-    const tenants = await listAllTenants(tokenRes.value);
-    if (tenants.length > 0) {
-      const config: SingleSelectConfig = {
-        name: "SwitchTenant",
-        title: localize("teamstoolkit.handlers.switchtenant.quickpick.title"),
-        options: tenants.map((tenant: any) => {
+    const config: SingleSelectConfig = {
+      name: "SwitchTenant",
+      title: localize("teamstoolkit.handlers.switchtenant.quickpick.title"),
+      options: async () => {
+        const tenants = await listAllTenants(tokenRes.value);
+        return tenants.map((tenant: any) => {
           return {
             id: tenant.tenantId,
             label: tenant.displayName,
             description: tenant.defaultDomain,
           };
-        }),
-      };
-      const result = await VS_CODE_UI.selectOption(config);
-      if (result.isOk()) {
-        // TODO: set tenant
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
-          [TelemetryProperty.AccountType]: AccountType.M365,
-          ...getTriggerFromProperty(args),
         });
-        return;
-      } else {
-        error = result.error;
-      }
+      },
+    };
+    const result = await VS_CODE_UI.selectOption(config);
+    if (result.isOk()) {
+      // TODO: set tenant
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
+        [TelemetryProperty.AccountType]: AccountType.M365,
+        ...getTriggerFromProperty(args),
+      });
+      return;
+    } else {
+      error = result.error;
     }
   }
   if (error == undefined) {
@@ -74,64 +74,45 @@ export async function onSwitchAzureTenant(...args: unknown[]): Promise<void> {
     ...getTriggerFromProperty(args),
   });
 
-  let tokenCredential = undefined;
-  try {
-    tokenCredential = await azureAccountManager.getIdentityCredentialAsync(false);
-  } catch (error) {
-    if (!isUserCancelError(error)) {
-      void showError(error);
-    }
-
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, error, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      ...getTriggerFromProperty(args),
-    });
-    return;
-  }
-
-  let error: FxError | undefined = undefined;
-  const token = tokenCredential ? await tokenCredential.getToken(AzureScopes) : undefined;
-  if (token && token.token) {
-    const tenants = await listAllTenants(token.token);
-    if (tenants.length > 0) {
-      const config: SingleSelectConfig = {
-        name: "SwitchTenant",
-        title: localize("teamstoolkit.handlers.switchtenant.quickpick.title"),
-        options: tenants.map((tenant: any) => {
+  const config: SingleSelectConfig = {
+    name: "SwitchTenant",
+    title: localize("teamstoolkit.handlers.switchtenant.quickpick.title"),
+    options: async () => {
+      const tokenCredential = await azureAccountManager.getIdentityCredentialAsync(false);
+      const token = tokenCredential ? await tokenCredential.getToken(AzureScopes) : undefined;
+      if (token && token.token) {
+        const tenants = await listAllTenants(token.token);
+        return tenants.map((tenant: any) => {
           return {
             id: tenant.tenantId,
             label: tenant.displayName,
             description: tenant.defaultDomain,
           };
-        }),
-      };
-      const result = await VS_CODE_UI.selectOption(config);
-      if (result.isOk()) {
-        // TODO: set tenant
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
-          [TelemetryProperty.AccountType]: AccountType.Azure,
-          ...getTriggerFromProperty(args),
         });
-        return;
       } else {
-        error = result.error;
+        throw new SystemError(
+          ExtensionSource,
+          "SwitchTenantFailed",
+          localize("teamstoolkit.handlers.switchtenant.error")
+        );
       }
+    },
+  };
+  const result = await VS_CODE_UI.selectOption(config);
+  if (result.isOk()) {
+    // TODO: set tenant
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
+      [TelemetryProperty.AccountType]: AccountType.Azure,
+      ...getTriggerFromProperty(args),
+    });
+    return;
+  } else {
+    if (!isUserCancelError(result.error)) {
+      void showError(result.error);
     }
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, result.error, {
+      [TelemetryProperty.AccountType]: AccountType.Azure,
+      ...getTriggerFromProperty(args),
+    });
   }
-
-  if (error == undefined) {
-    error = new SystemError(
-      ExtensionSource,
-      "SwitchTenantFailed",
-      localize("teamstoolkit.handlers.switchtenant.error")
-    );
-  }
-
-  if (!isUserCancelError(error)) {
-    void showError(error);
-  }
-  ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, error, {
-    [TelemetryProperty.AccountType]: AccountType.Azure,
-    ...getTriggerFromProperty(args),
-  });
 }

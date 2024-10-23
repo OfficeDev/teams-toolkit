@@ -60,7 +60,7 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-  {{^CEAEnabled}}
+  {{/CEAEnabled}}
 
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.

@@ -311,6 +311,34 @@ export class SpecParser {
 
       const authInfo = Utils.getAuthInfo(newSpec);
 
+      const paths = newUnResolvedSpec.paths;
+      for (const pathUrl in paths) {
+        const pathItem = paths[pathUrl];
+        if (pathItem) {
+          const operations = pathItem;
+          for (const method in operations) {
+            if (this.options.allowMethods.includes(method)) {
+              const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+              const operationId = operationItem.operationId!;
+              const containsSpecialCharacters = /[^a-zA-Z0-9]/.test(operationId);
+              if (!containsSpecialCharacters) {
+                continue;
+              }
+              operationItem.operationId = operationId.replace(/[^a-zA-Z0-9]/g, "_");
+              result.warnings.push({
+                type: WarningType.OperationIdContainsSpecialCharacters,
+                content: Utils.format(
+                  ConstantString.OperationIdContainsSpecialCharacters,
+                  operationId,
+                  operationItem.operationId
+                ),
+                data: operationId,
+              });
+            }
+          }
+        }
+      }
+
       await this.saveFilterSpec(outputSpecPath, newUnResolvedSpec);
 
       if (signal?.aborted) {

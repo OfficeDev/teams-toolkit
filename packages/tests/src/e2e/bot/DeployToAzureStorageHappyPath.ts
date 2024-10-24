@@ -105,7 +105,10 @@ output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`,
     // write .env.dev
     fs.writeFileSync(
       path.join(projectPath, "env", ".env.dev"),
-      "TEAMSFX_ENV=dev\n" + "APP_NAME_SUFFIX=dev\n" + "RESOURCE_SUFFIX=381cc5",
+      "TEAMSFX_ENV=dev\n" +
+        "APP_NAME_SUFFIX=dev\n" +
+        "RESOURCE_SUFFIX=381cc5\n" +
+        `AZURE_SUBSCRIPTION_ID=${process.env.AZURE_SUBSCRIPTION_ID}`,
       { encoding: "utf-8", flag: "w" }
     );
     // write build and build/index.html

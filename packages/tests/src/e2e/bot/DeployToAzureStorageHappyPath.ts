@@ -28,6 +28,7 @@ describe("Provision and deploy a Azure Storage", async function () {
   const envName = environmentNameManager.getDefaultEnvName();
 
   it("should be provision without problem", async () => {
+    fs.mkdirSync(projectPath, { recursive: true });
     // write teamsapp.yml
     fs.writeFileSync(
       path.join(projectPath, "teamsapp.yml"),
@@ -58,7 +59,8 @@ deploy:
     with:
       artifactFolder: build
       resourceId: \${{TAB_AZURE_STORAGE_RESOURCE_ID}}
-projectId: ${projectId}`
+projectId: ${projectId}`,
+      { encoding: "utf-8", flag: "w" }
     );
     // mkdir for infra
     fs.mkdirSync(path.join(projectPath, "infra"), { recursive: true });
@@ -83,7 +85,8 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
 }
 
 output TAB_AZURE_STORAGE_RESOURCE_ID string = storage.id
-output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`
+output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`,
+      { encoding: "utf-8", flag: "w" }
     );
     // write azure.parameters.json
     fs.writeFileSync(
@@ -96,18 +99,21 @@ output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`
       "value": "helloWorld\${{RESOURCE_SUFFIX}}"
     }
   }
-}`
+}`,
+      { encoding: "utf-8", flag: "w" }
     );
     // write .env.dev
     fs.writeFileSync(
       path.join(projectPath, "env", ".env.dev"),
-      "TEAMSFX_ENV=dev\n" + "APP_NAME_SUFFIX=dev\n" + "RESOURCE_SUFFIX=381cc5"
+      "TEAMSFX_ENV=dev\n" + "APP_NAME_SUFFIX=dev\n" + "RESOURCE_SUFFIX=381cc5",
+      { encoding: "utf-8", flag: "w" }
     );
     // write build and build/index.html
     fs.mkdirSync(path.join(projectPath, "build"), { recursive: true });
     fs.writeFileSync(
       path.join(projectPath, "build", "index.html"),
-      "<h1>Hello World</h1>"
+      "<h1>Hello World</h1>",
+      { encoding: "utf-8", flag: "w" }
     );
 
     // run provision

@@ -125,7 +125,7 @@ output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`,
     const result = await createResourceGroup(rgName, "westus");
     expect(result).to.be.true;
     process.env["AZURE_RESOURCE_GROUP_NAME"] = rgName;
-    await execAsyncWithRetry("teamsfx provision --env dev", {
+    await execAsyncWithRetry("teamsapp provision --env dev", {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

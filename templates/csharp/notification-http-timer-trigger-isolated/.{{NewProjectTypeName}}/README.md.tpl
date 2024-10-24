@@ -7,9 +7,9 @@
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
 2. Teams App Test Tool will be opened in the launched browser 
 3. [If you selected http trigger] Open Windows PowerShell and post a HTTP request to trigger 
-the notification(replace <endpoint> with real endpoint, for example localhost:5130):
+the notification(replace \<endpoint\> with real endpoint, for example localhost:5130):
 
-   Invoke-WebRequest -Uri "http://<endpoint>/api/notification" -Method Post
+   Invoke-WebRequest -Uri "http://\<endpoint\>/api/notification" -Method Post
    
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
@@ -21,9 +21,9 @@ the notification(replace <endpoint> with real endpoint, for example localhost:51
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
 5. In the opened web browser, select Add button to test the app in Teams
 6. [If you selected http trigger] Open Windows PowerShell and post a HTTP request to trigger 
-the notification(replace <endpoint> with real endpoint, for example localhost:5130):
+the notification(replace \<endpoint\> with real endpoint, for example localhost:5130):
 
-   Invoke-WebRequest -Uri "http://<endpoint>/api/notification" -Method Post
+   Invoke-WebRequest -Uri "http://\<endpoint\>/api/notification" -Method Post
    
 {{/enableTestToolByDefault}}
 

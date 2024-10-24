@@ -70,6 +70,39 @@ class ProcessUtil {
       console.error(`Error: ${error.message as string}`);
     }
   }
+
+  async getProcessInfo(pid: number): Promise<string> {
+    if (process.platform === "win32") return await this.getProcessInfoWindows(pid);
+    else return await this.getProcessCommandLineMac(pid);
+  }
+
+  async getProcessInfoWindows(pid: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      exec(
+        `wmic process where ProcessId=${pid} get CommandLine /value`,
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(`Error getting process command line: ${stderr}`);
+          } else {
+            const commandLine = stdout.split("=")[1]?.trim();
+            resolve(commandLine || "No CommandLine found");
+          }
+        }
+      );
+    });
+  }
+
+  async getProcessCommandLineMac(pid: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+      exec(`ps -p ${pid} -o command=`, (error, stdout, stderr) => {
+        if (error) {
+          reject(`Error getting process command line: ${stderr}`);
+        } else {
+          resolve(stdout.trim());
+        }
+      });
+    });
+  }
 }
 
 export const processUtil = new ProcessUtil();

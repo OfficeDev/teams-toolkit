@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { UserError, SystemError, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  UserError,
+  SystemError,
+  FxError,
+  Result,
+  err,
+  ok,
+  OptionItem,
+} from "@microsoft/teamsfx-api";
 import { isUserCancelError, ConcurrentError, PortsConflictError } from "@microsoft/teamsfx-core";
 import { Uri, commands, window } from "vscode";
 import {
@@ -21,6 +29,7 @@ import { processUtil } from "../utils/processUtil";
 import fs from "fs-extra";
 import path from "path";
 import detectPort from "detect-port";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 
 async function replacePortInPackageJson(filePath: string, oldPort: number, newPort: number) {
   // Read the file content
@@ -110,6 +119,7 @@ export async function showError(e: UserError | SystemError) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const buttons = recommendTestTool ? [runTestTool, help] : [help];
+    const ux = 1;
     if (e instanceof PortsConflictError) {
       buttons.push({
         title: "Kill Process",
@@ -118,8 +128,59 @@ export async function showError(e: UserError | SystemError) {
           const ports = (error.telemetryProperties?.["occupied-ports"] || "")
             .split(",")
             .map((p) => parseInt(p));
-          for (const port of ports) {
-            await processUtil.killProcessOnPort(port);
+          if (ux === 0) {
+            for (const port of ports) {
+              const processId = await processUtil.getProcessId(port);
+              if (processId) {
+                const processInfo = await processUtil.getProcessInfo(parseInt(processId));
+                const res = await VS_CODE_UI.showMessage(
+                  "info",
+                  `Process(pid=${processId}) on port ${port} is: '${processInfo}', do you want to kill it?`,
+                  true,
+                  "Yes",
+                  "No"
+                );
+                if (res.isOk() && res.value === "Yes") {
+                  await processUtil.killProcess(processId);
+                  void VS_CODE_UI.showMessage(
+                    "info",
+                    `Process ${processId} has been killed.`,
+                    false
+                  );
+                }
+              }
+            }
+          } else {
+            const processIds = new Set<string>();
+            for (const port of ports) {
+              const processId = await processUtil.getProcessId(port);
+              if (processId) {
+                processIds.add(processId);
+              }
+            }
+            if (processIds.size > 0) {
+              const options: OptionItem[] = [];
+              for (const processId of processIds) {
+                const processInfo = await processUtil.getProcessInfo(parseInt(processId));
+                options.push({ id: processId, label: processInfo });
+              }
+              const res = await VS_CODE_UI.selectOptions({
+                title: "Select processes to kill",
+                name: "select_processes",
+                options,
+              });
+              if (res.isOk() && res.value.type === "success") {
+                const processIds = res.value.result as string[];
+                for (const processId of processIds) {
+                  await processUtil.killProcess(processId);
+                }
+                void VS_CODE_UI.showMessage(
+                  "info",
+                  `Processes ${Array.from(processIds).join(",")} have been killed.`,
+                  false
+                );
+              }
+            }
           }
         },
       });

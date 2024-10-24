@@ -687,6 +687,20 @@ function formatApiSpecValidationWarningMessage(
     );
   }
 
+  const specialCharactersWarnings = specWarnings.filter(
+    (w) => w.type === WarningType.OperationIdContainsSpecialCharacters
+  );
+
+  specialCharactersWarnings.forEach((warning) => {
+    resultWarnings.push(
+      getLocalizedString(
+        "core.copilotPlugin.scaffold.summary.warning.operationIdContainsSpecialCharacters",
+        warning.data.operationId,
+        warning.data.operationId.replace(/[^a-zA-Z0-9]/g, "_")
+      )
+    );
+  });
+
   return resultWarnings;
 }
 

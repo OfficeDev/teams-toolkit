@@ -1174,6 +1174,22 @@ describe("render template", () => {
         `${templateName}-${commonTemplateName}`
       );
     });
+
+    it("template variables when CEA enabled", async () => {
+      sandbox.stub(process, "env").value({ TEAMSFX_CEA_ENABLED: "true" });
+      const vars = newGeneratorFlag
+        ? getTemplateReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
+      assert.equal(vars.CEAEnabled, "true");
+    });
+
+    it("template variables when CEA disabled", async () => {
+      sandbox.stub(process, "env").value({ TEAMSFX_CEA_ENABLED: "false" });
+      const vars = newGeneratorFlag
+        ? getTemplateReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
+      assert.equal(vars.CEAEnabled, "");
+    });
   });
 });
 

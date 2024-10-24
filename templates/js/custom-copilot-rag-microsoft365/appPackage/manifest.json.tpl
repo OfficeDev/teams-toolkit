@@ -1,7 +1,14 @@
 {
+    {{#CEAEnabled}} 
+    "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
+    "manifestVersion": "devPreview",
+    "version": "1.0.1",
+    {{/CEAEnabled}}
+    {{^CEAEnabled}} 
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
     "manifestVersion": "1.17",
     "version": "1.0.0",
+    {{/CEAEnabled}}
     "id": "${{TEAMS_APP_ID}}",
     "developer": {
         "name": "Teams App, Inc.",
@@ -22,6 +29,16 @@
         "full": "full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
+    {{#CEAEnabled}} 
+    "copilotAgents": {
+        "customEngineAgents": [
+            {
+                "type": "bot",
+                "id": "${{BOT_ID}}"
+            }
+        ]
+    },
+    {{/CEAEnabled}}
     "bots": [
         {
             "botId": "${{BOT_ID}}",

@@ -1168,6 +1168,25 @@ describe("SpecParser", () => {
                 },
               },
             },
+            post: {
+              operationId: "post_hello",
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       };
@@ -1182,7 +1201,7 @@ describe("SpecParser", () => {
         .stub(ManifestUpdater, "updateManifestWithAiPlugin")
         .resolves([{}, {}, []] as any);
 
-      const filter = ["get /hello"];
+      const filter = ["get /hello", "post /hello"];
 
       const outputSpecPath = "path/to/output.yaml";
       const pluginFilePath = "ai-plugin.json";
@@ -1200,6 +1219,7 @@ describe("SpecParser", () => {
       expect(updateManifestWithAiPluginStub.calledOnce).to.be.true;
       expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
       expect(outputJSONStub.calledTwice).to.be.true;
+      expect(result.warnings.length).equals(1);
       expect(result.warnings[0].content).contains("get_hello");
     });
 

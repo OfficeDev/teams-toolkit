@@ -26,6 +26,7 @@ describe("Provision and deploy a Azure Storage", async function () {
   const projectPath = path.resolve(testFolder, appName);
   const projectId = getUuid();
   const envName = environmentNameManager.getDefaultEnvName();
+  const rgName = appName + "-rg";
 
   it("should be provision without problem", async () => {
     fs.mkdirSync(projectPath, { recursive: true });
@@ -108,7 +109,8 @@ output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`,
       "TEAMSFX_ENV=dev\n" +
         "APP_NAME_SUFFIX=dev\n" +
         "RESOURCE_SUFFIX=381cc5\n" +
-        `AZURE_SUBSCRIPTION_ID=${process.env.AZURE_SUBSCRIPTION_ID}`,
+        `AZURE_SUBSCRIPTION_ID=${process.env.AZURE_SUBSCRIPTION_ID}\n` +
+        `AZURE_RESOURCE_GROUP_NAME=${rgName}`,
       { encoding: "utf-8", flag: "w" }
     );
     // write build and build/index.html
@@ -120,11 +122,14 @@ output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`,
     );
 
     // run provision
-    const result = await createResourceGroup(appName + "-rg", "westus");
+    const result = await createResourceGroup(rgName, "westus");
     expect(result).to.be.true;
-    process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
-    const { success } = await Executor.provision(projectPath, envName);
-    expect(success).to.be.true;
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = rgName;
+    await execAsyncWithRetry("teamsfx provision --env dev", {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
     console.log(`[Successfully] provision for ${projectPath}`);
 
     const env = Object.assign({}, process.env);

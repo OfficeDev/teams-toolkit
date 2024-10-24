@@ -44,7 +44,9 @@ import { env, Uri } from "vscode";
 import { randomBytes } from "crypto";
 import { getExchangeCode } from "./exchangeCode";
 import * as os from "os";
-import { ErrorCategory } from "@microsoft/teamsfx-core";
+import { ErrorCategory, featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
+
+const BASE_AUTHORITY = "https://login.microsoftonline.com/";
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
   reject: (reason: any) => void;
@@ -310,66 +312,15 @@ export class CodeFlowLogin {
     }
   }
 
-  /**
-   * @deprecated will be removed after unify m365 login
-   */
-  async getToken(refresh = true): Promise<string | undefined> {
-    try {
-      if (!this.account) {
-        const accessToken = await this.login(this.scopes);
-        return accessToken;
-      } else {
-        return this.pca
-          .acquireTokenSilent({
-            account: this.account,
-            scopes: this.scopes,
-            forceRefresh: false,
-          })
-          .then((response) => {
-            if (response) {
-              return response.accessToken;
-            } else {
-              return undefined;
-            }
-          })
-          .catch(async (error) => {
-            VsCodeLogInstance.debug(
-              "[Login] " +
-                stringUtil.format(
-                  localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
-                  path.join(os.homedir(), ".fx", "account"),
-                  error.message
-                )
-            );
-            if (!(await checkIsOnline())) {
-              return undefined;
-            }
-            await this.logout();
-            if (refresh) {
-              const accessToken = await this.login(this.scopes);
-              return accessToken;
-            }
-            return undefined;
-          });
-      }
-    } catch (error) {
-      VsCodeLogInstance.error("[Login] " + (error.message as string));
-      if (
-        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginTimeoutTitle") &&
-        error.name !== getDefaultString("teamstoolkit.codeFlowLogin.loginPortConflictTitle")
-      ) {
-        throw LoginCodeFlowError(error);
-      } else {
-        throw error;
-      }
-    }
-  }
-
   async getTokenByScopes(
     scopes: Array<string>,
     refresh = true,
     loginHint?: string
   ): Promise<Result<string, FxError>> {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      return await this.getToken(scopes, refresh, undefined, loginHint);
+    }
+
     if (!this.account) {
       const accessToken = await this.login(scopes, loginHint);
       return ok(accessToken);
@@ -379,6 +330,57 @@ export class CodeFlowLogin {
           account: this.account,
           scopes: scopes,
           forceRefresh: false,
+        });
+        if (res) {
+          return ok(res.accessToken);
+        } else {
+          return err(LoginCodeFlowError(new Error("No token response.")));
+        }
+      } catch (error) {
+        VsCodeLogInstance.debug(
+          "[Login] " +
+            stringUtil.format(
+              localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+              path.join(os.homedir(), ".fx", "account"),
+              error.message
+            )
+        );
+        if (!(await checkIsOnline())) {
+          return err(CheckOnlineError());
+        }
+        await this.logout();
+        if (refresh) {
+          const accessToken = await this.login(scopes, loginHint);
+          return ok(accessToken);
+        }
+        return err(LoginCodeFlowError(error));
+      }
+    }
+  }
+
+  // For multi-tenant support, the legacy function wil be removed later
+  async getToken(
+    scopes: Array<string>,
+    refresh = true,
+    tenantId?: string,
+    loginHint?: string
+  ): Promise<Result<string, FxError>> {
+    if (!this.account) {
+      const accessToken = await this.login(scopes, loginHint);
+      return ok(accessToken);
+    } else {
+      let tenantedAccount: AccountInfo | undefined = undefined;
+      if (tenantId) {
+        const allAccounts = await this.msalTokenCache.getAllAccounts();
+        tenantedAccount = allAccounts.find((account) => account.tenantId == tenantId);
+      }
+
+      try {
+        const res = await this.pca.acquireTokenSilent({
+          account: tenantedAccount ? tenantedAccount : this.account,
+          scopes: scopes,
+          forceRefresh: tenantedAccount ? false : true,
+          authority: tenantId ? BASE_AUTHORITY + tenantId : this.config.auth.authority,
         });
         if (res) {
           return ok(res.accessToken);

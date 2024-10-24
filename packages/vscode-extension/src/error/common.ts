@@ -165,7 +165,7 @@ export async function showError(e: UserError | SystemError) {
                 options.push({ id: processId, label: processInfo });
               }
               const res = await VS_CODE_UI.selectOptions({
-                title: "Select processes to kill",
+                title: "Select the following processes to kill",
                 name: "select_processes",
                 options,
               });
@@ -174,11 +174,13 @@ export async function showError(e: UserError | SystemError) {
                 for (const processId of processIds) {
                   await processUtil.killProcess(processId);
                 }
-                void VS_CODE_UI.showMessage(
-                  "info",
-                  `Processes ${Array.from(processIds).join(",")} have been killed.`,
-                  false
-                );
+                if (processIds.length > 0) {
+                  void VS_CODE_UI.showMessage(
+                    "info",
+                    `Processes ${Array.from(processIds).join(",")} have been killed.`,
+                    false
+                  );
+                }
               }
             }
           }
@@ -193,7 +195,17 @@ export async function showError(e: UserError | SystemError) {
             .map((p) => parseInt(p));
           const oldPort = ports[0];
           const newPort = await detectPort(oldPort);
-          await replaceInspectPort(workspaceUri!.fsPath, oldPort, newPort);
+          const res = await VS_CODE_UI.showMessage(
+            "info",
+            `Do you want to change the port from ${oldPort} to ${newPort}?`,
+            true,
+            "Yes",
+            "No"
+          );
+          if (res.isOk() && res.value === "Yes") {
+            await replaceInspectPort(workspaceUri!.fsPath, oldPort, newPort);
+            void VS_CODE_UI.showMessage("info", `Port replace done!`, false);
+          }
         },
       });
     }

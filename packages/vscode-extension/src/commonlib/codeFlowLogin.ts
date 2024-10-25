@@ -21,7 +21,14 @@ import { FxError, ok, Result, UserError, err } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import {
+  clearCache,
+  loadAccountId,
+  loadTenantId,
+  saveAccountId,
+  saveTenantId,
+  UTF8,
+} from "./cacheAccess";
 import * as stringUtil from "util";
 import {
   codeSpacesAuthComplete,
@@ -91,7 +98,7 @@ export class CodeFlowLogin {
     }
   }
 
-  async login(scopes: Array<string>, loginHint?: string): Promise<string> {
+  async login(scopes: Array<string>, loginHint?: string, tenantId?: string): Promise<string> {
     if (process.env.CODESPACES == "true") {
       return await this.loginInCodeSpace(scopes);
     }
@@ -110,6 +117,10 @@ export class CodeFlowLogin {
     const app = express();
     const server = app.listen(serverPort);
     serverPort = (server.address() as AddressInfo).port;
+    const authority =
+      featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) && tenantId
+        ? BASE_AUTHORITY + tenantId
+        : undefined;
 
     const authCodeUrlParameters: AuthorizationUrlRequest = {
       scopes: scopes,
@@ -118,6 +129,7 @@ export class CodeFlowLogin {
       redirectUri: `http://localhost:${serverPort}`,
       prompt: !loginHint ? "select_account" : "login",
       loginHint,
+      authority: authority,
     };
 
     let deferredRedirect: Deferred<string>;
@@ -318,7 +330,8 @@ export class CodeFlowLogin {
     loginHint?: string
   ): Promise<Result<string, FxError>> {
     if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
-      return await this.getToken(scopes, refresh, undefined, loginHint);
+      const tenantId = await loadTenantId(this.accountName);
+      return await this.getToken(scopes, refresh, tenantId, loginHint);
     }
 
     if (!this.account) {
@@ -366,7 +379,7 @@ export class CodeFlowLogin {
     loginHint?: string
   ): Promise<Result<string, FxError>> {
     if (!this.account) {
-      const accessToken = await this.login(scopes, loginHint);
+      const accessToken = await this.login(scopes, loginHint, tenantId);
       return ok(accessToken);
     } else {
       let tenantedAccount: AccountInfo | undefined = undefined;
@@ -401,7 +414,7 @@ export class CodeFlowLogin {
         }
         await this.logout();
         if (refresh) {
-          const accessToken = await this.login(scopes, loginHint);
+          const accessToken = await this.login(scopes, loginHint, tenantId);
           return ok(accessToken);
         }
         return err(LoginCodeFlowError(error));
@@ -432,6 +445,10 @@ export class CodeFlowLogin {
     } catch (e) {
       return err(LoginCodeFlowError(e));
     }
+  }
+
+  async switchTenant(tenantId: string): Promise<void> {
+    return await saveTenantId(this.accountName, tenantId);
   }
 
   async startServer(server: http.Server, port: number): Promise<string> {

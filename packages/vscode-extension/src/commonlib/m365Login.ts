@@ -212,6 +212,12 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     return true;
   }
 
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    await M365Login.codeFlowInstance.switchTenant(tenantId);
+
+    return M365Login.codeFlowInstance.getTokenByScopes(AppStudioScopes, true);
+  }
+
   private async doesUserConfirmLogin(): Promise<boolean> {
     const message = localize("teamstoolkit.appStudioLogin.message");
     const signin = localize("teamstoolkit.common.signin");

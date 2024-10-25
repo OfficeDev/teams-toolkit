@@ -75,6 +75,7 @@
         "cwd": "${workspaceFolder}",
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen"
+    {{#CEAEnabled}}
     },
     {
       "name": "Launch in Microsoft 365 app (Edge)",
@@ -97,6 +98,7 @@
         "hidden": true
       },
       "internalConsoleOptions": "neverOpen"
+    {{/CEAEnabled}}
     }
   ],
   "compounds": [
@@ -147,6 +149,7 @@
             "order": 1
         },
         "stopAll": true
+    {{#CEAEnabled}}
     },
     {
       "name": "Preview in Copilot (Edge)",
@@ -169,6 +172,7 @@
         "order": 1
       },
       "stopAll": true
+    {{/CEAEnabled}}
     }
   ]
 }

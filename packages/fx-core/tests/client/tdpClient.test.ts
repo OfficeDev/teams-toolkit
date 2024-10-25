@@ -854,7 +854,6 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.include(error.message, xCorrelationId);
       }
     });
-
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -887,6 +886,48 @@ describe("TeamsDevPortalClient Test", () => {
         await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
+      }
+    });
+    it("Bad Request", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const xCorrelationId = "fakeCorrelationId";
+      const postResponse = {
+        data: {
+          errorMessage: "BadRequest",
+        },
+        message: "fake message",
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
+      };
+
+      sandbox.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: "xx",
+                  displayName: "xx",
+                  lastModifiedDateTime: null,
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
+
+      try {
+        await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
+      } catch (error) {
+        chai.assert.include(error.message, xCorrelationId);
+        chai.assert.include(error.message, "BadRequest");
       }
     });
   });

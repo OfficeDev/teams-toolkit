@@ -40,6 +40,7 @@ import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
 import { getDefaultString } from "../../src/common/localizeUtils";
 import { HelpLinks } from "../../src/common/constants";
+import { expect } from "chai";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
@@ -929,6 +930,48 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.include(error.message, xCorrelationId);
         chai.assert.include(error.message, "BadRequest");
       }
+    });
+  });
+
+  describe("wrapResponse", () => {
+    it("should return an error with e.message if it exists", () => {
+      const e = new Error("Error from e");
+      const response = { data: { error: { message: "" }, errorMessage: "" } } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("Error from e");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
+    });
+
+    it("should return an error with response.data.error.message if e.message is missing and response.data.error.message exists", () => {
+      const e = new Error("");
+      const response = {
+        data: { error: { message: "Error from response.data.error" }, errorMessage: "" },
+      } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("Error from response.data.error");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
+    });
+
+    it("should return an error with response.data.errorMessage if both e.message and response.data.error.message are missing", () => {
+      const e = new Error("");
+      const response = {
+        data: { error: { message: "" }, errorMessage: "Error from response.data.errorMessage" },
+      } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("Error from response.data.errorMessage");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
+    });
+
+    it("should return an error with empty message if all messages are missing", () => {
+      const e = new Error("");
+      const response = { data: { error: { message: "" }, errorMessage: "" } } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
     });
   });
 

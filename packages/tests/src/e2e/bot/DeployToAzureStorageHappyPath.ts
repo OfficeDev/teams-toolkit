@@ -16,7 +16,6 @@ import * as path from "path";
 import * as fs from "fs";
 import { getUuid } from "../../commonlib";
 import { expect } from "chai";
-import { Executor } from "../../utils/executor";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 
 describe("Provision and deploy a Azure Storage", async function () {
@@ -110,6 +109,7 @@ output TAB_DOMAIN string = storage.properties.primaryEndpoints.web`,
         "APP_NAME_SUFFIX=dev\n" +
         "RESOURCE_SUFFIX=381cc5\n" +
         `AZURE_SUBSCRIPTION_ID=${process.env.AZURE_SUBSCRIPTION_ID}\n` +
+        `AZURE_TENANT_ID=${process.env.AZURE_TENANT_ID}\n` +
         `AZURE_RESOURCE_GROUP_NAME=${rgName}`,
       { encoding: "utf-8", flag: "w" }
     );

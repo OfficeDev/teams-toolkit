@@ -75,6 +75,28 @@
         "cwd": "${workspaceFolder}",
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Launch in Microsoft 365 app (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "https://www.office.com/chat",
+      "presentation": {
+        "group": "all",
+        "hidden": true
+      },
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Launch in Microsoft 365 app (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://www.office.com/chat",
+      "presentation": {
+        "group": "all",
+        "hidden": true
+      },
+      "internalConsoleOptions": "neverOpen"
     }
   ],
   "compounds": [
@@ -125,6 +147,28 @@
             "order": 1
         },
         "stopAll": true
+    },
+    {
+      "name": "Preview in Copilot (Edge)",
+      "configurations": ["Launch in Microsoft 365 app (Edge)", "Start Python"],
+      "cascadeTerminateToConfigurations": ["Start Python"],
+      "preLaunchTask": "Start Teams App Locally",
+      "presentation": {
+        "group": "3-local",
+        "order": 1
+      },
+      "stopAll": true
+    },
+    {
+      "name": "Preview in Copilot (Chrome)",
+      "configurations": ["Launch in Microsoft 365 app (Chrome)", "Start Python"],
+      "cascadeTerminateToConfigurations": ["Start Python"],
+      "preLaunchTask": "Start Teams App Locally",
+      "presentation": {
+        "group": "3-local",
+        "order": 1
+      },
+      "stopAll": true
     }
   ]
 }

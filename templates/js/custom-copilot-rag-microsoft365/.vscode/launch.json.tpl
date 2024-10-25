@@ -75,6 +75,30 @@
                 "order": 3
             },
             "internalConsoleOptions": "neverOpen",
+        {{#CEAEnabled}}
+        },
+        {
+            "name": "Launch in Microsoft 365 app (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://www.office.com/chat",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+            },
+            {
+            "name": "Launch in Microsoft 365 app (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://www.office.com/chat",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
+        {{/CEAEnabled}}
         }
     ],
     "compounds": [
@@ -115,6 +139,34 @@
                 "order": 3
             },
             "stopAll": true
+        {{#CEAEnabled}}
+        },
+        {
+            "name": "Preview in Copilot (Edge)",
+            "configurations": [
+                "Launch in Microsoft 365 app (Edge)",
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "3-local",
+                "order": 1
+            },
+            "stopAll": true
+            },
+            {
+            "name": "Preview in Copilot (Chrome)",
+            "configurations": [
+                "Launch in Microsoft 365 app (Chrome)",
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "3-local",
+                "order": 2
+            },
+            "stopAll": true
+        {{/CEAEnabled}}
         }
     ]
 }

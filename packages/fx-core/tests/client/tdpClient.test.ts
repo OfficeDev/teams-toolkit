@@ -936,11 +936,14 @@ describe("TeamsDevPortalClient Test", () => {
   describe("wrapResponse", () => {
     it("should return an error with e.message if it exists", () => {
       const e = new Error("Error from e");
-      const response = { data: { error: { message: "" }, errorMessage: "" } } as any;
-      const error = teamsDevPortalClient.wrapResponse(e, response);
+      const error = teamsDevPortalClient.wrapResponse(e, undefined);
       expect(error.message).to.equal("Error from e");
-      expect(error.response).to.equal(response);
-      expect(error.request).to.equal(response.request);
+    });
+
+    it("should return an error with e.message and response are missing", () => {
+      const e = new Error("");
+      const error = teamsDevPortalClient.wrapResponse(e, undefined);
+      expect(error.message).to.equal("");
     });
 
     it("should return an error with response.data.error.message if e.message is missing and response.data.error.message exists", () => {

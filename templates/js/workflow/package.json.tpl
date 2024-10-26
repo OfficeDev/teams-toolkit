@@ -26,10 +26,10 @@
         "adaptive-expressions": "^4.23.1",
         "@microsoft/teamsfx": "^3.0.0-alpha",
         "botbuilder": "^4.23.1",
-        "restify": "^10.0.0"
+        "express": "^5.0.1"
     },
     "devDependencies": {
         "env-cmd": "^10.1.0",
-        "nodemon": "^2.0.7"
+        "nodemon": "^3.1.7"
     }
 }

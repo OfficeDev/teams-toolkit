@@ -27,14 +27,14 @@
         "adaptive-expressions": "^4.23.1",
         "@microsoft/teamsfx": "^3.0.0-alpha",
         "botbuilder": "^4.23.1",
-        "restify": "^10.0.0"
+        "express": "^5.0.1"
     },
     "devDependencies": {
-        "@types/restify": "^8.5.5",
+        "@types/express": "^5.0.0",
         "@types/node": "^18.0.0",
         "@types/json-schema": "^7.0.15",
         "env-cmd": "^10.1.0",
-        "nodemon": "^2.0.7",
+        "nodemon": "^3.1.7",
         "shx": "^0.3.4",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4"

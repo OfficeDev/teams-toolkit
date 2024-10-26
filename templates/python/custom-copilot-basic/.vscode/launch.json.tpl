@@ -78,24 +78,24 @@
     {{#CEAEnabled}}
     },
     {
-      "name": "Launch in Microsoft 365 app (Edge)",
+      "name": "Launch Remote in Copilot (Edge)",
       "type": "msedge",
       "request": "launch",
       "url": "https://www.office.com/chat",
       "presentation": {
-        "group": "all",
-        "hidden": true
+        "group": "4-M365",
+        "order": 3
       },
       "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Launch in Microsoft 365 app (Chrome)",
+      "name": "Launch Remote in Copilot (Chrome)",
       "type": "chrome",
       "request": "launch",
       "url": "https://www.office.com/chat",
       "presentation": {
-        "group": "all",
-        "hidden": true
+        "group": "4-M365",
+        "order": 4
       },
       "internalConsoleOptions": "neverOpen"
     {{/CEAEnabled}}
@@ -153,26 +153,25 @@
     },
     {
       "name": "Preview in Copilot (Edge)",
-      "configurations": ["Launch in Microsoft 365 app (Edge)", "Start Python"],
+      "configurations": ["Launch Remote in Copilot (Edge)", "Start Python"],
       "cascadeTerminateToConfigurations": ["Start Python"],
       "preLaunchTask": "Start Teams App Locally",
       "presentation": {
-        "group": "3-local",
+        "group": "4-M365",
         "order": 1
       },
       "stopAll": true
     },
     {
       "name": "Preview in Copilot (Chrome)",
-      "configurations": ["Launch in Microsoft 365 app (Chrome)", "Start Python"],
+      "configurations": ["Launch Remote in Copilot (Chrome)", "Start Python"],
       "cascadeTerminateToConfigurations": ["Start Python"],
       "preLaunchTask": "Start Teams App Locally",
       "presentation": {
-        "group": "3-local",
-        "order": 1
+        "group": "4-M365",
+        "order": 2
       },
       "stopAll": true
-    {{/CEAEnabled}}
     }
   ]
 }

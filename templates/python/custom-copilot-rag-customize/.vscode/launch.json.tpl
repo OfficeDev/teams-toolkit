@@ -172,6 +172,7 @@
         "order": 2
       },
       "stopAll": true
+    {{/CEAEnabled}}
     }
   ]
 }

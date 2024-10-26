@@ -85,7 +85,6 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-
   {{#CEAEnabled}}
   - uses: teamsApp/extendToM365
     with:

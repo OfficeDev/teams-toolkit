@@ -95,6 +95,17 @@ deploy:
       # You can replace it with your existing Azure Resource id
       # or add it to your environment variable file.
       resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}}
+  {{#CEAEnabled}}
+  - uses: teamsApp/extendToM365
+    with:
+      # Relative path to the build app package.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
+  {{/CEAEnabled}}
 
 # Triggered when 'teamsapp publish' is executed
 publish:

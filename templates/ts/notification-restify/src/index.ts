@@ -2,7 +2,6 @@ import * as ACData from "adaptivecards-templating";
 import express from "express";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
 import { notificationApp } from "./internal/initialize";
-import { CardData } from "./cardModels";
 import { TeamsBot } from "./teamsBot";
 
 // Create express application.

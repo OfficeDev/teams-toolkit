@@ -83,8 +83,8 @@
             "request": "launch",
             "url": "https://www.office.com/chat",
             "presentation": {
-              "group": "4-M365",
-              "order": 3
+                "group": "4-M365",
+                "order": 3
             },
             "internalConsoleOptions": "neverOpen"
           },
@@ -94,8 +94,8 @@
             "request": "launch",
             "url": "https://www.office.com/chat",
             "presentation": {
-              "group": "4-M365",
-              "order": 4
+                "group": "4-M365",
+                "order": 4
             },
             "internalConsoleOptions": "neverOpen"
         {{/CEAEnabled}}

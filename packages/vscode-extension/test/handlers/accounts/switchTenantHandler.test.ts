@@ -48,6 +48,7 @@ describe("onSwitchM365Tenant", () => {
 
   it("Succeed to switch tenant", async () => {
     sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("faked token"));
+    sandbox.stub(M365TokenInstance, "switchTenant").resolves(ok("faked token"));
     sandbox.stub(tool, "listAllTenants").resolves([
       {
         tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",

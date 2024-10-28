@@ -16,6 +16,7 @@ export class M365AccountNode extends DynamicNode {
   public status: AccountItemStatus;
   private sideloadingNode: SideloadingNode;
   private copilotNode: CopilotNode | undefined;
+  private tid: string | undefined;
 
   constructor(private eventEmitter: vscode.EventEmitter<DynamicNode | undefined | void>) {
     super("", vscode.TreeItemCollapsibleState.None);
@@ -25,13 +26,13 @@ export class M365AccountNode extends DynamicNode {
     this.copilotNode = new CopilotNode(this.eventEmitter, "");
   }
 
-  public async setSignedIn(upn: string, tid: string) {
-    if (this.status === AccountItemStatus.SignedIn) {
+  public async setSignedIn(displayName: string, tid: string) {
+    if (this.status === AccountItemStatus.SignedIn && this.tid && this.tid === tid) {
       return;
     }
     this.status = AccountItemStatus.SignedIn;
 
-    this.label = upn;
+    this.label = displayName;
     if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
       const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
         scopes: AzureScopes,
@@ -40,7 +41,8 @@ export class M365AccountNode extends DynamicNode {
         const tenants = await listAllTenants(tokenRes.value);
         for (const tenant of tenants) {
           if (tenant.tenantId === tid && tenant.displayName) {
-            this.label = `${upn} (${tenant.displayName as string})`;
+            this.label = `${displayName} (${tenant.displayName as string})`;
+            this.tid = tid;
           }
         }
       }

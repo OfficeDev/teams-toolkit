@@ -15,9 +15,10 @@ import {
   LoginStatus,
   BasicLogin,
   UserError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { AccountInfo, LogLevel } from "@azure/msal-node";
-import { ExtensionErrors } from "../error/error";
+import { ExtensionErrors, ExtensionSource } from "../error/error";
 import { CodeFlowLogin, ConvertTokenToJson, UserCancelError } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
@@ -213,9 +214,27 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   }
 
   async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
-    await M365Login.codeFlowInstance.switchTenant(tenantId);
-
-    return M365Login.codeFlowInstance.getTokenByScopes(AppStudioScopes, true);
+    try {
+      const res = await M365Login.codeFlowInstance.getTokenByScopes(
+        AppStudioScopes,
+        true,
+        undefined,
+        tenantId
+      );
+      if (res.isOk()) {
+        await M365Login.codeFlowInstance.switchTenant(tenantId);
+        await this.notifyStatus({ scopes: AppStudioScopes });
+      }
+      return res;
+    } catch (e) {
+      return err(
+        new SystemError({
+          error: e,
+          source: ExtensionSource,
+          name: ExtensionErrors.LoginCacheError,
+        })
+      );
+    }
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {

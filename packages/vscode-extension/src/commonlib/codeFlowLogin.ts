@@ -327,10 +327,10 @@ export class CodeFlowLogin {
   async getTokenByScopes(
     scopes: Array<string>,
     refresh = true,
-    loginHint?: string
+    loginHint?: string,
+    tenantId?: string
   ): Promise<Result<string, FxError>> {
     if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
-      const tenantId = await loadTenantId(this.accountName);
       return await this.getToken(scopes, refresh, tenantId, loginHint);
     }
 

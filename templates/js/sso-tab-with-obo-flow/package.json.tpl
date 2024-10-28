@@ -7,10 +7,10 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@fluentui/react-components": "^9.18.0",
+    "@fluentui/react-components": "^9.55.1",
     "@microsoft/teams-js": "^2.22.0",
-    "@microsoft/teamsfx": "^2.2.0",
-    "@microsoft/teamsfx-react": "^3.0.0",
+    "@microsoft/teamsfx": "^3.0.0-alpha",
+    "@microsoft/teamsfx-react": "^4.0.0-alpha",
     "axios": "^0.21.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

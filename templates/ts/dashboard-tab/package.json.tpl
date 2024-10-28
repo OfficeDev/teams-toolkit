@@ -2,17 +2,17 @@
     "name": "{{SafeProjectNameLowerCase}}",
     "version": "0.1.0",
     "engines": {
-        "node": "16 || 18"
+        "node": "18 || 20"
     },
     "type": "module",
     "private": true,
     "dependencies": {
         "@fluentui/react-charting": "^5.14.10",
-        "@fluentui/react-components": "^9.18.0",
+        "@fluentui/react-components": "^9.55.1",
         "@fluentui/react-icons": "^2.0.186",
-        "@microsoft/teams-js": "^2.19.0",
-        "@microsoft/teamsfx": "^2.2.0",
-        "@microsoft/teamsfx-react": "^3.0.0",
+        "@microsoft/teams-js": "^2.22.0",
+        "@microsoft/teamsfx": "^3.0.0-alpha",
+        "@microsoft/teamsfx-react": "^4.0.0-alpha",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.8.0"

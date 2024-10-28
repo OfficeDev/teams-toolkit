@@ -687,6 +687,20 @@ function formatApiSpecValidationWarningMessage(
     );
   }
 
+  const specialCharactersWarnings = specWarnings.filter(
+    (w) => w.type === WarningType.OperationIdContainsSpecialCharacters
+  );
+
+  specialCharactersWarnings.forEach((warning) => {
+    resultWarnings.push(
+      getLocalizedString(
+        "core.copilotPlugin.scaffold.summary.warning.operationIdContainsSpecialCharacters",
+        warning.data.operationId,
+        warning.data.operationId.replace(/[^a-zA-Z0-9]/g, "_")
+      )
+    );
+  });
+
   return resultWarnings;
 }
 
@@ -1071,7 +1085,7 @@ async function updateAdaptiveCardForCustomApi(
 
     for (const item of specItems) {
       const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
-      const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
+      const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true, 5);
       if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
         (card.body[0] as any).$data = `\${${jsonPath}}`;
       }

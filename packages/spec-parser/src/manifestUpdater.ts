@@ -220,10 +220,12 @@ export class ManifestUpdater {
                 try {
                   const { json } = Utils.getResponseJson(operationItem);
                   if (json.schema) {
-                    const [card, jsonPath] =
-                      AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+                    const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(
+                      operationItem,
+                      false,
+                      5
+                    );
 
-                    card.body = Utils.limitACBodyProperties(card.body, 5);
                     const responseSemantic = wrapResponseSemantics(card, jsonPath);
                     funcObj.capabilities = {
                       response_semantics: responseSemantic,

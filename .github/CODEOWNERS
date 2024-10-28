@@ -25,12 +25,12 @@
 /packages/cli/src/cmds/m365 @swatDong @kuojianlu @kimizhu
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
 /packages/cli/src/commands @jayzhang @Alive-Fish
-/packages/cli/src/commands/models/account.ts @swatDong @xiaolang124 @kimizhu
-/packages/cli/src/commands/models/accountLogin.ts @swatDong @xiaolang124 @kimizhu
-/packages/cli/src/commands/models/accountLoginAzure.ts @swatDong @xiaolang124 @kimizhu
-/packages/cli/src/commands/models/accountLoginM365.ts @swatDong @xiaolang124 @kimizhu
-/packages/cli/src/commands/models/accountLogout.ts @swatDong @xiaolang124 @kimizhu
-/packages/cli/src/commands/models/accountShow.ts @swatDong @xiaolang124 @kimizhu
+/packages/cli/src/commands/models/account.ts @swatDong @xiaolang124 @kimizhu @HuihuiWu-Microsoft @jayzhang
+/packages/cli/src/commands/models/accountLogin.ts @swatDong @xiaolang124 @kimizhu @HuihuiWu-Microsoft @jayzhang
+/packages/cli/src/commands/models/accountLoginAzure.ts @swatDong @xiaolang124 @kimizhu @HuihuiWu-Microsoft @jayzhang
+/packages/cli/src/commands/models/accountLoginM365.ts @swatDong @xiaolang124 @kimizhu @HuihuiWu-Microsoft @jayzhang
+/packages/cli/src/commands/models/accountLogout.ts @swatDong @xiaolang124 @kimizhu @HuihuiWu-Microsoft @jayzhang
+/packages/cli/src/commands/models/accountShow.ts @swatDong @xiaolang124 @kimizhu @HuihuiWu-Microsoft @jayzhang
 /packages/cli/src/commands/models/add.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/cli/src/commands/models/addSPFxWebpart.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/cli/src/commands/models/doctor.ts @swatDong @jayzhang
@@ -47,7 +47,7 @@
 /packages/cli/src/commands/models/teamsapp @nliu-ms @jayzhang @anchenyi
 /packages/cli/src/commands/models/upgrade.ts @xzf0587 @blackchoey
 /packages/cli/src/commands/models/validate.ts @nliu-ms @jayzhang @anchenyi
-/packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya @HuihuiWu-Microsoft @jayzhang
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish
@@ -56,7 +56,7 @@
 /packages/cli/src/resource/errors.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang
-/packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya @HuihuiWu-Microsoft @jayzhang
 
 /packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
 /packages/dotnet-sdk/src/TeamsFx.Test/Conversation @swatDong @dooriya @kimizhu
@@ -271,13 +271,13 @@
 /packages/vscode-extension/WHATISNEW.md @therealjohn @sffamily
 /packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/vscode-extension/src/chat @tecton @Alive-Fish @lijie-lee @1openwindow
-/packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya @HuihuiWu-Microsoft @jayzhang
 /packages/vscode-extension/src/controls @tecton @yiqing-zhao
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug/officeTaskHandler.ts @swatDong @jayzhang @tecton
 /packages/vscode-extension/src/debug/taskTerminal/officeDevTerminal.ts @tecton @swatDong
 /packages/vscode-extension/src/handlers @tecton @jayzhang @yiqing-zhao
-/packages/vscode-extension/src/handlers/accounts @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/handlers/accounts @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya @HuihuiWu-Microsoft @jayzhang
 /packages/vscode-extension/src/handlers/aadManifestHandlers.ts @blackchoey @wenytang-ms @KennethBWSong
 /packages/vscode-extension/src/handlers/collaboratorHandlers.ts @KennethBWSong @SLdragon
 /packages/vscode-extension/src/handlers/copilotChatHandlers.ts @yuqizhou77

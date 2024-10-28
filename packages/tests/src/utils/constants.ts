@@ -178,6 +178,7 @@ export enum Capability {
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
   ApiPlugin = "api-plugin",
+  DeclarativeAgent = "declarative-agent",
 }
 
 export enum Trigger {

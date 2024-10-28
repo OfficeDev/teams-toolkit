@@ -522,7 +522,7 @@ describe("CreateApiKeyDriver", () => {
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
-      expect(result.result.error.name).to.equal("ApiKeyFailedToGetDomain");
+      expect(result.result.error.name).to.equal("ApiKeyAuthMissingInSpec");
     }
   });
 
@@ -549,7 +549,7 @@ describe("CreateApiKeyDriver", () => {
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
-      expect(result.result.error.name).to.equal("ApiKeyFailedToGetDomain");
+      expect(result.result.error.name).to.equal("ApiKeyAuthMissingInSpec");
     }
   });
 
@@ -585,6 +585,69 @@ describe("CreateApiKeyDriver", () => {
             authScheme: {
               type: "http",
               scheme: "basic",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+        {
+          api: "api3",
+          server: "https://test",
+          operationId: "get3",
+          auth: {
+            name: "test1",
+            authScheme: {
+              type: "apiKey",
+              in: "header",
+              name: "test1",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      validAPICount: 3,
+      allAPICount: 3,
+    });
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("ApiKeyAuthMissingInSpec");
+    }
+  });
+
+  it("should throw error if list api contains auth but server info is null", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedSecret",
+      apiSpecPath: "mockedPath",
+    };
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api1",
+          server: "https://test",
+          operationId: "get1",
+          auth: {
+            name: "test1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+        {
+          api: "api2",
+          server: "",
+          operationId: "get2",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
             },
           },
           isValid: true,

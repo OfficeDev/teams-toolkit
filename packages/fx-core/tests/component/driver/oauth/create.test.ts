@@ -1028,7 +1028,7 @@ describe("CreateOauthDriver", () => {
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
-      expect(result.result.error.name).to.equal("OauthFailedToGetDomain");
+      expect(result.result.error.name).to.equal("OauthAuthMissingInSpec");
     }
   });
 
@@ -1039,6 +1039,76 @@ describe("CreateOauthDriver", () => {
           api: "api",
           server: "https://test",
           operationId: "get",
+          isValid: true,
+          reason: [],
+        },
+      ],
+      validAPICount: 0,
+      allAPICount: 1,
+    });
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      clientId: "mockedClientId",
+      clientSecret: "mockedClientSecret",
+      flow: "authorizationCode",
+      refreshUrl: "mockedRefreshUrl",
+      applicableToApps: "SpecificApp",
+      targetAudience: "HomeTenant",
+    };
+
+    const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("OauthAuthMissingInSpec");
+    }
+  });
+
+  it("should throw error if list api contains auth but server info is null ", async () => {
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "mockedAuthorizationUrl",
+                  tokenUrl: "mockedTokenUrl",
+                  scopes: {
+                    mockedScope: "description for mocked scope",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get2",
+          auth: {
+            name: "test2",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "mockedAuthorizationUrl2",
+                  tokenUrl: "mockedTokenUrl2",
+                  scopes: {
+                    mockedScope2: "description for mocked scope",
+                  },
+                },
+              },
+            },
+          },
           isValid: true,
           reason: [],
         },

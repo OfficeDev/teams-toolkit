@@ -90,7 +90,7 @@ export class CreateApiKeyDriver implements StepDriver {
 
         this.validateArgs(args);
 
-        const domains = await getDomain(args, context);
+        const domains = await getDomain(args, context, actionName);
         validateDomain(domains, actionName);
 
         const apiKey = await this.mapArgsToApiSecretRegistration(

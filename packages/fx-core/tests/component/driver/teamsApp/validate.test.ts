@@ -350,6 +350,20 @@ describe("teamsApp/validateManifest", async () => {
       }
     });
 
+    it("should output errors when default language file validation fails", async () => {
+      const args: ValidateManifestArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.invalid.default.localization.manifest.json",
+      };
+      process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error.message.includes("2 failed"));
+      }
+    });
+
     it("should return error when validation throws exception", async () => {
       const args: ValidateManifestArgs = { manifestPath: "fakepath" };
       const manifest = { localizationInfo: { additionalLanguages: [{ file: "filePath" }] } } as any;

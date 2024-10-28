@@ -6,9 +6,9 @@
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 2. Teams App Test Tool will be opened in the launched browser 
 3. [If you selected http trigger] Open Windows PowerShell and post a HTTP request to trigger 
-the notification(replace <endpoint> with real endpoint, for example localhost:5130):
+the notification(replace \<endpoint\> with real endpoint, for example localhost:5130):
 
-   Invoke-WebRequest -Uri "http://<endpoint>/api/notification" -Method Post
+   Invoke-WebRequest -Uri "http://\<endpoint\>/api/notification" -Method Post
    
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
@@ -19,9 +19,9 @@ to install the app to
 4. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 5. In the launched browser, select the Add button to load the app in Teams
 6. [If you selected http trigger] Open Windows PowerShell and post a HTTP request to trigger 
-the notification(replace <endpoint> with real endpoint, for example localhost:5130):
+the notification(replace \<endpoint\> with real endpoint, for example localhost:5130):
 
-   Invoke-WebRequest -Uri "http://<endpoint>/api/notification" -Method Post
+   Invoke-WebRequest -Uri "http://\<endpoint\>/api/notification" -Method Post
    
 {{/enableTestToolByDefault}}
 

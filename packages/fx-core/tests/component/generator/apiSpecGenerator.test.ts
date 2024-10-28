@@ -185,6 +185,31 @@ describe("generateScaffoldingSummary", async () => {
     assert.isTrue(res.includes("content"));
   });
 
+  it("warnings about operationid contains special characters", async () => {
+    const res = await generateScaffoldingSummary(
+      [
+        {
+          type: WarningType.OperationIdContainsSpecialCharacters,
+          content:
+            "Operation id 'user/repo' contained special characters and was renamed to 'user_repo'.",
+          data: { operationId: "user/repo" },
+        },
+        {
+          type: WarningType.OperationIdContainsSpecialCharacters,
+          content:
+            "Operation id 'user/issue' contained special characters and was renamed to 'user_issue'.",
+          data: { operationId: "user/issue" },
+        },
+      ],
+      teamsManifest,
+      "path",
+      undefined,
+      ""
+    );
+    assert.isTrue(res.includes("user_repo"));
+    assert.isTrue(res.includes("user_issue"));
+  });
+
   it("warnings about adaptive card template in manifest", async () => {
     const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",

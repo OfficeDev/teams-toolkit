@@ -57,7 +57,7 @@
                     "commands": [
                         {
                             "title": "How can you help me?",
-                            "description": "A sample prompt"
+                            "description": "How can you help me?"
                         },
                         {
                             "title": "How to develop TeamsToolkit app?",

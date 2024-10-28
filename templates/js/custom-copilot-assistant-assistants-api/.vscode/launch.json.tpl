@@ -75,6 +75,30 @@
                 "order": 3
             },
             "internalConsoleOptions": "neverOpen",
+        {{#CEAEnabled}}
+        },
+        {
+            "name": "Launch Remote in Copilot (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://www.office.com/chat?auth=2&${account-hint}",
+            "presentation": {
+                "group": "4-M365",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+          },
+          {
+            "name": "Launch Remote in Copilot (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://www.office.com/chat?auth=2&${account-hint}",
+            "presentation": {
+                "group": "4-M365",
+                "order": 4
+            },
+            "internalConsoleOptions": "neverOpen"
+        {{/CEAEnabled}}
         }
     ],
     "compounds": [
@@ -142,6 +166,34 @@
                 "order": 1
             },
             "stopAll": true
+        {{#CEAEnabled}}
+        },
+        {
+            "name": "Preview in Copilot (Edge)",
+            "configurations": [
+                "Launch Remote in Copilot (Edge)",
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "4-M365",
+                "order": 1
+            },
+            "stopAll": true
+            },
+            {
+            "name": "Preview in Copilot (Chrome)",
+            "configurations": [
+                "Launch Remote in Copilot (Chrome)",
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App Locally",
+            "presentation": {
+                "group": "4-M365",
+                "order": 2
+            },
+            "stopAll": true
+        {{/CEAEnabled}}
         }
     ]
 }

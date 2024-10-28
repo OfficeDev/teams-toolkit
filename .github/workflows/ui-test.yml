@@ -341,40 +341,13 @@ jobs:
           name: ttk
           path: ./packages/tests
 
-      - name: Install teamsfx cli (for migration use latest)
-        if: contains(matrix.test-case,  'upgrade') && contains(matrix.test-case,  '4.0.0') == false && contains(matrix.test-case,  '3.x') == false
-        working-directory: packages/tests
-        run: |
-          npm install @microsoft/teamsfx-cli@1.2.6
-
-      - name: Install teamsfx cli (for migration use 1.0.0)
-        if: contains(matrix.test-case,  '4.0.0')
-        working-directory: packages/tests
-        run: |
-          npm install @microsoft/teamsfx-cli@1.0.0
-
-      - name: Install teamsfx cli (for migration use 0.2.0)
-        if: contains(matrix.test-case,  '3.x')
-        working-directory: packages/tests
-        run: |
-          npm install @microsoft/teamsfx-cli@0.2.0
-
       - name: Install teamsfx cli
-        if: contains(matrix.test-case,  'upgrade') == false
         working-directory: packages/tests
         run: |
           npm install @microsoft/teamsapp-cli@${{ needs.setup.outputs.npm-tag }}
 
-      - name: Download samples (migration use v1.1.0)
-        if: contains(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
-        uses: actions/checkout@v3
-        with:
-          repository: OfficeDev/TeamsFx-Samples
-          ref: v1.1.0
-          path: ./packages/tests/resource
-
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case, 'reddit-link') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false && contains(matrix.test-case, 'food-catalog') == false && contains(matrix.test-case, 'outlook-signature') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case, 'reddit-link') == false && contains(matrix.test-case, 'chef-bot') == false && contains(matrix.test-case, 'food-catalog') == false && contains(matrix.test-case, 'outlook-signature') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -382,7 +355,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples from another repo
-        if: (contains(matrix.test-case, 'proactive-message') || contains(matrix.test-case, 'reddit-link')) && contains(matrix.test-case,  'upgrade') == false
+        if: contains(matrix.test-case, 'proactive-message') || contains(matrix.test-case, 'reddit-link')
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples

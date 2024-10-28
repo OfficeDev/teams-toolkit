@@ -81,7 +81,7 @@
             "name": "Launch Remote in Copilot (Edge)",
             "type": "msedge",
             "request": "launch",
-            "url": "https://www.office.com/chat",
+            "url": "https://www.office.com/chat?auth=2&${account-hint}",
             "presentation": {
                 "group": "4-M365",
                 "order": 3
@@ -92,7 +92,7 @@
             "name": "Launch Remote in Copilot (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "https://www.office.com/chat",
+            "url": "https://www.office.com/chat?auth=2&${account-hint}",
             "presentation": {
                 "group": "4-M365",
                 "order": 4

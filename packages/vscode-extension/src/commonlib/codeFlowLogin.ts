@@ -303,6 +303,7 @@ export class CodeFlowLogin {
   async logout(): Promise<boolean> {
     try {
       await saveAccountId(this.accountName, undefined);
+      await saveTenantId(this.accountName, undefined);
       (this.msalTokenCache as any).storage.setCache({});
       await clearCache(this.accountName);
       this.account = undefined;
@@ -333,6 +334,9 @@ export class CodeFlowLogin {
     tenantId?: string
   ): Promise<Result<string, FxError>> {
     if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      if (!tenantId) {
+        tenantId = await loadTenantId(this.accountName);
+      }
       return await this.getToken(scopes, refresh, tenantId, loginHint);
     }
 

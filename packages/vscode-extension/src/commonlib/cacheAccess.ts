@@ -248,6 +248,8 @@ export async function saveTenantId(accountName: string, tenantId?: string) {
   try {
     if (tenantId) {
       await fs.writeFile(tenantPath + accountName, tenantId, UTF8);
+    } else {
+      await fs.writeFile(tenantPath + accountName, "", UTF8);
     }
   } catch (err) {
     VsCodeLogInstance.warning(

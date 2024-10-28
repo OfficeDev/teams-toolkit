@@ -6,7 +6,6 @@ import { AzureScopes } from "@microsoft/teamsfx-core";
 import axios from "axios";
 import * as chai from "chai";
 import { EnvConstants, PluginId, StateConfigKey } from "./constants";
-// eslint-disable-next-line import/no-cycle
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,

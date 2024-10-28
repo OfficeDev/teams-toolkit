@@ -1,9 +1,9 @@
 {
     "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
+    "description": "Microsoft Teams Toolkit Notification Bot Sample (Express)",
     "engines": {
-        "node": "16 || 18"
+        "node": "18 || 20"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -23,13 +23,13 @@
     },
     "dependencies": {
         "adaptivecards-templating": "^2.3.1",
-        "adaptive-expressions": "^4.22.3",
-        "@microsoft/teamsfx": "^2.3.1",
-        "botbuilder": "^4.20.0",
-        "restify": "^10.0.0"
+        "adaptive-expressions": "^4.23.1",
+        "@microsoft/teamsfx": "^3.0.0-alpha",
+        "botbuilder": "^4.23.1",
+        "express": "^5.0.1"
     },
     "devDependencies": {
-        "nodemon": "^2.0.7",
+        "nodemon": "^3.1.7",
         "env-cmd": "^10.1.0"
     }
 }

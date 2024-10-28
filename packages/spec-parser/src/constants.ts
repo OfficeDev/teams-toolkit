@@ -37,6 +37,9 @@ export class ConstantString {
   static readonly MultipleAuthNotSupported =
     "Multiple authentication methods are unsupported. Ensure all selected APIs use identical authentication.";
 
+  static readonly OperationIdContainsSpecialCharacters =
+    "Operation id '%s' in OpenAPI description document contained special characters and was renamed to '%s'.";
+
   static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
   static readonly FuncDescriptionTooLong =
     "The description of the function '%s' is too long. The current length is %s characters, while the maximum allowed length is %s characters.";

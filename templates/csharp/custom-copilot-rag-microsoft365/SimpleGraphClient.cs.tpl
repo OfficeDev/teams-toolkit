@@ -33,7 +33,7 @@ namespace {{SafeProjectName}}
                 },
             };
             var res = await graphClient.Search.Query(new List<SearchRequestObject> { q }).Request().PostAsync();
-            var urls = res.CurrentPage[0].HitsContainers.SelectMany(hitContainer => hitContainer.Hits ?? []).Select(hit => (hit.Resource as DriveItem).WebUrl).ToList();
+            var urls = res.CurrentPage[0].HitsContainers.SelectMany(hitContainer => hitContainer.Hits ?? new List<SearchHit>()).Select(hit => (hit.Resource as DriveItem).WebUrl).ToList();
             return urls;
         }
 

@@ -117,6 +117,10 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     return true;
   }
 
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
   async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
     if (!M365Login.codeFlowInstance.account) {
       await M365Login.codeFlowInstance.reloadCache();
@@ -184,6 +188,9 @@ class MM365TokenProviderWrapper implements M365TokenProvider {
   }
   async signout(): Promise<boolean> {
     return await (this.getProvider() as any).signout();
+  }
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
   }
 }
 

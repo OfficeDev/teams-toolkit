@@ -213,7 +213,7 @@ async function generateAccountHint(includeTenantId = true): Promise<string> {
       if (tokenObject) {
         // user signed in
         tenantId = tokenObject.tid as string;
-        loginHint = tokenObject.upn as string;
+        loginHint = (tokenObject.upn as string) ?? (tokenObject.unique_name as string);
       } else {
         // no signed user
         loginHint = "login_your_m365_account"; // a workaround that user has the chance to login

@@ -234,7 +234,9 @@ export class CodeFlowLogin {
           [TelemetryProperty.AccountType]: this.accountName,
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
           [TelemetryProperty.UserId]: (tokenJson as any).oid ? (tokenJson as any).oid : "",
-          [TelemetryProperty.Internal]: (tokenJson as any).upn?.endsWith("@microsoft.com")
+          [TelemetryProperty.Internal]: (
+            (tokenJson as any).upn ?? (tokenJson as any).unique_name
+          ).endsWith("@microsoft.com")
             ? "true"
             : "false",
         });

@@ -106,11 +106,15 @@ export class Executor {
     language: ProgrammingLanguage,
     customized: Record<string, string> = {}
   ) {
-    const languageParam =
-      language === ProgrammingLanguage.Common ||
-      language === ProgrammingLanguage.None
-        ? ""
-        : `--programming-language ${language}`;
+    let languageParam = "";
+    if (language === ProgrammingLanguage.CSharp) {
+      languageParam = "--runtime dotnet";
+    } else if (
+      language !== ProgrammingLanguage.Common &&
+      language !== ProgrammingLanguage.None
+    ) {
+      languageParam = `--programming-language ${language}`;
+    }
 
     const command =
       `teamsapp new --interactive false --app-name ${appName} --capability ${capability} ${languageParam}` +

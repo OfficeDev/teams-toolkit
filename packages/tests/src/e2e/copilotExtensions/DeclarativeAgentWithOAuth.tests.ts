@@ -25,3 +25,23 @@ new DeclarativeAgentWithOAutTestCase(
   {},
   myRecord
 ).test();
+
+new DeclarativeAgentWithOAutTestCase(
+  Capability.DeclarativeAgent,
+  30032802,
+  "huimaio@microsoft.com",
+  ["function"],
+  ProgrammingLanguage.TS,
+  {},
+  myRecord
+).test();
+
+new DeclarativeAgentWithOAutTestCase(
+  Capability.DeclarativeAgent,
+  30032802,
+  "huimaio@microsoft.com",
+  ["function"],
+  ProgrammingLanguage.CSharp,
+  {},
+  myRecord
+).test();

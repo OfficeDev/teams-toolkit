@@ -152,7 +152,7 @@
     {{#CEAEnabled}}
     },
     {
-      "name": "Preview in Copilot (Edge)",
+      "name": "Debug in Copilot (Edge)",
       "configurations": ["Launch Remote in Copilot (Edge)", "Start Python"],
       "cascadeTerminateToConfigurations": ["Start Python"],
       "preLaunchTask": "Start Teams App Locally",
@@ -163,7 +163,7 @@
       "stopAll": true
     },
     {
-      "name": "Preview in Copilot (Chrome)",
+      "name": "Debug in Copilot (Chrome)",
       "configurations": ["Launch Remote in Copilot (Chrome)", "Start Python"],
       "cascadeTerminateToConfigurations": ["Start Python"],
       "preLaunchTask": "Start Teams App Locally",

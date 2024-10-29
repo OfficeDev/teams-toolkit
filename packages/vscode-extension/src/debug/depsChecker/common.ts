@@ -7,6 +7,7 @@
 import {
   FxError,
   M365TokenProvider,
+  OptionItem,
   Result,
   SystemError,
   UserError,
@@ -27,6 +28,7 @@ import {
   PortsConflictError,
   SideloadingDisabledError,
   TelemetryContext,
+  UserCancelError,
   assembleError,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
@@ -66,6 +68,7 @@ import {
 } from "./prerequisitesCheckerConstants";
 import { vscodeLogger } from "./vscodeLogger";
 import { vscodeTelemetry } from "./vscodeTelemetry";
+import { processUtil } from "../../utils/processUtil";
 
 export async function _checkAndInstall(
   displayMessages: DisplayMessages,
@@ -146,6 +149,65 @@ async function runWithCheckResultTelemetryProperties(
   );
 }
 
+async function selectPortsToKill(
+  portsInUse: number[]
+): Promise<Result<undefined, UserCancelError>> {
+  const killRes = await VS_CODE_UI.showMessage(
+    "info",
+    `The following ports are occupied: ${Array.from(portsInUse).join(
+      ","
+    )}, kill the process(es) occupying them before debug continue.`,
+    true,
+    "Kill"
+  );
+
+  if (killRes.isErr()) {
+    return err(new UserCancelError(ExtensionSource));
+  }
+
+  const killValue = killRes.value;
+
+  if (killValue === "Kill") {
+    const processIds = new Set<string>();
+    for (const port of portsInUse) {
+      const processId = await processUtil.getProcessId(port);
+      if (processId) {
+        processIds.add(processId);
+      }
+    }
+    if (processIds.size > 0) {
+      const options: OptionItem[] = [];
+      for (const processId of processIds) {
+        const processInfo = await processUtil.getProcessInfo(parseInt(processId));
+        options.push({ id: processId, label: processInfo });
+      }
+      const res = await VS_CODE_UI.selectOptions({
+        title: "Select the following processes to kill",
+        name: "select_processes",
+        options,
+        default: options.map((o) => o.id),
+      });
+      if (res.isOk() && res.value.type === "success") {
+        const processIds = res.value.result as string[];
+        for (const processId of processIds) {
+          await processUtil.killProcess(processId);
+        }
+        if (processIds.length > 0) {
+          void VS_CODE_UI.showMessage(
+            "info",
+            `Processes ${Array.from(processIds).join(",")} have been killed.`,
+            false
+          );
+        }
+      } else {
+        return err(new UserCancelError(ExtensionSource));
+      }
+    }
+    return ok(undefined);
+  }
+  return err(new UserCancelError(ExtensionSource));
+}
+
 async function checkPort(
   localEnvManager: LocalEnvManager,
   ports: number[],
@@ -158,7 +220,14 @@ async function checkPort(
     additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
-      const portsInUse = await localEnvManager.getPortsInUse(ports);
+      let portsInUse = await localEnvManager.getPortsInUse(ports);
+      if (portsInUse.length > 0) {
+        const killRes = await selectPortsToKill(portsInUse);
+        if (killRes.isOk()) {
+          // recheck
+          portsInUse = await localEnvManager.getPortsInUse(ports);
+        }
+      }
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
       if (portsInUse.length > 0) {

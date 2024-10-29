@@ -771,7 +771,7 @@ export class CapabilityOptions {
 
   // custom copilot
   static customCopilotBasic(): OptionItem {
-    const description = FeatureFlags.CEAEnabled
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
       ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
       : undefined;
     return {
@@ -787,7 +787,7 @@ export class CapabilityOptions {
   }
 
   static customCopilotRag(): OptionItem {
-    const description = FeatureFlags.CEAEnabled
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
       ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
       : undefined;
     return {
@@ -803,7 +803,7 @@ export class CapabilityOptions {
   }
 
   static customCopilotAssistant(): OptionItem {
-    const description = FeatureFlags.CEAEnabled
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
       ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
       : undefined;
     return {

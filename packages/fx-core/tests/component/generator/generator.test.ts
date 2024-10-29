@@ -1194,7 +1194,9 @@ describe("render template", () => {
 
     it("CEA works in M365 tag shows when CEA enabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_CEA_ENABLED: "true" });
-      const descriptionAnswer = getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description");
+      const descriptionAnswer = getLocalizedString(
+        "core.createProjectQuestion.capability.customEngineAgent.description"
+      );
       assert.equal(CapabilityOptions.customCopilotBasic().description, descriptionAnswer);
     });
 

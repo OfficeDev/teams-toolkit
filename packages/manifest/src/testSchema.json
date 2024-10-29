@@ -305,7 +305,7 @@
                 },
                 "run_for_functions": {
                     "type": "array",
-                    "required": true,
+
                     "description": "The names of the functions that are available in this runtime. If this property is omitted, all functions described by the runtime are available. If a wildcard (\"*\") is specified as the only string, all functions are considered. More than one runtime MUST NOT declare support for the same function either implicitly or explicitly.",
                     "items": {
                         "type": "string"
@@ -394,7 +394,7 @@
             "title": "Localization object",
             "description": "Contains mappings for strings in different languages and locales.",
             "patternProperties": {
-                "^(?i)[a-z]{2,3}(-[a-z]{2})?(?-i)$": {
+                "/^[a-z]{2,3}(-[a-z]{2})?$/i": {
                     "type": "object",
                     "title": "Language-specific localized properties object",
                     "description": "Contains translations of localizable properties for the language represented by the property's name, which is a [BCP47][] language tag.",

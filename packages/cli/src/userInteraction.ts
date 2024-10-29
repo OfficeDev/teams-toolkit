@@ -117,6 +117,12 @@ class CLIUserInteraction implements UserInteraction {
       message,
       default: defaultValue,
       validate,
+      theme: {
+        prefix: {
+          idle: "\x1b[32m?\x1b[0m", // Green question mark displayed when input is in progress
+          done: "\x1b[32m?\x1b[0m", // Green question mark displayed when input is completed
+        },
+      },
     });
     ScreenManager.continue();
     return ok(answer);

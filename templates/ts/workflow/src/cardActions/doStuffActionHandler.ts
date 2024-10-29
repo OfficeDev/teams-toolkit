@@ -2,7 +2,6 @@ import * as ACData from "adaptivecards-templating";
 import { TurnContext, InvokeResponse } from "botbuilder";
 import { TeamsFxAdaptiveCardActionHandler, InvokeResponseFactory } from "@microsoft/teamsfx";
 import responseCard from "../adaptiveCards/doStuffActionResponse.json";
-import { CardData } from "../cardModels";
 
 /**
  * The `DoStuffActionHandler` registers an action with the `TeamsFxBotActionHandler` and responds
@@ -19,12 +18,12 @@ export class DoStuffActionHandler implements TeamsFxAdaptiveCardActionHandler {
     /**
      * You can send an adaptive card to respond to the card action invoke.
      */
-    const cardData: CardData = {
-      title: "Hello World Bot",
-      body: "Congratulations! Your task is processed successfully.",
-    };
-
-    const cardJson = new ACData.Template(responseCard).expand({ $root: cardData });
+    const cardJson = new ACData.Template(responseCard).expand({
+      $root: {
+        title: "Hello World Bot",
+        body: "Congratulations! Your task is processed successfully.",
+      },
+    });
     return InvokeResponseFactory.adaptiveCard(cardJson);
 
     /**

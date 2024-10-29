@@ -1,7 +1,6 @@
 import { AzureFunction, Context } from "@azure/functions";
 import * as ACData from "adaptivecards-templating";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
-import { CardData } from "./cardModels";
 import { notificationApp } from "./internal/initialize";
 
 // An Azure Function timer trigger.

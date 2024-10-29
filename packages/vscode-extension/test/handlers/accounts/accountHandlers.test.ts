@@ -165,6 +165,41 @@ describe("AccountHandlers", () => {
       chai.expect(executeCommandStub.args[2][0]).to.be.equal("fx-extension.signinAzure");
       chai.assert.isTrue(hideStub.calledOnce);
     });
+
+    it("Sign out happy path - unique_name", async () => {
+      sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined);
+      sandbox.stub(M365TokenInstance, "signout");
+      sandbox
+        .stub(M365TokenInstance, "getStatus")
+        .resolves(ok({ status: "SignedIn", accountInfo: { unique_name: "test.email.com" } }));
+      sandbox
+        .stub(AzureAccountManager.prototype, "getStatus")
+        .resolves({ status: "SignedIn", accountInfo: { upn: "test.email.com" } });
+      sandbox.stub(stubQuickPick, "hide");
+
+      await cmpAccountsHandler([]);
+
+      chai.assert.isTrue((stubQuickPick.items[0].label as string).includes("test.email.com"));
+    });
+
+    it("Sign out happy path - undefined", async () => {
+      sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined);
+      sandbox.stub(M365TokenInstance, "signout");
+      sandbox
+        .stub(M365TokenInstance, "getStatus")
+        .resolves(ok({ status: "SignedIn", accountInfo: {} }));
+      sandbox
+        .stub(AzureAccountManager.prototype, "getStatus")
+        .resolves({ status: "SignedIn", accountInfo: { upn: "test.email.com" } });
+      sandbox.stub(stubQuickPick, "hide");
+
+      await cmpAccountsHandler([]);
+
+      chai.assert.equal(
+        stubQuickPick.items[0].label as string,
+        localizeUtils.localize("teamstoolkit.handlers.signOutOfM365")
+      );
+    });
   });
 
   describe("azureAccountSignOutHelpHandler", () => {

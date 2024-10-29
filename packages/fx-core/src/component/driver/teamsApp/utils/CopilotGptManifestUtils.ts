@@ -187,6 +187,18 @@ export class CopilotGptManifestUtils {
         id,
         file: pluginFile,
       });
+
+      const actionPath = path.join(path.dirname(copilotGptPath), pluginFile);
+      const actionManifest = await fs.readJson(actionPath);
+      const conversationStarters = actionManifest.capabilities?.conversation_starters;
+
+      if (conversationStarters) {
+        if (!gptManifest.conversation_starters) {
+          gptManifest.conversation_starters = [];
+        }
+        gptManifest.conversation_starters.push(...conversationStarters);
+      }
+
       const updateGptManifestRes = await copilotGptManifestUtils.writeCopilotGptManifestFile(
         gptManifest,
         copilotGptPath

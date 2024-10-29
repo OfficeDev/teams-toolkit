@@ -40,6 +40,7 @@ import { Messages } from "../component/resource/botService/messages";
 import { MockTools } from "../core/utils";
 import { getDefaultString } from "../../src/common/localizeUtils";
 import { HelpLinks } from "../../src/common/constants";
+import { expect } from "chai";
 
 describe("TeamsDevPortalClient Test", () => {
   const tools = new MockTools();
@@ -854,7 +855,6 @@ describe("TeamsDevPortalClient Test", () => {
         chai.assert.include(error.message, xCorrelationId);
       }
     });
-
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sandbox.stub(axios, "create").returns(fakeAxiosInstance);
@@ -888,6 +888,93 @@ describe("TeamsDevPortalClient Test", () => {
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedSystemError.name);
       }
+    });
+    it("Bad Request", async () => {
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const xCorrelationId = "fakeCorrelationId";
+      const postResponse = {
+        data: {
+          errorMessage: "BadRequest",
+        },
+        message: "fake message",
+        headers: {
+          "x-correlation-id": xCorrelationId,
+        },
+      };
+
+      sandbox.stub(fakeAxiosInstance, "post").resolves(postResponse);
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: "xx",
+                  displayName: "xx",
+                  lastModifiedDateTime: null,
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sandbox.stub(fakeAxiosInstance, "get").resolves(getResponse);
+
+      try {
+        await teamsDevPortalClient.publishTeamsAppUpdate(token, "", Buffer.from(""));
+      } catch (error) {
+        chai.assert.include(error.message, xCorrelationId);
+        chai.assert.include(error.message, "BadRequest");
+      }
+    });
+  });
+
+  describe("wrapResponse", () => {
+    it("should return an error with e.message if it exists", () => {
+      const e = new Error("Error from e");
+      const error = teamsDevPortalClient.wrapResponse(e, undefined);
+      expect(error.message).to.equal("Error from e");
+    });
+
+    it("should return an error with e.message and response are missing", () => {
+      const e = new Error("");
+      const error = teamsDevPortalClient.wrapResponse(e, undefined);
+      expect(error.message).to.equal("");
+    });
+
+    it("should return an error with response.data.error.message if e.message is missing and response.data.error.message exists", () => {
+      const e = new Error("");
+      const response = {
+        data: { error: { message: "Error from response.data.error" }, errorMessage: "" },
+      } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("Error from response.data.error");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
+    });
+
+    it("should return an error with response.data.errorMessage if both e.message and response.data.error.message are missing", () => {
+      const e = new Error("");
+      const response = {
+        data: { error: { message: "" }, errorMessage: "Error from response.data.errorMessage" },
+      } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("Error from response.data.errorMessage");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
+    });
+
+    it("should return an error with empty message if all messages are missing", () => {
+      const e = new Error("");
+      const response = { data: { error: { message: "" }, errorMessage: "" } } as any;
+      const error = teamsDevPortalClient.wrapResponse(e, response);
+      expect(error.message).to.equal("");
+      expect(error.response).to.equal(response);
+      expect(error.request).to.equal(response.request);
     });
   });
 

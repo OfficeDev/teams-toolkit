@@ -14,12 +14,9 @@ import { PublishingState } from "../../../../src/component/driver/teamsApp/inter
 import { PublishAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/PublishAppPackageArgs";
 import { PublishAppPackageDriver } from "../../../../src/component/driver/teamsApp/publishAppPackage";
 import { UserCancelError } from "../../../../src/error/common";
-import {
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
+import { MockedM365Provider } from "../../../core/utils";
 
 describe("teamsApp/publishAppPackage", async () => {
   const teamsAppDriver = new PublishAppPackageDriver();

@@ -108,7 +108,7 @@ export async function cmpAccountsHandler(args: any[]) {
   const m365Account = m365AccountRes.isOk() ? m365AccountRes.value : undefined;
   if (m365Account && m365Account.status === "SignedIn") {
     const accountInfo = m365Account.accountInfo;
-    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    const email = (accountInfo as any).upn ?? (accountInfo as any).unique_name ?? undefined;
     if (email !== undefined) {
       signOutM365Option.label = signOutM365Option.label.concat(email);
     }

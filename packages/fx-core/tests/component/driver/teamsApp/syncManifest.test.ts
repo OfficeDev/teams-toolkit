@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { SyncManifestDriver } from "../../../../src/component/driver/teamsApp/syncManifest";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { SyncManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/SyncManifest";
-import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedLogProvider } from "../../../plugins/solution/util";
 import { envUtil } from "../../../../src/component/utils/envUtil";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, err, TeamsAppManifest, Err, UserError, Result, FxError } from "@microsoft/teamsfx-api";
@@ -13,6 +13,7 @@ import * as appStudio from "../../../../src/component/driver/teamsApp/appStudio"
 import { DotenvOutput, getLocalizedString } from "../../../../build";
 import { metadataUtil, pathUtils } from "../../../../src";
 import { ILifecycle, ProjectModel } from "../../../../src/component/configManager/interface";
+import { MockedM365Provider } from "../../../core/utils";
 
 describe("teamsApp/syncManifest", async () => {
   const syncManifestDriver = new SyncManifestDriver();

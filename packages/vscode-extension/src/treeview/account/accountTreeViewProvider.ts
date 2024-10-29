@@ -73,7 +73,7 @@ async function m365AccountStatusChangeHandler(
   if (status === "SignedIn") {
     if (accountInfo) {
       await instance.m365AccountNode.setSignedIn(
-        (accountInfo.upn as string) ? (accountInfo.upn as string) : "",
+        (accountInfo.upn as string) ?? (accountInfo.unique_name as string) ?? "",
         (accountInfo.tid as string) ?? ""
       );
       if (token && source === "appStudio") {

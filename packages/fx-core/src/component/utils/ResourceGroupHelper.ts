@@ -241,7 +241,6 @@ class ResourceGroupHelper {
       const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
       return ok(!!checkRes.body);
     } catch (e: any) {
-      delete e["request"];
       return err(
         new CheckResourceGroupExistenceError(
           resourceGroupName,

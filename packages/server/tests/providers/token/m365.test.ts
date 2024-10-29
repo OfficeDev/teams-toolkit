@@ -125,5 +125,9 @@ describe("m365", () => {
     it("removeStatusChangeMap", async () => {
       chai.expect(() => appStudio.removeStatusChangeMap("test")).to.throw(NotImplementedError);
     });
+
+    it("switchTenant", async () => {
+      chai.expect(() => appStudio.switchTenant("")).to.throw(NotImplementedError);
+    });
   });
 });

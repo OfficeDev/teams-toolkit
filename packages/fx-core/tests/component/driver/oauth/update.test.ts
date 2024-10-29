@@ -16,12 +16,8 @@ import {
   OauthRegistrationAppType,
   OauthRegistrationTargetAudience,
 } from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
-import {
-  MockedAzureAccountProvider,
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

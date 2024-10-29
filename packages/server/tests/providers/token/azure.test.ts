@@ -89,6 +89,11 @@ describe("azure", () => {
     chai.expect(() => azure.removeStatusChangeMap("test")).to.throw(NotImplementedError);
   });
 
+  it("switchTenant", () => {
+    const azure = new ServerAzureAccountProvider(msgConn);
+    chai.expect(() => azure.switchTenant("")).to.throw();
+  });
+
   describe("getJsonObject", () => {
     const azure = new ServerAzureAccountProvider(msgConn);
 

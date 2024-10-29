@@ -27,7 +27,7 @@
     },
     "dependencies": {
         "@azure/search-documents": "^12.0.0",
-        "@microsoft/teams-ai": "^1.1.0",
+        "@microsoft/teams-ai": "^1.5.3",
         "botbuilder": "^4.23.1",
         "express": "^5.0.1"
     },

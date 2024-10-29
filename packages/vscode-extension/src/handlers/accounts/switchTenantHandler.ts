@@ -41,12 +41,16 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
     };
     const result = await VS_CODE_UI.selectOption(config);
     if (result.isOk()) {
-      // TODO: set tenant
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
-        [TelemetryProperty.AccountType]: AccountType.M365,
-        ...getTriggerFromProperty(args),
-      });
-      return;
+      const switchRes = await M365TokenInstance.switchTenant(result.value.result as string);
+      if (switchRes.isOk()) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
+          [TelemetryProperty.AccountType]: AccountType.M365,
+          ...getTriggerFromProperty(args),
+        });
+        return;
+      } else {
+        error = switchRes.error;
+      }
     } else {
       error = result.error;
     }

@@ -19,6 +19,7 @@ import { SecretStorage } from "vscode";
 const cacheDir = os.homedir() + `/.${ConfigFolderName}/account`;
 const cachePath = os.homedir() + `/.${ConfigFolderName}/account/token.cache.`;
 const accountPath = os.homedir() + `/.${ConfigFolderName}/account/homeId.cache.`;
+const tenantPath = os.homedir() + `/.${ConfigFolderName}/account/tenantId.cache.`;
 const cachePathEnd = ".json";
 
 // the friendly service name to store secret in keytar
@@ -226,4 +227,33 @@ export async function loadAccountId(accountName: string) {
   }
 
   return undefined;
+}
+
+export async function loadTenantId(accountName: string) {
+  if (await fs.pathExists(tenantPath + accountName)) {
+    try {
+      return await fs.readFile(tenantPath + accountName, UTF8);
+    } catch (err) {
+      VsCodeLogInstance.warning(
+        localize("teamstoolkit.cacheAccess.readTenantIdFail") + (err.message as string)
+      );
+    }
+  }
+
+  return undefined;
+}
+
+export async function saveTenantId(accountName: string, tenantId?: string) {
+  await fs.ensureDir(cacheDir);
+  try {
+    if (tenantId) {
+      await fs.writeFile(tenantPath + accountName, tenantId, UTF8);
+    } else {
+      await fs.writeFile(tenantPath + accountName, "", UTF8);
+    }
+  } catch (err) {
+    VsCodeLogInstance.warning(
+      localize("teamstoolkit.cacheAccess.saveTenantIdFail") + (err.message as string)
+    );
+  }
 }

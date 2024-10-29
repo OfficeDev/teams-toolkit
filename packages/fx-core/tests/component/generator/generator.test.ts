@@ -1198,11 +1198,15 @@ describe("render template", () => {
         "core.createProjectQuestion.capability.customEngineAgent.description"
       );
       assert.equal(CapabilityOptions.customCopilotBasic().description, descriptionAnswer);
+      assert.equal(CapabilityOptions.customCopilotRag().description, descriptionAnswer);
+      assert.equal(CapabilityOptions.customCopilotAssistant().description, descriptionAnswer);
     });
 
     it("CEA works in M365 tag doesn't show when CEA disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_CEA_ENABLED: "false" });
       assert.equal(CapabilityOptions.customCopilotBasic().description, undefined);
+      assert.equal(CapabilityOptions.customCopilotRag().description, undefined);
+      assert.equal(CapabilityOptions.customCopilotAssistant().description, undefined);
     });
   });
 });

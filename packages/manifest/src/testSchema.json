@@ -394,7 +394,7 @@
             "title": "Localization object",
             "description": "Contains mappings for strings in different languages and locales.",
             "patternProperties": {
-                "/^[a-z]{2,3}(-[a-z]{2})?$/i": {
+                "^[a-zA-Z]{2,3}(-[a-zA-Z]{2})?$": {
                     "type": "object",
                     "title": "Language-specific localized properties object",
                     "description": "Contains translations of localizable properties for the language represented by the property's name, which is a [BCP47][] language tag.",

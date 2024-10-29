@@ -971,7 +971,7 @@ export class TeamsDevPortalClient {
   }
   wrapResponse(e?: Error, response?: AxiosResponse<any, any>): any {
     const error = new Error(
-      e?.message || response?.data.error.message || response?.data.errorMessage
+      e?.message || response?.data.error?.message || response?.data.errorMessage
     );
     (error as any).response = response;
     (error as any).request = response?.request;

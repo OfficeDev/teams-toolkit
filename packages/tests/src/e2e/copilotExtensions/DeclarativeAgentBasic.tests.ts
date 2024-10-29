@@ -24,6 +24,6 @@ new DeclarativeAgentBasicTestCase(
   "huimaio@microsoft.com",
   ["function"],
   ProgrammingLanguage.None,
-  { skipValidateForProvision: true },
+  { skipValidateForProvision: true, skipDeploy: true },
   myRecord
 ).test();

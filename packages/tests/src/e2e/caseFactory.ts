@@ -51,7 +51,7 @@ export abstract class CaseFactory {
     skipDeploy?: boolean;
     skipValidate?: boolean;
     skipPackage?: boolean;
-    skipValidateAfterProvision?: boolean;
+    skipValidateForProvision?: boolean;
   };
   public custimized?: Record<string, string>;
 
@@ -75,7 +75,7 @@ export abstract class CaseFactory {
       skipDeploy?: boolean;
       skipValidate?: boolean;
       skipPackage?: boolean;
-      skipValidateAfterProvision?: boolean;
+      skipValidateForProvision?: boolean;
     } = {},
     custimized?: Record<string, string>
   ) {
@@ -178,7 +178,7 @@ export abstract class CaseFactory {
           const { success } = await Executor.provision(projectPath);
           expect(success).to.be.true;
 
-          if (!options?.skipValidateAfterProvision) {
+          if (!options?.skipValidateForProvision) {
             // Validate Provision
             const context = await readContextMultiEnvV3(projectPath, env);
             if (validate.includes("bot")) {

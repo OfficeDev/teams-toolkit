@@ -35,12 +35,12 @@ import { envUtil } from "../../../../src/component/utils/envUtil";
 import { QuestionNames } from "../../../../src/question";
 import {
   MockLogProvider,
-  MockM365TokenProvider,
+  MockedM365Provider,
+  MockedAzureAccountProvider,
   MockTools,
   randomAppName,
 } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
-import { MockedAzureAccountProvider, MockedM365Provider } from "../../../plugins/solution/util";
 
 describe.skip("appStudio", () => {
   const tools = new MockTools();
@@ -49,7 +49,7 @@ describe.skip("appStudio", () => {
   describe("checkIfAppInDifferentAcountSameTenant", () => {
     const logger = new MockLogProvider();
     const teamsAppId = "teams";
-    const m365TokenProvider = new MockM365TokenProvider();
+    const m365TokenProvider = new MockedM365Provider();
 
     afterEach(() => {
       sandbox.restore();
@@ -122,7 +122,7 @@ describe.skip("appStudio", () => {
   describe("getAppPackage", () => {
     const logger = new MockLogProvider();
     const teamsAppId = "teams";
-    const m365TokenProvider = new MockM365TokenProvider();
+    const m365TokenProvider = new MockedM365Provider();
 
     afterEach(() => {
       sandbox.restore();

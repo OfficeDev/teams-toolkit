@@ -20,8 +20,11 @@ import {
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
 import { DefaultEncoding, getSystemEncoding } from "../../../../src/component/utils/charsetUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
-import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import {
+  MockLogProvider,
+  MockUserInteraction,
+  MockedAzureAccountProvider,
+} from "../../../core/utils";
 import { TestLogProvider } from "../../util/logProviderMock";
 
 describe("Script Driver test", () => {
@@ -40,7 +43,7 @@ describe("Script Driver test", () => {
       redirectTo: "./log",
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       progressBar: {
@@ -67,7 +70,7 @@ describe("Script Driver test", () => {
       run: "abc",
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",

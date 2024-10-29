@@ -9,14 +9,16 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/utils";
 import { AzureStorageStaticWebsiteConfigDriver } from "../../../../../src/component/driver/deploy/azure/azureStorageStaticWebsiteConfigDriver";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { ListAccountSasResponse, StorageManagementClient } from "@azure/arm-storage";
 import { BlobServiceClient, ServiceGetPropertiesResponse } from "@azure/storage-blob";
-import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
-import { MockUserInteraction } from "../../../../core/utils";
+import {
+  MockedAzureAccountProvider,
+  MockUserInteraction,
+  MyTokenCredential,
+} from "../../../../core/utils";
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 describe("Azure Storage enable static website Driver test", () => {
@@ -51,7 +53,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("Azure Storage enable static website happy path", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       progressBar: {
@@ -107,7 +109,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("Azure Storage use default", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -146,7 +148,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("should skip enable static website", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     // fake azure credentials
@@ -184,7 +186,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("Azure Storage set properties error", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -226,7 +228,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("Azure Storage set properties remote server error", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -269,7 +271,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("Azure Storage enable static website get properties error", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -304,7 +306,7 @@ describe("Azure Storage enable static website Driver test", () => {
   it("Azure Storage enable static website get properties remote error", async () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;

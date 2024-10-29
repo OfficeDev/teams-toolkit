@@ -34,7 +34,10 @@ export async function signinM365Callback(...args: unknown[]): Promise<Result<nul
   });
   const token = tokenRes.isOk() ? tokenRes.value : undefined;
   if (token !== undefined && node) {
-    await node.setSignedIn((token as any).upn ? (token as any).upn : "", (token as any).tid ?? "");
+    await node.setSignedIn(
+      (token as any).upn ?? (token as any).unique_name ?? "",
+      (token as any).tid ?? ""
+    );
   }
 
   await envTreeProviderInstance.reloadEnvironments();

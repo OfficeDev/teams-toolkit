@@ -99,6 +99,10 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     };
   }
 
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
   listSubscriptions(): Promise<SubscriptionInfo[]> {
     throw new Error("Method not implemented.");
   }
@@ -151,6 +155,10 @@ export class MockM365TokenProvider implements M365TokenProvider {
    * m365 sign out
    */
   signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
     throw new Error("Method not implemented.");
   }
 

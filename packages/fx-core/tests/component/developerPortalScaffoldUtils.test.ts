@@ -30,8 +30,7 @@ import { CommandScope, MeetingsContext } from "../../src/component/driver/teamsA
 import { DotenvOutput, envUtil } from "../../src/component/utils/envUtil";
 import { CapabilityOptions, QuestionNames } from "../../src/question/constants";
 import { getProjectTypeAndCapability } from "../../src/question/create";
-import { MockTools } from "../core/utils";
-import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
+import { MockedAzureAccountProvider, MockedM365Provider, MockTools } from "../core/utils";
 import { InputValidationError } from "../../src/error";
 
 describe("developPortalScaffoldUtils", () => {

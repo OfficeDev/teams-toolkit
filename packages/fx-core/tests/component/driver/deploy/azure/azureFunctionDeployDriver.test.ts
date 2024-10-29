@@ -8,7 +8,6 @@ import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/utils";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
@@ -17,8 +16,12 @@ import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azur
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
-import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
+import {
+  MockedAzureAccountProvider,
+  MockTelemetryReporter,
+  MockUserInteraction,
+  MyTokenCredential,
+} from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
@@ -72,7 +75,7 @@ describe("Azure Function Deploy Driver test", () => {
       zipFilePath: path.join(testFolder, "test.zip"),
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
@@ -121,7 +124,7 @@ describe("Azure Function Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
     } as any;
@@ -171,7 +174,7 @@ describe("Azure Function Deploy Driver test", () => {
     const logger = new TestLogProvider();
     const caller = sandbox.stub(logger, "warning").resolves();
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: logger,
       telemetryReporter: new MockTelemetryReporter(),
     } as any;
@@ -221,7 +224,7 @@ describe("Azure Function Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -268,7 +271,7 @@ describe("Azure Function Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -315,7 +318,7 @@ describe("Azure Function Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
     } as any;
@@ -364,7 +367,7 @@ describe("Azure Function Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -413,7 +416,7 @@ describe("Azure Function Deploy Driver test", () => {
       dryRun: true,
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;

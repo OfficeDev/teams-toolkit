@@ -40,12 +40,8 @@ import { ValidateAppPackageDriver } from "../../../../src/component/driver/teams
 import { ValidateWithTestCasesDriver } from "../../../../src/component/driver/teamsApp/validateTestCases";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
 import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
-import { MockTools } from "../../../core/utils";
-import {
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedM365Provider, MockTools } from "../../../core/utils";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 
 describe("teamsApp/validateManifest", async () => {
   const teamsAppDriver = new ValidateManifestDriver();

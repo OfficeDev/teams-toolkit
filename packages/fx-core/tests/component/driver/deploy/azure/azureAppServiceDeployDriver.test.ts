@@ -8,7 +8,6 @@ import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/utils";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
@@ -18,8 +17,12 @@ import { expect, assert } from "chai";
 import fs from "fs-extra";
 import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
-import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
+import {
+  MockedAzureAccountProvider,
+  MockTelemetryReporter,
+  MockUserInteraction,
+  MyTokenCredential,
+} from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -95,7 +98,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
 
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
@@ -171,7 +174,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
 
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
@@ -250,7 +253,7 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
     } as any;
@@ -297,7 +300,7 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -339,7 +342,7 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -386,7 +389,7 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -433,7 +436,7 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     const res = await deploy.execute(args, context);
@@ -466,7 +469,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const progressNextCaller = sandbox.stub(progressHandler, "next").resolves();
 
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: ui,
       progressBar: progressHandler,
@@ -529,7 +532,7 @@ describe("Azure App Service Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
     } as any;

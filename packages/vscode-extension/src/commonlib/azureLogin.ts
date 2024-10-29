@@ -13,6 +13,9 @@ import {
   SubscriptionInfo,
   SingleSelectConfig,
   OptionItem,
+  FxError,
+  Result,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error/error";
 import { LoginFailureError } from "./codeFlowLogin";
@@ -277,6 +280,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    // TODO
+    return Promise.resolve(ok(""));
+  }
   /**
    * list all subscriptions
    */

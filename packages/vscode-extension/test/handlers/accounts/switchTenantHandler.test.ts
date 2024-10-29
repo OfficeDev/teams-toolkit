@@ -6,7 +6,7 @@ import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import M365TokenInstance from "../../../src/commonlib/m365Login";
 import azureAccountManager from "../../../src/commonlib/azureLogin";
 import { err, ok, SystemError } from "@microsoft/teamsfx-api";
-import { NetworkError } from "@microsoft/teamsfx-core";
+import { NetworkError, UserCancelError } from "@microsoft/teamsfx-core";
 import {
   onSwitchM365Tenant,
   onSwitchAzureTenant,
@@ -25,9 +25,6 @@ describe("onSwitchM365Tenant", () => {
     sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sendTelemetryErrorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
-    selectOptionStub = sandbox
-      .stub(vsc_ui.VS_CODE_UI, "selectOption")
-      .resolves(ok({ type: "success" }));
   });
 
   afterEach(() => {
@@ -46,8 +43,9 @@ describe("onSwitchM365Tenant", () => {
     chai.assert.isTrue(sendTelemetryErrorEventStub.args[0][1] instanceof NetworkError);
   });
 
-  it("Succeed to switch tenant", async () => {
+  it("Failed to select tenant in UI", async () => {
     sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("faked token"));
+    sandbox.stub(M365TokenInstance, "switchTenant").resolves(ok("faked token"));
     sandbox.stub(tool, "listAllTenants").resolves([
       {
         tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",
@@ -60,6 +58,63 @@ describe("onSwitchM365Tenant", () => {
         defaultDomain: "Cisco561.onmicrosoft.com",
       },
     ]);
+    selectOptionStub = sandbox
+      .stub(vsc_ui.VS_CODE_UI, "selectOption")
+      .resolves(err(new UserCancelError()));
+
+    await onSwitchM365Tenant(TelemetryTriggerFrom.SideBar);
+
+    chai.assert.isTrue(sendTelemetryEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.args[0][1] instanceof UserCancelError);
+  });
+
+  it("Failed to switch tenant", async () => {
+    sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("faked token"));
+    sandbox
+      .stub(M365TokenInstance, "switchTenant")
+      .resolves(err(new NetworkError("extension", "")));
+    sandbox.stub(tool, "listAllTenants").resolves([
+      {
+        tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",
+        displayName: "MSFT",
+        defaultDomain: "t815h.onmicrosoft.com",
+      },
+      {
+        tenantId: "313ef12c-d7cb-4f01-af90-1b113db5aa9a",
+        displayName: "Cisco",
+        defaultDomain: "Cisco561.onmicrosoft.com",
+      },
+    ]);
+    selectOptionStub = sandbox
+      .stub(vsc_ui.VS_CODE_UI, "selectOption")
+      .resolves(ok({ type: "success" }));
+
+    await onSwitchM365Tenant(TelemetryTriggerFrom.SideBar);
+
+    chai.assert.isTrue(sendTelemetryEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.args[0][1] instanceof NetworkError);
+  });
+
+  it("Succeed to switch tenant", async () => {
+    sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok("faked token"));
+    sandbox.stub(M365TokenInstance, "switchTenant").resolves(ok("faked token"));
+    sandbox.stub(tool, "listAllTenants").resolves([
+      {
+        tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",
+        displayName: "MSFT",
+        defaultDomain: "t815h.onmicrosoft.com",
+      },
+      {
+        tenantId: "313ef12c-d7cb-4f01-af90-1b113db5aa9a",
+        displayName: "Cisco",
+        defaultDomain: "Cisco561.onmicrosoft.com",
+      },
+    ]);
+    selectOptionStub = sandbox
+      .stub(vsc_ui.VS_CODE_UI, "selectOption")
+      .resolves(ok({ type: "success" }));
 
     await onSwitchM365Tenant(TelemetryTriggerFrom.SideBar);
 

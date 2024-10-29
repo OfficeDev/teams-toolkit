@@ -57,6 +57,10 @@ export default class ServerM365TokenProvider implements M365TokenProvider {
     throw new NotImplementedError("FxServer", `m365/signout`);
   }
 
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new NotImplementedError("FxServer", `m365/switchTenant`);
+  }
+
   setStatusChangeMap(
     name: string,
     tokenRequest: TokenRequest,

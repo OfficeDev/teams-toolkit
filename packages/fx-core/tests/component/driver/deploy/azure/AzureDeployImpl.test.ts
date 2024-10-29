@@ -6,9 +6,13 @@
 
 import "mocha";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
-import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
+import {
+  MockedAzureAccountProvider,
+  MockTelemetryReporter,
+  MockUserInteraction,
+  MyTokenCredential,
+} from "../../../../core/utils";
 import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 import * as tools from "../../../../../src/common/utils";
 import * as sinon from "sinon";
@@ -20,7 +24,6 @@ import {
   GetPublishingCredentialsError,
 } from "../../../../../src/error/deploy";
 import * as chai from "chai";
-import { MyTokenCredential } from "../../../../plugins/solution/util";
 import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 import * as appService from "@azure/arm-appservice";
@@ -64,7 +67,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
     } as any;

@@ -17,12 +17,8 @@ import {
 } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { UserCancelError } from "../../../../src/error";
 import * as visitor from "../../../../src/ui/visitor";
-import {
-  MockedAzureAccountProvider,
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

@@ -117,7 +117,7 @@ export class Executor {
     }
 
     const command =
-      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} ${languageParam}` +
+      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} ${languageParam} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");

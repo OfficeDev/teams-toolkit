@@ -22,6 +22,9 @@ const model = new OpenAIModel({
 
   useSystemMessages: true,
   logRequests: true,
+  {{#CEAEnabled}} 
+  stream: true,
+  {{/CEAEnabled}}
 });
 const prompts = new PromptManager({
   promptsFolder: path.join(__dirname, "../prompts"),

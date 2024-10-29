@@ -38,105 +38,93 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { MyTokenCredential } from "../plugins/solution/util";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
 
 export function randomAppName() {
   return "mock" + new Date().getTime();
 }
 
-export class MockAzureAccountProvider implements AzureAccountProvider {
-  async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+export class MyTokenCredential implements TokenCredential {
+  public async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
+
+export class MockedAzureAccountProvider implements AzureAccountProvider {
+  async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
     return new MyTokenCredential();
   }
 
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async signout(): Promise<boolean> {
+    return true;
   }
-
-  setStatusChangeMap(
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    return ok("fakeToken");
+  }
+  async setStatusChangeMap(
     name: string,
     statusChange: (
       status: string,
       token?: string,
       accountInfo?: Record<string, unknown>
-    ) => Promise<void>
+    ) => Promise<void>,
+    immediateCall?: boolean
   ): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    return true;
   }
-
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async removeStatusChangeMap(name: string): Promise<boolean> {
+    return true;
   }
-
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
-      unique_name: "test",
-    };
+    return {};
   }
-
-  listSubscriptions(): Promise<SubscriptionInfo[]> {
-    throw new Error("Method not implemented.");
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    return [];
   }
-
-  setSubscription(subscriptionId: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-
+  async setSubscription(subscriptionId: string): Promise<void> {}
   getAccountInfo(): Record<string, string> {
-    throw new Error("Method not implemented.");
+    return {};
   }
-
-  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
-  selectSubscription(subscriptionId?: string): Promise<string> {
-    throw new Error("Method not implemented.");
+  async getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo> {
+    return {
+      subscriptionId: "",
+      subscriptionName: "",
+      tenantId: "",
+    };
   }
 }
 
-export class MockM365TokenProvider implements M365TokenProvider {
-  /**
-   * Get M365 access token
-   * @param tokenRequest permission scopes or show user interactive UX
-   */
-  getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
-    throw new Error("Method not implemented.");
+export class MockedM365Provider implements M365TokenProvider {
+  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+    return ok("fakeToken");
   }
-
-  /**
-   * Get M365 token Json object
-   * - tid : tenantId
-   * - unique_name : user name
-   * - ...
-   * @param tokenRequest permission scopes or show user interactive UX
-   */
-  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
-    throw new Error("Method not implemented.");
+  async getJsonObject(
+    tokenRequest: TokenRequest
+  ): Promise<Result<Record<string, unknown>, FxError>> {
+    return ok({
+      upn: "fakeUserPrincipalName@fake.com",
+      tid: "tenantId",
+    });
   }
-
-  /**
-   * Get user login status
-   * @param tokenRequest permission scopes or show user interactive UX
-   */
-  getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
-    throw new Error("Method not implemented.");
+  async signout(): Promise<boolean> {
+    return true;
   }
-  /**
-   * m365 sign out
-   */
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    return ok("fakeToken");
   }
-
-  /**
-   * Add update account info callback
-   * @param name callback name
-   * @param tokenRequest permission scopes
-   * @param statusChange callback method
-   * @param immediateCall whether callback when register, the default value is true
-   */
-  setStatusChangeMap(
+  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
+    return ok({
+      status: "SignedIn",
+      token: "fakeToken",
+    });
+  }
+  async setStatusChangeMap(
     name: string,
     tokenRequest: TokenRequest,
     statusChange: (
@@ -146,15 +134,10 @@ export class MockM365TokenProvider implements M365TokenProvider {
     ) => Promise<void>,
     immediateCall?: boolean
   ): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
+    return ok(true);
   }
-
-  /**
-   * Remove update account info callback
-   * @param name callback name
-   */
-  removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
+  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    return ok(true);
   }
 }
 
@@ -274,8 +257,8 @@ export class MockUserInteraction implements UserInteraction {
 export class MockTools implements Tools {
   logProvider = new MockLogProvider();
   tokenProvider: TokenProvider = {
-    azureAccountProvider: new MockAzureAccountProvider(),
-    m365TokenProvider: new MockM365TokenProvider(),
+    azureAccountProvider: new MockedAzureAccountProvider(),
+    m365TokenProvider: new MockedM365Provider(),
   };
   telemetryReporter = new MockTelemetryReporter();
   ui = new MockUserInteraction();

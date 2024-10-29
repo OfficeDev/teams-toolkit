@@ -19,68 +19,7 @@ import {
   isValidProjectV3,
 } from "../../src/common/projectSettingsHelper";
 import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
-import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
-
-export class MockedAzureTokenProvider implements AzureAccountProvider {
-  getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
-    return Promise.resolve(new MyTokenCredential());
-  }
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {
-      tid: "222",
-    };
-  }
-  async listSubscriptions(): Promise<SubscriptionInfo[]> {
-    return [
-      {
-        subscriptionName: "mockedSubscriptionName",
-        subscriptionId: "subscriptionId",
-        tenantId: "mockedTenantId",
-      },
-    ];
-  }
-  async setSubscription(subscriptionId: string): Promise<void> {
-    return;
-  }
-  getAccountInfo(): Record<string, string> | undefined {
-    return {};
-  }
-  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
-    const selectedSub = {
-      subscriptionId: "subscriptionId",
-      tenantId: "tenantId",
-      subscriptionName: "subscriptionName",
-    };
-    return Promise.resolve(selectedSub);
-  }
-}
 
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();

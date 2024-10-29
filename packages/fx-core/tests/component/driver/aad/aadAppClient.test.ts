@@ -7,7 +7,7 @@ import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAp
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import axios, { AxiosInstance, isAxiosError } from "axios";
-import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedLogProvider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import MockAdapter from "axios-mock-adapter";
 import { SystemError, err } from "@microsoft/teamsfx-api";
@@ -19,6 +19,7 @@ import {
 } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { CredentialInvalidLifetimeError } from "../../../../src/component/driver/aad/error/credentialInvalidLifetimeError";
 import { ClientSecretNotAllowedError } from "../../../../src/component/driver/aad/error/clientSecretNotAllowedError";
+import { MockedM365Provider } from "../../../core/utils";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 

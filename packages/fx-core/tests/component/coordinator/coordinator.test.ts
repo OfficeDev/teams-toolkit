@@ -42,7 +42,7 @@ import { FxCore } from "../../../src/core/FxCore";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { MissingEnvironmentVariablesError } from "../../../src/error/common";
 import { QuestionNames } from "../../../src/question";
-import { MockAzureAccountProvider, MockM365TokenProvider, MockTools } from "../../core/utils";
+import { MockedAzureAccountProvider, MockedM365Provider, MockTools } from "../../core/utils";
 
 export function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -425,8 +425,8 @@ describe("component coordinator test", () => {
     it("missing appPackagePath", async () => {
       const context = createContext();
       context.tokenProvider = {
-        m365TokenProvider: new MockM365TokenProvider(),
-        azureAccountProvider: new MockAzureAccountProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
       };
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
@@ -439,8 +439,8 @@ describe("component coordinator test", () => {
     it("success", async () => {
       const context = createContext();
       context.tokenProvider = {
-        m365TokenProvider: new MockM365TokenProvider(),
-        azureAccountProvider: new MockAzureAccountProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
       };
       sandbox
         .stub(context.tokenProvider.m365TokenProvider, "getJsonObject")
@@ -461,8 +461,8 @@ describe("component coordinator test", () => {
     it("update manifest error", async () => {
       const context = createContext();
       context.tokenProvider = {
-        m365TokenProvider: new MockM365TokenProvider(),
-        azureAccountProvider: new MockAzureAccountProvider(),
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
       };
       sandbox
         .stub(appStudio, "updateTeamsAppV3ForPublish")

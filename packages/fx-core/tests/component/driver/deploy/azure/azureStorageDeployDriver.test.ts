@@ -9,7 +9,6 @@ import * as sinon from "sinon";
 import * as tools from "../../../../../src/common/utils";
 import { AzureStorageDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureStorageDeployDriver";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
 import { assert } from "chai";
 import {
@@ -23,9 +22,12 @@ import {
   BlockBlobParallelUploadOptions,
   ContainerClient,
 } from "@azure/storage-blob";
-import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
-import { MockUserInteraction } from "../../../../core/utils";
+import {
+  MockedAzureAccountProvider,
+  MockUserInteraction,
+  MyTokenCredential,
+} from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
@@ -75,7 +77,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       progressBar: {
@@ -126,7 +128,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       progressBar: {
@@ -176,7 +178,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     sandbox
@@ -189,7 +191,7 @@ describe("Azure Storage Deploy Driver test", () => {
 
   it("clear storage error", async () => {
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     const deploy = new AzureStorageDeployDriver();
@@ -228,7 +230,7 @@ describe("Azure Storage Deploy Driver test", () => {
 
   it("clear storage with remote server error", async () => {
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as any;
     const deploy = new AzureStorageDeployDriver();
@@ -275,7 +277,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -322,7 +324,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -369,7 +371,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;
@@ -402,7 +404,7 @@ describe("Azure Storage Deploy Driver test", () => {
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as any;

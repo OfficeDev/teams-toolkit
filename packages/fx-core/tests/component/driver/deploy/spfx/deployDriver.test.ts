@@ -11,11 +11,7 @@ import fs from "fs-extra";
 import sinon from "sinon";
 
 import { Constants } from "../../../../../src/component/driver/deploy/spfx/utility/constants";
-import {
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../../plugins/solution/util";
 import { SPFxDeployDriver } from "../../../../../src/component/driver/deploy/spfx/deployDriver";
 import { SPOClient } from "../../../../../src/component/driver/deploy/spfx/utility/spoClient";
 import * as Tools from "../../../../../src/common/tools";
@@ -30,6 +26,7 @@ import { UploadAppPackageFailedError } from "../../../../../src/component/driver
 import { GetGraphTokenFailedError } from "../../../../../src/component/driver/deploy/spfx/error/getGraphTokenFailedError";
 import { GetTenantFailedError } from "../../../../../src/component/driver/deploy/spfx/error/getTenantFailedError";
 import { FileNotFoundError } from "../../../../../src/error/common";
+import { MockedM365Provider } from "../../../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

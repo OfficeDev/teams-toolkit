@@ -5,11 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateBotAadAppDriver } from "../../../../src/component/driver/botAadApp/create";
-import {
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedTelemetryReporter,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
@@ -25,6 +21,7 @@ import { AADApplication } from "../../../../src/component/driver/aad/interface/A
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
 import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 import { MissingServiceManagementReferenceError } from "../../../../src/component/driver/aad/error/missingServiceManagamentReferenceError";
+import { MockedM365Provider } from "../../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

@@ -7,16 +7,13 @@ import chai from "chai";
 import fs from "fs-extra";
 import { PackageService } from "../../../../src/component/m365/packageService";
 import { M365TitleAcquireDriver } from "../../../../src/component/driver/m365/acquire";
-import {
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import {
   FileNotFoundError,
   InvalidActionInputError,
   UnhandledError,
 } from "../../../../src/error/common";
+import { MockedM365Provider } from "../../../core/utils";
 
 describe("teamsApp/extendToM365", async () => {
   const acquireDriver = new M365TitleAcquireDriver();

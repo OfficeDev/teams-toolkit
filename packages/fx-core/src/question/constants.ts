@@ -771,9 +771,9 @@ export class CapabilityOptions {
 
   // custom copilot
   static customCopilotBasic(): OptionItem {
-    const description = FeatureFlags.CEAEnabled ? getLocalizedString(
-      "core.createProjectQuestion.capability.customEngineAgent.description"
-    ) : undefined;
+    const description = FeatureFlags.CEAEnabled
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-basic",
       label: getLocalizedString(
@@ -787,9 +787,9 @@ export class CapabilityOptions {
   }
 
   static customCopilotRag(): OptionItem {
-    const description = FeatureFlags.CEAEnabled ? getLocalizedString(
-      "core.createProjectQuestion.capability.customEngineAgent.description"
-    ) : undefined;
+    const description = FeatureFlags.CEAEnabled
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-rag",
       label: getLocalizedString(
@@ -803,9 +803,9 @@ export class CapabilityOptions {
   }
 
   static customCopilotAssistant(): OptionItem {
-    const description = FeatureFlags.CEAEnabled ? getLocalizedString(
-      "core.createProjectQuestion.capability.customEngineAgent.description"
-    ) : undefined;
+    const description = FeatureFlags.CEAEnabled
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-agent",
       label: getLocalizedString(

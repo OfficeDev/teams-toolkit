@@ -52,6 +52,7 @@ import { ActionContext } from "../../../src/component/middleware/actionExecution
 import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../src/question";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import { MockTools, randomAppName } from "../../core/utils";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -1189,6 +1190,23 @@ describe("render template", () => {
         ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.CEAEnabled, "");
+    });
+
+    it("CEA works in M365 tag shows when CEA enabled", async () => {
+      sandbox.stub(process, "env").value({ TEAMSFX_CEA_ENABLED: "true" });
+      const descriptionAnswer = getLocalizedString(
+        "core.createProjectQuestion.capability.customEngineAgent.description"
+      );
+      assert.equal(CapabilityOptions.customCopilotBasic().description, descriptionAnswer);
+      assert.equal(CapabilityOptions.customCopilotRag().description, descriptionAnswer);
+      assert.equal(CapabilityOptions.customCopilotAssistant().description, descriptionAnswer);
+    });
+
+    it("CEA works in M365 tag doesn't show when CEA disabled", async () => {
+      sandbox.stub(process, "env").value({ TEAMSFX_CEA_ENABLED: "false" });
+      assert.equal(CapabilityOptions.customCopilotBasic().description, undefined);
+      assert.equal(CapabilityOptions.customCopilotRag().description, undefined);
+      assert.equal(CapabilityOptions.customCopilotAssistant().description, undefined);
     });
   });
 });

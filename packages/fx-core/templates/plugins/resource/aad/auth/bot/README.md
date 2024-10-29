@@ -29,7 +29,7 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 | Modify | `azureWebAppBotConfig.bicep` under `templates/azure/teamsFx` and `azure.parameters.dev.json` under `.fx/configs` | Insert environment variables used for bot web app to enable SSO feature                                                                |
 | Modify | `manifest.template.json` under `templates/appPackage`                                                            | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
 | Modify | `projectSettings.json` under `.fx/configs`                                                                       | Add bot sso capability, which will be used internally by Teams Toolkit.                                                                |
-| Create | `aad.template.json` under `templates/appPackage`                                                                 | The Microsoft Entra application manifest that is used to register the application with Microsoft Entra.                                     |
+| Create | `aad.template.json` under `templates/appPackage`                                                                 | The Microsoft Entra application manifest that is used to register the application with Microsoft Entra.                                |
 | Create | `auth/bot`                                                                                                       | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information.         |
 
 <h2 id='2'>Update your code to Use SSO for Bot</h2>
@@ -41,14 +41,14 @@ As described above, the Teams Toolkit generated some configuration to set up you
 <h3 id='2.1'>Set up the Microsoft Entra redirects</h3>
 
 1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with Microsoft Entra, Microsoft Entra will redirect the user to these pages.
-1. Modify your `bot/src/index` to add the appropriate `restify` routes to these pages.
+1. Modify your `bot/src/index` to add the appropriate `express` routes to these pages.
 
    ```ts
    const path = require("path");
 
-   server.get(
+   expressApp.get(
      "/auth-:name(start|end).html",
-     restify.plugins.serveStatic({
+     express.static({
        directory: path.join(__dirname, "public"),
      })
    );
@@ -337,13 +337,13 @@ You can update the query logic in the `handleMessageExtensionQueryWithSSO` with 
 To make this work in your application:
 
 1. Move the `auth/bot/public` folder to `bot`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with Microsoft Entra, Microsoft Entra will redirect the user to these pages.
-1. Modify your `bot/index` to add the appropriate `restify` routes to these pages.
+1. Modify your `bot/index` to add the appropriate `express` routes to these pages.
 
    ```ts
    const path = require("path");
 
    // Listen for incoming requests.
-   server.post("/api/messages", async (req, res) => {
+   expressApp.post("/api/messages", async (req, res) => {
      await adapter
        .process(req, res, async (context) => {
          await bot.run(context);
@@ -356,9 +356,9 @@ To make this work in your application:
        });
    });
 
-   server.get(
+   expressApp.get(
      "/auth-:name(start|end).html",
-     restify.plugins.serveStatic({
+     express.static({
        directory: path.join(__dirname, "public"),
      })
    );

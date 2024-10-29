@@ -106,8 +106,14 @@ export class Executor {
     language: ProgrammingLanguage,
     customized: Record<string, string> = {}
   ) {
+    const languageParam =
+      language === ProgrammingLanguage.Common ||
+      language === ProgrammingLanguage.None
+        ? ""
+        : `--programming-language ${language}`;
+
     const command =
-      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
+      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} ${languageParam}` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");

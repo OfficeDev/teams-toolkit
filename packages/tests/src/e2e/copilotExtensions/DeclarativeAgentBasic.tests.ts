@@ -19,7 +19,7 @@ new DeclarativeAgentBasicTestCase(
   27971545,
   "huimaio@microsoft.com",
   ["function"],
-  ProgrammingLanguage.Common,
+  ProgrammingLanguage.None,
   { skipValidateAfterProvision: true },
   myRecord
 ).test();

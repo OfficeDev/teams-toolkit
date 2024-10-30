@@ -19,14 +19,8 @@ import { localize } from "../utils/localizeUtils";
 import { showOutputChannelHandler } from "./showOutputChannel";
 import { InstallCopilotChatLink } from "../constants";
 import { isVSCodeInsiderVersion } from "../utils/versionUtil";
-import { VS_CODE_UI } from "../qm/vsc_ui";
 
 const githubCopilotChatExtensionId = "github.copilot-chat";
-const teamsAgentLink = "https://aka.ms/install-teamsapp";
-enum installationTarget {
-  copilotChat = "copilot-chat",
-  teamsAgent = "teams-agent",
-}
 
 function githubCopilotInstalled(): boolean {
   const extension = vscode.extensions.getExtension(githubCopilotChatExtensionId);
@@ -64,7 +58,7 @@ async function openGithubCopilotChat(query: string): Promise<Result<null, FxErro
 
 export async function installGithubCopilotChatExtension(
   triggerFrom: TelemetryTriggerFrom
-): Promise<Result<{ installCopilot: boolean }, FxError>> {
+): Promise<Result<any, FxError>> {
   const eventName = "installCopilotChat";
   const telemetryProperties = {
     [TelemetryProperty.TriggerFrom]: triggerFrom,
@@ -74,10 +68,14 @@ export async function installGithubCopilotChatExtension(
     const confirmRes = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.askInstallCopilot"),
       localize("teamstoolkit.handlers.askInstallCopilot.install"),
-      localize("teamstoolkit.handlers.askInstallCopilot.installTeamsApp")
+      localize("teamstoolkit.handlers.askInstallCopilot.cancel")
     );
 
-    if (confirmRes === localize("teamstoolkit.handlers.askInstallCopilot.install")) {
+    if (confirmRes !== localize("teamstoolkit.handlers.askInstallCopilot.install")) {
+      const error = new UserCancelError(eventName, "cancel");
+      ExtTelemetry.sendTelemetryErrorEvent(eventName, error, telemetryProperties);
+      return err(error);
+    } else {
       await vscode.commands.executeCommand(
         "workbench.extensions.installExtension",
         githubCopilotChatExtensionId,
@@ -90,27 +88,9 @@ export async function installGithubCopilotChatExtension(
       ExtTelemetry.sendTelemetryEvent(eventName, {
         ...telemetryProperties,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.InstallTarget]: installationTarget.copilotChat,
       });
 
-      return ok({ installCopilot: true });
-    } else if (confirmRes === localize("teamstoolkit.handlers.askInstallCopilot.installTeamsApp")) {
-      const openUrlRes = await VS_CODE_UI.openUrl(teamsAgentLink);
-      if (openUrlRes.isOk()) {
-        ExtTelemetry.sendTelemetryEvent(eventName, {
-          ...telemetryProperties,
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-          [TelemetryProperty.InstallTarget]: installationTarget.teamsAgent,
-        });
-        return ok({ installCopilot: false });
-      } else {
-        ExtTelemetry.sendTelemetryErrorEvent(eventName, openUrlRes.error, telemetryProperties);
-        return err(openUrlRes.error);
-      }
-    } else {
-      const error = new UserCancelError(eventName, "cancel");
-      ExtTelemetry.sendTelemetryErrorEvent(eventName, error, telemetryProperties);
-      return err(error);
+      return ok(null);
     }
   } catch (e) {
     const error = new SystemError(
@@ -141,7 +121,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
       ? "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app development."
       : "@teamsapp Find relevant templates or samples to build your Teams app as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
-  let res: Result<null, FxError>;
+  let res;
 
   const isExtensionInstalled = githubCopilotInstalled();
   if (isExtensionInstalled) {
@@ -150,8 +130,8 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     VsCodeLogInstance.info(
       util.format(
         localize("teamstoolkit.handlers.installExtension.output"),
-        InstallCopilotChatLink,
-        teamsAgentLink
+        "GitHub Copilot Chat",
+        InstallCopilotChatLink
       )
     );
     showOutputChannelHandler();
@@ -160,7 +140,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     const installRes = await installGithubCopilotChatExtension(
       triggerFromProperty[TelemetryProperty.TriggerFrom]
     );
-    if (installRes.isOk() && installRes.value.installCopilot) {
+    if (installRes.isOk()) {
       let checkCount = 0;
       let verifyExtensionInstalled = false;
       while (checkCount < maxRetry) {
@@ -190,10 +170,8 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
         VsCodeLogInstance.error(error.message);
         res = err(error);
       }
-    } else if (installRes.isOk()) {
-      res = ok(null);
     } else {
-      res = err(installRes.error);
+      res = installRes;
     }
   }
   if (res.isErr()) {

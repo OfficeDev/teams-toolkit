@@ -96,7 +96,7 @@ describe("readmeHandlers", () => {
       );
     });
 
-    it("Restify Notification Bot Template", async () => {
+    it("Express Notification Bot Template", async () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
       sandbox
@@ -106,14 +106,14 @@ describe("readmeHandlers", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox
         .stub(fs, "readFile")
-        .resolves(Buffer.from("## Get Started with the Notification bot restify"));
+        .resolves(Buffer.from("## Get Started with the Notification bot express"));
       const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
 
       await openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
 
       sandbox.assert.calledOnceWithExactly(
         createOrShow,
-        PanelType.RestifyServerNotificationBotReadme
+        PanelType.ExpressServerNotificationBotReadme
       );
     });
   });

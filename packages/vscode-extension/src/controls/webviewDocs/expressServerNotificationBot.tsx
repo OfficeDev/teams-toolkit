@@ -16,7 +16,7 @@ import ExternalLink from "./components/externalLink";
 import { useEffect } from "react";
 import NotificationAdaptiveCard from "../../../img/webview/guide/notification-sends-adaptive-card.png";
 
-export default function RestifyServerNotificationBot() {
+export default function ExpressServerNotificationBot() {
   let scrollToBottom = false;
 
   const [theme, setTheme] = React.useState("light");

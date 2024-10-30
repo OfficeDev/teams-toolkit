@@ -516,7 +516,7 @@ export async function initTeamsPage(
           console.log("No save button to click");
         }
       }
-      await page.waitForTimeout(Timeout.shortTimeLoading);
+      // await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");
     });
 
@@ -2316,6 +2316,35 @@ export async function validateBasicDashboardTab(page: Page) {
 
 export async function validateDashboardTab(page: Page) {
   try {
+    await RetryHandler.retry(async () => {
+      console.log("Before popup");
+      const [popup] = await Promise.all([
+        page
+          .waitForEvent("popup")
+          .then((popup) =>
+            popup
+              .waitForEvent("close", {
+                timeout: Timeout.playwrightConsentPopupPage,
+              })
+              .catch(() => popup)
+          )
+          .catch(() => {}),
+        VSBrowser.instance.driver.sleep(30 * 1000),
+      ]);
+      console.log("after popup");
+      if (popup && !popup?.isClosed()) {
+        await popup
+          .click('button:has-text("Reload")', {
+            timeout: Timeout.playwrightConsentPageReload,
+          })
+          .catch(() => {});
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("popup"),
+            fullPage: true,
+          });
+        await popup.click("input.button[type='submit'][value='Accept']");
+      }
+    })
     console.log("start to verify dashboard tab");
     await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(

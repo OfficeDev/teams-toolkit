@@ -34,7 +34,7 @@ export async function checkAndInstallForTask(
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
         VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
-        await terminateAllRunningTeamsfxTasks();
+        terminateAllRunningTeamsfxTasks();
       }
 
       const res = await _checkAndInstall(

@@ -758,14 +758,20 @@ export function addPluginQuestionNode(): IQTreeNode {
       },
       {
         data: apiSpecLocationQuestion(),
-        condition: {
-          equals: ApiPluginStartOptions.apiSpec().id,
+        condition: (inputs: Inputs) => {
+          return (
+            !featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
+          );
         },
       },
       {
         data: apiOperationQuestion(true, true),
-        condition: {
-          equals: ApiPluginStartOptions.apiSpec().id,
+        condition: (inputs: Inputs) => {
+          return (
+            !featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+            inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
+          );
         },
       },
       {

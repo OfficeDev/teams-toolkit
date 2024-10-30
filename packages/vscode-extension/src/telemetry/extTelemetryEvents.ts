@@ -300,6 +300,8 @@ export enum TelemetryEvent {
   Configuration = "vsc-configuration",
 
   UpdateAddPluginTreeview = "update-add-plugin-tree-view",
+
+  AddPluginWithManifest = "add-plugin-with-manifest",
 }
 
 export enum TelemetryProperty {

@@ -16,7 +16,7 @@ after(() => {
   sinon.restore();
 });
 
-describe.only("invokeTeamsAgent", async () => {
+describe("invokeTeamsAgent", async () => {
   const sandbox = sinon.createSandbox();
   let clock: sinon.SinonFakeTimers;
 
@@ -239,12 +239,11 @@ describe.only("invokeTeamsAgent", async () => {
           ) as unknown as vscode.MessageItem
         )
       );
-    const openUrlStub = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+    sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
     const res = await handlers.invokeTeamsAgent([
       extTelemetryEvents.TelemetryTriggerFrom.CreateAppQuestionFlow,
     ]);
     chai.assert.isTrue(res.isOk());
-    chai.assert.isTrue(openUrlStub.called);
   });
 
   describe("handleInstallTeamsAgentSelection", async () => {

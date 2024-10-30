@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import { FxError, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { assembleError, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { UserCancelError, sleep } from "@microsoft/vscode-ui";
-import VsCodeLogInstance, { VsCodeLogProvider } from "../commonlib/log";
+import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -60,7 +60,7 @@ async function openGithubCopilotChat(query: string): Promise<Result<null, FxErro
 
 export async function installGithubCopilotChatExtension(
   triggerFrom: TelemetryTriggerFrom
-): Promise<Result<any, FxError>> {
+): Promise<Result<null, FxError>> {
   const eventName = "installCopilotChat";
   const telemetryProperties = {
     [TelemetryProperty.TriggerFrom]: triggerFrom,
@@ -156,7 +156,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
       ? "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app development."
       : "@teamsapp Find relevant templates or samples to build your Teams app as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
-  let res;
+  let res: Result<null, FxError>;
 
   const skipRemindInstallTeamsAgent = await globalStateGet(
     GlobalKey.DoNotRemindInstallTeamsAgent,

@@ -154,20 +154,27 @@ async function selectPortsToKill(
 ): Promise<Result<undefined, UserCancelError>> {
   const killRes = await VS_CODE_UI.showMessage(
     "info",
-    `The following ports are occupied: ${Array.from(portsInUse).join(
-      ","
-    )}, kill the process(es) occupying them before debug continue.`,
+    portsInUse.length === 1
+      ? util.format(
+          localize("teamstoolkit.localDebug.terminateProcess.notification"),
+          portsInUse[0]
+        )
+      : util.format(
+          localize("teamstoolkit.localDebug.terminateProcess.notification.plural"),
+          portsInUse.join(",")
+        ),
     true,
-    "Kill"
+    "Terminate Process",
+    "Learn More"
   );
 
   if (killRes.isErr()) {
     return err(new UserCancelError(ExtensionSource));
   }
 
-  const killValue = killRes.value;
+  const selectButton = killRes.value;
 
-  if (killValue === "Kill") {
+  if (selectButton === "Terminate Process") {
     const process2ports = new Map<string, number[]>();
     for (const port of portsInUse) {
       const processId = await processUtil.getProcessId(port);
@@ -187,12 +194,12 @@ async function selectPortsToKill(
         const processInfo = await processUtil.getProcessInfo(parseInt(processId));
         options.push({
           id: processId,
-          label: `Process '${processInfo}' (${processId}) occupies port(s): ${ports!.join(",")}`,
+          label: `'${processInfo}' (${processId}) occupies port(s): ${ports!.join(",")}`,
           data: processInfo,
         });
       }
       const res = await VS_CODE_UI.selectOptions({
-        title: "Select the following processes to kill",
+        title: "Select the following process(es) to terminate",
         name: "select_processes",
         options,
         default: options.map((o) => o.id),
@@ -218,6 +225,10 @@ async function selectPortsToKill(
       }
     }
     return ok(undefined);
+  } else if (selectButton === "Learn More") {
+    void VS_CODE_UI.openUrl(
+      "https://github.com/OfficeDev/teams-toolkit/wiki/%7BDebug%7D-FAQ#what-to-do-if-some-port-is-already-in-use"
+    );
   }
   return err(new UserCancelError(ExtensionSource));
 }

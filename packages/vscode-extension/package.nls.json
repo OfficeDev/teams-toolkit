@@ -348,6 +348,8 @@
   "teamstoolkit.localDebug.startDeletingNotificationLocalStoreFile": "Start updating notification local store file.",
   "teamstoolkit.localDebug.successDeleteNotificationLocalStoreFile": "Successfully updated notification local store file.",
   "teamstoolkit.localDebug.launchTeamsDesktopClientMessage": "Before proceeding, make sure your Teams desktop login matches your current Microsoft 365 account%s used in Teams Toolkit.",
+  "teamstoolkit.localDebug.terminateProcess.notification": "Port %s is occupied. Terminate the corresponding process(es) to continue local debug.",
+  "teamstoolkit.localDebug.terminateProcess.notification.plural": "Ports %s are occupied. Terminate the corresponding process(es) to continue local debug.",
   "teamstoolkit.migrateTeamsManifest.progressTitle": "Upgrade Teams Manifest to extend in Outlook and the Microsoft 365 app",
   "teamstoolkit.migrateTeamsManifest.selectFileConfig.name": "Select Teams Manifest to Upgrade",
   "teamstoolkit.migrateTeamsManifest.selectFileConfig.title": "Select Teams Manifest to Upgrade",

@@ -199,7 +199,7 @@ async function selectPortsToKill(
         });
       }
       const res = await VS_CODE_UI.selectOptions({
-        title: "Select the following process(es) to terminate",
+        title: "Select process(es) to terminate",
         name: "select_processes",
         options,
         default: options.map((o) => o.id),

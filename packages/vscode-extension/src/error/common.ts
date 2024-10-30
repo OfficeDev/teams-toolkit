@@ -1,16 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  UserError,
-  SystemError,
-  FxError,
-  Result,
-  err,
-  ok,
-  OptionItem,
-} from "@microsoft/teamsfx-api";
-import { isUserCancelError, ConcurrentError, PortsConflictError } from "@microsoft/teamsfx-core";
+import { UserError, SystemError, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { isUserCancelError, ConcurrentError } from "@microsoft/teamsfx-core";
 import { Uri, commands, window } from "vscode";
 import {
   RecommendedOperations,
@@ -25,58 +17,6 @@ import { isTestToolEnabledProject } from "../utils/projectChecker";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
-import { processUtil } from "../utils/processUtil";
-import fs from "fs-extra";
-import path from "path";
-import detectPort from "detect-port";
-import { VS_CODE_UI } from "../qm/vsc_ui";
-
-async function replacePortInPackageJson(filePath: string, oldPort: number, newPort: number) {
-  // Read the file content
-  const content = await fs.readFile(filePath, "utf-8");
-  // Regular expression to match the --inspect=<oldPort>
-  const portRegex = new RegExp(`--inspect=${oldPort}`, "g");
-  // Replace the old port with the new port
-  const updatedContent = content.replace(portRegex, `--inspect=${newPort}`);
-  // Write the updated content back to package.json
-  await fs.writeFile(filePath, updatedContent, "utf-8");
-  console.log(`Port replaced from ${oldPort} to ${newPort} in ${filePath}`);
-}
-async function replacePortInLaunchJson(filePath: string, oldPort: number, newPort: number) {
-  // Read the file content
-  const content = await fs.readFile(filePath, "utf-8");
-  // Regular expression to match the --inspect=<oldPort>
-  const portRegex = new RegExp(`"port"\\s*:\\s*${oldPort}\s*`, "g");
-  // Replace the old port with the new port
-  const updatedContent = content.replace(portRegex, `"port": ${newPort}`);
-  // Write the updated content back to package.json
-  await fs.writeFile(filePath, updatedContent, "utf-8");
-  console.log(`Port replaced from ${oldPort} to ${newPort} in ${filePath}`);
-}
-async function replacePortInTaskJson(filePath: string, oldPort: number, newPort: number) {
-  // Read the file content
-  const content = await fs.readFile(filePath, "utf-8");
-
-  // Regular expression to match the old port number in the portOccupancy array
-  const portRegex = new RegExp(`\\b${oldPort}\\b`, "g");
-
-  // Replace the old port with the new port
-  const updatedContent = content.replace(portRegex, `${newPort}`);
-
-  // Write the updated content back to the file
-  await fs.writeFile(filePath, updatedContent, "utf-8");
-
-  console.log(`Port replaced from ${oldPort} to ${newPort} in ${filePath}`);
-}
-
-async function replaceInspectPort(projectPath: string, oldPort: number, newPort: number) {
-  const taskJson = path.join(projectPath, ".vscode", "tasks.json");
-  const launchJson = path.join(projectPath, ".vscode", "launch.json");
-  const packageJson = path.join(projectPath, "package.json");
-  await replacePortInTaskJson(taskJson, oldPort, newPort);
-  await replacePortInPackageJson(packageJson, oldPort, newPort);
-  await replacePortInLaunchJson(launchJson, oldPort, newPort);
-}
 
 export async function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
@@ -119,74 +59,6 @@ export async function showError(e: UserError | SystemError) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const buttons = recommendTestTool ? [runTestTool, help] : [help];
-    const ux = 1;
-    // if (e instanceof PortsConflictError) {
-    //   buttons.push({
-    //     title: "Kill Process",
-    //     run: async () => {
-    //       const error = e;
-    //       const ports = (error.telemetryProperties?.["occupied-ports"] || "")
-    //         .split(",")
-    //         .map((p) => parseInt(p));
-    //       if (ux === 0) {
-    //         for (const port of ports) {
-    //           const processId = await processUtil.getProcessId(port);
-    //           if (processId) {
-    //             const processInfo = await processUtil.getProcessInfo(parseInt(processId));
-    //             const res = await VS_CODE_UI.showMessage(
-    //               "info",
-    //               `Process(pid=${processId}) on port ${port} is: '${processInfo}', do you want to kill it?`,
-    //               true,
-    //               "Yes",
-    //               "No"
-    //             );
-    //             if (res.isOk() && res.value === "Yes") {
-    //               await processUtil.killProcess(processId);
-    //               void VS_CODE_UI.showMessage(
-    //                 "info",
-    //                 `Process ${processId} has been killed.`,
-    //                 false
-    //               );
-    //             }
-    //           }
-    //         }
-    //       } else {
-    //         const processIds = new Set<string>();
-    //         for (const port of ports) {
-    //           const processId = await processUtil.getProcessId(port);
-    //           if (processId) {
-    //             processIds.add(processId);
-    //           }
-    //         }
-    //         if (processIds.size > 0) {
-    //           const options: OptionItem[] = [];
-    //           for (const processId of processIds) {
-    //             const processInfo = await processUtil.getProcessInfo(parseInt(processId));
-    //             options.push({ id: processId, label: processInfo });
-    //           }
-    //           const res = await VS_CODE_UI.selectOptions({
-    //             title: "Select the following processes to kill",
-    //             name: "select_processes",
-    //             options,
-    //           });
-    //           if (res.isOk() && res.value.type === "success") {
-    //             const processIds = res.value.result as string[];
-    //             for (const processId of processIds) {
-    //               await processUtil.killProcess(processId);
-    //             }
-    //             if (processIds.length > 0) {
-    //               void VS_CODE_UI.showMessage(
-    //                 "info",
-    //                 `Processes ${Array.from(processIds).join(",")} have been killed.`,
-    //                 false
-    //               );
-    //             }
-    //           }
-    //         }
-    //       }
-    //     },
-    //   });
-    // }
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       ...buttons

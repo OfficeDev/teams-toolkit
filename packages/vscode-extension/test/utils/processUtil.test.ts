@@ -40,7 +40,13 @@ describe("ProcessUtil", () => {
       const pid = await processUtil.getProcessId(port);
       expect(pid).to.equal("");
     });
-
+    it("should return an empty string if no process is found on Windows", async () => {
+      const port = 8080;
+      execStub.yields(null, "abc");
+      sandbox.stub(process, "platform").value("win32");
+      const pid = await processUtil.getProcessId(port);
+      expect(pid).to.equal("");
+    });
     it("should return an empty string if no process is found on Unix-based systems", async () => {
       const port = 8080;
       execStub.yields(null, "COMMAND   PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME\n");

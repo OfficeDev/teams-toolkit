@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import { FxError, Result, SystemError, err, ok } from "@microsoft/teamsfx-api";
 import { assembleError, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { UserCancelError, sleep } from "@microsoft/vscode-ui";
-import VsCodeLogInstance from "../commonlib/log";
+import VsCodeLogInstance, { VsCodeLogProvider } from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -132,7 +132,7 @@ export async function handleInstallTeamsAgentSelection(
       });
     } else {
       ExtTelemetry.sendTelemetryErrorEvent(eventName, openUrlRes.error, installTelemetryProperties);
-      return err(openUrlRes.error);
+      VsCodeLogInstance.error(openUrlRes.error.message);
     }
   } else if (selection === localize("teamstoolkit.handlers.askInstallTeamsAgent.confirmInstall")) {
     ExtTelemetry.sendTelemetryEvent(eventName, {
@@ -140,6 +140,9 @@ export async function handleInstallTeamsAgentSelection(
       [selectionTelemetryPropertyName]: "confirmed",
     });
     await globalStateUpdate(GlobalKey.DoNotRemindInstallTeamsAgent, true);
+  } else {
+    const error = new UserCancelError(eventName, "cancel");
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, telemetryProperties);
   }
 }
 

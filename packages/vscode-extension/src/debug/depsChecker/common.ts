@@ -168,18 +168,28 @@ async function selectPortsToKill(
   const killValue = killRes.value;
 
   if (killValue === "Kill") {
-    const processIds = new Set<string>();
+    const process2ports = new Map<string, number[]>();
     for (const port of portsInUse) {
       const processId = await processUtil.getProcessId(port);
       if (processId) {
-        processIds.add(processId);
+        const ports = process2ports.get(processId);
+        if (ports) {
+          ports.push(port);
+        } else {
+          process2ports.set(processId, [port]);
+        }
       }
     }
-    if (processIds.size > 0) {
+    if (process2ports.size > 0) {
       const options: OptionItem[] = [];
-      for (const processId of processIds) {
+      for (const processId of process2ports.keys()) {
+        const ports = process2ports.get(processId);
         const processInfo = await processUtil.getProcessInfo(parseInt(processId));
-        options.push({ id: processId, label: processInfo });
+        options.push({
+          id: processId,
+          label: `Process '${processInfo}' (${processId}) occupies port(s): ${ports!.join(",")}`,
+          data: processInfo,
+        });
       }
       const res = await VS_CODE_UI.selectOptions({
         title: "Select the following processes to kill",
@@ -193,9 +203,13 @@ async function selectPortsToKill(
           await processUtil.killProcess(processId);
         }
         if (processIds.length > 0) {
+          const processInfo = options
+            .filter((o) => processIds.includes(o.id))
+            .map((o) => `'${o.data as string}' (${o.id})`)
+            .join(", ");
           void VS_CODE_UI.showMessage(
             "info",
-            `Processes ${Array.from(processIds).join(",")} have been killed.`,
+            `Process(es) ${processInfo} have been killed.`,
             false
           );
         }

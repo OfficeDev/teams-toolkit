@@ -71,7 +71,7 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     });
   }
 
-  public switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+  public switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
     throw new Error("Method not implemented.");
   }
 

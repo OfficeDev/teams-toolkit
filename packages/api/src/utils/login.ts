@@ -80,7 +80,7 @@ export interface AzureAccountProvider {
    * Switch to specified tenant for current user account
    * @param tenantId id of tenant that user wants to switch to
    */
-  switchTenant(tenantId: string): Promise<Result<string, FxError>>;
+  switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>>;
   /**
    * Add update account info callback
    * @param name callback name

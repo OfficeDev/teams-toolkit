@@ -7,6 +7,8 @@ import * as handlers from "../../src/handlers/copilotChatHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import * as versionUtils from "../../src/utils/versionUtil";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import { localize } from "../../src/utils/localizeUtils";
 
 after(() => {
   sinon.restore();
@@ -40,6 +42,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("no need to install Github Copilot", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
     sandbox.stub(vscode.commands, "executeCommand").resolves();
 
@@ -51,6 +54,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("install Github Copilot and invoke Teams Agent", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     clock = sandbox.useFakeTimers();
     sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox
@@ -62,7 +66,9 @@ describe("invokeTeamsAgent", async () => {
     const commandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
     sandbox
       .stub(vscode.window, "showInformationMessage")
-      .resolves("Install" as unknown as vscode.MessageItem);
+      .resolves(
+        localize("teamstoolkit.handlers.askInstallCopilot.install") as unknown as vscode.MessageItem
+      );
 
     const job = handlers.invokeTeamsAgent([extTelemetryEvents.TelemetryTriggerFrom.TreeView]);
     await clock.tickAsync(6000);
@@ -80,6 +86,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("install Github Copilot, wait and invoke Teams Agent", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     clock = sandbox.useFakeTimers();
     sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox
@@ -93,7 +100,9 @@ describe("invokeTeamsAgent", async () => {
     const commandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
     sandbox
       .stub(vscode.window, "showInformationMessage")
-      .resolves("Install" as unknown as vscode.MessageItem);
+      .resolves(
+        localize("teamstoolkit.handlers.askInstallCopilot.install") as unknown as vscode.MessageItem
+      );
 
     const job = handlers.invokeTeamsAgent();
     await clock.tickAsync(6000);
@@ -104,6 +113,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("Install github copilot extension error", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox.stub(vscode.extensions, "getExtension").onFirstCall().returns(undefined);
     const commandStub = sandbox
@@ -117,7 +127,9 @@ describe("invokeTeamsAgent", async () => {
       });
     sandbox
       .stub(vscode.window, "showInformationMessage")
-      .resolves("Install" as unknown as vscode.MessageItem);
+      .resolves(
+        localize("teamstoolkit.handlers.askInstallCopilot.install") as unknown as vscode.MessageItem
+      );
     sandbox.stub(VsCodeLogInstance, "error").resolves();
 
     const res = await handlers.invokeTeamsAgent();
@@ -130,6 +142,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("Install github copilot extension cancel", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     const loggerStub = sandbox.stub(VsCodeLogInstance, "error").resolves();
     sandbox
@@ -157,13 +170,16 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("Verify installation error", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     clock = sandbox.useFakeTimers();
     sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
     const commandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
     sandbox
       .stub(vscode.window, "showInformationMessage")
-      .resolves("Install" as unknown as vscode.MessageItem);
+      .resolves(
+        localize("teamstoolkit.handlers.askInstallCopilot.install") as unknown as vscode.MessageItem
+      );
 
     const job = handlers.invokeTeamsAgent();
     await clock.tickAsync(30000);
@@ -177,6 +193,7 @@ describe("invokeTeamsAgent", async () => {
   });
 
   it("invoke Copilot chat error", async () => {
+    sandbox.stub(globalState, "globalStateGet").resolves(true);
     sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
     sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
     const commandStub = sandbox
@@ -190,7 +207,9 @@ describe("invokeTeamsAgent", async () => {
       });
     sandbox
       .stub(vscode.window, "showInformationMessage")
-      .resolves("Install" as unknown as vscode.MessageItem);
+      .resolves(
+        localize("teamstoolkit.handlers.askInstallCopilot.install") as unknown as vscode.MessageItem
+      );
     const loggerError = sandbox.stub(VsCodeLogInstance, "error").resolves();
 
     const res = await handlers.invokeTeamsAgent();

@@ -20,7 +20,7 @@ export default function ExpressServerNotificationBot() {
   let scrollToBottom = false;
 
   const [theme, setTheme] = React.useState("light");
-  const name = "restify-server-notification-bot";
+  const name = "express-server-notification-bot";
 
   useEffect(() => {
     let currentTheme = document.body.className;
@@ -163,7 +163,7 @@ export default function ExpressServerNotificationBot() {
       <CollapsibleSection
         title="What's included in the template"
         triggerFrom={TelemetryTriggerFrom.InProductDoc}
-        identifier="restify-server-notification-bot-template-contents"
+        identifier="express-server-notification-bot-template-contents"
       >
         <table>
           <thead>
@@ -218,7 +218,7 @@ export default function ExpressServerNotificationBot() {
                 <code className="code">src/index.js</code>
               </td>
               <td>
-                Application entry point and <code className="code">restify</code> handlers for
+                Application entry point and <code className="code">express</code> handlers for
                 notifications
               </td>
             </tr>
@@ -247,10 +247,10 @@ export default function ExpressServerNotificationBot() {
           step={1}
           title="Customize the trigger point from event source"
           triggerFrom={TelemetryTriggerFrom.InProductDoc}
-          identifier="restify-server-notification-bot-step1"
+          identifier="express-server-notification-bot-step1"
         >
           <p>
-            By default Teams Toolkit scaffolds a single <code className="code">restify</code> entry
+            By default Teams Toolkit scaffolds a single <code className="code">express</code> entry
             point in <code className="code">src/index.js</code>. When a HTTP request is sent to this
             entry point, the default implementation sends a hard-coded Adaptive Card to Teams. You
             can customize this behavior by customizing <code className="code">src/index.js</code>. A
@@ -288,7 +288,7 @@ export default function ExpressServerNotificationBot() {
           step={2}
           title="Customize the notification content"
           triggerFrom={TelemetryTriggerFrom.InProductDoc}
-          identifier="restify-server-notification-bot-step2"
+          identifier="express-server-notification-bot-step2"
         >
           <p>
             <code className="code">src/adaptiveCards/notification-default.json</code> defines the
@@ -328,7 +328,7 @@ export default function ExpressServerNotificationBot() {
           step={3}
           title="Customize where notifications are sent"
           triggerFrom={TelemetryTriggerFrom.InProductDoc}
-          identifier="restify-server-notification-bot-step3"
+          identifier="express-server-notification-bot-step3"
         >
           <p>Notifications can be sent to where the bot is installed:</p>
           <ul>

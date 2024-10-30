@@ -75,10 +75,10 @@ export class ManifestUtil {
       validate = ajv.compile(schema);
     } else {
       const ajv = new Ajv({
-        formats: { uri: true, email: true },
         allErrors: true,
         strictTypes: false,
       });
+      addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
     }
 

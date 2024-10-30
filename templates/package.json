@@ -6,10 +6,6 @@
     "scripts": {
         "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
         "precommit": "npm run check-sensitive && lint-staged",
-        "verify": "node ./scripts/yamlSolver.js verify",
-        "apply": "node ./scripts/yamlSolver.js apply",
-        "watch": "node ./scripts/watch.js",
-        "init": "node ./scripts/yamlSolver init",
         "upgrade-schema": "node ./scripts/yamlSolver upgrade-schema",
         "build": "node ./scripts/generateZip.js && node ./scripts/distributeZip.js",
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template",

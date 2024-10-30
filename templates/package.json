@@ -23,7 +23,7 @@
         "js/non-sso-tab-default-bot",
         "js/notification-http-timer-trigger",
         "js/notification-http-trigger",
-        "js/notification-restify",
+        "js/notification-express",
         "js/notification-timer-trigger",
         "js/workflow",
         "js/sso-tab-with-obo-flow",
@@ -34,7 +34,7 @@
         "ts/non-sso-tab-default-bot",
         "ts/notification-http-timer-trigger",
         "ts/notification-http-trigger",
-        "ts/notification-restify",
+        "ts/notification-express",
         "ts/notification-timer-trigger",
         "ts/workflow",
         "ts/sso-tab-with-obo-flow"

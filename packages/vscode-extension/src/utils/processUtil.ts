@@ -55,7 +55,7 @@ class ProcessUtil {
         `wmic process where ProcessId=${pid} get CommandLine /value`,
         (error, stdout, stderr) => {
           if (error) {
-            reject(`Error getting process command line: ${stderr}`);
+            reject(error);
           } else {
             const commandLine = stdout.split("=")[1]?.trim();
             resolve(commandLine || "No CommandLine found");
@@ -69,7 +69,7 @@ class ProcessUtil {
     return new Promise((resolve, reject) => {
       exec(`ps -p ${pid} -o command=`, (error, stdout, stderr) => {
         if (error) {
-          reject(`Error getting process command line: ${stderr}`);
+          reject(error);
         } else {
           resolve(stdout.trim());
         }

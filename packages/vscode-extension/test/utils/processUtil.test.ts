@@ -109,4 +109,56 @@ describe("ProcessUtil", () => {
       }
     });
   });
+
+  describe("getProcessInfo", () => {
+    it("should return process info on Unix-based systems", async () => {
+      sandbox.stub(process, "platform").value("linux");
+      const pid = 5678;
+      const stdout = `5678 /usr/bin/node`;
+      execStub.yields(null, stdout);
+
+      const processInfo = await processUtil.getProcessInfo(pid);
+      expect(processInfo).to.equal(stdout);
+      expect(execStub.calledWith(`ps -p ${pid} -o command=`)).to.be.true;
+    });
+
+    it("should return process info on Windows", async () => {
+      sandbox.stub(process, "platform").value("win32");
+      const pid = 1234;
+      const stdout = `CommandLine="node.exe"`;
+      execStub.yields(null, stdout);
+
+      const processInfo = await processUtil.getProcessInfo(pid);
+      expect(processInfo).to.equal("node.exe");
+      expect(execStub.calledWith(`wmic process where ProcessId=${pid} get CommandLine /value`)).to
+        .be.true;
+    });
+
+    it("should reject with an error if exec fails linux", async () => {
+      sandbox.stub(process, "platform").value("linux");
+      const pid = 5678;
+      const error = new Error("exec error");
+      execStub.yields(error);
+
+      try {
+        await processUtil.getProcessInfo(pid);
+        throw new Error("Expected method to reject.");
+      } catch (err) {
+        expect(err).to.equal(error);
+      }
+    });
+    it("should reject with an error if exec fails win32", async () => {
+      sandbox.stub(process, "platform").value("win32");
+      const pid = 5678;
+      const error = new Error("exec error");
+      execStub.yields(error);
+
+      try {
+        await processUtil.getProcessInfo(pid);
+        throw new Error("Expected method to reject.");
+      } catch (err) {
+        expect(err).to.equal(error);
+      }
+    });
+  });
 });

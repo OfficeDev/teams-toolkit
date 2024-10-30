@@ -129,7 +129,7 @@ describe("ProcessUtil", () => {
       execStub.yields(null, stdout);
 
       const processInfo = await processUtil.getProcessInfo(pid);
-      expect(processInfo).to.equal("node.exe");
+      expect(processInfo).to.equal('"node.exe"');
       expect(execStub.calledWith(`wmic process where ProcessId=${pid} get CommandLine /value`)).to
         .be.true;
     });

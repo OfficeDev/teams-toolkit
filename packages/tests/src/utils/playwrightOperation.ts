@@ -2320,8 +2320,7 @@ export async function validateDashboardTab(page: Page) {
   try {
     await RetryHandler.retry(async () => {
       console.log("Before popup");
-      const popup = await page
-      .waitForEvent("popup");
+      const popup = await page.waitForEvent("popup");
       console.log("after popup");
       if (popup && !popup?.isClosed()) {
         await popup
@@ -2330,18 +2329,35 @@ export async function validateDashboardTab(page: Page) {
           })
           .catch(() => {});
         console.log("click Accept button");
-        await popup.screenshot({
-          path: getPlaywrightScreenshotPath("popup"),
-          fullPage: true,
-        });
         await page.waitForTimeout(Timeout.longTimeWait);
-        await popup.screenshot({
-          path: getPlaywrightScreenshotPath("popup2"),
-          fullPage: true,
-        });
+        try {
+          // input password
+          console.log(`fill in password`);
+          await popup.fill(
+            "input.input[type='password'][name='passwd']",
+            Env.password
+          );
+          // sign in
+          await Promise.all([
+            popup.click("input.button[type='submit'][value='Sign in']"),
+            popup.waitForNavigation(),
+          ]);
+          await popup.click("input.button[type='submit'][value='Accept']");
+          try {
+            await popup?.close();
+          } catch (error) {
+            console.log("popup is closed");
+          }
+        } catch (error) {
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("login_error"),
+            fullPage: true,
+          });
+          throw error;
+        }
         await popup.click("input.button[type='submit'][value='Accept']");
       }
-    })
+    });
     console.log("start to verify dashboard tab");
     await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(

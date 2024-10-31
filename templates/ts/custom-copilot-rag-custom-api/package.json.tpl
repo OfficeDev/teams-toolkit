@@ -36,6 +36,7 @@
     },
     "devDependencies": {
         "@types/express": "^5.0.0",
+        "@types/json-schema": "^7.0.15",
         "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",

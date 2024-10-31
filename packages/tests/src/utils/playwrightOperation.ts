@@ -2334,7 +2334,7 @@ export async function validateDashboardTab(page: Page) {
           path: getPlaywrightScreenshotPath("popup"),
           fullPage: true,
         });
-        VSBrowser.instance.sleep(40* 1000)
+        await page.waitForTimeout(Timeout.longTimeWait);
         await popup.screenshot({
           path: getPlaywrightScreenshotPath("popup2"),
           fullPage: true,

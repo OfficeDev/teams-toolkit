@@ -15,6 +15,7 @@ import {
   Timeout,
   LocalDebugTaskLabel,
   DebugItemSelect,
+  LocalDebugTaskResult,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -49,14 +50,14 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.jsx");
+      validateFileExist(projectPath, "src/main.jsx");
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(
         LocalDebugTaskLabel.StartFrontend,
         // [BUG] warning error message block the frontend validation
-        "Compiled with warnings"
+        LocalDebugTaskResult.FrontendReady
       );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();

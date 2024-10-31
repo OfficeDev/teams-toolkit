@@ -3,16 +3,11 @@
 param resourceBaseName string
 param functionAppSKU string
 param aadAppClientId string
-{{^MicrosoftEntra}}
-@secure()
-param aadAppClientSecret string
-{{/MicrosoftEntra}}
 param aadAppTenantId string
 param aadAppOauthAuthorityHost string
 param location string = resourceGroup().location
 param serverfarmsName string = resourceBaseName
 param functionAppName string = resourceBaseName
-
 
 // Compute resources for Azure Functions
 resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
@@ -40,33 +35,15 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'node' // Set runtime to NodeJS
+          value: 'dotnet-isolated' // Use .NET isolated process
         }
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure Functions from a package file
         }
         {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18' // Set NodeJS version to 18.x
-        }
-        {
-          name: 'M365_CLIENT_ID'
-          value: aadAppClientId
-        }
-{{^MicrosoftEntra}}
-        {
-          name: 'M365_CLIENT_SECRET'
-          value: aadAppClientSecret
-        }
-{{/MicrosoftEntra}}
-        {
-          name: 'M365_TENANT_ID'
-          value: aadAppTenantId
-        }
-        {
-          name: 'M365_AUTHORITY_HOST'
-          value: aadAppOauthAuthorityHost
+          name: 'SCM_ZIPDEPLOY_DONOT_PRESERVE_FILETIME'
+          value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
       ]
       ftpsState: 'FtpsOnly'
@@ -81,6 +58,9 @@ var aadApplicationIdUriWithDomain = 'api://${functionApp.properties.defaultHostN
 {{/MicrosoftEntra}}
 
 // Configure Azure Functions to use Azure AD for authentication.
+{{#MicrosoftEntra}}
+var clientIdForTGS = 'ab3be6b7-f5df-413d-ac2d-abf1e3fd9c0b'
+{{/MicrosoftEntra}}
 resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   parent: functionApp
   name: 'authsettingsV2'
@@ -97,6 +77,14 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
           clientId: aadAppClientId
         }
         validation: {
+{{#MicrosoftEntra}}
+          defaultAuthorizationPolicy: {
+            allowedApplications: [
+              aadAppClientId
+              clientIdForTGS
+            ]
+          }
+{{/MicrosoftEntra}}
           allowedAudiences: [
             aadAppClientId
             aadApplicationIdUri

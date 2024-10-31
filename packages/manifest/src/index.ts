@@ -74,14 +74,23 @@ export class ManifestUtil {
       addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
     } else {
-      const ajv = new Ajv({ formats: { uri: true }, allErrors: true, strictTypes: false });
+      const ajv = new Ajv({
+        allErrors: true,
+        strictTypes: false,
+      });
+      addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
     }
 
     const valid = validate(manifest);
     if (!valid && validate.errors) {
       return Promise.resolve(
-        validate.errors?.map((error) => `${error.instancePath} ${error.message || ""}`)
+        validate.errors?.map(
+          (error) =>
+            `${error.instancePath} ${error.message || ""}. Details: ${
+              error.params ? JSON.stringify(error.params) : ""
+            }`
+        )
       );
     } else {
       return Promise.resolve([]);
@@ -195,6 +204,23 @@ export class ManifestUtil {
       if (copilotGpts && copilotGpts.length > 0) capabilities.push("copilotGpt");
     }
 
+    if ((manifest as TeamsAppManifest).copilotAgents?.plugins) {
+      const apiPlugins = (manifest as TeamsAppManifest).copilotAgents?.plugins;
+      if (
+        apiPlugins &&
+        apiPlugins.length > 0 &&
+        apiPlugins[0].file &&
+        !capabilities.includes("plugin")
+      )
+        capabilities.push("plugin");
+    }
+
+    if ((manifest as TeamsAppManifest).copilotAgents?.declarativeAgents) {
+      const copilotGpts = (manifest as TeamsAppManifest).copilotAgents?.declarativeAgents;
+      if (copilotGpts && copilotGpts.length > 0 && !capabilities.includes("copilotGpt"))
+        capabilities.push("copilotGpt");
+    }
+
     return properties;
   }
 
@@ -217,5 +243,10 @@ export class ManifestUtil {
     });
 
     return telemetryProperties;
+  }
+
+  static async useCopilotExtensionsInSchema(manifest: TeamsAppManifest): Promise<boolean> {
+    const schema = await this.fetchSchema(manifest);
+    return !!schema.properties.copilotExtensions;
   }
 }

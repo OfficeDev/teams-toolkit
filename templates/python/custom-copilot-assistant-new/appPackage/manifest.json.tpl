@@ -1,7 +1,14 @@
 {
+    {{#CEAEnabled}}
+    "$schema": " https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
+    "manifestVersion": "devPreview",
+    "version": "1.0.0",
+    {{/CEAEnabled}}
+    {{^CEAEnabled}}
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
     "manifestVersion": "1.17",
     "version": "1.0.0",
+    {{/CEAEnabled}}
     "id": "${{TEAMS_APP_ID}}",
     "developer": {
         "name": "Teams App, Inc.",
@@ -22,6 +29,16 @@
         "full": "full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
+    {{#CEAEnabled}}
+    "copilotAgents": {
+        "customEngineAgents": [
+            {
+                "type": "bot",
+                "id": "${{BOT_ID}}"
+            }
+        ]
+    },
+    {{/CEAEnabled}}
     "bots": [
         {
             "botId": "${{BOT_ID}}",
@@ -31,7 +48,24 @@
                 "groupChat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Create task:remind drink tonight",
+                            "description": "Create a task for me to remind me drink water tonight"
+                        },
+                        {
+                            "title": "Delete all my current tasks",
+                            "description": "Delete all my current tasks"
+                        }
+                    ]
+                }
+            ]
         }
     ],
     "composeExtensions": [],

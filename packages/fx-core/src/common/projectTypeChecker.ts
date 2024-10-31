@@ -279,6 +279,20 @@ export function getCapabilities(manifest: any): string[] {
   ) {
     capabilities.push("copilotGpt");
   }
+  if (
+    manifest.copilotAgents?.plugins &&
+    manifest.copilotAgents.plugins.length > 0 &&
+    !capabilities.includes("plugin")
+  ) {
+    capabilities.push("plugin");
+  }
+  if (
+    manifest.copilotAgents?.declarativeAgents &&
+    manifest.copilotAgents.declarativeAgents.length > 0 &&
+    !capabilities.includes("copilotGpt")
+  ) {
+    capabilities.push("copilotGpt");
+  }
   return capabilities;
 }
 export const projectTypeChecker = new ProjectTypeChecker();

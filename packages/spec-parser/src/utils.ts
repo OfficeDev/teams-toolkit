@@ -18,15 +18,19 @@ import { SpecParserError } from "./specParserError";
 
 export class Utils {
   static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
-    if (schema.type === "object") {
+    if (this.isObjectSchema(schema)) {
       for (const property in schema.properties) {
         const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
-        if (nestedSchema.type === "object") {
+        if (this.isObjectSchema(nestedSchema)) {
           return true;
         }
       }
     }
     return false;
+  }
+
+  static isObjectSchema(schema: OpenAPIV3.SchemaObject): boolean {
+    return schema.type === "object" || (!schema.type && !!schema.properties);
   }
 
   static containMultipleMediaTypes(
@@ -311,7 +315,7 @@ export class Utils {
       } else {
         optionalParams.push(parameter);
       }
-    } else if (schema.type === "object") {
+    } else if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
       for (const property in properties) {
         let isRequired = false;
@@ -463,36 +467,5 @@ export class Utils {
     const serverUrl = operationServer || methodServer || rootServer;
 
     return serverUrl;
-  }
-
-  static limitACBodyProperties(body: AdaptiveCardBody, maxCount: number): AdaptiveCardBody {
-    const result: AdaptiveCardBody = [];
-    let currentCount = 0;
-
-    for (const element of body) {
-      if (element.type === ConstantString.ContainerType) {
-        const items = this.limitACBodyProperties(
-          (element as ArrayElement).items,
-          maxCount - currentCount
-        );
-
-        result.push({
-          type: ConstantString.ContainerType,
-          $data: (element as ArrayElement).$data,
-          items: items,
-        });
-
-        currentCount += items.length;
-      } else {
-        result.push(element);
-        currentCount++;
-      }
-
-      if (currentCount >= maxCount) {
-        break;
-      }
-    }
-
-    return result;
   }
 }

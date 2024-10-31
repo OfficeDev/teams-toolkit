@@ -34,6 +34,7 @@ import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
+import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 
 describe("coordinator create", () => {
   const sandbox = sinon.createSandbox();
@@ -43,6 +44,7 @@ describe("coordinator create", () => {
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "trimManifestShortName").resolves(ok(undefined));
     generator = sandbox
       .stub(DefaultTemplateGenerator.prototype, <any>"scaffolding")
       .resolves(ok(undefined));
@@ -791,11 +793,10 @@ describe("coordinator create", () => {
       assert.isTrue(res.isErr());
     });
 
-    it("success for kiota integration", async () => {
+    it("success for kiota integration: plugin", async () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.KiotaIntegration]: "true",
       });
-      sandbox.stub(SPFxGeneratorNew.prototype, "run").resolves(ok({}));
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
       const inputs: Inputs = {
@@ -808,7 +809,29 @@ describe("coordinator create", () => {
       const res = await coordinator.create(context, inputs);
       assert.isTrue(res.isOk());
       if (res.isOk()) {
-        assert.equal(res.value.createProjectForKiota, true);
+        assert.isNotNull(res.value.lastCommand);
+        assert.equal(res.value.projectPath, "");
+      }
+    });
+
+    it("success for kiota integration: declarative copilot", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.WithPlugin]: "yes",
+      };
+      const context = createContext();
+      const res = await coordinator.create(context, inputs);
+      assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        assert.isNotNull(res.value.lastCommand);
         assert.equal(res.value.projectPath, "");
       }
     });

@@ -16,7 +16,6 @@ export class FeatureFlagName {
   static readonly OfficeMetaOS = "TEAMSFX_OFFICE_METAOS";
   static readonly CopilotExtension = "DEVELOP_COPILOT_EXTENSION";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
-  static readonly DeclarativeCopilot = "TEAMSFX_DECLARATIVE_COPILOT";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
@@ -33,6 +32,9 @@ export class FeatureFlagName {
   static readonly SyncManifest = "TEAMSFX_SYNC_MANIFEST";
   static readonly EnvFileFunc = "TEAMSFX_ENV_FILE_FUNC";
   static readonly KiotaIntegration = "TEAMSFX_KIOTA_INTEGRATION";
+  static readonly ApiPluginAAD = "TEAMSFX_API_PLUGIN_AAD";
+  static readonly CEAEnabled = "TEAMSFX_CEA_ENABLED";
+  static readonly MultiTenant = "TEAMSFX_MULTI_TENANT";
 }
 
 export interface FeatureFlag {
@@ -49,10 +51,6 @@ export class FeatureFlags {
   };
   static readonly CopilotPlugin = {
     name: FeatureFlagName.CopilotPlugin,
-    defaultValue: "false",
-  }; // old feature flag. Keep it for backwards compatibility.
-  static readonly DeclarativeCopilot = {
-    name: FeatureFlagName.DeclarativeCopilot,
     defaultValue: "false",
   }; // old feature flag. Keep it for backwards compatibility.
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
@@ -104,13 +102,24 @@ export class FeatureFlags {
     name: FeatureFlagName.KiotaIntegration,
     defaultValue: "false",
   };
+  static readonly ApiPluginAAD = {
+    name: FeatureFlagName.ApiPluginAAD,
+    defaultValue: "false",
+  };
+  static readonly CEAEnabled = {
+    name: FeatureFlagName.CEAEnabled,
+    defaultValue: "false",
+  };
+  static readonly MultiTenant = {
+    name: FeatureFlagName.MultiTenant,
+    defaultValue: "false",
+  };
 }
 
 export function isCopilotExtensionEnabled(): boolean {
   return (
     featureFlagManager.getBooleanValue(FeatureFlags.CopilotExtension) ||
-    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin) ||
-    featureFlagManager.getBooleanValue(FeatureFlags.DeclarativeCopilot)
+    featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin)
   );
 }
 

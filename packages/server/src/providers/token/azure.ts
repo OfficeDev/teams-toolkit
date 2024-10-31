@@ -4,7 +4,13 @@
 import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "@azure/core-auth";
 
-import { AzureAccountProvider, SubscriptionInfo, TokenRequest } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  FxError,
+  Result,
+  SubscriptionInfo,
+  TokenRequest,
+} from "@microsoft/teamsfx-api";
 
 import { RequestTypes } from "../../apis";
 import { getResponseWithErrorHandling } from "../../utils";
@@ -89,6 +95,10 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
       throw result.error;
     }
     return JSON.parse(result.value);
+  }
+
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new NotImplementedError("FxServer", `azure/switchTenant`);
   }
 
   async listSubscriptions(): Promise<SubscriptionInfo[]> {

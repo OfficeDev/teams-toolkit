@@ -110,7 +110,7 @@ export class WebviewPanel {
           TreatmentVariableValue.inProductDoc &&
           (panelType === PanelType.RespondToCardActions ||
             panelType === PanelType.FunctionBasedNotificationBotReadme ||
-            panelType === PanelType.RestifyServerNotificationBotReadme)
+            panelType === PanelType.ExpressServerNotificationBotReadme)
         ) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
             [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
@@ -266,6 +266,7 @@ export class WebviewPanel {
     if (this.panel && this.panel.webview) {
       let readme = this.replaceRelativeImagePaths(htmlContent, sample);
       readme = this.replaceMermaidRelatedContent(readme);
+      readme = this.addTabIndex(readme);
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleReadme,
         readme: readme,
@@ -295,6 +296,11 @@ export class WebviewPanel {
     return loaderRemovedHtmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
   }
 
+  private addTabIndex(htmlContent: string): string {
+    const tabIndexRegex = /<(p|h1|h2|h3|li)/gm;
+    return htmlContent.replace(tabIndexRegex, `<$1 tabIndex="0"`);
+  }
+
   private getWebpageTitle(panelType: PanelType): string {
     switch (panelType) {
       case PanelType.SampleGallery:
@@ -303,7 +309,7 @@ export class WebviewPanel {
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:
         return localize("teamstoolkit.webview.accountHelp");
-      case PanelType.RestifyServerNotificationBotReadme:
+      case PanelType.ExpressServerNotificationBotReadme:
         return localize("teamstoolkit.guides.notificationBot.label");
       case PanelType.FunctionBasedNotificationBotReadme:
         return localize("teamstoolkit.guides.notificationBot.label");

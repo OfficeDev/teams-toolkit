@@ -22,7 +22,7 @@ export enum TemplateNames {
   TabSSR = "non-sso-tab-ssr",
   SsoTabSSR = "sso-tab-ssr",
   DashboardTab = "dashboard-tab",
-  NotificationRestify = "notification-restify",
+  NotificationExpress = "notification-express",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTriggerIsolated = "notification-http-trigger-isolated",
   NotificationHttpTrigger = "notification-http-trigger",
@@ -70,7 +70,7 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
   [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
   [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
-    TemplateNames.NotificationRestify,
+    TemplateNames.NotificationExpress,
   [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
     TemplateNames.NotificationWebApi,
   [`${CapabilityOptions.notificationBot().id}:${
@@ -170,7 +170,7 @@ export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = 
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.appService().id,
     },
-    TemplateNames.NotificationRestify,
+    TemplateNames.NotificationExpress,
   ],
   [
     {

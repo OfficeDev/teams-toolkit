@@ -16,12 +16,13 @@ import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelp
 import { setTools } from "../../src/common/globalVars";
 import { ResourceGroupNotExistError } from "../../src/error/azure";
 import { M365TenantIdNotFoundInTokenError, M365TokenJSONNotFoundError } from "../../src/error/m365";
-import { MockAzureAccountProvider, MockTelemetryReporter, MockTools } from "../core/utils";
 import {
   MockedAzureAccountProvider,
-  MockedUserInteraction,
   MyTokenCredential,
-} from "../plugins/solution/util";
+  MockTelemetryReporter,
+  MockTools,
+} from "../core/utils";
+import { MockedUserInteraction } from "../plugins/solution/util";
 
 describe("provisionUtils", () => {
   const tools = new MockTools();
@@ -36,7 +37,7 @@ describe("provisionUtils", () => {
       mocker.restore();
     });
     it("no givenSubscriptionId - fail to select", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -45,7 +46,7 @@ describe("provisionUtils", () => {
       assert(res.isErr());
     });
     it("no givenSubscriptionId - success to select", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -58,7 +59,7 @@ describe("provisionUtils", () => {
       assert(res.isOk());
     });
     it("givenSubscriptionId - permission pass", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -73,7 +74,7 @@ describe("provisionUtils", () => {
       assert(res.isOk());
     });
     it("givenSubscriptionId - permission fail", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -95,7 +96,7 @@ describe("provisionUtils", () => {
       mocker.restore();
     });
     it("fail: azure token undefined", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker.stub(azureAccountProvider, "getIdentityCredentialAsync").resolves(undefined);
       const res = await provisionUtils.ensureResourceGroup(
         { platform: Platform.VSCode, projectPath: "" },
@@ -105,7 +106,7 @@ describe("provisionUtils", () => {
       assert(res.isErr());
     });
     it("fail: given invalid resource group 1", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -120,7 +121,7 @@ describe("provisionUtils", () => {
       assert(res.isErr() && res.error instanceof ResourceGroupNotExistError);
     });
     it("fail: given invalid resource group 2", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -137,7 +138,7 @@ describe("provisionUtils", () => {
       assert(res.isErr());
     });
     it("success: given valid resource group", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -158,7 +159,7 @@ describe("provisionUtils", () => {
       assert(res.isOk());
     });
     it("failed: resource group not exist", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -176,7 +177,7 @@ describe("provisionUtils", () => {
       }
     });
     it("success: ask resource group 1", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
@@ -198,7 +199,7 @@ describe("provisionUtils", () => {
     });
 
     it("success: ask resource group 2", async () => {
-      const azureAccountProvider = new MockAzureAccountProvider();
+      const azureAccountProvider = new MockedAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());

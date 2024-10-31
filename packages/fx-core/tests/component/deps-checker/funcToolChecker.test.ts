@@ -19,6 +19,7 @@ import {
   v3NodeNotFoundHelpLink,
 } from "../../../src/component/deps-checker/constant/helpLink";
 import { DebugLogger, cpUtils } from "../../../src/component/deps-checker/util/cpUtils";
+import { DepsCheckerError, NodejsNotFoundError } from "../../../src/error";
 
 describe("Func Tools Checker Test", () => {
   const sandbox = sinon.createSandbox();
@@ -523,7 +524,11 @@ describe("Func Tools Checker Test", () => {
         symlinkDir: "./devTools/func",
       });
       delete res["telemetryProperties"];
+      const error = res.error;
+      delete res.error;
+      delete failedResult.error;
       chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+      chai.assert.isTrue(error instanceof DepsCheckerError);
       chai.assert.isFalse(await fs.pathExists(path.resolve(mock.projectDir, "./devTools/func")));
       // The data has been cleaned.
       const files = await fs.readdir(path.resolve(mock.homeDir, "./.fx/bin/azfunc"), {
@@ -550,6 +555,8 @@ describe("Func Tools Checker Test", () => {
       symlinkDir: "./devTools/func",
     });
     delete res["telemetryProperties"];
+    const error = res.error;
+    delete res.error;
     chai.assert.equal(
       JSON.stringify(res),
       JSON.stringify({
@@ -563,11 +570,9 @@ describe("Func Tools Checker Test", () => {
           supportedVersions: [],
           binFolders: undefined,
         },
-        error: {
-          helpLink: v3NodeNotFoundHelpLink,
-        },
       })
     );
+    chai.assert.isTrue(error instanceof NodejsNotFoundError);
   });
 
   it(`failed to find npm`, async () => {
@@ -587,8 +592,11 @@ describe("Func Tools Checker Test", () => {
       symlinkDir: "./devTools/func",
     });
     delete res["telemetryProperties"];
-
+    const error = res.error;
+    delete res.error;
+    delete failedResult.error;
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
+    chai.assert.isTrue(error instanceof DepsCheckerError);
   });
 
   it(`throw error in linux`, async () => {
@@ -600,7 +608,8 @@ describe("Func Tools Checker Test", () => {
       symlinkDir: "./devTools/func",
     });
     delete res["telemetryProperties"];
-
+    delete res.error;
+    delete failedResult.error;
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
 
@@ -657,7 +666,8 @@ describe("Func Tools Checker Test", () => {
       symlinkDir: "./devtools/func",
     });
     delete res["telemetryProperties"];
-
+    delete res.error;
+    delete failedResult.error;
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
 
@@ -783,7 +793,8 @@ describe("Func Tools Checker Test", () => {
       symlinkDir: "./devtools/func",
     });
     delete res["telemetryProperties"];
-
+    delete res.error;
+    delete failedResult.error;
     chai.assert.equal(JSON.stringify(res), JSON.stringify(failedResult));
   });
 
@@ -870,7 +881,7 @@ describe("Func Tools Checker Test", () => {
         symlinkDir: "./devTools/func",
       });
       delete res["telemetryProperties"];
-
+      delete res.error;
       chai.assert.equal(
         JSON.stringify(res),
         JSON.stringify({
@@ -884,7 +895,6 @@ describe("Func Tools Checker Test", () => {
             supportedVersions: [],
             binFolders: [path.resolve(mock.projectDir, "./devTools/func")],
           },
-          error: nodeVersionValidationData.isSuccess ? undefined : { helpLink: v3DefaultHelpLink },
         })
       );
       const stat = await fs.lstat(res.details.binFolders[0]);
@@ -899,7 +909,7 @@ describe("Func Tools Checker Test", () => {
     });
   });
 
-  const failedResult = {
+  const failedResult: any = {
     name: "Azure Functions Core Tools",
     type: "func-core-tools",
     isInstalled: false,

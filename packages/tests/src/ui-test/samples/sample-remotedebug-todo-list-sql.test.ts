@@ -109,6 +109,7 @@ class TodoListBackendTestCase extends CaseFactory {
     teamsAppId: string,
     options?: {
       teamsAppName: string;
+      type: string;
     }
   ): Promise<Page> {
     return await initTeamsPage(
@@ -118,6 +119,7 @@ class TodoListBackendTestCase extends CaseFactory {
       Env.password,
       {
         teamsAppName: options?.teamsAppName,
+        type: options?.type,
       }
     );
   }
@@ -134,7 +136,7 @@ new TodoListBackendTestCase(
   [],
   {
     teamsAppName: "toDoList-dev",
-    skipValidation: false,
     testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
+    type: "spfx",
   }
 ).test();

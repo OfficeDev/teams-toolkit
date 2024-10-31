@@ -6,6 +6,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import { LogLevel } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent } from "./telemetry/extTelemetryEvents";
+import { FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class ConfigManager {
   registerConfigChangeCallback() {
@@ -36,8 +37,8 @@ export class ConfigManager {
       ConfigurationKey.CopilotExtensionEnable,
       false
     ).toString();
-    process.env["TEAMSFX_DECLARATIVE_COPILOT"] = this.getConfiguration(
-      ConfigurationKey.CopilotExtensionEnable,
+    process.env[FeatureFlags.KiotaIntegration.name] = this.getConfiguration(
+      ConfigurationKey.EnableMicrosoftKiota,
       false
     ).toString();
   }

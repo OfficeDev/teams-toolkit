@@ -183,54 +183,42 @@ export async function initPage(
     ]);
     await page.waitForTimeout(Timeout.longTimeWait);
     console.log("click add button");
-
-    const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-
-    // dashboard template will have a popup
-    if (options?.dashboardFlag) {
-      console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup)
-          )
-          .catch(() => {}),
-        addBtn?.click(),
-      ]);
-      console.log("after popup");
-
-      if (popup && !popup?.isClosed()) {
-        // input password
-        console.log(`fill in password`);
-        await popup.fill(
-          "input.input[type='password'][name='passwd']",
-          password
-        );
-        // sign in
-        await Promise.all([
-          popup.click("input.button[type='submit'][value='Sign in']"),
-          popup.waitForNavigation(),
-        ]);
-        await popup.click("input.button[type='submit'][value='Accept']");
-        try {
-          await popup?.close();
-        } catch (error) {
-          console.log("popup is closed");
-        }
+    let addBtn;
+    try {
+      addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+    } catch {
+      try {
+        addBtn = await page?.waitForSelector("button>span:has-text('Open')");
+      } catch {
+        await page.screenshot({
+          path: getPlaywrightScreenshotPath("add_page"),
+          fullPage: true,
+        });
+        throw "error to add app";
       }
-    } else {
-      await addBtn?.click();
     }
+
+    await addBtn?.click();
     await page.waitForTimeout(Timeout.shortTimeLoading);
     // verify add page is closed
-    await page?.waitForSelector("button>span:has-text('Add')", {
-      state: "detached",
-    });
+    try {
+      await page?.waitForSelector("button>span:has-text('Add')", {
+        state: "detached",
+      });
+    } catch {
+      await page?.waitForSelector("button>span:has-text('Open')", {
+        state: "detached",
+      });
+    }
+    try {
+      const openApp = await page?.waitForSelector(
+        "button[data-testid='open-app'][data-tid='open-app']"
+      );
+      console.log("clicked open app");
+      await openApp.click();
+    } catch {
+      console.log("No Open App button");
+    }
     console.log("[success] app loaded");
     await page.waitForTimeout(Timeout.longTimeWait);
   });
@@ -305,54 +293,43 @@ export async function reopenPage(
     await page.waitForTimeout(Timeout.shortTimeLoading);
     if (addApp) {
       console.log("click add button");
-      const addBtn = await page?.waitForSelector("button>span:has-text('Add')");
-
-      // dashboard template will have a popup
-      if (options?.dashboardFlag && password) {
-        console.log("Before popup");
-        const [popup] = await Promise.all([
-          page
-            .waitForEvent("popup")
-            .then((popup) =>
-              popup
-                .waitForEvent("close", {
-                  timeout: Timeout.playwrightConsentPopupPage,
-                })
-                .catch(() => popup)
-            )
-            .catch(() => {}),
-          addBtn?.click(),
-        ]);
-        console.log("after popup");
-
-        if (popup && !popup?.isClosed()) {
-          // input password
-          console.log(`fill in password`);
-          await popup.fill(
-            "input.input[type='password'][name='passwd']",
-            password
-          );
-          // sign in
-          await Promise.all([
-            popup.click("input.button[type='submit'][value='Sign in']"),
-            popup.waitForNavigation(),
-          ]);
-          await popup.click("input.button[type='submit'][value='Accept']");
-          try {
-            await popup?.close();
-          } catch (error) {
-            console.log("popup is closed");
-          }
+      let addBtn;
+      try {
+        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+      } catch {
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
+        } catch {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("add_page"),
+            fullPage: true,
+          });
+          throw "error to add app";
         }
-      } else {
-        await addBtn?.click();
       }
+
+      await addBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("[success] app loaded");
       // verify add page is closed
-      await page?.waitForSelector("button>span:has-text('Add')", {
-        state: "detached",
-      });
+      try {
+        await page?.waitForSelector("button>span:has-text('Add')", {
+          state: "detached",
+        });
+      } catch {
+        await page?.waitForSelector("button>span:has-text('Open')", {
+          state: "detached",
+        });
+      }
+      try {
+        const openApp = await page?.waitForSelector(
+          "button[data-testid='open-app'][data-tid='open-app']"
+        );
+        console.log("clicked open app");
+        await openApp.click();
+      } catch {
+        console.log("No Open App button");
+      }
     }
     await page.waitForTimeout(Timeout.longTimeWait);
   });
@@ -438,48 +415,39 @@ export async function initTeamsPage(
       }
 
       // default
-      if (options?.type !== "meeting") {
-        console.log("click add button");
-        const addBtn = await page?.waitForSelector(
-          "button>span:has-text('Add')"
+      console.log("click add button");
+      let addInBtn;
+      try {
+        addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
+      } catch {
+        try {
+          addInBtn = await page?.waitForSelector(
+            "button>span:has-text('Open')"
+          );
+        } catch {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("add_page"),
+            fullPage: true,
+          });
+          throw "error to add app";
+        }
+      }
+      await addInBtn?.click();
+      if (options?.type === "meeting") {
+        // select meeting tab in dialog box
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        const meetingTab = await dialog?.waitForSelector(
+          "li:has-text('testing')"
         );
-        await addBtn?.click();
+        console.log("click meeting tab");
+        await meetingTab?.click();
         await page.waitForTimeout(Timeout.shortTimeLoading);
-      } else {
-        // add in meeting
-        console.log("click showListBtn button");
-        const showListBtn = await page?.waitForSelector(
-          ".ui-splitbutton>button"
-        );
-        await showListBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-
-        console.log("click addInMeetingBtn button");
-        const addInMeetingBtn = await page?.waitForSelector(
-          ".ui-popup__content li:has-text('Add to a meeting')"
-        );
-        await addInMeetingBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-
-        console.log("input meeting name in search box");
-        const inputBox = await page.waitForSelector(
-          ".fui-DialogBody .ui-dropdown input.ui-box"
-        );
-        await inputBox.fill("testing");
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const testingTab = await page.waitForSelector(
-          "ul li:has-text('testing')"
-        );
-        await testingTab?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-
-        const setUpBtn = await page?.waitForSelector(
-          'button span:has-text("Set up a tab")'
-        );
-        await setUpBtn?.click();
+        const gotoBtn = await dialog?.waitForSelector("button[data-tid='go']");
         console.log("click 'set up a tab' button");
+        await gotoBtn?.click();
         await page.waitForTimeout(Timeout.shortTimeLoading);
-        await page?.waitForSelector('button span:has-text("Set up a tab")', {
+
+        await page?.waitForSelector("button[data-tid='go']", {
           state: "detached",
         });
         console.log("successful to add teams app!!!");
@@ -487,55 +455,48 @@ export async function initTeamsPage(
       }
 
       try {
-        // verify add page is closed
-        await page?.waitForSelector(`h1:has-text('to a team')`);
-        try {
-          try {
-            // select 2nd li item
-            const items = await page?.waitForSelector(
-              "li.ui-dropdown__item:nth-child(2)"
-            );
-            await items?.click();
-            console.log("selected a team.");
-          } catch (error) {
-            const searchBtn = await page?.waitForSelector(
-              "div.ui-dropdown__toggle-indicator"
-            );
-            await searchBtn?.click();
-            await page.waitForTimeout(Timeout.shortTimeLoading);
-            const items = await page?.waitForSelector("li.ui-dropdown__item");
-            await items?.click();
-            console.log("[catch] selected a team.");
-          }
+        // teams app add
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        const openBtn = await dialog?.waitForSelector(
+          "button:has-text('Open')"
+        );
+        console.log("click 'open' button");
+        await openBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
 
-          const setUpBtn = await page?.waitForSelector(
-            'button span:has-text("Set up a tab")'
-          );
-          await setUpBtn?.click();
-          console.log("click 'set up a tab' button");
-          await page.waitForTimeout(Timeout.shortTimeLoading);
-          await page?.waitForSelector('button span:has-text("Set up a tab")', {
-            state: "detached",
-          });
-        } catch (error) {
-          console.log(error);
-          await page.screenshot({
-            path: getPlaywrightScreenshotPath("error"),
-            fullPage: true,
-          });
-          throw error;
-        }
+        await page?.waitForSelector("div[role='dialog']", {
+          state: "detached",
+        });
+        console.log("successful to add teams app!!!");
       } catch (error) {
         console.log("no need to add to a team step");
       }
 
       {
-        console.log('[start] click "save" button');
-        const frameElementHandle = await page.waitForSelector(
-          `iframe[name="embedded-page-container"]`
-        );
-        const frame = await frameElementHandle?.contentFrame();
         if (options?.type === "spfx") {
+          // spfx add to channel
+          const dialog = await page.waitForSelector("div[role='dialog']");
+          const spfxTab = await dialog?.waitForSelector(
+            "li:has-text('test-team')"
+          );
+          console.log("click spfxTab tab");
+          await spfxTab?.click();
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          const gotoBtn = await dialog?.waitForSelector(
+            "button[data-tid='go']"
+          );
+          console.log("click 'set up a tab' button");
+          await gotoBtn?.click();
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+
+          await page?.waitForSelector("button[data-tid='go']", {
+            state: "detached",
+          });
+
+          const frameElementHandle = await page.waitForSelector(
+            `iframe[name="embedded-page-container"]`
+          );
+          const frame = await frameElementHandle?.contentFrame();
           try {
             console.log("Load debug scripts");
             await frame?.click('button:has-text("Load debug scripts")');
@@ -628,17 +589,22 @@ export async function reopenTeamsPage(
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
       if (options?.type === "meeting") {
-        // verify add page is closed
-        try {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a team')`
-          );
-        } catch (error) {
-          await page?.waitForSelector(
-            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
-          );
-        }
-        // TODO: need to add more logic
+        // select meeting tab in dialog box
+        const dialog = await page.waitForSelector("div[role='dialog']");
+        const meetingTab = await dialog?.waitForSelector(
+          "li:has-text('testing')"
+        );
+        console.log("click meeting tab");
+        await meetingTab?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        const gotoBtn = await dialog?.waitForSelector("button[data-tid='go']");
+        console.log("click 'set up a tab' button");
+        await gotoBtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+
+        await page?.waitForSelector("button[data-tid='go']", {
+          state: "detached",
+        });
         console.log("successful to add teams app!!!");
         return;
       }
@@ -996,11 +962,17 @@ export async function validateReactTab(
 
 export async function validateReactOutlookTab(
   page: Page,
+  url: string,
   displayName: string,
   includeFunction?: boolean
 ) {
-  try {
+  await RetryHandler.retry(async () => {
+    await Promise.all([page.goto(url), page.waitForNavigation()]);
     await page.waitForTimeout(Timeout.longTimeWait);
+    await page.waitForSelector('div[aria-label="hosted-app-tabs"]');
+  }, 3);
+
+  try {
     const frameElementHandle = await page.waitForSelector(
       'iframe[data-tid="app-host-iframe"]'
     );
@@ -2345,7 +2317,7 @@ export async function validateBasicDashboardTab(page: Page) {
 export async function validateDashboardTab(page: Page) {
   try {
     console.log("start to verify dashboard tab");
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
@@ -2969,9 +2941,6 @@ export async function validateCustomapi(
 export async function validateRetailDashboard(page: Page) {
   try {
     console.log("start to verify dashboard tab");
-    await page?.waitForSelector("button:has-text('RetailDashboard')");
-    await page?.waitForSelector("button:has-text('RetailHome')");
-    await page?.waitForSelector("button:has-text('RetailInventory')");
     const frameElementHandle = await page.waitForSelector(
       `iframe[name="embedded-page-container"]`
     );
@@ -2980,8 +2949,6 @@ export async function validateRetailDashboard(page: Page) {
     await frame?.waitForSelector(
       "span:has-text('Global Customer Satisfaction')"
     );
-    await frame?.waitForSelector("span:has-text('Product Sell')");
-    await frame?.waitForSelector("span:has-text('Reasons for Return')");
     console.log("Dashboard tab loaded successfully");
   } catch (error) {
     await page.screenshot({

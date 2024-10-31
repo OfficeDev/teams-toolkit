@@ -20,6 +20,9 @@ export enum TelemetryEvent {
   SignOutStart = "sign-out-start",
   SignOut = "sign-out",
 
+  SwitchTenantStart = "switch-tenant-start",
+  SwitchTenant = "switch-tenant",
+
   SelectSubscription = "select-subscription",
 
   CreateProjectStart = "create-project-start",
@@ -295,6 +298,10 @@ export enum TelemetryEvent {
 
   InstallKiota = "install-kiota",
   Configuration = "vsc-configuration",
+
+  UpdateAddPluginTreeview = "update-add-plugin-tree-view",
+
+  AddPluginWithManifest = "add-plugin-with-manifest",
 }
 
 export enum TelemetryProperty {
@@ -415,6 +422,8 @@ export enum TelemetryProperty {
   CopilotChatRequestToken = "copilot-chat-request-token",
   CopilotChatResponseToken = "copilot-chat-response-token",
   KiotaInstalled = "kiota-installed",
+  ShowAddPluginTreeView = "show-add-plugin-tree-view",
+  InstallTarget = "install-target",
 }
 
 export enum TelemetryMeasurements {

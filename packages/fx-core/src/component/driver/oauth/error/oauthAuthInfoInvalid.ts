@@ -5,7 +5,7 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "OauthAuthInfoInvalid";
-const messageKey = "driver.apiKey.error.oauthAuthInfoInvalid";
+const messageKey = "driver.oauth.error.oauthAuthInfoInvalid";
 
 export class OauthAuthInfoInvalid extends UserError {
   constructor(actionName: string) {

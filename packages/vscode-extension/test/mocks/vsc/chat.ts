@@ -58,9 +58,4 @@ export enum LanguageModelChatMessageRole {
    * The assistant role.
    */
   Assistant = 2,
-
-  /**
-   * The system role.
-   */
-  System = 3,
 }

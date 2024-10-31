@@ -305,6 +305,10 @@ class TelemetryUtils {
       props[TelemetryProperty.ErrorCat2] = error.categories[1];
       props[TelemetryProperty.ErrorCat3] = error.categories[2];
     }
+
+    if (error.telemetryProperties) {
+      assign(props, error.telemetryProperties);
+    }
   }
 
   fillinProjectTypeProperties(props: Record<string, string>, projectTypeRes: ProjectTypeResult) {

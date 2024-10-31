@@ -76,7 +76,11 @@ export interface AzureAccountProvider {
    * Azure sign out
    */
   signout(): Promise<boolean>;
-
+  /**
+   * Switch to specified tenant for current user account
+   * @param tenantId id of tenant that user wants to switch to
+   */
+  switchTenant(tenantId: string): Promise<Result<string, FxError>>;
   /**
    * Add update account info callback
    * @param name callback name
@@ -172,6 +176,11 @@ export interface M365TokenProvider {
    * @param tokenRequest permission scopes or show user interactive UX
    */
   getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>>;
+  /**
+   * Switch to specified tenant for current user account
+   * @param tenantId id of tenant that user wants to switch to
+   */
+  switchTenant(tenantId: string): Promise<Result<string, FxError>>;
   /**
    * Add update account info callback
    * @param name callback name

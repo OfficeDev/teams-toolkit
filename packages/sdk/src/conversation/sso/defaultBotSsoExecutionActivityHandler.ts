@@ -12,8 +12,6 @@ import {
   UserState,
 } from "botbuilder";
 import { TeamsBotSsoPromptSettings } from "../../bot/teamsBotSsoPrompt";
-import { TeamsFx } from "../../core/teamsfx";
-import { IdentityType } from "../../models/identityType";
 import {
   BotSsoConfig,
   BotSsoExecutionActivityHandler,
@@ -62,7 +60,7 @@ export class DefaultBotSsoExecutionActivityHandler
       dedupStorage,
       settings,
       customConfig as OnBehalfOfCredentialAuthConfig,
-      customConfig.initiateLoginEndpoint!
+      customConfig.initiateLoginEndpoint
     );
 
     this.conversationState = conversationState;

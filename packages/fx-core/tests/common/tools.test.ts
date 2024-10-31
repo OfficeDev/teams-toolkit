@@ -12,7 +12,12 @@ import * as path from "path";
 import Sinon, * as sinon from "sinon";
 import { getProjectMetadata } from "../../src/common/projectSettingsHelper";
 import * as telemetry from "../../src/common/telemetry";
-import { getSPFxToken, getSideloadingStatus, listDevTunnels } from "../../src/common/tools";
+import {
+  getSPFxToken,
+  getSideloadingStatus,
+  listAllTenants,
+  listDevTunnels,
+} from "../../src/common/tools";
 import { PackageService } from "../../src/component/m365/packageService";
 import { isVideoFilterProject } from "../../src/core/middleware/videoFilterAppBlocker";
 import { isUserCancelError } from "../../src/error/common";
@@ -121,6 +126,52 @@ describe("tools", () => {
       chai.assert.isUndefined(result);
       chai.assert.equal(events, 0);
       chai.assert.equal(errors, 1);
+    });
+  });
+
+  describe("listAllTenants", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("returns empty for invalid token", async () => {
+      const tenants = await listAllTenants("");
+
+      chai.assert.equal(tenants.length, 0);
+    });
+
+    it("returns empty when API call failure", async () => {
+      sandbox.stub(axios, "get").throws({ name: 404, message: "failed" });
+
+      const tenants = await listAllTenants("faked token");
+
+      chai.assert.equal(tenants.length, 0);
+    });
+
+    it("returns tenant list", async () => {
+      const fakedTenants = {
+        data: {
+          value: [
+            {
+              tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",
+              countryCode: "SG",
+              displayName: "MSFT",
+            },
+            {
+              tenantId: "313ef12c-d7cb-4f01-af90-1b113db5aa9a",
+              countryCode: "CN",
+              displayName: "Cisco",
+            },
+          ],
+        },
+      };
+      sandbox.stub(axios, "get").resolves(fakedTenants);
+
+      const tenants = await listAllTenants("faked token");
+
+      chai.assert.equal(tenants, fakedTenants.data.value);
     });
   });
 

@@ -20,6 +20,10 @@ class M365Provider extends BasicLogin implements M365TokenProvider {
   async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
     return ok({ status: "SignedIn" });
   }
+
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    return ok("fakeToken");
+  }
 }
 
 describe("m365Login", function () {

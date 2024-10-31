@@ -8,7 +8,13 @@ import * as identity from "@azure/identity";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  ConfigFolderName,
+  FxError,
+  Result,
+  SubscriptionInfo,
+} from "@microsoft/teamsfx-api";
 import { LoginStatus, login } from "./common/login";
 
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
@@ -115,6 +121,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     await AzureSpCrypto.clearAzureSP();
     return true;
   }
+
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+
   async getStatus(): Promise<LoginStatus> {
     await this.load();
     if (

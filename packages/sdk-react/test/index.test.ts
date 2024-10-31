@@ -12,16 +12,16 @@ describe("index", () => {
     expect(sdkReact.useTeams).toBeDefined();
   });
 
-  it("Should export useTeamsFx", () => {
-    expect(sdkReact.useTeamsFx).toBeDefined();
+  it("Should export useTeamsUserCredential", () => {
+    expect(sdkReact.useTeamsUserCredential).toBeDefined();
   });
 
   it("Should export useData", () => {
     expect(sdkReact.useData).toBeDefined();
   });
 
-  it("Should export useGraph", () => {
-    expect(sdkReact.useGraph).toBeDefined();
+  it("Should export useGraphWithCredential", () => {
+    expect(sdkReact.useGraphWithCredential).toBeDefined();
   });
 
   it("Should export BaseDashboard", () => {

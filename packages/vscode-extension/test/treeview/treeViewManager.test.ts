@@ -67,7 +67,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(setStatusStub.callCount, 2);
   });
 
-  it("updateTreeViewsOnSPFxChanged", () => {
+  it("updateDevelopmentTreeView", () => {
     sandbox.stub(globalVariables, "isSPFxProject").value(false);
     sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     treeViewManager.registerTreeViews({
@@ -82,7 +82,7 @@ describe("TreeViewManager", () => {
     chai.assert.equal(commands.length, 4);
 
     sandbox.stub(globalVariables, "isSPFxProject").value(true);
-    treeViewManager.updateTreeViewsOnSPFxChanged();
+    treeViewManager.updateDevelopmentTreeView();
 
     chai.assert.equal(commands.length, 5);
   });

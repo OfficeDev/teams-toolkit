@@ -65,7 +65,12 @@ import { MetadataV3, VersionSource, VersionState } from "../common/versionMetada
 import { ActionInjector } from "../component/configManager/actionInjector";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
-import { AadConstants, SingleSignOnOptionItem, ViewAadAppHelpLinkV5 } from "../component/constants";
+import {
+  AadConstants,
+  KiotaLastCommands,
+  SingleSignOnOptionItem,
+  ViewAadAppHelpLinkV5,
+} from "../component/constants";
 import { coordinator } from "../component/coordinator";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
@@ -167,6 +172,7 @@ import { SyncManifestArgs } from "../component/driver/teamsApp/interfaces/SyncMa
 import { SyncManifestDriver } from "../component/driver/teamsApp/syncManifest";
 import { generateDriverContext } from "../common/utils";
 import { addExistingPlugin } from "../component/generator/copilotExtension/helper";
+import { featureFlagManager, FeatureFlags } from "../common/featureFlags";
 
 export class FxCore {
   constructor(tools: Tools) {
@@ -1850,10 +1856,24 @@ export class FxCore {
     QuestionMW("addPlugin"),
     ConcurrentLockerMW,
   ])
-  async addPlugin(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async addPlugin(inputs: Inputs): Promise<Result<undefined | any, FxError>> {
     if (!inputs.projectPath) {
       throw new Error("projectPath is undefined"); // should never happen
     }
+
+    // Call Kiota to select the OpenAPI spec file
+    if (
+      inputs.platform === Platform.VSCode &&
+      featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
+      !!!inputs[QuestionNames.ApiPluginManifestPath]
+    ) {
+      return ok({
+        lastCommand: KiotaLastCommands.addPlugin,
+        manifestPath: inputs[QuestionNames.ManifestPath],
+      });
+    }
+
     const context = createContext();
     const teamsManifestPath = inputs[QuestionNames.ManifestPath];
     const appPackageFolder = path.dirname(teamsManifestPath);
@@ -1867,7 +1887,9 @@ export class FxCore {
     }
 
     const teamsManifest = manifestRes.value;
-    const declarativeGpt = teamsManifest.copilotExtensions?.declarativeCopilots?.[0];
+    const declarativeGpt = teamsManifest.copilotExtensions
+      ? teamsManifest.copilotExtensions.declarativeCopilots?.[0]
+      : teamsManifest.copilotAgents?.declarativeAgents?.[0];
     if (!declarativeGpt?.file) {
       return err(
         AppStudioResultFactory.UserError(

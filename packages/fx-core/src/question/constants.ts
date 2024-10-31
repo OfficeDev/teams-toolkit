@@ -271,7 +271,7 @@ export class ProjectTypeOptions {
 
   static copilotExtension(platform?: Platform): OptionItem {
     return {
-      id: "copilot-extension-type",
+      id: "copilot-agent-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
@@ -620,11 +620,16 @@ export class CapabilityOptions {
     return items;
   }
 
-  static copilotExtensions(inputs?: Inputs): OptionItem[] {
+  static copilotExtensions(inputs?: Inputs, isStatic?: boolean): OptionItem[] {
+    if (isStatic) {
+      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    }
     if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
       return [CapabilityOptions.apiPlugin()];
-    } else {
+    } else if (isCopilotExtensionEnabled()) {
       return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
+    } else {
+      return [CapabilityOptions.declarativeCopilot()];
     }
   }
 
@@ -654,7 +659,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.copilotExtensions(inputs),
+      ...CapabilityOptions.copilotExtensions(inputs, true),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
@@ -674,9 +679,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    if (isCopilotExtensionEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.copilotExtensions());
-    }
+    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
@@ -741,7 +744,7 @@ export class CapabilityOptions {
   // copilot extension - declarative copilot
   static declarativeCopilot(): OptionItem {
     return {
-      id: "declarative-copilot",
+      id: "declarative-agent",
       label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
       detail: getLocalizedString(
         "core.createProjectQuestion.projectType.declarativeCopilot.detail"
@@ -768,6 +771,9 @@ export class CapabilityOptions {
 
   // custom copilot
   static customCopilotBasic(): OptionItem {
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-basic",
       label: getLocalizedString(
@@ -776,10 +782,14 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotBasicOption.detail"
       ),
+      description: description,
     };
   }
 
   static customCopilotRag(): OptionItem {
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-rag",
       label: getLocalizedString(
@@ -788,10 +798,14 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotRagOption.detail"
       ),
+      description: description,
     };
   }
 
   static customCopilotAssistant(): OptionItem {
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-agent",
       label: getLocalizedString(
@@ -800,6 +814,7 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantOption.detail"
       ),
+      description: description,
     };
   }
 }

@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as os from "os";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { ConfigFolderName, UserError } from "@microsoft/teamsfx-api";
 import * as child_process from "child_process";
-import * as util from "util";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
 import { performance } from "perf_hooks";
-import { dotnetFailToInstallHelpLink, dotnetExplanationHelpLink } from "../constant/helpLink";
-import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
-import { runWithProgressIndicator } from "../util/progressIndicator";
-import { cpUtils } from "../util/cpUtils";
-import { isLinux, isWindows, isArm64, isMacOS } from "../util/system";
+import * as util from "util";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { DepsCheckerError, InstallSoftwareError } from "../../../error";
+import { getResourceFolder } from "../../../folder";
+import { dotnetExplanationHelpLink, dotnetFailToInstallHelpLink } from "../constant/helpLink";
+import { Messages } from "../constant/message";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
+import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
-import { Messages } from "../constant/message";
-import { getResourceFolder } from "../../../folder";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { cpUtils } from "../util/cpUtils";
+import { runWithProgressIndicator } from "../util/progressIndicator";
+import { isArm64, isLinux, isMacOS, isWindows } from "../util/system";
 
 const execFile = util.promisify(child_process.execFile);
 
@@ -48,10 +48,7 @@ export class DotnetChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async getDepsInfo(
-    isInstalled: boolean,
-    error?: DepsCheckerError
-  ): Promise<DependencyStatus> {
+  public async getDepsInfo(isInstalled: boolean, error?: UserError): Promise<DependencyStatus> {
     const execPath = await this.getDotnetExecPathFromConfig();
     return {
       name: DotnetCoreSDKName,
@@ -108,7 +105,7 @@ export class DotnetChecker implements DepsChecker {
     } catch (error) {
       this._logger.printDetailLog();
       this._logger.error(`${error.message as string}, error = '${error.toString() as string}'`);
-      if (error instanceof DepsCheckerError) {
+      if (error instanceof UserError) {
         return await this.getDepsInfo(false, error);
       }
       return await this.getDepsInfo(
@@ -122,10 +119,7 @@ export class DotnetChecker implements DepsChecker {
 
   public async install(): Promise<void> {
     if (isLinux()) {
-      throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound().split("@SupportedPackages").join(installedNameWithVersion),
-        dotnetExplanationHelpLink
-      );
+      throw new InstallSoftwareError(installedNameWithVersion, dotnetExplanationHelpLink);
     }
 
     this._logger.debug(`[start] cleanup bin/dotnet and config`);

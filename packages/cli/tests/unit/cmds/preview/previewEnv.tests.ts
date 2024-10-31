@@ -85,7 +85,7 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
     const cmd = new PreviewEnv();
     await cmd.runCommand(defaultOptions);
-    expect(logs.length).greaterThanOrEqual(1);
+    expect(logs.length >= 1).to.be.true;
     expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
   });
 
@@ -104,7 +104,7 @@ describe("Preview --env", () => {
       ["browser-arg"]: ["--guest"],
       ["open-only"]: true,
     });
-    expect(logs.length).greaterThanOrEqual(0);
+    expect(logs.length >= 0).to.be.true;
   });
 
   it("Preview Command Running - office", async () => {
@@ -124,7 +124,7 @@ describe("Preview --env", () => {
       ["browser-arg"]: ["--guest"],
     });
 
-    expect(logs.length).greaterThanOrEqual(0);
+    expect(logs.length >= 0).to.be.true;
   });
 
   it("Preview Command Running - workspace not supported error", async () => {

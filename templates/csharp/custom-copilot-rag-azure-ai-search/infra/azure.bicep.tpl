@@ -98,7 +98,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: azureOpenAIDeploymentName
         }
         {
-          name: 'Azure__OpenAIEmbeddingDeployment'
+          name: 'Azure__OpenAIEmbeddingDeploymentName'
           value: azureOpenAIEmbeddingDeploymentName
         }
 {{/useAzureOpenAI}}

@@ -18,7 +18,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import fse from "fs-extra";
 import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
@@ -39,6 +38,7 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
+import { envUtil } from "../../utils/envUtil";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -101,9 +101,6 @@ export class OfficeAddinGenerator {
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
-    const language = toLower(inputs[QuestionNames.ProgrammingLanguage]) as
-      | "javascript"
-      | "typescript";
     const projectType = inputs[QuestionNames.ProjectType];
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
@@ -139,12 +136,11 @@ export class OfficeAddinGenerator {
           );
         }
         // from template
-        const framework = getOfficeAddinFramework(inputs);
         const templateConfig = getOfficeAddinTemplateConfig();
         const projectLink =
           projectType === ProjectTypeOptions.officeMetaOS().id
             ? "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/json-wxpo-preview.zip"
-            : templateConfig[capability].framework[framework][language];
+            : "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/yo-office.zip";
 
         // Copy project template files from project repository
         if (projectLink) {
@@ -156,15 +152,7 @@ export class OfficeAddinGenerator {
           if (fetchRes.isErr()) {
             return err(fetchRes.error);
           }
-          let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          if (
-            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeMetaOS().id ||
-            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
-          ) {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
-          } else {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
-          }
+          const cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           await OfficeAddinGenerator.childProcessExec(cmdLine);
           const manifestPath = templateConfig[capability].manifestPath as string;
           // modify manifest guid and DisplayName
@@ -269,5 +257,25 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
     return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
+  }
+
+  async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
+    if (fromFolder) {
+      // reset all env files
+      const envRes = await envUtil.listEnv(destinationPath);
+      if (envRes.isOk()) {
+        const envs = envRes.value;
+        for (const env of envs) {
+          await envUtil.resetEnv(destinationPath, env, ["TEAMSFX_ENV", "APP_NAME_SUFFIX"]);
+        }
+      }
+    }
+    return ok({});
   }
 }

@@ -41,6 +41,9 @@ import { invokeTeamsAgent } from "./copilotChatHandlers";
 import { runCommand } from "./sharedOpts";
 import { ExtensionSource } from "../error/error";
 import VsCodeLogInstance from "../commonlib/log";
+import * as versionUtil from "../utils/versionUtil";
+import { KiotaExtensionId, KiotaMinVersion } from "../constants";
+import * as stringUtil from "util";
 
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
@@ -65,9 +68,9 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   if (
     featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
     res.projectPath === "" &&
-    res.createProjectForKiota
+    res.lastCommand
   ) {
-    return handleTriggerKiotaCommand(args, res);
+    return handleTriggerKiotaCommand(args, res, TelemetryEvent.CreateProject);
   }
 
   if (res.shouldInvokeTeamsAgent) {
@@ -118,7 +121,17 @@ export async function addWebpartHandler(...args: unknown[]) {
 
 export async function addPluginHandler(...args: unknown[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddPluginStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.addPlugin);
+  const result = await runCommand(Stage.addPlugin);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+
+  const res = result.value;
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) && res.lastCommand) {
+    return handleTriggerKiotaCommand(args, res, TelemetryEvent.AddPlugin);
+  } else {
+    return result;
+  }
 }
 
 /**
@@ -239,14 +252,11 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   return result;
 }
 
-function handleTriggerKiotaCommand(
-  args: any[],
-  result: CreateProjectResult
-): Result<CreateProjectResult, FxError> {
-  if (!vscode.extensions.getExtension("ms-graph.kiota")) {
+function handleTriggerKiotaCommand(args: any[], result: any, event: string): Result<any, FxError> {
+  if (!validateKiotaInstallation()) {
     void vscode.window
       .showInformationMessage(
-        localize("teamstoolkit.error.KiotaNotInstalled"),
+        stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion),
         "Install Kiota",
         "Cancel"
       )
@@ -262,28 +272,48 @@ function handleTriggerKiotaCommand(
             new UserError(
               ExtensionSource,
               "KiotaNotInstalled",
-              localize("teamstoolkit.error.KiotaNotInstalled")
+              stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion)
             )
           );
         }
       });
 
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+    ExtTelemetry.sendTelemetryEvent(event, {
       [TelemetryProperty.KiotaInstalled]: "No",
       ...getTriggerFromProperty(args),
     });
-    VsCodeLogInstance.error(localize("teamstoolkit.error.KiotaNotInstalled"));
+    VsCodeLogInstance.error(
+      stringUtil.format(localize("teamstoolkit.error.KiotaNotInstalled"), KiotaMinVersion)
+    );
     return ok({ projectPath: "" });
   } else {
     void vscode.commands.executeCommand("kiota.openApiExplorer.searchOrOpenApiDescription", {
       kind: "Plugin",
       type: "ApiPlugin",
       source: "ttk",
+      ttkContext: {
+        lastCommand: result.lastCommand,
+        manifestPath: result.manifestPath,
+      },
     });
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+    ExtTelemetry.sendTelemetryEvent(event, {
       [TelemetryProperty.KiotaInstalled]: "Yes",
       ...getTriggerFromProperty(args),
     });
     return ok(result);
   }
+}
+
+function validateKiotaInstallation(): boolean {
+  const installed = vscode.extensions.getExtension(KiotaExtensionId);
+  if (!installed) {
+    return false;
+  }
+
+  const kiotaVersion = installed.packageJSON.version;
+  if (!kiotaVersion) {
+    return false;
+  }
+
+  return versionUtil.compare(kiotaVersion, KiotaMinVersion) !== -1;
 }

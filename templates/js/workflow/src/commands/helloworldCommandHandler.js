@@ -8,13 +8,12 @@ class HelloWorldCommandHandler {
   async handleCommandReceived(context, message) {
     console.log(`Bot received message: ${message.text}`);
 
-    // render your adaptive card for reply message
-    const cardData = {
-      title: "Your Hello World Bot is Running",
-      body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
-    };
-
-    const cardJson = new ACData.Template(helloWorldCard).expand({ $root: cardData });
+    const cardJson = new ACData.Template(helloWorldCard).expand({
+      $root: {
+        title: "Your Hello World Bot is Running",
+        body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
+      },
+    });
     return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }

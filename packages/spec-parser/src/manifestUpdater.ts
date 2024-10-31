@@ -24,6 +24,7 @@ import {
   PluginManifestSchema,
   FunctionObject,
   AuthObject,
+  ManifestUtil,
 } from "@microsoft/teams-manifest";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapResponseSemantics } from "./adaptiveCardWrapper";
@@ -40,16 +41,30 @@ export class ManifestUpdater {
   ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
-    manifest.copilotExtensions = manifest.copilotExtensions || {};
-    // Insert plugins in manifest.json if it is plugin for Copilot.
-    if (!options.isGptPlugin) {
-      manifest.copilotExtensions.plugins = [
-        {
-          file: apiPluginRelativePath,
-          id: ConstantString.DefaultPluginId,
-        },
-      ];
-      ManifestUpdater.updateManifestDescription(manifest, spec);
+
+    const useCopilotExtensionsInSchema = await ManifestUtil.useCopilotExtensionsInSchema(manifest);
+    if (manifest.copilotExtensions || useCopilotExtensionsInSchema) {
+      manifest.copilotExtensions = manifest.copilotExtensions || {};
+      if (!options.isGptPlugin) {
+        manifest.copilotExtensions.plugins = [
+          {
+            file: apiPluginRelativePath,
+            id: ConstantString.DefaultPluginId,
+          },
+        ];
+        ManifestUpdater.updateManifestDescription(manifest, spec);
+      }
+    } else {
+      manifest.copilotAgents = manifest.copilotAgents || {};
+      if (!options.isGptPlugin) {
+        (manifest as any).copilotAgents.plugins = [
+          {
+            file: apiPluginRelativePath,
+            id: ConstantString.DefaultPluginId,
+          },
+        ];
+        ManifestUpdater.updateManifestDescription(manifest, spec);
+      }
     }
 
     const appName = this.removeEnvs(manifest.name.short);
@@ -159,7 +174,7 @@ export class ManifestUpdater {
               if (requestBody) {
                 const requestJsonBody = requestBody.content!["application/json"];
                 const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-                if (requestBodySchema.type === "object") {
+                if (Utils.isObjectSchema(requestBodySchema)) {
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
                     ManifestUpdater.checkSchema(schema, method, pathUrl);
@@ -205,10 +220,12 @@ export class ManifestUpdater {
                 try {
                   const { json } = Utils.getResponseJson(operationItem);
                   if (json.schema) {
-                    const [card, jsonPath] =
-                      AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+                    const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(
+                      operationItem,
+                      false,
+                      5
+                    );
 
-                    card.body = Utils.limitACBodyProperties(card.body, 5);
                     const responseSemantic = wrapResponseSemantics(card, jsonPath);
                     funcObj.capabilities = {
                       response_semantics: responseSemantic,

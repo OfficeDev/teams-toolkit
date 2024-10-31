@@ -31,8 +31,8 @@ export async function purifyUserMessage(
   The rephrased message should be clear and concise for developer.
   `;
   const purifyUserMessage = [
+    new LanguageModelChatMessage(LanguageModelChatMessageRole.User, systemPrompt),
     new LanguageModelChatMessage(LanguageModelChatMessageRole.User, userMessagePrompt),
-    new LanguageModelChatMessage(LanguageModelChatMessageRole.System, systemPrompt),
   ];
   const purifiedResult = await getCopilotResponseAsString(
     "copilot-gpt-4",

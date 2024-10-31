@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -17,6 +18,8 @@ import { Conversations } from "botframework-connector/lib/connectorApi/connector
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
+import * as fs from "fs";
+import * as path from "path";
 import { NotificationTargetType } from "../../../../src/conversation/interface";
 import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 import {
@@ -28,7 +31,8 @@ import {
   TeamsBotInstallation,
 } from "../../../../src/conversationWithCloudAdapter/notification";
 import * as utils from "../../../../src/conversation/utils";
-import { TestStorage, TestTarget } from "../conversation/testUtils";
+import { TestTarget } from "../conversation/testUtils";
+import { DefaultConversationReferenceStore } from "../../../../src/conversation/storage";
 
 chaiUse(chaiPromises);
 
@@ -394,7 +398,6 @@ describe("Notification Tests - Node", () => {
       content = "";
       activityResponse = {};
       turnError = undefined;
-      const fakeBotAppId = "fakeBotAppId";
       const stubAdapter = sandbox.createStubInstance(CloudAdapter);
       (
         stubAdapter.continueConversationAsync as unknown as sinon.SinonStub<
@@ -629,24 +632,6 @@ describe("Notification Tests - Node", () => {
       assert.strictEqual(continuationToken, "token");
     });
 
-    it("members should return correct members", async () => {
-      sandbox.stub(TeamsInfo, "getPagedMembers").resolves({
-        continuationToken: undefined as unknown as string,
-        members: [{} as TeamsChannelAccount, {} as TeamsChannelAccount],
-      });
-      const conversationRef = {
-        conversation: {
-          conversationType: "channel",
-        },
-      };
-      const fakeBotAppId = "fakeBotAppId";
-      const installation = new TeamsBotInstallation(adapter, conversationRef as any, fakeBotAppId);
-      assert.strictEqual(installation.type, NotificationTargetType.Channel);
-      assert.isTrue(installation.type === "Channel");
-      const members = await installation.members();
-      assert.strictEqual(members.length, 2);
-    });
-
     it("getTeamDetails should return correct team details", async () => {
       sandbox.stub(utils, "getTeamsBotInstallationId").returns("test");
       sandbox
@@ -680,15 +665,27 @@ describe("Notification Tests - Node", () => {
 
 describe("Notification Bot Tests - Node", () => {
   const sandbox = sinon.createSandbox();
+  const fileDir = "./test/";
+  const localFileName = ".notification.localstore.json";
+  const filePath = path.join(fileDir, localFileName);
+  const rawData = {
+    _a_1: {
+      channelId: "1",
+      conversation: {
+        conversationType: "channel",
+        id: "1",
+        tenantId: "a",
+      },
+    },
+  };
   let adapter: CloudAdapter;
-  let storage: TestStorage;
+  let store: DefaultConversationReferenceStore;
   let middlewares: any[];
 
   beforeEach(() => {
     middlewares = [];
     const stubContext = sandbox.createStubInstance(TurnContext);
     const stubAdapter = sandbox.createStubInstance(CloudAdapter);
-    const fakeBotAppId = "fakeBotAppId";
     stubAdapter.use.callsFake((args) => {
       middlewares.push(args);
       return stubAdapter;
@@ -702,15 +699,18 @@ describe("Notification Bot Tests - Node", () => {
       await logic(stubContext);
     });
     adapter = stubAdapter;
-    storage = new TestStorage();
+    store = new DefaultConversationReferenceStore(fileDir);
   });
 
   afterEach(() => {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
     sandbox.restore();
   });
 
   it("initialize notification should create correct middleware", () => {
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    new NotificationBot(adapter, { store });
     assert.strictEqual(middlewares.length, 1);
     assert.isTrue(middlewares[0] instanceof NotificationMiddleware);
   });
@@ -720,57 +720,32 @@ describe("Notification Bot Tests - Node", () => {
       return new Promise((resolve) => resolve({ continuationToken: "", members: [] }));
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify({
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            id: "1",
+            tenantId: "a",
+          },
         },
-      },
-      _a_2: {
-        channelId: "2",
-        conversation: {
-          id: "2",
-          tenantId: "a",
+        _a_2: {
+          channelId: "2",
+          conversation: {
+            id: "2",
+            tenantId: "a",
+          },
         },
-      },
-    };
+      })
+    );
     const { data: installations, continuationToken } =
       await notificationBot.getPagedInstallations();
     assert.strictEqual(installations.length, 2);
     assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
     assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
     assert.strictEqual(continuationToken, "");
-  });
-
-  it("installations should return correct targets", async () => {
-    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
-      return new Promise((resolve) => resolve({ continuationToken: "", members: [] }));
-    });
-
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-      _a_2: {
-        channelId: "2",
-        conversation: {
-          id: "2",
-          tenantId: "a",
-        },
-      },
-    };
-    const installations = await notificationBot.installations();
-    assert.strictEqual(installations.length, 2);
-    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
-    assert.strictEqual(installations[1].conversationReference.conversation?.id, "2");
   });
 
   it("getPagedInstallations should remove invalid target", async () => {
@@ -782,19 +757,13 @@ describe("Notification Bot Tests - Node", () => {
       };
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
+    const notificationBot = new NotificationBot(adapter, { store });
+
+    fs.writeFileSync(filePath, JSON.stringify(rawData));
     const { data: installations } = await notificationBot.getPagedInstallations();
+    const removedData = JSON.parse(fs.readFileSync(filePath, "utf8"));
     assert.strictEqual(installations.length, 0);
-    assert.deepStrictEqual(storage.items, {});
+    assert.deepStrictEqual(removedData, {});
   });
 
   it("getPagedInstallations should skip validation", async () => {
@@ -806,56 +775,18 @@ describe("Notification Bot Tests - Node", () => {
       };
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(filePath, JSON.stringify(rawData));
+
     const { data: installations } = await notificationBot.getPagedInstallations(
       undefined,
       undefined,
       false
     );
+    const fileData = JSON.parse(fs.readFileSync(filePath, "utf8"));
     assert.strictEqual(installations.length, 1);
     assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
-    assert.deepStrictEqual(storage.items, {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    });
-  });
-
-  it("installations should remove invalid target", async () => {
-    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
-      throw {
-        name: "test",
-        message: "test",
-        code: "BotNotInConversationRoster",
-      };
-    });
-
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
-    const installations = await notificationBot.installations();
-    assert.strictEqual(installations.length, 0);
-    assert.deepStrictEqual(storage.items, {});
+    assert.deepStrictEqual(fileData, rawData);
   });
 
   it("getPagedInstallations should keep valid target", async () => {
@@ -867,61 +798,15 @@ describe("Notification Bot Tests - Node", () => {
       };
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(filePath, JSON.stringify(rawData));
+
     const { data: installations } = await notificationBot.getPagedInstallations();
+    const fileData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+
     assert.strictEqual(installations.length, 1);
     assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
-    assert.deepStrictEqual(storage.items, {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    });
-  });
-
-  it("installations should keep valid target", async () => {
-    sandbox.stub(TeamsInfo, "getPagedMembers").callsFake((ctx, pageSize, continuationToken) => {
-      throw {
-        name: "test",
-        message: "test",
-        code: "Throttled",
-      };
-    });
-
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
-    const installations = await notificationBot.installations();
-    assert.strictEqual(installations.length, 1);
-    assert.strictEqual(installations[0].conversationReference.conversation?.id, "1");
-    assert.deepStrictEqual(storage.items, {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    });
+    assert.deepStrictEqual(fileData, rawData);
   });
 
   it("findMember should return correct member", async () => {
@@ -939,17 +824,8 @@ describe("Notification Bot Tests - Node", () => {
       );
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          conversationType: "channel",
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(filePath, JSON.stringify(rawData));
 
     const member = await notificationBot.findMember((m) =>
       Promise.resolve(m.account.name === "foo")
@@ -967,7 +843,7 @@ describe("Notification Bot Tests - Node", () => {
       );
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    const notificationBot = new NotificationBot(adapter, { store });
     const member = await notificationBot.findMember((m) =>
       Promise.resolve(m.account.name === "NotFound")
     );
@@ -994,17 +870,20 @@ describe("Notification Bot Tests - Node", () => {
       );
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          conversationType: "channel",
-          id: "1",
-          tenantId: "a",
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify({
+        _a_1: {
+          channelId: "1",
+          conversation: {
+            conversationType: "channel",
+            id: "1",
+            tenantId: "a",
+          },
         },
-      },
-    };
+      })
+    );
 
     const members = await notificationBot.findAllMembers((m) =>
       Promise.resolve(m.account.email?.endsWith("contoso.com") === true)
@@ -1025,17 +904,8 @@ describe("Notification Bot Tests - Node", () => {
       );
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          conversationType: "channel",
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(filePath, JSON.stringify(rawData));
 
     const channel = await notificationBot.findChannel((c) => Promise.resolve(c.info.id === "1"));
     assert.strictEqual(channel?.info.id, "1");
@@ -1054,17 +924,8 @@ describe("Notification Bot Tests - Node", () => {
       );
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
-    storage.items = {
-      _a_1: {
-        channelId: "1",
-        conversation: {
-          conversationType: "channel",
-          id: "1",
-          tenantId: "a",
-        },
-      },
-    };
+    const notificationBot = new NotificationBot(adapter, { store });
+    fs.writeFileSync(filePath, JSON.stringify(rawData));
 
     const channels = await notificationBot.findAllChannels((channel, team) =>
       Promise.resolve(team?.id === "test")
@@ -1085,7 +946,7 @@ describe("Notification Bot Tests - Node", () => {
       );
     });
 
-    const notificationBot = new NotificationBot(adapter, { storage: storage });
+    const notificationBot = new NotificationBot(adapter, { store });
     const channel = await notificationBot.findChannel((c) =>
       Promise.resolve(c.info.id === "NotFound")
     );
@@ -1101,7 +962,7 @@ describe("Notification Bot Tests - Node", () => {
         tenantId: "a",
       },
     } as ConversationReference;
-    const notificationBot = new NotificationBot(adapter, { storage });
+    const notificationBot = new NotificationBot(adapter, { store });
     const installation = notificationBot.buildTeamsBotInstallation(reference);
     assert.isNotNull(installation);
   });

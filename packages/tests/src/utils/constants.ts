@@ -406,6 +406,8 @@ export enum LocalDebugTaskLabel {
 
 export class LocalDebugTaskResult {
   static readonly FrontendSuccess = "Compiled successfully";
+  static readonly FrontendReady = "ready";
+  static readonly FrontendNoIssue = "webpack compiled";
   static readonly StartSuccess = "started successfully";
   static readonly AzuriteSuccess = "Azurite Table service is successfully";
   static readonly CompiledSuccess = "Found 0 errors";
@@ -418,6 +420,7 @@ export class LocalDebugTaskResult {
   static readonly WebServerSuccess = "press h to show help";
   static readonly DockerFinish = "press any key to close it";
   static readonly DevtunnelSuccess = "Ready to accept connections for tunnel:";
+  static readonly FunctionStarted = "Worker process started and initialized";
 }
 
 export enum LocalDebugTaskLabel2 {
@@ -463,7 +466,7 @@ export class Notification {
 }
 
 export class CreateProjectQuestion {
-  static readonly CustomCopilot = "Custom Engine Copilot";
+  static readonly CustomCopilot = "Custom Engine Agent";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";

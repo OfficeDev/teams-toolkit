@@ -15,12 +15,8 @@
             "sample-localdebug-query-org",
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
-            "basic-tab-debug-upgrade-debug",
-            "bot-debug-upgrade-debug",
-            "bot-upgrade-debug",
             "sample-remotedebug-todo-list-with-spfx",
             "sample-remotedebug-todo-list-with-m365",
-            "sample-localdebug-react-retail-dashboard",
             "sample-localdebug-spfx-productivity-dashboard",
             "sample-remotedebug-react-retail-dashboard",
             "sample-remotedebug-spfx-productivity-dashboard",
@@ -75,8 +71,7 @@
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
             "sample-localdebug-contact-exporter",
-            "sample-localdebug-hello-world-meeting",
-            "basic-tab-upgrade-debug"
+            "sample-localdebug-hello-world-meeting"
         ]
     },
     {
@@ -100,9 +95,7 @@
             "sample-remotedebug-assistant-dashboard",
             "sample-remotedebug-hello-world-tab-outlook",
             "sample-remotedebug-bot-sso",
-            "sample-remotedebug-sso-tab-via-apim-proxy",
-            "basic-tab-upgrade-provision-debug",
-            "bot-upgrade-provision-debug"
+            "sample-remotedebug-sso-tab-via-apim-proxy"
         ]
     },
     {
@@ -128,10 +121,9 @@
             "sample-remotedebug-bot-sso-docker",
             "sample-localdebug-hello-world-tab-docker",
             "sample-remotedebug-hello-world-tab-docker",
-            "basic-tab-provision-upgrade-provision-debug",
-            "bot-provision-upgrade-provision-debug",
             "sample-localdebug-todo-list-with-spfx",
-            "sample-localdebug-todo-list-with-m365"
+            "sample-localdebug-todo-list-with-m365",
+            "sample-localdebug-react-retail-dashboard"
         ]
     },
     {

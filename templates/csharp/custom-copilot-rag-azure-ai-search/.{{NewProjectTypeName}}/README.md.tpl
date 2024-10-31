@@ -22,9 +22,9 @@ This app template also demonstrates usage of techniques like:
 ## Create your Azure AI Search document index 
 **Before running or debugging your bot, please follow these steps to create your document index in Auzre AI Search.**
 
-> This app template provides script `Indexer.ps1` to help create assistant. You can change the instructions and settings in the script to customize the document index.
+> This app template provides script `Indexer.ps1` to help create document index. You can change the instructions and settings in the script to customize the document index.
 {{#useOpenAI}}
-1. Make sure your OpenAI and Azure AI search settings in `appsettings.TestTool.json`.
+1. Ensure your OpenAI and Azure AI search settings filled in `appsettings.TestTool.json`.
     ```
     "OpenAI": {
       "ApiKey": "<your-openai-api-key>",
@@ -37,12 +37,12 @@ This app template also demonstrates usage of techniques like:
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. Make sure your Azure OpenAI and Azure AI search settings in `appsettings.TestTool.json`.
+1. Ensure your Azure OpenAI and Azure AI search settings filled in `appsettings.TestTool.json`.
     ```
     "Azure": {
       "OpenAIApiKey": "<your-azure-openai-api-key>",
       "OpenAIEndpoint": "<your-azure-openai-endpoint>",
-      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>"
+      "OpenAIDeploymentName": "<your-azure-openai-deployment-name>",
       "OpenAIEmbeddingDeploymentName": "<your-azure-openai-embedding-deployment-name>",
       "AISearchApiKey": "<your-azure-ai-search-api-key>",
       "AISearchEndpoint": "<your-azure-ai-search-endpoint>"
@@ -55,10 +55,20 @@ This app template also demonstrates usage of techniques like:
    ```
 1. Once you're done using the sample it's good practice to delete the index. You can do so with the `. ./Indexer.ps1 -run delete`.
 
+### Debug bot app in Teams App Test Tool
+1. Create your Azure AI Search document index as mentioned above.
+1. Select `Teams App Test Tool (browser)` in debug dropdown menu.
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
+1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response.
+
+**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+
+![RAG Bot](https://github.com/OfficeDev/TeamsFx/assets/13211513/f56e7602-a5d3-436a-ae01-78546d61717d)
+
 ### Debug bot app in Teams Web Client
 1. Create your Azure AI Search document index as mentioned above.
 {{#useOpenAI}}
-1. Make sure your OpenAI and Azure AI search settings in `env/.env.local.user`.
+1. Ensure your OpenAI and Azure AI search settings filled in `env/.env.local.user`.
     ```
     SECRET_OPENAI_API_KEY="<your-openai-api-key>"
     OPENAI_EMBEDDING_MODEL="<your-openai-embedding-model>"
@@ -67,7 +77,7 @@ This app template also demonstrates usage of techniques like:
     ```
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. Make sure your Azure OpenAI and Azure AI search settings in `env/.env.local.user`.
+1. Ensure your Azure OpenAI and Azure AI search settings filled in `env/.env.local.user`.
     ```
     SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
     AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
@@ -80,22 +90,12 @@ This app template also demonstrates usage of techniques like:
 1. Create your Azure AI Search document index as mentioned above.
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel.
 1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies.
-1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to
+1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
 1. In the launched browser, select the Add button to load the app in Teams.
 1. In the chat bar, type and send anything to your bot to trigger a response.
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
-
-### Debug bot app in Teams App Test Tool
-1. Create your Azure AI Search document index as mentioned above.
-1. Select `Teams App Test Tool (browser)` in debug dropdown menu.
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
-1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response.
-
-**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
-
-![RAG Bot](https://github.com/OfficeDev/TeamsFx/assets/13211513/f56e7602-a5d3-436a-ae01-78546d61717d)
 
 ## Extend the template
 

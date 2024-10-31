@@ -39,7 +39,7 @@ export class UpdateApiKeyDriver implements StepDriver {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       this.validateArgs(args);
 
-      const domain = await getDomain(args, context);
+      const domain = await getDomain(args, context, actionName);
       validateDomain(domain, actionName);
 
       const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({

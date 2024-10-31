@@ -223,7 +223,7 @@ async function generateAccountHint(includeTenantId = true): Promise<string> {
     }
   }
   if (includeTenantId && tenantId) {
-    return loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+    return loginHint ? `tenantId=${tenantId}&appTenantId=${tenantId}&login_hint=${loginHint}` : "";
   } else {
     return loginHint ? `login_hint=${loginHint}` : "";
   }

@@ -66,6 +66,7 @@ export class LaunchHelper {
         url = new URL(baseUrl);
         const tid = await this.getTidFromToken();
         if (tid) {
+          url.searchParams.append("tenantId", tid);
           url.searchParams.append("appTenantId", tid);
         }
         break;

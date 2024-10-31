@@ -12,7 +12,7 @@ import { CaseFactory } from "./sampleCaseFactory";
 
 class DashboardTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
-    return await validateDashboardTab(page);
+    return await validateDashboardTab(page, true);
   }
 }
 

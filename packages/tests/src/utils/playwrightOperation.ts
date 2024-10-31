@@ -13,6 +13,7 @@ import { dotenvUtil } from "./envUtil";
 import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
 import { Env } from "./env";
 import { VSBrowser } from "vscode-extension-tester";
+import { log } from "console";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -2316,47 +2317,49 @@ export async function validateBasicDashboardTab(page: Page) {
   }
 }
 
-export async function validateDashboardTab(page: Page) {
+export async function validateDashboardTab(page: Page, loginConsent = false) {
   try {
-    await RetryHandler.retry(async () => {
-      console.log("Before popup");
-      const popup = await page.waitForEvent("popup");
-      console.log("after popup");
-      if (popup && !popup?.isClosed()) {
-        await popup
-          .click('button:has-text("Reload")', {
-            timeout: Timeout.playwrightConsentPageReload,
-          })
-          .catch(() => {});
-        console.log("click Accept button");
-        await page.waitForTimeout(Timeout.longTimeWait);
-        try {
-          // input password
-          console.log(`fill in password`);
-          await popup.fill(
-            "input.input[type='password'][name='passwd']",
-            Env.password
-          );
-          // sign in
-          await Promise.all([
-            popup.click("input.button[type='submit'][value='Sign in']"),
-            popup.waitForNavigation(),
-          ]);
-          await popup.click("input.button[type='submit'][value='Accept']");
+    if (loginConsent) {
+      await RetryHandler.retry(async () => {
+        console.log("Before popup");
+        const popup = await page.waitForEvent("popup");
+        console.log("after popup");
+        if (popup && !popup?.isClosed()) {
+          await popup
+            .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          console.log("click Accept button");
+          await page.waitForTimeout(Timeout.longTimeWait);
           try {
-            await popup?.close();
+            // input password
+            console.log(`fill in password`);
+            await popup.fill(
+              "input.input[type='password'][name='passwd']",
+              Env.password
+            );
+            // sign in
+            await Promise.all([
+              popup.click("input.button[type='submit'][value='Sign in']"),
+              popup.waitForNavigation(),
+            ]);
+            await popup.click("input.button[type='submit'][value='Accept']");
+            try {
+              await popup?.close();
+            } catch (error) {
+              console.log("popup is closed");
+            }
           } catch (error) {
-            console.log("popup is closed");
+            await popup.screenshot({
+              path: getPlaywrightScreenshotPath("login_error"),
+              fullPage: true,
+            });
+            throw error;
           }
-        } catch (error) {
-          await popup.screenshot({
-            path: getPlaywrightScreenshotPath("login_error"),
-            fullPage: true,
-          });
-          throw error;
         }
-      }
-    });
+      });
+    }
     console.log("start to verify dashboard tab");
     await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(

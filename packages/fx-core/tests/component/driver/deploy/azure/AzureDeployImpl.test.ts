@@ -344,7 +344,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
         resourceGroupName: string,
         name: string
       ): Promise<WebAppsListPublishingCredentialsResponse> {
-        throw new RestError("test message", "111", 500);
+        throw new RestError("test message", { statusCode: 500 });
       },
     };
     const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");
@@ -548,7 +548,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
         resourceGroupName: string,
         name: string
       ): Promise<WebAppsListPublishingCredentialsResponse> {
-        throw new RestError("test message", "111", 500);
+        throw new RestError("test message", { statusCode: 500 });
       },
     };
     const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");

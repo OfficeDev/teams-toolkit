@@ -97,7 +97,7 @@ export default class ServerAzureAccountProvider implements AzureAccountProvider 
     return JSON.parse(result.value);
   }
 
-  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+  switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
     throw new NotImplementedError("FxServer", `azure/switchTenant`);
   }
 

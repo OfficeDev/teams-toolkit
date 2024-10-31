@@ -42,6 +42,7 @@
     "@microsoft/teams-manifest": "workspace:*",
     "fs-extra": "^11.2.0",
     "js-yaml": "^4.1.0",
+    "json-schema-faker": "^0.5.6",
     "openapi-types": "^7.2.3",
     "swagger2openapi": "^7.0.8"
   },

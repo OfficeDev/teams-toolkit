@@ -95,8 +95,10 @@ export class CodeFlowLogin {
 
       if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
         const tenantCache = await loadTenantId(this.accountName);
-        const allAccounts = await this.msalTokenCache.getAllAccounts();
-        this.account = allAccounts.find((account) => account.tenantId == tenantCache);
+        if (tenantCache) {
+          const allAccounts = await this.msalTokenCache.getAllAccounts();
+          this.account = allAccounts.find((account) => account.tenantId == tenantCache);
+        }
       }
     } else if (this.status !== loggingIn) {
       this.account = undefined;

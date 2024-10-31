@@ -624,8 +624,8 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
 
       // Select trigger
-      // Unselect restify http trigger
-      // await selectQuickPickWithRegex(/(HTTP Trigger.*Restify Server)|(Restify Server.*HTTP Trigger)/);
+      // Unselect express http trigger
+      // await selectQuickPickWithRegex(/(HTTP Trigger.*Express Server)|(Express Server.*HTTP Trigger)/);
       // Select Functions http trigger
       await selectQuickPickWithRegex(
         /(HTTP Trigger.*Azure Functions)|(Azure Functions.*HTTP Trigger)/
@@ -640,7 +640,7 @@ export async function createNewProject(
       await input.selectQuickPick("Chat Notification Message");
       await driver.sleep(Timeout.input);
       // Select trigger
-      // HTTP Trigger Azure Restify, the default is Restify http trigger, no action needed.
+      // HTTP Trigger Azure Express, the default is Express http trigger, no action needed.
       await input.confirm();
 
       // Choose programming language

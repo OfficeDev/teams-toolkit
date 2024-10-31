@@ -64,15 +64,15 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Remote debug for restify notification project Tests",
+    "[auto] [Typescript] Remote debug for express notification bot project Tests",
     {
-      testPlanCaseId: 14112917,
+      testPlanCaseId: 14483095,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("restnoti", appName);
-      validateFileExist(projectPath, "src/index.js");
+      await createNewProject("restnoti", appName, { lang: "TypeScript" });
+      validateFileExist(projectPath, "src/index.ts");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(

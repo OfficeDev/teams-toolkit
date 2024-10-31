@@ -58,7 +58,7 @@ export class FeatureFlags {
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
   static readonly OfficeMetaOS = {
     name: FeatureFlagName.OfficeMetaOS,
-    defaultValue: "true",
+    defaultValue: "false",
   };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,

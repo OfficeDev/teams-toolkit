@@ -12,7 +12,6 @@ import fs from "fs";
 import { dotenvUtil } from "./envUtil";
 import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
 import { Env } from "./env";
-import { VSBrowser } from "vscode-extension-tester";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -221,7 +220,6 @@ export async function initPage(
       console.log("No Open App button");
     }
     console.log("[success] app loaded");
-    // await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;
@@ -421,17 +419,6 @@ export async function initTeamsPage(
       try {
         addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
       } catch {
-        // try {
-        //   addInBtn = await page?.waitForSelector(
-        //     "button>span:has-text('Open')"
-        //   );
-        // } catch {
-        //   await page.screenshot({
-        //     path: getPlaywrightScreenshotPath("add_page"),
-        //     fullPage: true,
-        //   });
-        //   throw "error to add app";
-        // }
         throw "error to add app";
       }
       await addInBtn?.click();
@@ -518,7 +505,6 @@ export async function initTeamsPage(
           console.log("No save button to click");
         }
       }
-      // await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");
     });
 

@@ -179,6 +179,22 @@ describe("onSwitchAzureTenant", () => {
     }
   });
 
+  it("User cancelled", async () => {
+    sandbox.stub(azureAccountManager, "getIdentityCredentialAsync").resolves({
+      getToken: () => {
+        return Promise.resolve(null);
+      },
+    });
+    selectOptionStub = sandbox
+      .stub(vsc_ui.VS_CODE_UI, "selectOption")
+      .resolves(err(new UserCancelError()));
+
+    await onSwitchAzureTenant(TelemetryTriggerFrom.SideBar);
+
+    chai.assert.isTrue(sendTelemetryEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+  });
+
   it("Failed to switch tenant", async () => {
     sandbox.stub(azureAccountManager, "getIdentityCredentialAsync").resolves({
       getToken: () => {

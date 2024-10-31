@@ -61,14 +61,14 @@ export async function openReadMeHandler(...args: unknown[]) {
       const content = await fs.readFile(uri.fsPath, "utf8");
       if (content.includes("## Get Started with the Notification bot")) {
         // A notification bot project.
-        if (content.includes("restify")) {
-          // Restify server notification bot.
+        if (content.includes("express")) {
+          // Express server notification bot.
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
             [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto,
             [TelemetryProperty.Interaction]: InProductGuideInteraction.Open,
-            [TelemetryProperty.Identifier]: PanelType.RestifyServerNotificationBotReadme,
+            [TelemetryProperty.Identifier]: PanelType.ExpressServerNotificationBotReadme,
           });
-          WebviewPanel.createOrShow(PanelType.RestifyServerNotificationBotReadme);
+          WebviewPanel.createOrShow(PanelType.ExpressServerNotificationBotReadme);
         } else {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
             [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto,

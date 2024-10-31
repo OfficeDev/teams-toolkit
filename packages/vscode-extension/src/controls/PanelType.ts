@@ -6,5 +6,5 @@ export enum PanelType {
   RespondToCardActions = "respond-to-card-actions",
   AccountHelp = "account-help",
   FunctionBasedNotificationBotReadme = "function-based-notification-bot-readme",
-  RestifyServerNotificationBotReadme = "restify-server-notification-bot-readme",
+  ExpressServerNotificationBotReadme = "express-server-notification-bot-readme",
 }

@@ -635,7 +635,7 @@ export async function createNewProject(
       await input.selectQuickPick(lang);
       break;
     }
-    case "restnoti": {
+    case "expressnoti": {
       await input.selectQuickPick(CreateProjectQuestion.Bot);
       await input.selectQuickPick("Chat Notification Message");
       await driver.sleep(Timeout.input);

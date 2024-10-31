@@ -349,7 +349,7 @@ export type AppType =
   | "bot"
   | "crbot" // command and response bot (name cannot be too long or it will exceed teams app name limit)
   | "funcnoti" // functions notification bot
-  | "restnoti" // express notification bot
+  | "expressnoti" // express notification bot
   | "msg"
   | "msgsa"
   | "m365lp"

@@ -38,7 +38,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("restnoti");
+    remoteDebugTestContext = new RemoteDebugTestContext("expressnoti");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -71,7 +71,7 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("restnoti", appName);
+      await createNewProject("expressnoti", appName);
       validateFileExist(projectPath, "src/index.js");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);

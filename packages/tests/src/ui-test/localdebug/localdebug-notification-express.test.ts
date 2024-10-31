@@ -29,7 +29,7 @@ describe("Express Notification Bot Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("restNoti");
+    localDebugTestContext = new LocalDebugTestContext("expressnoti");
     await localDebugTestContext.before();
   });
 

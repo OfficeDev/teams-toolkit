@@ -2334,6 +2334,11 @@ export async function validateDashboardTab(page: Page) {
           path: getPlaywrightScreenshotPath("popup"),
           fullPage: true,
         });
+        VSBrowser.instance.sleep(40* 1000)
+        await popup.screenshot({
+          path: getPlaywrightScreenshotPath("popup2"),
+          fullPage: true,
+        });
         await popup.click("input.button[type='submit'][value='Accept']");
       }
     })

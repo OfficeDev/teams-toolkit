@@ -2343,6 +2343,7 @@ export async function validateDashboardTab(page: Page) {
             path: getPlaywrightScreenshotPath("popup"),
             fullPage: true,
           });
+        console.log("click Accept button");
         await popup.click("input.button[type='submit'][value='Accept']");
       }
     })

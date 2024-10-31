@@ -948,11 +948,11 @@ interface HostTypeTriggerOptionItem extends OptionItem {
 export class NotificationTriggerOptions {
   static appService(): HostTypeTriggerOptionItem {
     return {
-      id: "http-restify",
+      id: "http-express",
       hostType: HostType.AppService,
-      label: getLocalizedString("plugins.bot.triggers.http-restify.label"),
-      description: getLocalizedString("plugins.bot.triggers.http-restify.description"),
-      detail: getLocalizedString("plugins.bot.triggers.http-restify.detail"),
+      label: getLocalizedString("plugins.bot.triggers.http-express.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-express.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-express.detail"),
     };
   }
   static appServiceForVS(): HostTypeTriggerOptionItem {

@@ -58,9 +58,9 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     shortName: "t",
     description: "Specifies the trigger for `Chat Notification Message` app template.",
-    default: "http-restify",
+    default: "http-express",
     choices: [
-      "http-restify",
+      "http-express",
       "http-webapi",
       "http-and-timer-functions",
       "http-functions",

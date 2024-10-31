@@ -159,6 +159,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             }
           });
       }
+      if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+        await saveTenantId(azureCacheName, session.id.split("/")[0]);
+      }
       const credential: TokenCredential = {
         // eslint-disable-next-line @typescript-eslint/require-await
         getToken: async () => {
@@ -364,10 +367,31 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * list all subscriptions
    */
-  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+  async listAllSubscriptions(): Promise<SubscriptionInfo[]> {
     const arr: SubscriptionInfo[] = [];
     if (await this.isUserLogin()) {
       const subs = await this.vscodeAzureSubscriptionProvider.getSubscriptions();
+      for (let i = 0; i < subs.length; ++i) {
+        const item = subs[i];
+        arr.push({
+          subscriptionId: item.subscriptionId,
+          tenantId: item.tenantId,
+          subscriptionName: item.name,
+        });
+      }
+    }
+
+    return arr;
+  }
+
+  /**
+   * List subscriptions under current tenant
+   */
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    const arr: SubscriptionInfo[] = [];
+    if (await this.isUserLogin()) {
+      const tenantId = await loadTenantId(azureCacheName);
+      const subs = await this.vscodeAzureSubscriptionProvider.getSubscriptions(tenantId);
       for (let i = 0; i < subs.length; ++i) {
         const item = subs[i];
         arr.push({
@@ -519,6 +543,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const config: SingleSelectConfig = {
         name: localize("teamstoolkit.azureLogin.subscription"),
         title: localize("teamstoolkit.azureLogin.selectSubscription"),
+        placeholder: localize("teamstoolkit.azurelogin.selectSubscription.placeholder"),
         options: options,
       };
       const result = await VS_CODE_UI.selectOption(config);

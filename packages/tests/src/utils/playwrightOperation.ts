@@ -2355,7 +2355,6 @@ export async function validateDashboardTab(page: Page) {
           });
           throw error;
         }
-        await popup.click("input.button[type='submit'][value='Accept']");
       }
     });
     console.log("start to verify dashboard tab");

@@ -161,7 +161,7 @@
   "plugins.bot.triggers.http-and-timer-functions.detail": "A function running on Azure Functions can respond to HTTP requests based on a specific schedule.",
   "plugins.bot.triggers.http-and-timer-functions.label": "HTTP and Timer Trigger",
   "plugins.bot.triggers.http-express.description": "Express Server",
-  "plugins.bot.triggers.http-express.detail": "A express server running on Azure App Service can respond to HTTP requests.",
+  "plugins.bot.triggers.http-express.detail": "An express server running on Azure App Service can respond to HTTP requests.",
   "plugins.bot.triggers.http-express.label": "HTTP Trigger",
   "plugins.bot.triggers.http-webapi.description": "Web API Server",
   "plugins.bot.triggers.http-webapi.detail": "A Web API server running on Azure App Service can respond to HTTP requests.",

@@ -182,7 +182,7 @@ export enum Capability {
 
 export enum Trigger {
   Http = "http-functions",
-  Restify = "http-restify",
+  Express = "http-express",
   Timmer = "timer-functions",
 }
 
@@ -349,7 +349,7 @@ export type AppType =
   | "bot"
   | "crbot" // command and response bot (name cannot be too long or it will exceed teams app name limit)
   | "funcnoti" // functions notification bot
-  | "restnoti" // restify notification bot
+  | "expressnoti" // express notification bot
   | "msg"
   | "msgsa"
   | "m365lp"

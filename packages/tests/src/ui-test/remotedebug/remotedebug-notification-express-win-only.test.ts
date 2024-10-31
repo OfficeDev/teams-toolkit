@@ -38,7 +38,7 @@ describe("Remote debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    remoteDebugTestContext = new RemoteDebugTestContext("restnoti");
+    remoteDebugTestContext = new RemoteDebugTestContext("expressnoti");
     testRootFolder = remoteDebugTestContext.testRootFolder;
     appName = remoteDebugTestContext.appName;
     newAppFolderName = appName + appNameCopySuffix;
@@ -64,15 +64,15 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] [Typescript] Remote debug for restify notification bot project Tests",
+    "[auto] Remote debug for express notification project Tests",
     {
-      testPlanCaseId: 14483095,
+      testPlanCaseId: 14112917,
       author: "v-helzha@microsoft.com",
     },
     async function () {
       const driver = VSBrowser.instance.driver;
-      await createNewProject("restnoti", appName, { lang: "TypeScript" });
-      validateFileExist(projectPath, "src/index.ts");
+      await createNewProject("expressnoti", appName);
+      validateFileExist(projectPath, "src/index.js");
       await provisionProject(appName, projectPath);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(

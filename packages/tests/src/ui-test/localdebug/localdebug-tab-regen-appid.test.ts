@@ -59,7 +59,7 @@ describe("Local Debug Tests", function () {
 
       await waitForTerminal(
         LocalDebugTaskLabel.StartApplication,
-        "restify listening to"
+        "app listening to"
       );
 
       await stopDebugging();
@@ -80,13 +80,13 @@ describe("Local Debug Tests", function () {
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "restify listening to"
+          "app listening to"
         );
         // check if there is error "Could not attach to main target"
         await driver.sleep(Timeout.startdebugging);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "restify listening to"
+          "app listening to"
         );
       } catch {
         try {
@@ -114,13 +114,13 @@ describe("Local Debug Tests", function () {
           await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
+            "app listening to"
           );
           // check if there is error "Debug Anyway"
           await driver.sleep(Timeout.startdebugging);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
+            "app listening to"
           );
         } catch {
           console.log(`Try to click "Debug Anyway" button for error dialog`);
@@ -130,7 +130,7 @@ describe("Local Debug Tests", function () {
           await driver.sleep(Timeout.shortTimeLoading);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
+            "app listening to"
           );
         }
       }

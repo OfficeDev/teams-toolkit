@@ -45,7 +45,7 @@ export type CliCapabilities =
   | "BotAndMessageExtension"
   | "TabNonSsoAndBot";
 export type CliTriggerType =
-  | "http-restify"
+  | "http-express"
   | "http-functions"
   | "http-and-timer-functions"
   | "timer-functions";

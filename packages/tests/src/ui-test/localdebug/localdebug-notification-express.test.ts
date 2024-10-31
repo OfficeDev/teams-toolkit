@@ -21,7 +21,7 @@ import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
 
 // TODO: Change preview test to normal test before rc release
-describe("Restify Notification Bot Local Debug Tests", function () {
+describe("Express Notification Bot Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
 
@@ -29,9 +29,7 @@ describe("Restify Notification Bot Local Debug Tests", function () {
   beforeEach(async function () {
     // ensure workbench is ready
     this.timeout(Timeout.prepareTestCase);
-    localDebugTestContext = new LocalDebugTestContext("restNoti", {
-      lang: "typescript",
-    });
+    localDebugTestContext = new LocalDebugTestContext("expressnoti");
     await localDebugTestContext.before();
   });
 
@@ -42,9 +40,9 @@ describe("Restify Notification Bot Local Debug Tests", function () {
   });
 
   it(
-    "[auto] [Typescript] Local debug Restify Notification Bot App",
+    "[auto] Local debug Express Notification Bot App",
     {
-      testPlanCaseId: 15277322,
+      testPlanCaseId: 13999815,
       author: "aochengwang@microsoft.com",
     },
     async function () {
@@ -52,7 +50,7 @@ describe("Restify Notification Bot Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "src/index.ts");
+      validateFileExist(projectPath, "src/index.js");
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 

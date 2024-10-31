@@ -13,6 +13,7 @@ import * as tools from "../../../../src/common/utils";
 import {
   convertScriptErrorToFxError,
   defaultShell,
+  executeCommand,
   getStderrHandler,
   parseSetOutputCommand,
   scriptDriver,
@@ -89,7 +90,19 @@ describe("Script Driver test", () => {
     assert.isTrue(res instanceof ScriptExecutionError);
   });
 });
-
+describe("executeCommand", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("dotnet command", async () => {
+    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
+    const stub = sandbox.stub(child_process, "exec").returns({} as any);
+    stub.yields(null);
+    await executeCommand("dotnet test", "./", new TestLogProvider(), new MockUserInteraction());
+    assert.isTrue(stub.calledOnce);
+  });
+});
 describe("getSystemEncoding", () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {

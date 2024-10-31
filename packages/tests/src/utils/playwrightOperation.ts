@@ -221,7 +221,7 @@ export async function initPage(
       console.log("No Open App button");
     }
     console.log("[success] app loaded");
-    await page.waitForTimeout(Timeout.longTimeWait);
+    // await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;
@@ -2320,19 +2320,8 @@ export async function validateDashboardTab(page: Page) {
   try {
     await RetryHandler.retry(async () => {
       console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup)
-          )
-          .catch(() => {}),
-        VSBrowser.instance.driver.sleep(30 * 1000),
-      ]);
+      const popup = await page
+      .waitForEvent("popup");
       console.log("after popup");
       if (popup && !popup?.isClosed()) {
         await popup
@@ -2340,11 +2329,11 @@ export async function validateDashboardTab(page: Page) {
             timeout: Timeout.playwrightConsentPageReload,
           })
           .catch(() => {});
-          await popup.screenshot({
-            path: getPlaywrightScreenshotPath("popup"),
-            fullPage: true,
-          });
         console.log("click Accept button");
+        await popup.screenshot({
+          path: getPlaywrightScreenshotPath("popup"),
+          fullPage: true,
+        });
         await popup.click("input.button[type='submit'][value='Accept']");
       }
     })

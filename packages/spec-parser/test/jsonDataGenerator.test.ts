@@ -22,6 +22,12 @@ describe("JsonDataGenerator", () => {
     expect(result).to.equal(false);
   });
 
+  it("should generate a boolean without example", () => {
+    const schema: OpenAPIV3.SchemaObject = { type: "boolean" };
+    const result = JsonDataGenerator.generate(schema);
+    expect(result).to.equal(true);
+  });
+
   it("should generate an array example", () => {
     const schema: OpenAPIV3.SchemaObject = {
       type: "array",
@@ -41,6 +47,14 @@ describe("JsonDataGenerator", () => {
     };
     const result = JsonDataGenerator.generate(schema);
     expect(result).deep.equal({ name: "John Doe", age: 30 });
+  });
+
+  it("should generate an object without properties", () => {
+    const schema: OpenAPIV3.SchemaObject = {
+      type: "object",
+    };
+    const result = JsonDataGenerator.generate(schema);
+    expect(result).deep.equal({});
   });
 
   it("should handle anyOf by selecting one schema", () => {
@@ -63,6 +77,22 @@ describe("JsonDataGenerator", () => {
     };
     const result = JsonDataGenerator.generate(schema);
     expect([true, "111"]).contain(result);
+  });
+
+  it("should merge data correctly when data is an object and not null", () => {
+    const schema: OpenAPIV3.SchemaObject = {
+      type: "object",
+      properties: {
+        key1: { type: "string", example: "value1" },
+        key2: { type: "number", example: 123 },
+      },
+    };
+
+    const result = JsonDataGenerator.generate(schema);
+    expect(result).deep.equal({
+      key1: "value1",
+      key2: 123,
+    });
   });
 
   it("should handle allOf by merging schemas", () => {
@@ -197,6 +227,14 @@ describe("JsonDataGenerator", () => {
     expect(result).to.equal(3.14);
   });
 
+  it("should handle without format", () => {
+    const schema: OpenAPIV3.SchemaObject = {
+      type: "number",
+    };
+    const result = JsonDataGenerator.generate(schema);
+    expect(result).to.equal(123);
+  });
+
   it("should handle number format double", () => {
     const schema: OpenAPIV3.SchemaObject = {
       type: "number",
@@ -222,6 +260,14 @@ describe("JsonDataGenerator", () => {
     };
     const result = JsonDataGenerator.generate(schema);
     expect(result).to.equal(2147483647);
+  });
+
+  it("should handle integer without format", () => {
+    const schema: OpenAPIV3.SchemaObject = {
+      type: "integer",
+    };
+    const result = JsonDataGenerator.generate(schema);
+    expect(result).to.equal(123);
   });
 
   it("should handle integer format int64", () => {

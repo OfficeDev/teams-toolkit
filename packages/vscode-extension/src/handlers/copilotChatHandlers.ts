@@ -148,9 +148,9 @@ export async function handleInstallTeamsAgentSelection(
 }
 
 export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxError>> {
-  const eventName = TelemetryEvent.InvokeTeamsAgentStart;
+  const eventName = TelemetryEvent.InvokeTeamsAgent;
   const triggerFromProperty = getTriggerFromProperty(args);
-  ExtTelemetry.sendTelemetryEvent(eventName, triggerFromProperty);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InvokeTeamsAgentStart, triggerFromProperty);
 
   const query =
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView ||

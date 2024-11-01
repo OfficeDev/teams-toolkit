@@ -9,6 +9,8 @@ import {
   Correlator,
   environmentNameManager,
   envUtil,
+  featureFlagManager,
+  FeatureFlags,
   Hub,
   isValidProject,
   isValidProjectV3,
@@ -223,7 +225,13 @@ async function generateAccountHint(includeTenantId = true): Promise<string> {
     }
   }
   if (includeTenantId && tenantId) {
-    return loginHint ? `tenantId=${tenantId}&appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      return loginHint
+        ? `tenantId=${tenantId}&appTenantId=${tenantId}&login_hint=${loginHint}`
+        : "";
+    } else {
+      return loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+    }
   } else {
     return loginHint ? `login_hint=${loginHint}` : "";
   }

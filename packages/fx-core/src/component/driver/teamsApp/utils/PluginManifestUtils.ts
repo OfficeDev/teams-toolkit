@@ -173,13 +173,23 @@ export class PluginManifestUtils {
     }
   }
 
-  public async getDefaultNextAvailableApiSpecPath(apiSpecPath: string, apiSpecFolder: string) {
+  public async getDefaultNextAvailableApiSpecPath(
+    apiSpecPath: string,
+    apiSpecFolder: string,
+    apiSpecFileName?: string
+  ) {
     let isYaml = false;
     try {
       isYaml = !(await isJsonSpecFile(apiSpecPath));
     } catch (e) {}
 
-    let openApiSpecFileName = isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName;
+    let openApiSpecFileName =
+      apiSpecFileName ?? (isYaml ? DefaultApiSpecYamlFileName : DefaultApiSpecJsonFileName);
+    // Check if the default file name already exists
+    if (!(await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName)))) {
+      return path.join(apiSpecFolder, openApiSpecFileName);
+    }
+
     const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
     const openApiSpecFileType = openApiSpecFileName.split(".")[1];
     let apiSpecFileNameSuffix = 1;

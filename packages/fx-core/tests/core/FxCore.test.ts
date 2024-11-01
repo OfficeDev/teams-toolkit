@@ -4,6 +4,7 @@
 import {
   ErrorType,
   ListAPIResult,
+  ProjectType,
   SpecParser,
   SpecParserError,
   ValidationStatus,
@@ -5597,6 +5598,12 @@ describe("addPlugin", async () => {
       if (path.endsWith("ai-plugin_2.json")) {
         return false;
       }
+      if (path.endsWith("spec.yaml")) {
+        return false;
+      }
+      if (path.endsWith("ai-plugin.json")) {
+        return false;
+      }
       return true;
     });
     sandbox
@@ -5608,7 +5615,23 @@ describe("addPlugin", async () => {
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
 
     const core = new FxCore(tools);
-    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
+    sandbox
+      .stub(CopilotPluginHelper, "generateFromApiSpec")
+      .callsFake(
+        async (
+          specParser,
+          teamsManifestPath,
+          inputs,
+          context,
+          component,
+          projectType,
+          outputFilePath
+        ) => {
+          assert.isTrue(outputFilePath.destinationApiSpecFilePath.includes("spec.yaml"));
+          assert.isTrue(outputFilePath.pluginManifestFilePath?.includes("ai-plugin.json"));
+          return ok({ warnings: [] });
+        }
+      );
 
     const showMessageStub = sandbox
       .stub(tools.ui, "showMessage")

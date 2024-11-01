@@ -2689,7 +2689,11 @@ describe("SpecGenerator", async () => {
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
-        .resolves({ allSuccess: true, warnings: [] });
+        .callsFake(async (manifestPath, filter, outputSpecPath, pluginFilePath) => {
+          assert.isTrue(outputSpecPath.includes("test.yaml"));
+          assert.isTrue(pluginFilePath.includes("test.json"));
+          return { allSuccess: true, warnings: [] };
+        });
       sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();

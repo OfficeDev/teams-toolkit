@@ -7,6 +7,7 @@
 import {
   FxError,
   M365TokenProvider,
+  OptionItem,
   Result,
   SystemError,
   UserError,
@@ -27,6 +28,7 @@ import {
   PortsConflictError,
   SideloadingDisabledError,
   TelemetryContext,
+  UserCancelError,
   assembleError,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
@@ -66,6 +68,7 @@ import {
 } from "./prerequisitesCheckerConstants";
 import { vscodeLogger } from "./vscodeLogger";
 import { vscodeTelemetry } from "./vscodeTelemetry";
+import { processUtil } from "../../utils/processUtil";
 
 export async function _checkAndInstall(
   displayMessages: DisplayMessages,
@@ -146,6 +149,90 @@ async function runWithCheckResultTelemetryProperties(
   );
 }
 
+async function selectPortsToKill(
+  portsInUse: number[]
+): Promise<Result<undefined, UserCancelError>> {
+  const killRes = await VS_CODE_UI.showMessage(
+    "info",
+    portsInUse.length === 1
+      ? util.format(
+          localize("teamstoolkit.localDebug.terminateProcess.notification"),
+          portsInUse[0]
+        )
+      : util.format(
+          localize("teamstoolkit.localDebug.terminateProcess.notification.plural"),
+          portsInUse.join(",")
+        ),
+    true,
+    "Terminate Process",
+    "Learn More"
+  );
+
+  if (killRes.isErr()) {
+    return err(new UserCancelError(ExtensionSource));
+  }
+
+  const selectButton = killRes.value;
+
+  if (selectButton === "Terminate Process") {
+    const process2ports = new Map<string, number[]>();
+    for (const port of portsInUse) {
+      const processId = await processUtil.getProcessId(port);
+      if (processId) {
+        const ports = process2ports.get(processId);
+        if (ports) {
+          ports.push(port);
+        } else {
+          process2ports.set(processId, [port]);
+        }
+      }
+    }
+    if (process2ports.size > 0) {
+      const options: OptionItem[] = [];
+      for (const processId of process2ports.keys()) {
+        const ports = process2ports.get(processId);
+        const processInfo = await processUtil.getProcessInfo(parseInt(processId));
+        options.push({
+          id: processId,
+          label: `'${processInfo}' (${processId}) occupies port(s): ${ports!.join(",")}`,
+          data: processInfo,
+        });
+      }
+      const res = await VS_CODE_UI.selectOptions({
+        title: "Select process(es) to terminate",
+        name: "select_processes",
+        options,
+        default: options.map((o) => o.id),
+      });
+      if (res.isOk() && res.value.type === "success") {
+        const processIds = res.value.result as string[];
+        for (const processId of processIds) {
+          await processUtil.killProcess(processId);
+        }
+        if (processIds.length > 0) {
+          const processInfo = options
+            .filter((o) => processIds.includes(o.id))
+            .map((o) => `'${o.data as string}' (${o.id})`)
+            .join(", ");
+          void VS_CODE_UI.showMessage(
+            "info",
+            `Process(es) ${processInfo} have been killed.`,
+            false
+          );
+        }
+      } else {
+        return err(new UserCancelError(ExtensionSource));
+      }
+    }
+    return ok(undefined);
+  } else if (selectButton === "Learn More") {
+    void VS_CODE_UI.openUrl(
+      "https://github.com/OfficeDev/teams-toolkit/wiki/%7BDebug%7D-FAQ#what-to-do-if-some-port-is-already-in-use"
+    );
+  }
+  return err(new UserCancelError(ExtensionSource));
+}
+
 async function checkPort(
   localEnvManager: LocalEnvManager,
   ports: number[],
@@ -158,7 +245,14 @@ async function checkPort(
     additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
-      const portsInUse = await localEnvManager.getPortsInUse(ports);
+      let portsInUse = await localEnvManager.getPortsInUse(ports);
+      if (portsInUse.length > 0) {
+        const killRes = await selectPortsToKill(portsInUse);
+        if (killRes.isOk()) {
+          // recheck
+          portsInUse = await localEnvManager.getPortsInUse(ports);
+        }
+      }
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
       if (portsInUse.length > 0) {

@@ -61,11 +61,12 @@ async function openGithubCopilotChat(query: string): Promise<Result<null, FxErro
 export async function installGithubCopilotChatExtension(
   triggerFrom: TelemetryTriggerFrom
 ): Promise<Result<null, FxError>> {
-  const eventName = "installCopilotChat";
+  const startEventName = "install-copilot-chat-start";
+  const eventName = "install-copilot-chat";
   const telemetryProperties = {
     [TelemetryProperty.TriggerFrom]: triggerFrom,
   };
-  ExtTelemetry.sendTelemetryEvent(eventName, telemetryProperties);
+  ExtTelemetry.sendTelemetryEvent(startEventName, telemetryProperties);
   try {
     const confirmRes = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.askInstallCopilot"),
@@ -118,7 +119,7 @@ export async function handleInstallTeamsAgentSelection(
     [key: string]: string;
   }
 ) {
-  const eventName = "installTeamsAgentNotification";
+  const eventName = "install-teams-agent-notification";
   const selectionTelemetryPropertyName = "selection";
   if (selection === localize("teamstoolkit.handlers.askInstallTeamsAgent.install")) {
     const installTelemetryProperties = {
@@ -147,7 +148,7 @@ export async function handleInstallTeamsAgentSelection(
 }
 
 export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxError>> {
-  const eventName = TelemetryEvent.InvokeTeamsAgent;
+  const eventName = TelemetryEvent.InvokeTeamsAgentStart;
   const triggerFromProperty = getTriggerFromProperty(args);
   ExtTelemetry.sendTelemetryEvent(eventName, triggerFromProperty);
 

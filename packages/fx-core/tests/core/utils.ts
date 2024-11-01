@@ -64,8 +64,8 @@ export class MockedAzureAccountProvider implements AzureAccountProvider {
   async signout(): Promise<boolean> {
     return true;
   }
-  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
-    return ok("fakeToken");
+  async switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
+    return ok(new MyTokenCredential());
   }
   async setStatusChangeMap(
     name: string,

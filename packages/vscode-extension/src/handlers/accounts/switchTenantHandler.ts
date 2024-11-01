@@ -98,20 +98,27 @@ export async function onSwitchAzureTenant(...args: unknown[]): Promise<void> {
     },
   };
   const result = await VS_CODE_UI.selectOption(config);
+  let error: any;
   if (result.isOk()) {
-    // TODO: set tenant
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      ...getTriggerFromProperty(args),
-    });
-    return;
-  } else {
-    if (!isUserCancelError(result.error)) {
-      void showError(result.error);
+    const switchRes = await azureAccountManager.switchTenant(result.value.result as string);
+    if (switchRes.isOk()) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        ...getTriggerFromProperty(args),
+      });
+      return;
+    } else {
+      error = switchRes.error;
     }
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, result.error, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      ...getTriggerFromProperty(args),
-    });
+  } else {
+    error = result.error;
   }
+
+  if (!isUserCancelError(error)) {
+    void showError(error);
+  }
+  ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, error, {
+    [TelemetryProperty.AccountType]: AccountType.Azure,
+    ...getTriggerFromProperty(args),
+  });
 }

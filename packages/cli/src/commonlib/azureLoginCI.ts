@@ -122,7 +122,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return true;
   }
 
-  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+  switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
     throw new Error("Method not implemented.");
   }
 

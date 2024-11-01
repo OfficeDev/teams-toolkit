@@ -16,11 +16,20 @@ import {
   FxError,
   Result,
   ok,
+  err,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error/error";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
-import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
+import {
+  azureCacheName,
+  loggedIn,
+  loggedOut,
+  loggingIn,
+  signedIn,
+  signedOut,
+  signingIn,
+} from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as util from "util";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -33,13 +42,20 @@ import {
   TelemetryErrorType,
 } from "../telemetry/extTelemetryEvents";
 import { VS_CODE_UI } from "../qm/vsc_ui";
-import { AzureScopes, globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import {
+  AzureScopes,
+  featureFlagManager,
+  FeatureFlags,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import {
   Microsoft,
   VSCodeAzureSubscriptionProvider,
   getSessionFromVSCode,
 } from "./vscodeAzureSubscriptionProvider";
+import { loadTenantId, saveTenantId } from "./cacheAccess";
 
 const showAzureSignOutHelp = "ShowAzureSignOutHelp";
 
@@ -73,22 +89,36 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * Async get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
    */
   async getIdentityCredentialAsync(showDialog = true): Promise<TokenCredential | undefined> {
-    if (await this.isUserLogin()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      const tenantId = await loadTenantId(azureCacheName);
+      if (await this.isUserLogin(tenantId)) {
+        const res = await this.getIdentityCredentialSilently(tenantId);
+        if (res.isOk()) {
+          return res.value;
+        } else {
+          return undefined;
+        }
+      } else {
+        return await this.login(showDialog, tenantId);
+      }
+    } else {
+      if (await this.isUserLogin()) {
+        return this.doGetIdentityCredentialAsync();
+      }
+      await this.login(showDialog);
       return this.doGetIdentityCredentialAsync();
     }
-    await this.login(showDialog);
-    return this.doGetIdentityCredentialAsync();
   }
 
-  private async isUserLogin(): Promise<boolean> {
-    const session = await getSessionFromVSCode(AzureScopes, undefined, {
+  private async isUserLogin(tenantId?: string): Promise<boolean> {
+    const session = await getSessionFromVSCode(AzureScopes, tenantId, {
       createIfNone: false,
       silent: true,
     });
     return session !== undefined;
   }
 
-  private async login(showDialog: boolean): Promise<void> {
+  private async login(showDialog: boolean, tenantId?: string): Promise<TokenCredential> {
     if (showDialog) {
       const userConfirmation: boolean = await this.doesUserConfirmLogin();
       if (!userConfirmation) {
@@ -108,7 +138,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     try {
       AzureAccountManager.currentStatus = loggingIn;
       void this.notifyStatus();
-      const session = await getSessionFromVSCode(AzureScopes, undefined, { createIfNone: true });
+      const session = await getSessionFromVSCode(AzureScopes, tenantId, { createIfNone: true });
       if (session === undefined) {
         throw new UserError(
           getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"),
@@ -129,6 +159,19 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             }
           });
       }
+      if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+        await saveTenantId(azureCacheName, session.id.split("/")[0]);
+      }
+      const credential: TokenCredential = {
+        // eslint-disable-next-line @typescript-eslint/require-await
+        getToken: async () => {
+          return {
+            token: session.accessToken,
+            expiresOnTimestamp: 0,
+          };
+        },
+      };
+      return credential;
     } catch (e) {
       AzureAccountManager.currentStatus = loggedOut;
       void this.notifyStatus();
@@ -186,6 +229,29 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       }
     }
     return Promise.reject(LoginFailureError());
+  }
+
+  private async getIdentityCredentialSilently(
+    tenantId?: string
+  ): Promise<Result<TokenCredential, FxError>> {
+    const session = await getSessionFromVSCode(AzureScopes, tenantId, {
+      createIfNone: false,
+      silent: true,
+    });
+    if (!session) {
+      return err(LoginFailureError());
+    }
+
+    const credential: TokenCredential = {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      getToken: async () => {
+        return {
+          token: session.accessToken,
+          expiresOnTimestamp: 0,
+        };
+      },
+    };
+    return ok(credential);
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
@@ -280,17 +346,52 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
-    // TODO
-    return Promise.resolve(ok(""));
+  async switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
+    let result: TokenCredential;
+
+    const res = await this.getIdentityCredentialSilently(tenantId);
+    if (res.isErr()) {
+      try {
+        result = await this.login(false, tenantId);
+      } catch (e) {
+        return err(LoginFailureError(e));
+      }
+    } else {
+      result = res.value;
+    }
+
+    await saveTenantId(azureCacheName, tenantId);
+    await this.notifyStatus();
+    return ok(result);
   }
   /**
    * list all subscriptions
    */
-  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+  async listAllSubscriptions(): Promise<SubscriptionInfo[]> {
     const arr: SubscriptionInfo[] = [];
     if (await this.isUserLogin()) {
       const subs = await this.vscodeAzureSubscriptionProvider.getSubscriptions();
+      for (let i = 0; i < subs.length; ++i) {
+        const item = subs[i];
+        arr.push({
+          subscriptionId: item.subscriptionId,
+          tenantId: item.tenantId,
+          subscriptionName: item.name,
+        });
+      }
+    }
+
+    return arr;
+  }
+
+  /**
+   * List subscriptions under current tenant
+   */
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    const arr: SubscriptionInfo[] = [];
+    if (await this.isUserLogin()) {
+      const tenantId = await loadTenantId(azureCacheName);
+      const subs = await this.vscodeAzureSubscriptionProvider.getSubscriptions(tenantId);
       for (let i = 0; i < subs.length; ++i) {
         const item = subs[i];
         arr.push({
@@ -373,6 +474,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         await this.notifyStatus();
       } else {
         AzureAccountManager.currentStatus = loggedOut;
+        await saveTenantId(azureCacheName, "");
         await this.notifyStatus();
       }
     });
@@ -441,6 +543,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const config: SingleSelectConfig = {
         name: localize("teamstoolkit.azureLogin.subscription"),
         title: localize("teamstoolkit.azureLogin.selectSubscription"),
+        placeholder: localize("teamstoolkit.azurelogin.selectSubscription.placeholder"),
         options: options,
       };
       const result = await VS_CODE_UI.selectOption(config);

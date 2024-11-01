@@ -34,6 +34,7 @@ import { ValidatorFactory } from "./validators/validatorFactory";
 import { Validator } from "./validators/validator";
 import { PluginManifestSchema } from "@microsoft/teams-manifest";
 import { createHash } from "crypto";
+import { JsonDataGenerator } from "./jsonDataGenerator";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -412,12 +413,31 @@ export class SpecParser {
                 const safeAdaptiveCardName = operation.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
                 const fileName = path.join(adaptiveCardFolder, `${safeAdaptiveCardName}.json`);
                 const wrappedCard = wrapAdaptiveCard(card, jsonPath);
+                const { json } = Utils.getResponseJson(operation, false);
+                const schema = json.schema as OpenAPIV3.SchemaObject;
+                let jsonData = {};
+                if (schema && Object.keys(schema).length > 0) {
+                  try {
+                    jsonData = JsonDataGenerator.generate(schema);
+                  } catch (err) {
+                    result.warnings.push({
+                      type: WarningType.GenerateJsonDataFailed,
+                      content: Utils.format(
+                        ConstantString.GenerateJsonDataFailed,
+                        operation.operationId!,
+                        (err as Error).toString()
+                      ),
+                      data: operation.operationId!,
+                    });
+                  }
+                }
+
                 await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
                 const dataFileName = path.join(
                   adaptiveCardFolder,
                   `${safeAdaptiveCardName}.data.json`
                 );
-                await fs.outputJSON(dataFileName, {}, { spaces: 2 });
+                await fs.outputJSON(dataFileName, jsonData, { spaces: 2 });
               } catch (err) {
                 result.allSuccess = false;
                 result.warnings.push({

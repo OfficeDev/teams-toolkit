@@ -139,7 +139,7 @@ describe("invokeTeamsAgent", async () => {
 
     chai.assert.isTrue(res.isErr());
     if (res.isErr()) {
-      chai.assert.equal(res.error.source, "installCopilotChat");
+      chai.assert.equal(res.error.source, "install-copilot-chat");
     }
     chai.assert.equal(commandStub.callCount, 1);
   });

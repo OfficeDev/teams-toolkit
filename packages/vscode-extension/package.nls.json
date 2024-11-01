@@ -285,7 +285,7 @@
   "_teamstoolkit.handlers.askInstallTeamsAgent.install.comment": "GitHub.com is the website address and should not be translated.",
   "teamstoolkit.handlers.askInstallTeamsAgent.confirmInstall": "Confirm Installation",
   "teamstoolkit.handlers.installCopilotAndAgent.output": "To use the GitHub Copilot Extension for Teams Toolkit when developing Teams apps or customizing Microsoft 365 Copilot, install GitHub Copilot from \"%s\" and Github Copilot Extension for Teams Toolkit from \"%s\".",
-  "teamstoolkit.handlers.installAgent.output": "To use GitHub Copilot Extension for Teams Toolkit when developing Teams apps or customizing Microsoft 365 Copilot, you need to install GitHub Copilot Extension for Teams Toolkit from \"%s\".",
+  "teamstoolkit.handlers.installAgent.output": "To use GitHub Copilot Extension for Teams Toolkit when developing Teams apps or customizing Microsoft 365 Copilot, install GitHub Copilot Extension for Teams Toolkit from \"%s\".",
   "teamstoolkit.handlers.installCopilotError": "Unable to install GitHub Copilot Chat. Install it following %s and try again.",
   "teamstoolkit.handlers.chatTeamsAgentError": "Unable to automatically focus GitHub Copilot Chat. Open GitHub Copilot Chat and start with \"%s\"",
   "teamstoolkit.handlers.verifyCopilotExtensionError": "Unable to verify GitHub Copilot Chat. Install it manually following %s and try again.",

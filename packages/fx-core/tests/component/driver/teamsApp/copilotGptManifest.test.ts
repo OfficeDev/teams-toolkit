@@ -635,13 +635,20 @@ describe("copilotGptManifestUtils", () => {
     });
 
     it("Success on second try", async () => {
-      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+      sandbox
+        .stub(fs, "pathExists")
+        .onFirstCall()
+        .resolves(true)
+        .onSecondCall()
+        .resolves(true)
+        .onThirdCall()
+        .resolves(false);
       const res = await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath("test");
       chai.assert.equal(res, path.join("test", "ai-plugin_2.json"));
     });
 
     it("Success on first try", async () => {
-      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
       const res = await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath("test");
       chai.assert.equal(res, path.join("test", "ai-plugin_1.json"));
     });

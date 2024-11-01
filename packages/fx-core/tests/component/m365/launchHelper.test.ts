@@ -44,7 +44,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -71,7 +71,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/?appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/?tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -98,7 +98,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -125,7 +125,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -152,7 +152,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 

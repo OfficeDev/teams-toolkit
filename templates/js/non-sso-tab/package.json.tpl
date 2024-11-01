@@ -6,7 +6,7 @@
     },
     "private": true,
     "dependencies": {
-        "restify": "^11.1.0",
+        "express": "^4.21.1",
         "send": "^0.18.0"
     },
     "devDependencies": {

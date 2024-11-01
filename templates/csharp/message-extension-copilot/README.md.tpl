@@ -7,9 +7,16 @@
 > To run the app template in your local dev machine, you will need:
 >
 > - [Visual Studio 2022](https://aka.ms/vs) 17.8 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs).
+{{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
+{{/enableTestToolByDefault}}
 > - [Microsoft 365 Copilot license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
 
+{{#enableTestToolByDefault}}
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.
+2. You can search NuGet package from compose message area, or from the command box.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In the debug dropdown menu, select `Dev Tunnels > Create a Tunnel` (set authentication type to Public) or select an existing public dev tunnel.
 2. Right-click your project and select `Teams Toolkit > Prepare Teams App Dependencies`.
 3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want
@@ -24,8 +31,14 @@
    3. Open the `Copilot` app, select `Plugins`, and from the list of plugins, turn on the toggle for your message extension. Now, you can send a prompt to trigger your plugin.
    4. Send a message to Copilot to find an NuGet package information. For example: Find the NuGet package info on Microsoft.CSharp.
       > Note: This prompt may not always make Copilot include a response from your message extension. If it happens, try some other prompts or leave a feedback to us by thumbing down the Copilot response and leave a message tagged with [MessageExtension].
+{{/enableTestToolByDefault}}
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
+{{^enableTestToolByDefault}}
+## Debug in Test Tool
+Teams App Test Tool allows developers test and debug bots locally without needing Microsoft 365 accounts, development tunnels, or Teams app and bot registration. See https://aka.ms/teams-toolkit-vs-test-tool for more details.
+{{/enableTestToolByDefault}}
 
 ## Learn more
 

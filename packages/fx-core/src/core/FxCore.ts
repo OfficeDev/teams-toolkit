@@ -1879,6 +1879,9 @@ export class FxCore {
     const appPackageFolder = path.dirname(teamsManifestPath);
     const isGenerateFromApiSpec =
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id;
+    const isKiotaIntegration =
+      featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+      !!inputs[QuestionNames.ApiPluginManifestPath];
 
     // validate the project is valid for adding plugin
     const manifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
@@ -1950,10 +1953,16 @@ export class FxCore {
       const url = inputs[QuestionNames.ApiSpecLocation].trim();
 
       destinationPluginManifestPath =
-        await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(appPackageFolder);
+        await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(
+          appPackageFolder,
+          isKiotaIntegration
+            ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
+            : undefined
+        );
       const destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
         url,
-        path.join(appPackageFolder, DefaultApiSpecFolderName)
+        path.join(appPackageFolder, isKiotaIntegration ? "" : DefaultApiSpecFolderName),
+        isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined
       );
       const specParser = new SpecParser(url, getParserOptions(ProjectType.Copilot, true));
       const generateRes = await generateFromApiSpec(

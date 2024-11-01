@@ -300,8 +300,14 @@ export class CopilotGptManifestUtils {
     }
   }
 
-  public async getDefaultNextAvailablePluginManifestPath(folder: string) {
-    const pluginManifestNamePrefix = DefaultPluginManifestFileName.split(".")[0];
+  public async getDefaultNextAvailablePluginManifestPath(
+    folder: string,
+    pluginManifestFileName = DefaultPluginManifestFileName
+  ) {
+    if (!(await fs.pathExists(path.join(folder, pluginManifestFileName)))) {
+      return path.join(folder, pluginManifestFileName);
+    }
+    const pluginManifestNamePrefix = pluginManifestFileName.split(".")[0];
     let pluginFileNameSuffix = 1;
     let pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
     while (await fs.pathExists(path.join(folder, pluginManifestName))) {

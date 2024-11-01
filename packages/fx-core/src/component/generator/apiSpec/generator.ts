@@ -299,6 +299,9 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       const getTemplateInfosState = inputs.getTemplateInfosState as TemplateInfosState;
       const isDeclarativeCopilot =
         inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+      const isKiotaIntegration =
+        featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+        !!inputs[QuestionNames.ApiPluginManifestPath];
       const manifestPath = path.join(
         destinationPath,
         AppPackageFolderName,
@@ -307,9 +310,11 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       const apiSpecFolderPath = path.join(
         destinationPath,
         AppPackageFolderName,
-        DefaultApiSpecFolderName
+        isKiotaIntegration ? "" : DefaultApiSpecFolderName
       );
-      const openapiSpecFileName = getTemplateInfosState.isYaml
+      const openapiSpecFileName = isKiotaIntegration
+        ? path.basename(inputs[QuestionNames.ApiSpecLocation])
+        : getTemplateInfosState.isYaml
         ? DefaultApiSpecYamlFileName
         : DefaultApiSpecJsonFileName;
 
@@ -331,7 +336,13 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       let warnings: WarningResult[];
       const pluginManifestPath =
         getTemplateInfosState.type === ProjectType.Copilot
-          ? path.join(destinationPath, AppPackageFolderName, DefaultPluginManifestFileName)
+          ? path.join(
+              destinationPath,
+              AppPackageFolderName,
+              isKiotaIntegration
+                ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
+                : DefaultPluginManifestFileName
+            )
           : undefined;
       const responseTemplateFolder =
         getTemplateInfosState.type === ProjectType.SME
@@ -367,7 +378,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         const addAcionResult = await copilotGptManifestUtils.addAction(
           gptManifestPath,
           defaultDeclarativeCopilotActionId,
-          DefaultPluginManifestFileName
+          path.basename(pluginManifestPath!)
         );
         if (addAcionResult.isErr()) {
           return err(addAcionResult.error);

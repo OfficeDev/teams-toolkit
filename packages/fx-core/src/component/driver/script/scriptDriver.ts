@@ -102,14 +102,14 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  const systemEncoding = await getSystemEncoding(command);
+  let systemEncoding = await getSystemEncoding(command);
+  if (command.startsWith("dotnet ")) {
+    systemEncoding = "utf-8";
+  }
   const dshell = await defaultShell();
   return new Promise((resolve) => {
     const finalShell = shell || dshell;
     const finalCmd = command;
-    // if (typeof finalShell === "string" && finalShell.includes("cmd")) {
-    //   finalCmd = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
-    // }
     const platform = os.platform();
     let workingDir = workingDirectory || ".";
     workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);

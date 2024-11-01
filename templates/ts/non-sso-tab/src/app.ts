@@ -2,6 +2,7 @@ import express from "express";
 import * as fs from "fs";
 import * as https from "https";
 import * as path from "path";
+import send from "send";
 
 const app = express();
 
@@ -13,12 +14,12 @@ const sslOptions = {
 // Adding tabs to our app. This will setup routes to various views
 // Setup home page
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "hello.html"));
+  send(req, path.join(__dirname, "views", "hello.html")).pipe(res);
 });
 
 // Setup the static tab
 app.get("/tab", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "hello.html"));
+  send(req, path.join(__dirname, "views", "hello.html")).pipe(res);
 });
 
 // Create HTTP server.

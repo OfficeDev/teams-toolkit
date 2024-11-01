@@ -44,7 +44,7 @@ export class ConstantString {
   static readonly FuncDescriptionTooLong =
     "The description of the function '%s' is too long. The current length is %s characters, while the maximum allowed length is %s characters.";
 
-  static readonly GenerateJsonDataFailed = "Failed to generate JSON data for api: %s.";
+  static readonly GenerateJsonDataFailed = "Failed to generate JSON data for api: %s due to %s.";
 
   static readonly WrappedCardVersion = "devPreview";
   static readonly WrappedCardSchema =

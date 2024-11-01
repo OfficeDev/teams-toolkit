@@ -417,14 +417,15 @@ export class SpecParser {
                 const schema = json.schema as OpenAPIV3.SchemaObject;
                 let jsonData = {};
                 if (schema && Object.keys(schema).length > 0) {
-                  jsonData = JsonDataGenerator.generate(schema);
-                  if (jsonData === undefined) {
-                    jsonData = {};
+                  try {
+                    jsonData = JsonDataGenerator.generate(schema);
+                  } catch (err) {
                     result.warnings.push({
                       type: WarningType.GenerateJsonDataFailed,
                       content: Utils.format(
                         ConstantString.GenerateJsonDataFailed,
-                        operation.operationId!
+                        operation.operationId!,
+                        (err as Error).toString()
                       ),
                       data: operation.operationId!,
                     });

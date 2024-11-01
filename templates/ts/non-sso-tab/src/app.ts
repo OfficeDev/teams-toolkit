@@ -11,6 +11,8 @@ const sslOptions = {
   cert: process.env.SSL_CRT_FILE ? fs.readFileSync(process.env.SSL_CRT_FILE) : undefined,
 };
 
+app.use("/static", express.static(path.join(__dirname, "static")));
+
 // Adding tabs to our app. This will setup routes to various views
 // Setup home page
 app.get("/", (req, res) => {
@@ -22,12 +24,8 @@ app.get("/tab", (req, res) => {
   send(req, path.join(__dirname, "views", "hello.html")).pipe(res);
 });
 
-// Create HTTP server.
-// Start server
+// Create HTTP server
 const port = process.env.port || process.env.PORT || 3333;
-
-// Serve static files under /static
-app.use("/static", express.static(path.join(__dirname, "static")));
 
 if (sslOptions.key && sslOptions.cert) {
   https.createServer(sslOptions, app).listen(port, () => {

@@ -11,6 +11,7 @@ import {
   ProjectType,
   SpecParser,
   SpecParserError,
+  Utils,
   ValidationStatus,
   WarningType,
 } from "@microsoft/m365-spec-parser";
@@ -43,6 +44,7 @@ import {
   formatValidationErrors,
   generateScaffoldingSummary,
   listPluginExistingOperations,
+  injectAuthAction,
 } from "../../../src/component/generator/apiSpec/helper";
 import {
   ApiPluginStartOptions,
@@ -62,6 +64,7 @@ import { FeatureFlagName } from "../../../src/common/featureFlags";
 import * as commonUtils from "../../../src/common/utils";
 import * as helper from "../../../src/component/generator/apiSpec/helper";
 import { fail } from "assert";
+import { ActionInjector } from "../../../src/component/configManager/actionInjector";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -626,6 +629,78 @@ describe("formatValidationErrors", () => {
       )
     );
     expect(res[1].content).equals(getLocalizedString("error.copilot.noExtraAPICanBeAdded"));
+  });
+});
+
+describe("injectAuthAction", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("api key auth", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(Utils, "isBearerTokenAuth").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateAPIKeyAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledTwice);
+  });
+
+  it("api key auth: no local yaml", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(Utils, "isBearerTokenAuth").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateAPIKeyAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledOnce);
+  });
+
+  it("oauth auth", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(Utils, "isOAuthWithAuthCodeFlow").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateOAuthAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledTwice);
+  });
+
+  it("oauth auth: no local yaml", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(Utils, "isOAuthWithAuthCodeFlow").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateOAuthAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledOnce);
   });
 });
 

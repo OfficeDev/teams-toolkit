@@ -21,7 +21,7 @@ import {
   WarningResult,
   WarningType,
 } from "@microsoft/m365-spec-parser";
-import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import { AuthType, ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -62,6 +62,8 @@ import {
 } from "../../../common/telemetry";
 import * as util from "util";
 import { SpecParserSource } from "../../../common/constants";
+import { MetadataV3 } from "../../../common/versionMetadata";
+import { ActionInjector, AuthActionInjectResult } from "../../configManager/actionInjector";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -592,6 +594,55 @@ export function logValidationResults(
     );
 
   void context.logProvider.info(outputMessage);
+}
+
+export async function injectAuthAction(
+  projectPath: string,
+  authName: string,
+  authScheme: AuthType,
+  outputApiSpecPath: string,
+  forceToAddNew: boolean
+): Promise<AuthActionInjectResult | undefined> {
+  const ymlPath = path.join(projectPath, MetadataV3.configFile);
+  const localYamlPath = path.join(projectPath, MetadataV3.localConfigFile);
+
+  const relativeSpecPath = "./" + path.relative(projectPath, outputApiSpecPath).replace(/\\/g, "/");
+
+  if (Utils.isBearerTokenAuth(authScheme)) {
+    const res = await ActionInjector.injectCreateAPIKeyAction(
+      ymlPath,
+      authName,
+      relativeSpecPath,
+      forceToAddNew
+    );
+
+    if (await fs.pathExists(localYamlPath)) {
+      await ActionInjector.injectCreateAPIKeyAction(
+        localYamlPath,
+        authName,
+        relativeSpecPath,
+        forceToAddNew
+      );
+    }
+    return res;
+  } else if (Utils.isOAuthWithAuthCodeFlow(authScheme)) {
+    const res = await ActionInjector.injectCreateOAuthAction(
+      ymlPath,
+      authName,
+      relativeSpecPath,
+      forceToAddNew
+    );
+
+    if (await fs.pathExists(localYamlPath)) {
+      await ActionInjector.injectCreateOAuthAction(
+        localYamlPath,
+        authName,
+        relativeSpecPath,
+        forceToAddNew
+      );
+    }
+    return res;
+  }
 }
 
 /**

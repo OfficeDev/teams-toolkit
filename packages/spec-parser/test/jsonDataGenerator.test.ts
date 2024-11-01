@@ -241,7 +241,7 @@ describe("JsonDataGenerator", () => {
       format: "double",
     };
     const result = JsonDataGenerator.generate(schema);
-    expect(result).to.equal(3.141592653589793);
+    expect(result).to.equal(3.14159);
   });
 
   it("should handle number with unknown format by using default", () => {
@@ -259,7 +259,7 @@ describe("JsonDataGenerator", () => {
       format: "int32",
     };
     const result = JsonDataGenerator.generate(schema);
-    expect(result).to.equal(2147483647);
+    expect(result).to.equal(123456);
   });
 
   it("should handle integer without format", () => {
@@ -276,7 +276,7 @@ describe("JsonDataGenerator", () => {
       format: "int64",
     };
     const result = JsonDataGenerator.generate(schema);
-    expect(result).to.equal(9223372036854775807);
+    expect(result).to.equal(123456789);
   });
 
   it("should handle integer with unknown format by using default", () => {

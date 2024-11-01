@@ -31,9 +31,7 @@ export class JsonDataGenerator {
       result = {};
       for (const subschema of schema.allOf) {
         const data = this.generateMockData(subschema as OpenAPIV3.SchemaObject);
-        if (typeof data === "object" && data !== null) {
-          result = { ...result, ...data };
-        }
+        result = { ...result, ...data };
       }
     } else {
       switch (schema.type) {
@@ -43,7 +41,7 @@ export class JsonDataGenerator {
           } else if (schema.format) {
             switch (schema.format) {
               case "date-time":
-                result = new Date().toISOString();
+                result = "2024-11-01T05:25:43.593Z";
                 break;
               case "email":
                 result = "example@example.com";
@@ -73,7 +71,7 @@ export class JsonDataGenerator {
                 result = 3.14;
                 break;
               case "double":
-                result = 3.141592653589793;
+                result = 3.14159;
                 break;
               default:
                 result = 123;
@@ -88,10 +86,10 @@ export class JsonDataGenerator {
           } else if (schema.format) {
             switch (schema.format) {
               case "int32":
-                result = 2147483647;
+                result = 123456;
                 break;
               case "int64":
-                result = 9223372036854775807;
+                result = 123456789;
                 break;
               default:
                 result = 123;
@@ -104,9 +102,7 @@ export class JsonDataGenerator {
           result = schema.example !== undefined ? schema.example : true;
           break;
         case "array":
-          result = schema.items
-            ? [this.generateMockData(schema.items as OpenAPIV3.SchemaObject)]
-            : [];
+          result = [this.generateMockData(schema.items as OpenAPIV3.SchemaObject)];
           break;
         case "object":
           result = {};

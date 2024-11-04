@@ -185,7 +185,7 @@ export class ConversationBot {
    * @param logic - The additional function to handle bot context.
    *
    * @example
-   * For example, to use with Restify:
+   * For example, to use with Express:
    * ``` typescript
    * // The default/empty behavior
    * const expressApp = express();

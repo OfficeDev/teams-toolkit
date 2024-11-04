@@ -5566,9 +5566,9 @@ describe("addPlugin", async () => {
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       [QuestionNames.TeamsAppManifestFilePath]: "manifest.json",
-      [QuestionNames.ApiPluginManifestPath]: "ai-plugin.json",
-      [QuestionNames.ApiSpecLocation]: "spec.yaml",
-      [QuestionNames.ApiOperation]: "ai-plugin.json",
+      [QuestionNames.ApiPluginManifestPath]: "aiplugin-apiplugin.json",
+      [QuestionNames.ApiSpecLocation]: "spec-apimanifest.yaml",
+      [QuestionNames.ApiOperation]: "aiplugin-apiplugin.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
 
@@ -5598,10 +5598,16 @@ describe("addPlugin", async () => {
       if (path.endsWith("ai-plugin_2.json")) {
         return false;
       }
-      if (path.endsWith("spec.yaml")) {
+      if (path.endsWith("aiplugin-apiplugin.json")) {
+        return true;
+      }
+      if (path.endsWith("spec-apimanifest.yaml")) {
+        return true;
+      }
+      if (path.endsWith("aiplugin_1-apiplugin.json")) {
         return false;
       }
-      if (path.endsWith("ai-plugin.json")) {
+      if (path.endsWith("spec_1-apimanifest.yaml")) {
         return false;
       }
       return true;
@@ -5627,8 +5633,8 @@ describe("addPlugin", async () => {
           projectType,
           outputFilePath
         ) => {
-          assert.isTrue(outputFilePath.destinationApiSpecFilePath.includes("spec.yaml"));
-          assert.isTrue(outputFilePath.pluginManifestFilePath?.includes("ai-plugin.json"));
+          assert.isTrue(outputFilePath.destinationApiSpecFilePath.includes("apimanifest.yaml"));
+          assert.isTrue(outputFilePath.pluginManifestFilePath?.includes("apiplugin.json"));
           return ok({ warnings: [] });
         }
       );

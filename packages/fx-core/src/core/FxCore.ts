@@ -1957,12 +1957,14 @@ export class FxCore {
           appPackageFolder,
           isKiotaIntegration
             ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
-            : undefined
+            : undefined,
+          isKiotaIntegration
         );
       const destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
         url,
         path.join(appPackageFolder, isKiotaIntegration ? "" : DefaultApiSpecFolderName),
-        isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined
+        isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined,
+        isKiotaIntegration
       );
       const specParser = new SpecParser(url, getParserOptions(ProjectType.Copilot, true));
       const generateRes = await generateFromApiSpec(

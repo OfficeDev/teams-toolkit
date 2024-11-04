@@ -302,18 +302,43 @@ export class CopilotGptManifestUtils {
 
   public async getDefaultNextAvailablePluginManifestPath(
     folder: string,
-    pluginManifestFileName = DefaultPluginManifestFileName
+    pluginManifestFileName = DefaultPluginManifestFileName,
+    isKiotaIntegration = false
   ) {
     if (!(await fs.pathExists(path.join(folder, pluginManifestFileName)))) {
       return path.join(folder, pluginManifestFileName);
     }
     const pluginManifestNamePrefix = pluginManifestFileName.split(".")[0];
     let pluginFileNameSuffix = 1;
-    let pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
+    let pluginManifestName = this.getPluginManifestFileName(
+      pluginManifestNamePrefix,
+      pluginFileNameSuffix,
+      isKiotaIntegration
+    );
     while (await fs.pathExists(path.join(folder, pluginManifestName))) {
-      pluginManifestName = `${pluginManifestNamePrefix}_${++pluginFileNameSuffix}.json`;
+      pluginFileNameSuffix++;
+      pluginManifestName = this.getPluginManifestFileName(
+        pluginManifestNamePrefix,
+        pluginFileNameSuffix,
+        isKiotaIntegration
+      );
     }
     return path.join(folder, pluginManifestName);
+  }
+
+  getPluginManifestFileName(
+    pluginManifestNamePrefix: string,
+    pluginFileNameSuffix: number,
+    isKiotaIntegration: boolean
+  ) {
+    let pluginManifestName;
+    if (isKiotaIntegration) {
+      const pluginManifestNameSplit = pluginManifestNamePrefix.split("-");
+      pluginManifestName = `${pluginManifestNameSplit[0]}_${pluginFileNameSuffix}-${pluginManifestNameSplit[1]}.json`;
+    } else {
+      pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
+    }
+    return pluginManifestName;
   }
 }
 

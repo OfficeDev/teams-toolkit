@@ -176,7 +176,8 @@ export class PluginManifestUtils {
   public async getDefaultNextAvailableApiSpecPath(
     apiSpecPath: string,
     apiSpecFolder: string,
-    apiSpecFileName?: string
+    apiSpecFileName?: string,
+    isKiotaIntegration = false
   ) {
     let isYaml = false;
     try {
@@ -193,14 +194,41 @@ export class PluginManifestUtils {
     const openApiSpecFileNamePrefix = openApiSpecFileName.split(".")[0];
     const openApiSpecFileType = openApiSpecFileName.split(".")[1];
     let apiSpecFileNameSuffix = 1;
-    openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+    openApiSpecFileName = this.getApiSpecFileName(
+      openApiSpecFileNamePrefix,
+      openApiSpecFileType,
+      apiSpecFileNameSuffix,
+      isKiotaIntegration
+    );
 
     while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
-      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${++apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+      apiSpecFileNameSuffix++;
+      openApiSpecFileName = this.getApiSpecFileName(
+        openApiSpecFileNamePrefix,
+        openApiSpecFileType,
+        apiSpecFileNameSuffix,
+        isKiotaIntegration
+      );
     }
     const openApiSpecFilePath = path.join(apiSpecFolder, openApiSpecFileName);
 
     return openApiSpecFilePath;
+  }
+
+  getApiSpecFileName(
+    openApiSpecFileNamePrefix: string,
+    openApiSpecFileType: string,
+    apiSpecFileNameSuffix: number,
+    isKiotaIntegration: boolean
+  ): string {
+    let openApiSpecFileName;
+    if (isKiotaIntegration) {
+      const apiSpecNameSplit = openApiSpecFileNamePrefix.split("-");
+      openApiSpecFileName = `${apiSpecNameSplit[0]}_${apiSpecFileNameSuffix}-${apiSpecNameSplit[1]}.${openApiSpecFileType}`;
+    } else {
+      openApiSpecFileName = `${openApiSpecFileNamePrefix}_${apiSpecFileNameSuffix}.${openApiSpecFileType}`;
+    }
+    return openApiSpecFileName;
   }
 
   async getApiSpecFilePathFromPlugin(

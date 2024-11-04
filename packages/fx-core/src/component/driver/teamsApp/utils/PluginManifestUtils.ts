@@ -202,10 +202,11 @@ export class PluginManifestUtils {
     );
 
     while (await fs.pathExists(path.join(apiSpecFolder, openApiSpecFileName))) {
+      apiSpecFileNameSuffix++;
       openApiSpecFileName = this.getApiSpecFileName(
         openApiSpecFileNamePrefix,
         openApiSpecFileType,
-        apiSpecFileNameSuffix++,
+        apiSpecFileNameSuffix,
         isKiotaIntegration
       );
     }

@@ -316,9 +316,10 @@ export class CopilotGptManifestUtils {
       isKiotaIntegration
     );
     while (await fs.pathExists(path.join(folder, pluginManifestName))) {
+      pluginFileNameSuffix++;
       pluginManifestName = this.getPluginManifestFileName(
         pluginManifestNamePrefix,
-        pluginFileNameSuffix++,
+        pluginFileNameSuffix,
         isKiotaIntegration
       );
     }

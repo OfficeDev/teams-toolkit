@@ -247,6 +247,9 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
           endLocalDebugSession();
           return;
         }
+        // Need to endLocalDebugSession() here.
+        // Otherwise, when user stops debugging, or task exits, it will incorrectly send an incorrect debug-all event with success=no
+        endLocalDebugSession();
         await sendDebugAllEvent(undefined, { [TelemetryProperty.DebugTestTool]: "true" });
       }
     }

@@ -25,9 +25,4 @@ expressApp.post("/api/messages", async (req, res) => {
   });
 });
 
-expressApp.get(
-  "/auth-:name(start|end).html",
-  express.static({
-    directory: path.join(__dirname, "public"),
-  })
-);
+expressApp.get("/auth-:name(start|end).html", express.static(path.join(__dirname, "public")));

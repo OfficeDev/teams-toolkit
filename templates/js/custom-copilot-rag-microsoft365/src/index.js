@@ -25,4 +25,12 @@ expressApp.post("/api/messages", async (req, res) => {
   });
 });
 
-expressApp.get("/auth-:name(start|end).html", express.static(path.join(__dirname, "public")));
+expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
+  res.sendFile(
+    path.join(
+      __dirname,
+      "public",
+      req.url.includes("auth-start.html") ? "auth-start.html" : "auth-end.html"
+    )
+  );
+});

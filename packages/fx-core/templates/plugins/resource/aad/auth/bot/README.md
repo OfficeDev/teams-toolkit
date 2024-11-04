@@ -46,12 +46,15 @@ As described above, the Teams Toolkit generated some configuration to set up you
    ```ts
    const path = require("path");
 
-   expressApp.get(
-     "/auth-:name(start|end).html",
-     express.static({
-       directory: path.join(__dirname, "public"),
-     })
-   );
+   expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
+     res.sendFile(
+       path.join(
+         __dirname,
+         "public",
+         req.url.includes("auth-start.html") ? "auth-start.html" : "auth-end.html"
+       )
+     );
+   });
    ```
 
 <h3 id='2.2'>Update your business logic</h3>
@@ -356,12 +359,15 @@ To make this work in your application:
        });
    });
 
-   expressApp.get(
-     "/auth-:name(start|end).html",
-     express.static({
-       directory: path.join(__dirname, "public"),
-     })
-   );
+   expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
+     res.sendFile(
+       path.join(
+         __dirname,
+         "public",
+         req.url.includes("auth-start.html") ? "auth-start.html" : "auth-end.html"
+       )
+     );
+   });
    ```
 
 1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/teamsBot`. You can follow the sample code in the `handleMessageExtensionQueryWithSSO` to do your own query logic.

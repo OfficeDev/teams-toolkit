@@ -164,6 +164,13 @@ export async function sendDebugAllEvent(
   }
   properties["debug-checked-ports"] = globalVariables.LocalDebugPorts.checkPorts.join(",");
   properties["debug-closed-ports"] = closedPorts.join(",");
+  properties["debug-conflict-ports"] = globalVariables.LocalDebugPorts.conflictPorts.join(",");
+  properties["debug-terminate-button"] = globalVariables.LocalDebugPorts.terminateButton;
+  properties["debug-process2conflict-ports"] = JSON.stringify(
+    globalVariables.LocalDebugPorts.process2conflictPorts
+  );
+  properties["debug-terminate-processes"] =
+    globalVariables.LocalDebugPorts.terminateProcesses.join(",");
 
   if (error === undefined) {
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAll, properties, measurements);

@@ -426,6 +426,7 @@ export class LocalDebugTaskResult {
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
   PythonDebugConsole = "Python Debug Console",
+  StartTestTool = "Start Test Tool",
 }
 
 export enum LocalDebugError {
@@ -442,6 +443,7 @@ export class LocalDebugTaskInfo {
 
 export class DebugItemSelect {
   static readonly DebugInTeamsUsingChrome = "Debug in Teams (Chrome)";
+  static readonly DebugInTestTool = "Debug in Test Tool";
 }
 
 export class TestFilePath {

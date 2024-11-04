@@ -41,7 +41,7 @@ import M365TokenInstance from "../../commonlib/m365Login";
 import { PanelType } from "../../controls/PanelType";
 import { WebviewPanel } from "../../controls/webviewPanel";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
-import { LocalDebugPorts, tools, workspaceUri } from "../../globalVariables";
+import { LocalDebugPorts, resetLocalDebugPorts, tools, workspaceUri } from "../../globalVariables";
 import { checkCopilotCallback } from "../../handlers/accounts/checkAccessCallback";
 import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
@@ -169,10 +169,12 @@ async function selectPortsToKill(
   );
 
   if (killRes.isErr()) {
+    LocalDebugPorts.terminateButton = "Cancel";
     return err(new UserCancelError(ExtensionSource));
   }
 
   const selectButton = killRes.value;
+  LocalDebugPorts.terminateButton = selectButton!;
 
   if (selectButton === "Terminate Process") {
     const process2ports = new Map<string, number[]>();
@@ -191,6 +193,7 @@ async function selectPortsToKill(
       const options: OptionItem[] = [];
       for (const processId of process2ports.keys()) {
         const ports = process2ports.get(processId);
+        LocalDebugPorts.process2conflictPorts[processId] = ports!;
         const processInfo = await processUtil.getProcessInfo(parseInt(processId));
         options.push({
           id: processId,
@@ -206,6 +209,7 @@ async function selectPortsToKill(
       });
       if (res.isOk() && res.value.type === "success") {
         const processIds = res.value.result as string[];
+        LocalDebugPorts.terminateProcesses = processIds;
         for (const processId of processIds) {
           await processUtil.killProcess(processId);
         }
@@ -221,6 +225,7 @@ async function selectPortsToKill(
           );
         }
       } else {
+        LocalDebugPorts.terminateProcesses = [];
         return err(new UserCancelError(ExtensionSource));
       }
     }
@@ -239,6 +244,7 @@ async function checkPort(
   displayMessage: string,
   additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
+  resetLocalDebugPorts();
   LocalDebugPorts.checkPorts = ports;
   return await runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckPorts,
@@ -246,6 +252,7 @@ async function checkPort(
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
       let portsInUse = await localEnvManager.getPortsInUse(ports);
+      LocalDebugPorts.conflictPorts = portsInUse;
       if (portsInUse.length > 0) {
         const killRes = await selectPortsToKill(portsInUse);
         if (killRes.isOk()) {

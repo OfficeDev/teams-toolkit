@@ -46,6 +46,12 @@ import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { errors } from "./resource";
 import { getColorizedString } from "./utils";
 
+export const inquirerPrompts = {
+  confirm,
+  password,
+  input,
+};
+
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -113,10 +119,16 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue || "");
     }
     ScreenManager.pause();
-    const answer = await input({
+    const answer = await inquirerPrompts.input({
       message,
       default: defaultValue,
       validate,
+      theme: {
+        prefix: {
+          idle: "\x1b[32m?\x1b[0m", // Green question mark displayed when input is in progress
+          done: "\x1b[32m?\x1b[0m", // Green question mark displayed when input is completed
+        },
+      },
     });
     ScreenManager.continue();
     return ok(answer);
@@ -132,7 +144,7 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue || "");
     }
     ScreenManager.pause();
-    const answer = await password({
+    const answer = await inquirerPrompts.password({
       message,
       mask: "*",
       validate,
@@ -165,7 +177,7 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue !== undefined ? defaultValue : true);
     }
     ScreenManager.pause();
-    const answer = await confirm({
+    const answer = await inquirerPrompts.confirm({
       message,
       default: defaultValue ?? true,
       transformer,

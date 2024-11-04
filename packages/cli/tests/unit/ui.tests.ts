@@ -1,7 +1,7 @@
+/* eslint-disable import/no-duplicates */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as prompts from "@inquirer/prompts";
 import {
   Colors,
   InputTextConfig,
@@ -20,6 +20,7 @@ import sinon from "sinon";
 import { logger } from "../../src/commonlib/logger";
 import * as customizedPrompts from "../../src/prompts";
 import UI from "../../src/userInteraction";
+import { inquirerPrompts } from "../../src/userInteraction";
 import { expect } from "./utils";
 import mockedEnv from "mocked-env";
 
@@ -345,7 +346,7 @@ describe("User Interaction Tests", function () {
     });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
-      sandbox.stub(prompts, "confirm").resolves(false);
+      sandbox.stub(inquirerPrompts, "confirm").resolves(false);
       const result = await UI._confirm("Select a string", false);
       expect(result.isOk() ? result.value : result.error).to.be.equals(false);
     });
@@ -404,7 +405,7 @@ describe("User Interaction Tests", function () {
     });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
-      sandbox.stub(prompts, "input").resolves("abc");
+      sandbox.stub(inquirerPrompts, "input").resolves("abc");
       const result = await UI.input("test", "Input the password", "default string");
       expect(result.isOk() ? result.value : result.error).equals("abc");
     });
@@ -425,7 +426,7 @@ describe("User Interaction Tests", function () {
     });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
-      sandbox.stub(prompts, "password").resolves("Password Result");
+      sandbox.stub(inquirerPrompts, "password").resolves("Password Result");
       const result = await UI.password("test", "Input the password");
       expect(result.isOk() ? result.value : result.error).equals("Password Result");
     });
@@ -496,7 +497,7 @@ describe("User Interaction Tests", function () {
       expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
     });
     it("Input text", async () => {
-      sandbox.stub(prompts, "input").resolves("abc");
+      sandbox.stub(inquirerPrompts, "input").resolves("abc");
       sandbox.stub(UI, "interactive").value(true);
       const config: InputTextConfig = {
         name: "folder",

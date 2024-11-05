@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { exec } from "child_process";
+import * as os from "os";
+import psTree from "ps-tree";
 
 class ProcessUtil {
   async getProcessId(port: number): Promise<string> {
@@ -74,6 +76,38 @@ class ProcessUtil {
           resolve(stdout.trim());
         }
       });
+    });
+  }
+  async killProcessAndChildren(pid: number, signal = "SIGTERM"): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const platform = os.platform();
+      if (platform === "win32") {
+        // Windows: taskkill
+        exec(`taskkill /PID ${pid} /T /F`, (error, stdout) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(stdout.trim());
+          }
+        });
+      } else {
+        // Linux/macOS: ps-tree
+        psTree(pid, (err, children) => {
+          if (err) {
+            return reject(err);
+          }
+          // get all child processes and itself
+          const pids = [pid, ...children.map((child) => child.PID)];
+          pids.forEach((p) => {
+            try {
+              process.kill(Number(p), signal);
+            } catch (e) {
+              reject(e);
+            }
+          });
+          resolve(`Process(es) terminated: ${pids.join(",")}`);
+        });
+      }
     });
   }
 }

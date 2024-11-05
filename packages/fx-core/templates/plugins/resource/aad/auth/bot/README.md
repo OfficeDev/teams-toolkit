@@ -47,13 +47,14 @@ As described above, the Teams Toolkit generated some configuration to set up you
    const path = require("path");
 
    expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
-     res.sendFile(
+     send(
+       req,
        path.join(
          __dirname,
          "public",
          req.url.includes("auth-start.html") ? "auth-start.html" : "auth-end.html"
        )
-     );
+     ).pipe(res);
    });
    ```
 
@@ -360,13 +361,14 @@ To make this work in your application:
    });
 
    expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
-     res.sendFile(
+     send(
+       req,
        path.join(
          __dirname,
          "public",
          req.url.includes("auth-start.html") ? "auth-start.html" : "auth-end.html"
        )
-     );
+     ).pipe(res);
    });
    ```
 

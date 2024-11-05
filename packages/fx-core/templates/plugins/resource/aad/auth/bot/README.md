@@ -45,6 +45,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
    ```ts
    const path = require("path");
+   const send = require("send");
 
    expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
      send(
@@ -345,6 +346,7 @@ To make this work in your application:
 
    ```ts
    const path = require("path");
+   const send = require("send");
 
    // Listen for incoming requests.
    expressApp.post("/api/messages", async (req, res) => {

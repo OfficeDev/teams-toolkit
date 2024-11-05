@@ -390,7 +390,13 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         const spec = specs[1];
         try {
           const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
-          await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
+          const updateWarnings = await updateForCustomApi(
+            spec,
+            language,
+            destinationPath,
+            openapiSpecFileName
+          );
+          warnings.push(...updateWarnings);
         } catch (error: any) {
           throw new SystemError(
             this.componentName,

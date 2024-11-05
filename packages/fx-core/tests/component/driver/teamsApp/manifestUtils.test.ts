@@ -481,6 +481,7 @@ describe("trimManifestShortName", () => {
     teamsManifest.name.short = "shortname abcdefghijklmn123456${{APP_NAME_SUFFIX}}";
     sandbox.stub(fs, "readJson").resolves(teamsManifest);
     sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const res = await manifestUtils.trimManifestShortName("projectPath");
     assert.isTrue(res.isOk());
     assert.equal(teamsManifest.name.short, "shortnameabcdefghijklmn12${{APP_NAME_SUFFIX}}");
@@ -490,6 +491,7 @@ describe("trimManifestShortName", () => {
     teamsManifest.name.short = "shortname abcdefghijklmn123456";
     sandbox.stub(fs, "readJson").resolves(teamsManifest);
     sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const res = await manifestUtils.trimManifestShortName("projectPath");
     assert.isTrue(res.isOk());
     assert.equal(teamsManifest.name.short, "shortnameabcdefghijklmn12");
@@ -497,10 +499,24 @@ describe("trimManifestShortName", () => {
   it("No need to trim", async () => {
     const teamsManifest = new TeamsAppManifest();
     teamsManifest.name.short = "shortname abcdefghijklmn${{APP_NAME_SUFFIX}}";
-    sandbox.stub(fs, "readJson").resolves(teamsManifest);
-    sandbox.stub(fs, "writeFile").resolves();
+    const readJsonStub = sandbox.stub(fs, "readJson").resolves(teamsManifest);
+    const writeFileStub = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const res = await manifestUtils.trimManifestShortName("projectPath");
     assert.isTrue(res.isOk());
+    assert.isTrue(readJsonStub.calledOnce);
+    assert.isTrue(writeFileStub.notCalled);
     assert.equal(teamsManifest.name.short, "shortname abcdefghijklmn${{APP_NAME_SUFFIX}}");
+  });
+  it("No manifest", async () => {
+    const teamsManifest = new TeamsAppManifest();
+    teamsManifest.name.short = "shortname abcdefghijklmn${{APP_NAME_SUFFIX}}";
+    const readJsonStub = sandbox.stub(fs, "readJson").resolves(teamsManifest);
+    const writeFileStub = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    const res = await manifestUtils.trimManifestShortName("projectPath");
+    assert.isTrue(res.isOk());
+    assert.isTrue(readJsonStub.notCalled);
+    assert.isTrue(writeFileStub.notCalled);
   });
 });

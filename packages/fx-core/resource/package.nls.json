@@ -1,5 +1,7 @@
 {
   "core.addApi.confirm": "Teams Toolkit will modify files in your \"%s\" folder based on the new OpenAPI document you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.",
+  "core.addApi.confirm.teamsYaml": "Teams Toolkit will modify files in your \"%s\" folder and \"%s\" based on the new OpenAPI document you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.",
+  "core.addApi.confirm.localTeamsYaml": "Teams Toolkit will modify files in your \"%s\" folder, \"%s\" and \"%s\" based on the new OpenAPI document you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.",
   "core.addApi.continue": "Add",
   "core.provision.provision": "Provision",
   "core.provision.learnMore": "More info",

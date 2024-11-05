@@ -7,6 +7,7 @@ import adapter from "./adapter";
 // This bot's main dialog.
 import app from "./app/app";
 import path from "path";
+import send from "send";
 
 // Create express application.
 const expressApp = express();
@@ -25,9 +26,13 @@ expressApp.post("/api/messages", async (req, res) => {
   });
 });
 
-expressApp.get(
-  "/auth-:name(start|end).html",
-  express.static({
-    directory: path.join(__dirname, "public"),
-  })
-);
+expressApp.get(["/auth-start.html", "/auth-end.html"], async (req, res) => {
+  send(
+    req,
+    path.join(
+      __dirname,
+      "public",
+      req.url.includes("auth-start.html") ? "auth-start.html" : "auth-end.html"
+    )
+  ).pipe(res);
+});

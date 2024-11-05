@@ -303,7 +303,7 @@ describe("ActionInjector", () => {
       }
     });
 
-    it.only("should handle existing OAuth action if env names for configuration id exists", async () => {
+    it("should handle existing OAuth action if env names for configuration id exists", async () => {
       const ymlPath = "path/to/yml";
       const authName = "testAuth";
       const specRelativePath = "path/to/spec";

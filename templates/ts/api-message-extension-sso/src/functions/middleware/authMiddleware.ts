@@ -29,7 +29,6 @@ export async function authMiddleware(req?: HttpRequest): Promise<boolean> {
     const options = {
       allowedTenants: [config.aadAppTenantId],
       audience: config.aadAppClientId,
-      idtyp: "web",
       issuer: `https://login.microsoftonline.com/${config.aadAppTenantId}/v2.0`,
       scp: ["repairs_read"],
     };

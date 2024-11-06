@@ -46,7 +46,7 @@ import {
 } from "./common/localDebugSession";
 import { allRunningDebugSessions } from "./officeTaskHandler";
 import { deleteAad } from "./deleteAadHelper";
-
+import kill from "tree-kill";
 class NpmInstallTaskInfo {
   private startTime: number;
 
@@ -529,7 +529,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
       if (task[1] > 0) {
-        process.kill(task[1], "SIGTERM");
+        kill(task[1], "SIGTERM");
       }
     } catch (e) {
       // ignore and keep killing others

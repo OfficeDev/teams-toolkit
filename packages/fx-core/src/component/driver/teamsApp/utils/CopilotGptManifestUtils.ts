@@ -196,7 +196,19 @@ export class CopilotGptManifestUtils {
         if (!gptManifest.conversation_starters) {
           gptManifest.conversation_starters = [];
         }
-        gptManifest.conversation_starters.push(...conversationStarters);
+
+        for (const starter of conversationStarters) {
+          if (gptManifest.conversation_starters.length >= 6) {
+            break;
+          }
+          if (
+            !gptManifest.conversation_starters.some(
+              (existingStarter) => existingStarter.text === starter.text
+            )
+          ) {
+            gptManifest.conversation_starters.push(starter);
+          }
+        }
       }
 
       const updateGptManifestRes = await copilotGptManifestUtils.writeCopilotGptManifestFile(

@@ -171,6 +171,146 @@ describe("copilotGptManifestUtils", () => {
       }
     });
 
+    it("conversation starters count should less than 6", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(
+        JSON.stringify({
+          name: "name${{APP_NAME_SUFFIX}}",
+          description: "description",
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+          ],
+          actions: [
+            {
+              id: "action_1",
+              file: "plugin1.json",
+            },
+          ],
+        }) as any
+      );
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({
+        capabilities: {
+          conversation_starters: [
+            {
+              text: "List all repairs2",
+            },
+            {
+              text: "List all repairs3",
+            },
+            {
+              text: "List all repairs4",
+            },
+            {
+              text: "List all repairs5",
+            },
+            {
+              text: "List all repairs6",
+            },
+            {
+              text: "List all repairs7",
+            },
+          ],
+        },
+      } as any);
+
+      const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const updatedManifest = res.value;
+        chai.assert.deepEqual(updatedManifest.actions![0], {
+          id: "action_1",
+          file: "plugin1.json",
+        });
+        chai.assert.deepEqual(updatedManifest.actions![1], {
+          id: "testId",
+          file: "testFile",
+        });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs1",
+          },
+          {
+            text: "List all repairs2",
+          },
+          {
+            text: "List all repairs3",
+          },
+          {
+            text: "List all repairs4",
+          },
+          {
+            text: "List all repairs5",
+          },
+          {
+            text: "List all repairs6",
+          },
+        ]);
+      }
+    });
+
+    it("conversation starters should unique", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(
+        JSON.stringify({
+          name: "name${{APP_NAME_SUFFIX}}",
+          description: "description",
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+          ],
+          actions: [
+            {
+              id: "action_1",
+              file: "plugin1.json",
+            },
+          ],
+        }) as any
+      );
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({
+        capabilities: {
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+            {
+              text: "List all repairs2",
+            },
+          ],
+        },
+      } as any);
+
+      const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const updatedManifest = res.value;
+        chai.assert.deepEqual(updatedManifest.actions![0], {
+          id: "action_1",
+          file: "plugin1.json",
+        });
+        chai.assert.deepEqual(updatedManifest.actions![1], {
+          id: "testId",
+          file: "testFile",
+        });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs1",
+          },
+          {
+            text: "List all repairs2",
+          },
+        ]);
+      }
+    });
+
     it("add plugin error: read manifest error", async () => {
       sandbox.stub(fs, "pathExists").resolves(false);
       const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");

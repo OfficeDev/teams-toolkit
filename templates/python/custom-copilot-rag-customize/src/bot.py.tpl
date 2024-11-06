@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-
+import json
 from botbuilder.core import MemoryStorage, TurnContext
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.ai import AIOptions

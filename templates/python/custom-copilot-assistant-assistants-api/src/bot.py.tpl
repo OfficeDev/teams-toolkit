@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback
+import json
 from typing import Any, Dict, Optional
 
 from botbuilder.core import MemoryStorage, TurnContext

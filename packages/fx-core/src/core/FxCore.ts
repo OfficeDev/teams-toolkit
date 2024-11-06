@@ -1920,6 +1920,16 @@ export class FxCore {
       );
       const listResult = await specParser.list();
       const authApis = listResult.APIs.filter((value) => value.isValid && !!value.auth);
+      if (
+        inputs.platform === Platform.VSCode &&
+        featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
+        inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
+        !!inputs[QuestionNames.ApiPluginManifestPath]
+      ) {
+        inputs[QuestionNames.ApiOperation] = listResult.APIs.filter((value) => value.isValid).map(
+          (value) => value.api
+        );
+      }
       for (const api of inputs[QuestionNames.ApiOperation] as string[]) {
         const operation = authApis.find((op) => op.api === api);
         if (

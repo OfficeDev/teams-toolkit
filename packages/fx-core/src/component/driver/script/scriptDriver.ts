@@ -102,6 +102,29 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
+  if (ui?.runCommand) {
+    let workingDir = workingDirectory || ".";
+    workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
+    const res = await ui.runCommand({
+      cmd: command,
+      workingDirectory: workingDir,
+      timeout: timeout,
+      shell: shell,
+    });
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    const outputString = res.value;
+    const outputObject = parseSetOutputCommand(outputString);
+    if (Object.keys(outputObject).length > 0)
+      logProvider.verbose(
+        `script output env variables: ${maskSecret(JSON.stringify(outputObject), {
+          replace: "***",
+        })}`
+      );
+    return ok([outputString, outputObject]);
+  }
+
   let systemEncoding = await getSystemEncoding(command);
   if (command.startsWith("dotnet ")) {
     systemEncoding = "utf-8";

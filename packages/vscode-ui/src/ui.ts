@@ -13,13 +13,16 @@ import {
   QuickPick,
   QuickPickItem,
   QuickPickItemKind,
+  ShellExecution,
+  Task,
+  tasks,
+  TaskScope,
   Terminal,
   ThemeIcon,
   Uri,
   window,
   workspace,
 } from "vscode";
-
 import {
   Colors,
   ConfirmConfig,
@@ -53,6 +56,7 @@ import {
 import { ProgressHandler } from "./progressHandler";
 import { EmptyOptionsError, InternalUIError, ScriptTimeoutError, UserCancelError } from "./error";
 import { DefaultLocalizer, Localizer } from "./localize";
+import fs from "fs";
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
@@ -1121,26 +1125,52 @@ export class VSCodeUI implements UserInteraction {
     });
 
     try {
-      let terminal: Terminal | undefined;
-      const name = args.shellName ?? (shell ? `${this.terminalName}-${shell}` : this.terminalName);
-      if (
-        window.terminals.length === 0 ||
-        (terminal = find(window.terminals, (value) => value.name === name)) === undefined
-      ) {
-        terminal = window.createTerminal({
-          name,
-          shellPath: shell,
-          cwd: workingDirectory,
-          env,
-          iconPath: args.iconPath ? new ThemeIcon(args.iconPath) : undefined,
-        });
-      }
-      terminal.show();
-      terminal.sendText(cmd);
+      // let terminal: Terminal | undefined;
+      // const name = args.shellName ?? (shell ? `${this.terminalName}-${shell}` : this.terminalName);
 
-      const processId = await Promise.race([terminal.processId, timeoutPromise]);
-      await sleep(500);
-      return ok(processId?.toString() ?? "");
+      const taskPromise = new Promise((resolve, reject) => {
+        const task = new Task(
+          { type: "shell", task: "run script" },
+          TaskScope.Workspace,
+          "run script",
+          "ms-teams-vscode-extension",
+          new ShellExecution(cmd, {
+            cwd: workingDirectory, // 使用当前工作区路径
+          })
+        );
+        task.isBackground = true;
+        void tasks.executeTask(task);
+        tasks.onDidStartTaskProcess((e) => {
+          if (
+            e.execution.task.name === "run script" &&
+            e.execution.task.source === "ms-teams-vscode-extension"
+          ) {
+            void window.showInformationMessage(`run script started: ${e.processId}`);
+          }
+        });
+        const endTaskListener = tasks.onDidEndTaskProcess((e) => {
+          if (
+            e.execution.task.name === "run script" &&
+            e.execution.task.source === "ms-teams-vscode-extension"
+          ) {
+            endTaskListener.dispose();
+            if (e.exitCode === 0) {
+              void window.showInformationMessage("run script finished successfully!");
+              resolve(undefined);
+            } else {
+              void window.showErrorMessage(`run script failed with exit code ${e.exitCode || ""}`);
+              reject(new Error(`script execution failure: ${e.exitCode || ""}`));
+            }
+          }
+        });
+      });
+
+      await Promise.race([taskPromise, timeoutPromise]);
+      let stdout = "";
+      if (fs.existsSync("script.log")) {
+        stdout = fs.readFileSync("script.log", "utf8");
+      }
+      return ok(stdout);
     } catch (error) {
       return err(this.assembleError(error));
     }

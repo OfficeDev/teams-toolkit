@@ -6,6 +6,7 @@
  */
 
 import {
+  AdaptiveCardGenerator,
   ErrorResult,
   ErrorType,
   ProjectType,
@@ -873,6 +874,51 @@ describe("updateForCustomApi", async () => {
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "typescript", "path", "openapi.yaml");
+  });
+
+  it("happy path: should contain warning if generate adaptive card failed", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        assert.fail("should not generate adaptive card");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    sandbox
+      .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+      .throws(new Error("generate adaptive card failed"));
+
+    const result = await CopilotPluginHelper.updateForCustomApi(
+      spec,
+      "typescript",
+      "path",
+      "openapi.yaml"
+    );
+
+    expect(result).to.be.deep.equal([
+      {
+        type: WarningType.GenerateCardFailed,
+        content:
+          "Failed to create the adaptive card for API 'getHello': generate adaptive card failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "getHello",
+      },
+      {
+        type: WarningType.GenerateCardFailed,
+        content:
+          "Failed to create the adaptive card for API 'createPet': generate adaptive card failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "createPet",
+      },
+    ]);
   });
 
   it("happy path: js", async () => {
@@ -2423,7 +2469,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2475,7 +2521,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2527,7 +2573,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox

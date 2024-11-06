@@ -23,7 +23,12 @@ import {
   environmentNameManager,
   ProgrammingLanguage,
 } from "@microsoft/teamsfx-core";
-import { AadValidator, BotValidator, FunctionValidator } from "../commonlib";
+import {
+  AadValidator,
+  BotValidator,
+  FunctionValidator,
+  ValidatorType,
+} from "../commonlib";
 import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 
 export abstract class CaseFactory {
@@ -46,6 +51,7 @@ export abstract class CaseFactory {
     skipDeploy?: boolean;
     skipValidate?: boolean;
     skipPackage?: boolean;
+    skipValidateForProvision?: boolean;
   };
   public custimized?: Record<string, string>;
 
@@ -69,6 +75,7 @@ export abstract class CaseFactory {
       skipDeploy?: boolean;
       skipValidate?: boolean;
       skipPackage?: boolean;
+      skipValidateForProvision?: boolean;
     } = {},
     custimized?: Record<string, string>
   ) {
@@ -128,7 +135,7 @@ export abstract class CaseFactory {
       onBeforeProvision,
       onCreate,
     } = this;
-    describe(`template Test: ${capability}`, function () {
+    describe(`template Test: ${capability} - ${programmingLanguage}`, function () {
       const testFolder = getTestFolder();
       const appName = getUniqueAppName();
       const projectPath = path.resolve(testFolder, appName);
@@ -171,35 +178,40 @@ export abstract class CaseFactory {
           const { success } = await Executor.provision(projectPath);
           expect(success).to.be.true;
 
-          // Validate Provision
-          const context = await readContextMultiEnvV3(projectPath, env);
-          if (validate.includes("bot")) {
-            // Validate Bot Provision
-            const bot = new BotValidator(context, projectPath, env);
-            await bot.validateProvisionV3(false);
-          }
-          if (validate.includes("tab")) {
-            // Validate Tab Frontend
-            // const frontend = StaticSiteValidator.init(context);
-            // await StaticSiteValidator.validateProvision(frontend);
-          }
-          if (validate.includes("aad")) {
-            // Validate Aad App
-            const aad = AadValidator.init(context, false, m365Login);
-            await AadValidator.validate(aad);
-          }
-          if (validate.includes("tab & bot")) {
-            // Validate Tab & Bot Provision
-            await validateTabAndBotProjectProvision(projectPath, env);
-          }
-          if (validate.includes("function")) {
-            // Validate Function App
-            const functionValidator = new FunctionValidator(
-              context,
-              projectPath,
-              env
-            );
-            await functionValidator.validateProvision();
+          if (!options?.skipValidateForProvision) {
+            // Validate Provision
+            const context = await readContextMultiEnvV3(projectPath, env);
+            if (validate.includes("bot")) {
+              // Validate Bot Provision
+              const bot = new BotValidator(context, projectPath, env);
+              await bot.validateProvisionV3(false);
+            }
+            if (validate.includes("tab")) {
+              // Validate Tab Frontend
+              // const frontend = StaticSiteValidator.init(context);
+              // await StaticSiteValidator.validateProvision(frontend);
+            }
+            if (validate.includes("aad")) {
+              // Validate Aad App
+              const aad = AadValidator.init(context, false, m365Login);
+              await AadValidator.validate(aad);
+            }
+            if (validate.includes("tab & bot")) {
+              // Validate Tab & Bot Provision
+              await validateTabAndBotProjectProvision(projectPath, env);
+            }
+            if (validate.includes("function")) {
+              // Validate Function App
+              const functionValidator = new FunctionValidator(
+                context,
+                projectPath,
+                env,
+                capability === Capability.DeclarativeAgent
+                  ? [ValidatorType.FUNCTION_NAME]
+                  : [ValidatorType.API_ENDPOINT]
+              );
+              await functionValidator.validateProvision();
+            }
           }
         }
 

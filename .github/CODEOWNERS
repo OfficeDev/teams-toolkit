@@ -247,7 +247,7 @@
 
 /packages/simpleauth @blackchoey @wenytang-ms
 
-/packages/spec-parser/ @KennethBWSong @SLdragon
+/packages/spec-parser/ @KennethBWSong @SLdragon @adashen
 
 /packages/tests/src/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/tests/src/e2e/bot/tdpIntegrationTemplates @yuqizhou77 @nliu-ms

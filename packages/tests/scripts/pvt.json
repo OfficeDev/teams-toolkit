@@ -1,6 +1,6 @@
 {
   "windows-latest": {
-    "node-18": [
+    "node-20": [
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-bot-twice",
@@ -8,11 +8,6 @@
       "localdebug-notification-func",
       "localdebug-notification-express",
       "localdebug-tab-regen-appid",
-      "treeview-newproject-spfx",
-      "treeview-collaboration-spfx",
-      "remotedebug-spfxreact-globalpkg",
-      "remotedebug-spfxnone-globalpkg-addwebpart",
-      "remotedebug-spfxreact-addwebpart",
       "treeview-newproject-outlook-add-in",
       "treeview-newproject-tab",
       "treeview-collaboration-win-only",
@@ -71,11 +66,6 @@
       "localdebug-aiagent-new-openai-bot",
       "remotedebug-msg-newapi-apikey-ts-win-only",
       "remotedebug-msg-newapi-apikey-win-only",
-      "remotedebug-spfxreact-import-single",
-      "remotedebug-spfxreact-import-multiple",
-      "remotedebug-spfx-none",
-      "remotedebug-spfx-minimal",
-      "remotedebug-spfx-react",
       "remotedebug-msg-newapi-microsoftentra-ts-win-only",
       "remotedebug-msg-newapi-microsoftentra-win-only",
       "remotedebug-msg-multiple-params-win-only",
@@ -98,10 +88,20 @@
       "remotedebug-chatdata-customapi-ts-openai-win-only",
       "remotedebug-chatdata-customapi-py-azureopenai-win-only",
       "remotedebug-chatdata-customapi-py-openai-win-only"
-      
-
     ],
-    "node-20": ["localdebug-obo-tab"]
+    "node-18": [
+      "localdebug-obo-tab",
+      "treeview-newproject-spfx",
+      "treeview-collaboration-spfx",
+      "remotedebug-spfxreact-globalpkg",
+      "remotedebug-spfxnone-globalpkg-addwebpart",
+      "remotedebug-spfxreact-addwebpart",
+      "remotedebug-spfxreact-import-single",
+      "remotedebug-spfxreact-import-multiple",
+      "remotedebug-spfx-none",
+      "remotedebug-spfx-minimal",
+      "remotedebug-spfx-react"
+    ]
   },
   "ubuntu-latest": {
     "node-18": [

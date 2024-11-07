@@ -60,8 +60,6 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ![microsoft-entra-flow](https://github.com/OfficeDev/TeamsFx/assets/107838226/846e7a60-8cc1-4d8b-852e-2aec93b61fe9)
 
-> **Note**: The Azure Active Directory (AAD) flow is only functional in remote environments. It cannot be tested in a local environment due to the lack of authentication support in Azure Function core tools.
-
 ## Addition information and references
 
 - [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)

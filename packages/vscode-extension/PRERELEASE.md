@@ -29,7 +29,7 @@
 #### Bug Fixes
 
 - Update `@azure/storage-blob` to avoid AbortSignal error when deploying with `azureStorage/enableStaticWebsite`. [#12583](https://github.com/OfficeDev/teams-toolkit/pull/12583)
-- Upgraded `path-to-regexp` and `body-parser` to fix vulunerbility issues. [#12610](https://github.com/OfficeDev/teams-toolkit/pull/12610)
+- Upgraded `path-to-regexp` and `body-parser` to fix vulnerability issues. [#12610](https://github.com/OfficeDev/teams-toolkit/pull/12610)
 - Fixed an issue where `teamsapp.yml` when adding an API Plugin to the declarative agent. [#12656](https://github.com/OfficeDev/teams-toolkit/pull/12656)
 
 ### September 17, 2024

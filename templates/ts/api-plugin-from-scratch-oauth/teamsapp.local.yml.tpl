@@ -95,14 +95,14 @@ provision:
       appId: ${{TEAMS_APP_ID}}
       # Path to OpenAPI description document
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
-      configurationId: AADAUTHCODE_CONFIGURATION_ID
+      configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
 {{/MicrosoftEntra}}
 {{^MicrosoftEntra}}
       name: oAuth2AuthCode
       appId: ${{TEAMS_APP_ID}}
       # Path to OpenAPI description document
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
-      configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+      configurationId: ${{OAUTH2AUTHCODE_CONFIGURATION_ID}}
 {{/MicrosoftEntra}}
 
   # Build Teams app package with latest env value

@@ -1566,6 +1566,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1579,85 +1581,6 @@ describe("SpecParser", () => {
       );
 
       expect(result.allSuccess).to.be.true;
-      expect(JsyamlSpy.calledOnce).to.be.true;
-      expect(specFilterStub.calledOnce).to.be.true;
-      expect(outputFileStub.calledOnce).to.be.true;
-      expect(manifestUpdaterStub.calledOnce).to.be.true;
-      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
-      expect(outputJSONStub.calledThrice).to.be.true;
-    });
-
-    it("should return warning if generate json data throw exception", async () => {
-      const specParser = new SpecParser("path/to/spec.yaml");
-      const spec = {
-        openapi: "3.0.0",
-        paths: {
-          "/hello": {
-            get: {
-              operationId: "helloApi",
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      };
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
-      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
-      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
-      const JsyamlSpy = sinon.spy(jsyaml, "dump");
-
-      const manifestUpdaterStub = sinon
-        .stub(ManifestUpdater, "updateManifest")
-        .resolves([{}, []] as any);
-
-      sinon.stub(JsonDataGenerator, "generate").throws(new Error("generate json data error"));
-      const generateAdaptiveCardStub = sinon
-        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
-        .returns([
-          {
-            type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-            version: "1.5",
-            body: [
-              {
-                type: "TextBlock",
-                text: "id: ${id}",
-                wrap: true,
-              },
-            ],
-          },
-          "$",
-        ]);
-
-      const filter = ["get /hello"];
-
-      const outputSpecPath = "path/to/output.yaml";
-      const result = await specParser.generate(
-        "path/to/manifest.json",
-        filter,
-        outputSpecPath,
-        "path/to/adaptiveCardFolder"
-      );
-
-      expect(result.allSuccess).to.be.true;
-      expect(result.warnings.length).equals(1);
-      expect(result.warnings[0].content).contains("generate json data error");
       expect(JsyamlSpy.calledOnce).to.be.true;
       expect(specFilterStub.calledOnce).to.be.true;
       expect(outputFileStub.calledOnce).to.be.true;
@@ -1712,6 +1635,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1789,6 +1714,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1864,6 +1791,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1978,6 +1907,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello", "post /hello"];
@@ -2089,6 +2020,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello", "post /hello"];
@@ -2205,6 +2138,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello", "post /hello"];

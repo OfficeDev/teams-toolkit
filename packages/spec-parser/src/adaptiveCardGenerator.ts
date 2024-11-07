@@ -10,24 +10,44 @@ import {
   ErrorType,
   ImageElement,
   TextBlockElement,
+  WarningResult,
+  WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
+import { JsonDataGenerator } from "./jsonDataGenerator";
 
 export class AdaptiveCardGenerator {
   static generateAdaptiveCard(
     operationItem: OpenAPIV3.OperationObject,
     allowMultipleMediaType = false,
     maxElementCount: number = Number.MAX_SAFE_INTEGER
-  ): [AdaptiveCard, string] {
+  ): [AdaptiveCard, string, any, WarningResult[]] {
     try {
       const { json } = Utils.getResponseJson(operationItem, allowMultipleMediaType);
 
       let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
+      let jsonData: any = {};
+      const warnings: WarningResult[] = [];
 
+      const operationId = operationItem.operationId!;
       let schema = json.schema as OpenAPIV3.SchemaObject;
       let jsonPath = "$";
       if (schema && Object.keys(schema).length > 0) {
+        try {
+          jsonData = JsonDataGenerator.generate(schema);
+        } catch (err) {
+          warnings.push({
+            type: WarningType.GenerateJsonDataFailed,
+            content: Utils.format(
+              ConstantString.GenerateJsonDataFailed,
+              operationId,
+              (err as Error).toString()
+            ),
+            data: operationId,
+          });
+        }
+
         jsonPath = AdaptiveCardGenerator.getResponseJsonPathFromSchema(schema);
         if (jsonPath !== "$") {
           schema = schema.properties![jsonPath] as OpenAPIV3.SchemaObject;
@@ -65,7 +85,7 @@ export class AdaptiveCardGenerator {
         body: cardBody,
       };
 
-      return [fullCard, jsonPath];
+      return [fullCard, jsonPath, jsonData, warnings];
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.GenerateAdaptiveCardFailed);
     }

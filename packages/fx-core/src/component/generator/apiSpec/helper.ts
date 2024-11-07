@@ -1138,12 +1138,27 @@ async function updateAdaptiveCardForCustomApi(
     for (const item of specItems) {
       const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
       try {
-        const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true, 5);
+        const [card, jsonPath, jsonData, generateWarnings] =
+          AdaptiveCardGenerator.generateAdaptiveCard(item.item, true, 5);
         if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
           (card.body[0] as any).$data = `\${${jsonPath}}`;
         }
         const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
+        const jsonDataPath = path.join(adaptiveCardsFolderPath, `${name}.data.json`);
         await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
+        await fs.writeFile(jsonDataPath, JSON.stringify(jsonData, null, 2));
+
+        generateWarnings.forEach((w) => {
+          warnings.push({
+            type: WarningType.GenerateJsonDataFailed,
+            content: getLocalizedString(
+              "core.copilotPlugin.scaffold.summary.warning.generate.ac.data.failed",
+              item.item.operationId,
+              w.content
+            ),
+            data: item.item.operationId,
+          });
+        });
       } catch (err) {
         warnings.push({
           type: WarningType.GenerateCardFailed,

@@ -30,6 +30,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
+  ScriptExecutionError,
   SelectSubscriptionError,
   UserCancelError,
   assembleError,
@@ -45,6 +46,7 @@ import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { errors } from "./resource";
 import { getColorizedString } from "./utils";
+import { cwd } from "process";
 
 export const inquirerPrompts = {
   confirm,
@@ -612,6 +614,43 @@ class CLIUserInteraction implements UserInteraction {
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {
     return new Progress(title, totalSteps);
+  }
+
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string | undefined;
+    shell?: string | undefined;
+    timeout?: number | undefined;
+    env?: { [k: string]: string } | undefined;
+    shellName?: string;
+    iconPath?: string;
+  }): Promise<Result<string, FxError>> {
+    return new Promise<Result<string, FxError>>((resolve) => {
+      const { spawn } = require("child_process");
+      // 启动一个新的终端执行 npm run build 命令
+      const buildProcess = spawn("cmd.exe", ["/c", args.cmd], {
+        stdio: "inherit",
+        cwd: args.workingDirectory,
+      });
+
+      // 监听构建进程的完成
+      buildProcess.on("close", (code: number) => {
+        if (code === 0) {
+          void this.showMessage("info", "Script execution successfully.", false);
+          resolve(ok(""));
+        } else {
+          void this.showMessage("error", "Script execution failed with code:" + code, false);
+          resolve(
+            err(
+              new ScriptExecutionError(
+                new Error("Script execution failed with code:" + code),
+                args.cmd
+              )
+            )
+          );
+        }
+      });
+    });
   }
 }
 

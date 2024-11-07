@@ -1,28 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { find, remove } from "lodash";
-import * as path from "path";
-import {
-  commands,
-  Disposable,
-  env,
-  InputBox,
-  QuickInputButton,
-  QuickInputButtons,
-  QuickPick,
-  QuickPickItem,
-  QuickPickItemKind,
-  ShellExecution,
-  Task,
-  tasks,
-  TaskScope,
-  Terminal,
-  ThemeIcon,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
 import {
   Colors,
   ConfirmConfig,
@@ -53,7 +31,27 @@ import {
   UIConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { ProgressHandler } from "./progressHandler";
+import { remove } from "lodash";
+import * as path from "path";
+import {
+  commands,
+  Disposable,
+  env,
+  InputBox,
+  QuickInputButton,
+  QuickInputButtons,
+  QuickPick,
+  QuickPickItem,
+  QuickPickItemKind,
+  ShellExecution,
+  Task,
+  tasks,
+  TaskScope,
+  ThemeIcon,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
 import {
   EmptyOptionsError,
   InternalUIError,
@@ -62,7 +60,7 @@ import {
   UserCancelError,
 } from "./error";
 import { DefaultLocalizer, Localizer } from "./localize";
-import fs from "fs";
+import { ProgressHandler } from "./progressHandler";
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));

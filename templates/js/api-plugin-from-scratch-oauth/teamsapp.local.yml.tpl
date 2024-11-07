@@ -71,3 +71,11 @@ deploy:
     name: install dependencies
     with:
       args: install --no-audit
+
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./.localConfigs
+      envs:
+        aadAppClientId: ${{AAD_APP_CLIENT_ID}}
+        aadAppTenantId: ${{AAD_APP_TENANT_ID}}

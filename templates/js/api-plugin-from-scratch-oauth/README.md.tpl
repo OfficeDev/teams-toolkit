@@ -40,7 +40,7 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-{{^DeclarativeCopilot}}
+   {{^DeclarativeCopilot}}
 3. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)` from the launch configuration dropdown.
 4. When Teams launches in the browser, open the `Copilot` app.
 5. Select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
@@ -50,7 +50,7 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 3. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
 4. Select your declarative agent from the `Copilot` app.
 5. Send a message to Copilot to find a repair record.
-{{/DeclarativeCopilot}}
+   {{/DeclarativeCopilot}}
 
 ## What's included in the template
 
@@ -64,17 +64,20 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                               | Contents                                                                                              |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `src/functions/repairs.js`                         | The main file of a function in Azure Functions.                                                       |
-| `src/repairsData.json`                             | The data source for the repair API.                                                                   |
-| `appPackage/apiSpecificationFile/repair.dev.yml`   | A file that describes the structure and behavior of the repair API.                                   |
-| `appPackage/apiSpecificationFile/repair.local.yml` | A file that describes the structure and behavior of the repair API for local execution and debugging. |
-| `appPackage/manifest.json`                         | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.              |
-| `appPackage/ai-plugin.dev.json`                    | The manifest file for your API Plugin that contains information for your API and used by LLM.     |
-| `appPackage/ai-plugin.local.json`                  | The manifest file for your API Plugin for local execution and debugging.                          |
+| File                                            | Contents                                                                                                                      |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src/functions/repairs.js`                      | The main file of a function in Azure Functions.                                                                               |
+| `src/functions/middleware/tokenCacheWrapper.js` | A wrapper class that handles caching of JWT signing keys to improve performance of token validation.                          |
+| `src/functions/middleware/tokenValidator.js`    | Core class for validating JWT tokens from Microsoft Entra, including checks for claims, scopes, roles, and tenant validation. |
+| `src/functions/middleware/authMiddleware.js`    | Middleware function that handles authorization using JWT tokens, integrating with the token validator.                        |
+| `src/functions/middleware/utils.js`             | Utility functions for authentication, including retrieving JWKS URIs for different cloud environments.                        |
+| `src/functions/middleware/config.js`            | Configuration file that exports Microsoft Entra app settings from environment variables.                                      |
+| `src/repairsData.json`                          | The data source for the repair API.                                                                                           |
+| `appPackage/apiSpecificationFile/repair.yml`    | A file that describes the structure and behavior of the repair API.                                                           |
+| `appPackage/manifest.json`                      | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.                                      |
+| `appPackage/ai-plugin.json`                     | The manifest file for your API Plugin that contains information for your API and used by LLM.                                 |
 {{#DeclarativeCopilot}}
-| `appPackage/repairDeclarativeAgent.json` | Define the behaviour and configurations of the declarative agent. |
+| `appPackage/repairDeclarativeAgent.json`        | Define the behaviour and configurations of the declarative agent.                                                             |
 {{/DeclarativeCopilot}}
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
@@ -90,14 +93,11 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ![oauth-flow](https://github.com/OfficeDev/teams-toolkit/assets/107838226/f074abbe-d9e3-4a46-8e08-feb66b17a539)
 
-> **Note**: The OAuth flow is only functional in remote environments. It cannot be tested in a local environment due to the lack of authentication support in Azure Function core tools.
-{{/MicrosoftEntra}}
-
 ## Addition information and references
 
 {{#DeclarativeCopilot}}
 - [Declarative agents for Microsoft 365](https://aka.ms/teams-toolkit-declarative-agent)
-{{/DeclarativeCopilot}}
+  {{/DeclarativeCopilot}}
 - [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)
 - [Message extensions for Microsoft 365 Copilot](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-message-extension-bot)
 - [Microsoft Graph Connectors for Microsoft 365 Copilot](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector)

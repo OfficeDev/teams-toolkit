@@ -17,7 +17,7 @@
     "actions": [
         {
             "id": "repairPlugin",
-            "file": "ai-plugin.${{TEAMSFX_ENV}}.json"
+            "file": "ai-plugin.json"
         }
     ]
 }

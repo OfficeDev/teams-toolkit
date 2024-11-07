@@ -54,7 +54,13 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { ProgressHandler } from "./progressHandler";
-import { EmptyOptionsError, InternalUIError, ScriptTimeoutError, UserCancelError } from "./error";
+import {
+  EmptyOptionsError,
+  InternalUIError,
+  ScriptExecutionError,
+  ScriptTimeoutError,
+  UserCancelError,
+} from "./error";
 import { DefaultLocalizer, Localizer } from "./localize";
 import fs from "fs";
 
@@ -1109,7 +1115,6 @@ export class VSCodeUI implements UserInteraction {
   }): Promise<Result<string, FxError>> {
     const cmd = args.cmd;
     const workingDirectory = args.workingDirectory;
-    const shell = args.shell;
     const timeout = args.timeout;
     const env = args.env;
     const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
@@ -1123,54 +1128,51 @@ export class VSCodeUI implements UserInteraction {
         );
       }, timeout ?? 1000 * 60 * 5);
     });
-
-    try {
-      // let terminal: Terminal | undefined;
-      // const name = args.shellName ?? (shell ? `${this.terminalName}-${shell}` : this.terminalName);
-
-      const taskPromise = new Promise((resolve, reject) => {
-        const task = new Task(
-          { type: "shell", task: "run script" },
-          TaskScope.Workspace,
-          "run script",
-          "ms-teams-vscode-extension",
-          new ShellExecution(cmd, {
-            cwd: workingDirectory, // 使用当前工作区路径
-          })
-        );
-        task.isBackground = true;
-        void tasks.executeTask(task);
-        tasks.onDidStartTaskProcess((e) => {
-          if (
-            e.execution.task.name === "run script" &&
-            e.execution.task.source === "ms-teams-vscode-extension"
-          ) {
-            void window.showInformationMessage(`run script started: ${e.processId}`);
+    const taskPromise = new Promise((resolve, reject) => {
+      const task = new Task(
+        { type: "shell", task: "run script" },
+        TaskScope.Workspace,
+        "run script",
+        "ms-teams-vscode-extension",
+        new ShellExecution(cmd, {
+          cwd: workingDirectory,
+          env: env,
+        })
+      );
+      task.isBackground = true;
+      void tasks.executeTask(task);
+      // tasks.onDidStartTaskProcess((e) => {
+      //   if (
+      //     e.execution.task.name === "run script" &&
+      //     e.execution.task.source === "ms-teams-vscode-extension"
+      //   ) {
+      //     void window.showInformationMessage(`run script started: ${e.processId}`);
+      //   }
+      // });
+      const endTaskListener = tasks.onDidEndTaskProcess((e) => {
+        if (
+          e.execution.task.name === "run script" &&
+          e.execution.task.source === "ms-teams-vscode-extension"
+        ) {
+          endTaskListener.dispose();
+          if (e.exitCode === 0) {
+            void window.showInformationMessage("run script finished successfully!");
+            resolve(undefined);
+          } else {
+            void window.showErrorMessage(`run script failed with exit code ${e.exitCode || ""}`);
+            reject(
+              new ScriptExecutionError(
+                this.localizer.commandExecutionErrorMessage(cmd),
+                this.localizer.commandExecutionErrorDisplayMessage(cmd)
+              )
+            );
           }
-        });
-        const endTaskListener = tasks.onDidEndTaskProcess((e) => {
-          if (
-            e.execution.task.name === "run script" &&
-            e.execution.task.source === "ms-teams-vscode-extension"
-          ) {
-            endTaskListener.dispose();
-            if (e.exitCode === 0) {
-              void window.showInformationMessage("run script finished successfully!");
-              resolve(undefined);
-            } else {
-              void window.showErrorMessage(`run script failed with exit code ${e.exitCode || ""}`);
-              reject(new Error(`script execution failure: ${e.exitCode || ""}`));
-            }
-          }
-        });
+        }
       });
-
+    });
+    try {
       await Promise.race([taskPromise, timeoutPromise]);
-      let stdout = "";
-      if (fs.existsSync("script.log")) {
-        stdout = fs.readFileSync("script.log", "utf8");
-      }
-      return ok(stdout);
+      return ok("");
     } catch (error) {
       return err(this.assembleError(error));
     }

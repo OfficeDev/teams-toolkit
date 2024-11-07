@@ -92,6 +92,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## How OAuth works in the API plugin
 
 ![oauth-flow](https://github.com/OfficeDev/teams-toolkit/assets/107838226/f074abbe-d9e3-4a46-8e08-feb66b17a539)
+{{/MicrosoftEntra}}
 
 ## Addition information and references
 

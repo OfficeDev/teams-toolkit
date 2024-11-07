@@ -1,15 +1,12 @@
 # Lines starting with '#' are comments.
-
 # Each line is a file pattern followed by one or more owners.
 
 # More details are here: https://help.github.com/articles/about-codeowners/
 
 # Order is important. The last matching pattern has the most precedence.
-
 # The folders are ordered as follows:
 
 # In each subsection folders are ordered first by depth, then alphabetically.
-
 # This should make it easy to add new rules without breaking existing ones.
 
 ./lerna.json @wenytang-ms @qinezh @Siglud @LongOddCode
@@ -294,9 +291,9 @@
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 
-/schemas/\* @yuqizhou77 @huimiu
+/schemas/* @yuqizhou77 @huimiu
 
-/templates/_ @hund030 @eriolchan @huimiu
+/templates/* @hund030 @eriolchan @huimiu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/api-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang @anchenyi
@@ -356,4 +353,4 @@
 /templates/constraints/yml/actions @hund030 @eriolchan @huimiu
 /templates/python @adashen @blackchoey @frankqianms
 /templates/scripts @hund030 @eriolchan @huimiu
-/templates/csharp/custom-copilot-_ @adashen @blackchoey @frankqianms @xzf0587
+/templates/csharp/custom-copilot-* @adashen @blackchoey @frankqianms @xzf0587 

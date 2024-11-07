@@ -4,6 +4,32 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### November 14, 2024
+
+#### New Features
+
+- **Added Local Authentication Support for API ME and API Plugin**: We have introduced local authentication support for application templates of API-ME and API Plugin application with Microsoft Entra and OAuth. which eliminates the annoymouns setup for APIs on local environment end to end and also helps developers verify the behavior when Teams and Microsoft 365 Copilot invokes an API without proper authorization. This feature includes built-in middleware that implements the token validation and a guided code tour explains how it works.
+
+- **Process Termination For Port Conflict**: Port conflict is a common pain point for developers when debugging bot applications. It happens when the processes are not fully terminated when debug session stops. Now Teams Toolkit has added addtional support to help terminate those unkilled processes to release ports.
+
+- **Integrated with Microsoft Kiota for API Plugin Generation**: Now Teams Toolkit has integrated with [Microsoft Kiota](https://learn.microsoft.com/en-us/openapi/kiota/overview) when adding API Plugins into Declarative Agent. With this integration, developers are enabled to create API Plugins by browsing public API catalogs and Microsoft Kiota is capable of handling large OpenAPI Description Document. This is an experimental feature, for early access make sure to turn on [VSCode Settings](https://code.visualstudio.com/docs/getstarted/settings#_workspace-settings) with `Enable Microsoft Kiota`.
+
+- **Using Assistant API on Azure OpenAI Service**: We have previously announced the support for Assistant API on Azure OpenAI Services in Teams Toolkit for Python language, and now it has expanded to TypeScript and JavaScript.
+
+- **Manifest Schema Validtaion Enhancement**: Added support for manifest schema validation to cover localization files and default language files.
+
+#### Enhancements
+
+- Updated Bot application templates from `restify` to `express` server for better support of Node.js 20.
+- Updated application templates and pre-requisiste checker for Node.js 20 support.
+- Updated application templates to the latest stable [App Manifest](https://learn.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema#sample-app-manifest) version v1.19.
+
+#### Bug Fixes
+
+- Update `@azure/storage-blob` to avoid AbortSignal error when deploying with `azureStorage/enableStaticWebsite`. [#12583](https://github.com/OfficeDev/teams-toolkit/pull/12583)
+- Upgraded `path-to-regexp` and `body-parser` to fix vulunerbility issues. [#12610](https://github.com/OfficeDev/teams-toolkit/pull/12610)
+- Fixed an issue where `teamsapp.yml` when adding an API Plugin to the declarative agent. [#12656](https://github.com/OfficeDev/teams-toolkit/pull/12656)
+
 ### September 17, 2024
 
 #### Enhancement

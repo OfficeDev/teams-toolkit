@@ -1151,8 +1151,9 @@ async function updateAdaptiveCardForCustomApi(
         generateWarnings.forEach((w) => {
           warnings.push({
             type: WarningType.GenerateJsonDataFailed,
-            content: getLocalizedString(
-              "core.copilotPlugin.scaffold.summary.warning.generate.ac.data.failed",
+            // TODO: move message to package.nls.json file
+            content: util.format(
+              "Failed to create the adaptive card mock data for API '%s': %s. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
               item.item.operationId,
               w.content
             ),

@@ -56,11 +56,11 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '~18' // Set NodeJS version to 18.x
         }
         {
-          name: 'M365_CLIENT_ID'
+          name: 'aadAppClientId'
           value: aadAppClientId
         }
         {
-          name: 'M365_TENANT_ID'
+          name: 'aadAppTenantId'
           value: aadAppTenantId
         }
         {

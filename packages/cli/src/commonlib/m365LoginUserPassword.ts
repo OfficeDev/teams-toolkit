@@ -135,6 +135,10 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
   signout(): boolean {
     return true;
   }
+
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export default M365ProviderUserPassword.getInstance();

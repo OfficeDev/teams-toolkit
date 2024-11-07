@@ -14,9 +14,7 @@
         "--extensions_dir",
         ".test-resources",
         "--type",
-        "insider",
-        "--code_version",
-        "1.90.0-insider",
+        "stable",
         "--code_settings",
         "./settings.json",
         "./out/ui-test/**/${{ YOUR TEST CASE }}.test.js"

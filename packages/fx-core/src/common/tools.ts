@@ -14,6 +14,22 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
   return teamsDevPortalClient.getSideloadingStatus(token);
 }
 
+export async function listAllTenants(token: string): Promise<Record<string, any>[]> {
+  const RM_ENDPOINT = "https://management.azure.com/tenants?api-version=2022-06-01";
+  if (token.length > 0) {
+    try {
+      const response = await axios.get(RM_ENDPOINT, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data.value;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  return [];
+}
+
 export async function getSPFxTenant(graphToken: string): Promise<string> {
   const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
   if (graphToken.length > 0) {

@@ -13,11 +13,12 @@ class DoStuffActionHandler {
     /**
      * You can send an adaptive card to respond to the card action invoke.
      */
-    const cardData = {
-      title: "Hello World Bot",
-      body: "Congratulations! Your task is processed successfully.",
-    };
-    const cardJson = new ACData.Template(responseCard).expand({ $root: cardData });
+    const cardJson = new ACData.Template(responseCard).expand({
+      $root: {
+        title: "Hello World Bot",
+        body: "Congratulations! Your task is processed successfully.",
+      },
+    });
     return InvokeResponseFactory.adaptiveCard(cardJson);
 
     /**

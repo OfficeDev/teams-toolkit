@@ -9,16 +9,13 @@ import * as path from "path";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
-import {
-  MockedM365Provider,
-  MockedLogProvider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { FileNotFoundError, JSONSyntaxError } from "../../../../src/error/common";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, PluginManifestSchema, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../../src/error/teamsApp";
+import { MockedM365Provider } from "../../../core/utils";
 
 describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();

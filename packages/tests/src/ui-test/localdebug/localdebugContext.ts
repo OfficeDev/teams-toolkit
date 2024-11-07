@@ -19,7 +19,7 @@ export type LocalDebugTestName =
   | "msg"
   | "msgsa"
   | "funcNoti" // functions notification bot
-  | "restNoti" // restify notification bot
+  | "expressnoti" // express notification bot
   | "crbot" // command an response bot
   | "tabbot"
   | "spfx"
@@ -171,10 +171,10 @@ export class LocalDebugTestContext extends TestContext {
           `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-functions --programming-language ${this.lang} --telemetry false`
         );
         break;
-      case "restNoti":
+      case "expressnoti":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-restify --programming-language ${this.lang} --telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability notification --bot-host-type-trigger http-express --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "crbot":

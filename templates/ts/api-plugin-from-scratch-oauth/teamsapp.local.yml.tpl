@@ -4,6 +4,39 @@
 version: v1.7
 
 provision:
+  # Creates a new Microsoft Entra app to authenticate users if
+  # the environment variable that stores clientId is empty
+  - uses: aadApp/create
+    with:
+      # Note: when you run aadApp/update, the Microsoft Entra app name will be updated
+      # based on the definition in manifest. If you don't want to change the
+      # name, make sure the name in Microsoft Entra manifest is the same with the name
+      # defined here.
+      name: {{appName}}-aad
+      # If the value is false, the action will not generate client secret for you
+{{#MicrosoftEntra}}
+      generateClientSecret: false
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
+      generateClientSecret: true
+{{/MicrosoftEntra}}
+      # Authenticate users with a Microsoft work or school account in your
+      # organization's Microsoft Entra tenant (for example, single tenant).
+      signInAudience: AzureADMyOrg
+    # Write the information of created resources into environment file for the
+    # specified environment variable(s).
+    writeToEnvironmentFile:
+      clientId: AAD_APP_CLIENT_ID
+      # Environment variable that starts with `SECRET_` will be stored to the
+      # .env.{envName}.user environment file
+{{^MicrosoftEntra}}
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+{{/MicrosoftEntra}}
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
+
   # Creates a Teams app
   - uses: teamsApp/create
     with:
@@ -20,6 +53,57 @@ provision:
       run:
         echo "::set-teamsfx-env FUNC_NAME=repair";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
+
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
+  # manifest file to determine which Microsoft Entra app to update.
+  - uses: aadApp/update
+    with:
+      # Relative path to this file. Environment variables in manifest will
+      # be replaced before apply to Microsoft Entra app
+      manifestPath: ./aad.manifest.json
+      outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
+
+  - uses: oauth/register
+    with:
+{{#MicrosoftEntra}}
+      name: aadAuthCode
+      flow: authorizationCode
+      appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      identityProvider: MicrosoftEntra
+    writeToEnvironmentFile:
+      configurationId: AADAUTHCODE_CONFIGURATION_ID
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
+      name: oAuth2AuthCode
+      flow: authorizationCode
+      appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      clientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+    writeToEnvironmentFile:
+      configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+{{/MicrosoftEntra}}
+
+  - uses: oauth/update
+    with:
+{{#MicrosoftEntra}}
+      name: aadAuthCode
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
+      name: oAuth2AuthCode
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      configurationId: ${{OAUTH2AUTHCODE_CONFIGURATION_ID}}
+{{/MicrosoftEntra}}
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
@@ -71,3 +155,11 @@ deploy:
     name: install dependencies
     with:
       args: install --no-audit
+
+  # Generate runtime environment variables
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./.localConfigs
+      envs:
+        aadAppTenantId: ${{AAD_APP_TENANT_ID}}
+        aadAppClientId: ${{AAD_APP_CLIENT_ID}}

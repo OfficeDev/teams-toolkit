@@ -648,7 +648,24 @@ From `botbuilder@4.16.0`, `BotFrameworkAdapter` is deprecated, and `CloudAdapter
    });
    ```
 
-4. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
+4. If the project is using `express` to create a server, please add the following line after `express()`.
+
+   ```ts
+   expressApp.use(express.json());
+   ```
+
+   The complete code will be like
+
+   ```ts
+   // Create HTTP server.
+   const expressApp = express();
+   expressApp.use(express.json());
+   const server = expressApp.listen(process.env.port || process.env.PORT || 3978, () => {
+     console.log(`\nBot Started, ${expressApp.name} listening to`, server.address());
+   });
+   ```
+
+5. If the project has `responseWrapper.ts`, please update the class `responseWrapper` to the class below.
 
    ```ts
    import { Response } from "botbuilder";

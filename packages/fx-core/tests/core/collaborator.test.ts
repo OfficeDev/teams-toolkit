@@ -28,12 +28,8 @@ import {
   listCollaborator,
 } from "../../src/core/collaborator";
 import { QuestionNames } from "../../src/question";
-import {
-  MockedAzureAccountProvider,
-  MockedM365Provider,
-  MockedV2Context,
-} from "../plugins/solution/util";
-import { randomAppName } from "./utils";
+import { MockedV2Context } from "../plugins/solution/util";
+import { MockedAzureAccountProvider, MockedM365Provider, randomAppName } from "./utils";
 
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();

@@ -6,11 +6,13 @@
  */
 
 import {
+  AdaptiveCardGenerator,
   ErrorResult,
   ErrorType,
   ProjectType,
   SpecParser,
   SpecParserError,
+  Utils,
   ValidationStatus,
   WarningType,
 } from "@microsoft/m365-spec-parser";
@@ -43,6 +45,7 @@ import {
   formatValidationErrors,
   generateScaffoldingSummary,
   listPluginExistingOperations,
+  injectAuthAction,
 } from "../../../src/component/generator/apiSpec/helper";
 import {
   ApiPluginStartOptions,
@@ -62,6 +65,7 @@ import { FeatureFlagName } from "../../../src/common/featureFlags";
 import * as commonUtils from "../../../src/common/utils";
 import * as helper from "../../../src/component/generator/apiSpec/helper";
 import { fail } from "assert";
+import { ActionInjector } from "../../../src/component/configManager/actionInjector";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -183,6 +187,31 @@ describe("generateScaffoldingSummary", async () => {
     );
 
     assert.isTrue(res.includes("content"));
+  });
+
+  it("warnings about operationid contains special characters", async () => {
+    const res = await generateScaffoldingSummary(
+      [
+        {
+          type: WarningType.OperationIdContainsSpecialCharacters,
+          content:
+            "Operation id 'user/repo' contained special characters and was renamed to 'user_repo'.",
+          data: { operationId: "user/repo" },
+        },
+        {
+          type: WarningType.OperationIdContainsSpecialCharacters,
+          content:
+            "Operation id 'user/issue' contained special characters and was renamed to 'user_issue'.",
+          data: { operationId: "user/issue" },
+        },
+      ],
+      teamsManifest,
+      "path",
+      undefined,
+      ""
+    );
+    assert.isTrue(res.includes("user_repo"));
+    assert.isTrue(res.includes("user_issue"));
   });
 
   it("warnings about adaptive card template in manifest", async () => {
@@ -604,6 +633,78 @@ describe("formatValidationErrors", () => {
   });
 });
 
+describe("injectAuthAction", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("api key auth", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(Utils, "isBearerTokenAuth").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateAPIKeyAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledTwice);
+  });
+
+  it("api key auth: no local yaml", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(Utils, "isBearerTokenAuth").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateAPIKeyAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledOnce);
+  });
+
+  it("oauth auth", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(Utils, "isOAuthWithAuthCodeFlow").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateOAuthAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledTwice);
+  });
+
+  it("oauth auth: no local yaml", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(Utils, "isOAuthWithAuthCodeFlow").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateOAuthAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledOnce);
+  });
+});
+
 describe("listPluginExistingOperations", () => {
   const teamsManifestWithPlugin: TeamsAppManifest = {
     ...teamsManifest,
@@ -773,6 +874,133 @@ describe("updateForCustomApi", async () => {
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(spec, "typescript", "path", "openapi.yaml");
+  });
+
+  it("happy path: should contain warning if generate adaptive card failed", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        assert.fail("should not generate adaptive card");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    sandbox
+      .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+      .throws(new Error("generate adaptive card failed"));
+
+    const result = await CopilotPluginHelper.updateForCustomApi(
+      spec,
+      "typescript",
+      "path",
+      "openapi.yaml"
+    );
+
+    expect(result).to.be.deep.equal([
+      {
+        type: WarningType.GenerateCardFailed,
+        content:
+          "Failed to create the adaptive card for API 'getHello': generate adaptive card failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "getHello",
+      },
+      {
+        type: WarningType.GenerateCardFailed,
+        content:
+          "Failed to create the adaptive card for API 'createPet': generate adaptive card failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "createPet",
+      },
+    ]);
+  });
+
+  it("happy path: js", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(spec, "javascript", "path", "openapi.yaml");
+  });
+
+  it("happy path: should contain warning if generate adaptive card data failed", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        assert.fail("should not generate adaptive card");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      } else if (file == path.join("path", "src", "adaptiveCard", "hello.data.json")) {
+        expect(data).to.deep.equal({});
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    sandbox.stub(AdaptiveCardGenerator, "generateAdaptiveCard").returns([
+      {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "name: ${if(name, name, 'N/A')}",
+            wrap: true,
+          },
+        ],
+      },
+      "$",
+      {},
+      [{ type: WarningType.GenerateJsonDataFailed, content: "generate json data failed" }],
+    ]);
+
+    const result = await CopilotPluginHelper.updateForCustomApi(
+      spec,
+      "typescript",
+      "path",
+      "openapi.yaml"
+    );
+
+    expect(result).to.be.deep.equal([
+      {
+        type: WarningType.GenerateJsonDataFailed,
+        content:
+          "Failed to create the adaptive card mock data for API 'getHello': generate json data failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "getHello",
+      },
+      {
+        type: WarningType.GenerateJsonDataFailed,
+        content:
+          "Failed to create the adaptive card mock data for API 'createPet': generate json data failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "createPet",
+      },
+    ]);
   });
 
   it("happy path: js", async () => {
@@ -2323,7 +2551,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2375,7 +2603,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2427,7 +2655,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2664,7 +2892,11 @@ describe("SpecGenerator", async () => {
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
-        .resolves({ allSuccess: true, warnings: [] });
+        .callsFake(async (manifestPath, filter, outputSpecPath, pluginFilePath) => {
+          assert.isTrue(outputSpecPath.includes("test.yaml"));
+          assert.isTrue(pluginFilePath.includes("test.json"));
+          return { allSuccess: true, warnings: [] };
+        });
       sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();

@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-
+import json
 from botbuilder.core import MemoryStorage, TurnContext
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.ai import AIOptions
@@ -53,7 +53,7 @@ bot_app = Application[TurnState](
         bot_app_id=config.APP_ID,
         storage=storage,
         adapter=TeamsAdapter(config),
-        ai=AIOptions(planner=planner),
+        ai=AIOptions(planner=planner, enable_feedback_loop=True),
     )
 )
 
@@ -67,3 +67,8 @@ async def on_error(context: TurnContext, error: Exception):
 
     # Send a message to the user
     await context.send_activity("The bot encountered an error or bug.")
+
+@bot_app.feedback_loop()
+async def feedback_loop(_context: TurnContext, _state: TurnState, feedback_loop_data: FeedbackLoopData):
+    # Add custom feedback process logic here.
+    print(f"Your feedback is:\n{json.dumps(asdict(feedback_loop_data), indent=4)}")

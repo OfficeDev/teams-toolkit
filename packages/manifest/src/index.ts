@@ -74,14 +74,23 @@ export class ManifestUtil {
       addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
     } else {
-      const ajv = new Ajv({ formats: { uri: true }, allErrors: true, strictTypes: false });
+      const ajv = new Ajv({
+        allErrors: true,
+        strictTypes: false,
+      });
+      addFormats(ajv, ["uri", "email", "regex"]);
       validate = ajv.compile(schema);
     }
 
     const valid = validate(manifest);
     if (!valid && validate.errors) {
       return Promise.resolve(
-        validate.errors?.map((error) => `${error.instancePath} ${error.message || ""}`)
+        validate.errors?.map(
+          (error) =>
+            `${error.instancePath} ${error.message || ""}. Details: ${
+              error.params ? JSON.stringify(error.params) : ""
+            }`
+        )
       );
     } else {
       return Promise.resolve([]);

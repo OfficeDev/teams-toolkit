@@ -771,6 +771,9 @@ export class CapabilityOptions {
 
   // custom copilot
   static customCopilotBasic(): OptionItem {
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-basic",
       label: getLocalizedString(
@@ -779,13 +782,14 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotBasicOption.detail"
       ),
-      description: getLocalizedString(
-        "core.createProjectQuestion.capability.customEngineAgent.description"
-      ),
+      description: description,
     };
   }
 
   static customCopilotRag(): OptionItem {
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-rag",
       label: getLocalizedString(
@@ -794,10 +798,14 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotRagOption.detail"
       ),
+      description: description,
     };
   }
 
   static customCopilotAssistant(): OptionItem {
+    const description = featureFlagManager.getBooleanValue(FeatureFlags.CEAEnabled)
+      ? getLocalizedString("core.createProjectQuestion.capability.customEngineAgent.description")
+      : undefined;
     return {
       id: "custom-copilot-agent",
       label: getLocalizedString(
@@ -806,6 +814,7 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantOption.detail"
       ),
+      description: description,
     };
   }
 }
@@ -939,11 +948,11 @@ interface HostTypeTriggerOptionItem extends OptionItem {
 export class NotificationTriggerOptions {
   static appService(): HostTypeTriggerOptionItem {
     return {
-      id: "http-restify",
+      id: "http-express",
       hostType: HostType.AppService,
-      label: getLocalizedString("plugins.bot.triggers.http-restify.label"),
-      description: getLocalizedString("plugins.bot.triggers.http-restify.description"),
-      detail: getLocalizedString("plugins.bot.triggers.http-restify.detail"),
+      label: getLocalizedString("plugins.bot.triggers.http-express.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-express.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-express.detail"),
     };
   }
   static appServiceForVS(): HostTypeTriggerOptionItem {

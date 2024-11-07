@@ -8,7 +8,8 @@ import {
   generateSasToken,
   getAzureAccountCredential,
 } from "../../../src/component/utils/azureResourceOperation";
-import { TestAzureAccountProvider } from "./azureAccountMock";
+import { MockedAzureAccountProvider } from "../../core/utils";
+
 chai.use(chaiAsPromised);
 
 describe("Azure Resource Operation test", () => {
@@ -23,7 +24,7 @@ describe("Azure Resource Operation test", () => {
   });
 
   it("should get Azure account credential error", async () => {
-    const tokenProvider = new TestAzureAccountProvider();
+    const tokenProvider = new MockedAzureAccountProvider();
     sandbox.stub(tokenProvider, "getIdentityCredentialAsync").resolves(undefined);
     await chai.expect(getAzureAccountCredential(tokenProvider)).to.be.eventually.rejectedWith("");
   });

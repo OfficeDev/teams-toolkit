@@ -112,6 +112,13 @@ export class ManifestUtils {
     if (fs.existsSync(filePath)) {
       return filePath;
     }
+
+    // Samples from https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature have the manifest in root folder
+    const officeAddinManifestPath = path.join(projectPath, "manifest.json");
+    if (fs.existsSync(officeAddinManifestPath)) {
+      return officeAddinManifestPath;
+    }
+
     return path.join(projectPath, "appPackage", "manifest.json");
   }
 
@@ -406,21 +413,23 @@ export class ManifestUtils {
     maxLength = 25
   ): Promise<Result<undefined, FxError>> {
     const manifestPath = this.getTeamsAppManifestPath(projectPath);
-    const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
-    const shortName = manifest.name.short;
-    let hasSuffix = false;
-    let trimmedName = shortName;
-    if (shortName.includes("${{APP_NAME_SUFFIX}}")) {
-      hasSuffix = true;
-      trimmedName = shortName.replace("${{APP_NAME_SUFFIX}}", "");
+    if (fs.pathExistsSync(manifestPath)) {
+      const manifest = (await fs.readJson(manifestPath)) as TeamsAppManifest;
+      const shortName = manifest.name.short;
+      let hasSuffix = false;
+      let trimmedName = shortName;
+      if (shortName.includes("${{APP_NAME_SUFFIX}}")) {
+        hasSuffix = true;
+        trimmedName = shortName.replace("${{APP_NAME_SUFFIX}}", "");
+      }
+      if (trimmedName.length <= maxLength) return ok(undefined);
+      let newShortName = trimmedName.replace(/\s/g, "").slice(0, maxLength);
+      if (hasSuffix) {
+        newShortName += "${{APP_NAME_SUFFIX}}";
+      }
+      manifest.name.short = newShortName;
+      await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
     }
-    if (trimmedName.length <= maxLength) return ok(undefined);
-    let newShortName = trimmedName.replace(/\s/g, "").slice(0, maxLength);
-    if (hasSuffix) {
-      newShortName += "${{APP_NAME_SUFFIX}}";
-    }
-    manifest.name.short = newShortName;
-    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
     return ok(undefined);
   }
 }

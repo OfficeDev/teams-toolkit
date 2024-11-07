@@ -1,5 +1,5 @@
 // Import required packages
-const restify = require("restify");
+const express = require("express");
 
 // This bot's adapter
 const adapter = require("./adapter");
@@ -7,16 +7,16 @@ const adapter = require("./adapter");
 // This bot's main dialog.
 const app = require("./app/app");
 
-// Create HTTP server.
-const server = restify.createServer();
-server.use(restify.plugins.bodyParser());
+// Create express application.
+const expressApp = express();
+expressApp.use(express.json());
 
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
+const server = expressApp.listen(process.env.port || process.env.PORT || 3978, () => {
+  console.log(`\nBot Started, ${expressApp.name} listening to`, server.address());
 });
 
-// Listen for incoming server requests.
-server.post("/api/messages", async (req, res) => {
+// Listen for incoming requests.
+expressApp.post("/api/messages", async (req, res) => {
   // Route received a request to adapter for processing
   await adapter.process(req, res, async (context) => {
     // Dispatch to application for routing

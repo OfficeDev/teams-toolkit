@@ -10,7 +10,7 @@ This is a simple hello world application with both Bot and Message extension cap
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/), supported versions: 16, 18
+- [Node.js](https://nodejs.org/), supported versions: 18, 20
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 
@@ -43,7 +43,7 @@ This file contains template arguments with `${{...}}` statements which will be r
 
 Deploy your project to Azure by following these steps:
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                                                                                                             | From Teams Toolkit CLI                                                                                                                                                     |
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                                                                                                             | From Teams Toolkit CLI                                                                                                                                               |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision` from DEPLOYMENT section or open the command palette and select: `Teams: Provision`.</li><li>Open the Teams Toolkit and click `Deploy` or open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsapp auth login azure`.</li> <li>Run command `teamsapp provision --env dev`.</li> <li>Run command: `teamsapp deploy --env dev`. </li></ul> |
 

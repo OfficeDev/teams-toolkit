@@ -1,7 +1,4 @@
-import { TokenCredential } from "@azure/core-auth";
-import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
-  AzureAccountProvider,
   Colors,
   ConfirmConfig,
   ConfirmResult,
@@ -14,8 +11,6 @@ import {
   InputTextResult,
   LogLevel,
   LogProvider,
-  LoginStatus,
-  M365TokenProvider,
   MultiSelectConfig,
   MultiSelectResult,
   Result,
@@ -28,24 +23,11 @@ import {
   SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
-  SubscriptionInfo,
   TelemetryReporter,
-  TokenRequest,
   UserInteraction,
   ok,
 } from "@microsoft/teamsfx-api";
 
-export class MyTokenCredential implements TokenCredential {
-  public async getToken(
-    scopes: string | string[],
-    options?: GetTokenOptions
-  ): Promise<AccessToken | null> {
-    return {
-      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
-      expiresOnTimestamp: 1234,
-    };
-  }
-}
 export class MockedLogProvider implements LogProvider {
   msg = "";
   verbose(msg: string): void {
@@ -189,84 +171,5 @@ export class MockedV2Context implements Context {
     this.userInteraction = new MockedUserInteraction();
     this.logProvider = new MockedLogProvider();
     this.telemetryReporter = new MockedTelemetryReporter();
-  }
-}
-
-export class MockedM365Provider implements M365TokenProvider {
-  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
-    return ok("fakeToken");
-  }
-  async getJsonObject(
-    tokenRequest: TokenRequest
-  ): Promise<Result<Record<string, unknown>, FxError>> {
-    return ok({
-      upn: "fakeUserPrincipalName@fake.com",
-      tid: "tenantId",
-    });
-  }
-  async signout(): Promise<boolean> {
-    return true;
-  }
-  async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
-    return ok({
-      status: "SignedIn",
-      token: "fakeToken",
-    });
-  }
-  async setStatusChangeMap(
-    name: string,
-    tokenRequest: TokenRequest,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<Result<boolean, FxError>> {
-    return ok(true);
-  }
-  async removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
-    return ok(true);
-  }
-}
-
-export class MockedAzureAccountProvider implements AzureAccountProvider {
-  async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    return new MyTokenCredential();
-  }
-
-  async signout(): Promise<boolean> {
-    return true;
-  }
-  async setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    return true;
-  }
-  async removeStatusChangeMap(name: string): Promise<boolean> {
-    return true;
-  }
-  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {};
-  }
-  async listSubscriptions(): Promise<SubscriptionInfo[]> {
-    return [];
-  }
-  async setSubscription(subscriptionId: string): Promise<void> {}
-  getAccountInfo(): Record<string, string> {
-    return {};
-  }
-  async getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo> {
-    return {
-      subscriptionId: "",
-      subscriptionName: "",
-      tenantId: "",
-    };
   }
 }

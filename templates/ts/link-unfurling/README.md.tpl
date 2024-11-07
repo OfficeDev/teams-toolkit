@@ -13,7 +13,7 @@ This template showcases an app that unfurls a link into an adaptive card when UR
 
 > **Prerequisites**
 >
-> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - [Node.js](https://nodejs.org/), supported versions: 18, 20
 {{^enableMETestToolByDefault}}
 > - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/microsoft-365/dev-program)
 {{/enableMETestToolByDefault}}
@@ -50,7 +50,7 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                    | Contents                                       |
 | --------------------------------------- | ---------------------------------------------- |
-| `src/index.ts`                          | Application entry point and `restify` handlers |
+| `src/index.ts`                          | Application entry point and `express` handlers |
 | `src/linkUnfurlingApp.ts`               | The teams activity handler                     |
 | `src/adaptiveCards/helloWorldCard.json` | The adaptive card                              |
 

@@ -46,6 +46,7 @@ import {
 } from "./common/localDebugSession";
 import { allRunningDebugSessions } from "./officeTaskHandler";
 import { deleteAad } from "./deleteAadHelper";
+import kill from "tree-kill";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -248,6 +249,9 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
           return;
         }
         await sendDebugAllEvent(undefined, { [TelemetryProperty.DebugTestTool]: "true" });
+        // Need to endLocalDebugSession() here.
+        // Otherwise, when user stops debugging, or task exits, it will incorrectly send an incorrect debug-all event with success=no
+        endLocalDebugSession();
       }
     }
   }
@@ -529,7 +533,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
       if (task[1] > 0) {
-        process.kill(task[1], "SIGTERM");
+        kill(task[1], "SIGTERM");
       }
     } catch (e) {
       // ignore and keep killing others

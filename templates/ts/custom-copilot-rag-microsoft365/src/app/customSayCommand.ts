@@ -1,6 +1,6 @@
 import { ActivityTypes, Channels, TurnContext } from "botbuilder";
-import { PredictedSayCommand, TurnState, Utilities, ClientCitation } from "@microsoft/teams-ai";
-import { AIEntity } from "@microsoft/teams-ai/lib/actions/SayCommand";
+import { PredictedSayCommand, TurnState, Utilities } from "@microsoft/teams-ai";
+import { AIEntity, ClientCitation } from "@microsoft/teams-ai/lib/types";
 
 export function sayCommand<TState extends TurnState = TurnState>(feedbackLoopEnabled = false) {
   return async (context: TurnContext, _state: TState, data: PredictedSayCommand) => {

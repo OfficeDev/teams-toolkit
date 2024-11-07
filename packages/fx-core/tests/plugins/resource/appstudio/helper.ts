@@ -122,6 +122,9 @@ export class MockedM365TokenProvider implements M365TokenProvider {
   removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export class MockedM365TokenProviderFail implements M365TokenProvider {
@@ -152,6 +155,9 @@ export class MockedM365TokenProviderFail implements M365TokenProvider {
     throw new Error("Method not implemented.");
   }
   removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
+    throw new Error("Method not implemented.");
+  }
+  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
     throw new Error("Method not implemented.");
   }
 }

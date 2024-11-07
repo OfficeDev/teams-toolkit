@@ -6,13 +6,14 @@ import "mocha";
 import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/common/globalVars";
 import {
-  MockAzureAccountProvider,
+  MockedAzureAccountProvider,
+  MockedM365Provider,
   MockLogProvider,
   MockTelemetryReporter,
   MockTools,
   MockUserInteraction,
+  MyTokenCredential,
 } from "../../../core/utils";
-import { MockedM365Provider, MyTokenCredential } from "../../../plugins/solution/util";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
 import { getAbsolutePath, getEnvironmentVariables } from "../../../../src/component/utils/common";
@@ -104,7 +105,7 @@ describe("arm deploy error handle test", () => {
   setTools(tools);
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
-    azureAccountProvider: new MockAzureAccountProvider(),
+    azureAccountProvider: new MockedAzureAccountProvider(),
     telemetryReporter: new MockTelemetryReporter(),
     ui: new MockUserInteraction(),
     logProvider: new MockLogProvider(),

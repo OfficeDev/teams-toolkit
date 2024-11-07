@@ -13,6 +13,7 @@ import { OauthDomainInvalidError } from "../error/oauthDomainInvalid";
 import { OauthFailedToGetDomainError } from "../error/oauthFailedToGetDomain";
 import { OauthAuthInfoInvalid } from "../error/oauthAuthInfoInvalid";
 import { UpdateOauthArgs } from "../interface/updateOauthArgs";
+import { OauthAuthMissingInSpec } from "../error/oauthAuthMissingInSpec";
 
 export interface OauthInfo {
   domain: string[];
@@ -50,6 +51,10 @@ export async function getandValidateOauthInfoFromSpec(
     const auth = value.auth;
     return auth && auth.authScheme.type === "oauth2" && auth.name === args.name;
   });
+
+  if (operations.length === 0) {
+    throw new OauthAuthMissingInSpec(actionName, args.name);
+  }
 
   const domains = operations
     .map((value) => {
@@ -103,7 +108,7 @@ function validateDomain(domain: string[], actionName: string): void {
     throw new OauthDomainInvalidError(actionName);
   }
 
-  if (domain.length === 0) {
+  if (domain.length === 0 || domain.includes("")) {
     throw new OauthFailedToGetDomainError(actionName);
   }
 }

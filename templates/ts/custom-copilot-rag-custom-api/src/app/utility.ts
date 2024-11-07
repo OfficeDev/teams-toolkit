@@ -2,9 +2,6 @@ import { CardFactory } from "botbuilder";
 const ACData = require("adaptivecards-templating");
 import { OpenAPIClient } from "openapi-client-axios";
 export function generateAdaptiveCard(templatePath: string, result: any) {
-  if (!result || !result.data) {
-    throw new Error("Get empty result from api call.");
-  }
   const adaptiveCardTemplate = require(templatePath);
   const template = new ACData.Template(adaptiveCardTemplate);
   const cardContent = template.expand({

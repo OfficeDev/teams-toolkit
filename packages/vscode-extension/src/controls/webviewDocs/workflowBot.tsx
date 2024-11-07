@@ -298,7 +298,7 @@ module.exports = {
               <code className="code">src/index.js</code>
             </td>
             <td>
-              Application entry point and <code className="code">restify</code> handlers for the
+              Application entry point and <code className="code">express</code> handlers for the
               Workflow bot
             </td>
           </tr>

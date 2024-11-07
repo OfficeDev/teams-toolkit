@@ -200,6 +200,7 @@ import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
+import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
@@ -534,7 +535,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
     const createPluginWithManifestCommand = vscode.commands.registerCommand(
       "fx-extension.createprojectfromkiota",
-      () => Correlator.run(createPluginWithManifest)
+      (args) => Correlator.run(createPluginWithManifest, args)
     );
     context.subscriptions.push(createPluginWithManifestCommand);
   }
@@ -974,9 +975,27 @@ function registerAccountMenuCommands(context: vscode.ExtensionContext) {
       }
     })
   );
+
+  const m365SwitchTenant = vscode.commands.registerCommand(
+    "fx-extension.m365SwitchTenant",
+    (...args) => Correlator.run(onSwitchM365Tenant, [TelemetryTriggerFrom.SideBar])
+  );
+  context.subscriptions.push(m365SwitchTenant);
+
+  const azureSwitchTenant = vscode.commands.registerCommand(
+    "fx-extension.azureSwitchTenant",
+    (...args) => Correlator.run(onSwitchAzureTenant, [TelemetryTriggerFrom.SideBar])
+  );
+  context.subscriptions.push(azureSwitchTenant);
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isMultiTenantEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.MultiTenant)
+  );
+
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   await vscode.commands.executeCommand(

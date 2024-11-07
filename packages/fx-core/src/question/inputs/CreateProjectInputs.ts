@@ -42,7 +42,7 @@ export interface CreateProjectInputs extends Inputs {
     | "office-content-addin";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
-    | "http-restify"
+    | "http-express"
     | "http-webapi"
     | "http-and-timer-functions"
     | "http-functions"

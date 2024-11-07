@@ -13,7 +13,9 @@
     },
     "dependencies": {
         "@azure/functions": "^4.3.0",
-        "jwt-validate": "^0.5.0"
+        "jsonwebtoken": "^9.0.2",
+        "jwks-rsa": "^3.1.0",
+        "lru-memoizer": "^2.3.0"
     },
     "devDependencies": {
         "@types/debug": "^4.1.12",

@@ -64,15 +64,18 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                               | Contents                                                                                              |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `src/functions/repairs.ts`                         | The main file of a function in Azure Functions.                                                       |
-| `src/repairsData.json`                             | The data source for the repair API.                                                                   |
-| `appPackage/apiSpecificationFile/repair.dev.yml`   | A file that describes the structure and behavior of the repair API.                                   |
-| `appPackage/apiSpecificationFile/repair.local.yml` | A file that describes the structure and behavior of the repair API for local execution and debugging. |
-| `appPackage/manifest.json`                         | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.              |
-| `appPackage/ai-plugin.dev.json`                    | The manifest file for your API plugin that contains information for your API and used by LLM.     |
-| `appPackage/ai-plugin.local.json`                  | The manifest file for your API plugin for local execution and debugging.                          |
+| File                                            | Contents                                                                                                                     |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `src/functions/repair.ts`                       | The main file of a function in Azure Functions.                                                                              |
+| `src/functions/middleware/tokenCacheWrapper.ts` | A wrapper class that handles caching of JWT signing keys to improve performance of token validation.                         |
+| `src/functions/middleware/tokenValidator.ts`    | Core class for validating JWT tokens from Microsoft Entra, including checks for claims, scopes, roles and tenant validation. |
+| `src/functions/middleware/authMiddleware.ts`    | Middleware function that handles authorization using JWT tokens, integrating with the token validator.                       |
+| `src/functions/middleware/utils.ts`             | Utility functions for authentication, including retrieving JWKS URIs for different cloud environments.                       |
+| `src/functions/middleware/config.ts`            | Configuration file that exports Microsoft Entra app settings from environment variables.                                     |
+| `src/functions/middleware/authMiddleware.ts`    | A middleware function that implements Microsoft Entra authentication for Azure Functions.                                    |
+| `src/repairsData.json`                          | The data source for the repair API.                                                                                          |
+| `appPackage/apiSpecificationFile/repair.yml`    | A file that describes the structure and behavior of the repair API.                                                          |
+| `appPackage/responseTemplates/repair.json`      | A generated Adaptive Card that used to render API response.    
 {{#DeclarativeCopilot}}
 | `appPackage/repairDeclarativeAgent.json` | Define the behaviour and configurations of the declarative agent. |
 {{/DeclarativeCopilot}}

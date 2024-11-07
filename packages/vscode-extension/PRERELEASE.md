@@ -23,7 +23,7 @@
 #### Enhancements
 
 - Updated Bot application templates from `restify` to `express` server for better support of Node.js 20.
-- Updated application templates and pre-requisiste checker for Node.js 20 support.
+- Updated application templates and pre-requisite checker for Node.js 20 support.
 - Updated application templates to the latest stable [App Manifest](https://learn.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema#sample-app-manifest) version v1.19.
 
 #### Bug Fixes

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { confirm, password, input } from "@inquirer/prompts";
+import { confirm, input, password } from "@inquirer/prompts";
 import {
   Colors,
   ConfirmConfig,
@@ -46,7 +46,6 @@ import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { errors } from "./resource";
 import { getColorizedString } from "./utils";
-import { cwd } from "process";
 
 export const inquirerPrompts = {
   confirm,

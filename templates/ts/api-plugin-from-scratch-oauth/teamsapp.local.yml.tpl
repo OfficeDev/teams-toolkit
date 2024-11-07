@@ -12,9 +12,14 @@ provision:
       # based on the definition in manifest. If you don't want to change the
       # name, make sure the name in Microsoft Entra manifest is the same with the name
       # defined here.
-      name: {{appName}}
+      name: {{appName}}-aad
       # If the value is false, the action will not generate client secret for you
+{{#MicrosoftEntra}}
       generateClientSecret: false
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
+      generateClientSecret: true
+{{/MicrosoftEntra}}
       # Authenticate users with a Microsoft work or school account in your
       # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
@@ -22,6 +27,11 @@ provision:
     # specified environment variable(s).
     writeToEnvironmentFile:
       clientId: AAD_APP_CLIENT_ID
+      # Environment variable that starts with `SECRET_` will be stored to the
+      # .env.{envName}.user environment file
+{{^MicrosoftEntra}}
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+{{/MicrosoftEntra}}
       objectId: AAD_APP_OBJECT_ID
       tenantId: AAD_APP_TENANT_ID
       authority: AAD_APP_OAUTH_AUTHORITY

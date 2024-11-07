@@ -40,7 +40,7 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-   {{^DeclarativeCopilot}}
+{{^DeclarativeCopilot}}
 3. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)` from the launch configuration dropdown.
 4. When Teams launches in the browser, open the `Copilot` app.
 5. Select `Plugins`, and from the list of plugins, turn on the toggle for your plugin. Now, you can send a prompt to trigger your plugin.
@@ -50,7 +50,7 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 3. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
 4. Select your declarative agent from the `Copilot` app.
 5. Send a message to Copilot to find a repair record.
-   {{/DeclarativeCopilot}}
+{{/DeclarativeCopilot}}
 
 ## What's included in the template
 
@@ -97,7 +97,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 {{#DeclarativeCopilot}}
 - [Declarative agents for Microsoft 365](https://aka.ms/teams-toolkit-declarative-agent)
-  {{/DeclarativeCopilot}}
+{{/DeclarativeCopilot}}
 - [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)
 - [Message extensions for Microsoft 365 Copilot](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-message-extension-bot)
 - [Microsoft Graph Connectors for Microsoft 365 Copilot](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector)

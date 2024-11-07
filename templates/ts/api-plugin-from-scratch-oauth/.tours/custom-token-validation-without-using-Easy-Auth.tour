@@ -3,7 +3,7 @@
   "title": "custom-token-validation-without-using-Easy-Auth",
   "steps": [
     {
-      "file": "src/functions/repair.ts",
+      "file": "src/functions/repairs.ts",
       "selection": {
         "start": {
           "line": 55,
@@ -48,7 +48,7 @@
       "title": "Config yaml actions"
     },
     {
-      "file": "src/functions/repair.ts",
+      "file": "src/functions/repairs.ts",
       "selection": {
         "start": {
           "line": 58,

@@ -161,5 +161,5 @@ deploy:
     with:
       target: ./.localConfigs
       envs:
-        AAD_APP_TENANT_ID: ${{AAD_APP_TENANT_ID}}
-        AAD_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        aadAppTenantId: ${{AAD_APP_TENANT_ID}}
+        aadAppClientId: ${{AAD_APP_CLIENT_ID}}

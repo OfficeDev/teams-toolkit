@@ -6,12 +6,12 @@
       "file": "src/functions/repair.js",
       "selection": {
         "start": {
-          "line": 51,
+          "line": 52,
           "character": 3
         },
         "end": {
-          "line": 51,
-          "character": 25
+          "line": 52,
+          "character": 26
         }
       },
       "description": "The reason for custom token validation is that Azure Function Core Tools do not support authentication when running locally. This template is designed to demonstrate local debugging of authentication functionalities in the API Message Extension. Therefore, this approach was taken. In production, you should leverage the authentication capabilities of Azure Functions as they are more secure and reliable.",
@@ -22,7 +22,7 @@
       "selection": {
         "start": {
           "line": 12,
-          "character": 1
+          "character": 9
         },
         "end": {
           "line": 14,
@@ -51,11 +51,11 @@
       "file": "src/functions/repair.js",
       "selection": {
         "start": {
-          "line": 54,
+          "line": 55,
           "character": 1
         },
         "end": {
-          "line": 60,
+          "line": 61,
           "character": 6
         }
       },

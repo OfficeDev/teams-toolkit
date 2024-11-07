@@ -627,25 +627,22 @@ class CLIUserInteraction implements UserInteraction {
   }): Promise<Result<string, FxError>> {
     return new Promise<Result<string, FxError>>((resolve) => {
       const { spawn } = require("child_process");
-      // 启动一个新的终端执行 npm run build 命令
-      const buildProcess = spawn("cmd.exe", ["/c", args.cmd], {
+      const isWindows = process.platform === "win32";
+      const command = isWindows ? "cmd.exe" : "/bin/bash";
+      const commandArgs = isWindows ? ["/c", args.cmd] : ["-c", args.cmd];
+      logger.info(`Executing task: ${args.cmd}`);
+      const childProcess = spawn(command, commandArgs, {
         stdio: "inherit",
         cwd: args.workingDirectory,
       });
-
-      // 监听构建进程的完成
-      buildProcess.on("close", (code: number) => {
+      childProcess.on("close", (code: number) => {
         if (code === 0) {
-          void this.showMessage("info", "Script execution successfully.", false);
           resolve(ok(""));
         } else {
-          void this.showMessage("error", "Script execution failed with code:" + code, false);
+          logger.error("Execute task failed with code:" + code);
           resolve(
             err(
-              new ScriptExecutionError(
-                new Error("Script execution failed with code:" + code),
-                args.cmd
-              )
+              new ScriptExecutionError(new Error("Execute task failed with code:" + code), args.cmd)
             )
           );
         }

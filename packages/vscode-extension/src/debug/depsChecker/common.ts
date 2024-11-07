@@ -68,6 +68,7 @@ import {
 } from "./prerequisitesCheckerConstants";
 import { vscodeLogger } from "./vscodeLogger";
 import { vscodeTelemetry } from "./vscodeTelemetry";
+import find from "find-process";
 import { processUtil } from "../../utils/processUtil";
 
 export async function _checkAndInstall(
@@ -177,15 +178,16 @@ async function selectPortsToKill(
   LocalDebugPorts.terminateButton = selectButton!;
 
   if (selectButton === "Terminate Process") {
-    const process2ports = new Map<string, number[]>();
+    const process2ports = new Map<number, number[]>();
     for (const port of portsInUse) {
-      const processId = await processUtil.getProcessId(port);
-      if (processId) {
-        const ports = process2ports.get(processId);
+      const processList = await find("port", port);
+      if (processList.length > 0) {
+        const process = processList[0];
+        const ports = process2ports.get(process.pid);
         if (ports) {
           ports.push(port);
         } else {
-          process2ports.set(processId, [port]);
+          process2ports.set(process.pid, [port]);
         }
       }
     }
@@ -194,12 +196,15 @@ async function selectPortsToKill(
       for (const processId of process2ports.keys()) {
         const ports = process2ports.get(processId);
         LocalDebugPorts.process2conflictPorts[processId] = ports!;
-        const processInfo = await processUtil.getProcessInfo(parseInt(processId));
-        options.push({
-          id: processId,
-          label: `'${processInfo}' (${processId}) occupies port(s): ${ports!.join(",")}`,
-          data: processInfo,
-        });
+        const findList = await find("pid", processId);
+        if (findList.length > 0) {
+          const processInfo = findList[0].cmd;
+          options.push({
+            id: `${processId}`,
+            label: `'${String(processInfo)}' (${processId}) occupies port(s): ${ports!.join(",")}`,
+            data: processInfo,
+          });
+        }
       }
       const res = await VS_CODE_UI.selectOptions({
         title: "Select process(es) to terminate",
@@ -211,7 +216,7 @@ async function selectPortsToKill(
         const processIds = res.value.result as string[];
         LocalDebugPorts.terminateProcesses = processIds;
         for (const processId of processIds) {
-          await processUtil.killProcess(processId);
+          await processUtil.killProcess(parseInt(processId));
         }
         if (processIds.length > 0) {
           const processInfo = options

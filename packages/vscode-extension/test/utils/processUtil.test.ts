@@ -17,16 +17,13 @@ describe("ProcessUtil", () => {
   describe("killProcess", () => {
     it("happy", async () => {
       sandbox.stub(process, "platform").value("win32");
-      const pid = "1234";
       execStub.yields(null);
-
       await processUtil.killProcess(1234);
-      expect(execStub.calledWith(`taskkill /PID ${pid} /T /F`)).to.be.true;
+      expect(execStub.calledWith(`taskkill /PID 1234 /T /F`)).to.be.true;
     });
 
     it("error", async () => {
-      sandbox.stub(process, "platform").value("linux");
-      const pid = "5678";
+      sandbox.stub(process, "platform").value("win32");
       const error = new Error("exec error");
       execStub.yields(error);
       try {

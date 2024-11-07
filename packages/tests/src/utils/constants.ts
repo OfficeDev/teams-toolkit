@@ -409,6 +409,7 @@ export class LocalDebugTaskResult {
   static readonly FrontendSuccess = "Compiled successfully";
   static readonly FrontendReady = "ready";
   static readonly FrontendNoIssue = "webpack compiled";
+  static readonly FrontendStarted = "Express server listening on";
   static readonly StartSuccess = "started successfully";
   static readonly AzuriteSuccess = "Azurite Table service is successfully";
   static readonly CompiledSuccess = "Found 0 errors";

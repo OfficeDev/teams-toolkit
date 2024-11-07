@@ -64,17 +64,20 @@ You can extend declarative agents using plugins to retrieve data and execute tas
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                               | Contents                                                                                              |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `src/functions/repairs.js`                         | The main file of a function in Azure Functions.                                                       |
-| `src/repairsData.json`                             | The data source for the repair API.                                                                   |
-| `appPackage/apiSpecificationFile/repair.dev.yml`   | A file that describes the structure and behavior of the repair API.                                   |
-| `appPackage/apiSpecificationFile/repair.local.yml` | A file that describes the structure and behavior of the repair API for local execution and debugging. |
-| `appPackage/manifest.json`                         | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.              |
-| `appPackage/ai-plugin.dev.json`                    | The manifest file for your API Plugin that contains information for your API and used by LLM.     |
-| `appPackage/ai-plugin.local.json`                  | The manifest file for your API Plugin for local execution and debugging.                          |
+| File                                            | Contents                                                                                                                      |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src/functions/repairs.js`                      | The main file of a function in Azure Functions.                                                                               |
+| `src/functions/middleware/tokenCacheWrapper.js` | A wrapper class that handles caching of JWT signing keys to improve performance of token validation.                          |
+| `src/functions/middleware/tokenValidator.js`    | Core class for validating JWT tokens from Microsoft Entra, including checks for claims, scopes, roles, and tenant validation. |
+| `src/functions/middleware/authMiddleware.js`    | Middleware function that handles authorization using JWT tokens, integrating with the token validator.                        |
+| `src/functions/middleware/utils.js`             | Utility functions for authentication, including retrieving JWKS URIs for different cloud environments.                        |
+| `src/functions/middleware/config.js`            | Configuration file that exports Microsoft Entra app settings from environment variables.                                      |
+| `src/repairsData.json`                          | The data source for the repair API.                                                                                           |
+| `appPackage/apiSpecificationFile/repairs.yml`    | A file that describes the structure and behavior of the repair API.                                                           |
+| `appPackage/manifest.json`                      | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.                                      |
+| `appPackage/ai-plugin.json`                     | The manifest file for your API Plugin that contains information for your API and used by LLM.                                 |
 {{#DeclarativeCopilot}}
-| `appPackage/repairDeclarativeAgent.json` | Define the behaviour and configurations of the declarative agent. |
+| `appPackage/repairDeclarativeAgent.json`        | Define the behaviour and configurations of the declarative agent.                                                             |
 {{/DeclarativeCopilot}}
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
@@ -89,8 +92,6 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## How OAuth works in the API plugin
 
 ![oauth-flow](https://github.com/OfficeDev/teams-toolkit/assets/107838226/f074abbe-d9e3-4a46-8e08-feb66b17a539)
-
-> **Note**: The OAuth flow is only functional in remote environments. It cannot be tested in a local environment due to the lack of authentication support in Azure Function core tools.
 {{/MicrosoftEntra}}
 
 ## Addition information and references

@@ -12,9 +12,9 @@ provision:
       # based on the definition in manifest. If you don't want to change the
       # name, make sure the name in Microsoft Entra manifest is the same with the name
       # defined here.
-      name: TypeB-OAuth-aad
+      name: {{appName}}
       # If the value is false, the action will not generate client secret for you
-      generateClientSecret: true
+      generateClientSecret: false
       # Authenticate users with a Microsoft work or school account in your
       # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
@@ -22,9 +22,6 @@ provision:
     # specified environment variable(s).
     writeToEnvironmentFile:
       clientId: AAD_APP_CLIENT_ID
-      # Environment variable that starts with `SECRET_` will be stored to the
-      # .env.{envName}.user environment file
-      clientSecret: SECRET_AAD_APP_CLIENT_SECRET
       objectId: AAD_APP_OBJECT_ID
       tenantId: AAD_APP_TENANT_ID
       authority: AAD_APP_OAUTH_AUTHORITY
@@ -46,6 +43,15 @@ provision:
       run:
         echo "::set-teamsfx-env FUNC_NAME=repair";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
+
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
+  # manifest file to determine which Microsoft Entra app to update.
+  - uses: aadApp/update
+    with:
+      # Relative path to this file. Environment variables in manifest will
+      # be replaced before apply to Microsoft Entra app
+      manifestPath: ./aad.manifest.json
+      outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   - uses: oauth/register
     with:
@@ -111,15 +117,6 @@ provision:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
-  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
-  # manifest file to determine which Microsoft Entra app to update.
-  - uses: aadApp/update
-    with:
-      # Relative path to this file. Environment variables in manifest will
-      # be replaced before apply to Microsoft Entra app
-      manifestPath: ./aad.manifest.json
-      outputFilePath: ./build/aad.manifest.json
-
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365
     with:
@@ -149,10 +146,10 @@ deploy:
     with:
       args: install --no-audit
 
+  # Generate runtime environment variables
   - uses: file/createOrUpdateEnvironmentFile
     with:
       target: ./.localConfigs
       envs:
         AAD_APP_TENANT_ID: ${{AAD_APP_TENANT_ID}}
-        TEAMS_APP_ID: ${{TEAMS_APP_ID}}
         AAD_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}

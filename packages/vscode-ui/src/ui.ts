@@ -1128,9 +1128,9 @@ export class VSCodeUI implements UserInteraction {
     });
     const taskPromise = new Promise((resolve, reject) => {
       const task = new Task(
-        { type: "shell", task: "run script" },
+        { type: "shell", task: "Execute script action" },
         TaskScope.Workspace,
-        "run script",
+        "Execute script action",
         "ms-teams-vscode-extension",
         new ShellExecution(cmd, {
           cwd: workingDirectory,
@@ -1139,25 +1139,16 @@ export class VSCodeUI implements UserInteraction {
       );
       task.isBackground = true;
       void tasks.executeTask(task);
-      // tasks.onDidStartTaskProcess((e) => {
-      //   if (
-      //     e.execution.task.name === "run script" &&
-      //     e.execution.task.source === "ms-teams-vscode-extension"
-      //   ) {
-      //     void window.showInformationMessage(`run script started: ${e.processId}`);
-      //   }
-      // });
       const endTaskListener = tasks.onDidEndTaskProcess((e) => {
         if (
-          e.execution.task.name === "run script" &&
+          e.execution.task.name === "Execute script action" &&
           e.execution.task.source === "ms-teams-vscode-extension"
         ) {
           endTaskListener.dispose();
           if (e.exitCode === 0) {
-            void window.showInformationMessage("run script finished successfully!");
             resolve(undefined);
           } else {
-            void window.showErrorMessage(`run script failed with exit code ${e.exitCode || ""}`);
+            void window.showErrorMessage(`Execute task failed with exit code ${e.exitCode || ""}`);
             reject(
               new ScriptExecutionError(
                 this.localizer.commandExecutionErrorMessage(cmd),

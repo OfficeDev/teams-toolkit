@@ -641,7 +641,10 @@ class CLIUserInteraction implements UserInteraction {
           logger.error("Execute task failed with code:" + code);
           resolve(
             err(
-              new ScriptExecutionError(new Error("Execute task failed with code:" + code), args.cmd)
+              new ScriptExecutionError(
+                new Error("Execute task failed with exit code:" + code),
+                args.cmd
+              )
             )
           );
         }

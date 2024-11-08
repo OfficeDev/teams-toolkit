@@ -18,7 +18,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
-import { envUtil } from "../../utils/envUtil";
 import { pathUtils } from "../../utils/pathUtils";
 
 const actionName = "file/createOrUpdateEnvironmentFile";

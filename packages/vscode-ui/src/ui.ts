@@ -1124,7 +1124,7 @@ export class VSCodeUI implements UserInteraction {
             this.localizer.commandTimeoutErrorDisplayMessage(cmd)
           )
         );
-      }, timeout ?? 1000 * 60 * 5);
+      }, timeout ?? 1000 * 60 * 30);
     });
     const taskPromise = new Promise((resolve, reject) => {
       const task = new Task(

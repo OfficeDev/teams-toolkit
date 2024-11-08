@@ -1,5 +1,6 @@
 {
   "recommendations": [
-    "teamsdevapp.ms-teams-vscode-extension"
+    "teamsdevapp.ms-teams-vscode-extension",
+    "vsls-contrib.codetour"
   ]
 }

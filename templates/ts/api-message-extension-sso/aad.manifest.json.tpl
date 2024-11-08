@@ -16,27 +16,16 @@
         ],
         "saml2Token": []
     },
-    "requiredResourceAccess": [
-        {
-            "resourceAppId": "Microsoft Graph",
-            "resourceAccess": [
-                {
-                    "id": "User.Read",
-                    "type": "Scope"
-                }
-            ]
-        }
-    ],
     "oauth2Permissions": [
         {
-            "adminConsentDescription": "Allows Teams to call the app's web APIs as the current user.",
-            "adminConsentDisplayName": "Teams can access app's web APIs",
+            "adminConsentDescription": "Allows Copilot to read repair records on your behalf.",
+            "adminConsentDisplayName": "Read repairs",
             "id": "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}",
             "isEnabled": true,
             "type": "User",
-            "userConsentDescription": "Enable Teams to call this app's web APIs with the same rights that you have",
-            "userConsentDisplayName": "Teams can access app's web APIs and make requests on your behalf",
-            "value": "access_as_user"
+            "userConsentDescription": "Allows Copilot to read repair records.",
+            "userConsentDisplayName": "Read repairs",
+            "value": "repairs_read"
         }
     ],
     "preAuthorizedApplications": [

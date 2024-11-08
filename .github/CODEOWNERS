@@ -247,7 +247,7 @@
 
 /packages/simpleauth @blackchoey @wenytang-ms
 
-/packages/spec-parser/ @KennethBWSong @SLdragon
+/packages/spec-parser/ @KennethBWSong @SLdragon @adashen
 
 /packages/tests/src/e2e/bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /packages/tests/src/e2e/bot/tdpIntegrationTemplates @yuqizhou77 @nliu-ms
@@ -329,7 +329,7 @@
 /templates/**/non-sso-tab-ssr @Yimin-Jin @eriolchan @hund030
 /templates/**/notification-http-timer-trigger @kimizhu @dooriya @swatDong
 /templates/**/notification-http-trigger @kimizhu @dooriya @swatDong
-/templates/**/notification-restify @kimizhu @dooriya @swatDong
+/templates/**/notification-express @kimizhu @dooriya @swatDong
 /templates/**/notification-timer-trigger @kimizhu @dooriya @swatDong
 /templates/**/notification-webapi @kimizhu @dooriya @swatDong
 /templates/**/office-addin @jayzhang @tecton

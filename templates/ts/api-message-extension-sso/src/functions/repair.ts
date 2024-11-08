@@ -6,6 +6,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 
 import repairRecords from "../repairsData.json";
+import { authMiddleware } from "./middleware/authMiddleware";
 
 /**
  * This function handles the HTTP request and returns the repair information.
@@ -52,5 +53,16 @@ export async function repair(
 app.http("repair", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: repair,
+  handler: async (req: HttpRequest, context: InvocationContext) => {
+    // Check if the request is authenticated
+    const isAuthenticated = await authMiddleware(req);
+    if (!isAuthenticated) {
+      return {
+        status: 401,
+        body: "Unauthorized",
+      };
+    }
+    // Call the actual handler function
+    return repair(req, context);
+  },
 });

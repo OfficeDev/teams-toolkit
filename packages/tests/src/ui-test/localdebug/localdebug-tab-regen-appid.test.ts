@@ -18,6 +18,7 @@ import {
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
+  LocalDebugTaskResult,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -59,7 +60,7 @@ describe("Local Debug Tests", function () {
 
       await waitForTerminal(
         LocalDebugTaskLabel.StartApplication,
-        "app listening to"
+        LocalDebugTaskResult.FrontendStarted
       );
 
       await stopDebugging();
@@ -80,13 +81,13 @@ describe("Local Debug Tests", function () {
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "app listening to"
+          LocalDebugTaskResult.FrontendStarted
         );
         // check if there is error "Could not attach to main target"
         await driver.sleep(Timeout.startdebugging);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "app listening to"
+          LocalDebugTaskResult.FrontendStarted
         );
       } catch {
         try {
@@ -114,13 +115,13 @@ describe("Local Debug Tests", function () {
           await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "app listening to"
+            LocalDebugTaskResult.FrontendStarted
           );
           // check if there is error "Debug Anyway"
           await driver.sleep(Timeout.startdebugging);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "app listening to"
+            LocalDebugTaskResult.FrontendStarted
           );
         } catch {
           console.log(`Try to click "Debug Anyway" button for error dialog`);
@@ -130,7 +131,7 @@ describe("Local Debug Tests", function () {
           await driver.sleep(Timeout.shortTimeLoading);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "app listening to"
+            LocalDebugTaskResult.FrontendStarted
           );
         }
       }

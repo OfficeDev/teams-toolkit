@@ -16,5 +16,4 @@ class ProcessUtil {
     });
   }
 }
-
 export const processUtil = new ProcessUtil();

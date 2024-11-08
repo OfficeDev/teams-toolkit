@@ -46,6 +46,7 @@ import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { errors } from "./resource";
 import { getColorizedString } from "./utils";
+import { spawn } from "child_process";
 
 export const inquirerPrompts = {
   confirm,
@@ -625,7 +626,6 @@ class CLIUserInteraction implements UserInteraction {
     iconPath?: string;
   }): Promise<Result<string, FxError>> {
     return new Promise<Result<string, FxError>>((resolve) => {
-      const { spawn } = require("child_process");
       const isWindows = process.platform === "win32";
       const command = isWindows ? "cmd.exe" : "/bin/bash";
       const commandArgs = isWindows ? ["/c", args.cmd] : ["-c", args.cmd];
@@ -633,6 +633,8 @@ class CLIUserInteraction implements UserInteraction {
       const childProcess = spawn(command, commandArgs, {
         stdio: "inherit",
         cwd: args.workingDirectory,
+        timeout: args.timeout,
+        env: args.env,
       });
       childProcess.on("close", (code: number) => {
         if (code === 0) {

@@ -18,6 +18,8 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
+import { envUtil } from "../../utils/envUtil";
+import { pathUtils } from "../../utils/pathUtils";
 
 const actionName = "file/createOrUpdateEnvironmentFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
@@ -70,8 +72,20 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       );
       context.logProvider?.debug(`Updated envs: ${JSON.stringify(updatedEnvs)}`);
       await fs.writeFile(target, updatedEnvs.join(os.EOL));
+      const map = new Map<string, string>();
+      const envFilePathRes = await pathUtils.getEnvFilePath(
+        context.projectPath,
+        process.env.TEAMSFX_ENV || "dev"
+      );
+      if (envFilePathRes.isOk()) {
+        if (path.resolve(target) === path.resolve(envFilePathRes.value!)) {
+          for (const key of Object.keys(args.envs)) {
+            map.set(key, args.envs[key]);
+          }
+        }
+      }
       return {
-        output: new Map<string, string>(),
+        output: map,
         summaries: [
           getLocalizedString(
             "driver.file.createOrUpdateEnvironmentFile.summary",

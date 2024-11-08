@@ -20,6 +20,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { maskSecret } from "../../../common/stringUtils";
+import { pathUtils } from "../../utils/pathUtils";
 
 const ACTION_NAME = "script";
 
@@ -102,9 +103,16 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  if (ui?.runCommand) {
-    let workingDir = workingDirectory || ".";
-    workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
+  const ymlPath = pathUtils.getYmlFilePath(projectPath, process.env.TEAMSFX_ENV);
+  const ymlContent = await fs.readFile(ymlPath, "utf-8");
+  const hasSetEnvCommand =
+    ymlContent.includes("::set-teamsfx-env") || ymlContent.includes("::set-output");
+  let workingDir = workingDirectory || ".";
+  workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
+  if (process.platform === "win32") {
+    workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
+  }
+  if (!hasSetEnvCommand && ui?.runCommand) {
     const res = await ui.runCommand({
       cmd: command,
       workingDirectory: workingDir,

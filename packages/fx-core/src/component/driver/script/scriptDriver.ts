@@ -141,12 +141,6 @@ export async function executeCommand(
   return new Promise((resolve) => {
     const finalShell = shell || dshell;
     const finalCmd = command;
-    const platform = os.platform();
-    let workingDir = workingDirectory || ".";
-    workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
-    if (platform === "win32") {
-      workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
-    }
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);

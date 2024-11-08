@@ -55,9 +55,6 @@ This app template also demonstrates usage of techniques like:
     Upload new documents succeeded. If they do not exist, wait for several seconds...
     setup finished
     ```
-1. After creating index, please go to your index portal page to set the `descriptionVector` field as retrievable
-![image](https://github.com/user-attachments/assets/0d0b6731-440d-4ae7-a7fd-af30ae13da0d)
-
 1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python src/indexers/delete.py --ai-search-key <your-azure-ai-search-key>`.
 
 ### Conversation with bot

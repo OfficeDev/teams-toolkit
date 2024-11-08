@@ -1,5 +1,6 @@
-import sinon from "sinon";
-import { processUtil } from "../../src/utils/processUtil";
+import sinon, { SinonFakeTimers, useFakeTimers } from "sinon";
+import * as chai from "chai";
+import { processUtil, timeoutPromise } from "../../src/utils/processUtil";
 
 describe("ProcessUtil", () => {
   const sandbox = sinon.createSandbox();
@@ -13,8 +14,35 @@ describe("ProcessUtil", () => {
       sandbox.stub(process, "platform").value("win32");
       try {
         await processUtil.killProcess(-1);
-        throw new Error("Expected method to reject.");
-      } catch (err) {}
+        chai.assert.fail("Expected promise to reject, but it resolved.");
+      } catch (error) {
+        chai.assert.isTrue(error instanceof Error);
+      }
     });
+  });
+});
+
+describe("timeoutPromise", () => {
+  let clock: SinonFakeTimers;
+
+  beforeEach(() => {
+    clock = useFakeTimers();
+  });
+
+  afterEach(() => {
+    clock.restore();
+  });
+
+  it("timeoutPromise", async () => {
+    try {
+      const timeout = 1000;
+      const promise = timeoutPromise(timeout);
+      clock.tick(timeout);
+      await promise;
+      chai.assert.fail("Expected promise to reject, but it resolved.");
+    } catch (error) {
+      chai.assert.isTrue(error instanceof Error);
+      chai.assert.equal(error.message, "Operation timeout");
+    }
   });
 });

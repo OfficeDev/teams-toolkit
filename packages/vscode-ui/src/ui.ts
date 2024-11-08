@@ -1115,9 +1115,8 @@ export class VSCodeUI implements UserInteraction {
     const workingDirectory = args.workingDirectory;
     const timeout = args.timeout;
     const env = args.env;
-    const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
-      const wait = setTimeout(() => {
-        clearTimeout(wait);
+    const timeoutPromise = new Promise((resolve, reject) => {
+      setTimeout(() => {
         reject(
           new ScriptTimeoutError(
             this.localizer.commandTimeoutErrorMessage(cmd),

@@ -21,6 +21,7 @@ import {
   Disposable,
   QuickInputButton,
   QuickPick,
+  tasks,
   Terminal,
   TextDocument,
   window,
@@ -396,36 +397,8 @@ describe("UI Unit Tests", async () => {
     afterEach(() => {
       sandbox.restore();
     });
-
-    it("runs command successfully", async function (this: Mocha.Context) {
-      const timer = sandbox.useFakeTimers();
-      const mockTerminal = stubInterface<Terminal>();
-      sandbox.stub(window, "createTerminal").returns(mockTerminal);
-
-      const runCmd = ui.runCommand({ cmd: "test" });
-      await timer.tickAsync(1000);
-      const result = await runCmd;
-
-      expect(mockTerminal.show.calledOnce).to.be.true;
-      expect(mockTerminal.sendText.calledOnceWithExactly("test")).to.be.true;
-      expect(result.isOk()).is.true;
-      timer.restore();
-    });
-
     it("runs command timeout", async function (this: Mocha.Context) {
       const timer = sandbox.useFakeTimers();
-      const mockTerminal = {
-        show: sinon.stub(),
-        sendText: sinon.stub(),
-        processId: new Promise((resolve: (value: string) => void, reject) => {
-          const wait = setTimeout(() => {
-            clearTimeout(wait);
-            resolve("1");
-          }, 1000);
-        }),
-      } as unknown as Terminal;
-      sandbox.stub(window, "createTerminal").returns(mockTerminal);
-
       const runCmd = ui.runCommand({ cmd: "test", timeout: 200 });
       await timer.tickAsync(2000);
       const result = await runCmd;

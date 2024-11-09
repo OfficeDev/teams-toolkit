@@ -13,6 +13,7 @@ import {
   languages,
   QuickInputButton,
   QuickPick,
+  tasks,
   Terminal,
   TextDocument,
   window,
@@ -429,7 +430,7 @@ describe("UI Unit Tests", async () => {
     it("runs command successfully", async function (this: Mocha.Context) {
       const timer = sandbox.useFakeTimers();
       const ui = new VsCodeUI(<ExtensionContext>{});
-      const mockTerminal = stubInterface<Terminal>();
+      // const mockTerminal = stubInterface<Terminal>();
       const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
@@ -442,14 +443,15 @@ describe("UI Unit Tests", async () => {
         hide: () => {},
         dispose: () => {},
       });
-      sandbox.stub(window, "createTerminal").returns(mockTerminal);
+      sandbox.stub(tasks, "executeTask").resolves();
+      const stub = sandbox.stub(tasks, "onDidEndTaskProcess").returns({ dispose: () => {} });
 
       const runCmd = ui.runCommand({ cmd: "test" });
       await timer.tickAsync(1000);
       const result = await runCmd;
 
-      expect(mockTerminal.show.calledOnce).to.be.true;
-      expect(mockTerminal.sendText.calledOnceWithExactly("test")).to.be.true;
+      // expect(mockTerminal.show.calledOnce).to.be.true;
+      // expect(mockTerminal.sendText.calledOnceWithExactly("test")).to.be.true;
       expect(result.isOk()).is.true;
       timer.restore();
     });

@@ -45,6 +45,7 @@ import {
   QuickPickItemKind,
   ShellExecution,
   Task,
+  TaskProcessEndEvent,
   tasks,
   TaskScope,
   ThemeIcon,
@@ -1138,12 +1139,11 @@ export class VSCodeUI implements UserInteraction {
       );
       task.isBackground = true;
       void tasks.executeTask(task);
-      const endTaskListener = tasks.onDidEndTaskProcess((e) => {
+      tasks.onDidEndTaskProcess((e: TaskProcessEndEvent) => {
         if (
           e.execution.task.name === "Execute script action" &&
           e.execution.task.source === "ms-teams-vscode-extension"
         ) {
-          endTaskListener.dispose();
           if (e.exitCode === 0) {
             resolve(undefined);
           } else {

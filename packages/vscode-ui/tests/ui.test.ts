@@ -21,6 +21,7 @@ import {
   Disposable,
   QuickInputButton,
   QuickPick,
+  Task,
   tasks,
   Terminal,
   TextDocument,
@@ -402,9 +403,23 @@ describe("UI Unit Tests", async () => {
       const runCmd = ui.runCommand({ cmd: "test", timeout: 200 });
       await timer.tickAsync(2000);
       const result = await runCmd;
-
       expect(result.isErr()).is.true;
       timer.restore();
+    });
+    it("runs command successfully", async function (this: Mocha.Context) {
+      // const timer = sandbox.useFakeTimers();
+      sandbox.stub(tasks, "executeTask").resolves();
+      const disposable = { dispose: () => {} };
+      const stub = sandbox.stub(tasks, "onDidEndTaskProcess").returns(disposable);
+      stub.yields({
+        exitCode: 0,
+        execution: { task: { name: "Execute script action", source: "ms-teams-vscode-extension" } },
+      });
+      const runCmd = ui.runCommand({ cmd: "test" });
+      // await timer.tickAsync(1000);
+      const result = await runCmd;
+      expect(result.isOk()).is.true;
+      // timer.restore();
     });
   });
 

@@ -15,6 +15,8 @@ import { CreateOrUpdateEnvironmentFileDriver } from "../../../../src/component/d
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { InvalidActionInputError, UnhandledError } from "../../../../src/error/common";
+import { pathUtils } from "../../../../src/component/utils/pathUtils";
+import { ok } from "@microsoft/teamsfx-api";
 
 describe("CreateOrUpdateEnvironmentFileDriver", () => {
   const mockedDriverContexts = [
@@ -116,7 +118,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
       });
 
       it("happy path: output to target", async () => {
-        const target = path.join(mockedDriverContext.projectPath, ".env.teamsfx.local");
+        const target = path.join(mockedDriverContext.projectPath, ".env.local");
         const existingEnvs = {
           existing1: "value1",
           existing2: "value2",
@@ -141,17 +143,18 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
           }
         });
         const args: any = {
-          target: ".env.teamsfx.local",
+          target: ".env.local",
           envs: {
             key1: 10,
             key2: true,
             key3: "value3",
           },
         };
+        sinon.stub(pathUtils, "getEnvFilePath").resolves(ok(target));
         const result = await driver.run(args, mockedDriverContext);
         chai.assert(result.isOk());
         if (result.isOk()) {
-          chai.assert.equal(result.value.size, 0);
+          chai.assert.equal(result.value.size, 3);
           const expectedEnvs = { ...existingEnvs, ...args.envs };
           const expectedContent = Object.entries(expectedEnvs)
             .map(([key, value]) => `${key}=${value}`)
@@ -205,10 +208,11 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
             key3: "value3",
           },
         };
+        sinon.stub(pathUtils, "getEnvFilePath").resolves(ok(target));
         const executionResult = await driver.execute(args, mockedDriverContext);
         chai.assert(executionResult.result.isOk());
         if (executionResult.result.isOk()) {
-          chai.assert.equal(executionResult.result.value.size, 0);
+          chai.assert.equal(executionResult.result.value.size, 3);
           const expectedEnvs = { ...existingEnvs, ...args.envs };
           const expectedContent = Object.entries(expectedEnvs)
             .map(([key, value]) => `${key}=${value}`)

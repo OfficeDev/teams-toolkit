@@ -242,7 +242,7 @@ export class MockUserInteraction implements UserInteraction {
     timeout?: number;
     env?: { [k: string]: string };
   }): Promise<Result<string, FxError>> {
-    throw new Error(`Method openUrl not implemented: runCommand`);
+    return ok("");
   }
 
   async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {

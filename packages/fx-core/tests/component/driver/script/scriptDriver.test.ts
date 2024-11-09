@@ -68,7 +68,7 @@ describe("Script Driver test", () => {
     sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
     const args = {
       workingDirectory: "./",
-      run: "abc",
+      run: "echo '::set-output MY_KEY=MY_VALUE'",
     };
     const context = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -99,8 +99,22 @@ describe("executeCommand", () => {
     sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
     const stub = sandbox.stub(child_process, "exec").returns({} as any);
     stub.yields(null);
-    await executeCommand("dotnet test", "./", new TestLogProvider(), new MockUserInteraction());
+    await executeCommand(
+      "dotnet test && echo '::set-output MY_KEY=MY_VALUE'",
+      "./",
+      new TestLogProvider(),
+      new MockUserInteraction()
+    );
     assert.isTrue(stub.calledOnce);
+  });
+  it("call ui.runCommand", async () => {
+    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
+    const ui = new MockUserInteraction();
+    const spyRunCommand = sandbox.spy(ui, "runCommand");
+    const stub = sandbox.stub(child_process, "exec").returns({} as any);
+    await executeCommand("abc", "./", new TestLogProvider(), ui);
+    assert.isTrue(spyRunCommand.calledOnce);
+    assert.isFalse(stub.calledOnce);
   });
 });
 describe("getSystemEncoding", () => {

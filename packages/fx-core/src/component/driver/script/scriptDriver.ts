@@ -9,9 +9,9 @@ import { FxError, LogProvider, Result, err, ok } from "@microsoft/teamsfx-api";
 import child_process from "child_process";
 import fs from "fs-extra";
 import iconv from "iconv-lite";
-import os from "os";
 import * as path from "path";
 import { Service } from "typedi";
+import { maskSecret } from "../../../common/stringUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { getSystemEncoding } from "../../utils/charsetUtils";
@@ -19,8 +19,6 @@ import { DotenvOutput } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { maskSecret } from "../../../common/stringUtils";
-import { pathUtils } from "../../utils/pathUtils";
 
 const ACTION_NAME = "script";
 
@@ -103,10 +101,8 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  const ymlPath = pathUtils.getYmlFilePath(projectPath, process.env.TEAMSFX_ENV);
-  const ymlContent = await fs.readFile(ymlPath, "utf-8");
   const hasSetEnvCommand =
-    ymlContent.includes("::set-teamsfx-env") || ymlContent.includes("::set-output");
+    command.includes("::set-teamsfx-env") || command.includes("::set-output");
   let workingDir = workingDirectory || ".";
   workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
   if (process.platform === "win32") {

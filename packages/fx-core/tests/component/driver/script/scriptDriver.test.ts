@@ -11,7 +11,6 @@ import os from "os";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/utils";
 import {
-  capitalizeFirstLetter,
   convertScriptErrorToFxError,
   defaultShell,
   executeCommand,
@@ -30,6 +29,7 @@ import {
 } from "../../../core/utils";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { UserCancelError } from "../../../../src/error";
+import * as path from "path";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -291,12 +291,12 @@ describe("resolveFilePath", () => {
     sandbox.restore();
   });
   it("relative path", async () => {
-    const res = resolveFilePath("e:\\test");
-    assert.equal(res, "e:\\test");
+    const res = resolveFilePath("/test");
+    assert.isTrue(res === "\\test" || res === "/test");
   });
   it("absolute path", async () => {
     const res = resolveFilePath("/test", "/test2");
-    assert.equal(res, "/test2");
+    assert.isTrue(res === "\\test2" || res === "/test2");
   });
 });
 

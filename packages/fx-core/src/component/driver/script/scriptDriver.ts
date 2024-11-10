@@ -237,11 +237,6 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
   return output;
 }
 
-export function capitalizeFirstLetter(raw: string): string {
-  if (!raw) return raw;
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-}
-
 export function resolveFilePath(projectPath: string, filePath?: string): string {
   let result = filePath || ".";
   result = path.isAbsolute(result) ? result : path.join(projectPath, result);

@@ -127,20 +127,13 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
           .map(([key, value]) => `${key}=${value}`)
           .join(os.EOL);
         sinon.stub(fs, "ensureFile").callsFake(async (path) => {
-          if (path !== target) {
-            content = "";
-          }
+          content = "";
         });
         sinon.stub(fs, "readFile").callsFake(async (path) => {
-          if (path === target) {
-            return Buffer.from(content);
-          }
-          return Buffer.from("");
+          return Buffer.from(content);
         });
         sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
-          if (path === target) {
-            content = data;
-          }
+          content = data;
         });
         const args: any = {
           target: ".env.local",
@@ -172,20 +165,13 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
           .map(([key, value]) => `${key}=${value}`)
           .join(os.EOL);
         sinon.stub(fs, "ensureFile").callsFake(async (path) => {
-          if (path !== target) {
-            content = "";
-          }
+          content = "";
         });
         sinon.stub(fs, "readFile").callsFake(async (path) => {
-          if (path === target) {
-            return Buffer.from(content);
-          }
-          return Buffer.from("");
+          return Buffer.from(content);
         });
         sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
-          if (path === target) {
-            content = data;
-          }
+          content = data;
         });
         const args: any = {
           target: "E:\\home\\test\\.env.local",

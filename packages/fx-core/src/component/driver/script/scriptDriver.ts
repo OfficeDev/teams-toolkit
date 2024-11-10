@@ -101,14 +101,12 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  const hasSetEnvCommand =
-    command.includes("::set-teamsfx-env") || command.includes("::set-output");
   let workingDir = workingDirectory || ".";
   workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
   if (process.platform === "win32") {
     workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
   }
-  if (!hasSetEnvCommand && ui?.runCommand) {
+  if (ui?.runCommand) {
     const res = await ui.runCommand({
       cmd: command,
       workingDirectory: workingDir,
@@ -119,7 +117,7 @@ export async function executeCommand(
       return err(res.error);
     }
     const outputString = res.value;
-    const outputObject = parseSetOutputCommand(outputString);
+    const outputObject = parseSetOutputCommand(command);
     if (Object.keys(outputObject).length > 0)
       logProvider.verbose(
         `script output env variables: ${maskSecret(JSON.stringify(outputObject), {

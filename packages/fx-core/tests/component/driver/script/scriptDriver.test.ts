@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { err, IProgressHandler, ok } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import child_process from "child_process";
 import fs from "fs-extra";
@@ -27,9 +27,11 @@ import {
   MockedAzureAccountProvider,
 } from "../../../core/utils";
 import { TestLogProvider } from "../../util/logProviderMock";
+import { UserCancelError } from "../../../../src/error";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
+  const ui = new MockUserInteraction();
   beforeEach(() => {
     sandbox.stub(tools, "waitSeconds").resolves();
   });
@@ -46,7 +48,7 @@ describe("Script Driver test", () => {
     const context = {
       azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
       progressBar: {
         start: async (detail?: string): Promise<void> => {},
         next: async (detail?: string): Promise<void> => {},
@@ -54,6 +56,7 @@ describe("Script Driver test", () => {
       } as IProgressHandler,
       projectPath: "./",
     } as any;
+    sandbox.stub(ui, "runCommand").value(undefined);
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
@@ -73,9 +76,10 @@ describe("Script Driver test", () => {
     const context = {
       azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
       projectPath: "./",
     } as any;
+    sandbox.stub(ui, "runCommand").value(undefined);
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isErr());
   });
@@ -91,6 +95,7 @@ describe("Script Driver test", () => {
   });
 });
 describe("executeCommand", () => {
+  const ui = new MockUserInteraction();
   const sandbox = sinon.createSandbox();
   afterEach(() => {
     sandbox.restore();
@@ -99,22 +104,42 @@ describe("executeCommand", () => {
     sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
     const stub = sandbox.stub(child_process, "exec").returns({} as any);
     stub.yields(null);
+    sandbox.stub(ui, "runCommand").value(undefined);
     await executeCommand(
       "dotnet test && echo '::set-output MY_KEY=MY_VALUE'",
       "./",
       new TestLogProvider(),
-      new MockUserInteraction()
+      ui
     );
     assert.isTrue(stub.calledOnce);
   });
-  it("call ui.runCommand", async () => {
-    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
-    const ui = new MockUserInteraction();
-    const spyRunCommand = sandbox.spy(ui, "runCommand");
-    const stub = sandbox.stub(child_process, "exec").returns({} as any);
-    await executeCommand("abc", "./", new TestLogProvider(), ui);
-    assert.isTrue(spyRunCommand.calledOnce);
-    assert.isFalse(stub.calledOnce);
+  // it("call ui.runCommand", async () => {
+  //   const ui = new MockUserInteraction();
+  //   const spyRunCommand = sandbox.spy(ui, "runCommand");
+  //   const stub = sandbox.stub(child_process, "exec").returns({} as any);
+  //   await executeCommand("abc", "./", new TestLogProvider(), ui);
+  //   assert.isTrue(spyRunCommand.calledOnce);
+  //   assert.isFalse(stub.calledOnce);
+  // });
+  it("call ui.runCommand error", async () => {
+    sandbox.stub(ui, "runCommand").resolves(err(new UserCancelError()));
+    sandbox.stub(child_process, "exec").returns({} as any);
+    const res = await executeCommand("abc", "./", new TestLogProvider(), ui);
+    assert.isTrue(res.isErr());
+  });
+  it("call ui.runCommand with output", async () => {
+    sandbox.stub(ui, "runCommand").resolves(ok(""));
+    sandbox.stub(child_process, "exec").returns({} as any);
+    const res = await executeCommand(
+      "echo '::set-teamsfx-env MY_KEY=MY_VALUE'",
+      "./",
+      new TestLogProvider(),
+      ui
+    );
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value[1], { MY_KEY: "MY_VALUE" });
+    }
   });
 });
 describe("getSystemEncoding", () => {

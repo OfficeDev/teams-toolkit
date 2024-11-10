@@ -25,6 +25,15 @@ describe("DefaultLocalizer", () => {
   it("commandTimeoutErrorMessage", async () => {
     assert.equal(localizer.commandTimeoutErrorMessage("abc"), "Execute command timeout: abc");
   });
+  it("commandExecutionErrorMessage", async () => {
+    assert.equal(localizer.commandExecutionErrorMessage("abc"), "Execute command failure: abc");
+  });
+  it("commandExecutionErrorDisplayMessage", async () => {
+    assert.equal(
+      localizer.commandExecutionErrorDisplayMessage("abc"),
+      "Execute command failure: abc"
+    );
+  });
   it("defaultFolder", async () => {
     assert.equal(localizer.defaultFolder(), "Default folder");
   });

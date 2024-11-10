@@ -126,9 +126,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         let content = Object.entries(existingEnvs)
           .map(([key, value]) => `${key}=${value}`)
           .join(os.EOL);
-        sinon.stub(fs, "ensureFile").callsFake(async (path) => {
-          content = "";
-        });
+        sinon.stub(fs, "ensureFile").resolves();
         sinon.stub(fs, "readFile").callsFake(async (path) => {
           return Buffer.from(content);
         });
@@ -156,7 +154,6 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         }
       });
       it("happy path: not env file", async () => {
-        const target = path.join("E:\\home\\test", ".env.local");
         const existingEnvs = {
           existing1: "value1",
           existing2: "value2",
@@ -164,9 +161,7 @@ describe("CreateOrUpdateEnvironmentFileDriver", () => {
         let content = Object.entries(existingEnvs)
           .map(([key, value]) => `${key}=${value}`)
           .join(os.EOL);
-        sinon.stub(fs, "ensureFile").callsFake(async (path) => {
-          content = "";
-        });
+        sinon.stub(fs, "ensureFile").resolves();
         sinon.stub(fs, "readFile").callsFake(async (path) => {
           return Buffer.from(content);
         });

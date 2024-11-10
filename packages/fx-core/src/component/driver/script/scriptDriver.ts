@@ -101,11 +101,7 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  let workingDir = workingDirectory || ".";
-  workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
-  if (process.platform === "win32") {
-    workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
-  }
+  const workingDir = resolveFilePath(projectPath, workingDirectory);
   if (ui?.runCommand) {
     const res = await ui.runCommand({
       cmd: command,
@@ -137,7 +133,7 @@ export async function executeCommand(
     const finalCmd = command;
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
-      appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
+      appendFile = resolveFilePath(projectPath, redirectTo);
     }
     logProvider.verbose(
       `Start to run command: "${maskSecret(finalCmd, {
@@ -242,5 +238,12 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
 }
 
 export function capitalizeFirstLetter(raw: string): string {
+  if (!raw) return raw;
   return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+export function resolveFilePath(projectPath: string, filePath?: string): string {
+  let result = filePath || ".";
+  result = path.isAbsolute(result) ? result : path.join(projectPath, result);
+  return result;
 }

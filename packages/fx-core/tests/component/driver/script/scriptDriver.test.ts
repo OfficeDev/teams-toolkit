@@ -11,10 +11,12 @@ import os from "os";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/utils";
 import {
+  capitalizeFirstLetter,
   convertScriptErrorToFxError,
   defaultShell,
   executeCommand,
   getStderrHandler,
+  resolveFilePath,
   parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
@@ -64,6 +66,32 @@ describe("Script Driver test", () => {
       assert.equal(output.get("MY_KEY"), "MY_VALUE");
     }
     sinon.assert.called(appendFileSyncStub);
+  });
+  it("execute success: set-output and not append to file", async () => {
+    const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
+    const args = {
+      workingDirectory: "./",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").value(undefined);
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.equal(output.get("MY_KEY"), "MY_VALUE");
+    }
+    sinon.assert.notCalled(appendFileSyncStub);
   });
   it("execute failed: child_process.exec return error", async () => {
     const error = new Error("test error");
@@ -253,6 +281,22 @@ describe("getStderrHandler", () => {
     );
     await handler(Buffer.from("test"));
     assert.deepEqual(stderrStrings, ["test"]);
+  });
+});
+
+describe("resolveFilePath", () => {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {});
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("relative path", async () => {
+    const res = resolveFilePath("e:\\test");
+    assert.equal(res, "e:\\test");
+  });
+  it("absolute path", async () => {
+    const res = resolveFilePath("e:\\test", "e:\\test2");
+    assert.equal(res, "e:\\test2");
   });
 });
 

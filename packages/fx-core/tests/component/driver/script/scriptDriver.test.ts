@@ -295,8 +295,8 @@ describe("resolveFilePath", () => {
     assert.equal(res, "e:\\test");
   });
   it("absolute path", async () => {
-    const res = resolveFilePath("e:\\test", "e:\\test2");
-    assert.equal(res, "e:\\test2");
+    const res = resolveFilePath("/test", "/test2");
+    assert.equal(res, "/test2");
   });
 });
 

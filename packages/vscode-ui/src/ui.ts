@@ -1116,16 +1116,18 @@ export class VSCodeUI implements UserInteraction {
     const workingDirectory = args.workingDirectory;
     const timeout = args.timeout;
     const env = args.env;
-    const timeoutPromise = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        reject(
-          new ScriptTimeoutError(
-            this.localizer.commandTimeoutErrorMessage(cmd),
-            this.localizer.commandTimeoutErrorDisplayMessage(cmd)
-          )
-        );
-      }, timeout ?? 1000 * 60 * 30);
-    });
+    const timeoutPromise = timeout
+      ? new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(
+              new ScriptTimeoutError(
+                this.localizer.commandTimeoutErrorMessage(cmd),
+                this.localizer.commandTimeoutErrorDisplayMessage(cmd)
+              )
+            );
+          }, timeout ?? 1000 * 60 * 30);
+        })
+      : undefined;
     const taskPromise = new Promise((resolve, reject) => {
       const task = new Task(
         { type: "shell", task: "Execute script action" },
@@ -1159,7 +1161,11 @@ export class VSCodeUI implements UserInteraction {
       });
     });
     try {
-      await Promise.race([taskPromise, timeoutPromise]);
+      if (timeout) {
+        await Promise.race([taskPromise, timeoutPromise]);
+      } else {
+        await taskPromise;
+      }
       return ok("");
     } catch (error) {
       return err(this.assembleError(error));

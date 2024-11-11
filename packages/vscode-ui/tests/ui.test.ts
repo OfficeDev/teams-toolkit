@@ -42,20 +42,11 @@ describe("UI Unit Tests", async () => {
 
   describe("Manually", () => {
     it("Show Progress 2", async function (this: Mocha.Context) {
-      this.timeout(0);
       const handler = ui.createProgressBar("Test Progress Bar", 3);
       await handler.start("Prepare");
-      await sleep(2 * 1000);
-
       await handler.next("First step");
-      await sleep(2 * 1000);
-
       await handler.next("Second step");
-      await sleep(2 * 1000);
-
       await handler.next("Third step");
-      await sleep(2 * 1000);
-
       await handler.end(true);
     });
   });
@@ -97,11 +88,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("default folder");
       }
-      // expect(
-      //   telemetryStub.calledOnceWith("select-folder", {
-      //     "selected-option": "default",
-      //   })
-      // ).is.true;
       sinon.restore();
     });
 
@@ -401,13 +387,13 @@ describe("UI Unit Tests", async () => {
     it("runs command timeout", async function (this: Mocha.Context) {
       const timer = sandbox.useFakeTimers();
       const runCmd = ui.runCommand({ cmd: "test", timeout: 200 });
+      sandbox.stub(tasks, "executeTask").resolves();
       await timer.tickAsync(2000);
       const result = await runCmd;
       expect(result.isErr()).is.true;
       timer.restore();
     });
     it("runs command successfully", async function (this: Mocha.Context) {
-      // const timer = sandbox.useFakeTimers();
       sandbox.stub(tasks, "executeTask").resolves();
       const disposable = { dispose: () => {} };
       const stub = sandbox.stub(tasks, "onDidEndTaskProcess").returns(disposable);
@@ -416,10 +402,8 @@ describe("UI Unit Tests", async () => {
         execution: { task: { name: "Execute script action", source: "ms-teams-vscode-extension" } },
       });
       const runCmd = ui.runCommand({ cmd: "test" });
-      // await timer.tickAsync(1000);
       const result = await runCmd;
       expect(result.isOk()).is.true;
-      // timer.restore();
     });
   });
 

@@ -1,7 +1,6 @@
 import sinon, { SinonFakeTimers, useFakeTimers } from "sinon";
 import * as chai from "chai";
-import { processUtil, timeoutPromise } from "../../src/utils/processUtil";
-
+import { killModule, processUtil, timeoutPromise } from "../../src/utils/processUtil";
 describe("ProcessUtil", () => {
   const sandbox = sinon.createSandbox();
 
@@ -11,13 +10,21 @@ describe("ProcessUtil", () => {
 
   describe("killProcess", () => {
     it("error", async () => {
-      sandbox.stub(process, "platform").value("win32");
+      const killStub = sandbox.stub(killModule, "killTree");
+      killStub.yields(new Error());
       try {
         await processUtil.killProcess(-1);
         chai.assert.fail("Expected promise to reject, but it resolved.");
       } catch (error) {
         chai.assert.isTrue(error instanceof Error);
       }
+    });
+    it("happy", async () => {
+      const killStub = sandbox.stub(killModule, "killTree");
+      sandbox.stub(process, "platform").value("win32");
+      killStub.yields(null);
+      await processUtil.killProcess(-1);
+      chai.assert.isTrue(killStub.calledOnce);
     });
   });
 });

@@ -21,7 +21,6 @@ describe("ProcessUtil", () => {
     });
     it("happy", async () => {
       const killStub = sandbox.stub(killModule, "killTree");
-      sandbox.stub(process, "platform").value("win32");
       killStub.yields(null);
       await processUtil.killProcess(-1);
       chai.assert.isTrue(killStub.calledOnce);

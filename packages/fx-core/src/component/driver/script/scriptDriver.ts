@@ -9,13 +9,13 @@ import { FxError, LogProvider, Result, err, ok } from "@microsoft/teamsfx-api";
 import child_process from "child_process";
 import fs from "fs-extra";
 import iconv from "iconv-lite";
-import * as path from "path";
 import { Service } from "typedi";
 import { maskSecret } from "../../../common/stringUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { getSystemEncoding } from "../../utils/charsetUtils";
 import { DotenvOutput } from "../../utils/envUtil";
+import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
@@ -101,7 +101,7 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
-  const workingDir = resolveFilePath(projectPath, workingDirectory);
+  const workingDir = pathUtils.resolveFilePath(projectPath, workingDirectory);
   if (ui?.runCommand) {
     const res = await ui.runCommand({
       cmd: command,
@@ -133,7 +133,7 @@ export async function executeCommand(
     const finalCmd = command;
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
-      appendFile = resolveFilePath(projectPath, redirectTo);
+      appendFile = pathUtils.resolveFilePath(projectPath, redirectTo);
     }
     logProvider.verbose(
       `Start to run command: "${maskSecret(finalCmd, {
@@ -235,10 +235,4 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
     output[key] = value;
   }
   return output;
-}
-
-export function resolveFilePath(projectPath: string, filePath?: string): string {
-  let result = filePath || ".";
-  result = path.isAbsolute(result) ? result : path.join(projectPath, result);
-  return result;
 }

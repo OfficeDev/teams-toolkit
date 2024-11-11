@@ -6,10 +6,8 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Service } from "typedi";
-
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
-
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { wrapRun } from "../../utils/common";
@@ -62,7 +60,7 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
   }> {
     try {
       this.validateArgs(args);
-      const target = this.getAbsolutePath(args.target!, context.projectPath);
+      const target = pathUtils.resolveFilePath(context.projectPath, args.target);
       await fs.ensureFile(target);
       const envs = dotenv.parse(await fs.readFile(target));
       context.logProvider?.debug(`Existing envs: ${JSON.stringify(envs)}`);
@@ -127,11 +125,5 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string) {
-    return path.isAbsolute(relativeOrAbsolutePath)
-      ? relativeOrAbsolutePath
-      : path.join(projectPath, relativeOrAbsolutePath);
   }
 }

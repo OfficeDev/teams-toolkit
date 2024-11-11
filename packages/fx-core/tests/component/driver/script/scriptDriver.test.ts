@@ -15,7 +15,6 @@ import {
   defaultShell,
   executeCommand,
   getStderrHandler,
-  resolveFilePath,
   parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
@@ -281,22 +280,6 @@ describe("getStderrHandler", () => {
     );
     await handler(Buffer.from("test"));
     assert.deepEqual(stderrStrings, ["test"]);
-  });
-});
-
-describe("resolveFilePath", () => {
-  const sandbox = sinon.createSandbox();
-  beforeEach(() => {});
-  afterEach(async () => {
-    sandbox.restore();
-  });
-  it("relative path", async () => {
-    const res = resolveFilePath("/test");
-    assert.isTrue(res === "\\test" || res === "/test");
-  });
-  it("absolute path", async () => {
-    const res = resolveFilePath("/test", "/test2");
-    assert.isTrue(res === "\\test2" || res === "/test2");
   });
 });
 

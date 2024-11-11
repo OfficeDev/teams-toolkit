@@ -28,7 +28,6 @@ import {
 } from "../../../core/utils";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { UserCancelError } from "../../../../src/error";
-import * as path from "path";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -39,7 +38,7 @@ describe("Script Driver test", () => {
   afterEach(async () => {
     sandbox.restore();
   });
-  it("execute success: set-output and append to file", async () => {
+  it("ui not provided - execute success: set-output and append to file", async () => {
     const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
     const args = {
       workingDirectory: "./",
@@ -66,7 +65,7 @@ describe("Script Driver test", () => {
     }
     sinon.assert.called(appendFileSyncStub);
   });
-  it("execute success: set-output and not append to file", async () => {
+  it("ui not provided - execute success: set-output and not append to file", async () => {
     const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
     const args = {
       workingDirectory: "./",
@@ -92,10 +91,10 @@ describe("Script Driver test", () => {
     }
     sinon.assert.notCalled(appendFileSyncStub);
   });
-  it("execute failed: child_process.exec return error", async () => {
+  it("ui not provided - execute failed: child_process.exec return error", async () => {
     const error = new Error("test error");
     sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
-    sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
+    sandbox.stub(child_process, "exec").yields(error);
     const args = {
       workingDirectory: "./",
       run: "echo '::set-output MY_KEY=MY_VALUE'",
@@ -107,6 +106,74 @@ describe("Script Driver test", () => {
       projectPath: "./",
     } as any;
     sandbox.stub(ui, "runCommand").value(undefined);
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isErr());
+  });
+  it("ui provided - execute - success", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").resolves(ok(""));
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.equal(output.get("MY_KEY"), "MY_VALUE");
+    }
+  });
+  it("ui provided - execute - success no env output", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: `echo 'abc'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").resolves(ok(""));
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.deepEqual(output, new Map());
+    }
+  });
+  it("ui provided - execute - runCommand Error", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").resolves(err(new UserCancelError()));
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isErr());
   });

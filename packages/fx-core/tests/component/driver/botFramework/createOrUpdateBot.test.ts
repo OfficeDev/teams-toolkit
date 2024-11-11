@@ -10,7 +10,8 @@ import * as localizeUtils from "../../../../src/common/localizeUtils";
 import { CreateOrUpdateBotFrameworkBotDriver } from "../../../../src/component/driver/botFramework/createOrUpdateBot";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
 import { InvalidActionInputError, UnhandledError } from "../../../../src/error/common";
-import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedLogProvider } from "../../../plugins/solution/util";
+import { MockedM365Provider } from "../../../core/utils";
 
 describe("CreateOrUpdateM365BotDriver", () => {
   const mockedDriverContext: any = {

@@ -12,8 +12,7 @@ import chai from "chai";
 import * as tools from "../../../../src/common/utils";
 import { NpxBuildDriver } from "../../../../src/component/driver/script/npxBuildDriver";
 import * as utils from "../../../../src/component/driver/script/scriptDriver";
-import { MockUserInteraction } from "../../../core/utils";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import { MockUserInteraction, MockedAzureAccountProvider } from "../../../core/utils";
 import { TestLogProvider } from "../../util/logProviderMock";
 
 describe("NPX Build Driver test", () => {
@@ -34,7 +33,7 @@ describe("NPX Build Driver test", () => {
       args: "build",
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
@@ -53,7 +52,7 @@ describe("NPX Build Driver test", () => {
       env: { a: "HELLO" },
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
     } as any;

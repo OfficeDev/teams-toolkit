@@ -21,6 +21,9 @@ const model = new OpenAIModel({
 
   useSystemMessages: true,
   logRequests: true,
+  {{#CEAEnabled}} 
+  stream: true,
+  {{/CEAEnabled}}
 });
 const prompts = new PromptManager({
   promptsFolder: path.join(__dirname, "../prompts"),
@@ -60,15 +63,6 @@ const app = new Application({
   },
 });
 app.ai.action(AI.SayCommandActionName, customSayCommand.sayCommand(true));
-
-app.conversationUpdate("membersAdded", async (turnContext) => {
-  const welcomeText = "How can I help you today?";
-  for (const member of turnContext.activity.membersAdded) {
-    if (member.id !== turnContext.activity.recipient.id) {
-      await turnContext.sendActivity(MessageFactory.text(welcomeText));
-    }
-  }
-});
 
 app.feedbackLoop(async (context, state, feedbackLoopData) => {
   //add custom feedback process logic here

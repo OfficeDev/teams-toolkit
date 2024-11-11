@@ -12,11 +12,16 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@azure/functions": "^4.3.0"
+        "@azure/functions": "^4.3.0",
+        "jsonwebtoken": "^9.0.2",
+        "jwks-rsa": "^3.1.0",
+        "lru-memoizer": "^2.3.0"
     },
     "devDependencies": {
+        "@types/debug": "^4.1.12",
+        "@types/node": "^20.14.9",
         "env-cmd": "^10.1.0",
-        "@types/node": "^18.11.9",
+        "rimraf": "^5.0.7",
         "typescript": "^4.1.6"
     },
     "main": "dist/src/functions/*.js"

@@ -152,7 +152,9 @@ export class CopilotGptManifestUtils {
     if (teamsManifestRes.isErr()) {
       return err(teamsManifestRes.error);
     }
-    const filePath = teamsManifestRes.value.copilotExtensions?.declarativeCopilots?.[0].file;
+    const filePath = teamsManifestRes.value.copilotExtensions
+      ? teamsManifestRes.value.copilotExtensions.declarativeCopilots?.[0].file
+      : teamsManifestRes.value.copilotAgents?.declarativeAgents?.[0].file;
     if (!filePath) {
       return err(
         AppStudioResultFactory.UserError(
@@ -185,6 +187,30 @@ export class CopilotGptManifestUtils {
         id,
         file: pluginFile,
       });
+
+      const actionPath = path.join(path.dirname(copilotGptPath), pluginFile);
+      const actionManifest = await fs.readJson(actionPath);
+      const conversationStarters = actionManifest.capabilities?.conversation_starters;
+
+      if (conversationStarters) {
+        if (!gptManifest.conversation_starters) {
+          gptManifest.conversation_starters = [];
+        }
+
+        for (const starter of conversationStarters) {
+          if (gptManifest.conversation_starters.length >= 6) {
+            break;
+          }
+          if (
+            !gptManifest.conversation_starters.some(
+              (existingStarter) => existingStarter.text === starter.text
+            )
+          ) {
+            gptManifest.conversation_starters.push(starter);
+          }
+        }
+      }
+
       const updateGptManifestRes = await copilotGptManifestUtils.writeCopilotGptManifestFile(
         gptManifest,
         copilotGptPath
@@ -286,14 +312,45 @@ export class CopilotGptManifestUtils {
     }
   }
 
-  public async getDefaultNextAvailablePluginManifestPath(folder: string) {
-    const pluginManifestNamePrefix = DefaultPluginManifestFileName.split(".")[0];
+  public async getDefaultNextAvailablePluginManifestPath(
+    folder: string,
+    pluginManifestFileName = DefaultPluginManifestFileName,
+    isKiotaIntegration = false
+  ) {
+    if (!(await fs.pathExists(path.join(folder, pluginManifestFileName)))) {
+      return path.join(folder, pluginManifestFileName);
+    }
+    const pluginManifestNamePrefix = pluginManifestFileName.split(".")[0];
     let pluginFileNameSuffix = 1;
-    let pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
+    let pluginManifestName = this.getPluginManifestFileName(
+      pluginManifestNamePrefix,
+      pluginFileNameSuffix,
+      isKiotaIntegration
+    );
     while (await fs.pathExists(path.join(folder, pluginManifestName))) {
-      pluginManifestName = `${pluginManifestNamePrefix}_${++pluginFileNameSuffix}.json`;
+      pluginFileNameSuffix++;
+      pluginManifestName = this.getPluginManifestFileName(
+        pluginManifestNamePrefix,
+        pluginFileNameSuffix,
+        isKiotaIntegration
+      );
     }
     return path.join(folder, pluginManifestName);
+  }
+
+  getPluginManifestFileName(
+    pluginManifestNamePrefix: string,
+    pluginFileNameSuffix: number,
+    isKiotaIntegration: boolean
+  ) {
+    let pluginManifestName;
+    if (isKiotaIntegration) {
+      const pluginManifestNameSplit = pluginManifestNamePrefix.split("-");
+      pluginManifestName = `${pluginManifestNameSplit[0]}_${pluginFileNameSuffix}-${pluginManifestNameSplit[1]}.json`;
+    } else {
+      pluginManifestName = `${pluginManifestNamePrefix}_${pluginFileNameSuffix}.json`;
+    }
+    return pluginManifestName;
   }
 }
 

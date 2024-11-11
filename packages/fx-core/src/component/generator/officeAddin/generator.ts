@@ -18,7 +18,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import fse from "fs-extra";
 import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
@@ -39,6 +38,7 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
+import { envUtil } from "../../utils/envUtil";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -101,17 +101,13 @@ export class OfficeAddinGenerator {
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
-    const language = toLower(inputs[QuestionNames.ProgrammingLanguage]) as
-      | "javascript"
-      | "typescript";
     const projectType = inputs[QuestionNames.ProjectType];
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
-    const importProgressStr =
-      projectType === ProjectTypeOptions.officeAddin().id
-        ? getLocalizedString("core.generator.officeAddin.importOfficeProject.title")
-        : getLocalizedString("core.generator.officeAddin.importProject.title");
+    const importProgressStr = getLocalizedString(
+      "core.generator.officeAddin.importOfficeProject.title"
+    );
     const importProgress = context.userInteraction.createProgressBar(importProgressStr, 3);
 
     process.chdir(addinRoot);
@@ -140,7 +136,6 @@ export class OfficeAddinGenerator {
           );
         }
         // from template
-        const framework = getOfficeAddinFramework(inputs);
         const templateConfig = getOfficeAddinTemplateConfig();
         const projectLink =
           projectType === ProjectTypeOptions.officeMetaOS().id
@@ -182,7 +177,7 @@ export class OfficeAddinGenerator {
         );
         if (manifestFile.endsWith(".xml")) {
           // Need to convert to json project first
-          await convertProject(manifestFile);
+          await convertProject(manifestFile, "./backup.zip", "", true);
           manifestFile = manifestFile.replace(/\.xml$/, ".json");
         }
         inputs[QuestionNames.OfficeAddinHost] = await getHost(manifestFile);
@@ -262,5 +257,25 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
     return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
+  }
+
+  async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<GeneratorResult, FxError>> {
+    const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
+    if (fromFolder) {
+      // reset all env files
+      const envRes = await envUtil.listEnv(destinationPath);
+      if (envRes.isOk()) {
+        const envs = envRes.value;
+        for (const env of envs) {
+          await envUtil.resetEnv(destinationPath, env, ["TEAMSFX_ENV", "APP_NAME_SUFFIX"]);
+        }
+      }
+    }
+    return ok({});
   }
 }

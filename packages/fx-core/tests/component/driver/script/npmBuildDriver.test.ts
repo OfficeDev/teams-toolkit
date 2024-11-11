@@ -9,12 +9,11 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/utils";
 import * as utils from "../../../../src/component/driver/script/scriptDriver";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { NpmBuildDriver } from "../../../../src/component/driver/script/npmBuildDriver";
 import { assert } from "chai";
-import { MockUserInteraction } from "../../../core/utils";
+import { MockedAzureAccountProvider, MockUserInteraction } from "../../../core/utils";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 
 describe("NPM Build Driver test", () => {
@@ -35,7 +34,7 @@ describe("NPM Build Driver test", () => {
       args: "build",
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
@@ -55,7 +54,7 @@ describe("NPM Build Driver test", () => {
       env: { a: "HELLO" },
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
     } as any;

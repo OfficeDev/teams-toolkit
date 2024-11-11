@@ -140,6 +140,8 @@ export enum WarningType {
   OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
   ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
   FuncDescriptionTooLong = "function-description-too-long",
+  OperationIdContainsSpecialCharacters = "operationid-contains-special-characters",
+  GenerateJsonDataFailed = "generate-json-data-failed",
   Unknown = "unknown",
 }
 

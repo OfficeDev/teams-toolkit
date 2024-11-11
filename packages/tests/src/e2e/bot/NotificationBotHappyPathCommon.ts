@@ -44,7 +44,7 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: app service hosted notification", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsapp new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-restify --programming-language typescript`
+          ? `teamsapp new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-express --programming-language typescript`
           : `teamsapp new --runtime dotnet --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-webapi`;
       await execAsync(cmd, {
         cwd: testFolder,

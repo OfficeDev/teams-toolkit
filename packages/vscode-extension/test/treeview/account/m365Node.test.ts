@@ -5,6 +5,10 @@ import * as vscode from "vscode";
 import { AccountItemStatus, loadingIcon, m365Icon } from "../../../src/treeview/account/common";
 import { M365AccountNode } from "../../../src/treeview/account/m365Node";
 import { DynamicNode } from "../../../src/treeview/dynamicNode";
+import * as tool from "@microsoft/teamsfx-core/build/common/tools";
+import * as globalVariables from "../../../src/globalVariables";
+import { MockTools } from "../../mocks/mockTools";
+import { ok } from "@microsoft/teamsfx-api";
 
 describe("m365Node", () => {
   const sandbox = sinon.createSandbox();
@@ -15,13 +19,42 @@ describe("m365Node", () => {
   });
 
   it("setSignedIn", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     const m365Node = new M365AccountNode(eventEmitter);
-    await m365Node.setSignedIn("test upn");
+    await m365Node.setSignedIn("test upn", "");
     const treeItem = await m365Node.getTreeItem();
 
     chai.assert.equal(treeItem.iconPath, m365Icon);
     chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
     chai.assert.equal(treeItem.label, "test upn");
+    chai.assert.equal(treeItem.contextValue, "signedinM365");
+    chai.assert.equal(treeItem.command, undefined);
+  });
+
+  it("setSignedIn - multitenant", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+    sandbox.stub(globalVariables, "tools").value(new MockTools());
+    sandbox
+      .stub(globalVariables.tools.tokenProvider.m365TokenProvider, "getAccessToken")
+      .resolves(ok("test-token"));
+    sandbox.stub(tool, "listAllTenants").resolves([
+      {
+        tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",
+        displayName: "MSFT",
+      },
+      {
+        tenantId: "313ef12c-d7cb-4f01-af90-1b113db5aa9a",
+        displayName: "Cisco",
+      },
+    ]);
+
+    const m365Node = new M365AccountNode(eventEmitter);
+    await m365Node.setSignedIn("test upn", "0022fd51-06f5-4557-8a34-69be98de6e20");
+    const treeItem = await m365Node.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, m365Icon);
+    chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
+    chai.assert.equal(treeItem.label, "test upn (MSFT)");
     chai.assert.equal(treeItem.contextValue, "signedinM365");
     chai.assert.equal(treeItem.command, undefined);
   });

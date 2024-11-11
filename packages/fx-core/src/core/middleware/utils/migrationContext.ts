@@ -5,7 +5,7 @@ import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-e
 import path from "path";
 import { MetadataV2 } from "../../../common/versionMetadata";
 import { CoreHookContext } from "../../types";
-import { getParameterFromCxt } from "./v3MigrationUtils";
+import { Inputs } from "@microsoft/teamsfx-api";
 
 export const backupFolder = ".backup";
 export interface MigrationContext extends CoreHookContext {
@@ -128,4 +128,10 @@ export class MigrationContext {
   addTelemetryProperties(properties: Record<string, string>): void {
     this.telemetryProperties = { ...properties, ...this.telemetryProperties };
   }
+}
+
+function getParameterFromCxt(ctx: CoreHookContext, key: string, defaultValue?: string): string {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const value = (inputs[key] as string) || defaultValue || "";
+  return value;
 }

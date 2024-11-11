@@ -9,11 +9,11 @@ import { NotExtendedToM365Error } from "../../../src/component/m365/errors";
 import { LaunchHelper } from "../../../src/component/m365/launchHelper";
 import { PackageService } from "../../../src/component/m365/packageService";
 import { HubTypes } from "../../../src/question";
-import { MockM365TokenProvider } from "../../core/utils";
 import { outlookCopilotAppId } from "../../../src/component/m365/constants";
+import { MockedM365Provider } from "../../core/utils";
 
 describe("LaunchHelper", () => {
-  const m365TokenProvider = new MockM365TokenProvider();
+  const m365TokenProvider = new MockedM365Provider();
   const launchHelper = new LaunchHelper(m365TokenProvider);
 
   afterEach(() => {

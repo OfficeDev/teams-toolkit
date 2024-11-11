@@ -6,11 +6,13 @@
  */
 
 import {
+  AdaptiveCardGenerator,
   ErrorResult,
   ErrorType,
   ProjectType,
   SpecParser,
   SpecParserError,
+  Utils,
   ValidationStatus,
   WarningType,
 } from "@microsoft/m365-spec-parser";
@@ -43,6 +45,7 @@ import {
   formatValidationErrors,
   generateScaffoldingSummary,
   listPluginExistingOperations,
+  injectAuthAction,
 } from "../../../src/component/generator/apiSpec/helper";
 import {
   ApiPluginStartOptions,
@@ -61,6 +64,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/featureFlags";
 import * as commonUtils from "../../../src/common/utils";
 import * as helper from "../../../src/component/generator/apiSpec/helper";
+import { fail } from "assert";
+import { ActionInjector } from "../../../src/component/configManager/actionInjector";
 
 const teamsManifest: TeamsAppManifest = {
   name: {
@@ -182,6 +187,31 @@ describe("generateScaffoldingSummary", async () => {
     );
 
     assert.isTrue(res.includes("content"));
+  });
+
+  it("warnings about operationid contains special characters", async () => {
+    const res = await generateScaffoldingSummary(
+      [
+        {
+          type: WarningType.OperationIdContainsSpecialCharacters,
+          content:
+            "Operation id 'user/repo' contained special characters and was renamed to 'user_repo'.",
+          data: { operationId: "user/repo" },
+        },
+        {
+          type: WarningType.OperationIdContainsSpecialCharacters,
+          content:
+            "Operation id 'user/issue' contained special characters and was renamed to 'user_issue'.",
+          data: { operationId: "user/issue" },
+        },
+      ],
+      teamsManifest,
+      "path",
+      undefined,
+      ""
+    );
+    assert.isTrue(res.includes("user_repo"));
+    assert.isTrue(res.includes("user_issue"));
   });
 
   it("warnings about adaptive card template in manifest", async () => {
@@ -603,6 +633,78 @@ describe("formatValidationErrors", () => {
   });
 });
 
+describe("injectAuthAction", async () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("api key auth", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(Utils, "isBearerTokenAuth").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateAPIKeyAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledTwice);
+  });
+
+  it("api key auth: no local yaml", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(Utils, "isBearerTokenAuth").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateAPIKeyAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledOnce);
+  });
+
+  it("oauth auth", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(Utils, "isOAuthWithAuthCodeFlow").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateOAuthAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledTwice);
+  });
+
+  it("oauth auth: no local yaml", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(Utils, "isOAuthWithAuthCodeFlow").returns(true);
+    const injectStub = sandbox.stub(ActionInjector, "injectCreateOAuthAction").resolves(undefined);
+    const res = await injectAuthAction(
+      "oauth",
+      "test",
+      { scheme: "", type: "http" },
+      "test",
+      false
+    );
+
+    assert.isUndefined(res);
+    assert.isTrue(injectStub.calledOnce);
+  });
+});
+
 describe("listPluginExistingOperations", () => {
   const teamsManifestWithPlugin: TeamsAppManifest = {
     ...teamsManifest,
@@ -774,6 +876,133 @@ describe("updateForCustomApi", async () => {
     await CopilotPluginHelper.updateForCustomApi(spec, "typescript", "path", "openapi.yaml");
   });
 
+  it("happy path: should contain warning if generate adaptive card failed", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        assert.fail("should not generate adaptive card");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    sandbox
+      .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+      .throws(new Error("generate adaptive card failed"));
+
+    const result = await CopilotPluginHelper.updateForCustomApi(
+      spec,
+      "typescript",
+      "path",
+      "openapi.yaml"
+    );
+
+    expect(result).to.be.deep.equal([
+      {
+        type: WarningType.GenerateCardFailed,
+        content:
+          "Failed to create the adaptive card for API 'getHello': generate adaptive card failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "getHello",
+      },
+      {
+        type: WarningType.GenerateCardFailed,
+        content:
+          "Failed to create the adaptive card for API 'createPet': generate adaptive card failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "createPet",
+      },
+    ]);
+  });
+
+  it("happy path: js", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(spec, "javascript", "path", "openapi.yaml");
+  });
+
+  it("happy path: should contain warning if generate adaptive card data failed", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        assert.fail("should not generate adaptive card");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      } else if (file == path.join("path", "src", "adaptiveCard", "hello.data.json")) {
+        expect(data).to.deep.equal({});
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    sandbox.stub(AdaptiveCardGenerator, "generateAdaptiveCard").returns([
+      {
+        type: "AdaptiveCard",
+        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "name: ${if(name, name, 'N/A')}",
+            wrap: true,
+          },
+        ],
+      },
+      "$",
+      {},
+      [{ type: WarningType.GenerateJsonDataFailed, content: "generate json data failed" }],
+    ]);
+
+    const result = await CopilotPluginHelper.updateForCustomApi(
+      spec,
+      "typescript",
+      "path",
+      "openapi.yaml"
+    );
+
+    expect(result).to.be.deep.equal([
+      {
+        type: WarningType.GenerateJsonDataFailed,
+        content:
+          "Failed to create the adaptive card mock data for API 'getHello': generate json data failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "getHello",
+      },
+      {
+        type: WarningType.GenerateJsonDataFailed,
+        content:
+          "Failed to create the adaptive card mock data for API 'createPet': generate json data failed. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+        data: "createPet",
+      },
+    ]);
+  });
+
   it("happy path: js", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(fs, "writeFile").callsFake((file, data) => {
@@ -818,9 +1047,61 @@ describe("updateForCustomApi", async () => {
 
   it("happy path: csharp", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    const mockWriteFile = sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "APIActions.cs")) {
+        expect(data).to.contains(`[Action("getHello")]`);
+        expect(data).to.contains(`public async Task<string> GetHelloAsync`);
+        expect(data).to.contains("openapi.yaml");
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("# Replace with action code");
+      }
+
+      if (file.toString().endsWith("actions.json")) {
+        expect(file == path.join("path", "prompts", "Chat", "actions.json")).to.be.true;
+      }
+
+      if (file.toString().endsWith("skprompt.txt")) {
+        expect(file == path.join("path", "prompts", "Chat", "skprompt.txt")).to.be.true;
+      }
+
+      if (file.toString().endsWith("getHello.json")) {
+        expect(file == path.join("path", "adaptiveCards", "getHello.json")).to.be.true;
+      }
+    });
+
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+
+    //sandbox fs.readdir(destinationPath)
+    sandbox.stub(fs, "readdir").resolves(["MyApp.csproj"] as any);
     await CopilotPluginHelper.updateForCustomApi(spec, "csharp", "path", "openapi.yaml");
-    expect(mockWriteFile.notCalled).to.be.true;
+  });
+
+  it("unknown language: unknown", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file == path.join("path", "APIActions.cs")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("actions.json")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("skprompt.txt")) {
+        fail("actions.json should not be created for unknown language");
+      }
+
+      if (file.toString().endsWith("getHello.json")) {
+        fail("actions.json should not be created for unknown language");
+      }
+    });
+
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(spec, "unknown", "path", "openapi.yaml");
   });
 
   it("happy path with spec without path", async () => {
@@ -1004,6 +1285,132 @@ describe("updateForCustomApi", async () => {
         expect(data).to.contains("getHello");
       } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
         expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(newSpec, "typescript", "path", "openapi.yaml");
+  });
+
+  it("happy path with spec request body and schema contains format", async () => {
+    const newSpec = {
+      openapi: "3.0.0",
+      info: {
+        title: "My API",
+        version: "1.0.0",
+      },
+      description: "test",
+      paths: {
+        "/hello": {
+          get: {
+            operationId: "getHello",
+            summary: "Returns a greeting",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+                required: true,
+              },
+              {
+                name: "query2",
+                in: "query",
+                schema: { type: "string" },
+                requried: false,
+              },
+              {
+                name: "query3",
+                in: "query",
+                schema: { type: "string" },
+                requried: true,
+                description: "test",
+              },
+              {
+                name: "query4",
+                in: "query",
+                schema: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    format: "test",
+                  },
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "",
+            requestBody: {
+              required: true,
+              description: "request body description",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["date"],
+                    properties: {
+                      date: {
+                        type: "string",
+                        description: "",
+                        format: "date-time",
+                      },
+                      array: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          format: "test",
+                        },
+                      },
+                      object: {
+                        type: "object",
+                        properties: {
+                          nestedObjProperty: {
+                            type: "string",
+                            description: "",
+                            format: "test",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as OpenAPIV3.Document;
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+        expect(data).to.contains("body");
+        expect(data).to.not.contains("format");
+        expect(data).to.contains("nestedObjProperty");
+        expect(data).to.contains("array");
       } else if (file === path.join("path", "src", "app", "app.ts")) {
         expect(data).to.contains(`app.ai.action("getHello"`);
         expect(data).not.to.contains("{{");
@@ -1363,6 +1770,37 @@ describe("listOperations", async () => {
   it("should not allow auth for VS project", async () => {
     const inputs = {
       platform: Platform.VS,
+    };
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+      specHash: "xxx",
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "1",
+          server: "https://test",
+          operationId: "id1",
+          isValid: false,
+          reason: [ErrorType.AuthTypeIsNotSupported],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 0,
+    });
+
+    const res = await CopilotPluginHelper.listOperations(context, "", inputs, true, false, "");
+    expect(res.isOk()).to.be.true;
+  });
+
+  it("should not allow auth for VS copilot project", async () => {
+    const inputs = {
+      platform: Platform.VS,
+      "api-plugin-type": "api-spec",
     };
     sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
     sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
@@ -2113,7 +2551,59 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generate")
+        .resolves({ allSuccess: true, warnings: [] });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
+    });
+
+    it("generateCustomCopilot for csharp: success", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        getTemplateInfosState: {
+          templateName: "custom-copilot-rag-custom-api",
+          isPlugin: false,
+          uri: "https://test.com",
+          isYaml: false,
+          type: ProjectType.TeamsAi,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "getFilteredSpecs").resolves([
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+        {
+          openapi: "3.0.0",
+          info: {
+            title: "test",
+            version: "1.0",
+          },
+          paths: {},
+        },
+      ]);
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2165,7 +2655,7 @@ describe("SpecGenerator", async () => {
           paths: {},
         },
       ]);
-      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves();
+      sandbox.stub(CopilotPluginHelper, "updateForCustomApi").resolves([]);
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
@@ -2402,7 +2892,11 @@ describe("SpecGenerator", async () => {
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
-        .resolves({ allSuccess: true, warnings: [] });
+        .callsFake(async (manifestPath, filter, outputSpecPath, pluginFilePath) => {
+          assert.isTrue(outputSpecPath.includes("test.yaml"));
+          assert.isTrue(pluginFilePath.includes("test.json"));
+          return { allSuccess: true, warnings: [] };
+        });
       sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
 
       const generator = new SpecGenerator();

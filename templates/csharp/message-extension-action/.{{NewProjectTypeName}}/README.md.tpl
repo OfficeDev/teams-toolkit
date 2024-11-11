@@ -2,6 +2,11 @@
 
 ## Quick Start
 
+{{#enableTestToolByDefault}}
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.
+2. You can trigger "create card" command from compose message area, the command box, or directly from a message.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/create-devtunnel-button.png)
 2. Right-click the '{{NewProjectTypeName}}' project in Solution Explorer and select Teams Toolkit > Prepare Teams App Dependencies
@@ -10,6 +15,12 @@
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
 5. In the opened web browser, select Add button to test the app in Teams
 6. You can trigger "create card" command from compose message area, the command box, or directly from a message.
+{{/enableTestToolByDefault}}
+
+{{^enableTestToolByDefault}}
+## Debug in Test Tool
+Teams App Test Tool allows developers test and debug bots locally without needing Microsoft 365 accounts, development tunnels, or Teams app and bot registration. See https://aka.ms/teams-toolkit-vs-test-tool for more details.
+{{/enableTestToolByDefault}}
 
 ## Get more info
 

@@ -5,8 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { setTools, TOOLS } from "../../src/common/globalVars";
-import { MockTools } from "../core/utils";
-import { MyTokenCredential } from "../plugins/solution/util";
+import { MockTools, MyTokenCredential } from "../core/utils";
 import * as armResources from "@azure/arm-resources";
 import * as armSubscriptions from "@azure/arm-subscriptions";
 import {

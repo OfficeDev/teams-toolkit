@@ -170,4 +170,38 @@ describe("createPluginWithManifestHandler", () => {
       chai.assert.equal(res.error.name, "fakeError");
     }
   });
+
+  it("happy path: add plugin", async () => {
+    const core = new MockCore();
+    sandbox.stub(globalVariables, "core").value(core);
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      {
+        lastCommand: "addPlugin",
+        manifestPath: "manifestPath",
+      },
+    ]);
+    chai.assert.isTrue(res.isOk());
+  });
+
+  it("should throw error if add plugin core return error", async () => {
+    const core = new MockCore();
+    sandbox.stub(globalVariables, "core").value(core);
+    sandbox
+      .stub(globalVariables.core, "addPlugin")
+      .resolves(err(new UserError("core", "fakeError", "fakeErrorMessage")));
+    const res = await createPluginWithManifest([
+      "specPath",
+      "pluginManifestPath",
+      {
+        lastCommand: "addPlugin",
+        manifestPath: "manifestPath",
+      },
+    ]);
+    chai.assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      chai.assert.equal(res.error.name, "fakeError");
+    }
+  });
 });

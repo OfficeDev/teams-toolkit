@@ -1,7 +1,9 @@
 import os
 import sys
 import traceback
+import json
 from typing import Any, Dict, Optional
+from dataclasses import asdict
 
 from botbuilder.core import MemoryStorage, TurnContext
 from state import AppTurnState
@@ -12,6 +14,7 @@ from teams.ai.models import AzureOpenAIModelOptions, OpenAIModel, OpenAIModelOpt
 from teams.ai.planners import ActionPlanner, ActionPlannerOptions
 from teams.ai.prompts import PromptManager, PromptManagerOptions
 from teams.state import TurnState
+from teams.feedback_loop_data import FeedbackLoopData
 
 from config import Config
 
@@ -51,14 +54,10 @@ bot_app = Application[AppTurnState](
         bot_app_id=config.APP_ID,
         storage=storage,
         adapter=TeamsAdapter(config),
-        ai=AIOptions(planner=planner),
+        ai=AIOptions(planner=planner, enable_feedback_loop=True),
     )
 )
 
-@bot_app.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext, state: TurnState):
-    await context.send_activity("How can I help you today?")
-    
 @bot_app.turn_state_factory
 async def turn_state_factory(context: TurnContext):
     return await AppTurnState.load(context, storage)
@@ -92,3 +91,8 @@ async def on_error(context: TurnContext, error: Exception):
 
     # Send a message to the user
     await context.send_activity("The bot encountered an error or bug.")
+
+@bot_app.feedback_loop()
+async def feedback_loop(_context: TurnContext, _state: TurnState, feedback_loop_data: FeedbackLoopData):
+    # Add custom feedback process logic here.
+    print(f"Your feedback is:\n{json.dumps(asdict(feedback_loop_data), indent=4)}")

@@ -20,6 +20,9 @@ export enum TelemetryEvent {
   SignOutStart = "sign-out-start",
   SignOut = "sign-out",
 
+  SwitchTenantStart = "switch-tenant-start",
+  SwitchTenant = "switch-tenant",
+
   SelectSubscription = "select-subscription",
 
   CreateProjectStart = "create-project-start",
@@ -274,6 +277,7 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  InvokeTeamsAgentStart = "invoke-teams-agent-start",
   InvokeTeamsAgent = "invoke-teams-agent",
 
   // Copilot Chat
@@ -297,6 +301,8 @@ export enum TelemetryEvent {
   Configuration = "vsc-configuration",
 
   UpdateAddPluginTreeview = "update-add-plugin-tree-view",
+
+  AddPluginWithManifest = "add-plugin-with-manifest",
 }
 
 export enum TelemetryProperty {

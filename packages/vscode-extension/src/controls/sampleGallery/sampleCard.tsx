@@ -45,7 +45,7 @@ export default class SampleCard extends React.Component<SampleProps, { imageUrl:
         <label className="hidden-label" id="tagLabel">
           sample app tags:
         </label>
-        <div className="tagSection" aria-labelledby="tagLabel">
+        <div className="tagSection">
           {sample.tags &&
             sample.tags.map((value: string) => {
               return (

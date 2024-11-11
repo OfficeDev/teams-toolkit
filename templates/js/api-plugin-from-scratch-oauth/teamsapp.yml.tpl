@@ -92,7 +92,7 @@ provision:
       appId: ${{TEAMS_APP_ID}}
       clientId: ${{AAD_APP_CLIENT_ID}}
       # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
       identityProvider: MicrosoftEntra
     writeToEnvironmentFile:
       configurationId: AADAUTHCODE_CONFIGURATION_ID
@@ -104,7 +104,7 @@ provision:
       clientId: ${{AAD_APP_CLIENT_ID}}
       clientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
       # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.${{TEAMSFX_ENV}}.yml
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
     writeToEnvironmentFile:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
 {{/MicrosoftEntra}}

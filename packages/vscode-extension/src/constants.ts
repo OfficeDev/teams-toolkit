@@ -36,6 +36,7 @@ export enum GlobalKey {
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
   SampleGalleryInitialSample = "teamsToolkit:sampleGallery:initialSample",
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
+  DoNotRemindInstallTeamsAgent = "teamsToolkit:doNotRemindInstallTeamsAgent",
 }
 
 export enum CommandKey {

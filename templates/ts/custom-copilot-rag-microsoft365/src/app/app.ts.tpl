@@ -21,6 +21,9 @@ const model = new OpenAIModel({
 
   useSystemMessages: true,
   logRequests: true,
+  {{#CEAEnabled}} 
+  stream: true,
+  {{/CEAEnabled}}
 });
 const prompts = new PromptManager({
   promptsFolder: path.join(__dirname, "../prompts"),
@@ -61,15 +64,6 @@ const app = new Application<TurnState>({
   }
 });
 app.ai.action(AI.SayCommandActionName, customSayCommand.sayCommand(true));
-
-app.conversationUpdate("membersAdded", async (turnContext: TurnContext) => {
-  const welcomeText = "How can I help you today?";
-  for (const member of turnContext.activity.membersAdded) {
-    if (member.id !== turnContext.activity.recipient.id) {
-      await turnContext.sendActivity(MessageFactory.text(welcomeText));
-    }
-  }
-});
 
 app.authentication.get("graph").onUserSignInSuccess(async (context, state) => {
   // Successfully logged in

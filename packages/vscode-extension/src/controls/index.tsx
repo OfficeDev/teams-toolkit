@@ -9,7 +9,7 @@ import { PanelType } from "./PanelType";
 import SampleGallery from "./sampleGallery/SampleGallery";
 import AccountHelp from "./webviewDocs/accountHelp";
 import FunctionBasedNotificationBot from "./webviewDocs/functionBasedNotificationBot";
-import RestifyServerNotificationBot from "./webviewDocs/restifyServerNotificationBot";
+import ExpressServerNotificationBot from "./webviewDocs/expressServerNotificationBot";
 import WorkflowBot from "./webviewDocs/workflowBot";
 
 const language = "en";
@@ -32,7 +32,7 @@ function App(props: any) {
     initialIndex = 2;
   } else if (panelType === PanelType.FunctionBasedNotificationBotReadme) {
     initialIndex = 3;
-  } else if (panelType === PanelType.RestifyServerNotificationBotReadme) {
+  } else if (panelType === PanelType.ExpressServerNotificationBotReadme) {
     initialIndex = 4;
   }
 
@@ -43,7 +43,7 @@ function App(props: any) {
         "/respond-to-card-actions",
         "/account-help",
         "/function-based-notification-bot",
-        "/restify-server-notification-bot",
+        "/express-server-notification-bot",
       ]}
       initialIndex={initialIndex}
     >
@@ -54,7 +54,7 @@ function App(props: any) {
       <Route path="/respond-to-card-actions" component={WorkflowBot} />
       <Route path="/account-help" component={AccountHelp} />
       <Route path="/function-based-notification-bot" component={FunctionBasedNotificationBot} />
-      <Route path="/restify-server-notification-bot" component={RestifyServerNotificationBot} />
+      <Route path="/express-server-notification-bot" component={ExpressServerNotificationBot} />
     </MemoryRouter>
   );
 }

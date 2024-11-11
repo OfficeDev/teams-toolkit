@@ -320,6 +320,6 @@ export interface DependencyStatusRPC {
   };
   error?: {
     message: string;
-    helpLink: string;
+    helpLink?: string;
   };
 }

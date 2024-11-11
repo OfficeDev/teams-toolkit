@@ -21,7 +21,7 @@ import {
   WarningResult,
   WarningType,
 } from "@microsoft/m365-spec-parser";
-import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import { AuthType, ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -62,6 +62,8 @@ import {
 } from "../../../common/telemetry";
 import * as util from "util";
 import { SpecParserSource } from "../../../common/constants";
+import { MetadataV3 } from "../../../common/versionMetadata";
+import { ActionInjector, AuthActionInjectResult } from "../../configManager/actionInjector";
 
 const enum telemetryProperties {
   validationStatus = "validation-status",
@@ -94,9 +96,9 @@ export function getParserOptions(
     ? {
         isGptPlugin: isDeclarativeCopilot,
         allowAPIKeyAuth: false,
-        allowBearerTokenAuth: true,
+        allowBearerTokenAuth: !!platform && platform === Platform.VS ? false : true,
         allowMultipleParameters: true,
-        allowOauth2: true,
+        allowOauth2: !!platform && platform === Platform.VS ? false : true,
         projectType: ProjectType.Copilot,
         allowMissingId: true,
         allowSwagger: true,
@@ -594,6 +596,55 @@ export function logValidationResults(
   void context.logProvider.info(outputMessage);
 }
 
+export async function injectAuthAction(
+  projectPath: string,
+  authName: string,
+  authScheme: AuthType,
+  outputApiSpecPath: string,
+  forceToAddNew: boolean
+): Promise<AuthActionInjectResult | undefined> {
+  const ymlPath = path.join(projectPath, MetadataV3.configFile);
+  const localYamlPath = path.join(projectPath, MetadataV3.localConfigFile);
+
+  const relativeSpecPath = "./" + path.relative(projectPath, outputApiSpecPath).replace(/\\/g, "/");
+
+  if (Utils.isBearerTokenAuth(authScheme)) {
+    const res = await ActionInjector.injectCreateAPIKeyAction(
+      ymlPath,
+      authName,
+      relativeSpecPath,
+      forceToAddNew
+    );
+
+    if (await fs.pathExists(localYamlPath)) {
+      await ActionInjector.injectCreateAPIKeyAction(
+        localYamlPath,
+        authName,
+        relativeSpecPath,
+        forceToAddNew
+      );
+    }
+    return res;
+  } else if (Utils.isOAuthWithAuthCodeFlow(authScheme)) {
+    const res = await ActionInjector.injectCreateOAuthAction(
+      ymlPath,
+      authName,
+      relativeSpecPath,
+      forceToAddNew
+    );
+
+    if (await fs.pathExists(localYamlPath)) {
+      await ActionInjector.injectCreateOAuthAction(
+        localYamlPath,
+        authName,
+        relativeSpecPath,
+        forceToAddNew
+      );
+    }
+    return res;
+  }
+}
+
 /**
  * Generate scaffolding warning summary.
  * @param warnings warnings returned from spec-parser.
@@ -686,6 +737,20 @@ function formatApiSpecValidationWarningMessage(
         )
     );
   }
+
+  const specialCharactersWarnings = specWarnings.filter(
+    (w) => w.type === WarningType.OperationIdContainsSpecialCharacters
+  );
+
+  specialCharactersWarnings.forEach((warning) => {
+    resultWarnings.push(
+      getLocalizedString(
+        "core.copilotPlugin.scaffold.summary.warning.operationIdContainsSpecialCharacters",
+        warning.data.operationId,
+        warning.data.operationId.replace(/[^a-zA-Z0-9]/g, "_")
+      )
+    );
+  });
 
   return resultWarnings;
 }
@@ -1036,7 +1101,12 @@ function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   return [res, needAuth];
 }
 
-const commonLanguages = [ProgrammingLanguage.TS, ProgrammingLanguage.JS, ProgrammingLanguage.PY];
+const commonLanguages = [
+  ProgrammingLanguage.TS,
+  ProgrammingLanguage.JS,
+  ProgrammingLanguage.PY,
+  ProgrammingLanguage.CSharp,
+];
 
 async function updatePromptForCustomApi(
   spec: OpenAPIV3.Document,
@@ -1056,21 +1126,89 @@ async function updateAdaptiveCardForCustomApi(
   specItems: SpecObject[],
   language: string,
   destinationPath: string
-): Promise<void> {
+): Promise<WarningResult[]> {
+  const warnings: WarningResult[] = [];
   if (commonLanguages.includes(language as ProgrammingLanguage)) {
-    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    let adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    if (language === ProgrammingLanguage.CSharp) {
+      adaptiveCardsFolderPath = path.join(destinationPath, "adaptiveCards");
+    }
     await fs.ensureDir(adaptiveCardsFolderPath);
 
     for (const item of specItems) {
       const name = item.item.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
-      const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(item.item, true);
-      if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
-        (card.body[0] as any).$data = `\${${jsonPath}}`;
+      try {
+        const [card, jsonPath, jsonData, generateWarnings] =
+          AdaptiveCardGenerator.generateAdaptiveCard(item.item, true, 5);
+        if (jsonPath !== "$" && card.body && card.body[0] && (card.body[0] as any).$data) {
+          (card.body[0] as any).$data = `\${${jsonPath}}`;
+        }
+        const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
+        const jsonDataPath = path.join(adaptiveCardsFolderPath, `${name}.data.json`);
+        await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
+        await fs.writeFile(jsonDataPath, JSON.stringify(jsonData, null, 2));
+
+        generateWarnings.forEach((w) => {
+          warnings.push({
+            type: WarningType.GenerateJsonDataFailed,
+            // TODO: move message to package.nls.json file
+            content: util.format(
+              "Failed to create the adaptive card mock data for API '%s': %s. Mitigation: Not required but you can manually add it to the adaptiveCards folder.",
+              item.item.operationId,
+              w.content
+            ),
+            data: item.item.operationId,
+          });
+        });
+      } catch (err) {
+        warnings.push({
+          type: WarningType.GenerateCardFailed,
+          content: getLocalizedString(
+            "core.copilotPlugin.scaffold.summary.warning.generate.ac.failed",
+            item.item.operationId,
+            err.message
+          ),
+          data: item.item.operationId,
+        });
       }
-      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name}.json`);
-      await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
     }
   }
+  return warnings;
+}
+
+function filterSchema(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
+  const filteredSchema: any = { type: schema.type };
+
+  if (schema.description) {
+    filteredSchema.description = schema.description;
+  }
+
+  if (schema.type === "object" && schema.properties) {
+    filteredSchema.properties = {};
+    filteredSchema.required = schema.required;
+    for (const key in schema.properties) {
+      const property = schema.properties[key] as OpenAPIV3.SchemaObject;
+      if (property.type === "object") {
+        filteredSchema.properties[key] = filterSchema(property as OpenAPIV3.SchemaObject);
+        filteredSchema.required = schema.required;
+      } else if (property.type === "array") {
+        filteredSchema.properties[key] = {
+          type: "array",
+          items: filterSchema(property.items as OpenAPIV3.SchemaObject),
+          description: property.description,
+        };
+      } else {
+        filteredSchema.properties[key] = {
+          type: property.type,
+          description: property.description,
+        };
+      }
+    }
+  } else if (schema.type === "array" && schema.items) {
+    filteredSchema.items = filterSchema(schema.items as OpenAPIV3.SchemaObject);
+  }
+
+  return filteredSchema;
 }
 
 async function updateActionForCustomApi(
@@ -1103,13 +1241,28 @@ async function updateActionForCustomApi(
               required: [],
             };
           }
-          parameters.properties[paramType].properties[param.name] = schema;
+          parameters.properties[paramType].properties[param.name] = filterSchema(schema);
           parameters.properties[paramType].properties[param.name].description =
             param.description ?? "";
           if (param.required) {
             parameters.properties[paramType].required.push(param.name);
             if (!parameters.required.includes(paramType)) {
               parameters.required.push(paramType);
+            }
+          }
+        }
+      }
+
+      const requestBody = item.item.requestBody as OpenAPIV3.RequestBodyObject;
+      if (requestBody) {
+        const content = requestBody.content;
+        if (content) {
+          const contentSchema = content["application/json"].schema as OpenAPIV3.SchemaObject;
+          if (Object.keys(contentSchema).length !== 0) {
+            parameters.properties["body"] = filterSchema(contentSchema);
+            parameters.properties["body"].description = requestBody.description ?? "";
+            if (requestBody.required) {
+              parameters.required.push("body");
             }
           }
         }
@@ -1131,14 +1284,23 @@ const ActionCode = {
 app.ai.action("{{operationId}}", async (context, state, parameter) => {
   const client = await api.getClient();
   // Add authentication configuration for the client
-  const path = client.paths["{{pathUrl}}"];
-  if (path && path.{{method}}) {
-    const result = await path.{{method}}(parameter.path, parameter.body, {
+  const apiPath = client.paths["{{pathUrl}}"];
+  if (apiPath && apiPath.{{method}}) {
+    const result = await apiPath.{{method}}(parameter.path, parameter.body, {
       params: parameter.query,
     });
+    if (!result || !result.data) {
+      throw new Error("Get empty result from api call.");
+    }
     const cardName = "{{operationId}}".replace(/[^a-zA-Z0-9]/g, "_");
-    const card = generateAdaptiveCard("../adaptiveCards/" + cardName + ".json", result);
-    await context.sendActivity({ attachments: [card] });
+    const cardTemplatePath = path.join(__dirname, '../adaptiveCards', cardName + '.json');
+    if (await fs.exists(cardTemplatePath)){
+      const card = generateAdaptiveCard(cardTemplatePath, result);
+      await context.sendActivity({ attachments: [card] });
+    }
+    else {
+      await context.sendActivity(JSON.stringify(result.data));
+    }
   } else {
     await context.sendActivity("no result");
   }
@@ -1149,14 +1311,23 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
   const client = await api.getClient();
   // Add authentication configuration for the client
-  const path = client.paths["{{pathUrl}}"];
-  if (path && path.{{method}}) {
-    const result = await path.{{method}}(parameter.path, parameter.body, {
+  const apiPath = client.paths["{{pathUrl}}"];
+  if (apiPath && apiPath.{{method}}) {
+    const result = await apiPath.{{method}}(parameter.path, parameter.body, {
       params: parameter.query,
     });
+    if (!result || !result.data) {
+      throw new Error("Get empty result from api call.");
+    }
     const cardName = "{{operationId}}".replace(/[^a-zA-Z0-9]/g, "_");
-    const card = generateAdaptiveCard("../adaptiveCards/" + cardName + ".json", result);
-    await context.sendActivity({ attachments: [card] });
+    const cardTemplatePath = path.join(__dirname, '../adaptiveCards', cardName + '.json');
+    if (await fs.exists(cardTemplatePath)){
+      const card = generateAdaptiveCard(cardTemplatePath, result);
+      await context.sendActivity({ attachments: [card] });
+    }
+    else {
+      await context.sendActivity(JSON.stringify(result.data));
+    }
   } else {
     await context.sendActivity("no result");
   }
@@ -1179,20 +1350,51 @@ async def {{operationId}}(
     await context.send_activity(resp.reason)
   else:
     card_template_path = os.path.join(current_dir, 'adaptiveCards/{{operationId}}.json')
-    with open(card_template_path) as card_template_file:
+    if not os.path.exists(card_template_path):
+      json_resoponse_str = resp.text
+      await context.send_activity(json_resoponse_str)
+    else:
+      with open(card_template_path) as card_template_file:
         adaptive_card_template = card_template_file.read()
 
-    renderer = AdaptiveCardRenderer(adaptive_card_template)
+      renderer = AdaptiveCardRenderer(adaptive_card_template)
 
-    json_resoponse_str = resp.text
-    rendered_card_str = renderer.render(json_resoponse_str)
-    rendered_card_json = json.loads(rendered_card_str)
-    card = CardFactory.adaptive_card(rendered_card_json)
-    message = MessageFactory.attachment(card)
-    
-    await context.send_activity(message)
+      json_resoponse_str = resp.text
+      rendered_card_str = renderer.render(json_resoponse_str)
+      rendered_card_json = json.loads(rendered_card_str)
+      card = CardFactory.adaptive_card(rendered_card_json)
+      message = MessageFactory.attachment(card)
+      
+      await context.send_activity(message)
   return "success"
   `,
+  cs: `
+        [Action("{{operationId}}")]
+        public async Task<string> {{functionName}}Async([ActionTurnContext] ITurnContext turnContext, [ActionTurnState] TurnState turnState, [ActionParameters] Dictionary<string, object> args)
+        {
+            try
+            {
+                RequestParams requestParam = ParseRequestParams(args);
+
+                var response = await Client.CallAsync("{{apiPath}}", Method.{{apiMethod}}, requestParam);
+                var data = response.Content;
+
+                var cardTemplatePath = "./adaptiveCards/{{operationId}}.json";
+                if (File.Exists(cardTemplatePath)) {
+                    var message = RenderCardToMessage(cardTemplatePath, data);
+                    await turnContext.SendActivityAsync(message);
+                }
+                else
+                {
+                    await turnContext.SendActivityAsync(data);
+                }
+            }
+            catch (Exception ex) {
+                await turnContext.SendActivityAsync("Failed to call API with error:  " + ex.Message);
+            }
+
+            return "complete";
+        }`,
 };
 
 const AuthCode = {
@@ -1259,6 +1461,34 @@ async function updateCodeForCustomApi(
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("# Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(botFilePath, updateBotFileContent);
+  } else if (language === ProgrammingLanguage.CSharp) {
+    const actionsCode = [];
+    const codeTemplate = ActionCode["cs"];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace(/{{apiPath}}/g, item.pathUrl)
+        .replace(/{{apiMethod}}/g, Utils.updateFirstLetter(item.method))
+        .replace(/{{functionName}}/g, Utils.updateFirstLetter(item.item.operationId!));
+      actionsCode.push(code);
+    }
+
+    const apiActionCsFilePath = path.join(destinationPath, "APIActions.cs");
+    const apiActionCsFileContent = (await fs.readFile(apiActionCsFilePath)).toString();
+    const updateApiActionCsFileContent = apiActionCsFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", "apiSpecificationFile/" + openapiSpecFileName)
+      .replace("// Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(apiActionCsFilePath, updateApiActionCsFileContent);
+
+    const files = await fs.readdir(destinationPath);
+    const projectFileName = files.find((file) => file.endsWith(".csproj"));
+    const projectFilePath = path.join(destinationPath, projectFileName!);
+    const projectFileContent = (await fs.readFile(projectFilePath)).toString();
+    const updateProjectFileContent = projectFileContent.replace(
+      /{{OPENAPI_SPEC_PATH}}/g,
+      openapiSpecFileName
+    );
+    await fs.writeFile(projectFilePath, updateProjectFileContent);
   }
 }
 
@@ -1267,8 +1497,12 @@ export async function updateForCustomApi(
   language: string,
   destinationPath: string,
   openapiSpecFileName: string
-): Promise<void> {
-  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+): Promise<WarningResult[]> {
+  const warnings: WarningResult[] = [];
+  let chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  if (language === ProgrammingLanguage.CSharp) {
+    chatFolder = path.join(destinationPath, "prompts", "Chat");
+  }
   await fs.ensureDir(chatFolder);
 
   // 1. update prompt folder
@@ -1277,13 +1511,21 @@ export async function updateForCustomApi(
   const [specItems, needAuth] = parseSpec(spec);
 
   // 2. update adaptive card folder
-  await updateAdaptiveCardForCustomApi(specItems, language, destinationPath);
+  const generateWarnings = await updateAdaptiveCardForCustomApi(
+    specItems,
+    language,
+    destinationPath
+  );
+
+  warnings.push(...generateWarnings);
 
   // 3. update actions file
   await updateActionForCustomApi(specItems, language, chatFolder);
 
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
+
+  return warnings;
 }
 
 const EnvNameMapping: { [authType: string]: string } = {

@@ -33,6 +33,8 @@ export class FeatureFlagName {
   static readonly EnvFileFunc = "TEAMSFX_ENV_FILE_FUNC";
   static readonly KiotaIntegration = "TEAMSFX_KIOTA_INTEGRATION";
   static readonly ApiPluginAAD = "TEAMSFX_API_PLUGIN_AAD";
+  static readonly CEAEnabled = "TEAMSFX_CEA_ENABLED";
+  static readonly MultiTenant = "TEAMSFX_MULTI_TENANT";
 }
 
 export interface FeatureFlag {
@@ -102,6 +104,14 @@ export class FeatureFlags {
   };
   static readonly ApiPluginAAD = {
     name: FeatureFlagName.ApiPluginAAD,
+    defaultValue: "false",
+  };
+  static readonly CEAEnabled = {
+    name: FeatureFlagName.CEAEnabled,
+    defaultValue: "false",
+  };
+  static readonly MultiTenant = {
+    name: FeatureFlagName.MultiTenant,
     defaultValue: "false",
   };
 }

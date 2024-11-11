@@ -46,6 +46,7 @@
                         "access": "public",
                         "writeToEnvironmentFile": {
                             "endpoint": "OPENAPI_SERVER_URL", // output tunnel endpoint as OPENAPI_SERVER_URL
+                            "domain": "OPENAPI_SERVER_DOMAIN" // output tunnel domain as OPENAPI_SERVER_DOMAIN
                         }
                     }
                 ],

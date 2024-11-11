@@ -138,7 +138,7 @@ async function readFileContent(
   fromPath: string
 ): Promise<Result<string, FxError>> {
   const ext = path.extname(filePath);
-  if (ext.toLowerCase() !== ".txt") {
+  if (ext.toLowerCase() !== ".txt" && ext.toLowerCase() !== ".md") {
     ctx.logProvider.error(
       getLocalizedString("core.envFunc.unsupportedFile.errorLog", filePath, "txt")
     );
@@ -150,7 +150,8 @@ async function readFileContent(
     try {
       let fileContent = await fs.readFile(absolutePath, "utf8");
       fileContent = stripBom(fileContent);
-      const processedFileContent = expandEnvironmentVariable(fileContent, envs);
+      let processedFileContent = expandEnvironmentVariable(fileContent, envs);
+      processedFileContent = processedFileContent.replace(/\r\n/g, "\n");
       return ok(processedFileContent);
     } catch (e) {
       ctx.logProvider.error(

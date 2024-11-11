@@ -10,7 +10,7 @@ With the declarative agent, you can build a custom version of Copilot that can b
 >
 > To run this app template in your local dev machine, you will need:
 >
-> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - [Node.js](https://nodejs.org/), supported versions: 18, 20
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - [Microsoft 365 Copilot license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
@@ -34,10 +34,10 @@ With the declarative agent, you can build a custom version of Copilot that can b
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                 | Contents                                                                       |
-| ------------------------------------ | ------------------------------------------------------------------------------ |
+| File                               | Contents                                                                     |
+| ---------------------------------- | ---------------------------------------------------------------------------- |
 | `appPackage/declarativeAgent.json` | Define the behaviour and configurations of the declarative agent.            |
-| `appPackage/manifest.json`           | Teams application manifest that defines metadata for your declarative agent. |
+| `appPackage/manifest.json`         | Teams application manifest that defines metadata for your declarative agent. |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

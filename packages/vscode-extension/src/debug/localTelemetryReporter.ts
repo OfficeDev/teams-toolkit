@@ -25,6 +25,7 @@ import { getLocalDebugSession } from "./common/localDebugSession";
 import { updateProjectStatus } from "../utils/projectStatusUtils";
 import { CommandKey } from "../constants";
 import { TeamsFxTaskType } from "./common/debugConstants";
+import detectPort from "detect-port";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -153,6 +154,23 @@ export async function sendDebugAllEvent(
     [TelemetryMeasurements.DebugPrecheckGapDuration]: precheckGap,
     [TelemetryMeasurements.DebugServicesGapDuration]: servicesGap,
   };
+
+  const closedPorts: number[] = [];
+  for (const port of globalVariables.LocalDebugPorts.checkPorts) {
+    const port2 = await detectPort(port);
+    if (port2 === port) {
+      closedPorts.push(port);
+    }
+  }
+  properties["debug-checked-ports"] = globalVariables.LocalDebugPorts.checkPorts.join(",");
+  properties["debug-closed-ports"] = closedPorts.join(",");
+  properties["debug-conflict-ports"] = globalVariables.LocalDebugPorts.conflictPorts.join(",");
+  properties["debug-terminate-button"] = globalVariables.LocalDebugPorts.terminateButton;
+  properties["debug-process2conflict-ports"] = JSON.stringify(
+    globalVariables.LocalDebugPorts.process2conflictPorts
+  );
+  properties["debug-terminate-processes"] =
+    globalVariables.LocalDebugPorts.terminateProcesses.join(",");
 
   if (error === undefined) {
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAll, properties, measurements);

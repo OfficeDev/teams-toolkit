@@ -37,6 +37,7 @@
       <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
       <ExcludeAssets>contentFiles</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="6.0.10" />
     <!-- Fix system package downgrade -->
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.1.0" PrivateAssets="All" />
   </ItemGroup>

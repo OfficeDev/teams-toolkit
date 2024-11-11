@@ -9,6 +9,7 @@ import { UpdateApiKeyArgs } from "../interface/updateApiKeyArgs";
 import { maxDomainPerApiKey } from "./constants";
 import { ApiKeyDomainInvalidError } from "../error/apiKeyDomainInvalid";
 import { ApiKeyFailedToGetDomainError } from "../error/apiKeyFailedToGetDomain";
+import { ApiKeyAuthMissingInSpecError } from "../error/apiKeyAuthMissingInSpec";
 
 // Needs to validate the parameters outside of the function
 export function loadStateFromEnv(
@@ -24,7 +25,8 @@ export function loadStateFromEnv(
 // TODO: need to add logic to read domain from env if need to support non-lifecycle commands
 export async function getDomain(
   args: CreateApiKeyArgs | UpdateApiKeyArgs,
-  context: DriverContext
+  context: DriverContext,
+  actionName: string
 ): Promise<string[]> {
   const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
   const parser = new SpecParser(absolutePath, {
@@ -33,23 +35,26 @@ export async function getDomain(
   });
   const listResult = await parser.list();
   const operations = listResult.APIs;
-  const domains = operations
-    .filter((value) => {
-      const auth = value.auth;
-      return (
-        auth &&
-        auth.authScheme.type === "http" &&
-        auth.authScheme.scheme === "bearer" &&
-        auth.name === args.name
-      );
-    })
-    .map((value) => {
-      return value.server;
-    })
-    .filter((value, index, self) => {
-      return self.indexOf(value) === index;
-    });
-  return domains;
+
+  const filteredOperations = operations.filter((value) => {
+    const auth = value.auth;
+    return (
+      auth &&
+      auth.authScheme.type === "http" &&
+      auth.authScheme.scheme === "bearer" &&
+      auth.name === args.name
+    );
+  });
+
+  if (filteredOperations.length === 0) {
+    throw new ApiKeyAuthMissingInSpecError(actionName, args.name);
+  }
+
+  const servers = filteredOperations.map((value) => value.server);
+
+  const uniqueServerUrls = servers.filter((value, index, self) => self.indexOf(value) === index);
+
+  return uniqueServerUrls;
 }
 
 export function validateDomain(domain: string[], actionName: string): void {
@@ -57,7 +62,7 @@ export function validateDomain(domain: string[], actionName: string): void {
     throw new ApiKeyDomainInvalidError(actionName);
   }
 
-  if (domain.length === 0) {
+  if (domain.length === 0 || domain.includes("")) {
     throw new ApiKeyFailedToGetDomainError(actionName);
   }
 }

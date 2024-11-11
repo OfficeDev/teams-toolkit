@@ -50,10 +50,21 @@ describe("copilotGptManifestUtils", () => {
   };
 
   describe("add plugin", async () => {
-    it("add plugin success", async () => {
+    it("add plugin without appending conversation starters success", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
+      sandbox.stub(fs, "readFile").resolves(
+        JSON.stringify({
+          name: "name${{APP_NAME_SUFFIX}}",
+          description: "description",
+          conversation_starters: [
+            {
+              text: "List all repairs",
+            },
+          ],
+        }) as any
+      );
       sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({} as any);
 
       const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
 
@@ -64,6 +75,239 @@ describe("copilotGptManifestUtils", () => {
           id: "testId",
           file: "testFile",
         });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs",
+          },
+        ]);
+      }
+    });
+
+    it("add plugin success", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({
+        capabilities: {
+          conversation_starters: [
+            {
+              text: "List all repairs",
+            },
+          ],
+        },
+      } as any);
+
+      const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const updatedManifest = res.value;
+        chai.assert.deepEqual(updatedManifest.actions![0], {
+          id: "testId",
+          file: "testFile",
+        });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs",
+          },
+        ]);
+      }
+    });
+
+    it("add plugin and append conversation starters success", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(
+        JSON.stringify({
+          name: "name${{APP_NAME_SUFFIX}}",
+          description: "description",
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+          ],
+          actions: [
+            {
+              id: "action_1",
+              file: "plugin1.json",
+            },
+          ],
+        }) as any
+      );
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({
+        capabilities: {
+          conversation_starters: [
+            {
+              text: "List all repairs2",
+            },
+          ],
+        },
+      } as any);
+
+      const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const updatedManifest = res.value;
+        chai.assert.deepEqual(updatedManifest.actions![0], {
+          id: "action_1",
+          file: "plugin1.json",
+        });
+        chai.assert.deepEqual(updatedManifest.actions![1], {
+          id: "testId",
+          file: "testFile",
+        });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs1",
+          },
+          {
+            text: "List all repairs2",
+          },
+        ]);
+      }
+    });
+
+    it("conversation starters count should less than 6", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(
+        JSON.stringify({
+          name: "name${{APP_NAME_SUFFIX}}",
+          description: "description",
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+          ],
+          actions: [
+            {
+              id: "action_1",
+              file: "plugin1.json",
+            },
+          ],
+        }) as any
+      );
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({
+        capabilities: {
+          conversation_starters: [
+            {
+              text: "List all repairs2",
+            },
+            {
+              text: "List all repairs3",
+            },
+            {
+              text: "List all repairs4",
+            },
+            {
+              text: "List all repairs5",
+            },
+            {
+              text: "List all repairs6",
+            },
+            {
+              text: "List all repairs7",
+            },
+          ],
+        },
+      } as any);
+
+      const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const updatedManifest = res.value;
+        chai.assert.deepEqual(updatedManifest.actions![0], {
+          id: "action_1",
+          file: "plugin1.json",
+        });
+        chai.assert.deepEqual(updatedManifest.actions![1], {
+          id: "testId",
+          file: "testFile",
+        });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs1",
+          },
+          {
+            text: "List all repairs2",
+          },
+          {
+            text: "List all repairs3",
+          },
+          {
+            text: "List all repairs4",
+          },
+          {
+            text: "List all repairs5",
+          },
+          {
+            text: "List all repairs6",
+          },
+        ]);
+      }
+    });
+
+    it("conversation starters should unique", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves(
+        JSON.stringify({
+          name: "name${{APP_NAME_SUFFIX}}",
+          description: "description",
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+          ],
+          actions: [
+            {
+              id: "action_1",
+              file: "plugin1.json",
+            },
+          ],
+        }) as any
+      );
+      sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(fs, "readJson").resolves({
+        capabilities: {
+          conversation_starters: [
+            {
+              text: "List all repairs1",
+            },
+            {
+              text: "List all repairs2",
+            },
+          ],
+        },
+      } as any);
+
+      const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const updatedManifest = res.value;
+        chai.assert.deepEqual(updatedManifest.actions![0], {
+          id: "action_1",
+          file: "plugin1.json",
+        });
+        chai.assert.deepEqual(updatedManifest.actions![1], {
+          id: "testId",
+          file: "testFile",
+        });
+
+        chai.assert.deepEqual(updatedManifest.conversation_starters, [
+          {
+            text: "List all repairs1",
+          },
+          {
+            text: "List all repairs2",
+          },
+        ]);
       }
     });
 
@@ -80,6 +324,7 @@ describe("copilotGptManifestUtils", () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readFile").resolves(JSON.stringify(gptManifest) as any);
       sandbox.stub(fs, "writeFile").throws("some error");
+      sandbox.stub(fs, "readJson").resolves({} as any);
       const res = await copilotGptManifestUtils.addAction("testPath", "testId", "testFile");
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
@@ -428,6 +673,65 @@ describe("copilotGptManifestUtils", () => {
       }
     });
 
+    it("get manifest success - copilot agent", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotAgents: {
+            declarativeAgents: [
+              {
+                file: "test",
+                id: "1",
+              },
+            ],
+          },
+        } as any)
+      );
+      sandbox.stub(path, "dirname").returns("testFolder");
+      sandbox.stub(path, "resolve").returns("testFolder/test");
+
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.equal(res.value, "testFolder/test");
+      }
+    });
+
+    it("declarativeAgents error 1", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotAgents: {},
+        } as any)
+      );
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof UserError);
+      }
+    });
+
+    it("declarativeAgents error 2", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof UserError);
+      }
+    });
+
+    it("declarativeCopilots error 1", async () => {
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          copilotExtensions: {},
+        } as any)
+      );
+      const res = await copilotGptManifestUtils.getManifestPath("testPath");
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error instanceof UserError);
+      }
+    });
+
     it("read Teams manifest error", async () => {
       sandbox
         .stub(manifestUtils, "_readAppManifest")
@@ -471,13 +775,20 @@ describe("copilotGptManifestUtils", () => {
     });
 
     it("Success on second try", async () => {
-      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+      sandbox
+        .stub(fs, "pathExists")
+        .onFirstCall()
+        .resolves(true)
+        .onSecondCall()
+        .resolves(true)
+        .onThirdCall()
+        .resolves(false);
       const res = await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath("test");
       chai.assert.equal(res, path.join("test", "ai-plugin_2.json"));
     });
 
     it("Success on first try", async () => {
-      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
       const res = await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath("test");
       chai.assert.equal(res, path.join("test", "ai-plugin_1.json"));
     });

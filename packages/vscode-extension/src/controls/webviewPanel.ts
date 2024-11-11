@@ -110,7 +110,7 @@ export class WebviewPanel {
           TreatmentVariableValue.inProductDoc &&
           (panelType === PanelType.RespondToCardActions ||
             panelType === PanelType.FunctionBasedNotificationBotReadme ||
-            panelType === PanelType.RestifyServerNotificationBotReadme)
+            panelType === PanelType.ExpressServerNotificationBotReadme)
         ) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
             [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
@@ -309,7 +309,7 @@ export class WebviewPanel {
         return localize("teamstoolkit.guides.cardActionResponse.label");
       case PanelType.AccountHelp:
         return localize("teamstoolkit.webview.accountHelp");
-      case PanelType.RestifyServerNotificationBotReadme:
+      case PanelType.ExpressServerNotificationBotReadme:
         return localize("teamstoolkit.guides.notificationBot.label");
       case PanelType.FunctionBasedNotificationBotReadme:
         return localize("teamstoolkit.guides.notificationBot.label");

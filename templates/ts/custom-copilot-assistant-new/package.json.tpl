@@ -6,7 +6,7 @@
     },
     "description": "Microsoft Teams Toolkit AI Chat Bot Sample with Teams AI Library",
     "engines": {
-        "node": "16 || 18"
+        "node": "18 || 20"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -26,17 +26,17 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/teams-ai": "^1.1.0",
-        "botbuilder": "^4.20.0",
-        "restify": "^10.0.0"
+        "@microsoft/teams-ai": "^1.5.3",
+        "botbuilder": "^4.23.1",
+        "express": "^5.0.1"
     },
     "devDependencies": {
-        "@types/restify": "^8.5.5",
+        "@types/express": "^5.0.0",
         "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
-        "typescript": "^4.4.4",
-        "nodemon": "^2.0.7",
+        "typescript": "^5.5.4",
+        "nodemon": "^3.1.7",
         "shx": "^0.3.3"
     }
 }

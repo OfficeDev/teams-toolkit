@@ -32,7 +32,6 @@ import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 import { ValidatorFactory } from "./validators/validatorFactory";
 import { Validator } from "./validators/validator";
-import { PluginManifestSchema } from "@microsoft/teams-manifest";
 import { createHash } from "crypto";
 
 /**
@@ -311,6 +310,29 @@ export class SpecParser {
 
       const authInfo = Utils.getAuthInfo(newSpec);
 
+      const paths = newUnResolvedSpec.paths;
+      for (const pathUrl in paths) {
+        const operations = paths[pathUrl];
+        for (const method in operations) {
+          const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+          const operationId = operationItem.operationId!;
+          const containsSpecialCharacters = /[^a-zA-Z0-9_]/.test(operationId);
+          if (!containsSpecialCharacters) {
+            continue;
+          }
+          operationItem.operationId = operationId.replace(/[^a-zA-Z0-9]/g, "_");
+          result.warnings.push({
+            type: WarningType.OperationIdContainsSpecialCharacters,
+            content: Utils.format(
+              ConstantString.OperationIdContainsSpecialCharacters,
+              operationId,
+              operationItem.operationId
+            ),
+            data: operationId,
+          });
+        }
+      }
+
       await this.saveFilterSpec(outputSpecPath, newUnResolvedSpec);
 
       if (signal?.aborted) {
@@ -385,7 +407,9 @@ export class SpecParser {
             if (this.options.allowMethods.includes(method)) {
               const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
               try {
-                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
+                const [card, jsonPath, jsonData, warnings] =
+                  AdaptiveCardGenerator.generateAdaptiveCard(operation);
+                result.warnings.push(...warnings);
                 const safeAdaptiveCardName = operation.operationId!.replace(/[^a-zA-Z0-9]/g, "_");
                 const fileName = path.join(adaptiveCardFolder, `${safeAdaptiveCardName}.json`);
                 const wrappedCard = wrapAdaptiveCard(card, jsonPath);
@@ -394,7 +418,7 @@ export class SpecParser {
                   adaptiveCardFolder,
                   `${safeAdaptiveCardName}.data.json`
                 );
-                await fs.outputJSON(dataFileName, {}, { spaces: 2 });
+                await fs.outputJSON(dataFileName, jsonData, { spaces: 2 });
               } catch (err) {
                 result.allSuccess = false;
                 result.warnings.push({

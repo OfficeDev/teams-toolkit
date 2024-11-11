@@ -6,6 +6,7 @@
  */
 import * as path from "path";
 import {
+  clearNotifications,
   startDebugging,
   stopDebugging,
   waitForTerminal,
@@ -17,6 +18,7 @@ import {
   LocalDebugTaskLabel,
   DebugItemSelect,
   ValidationContent,
+  LocalDebugTaskResult,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -58,7 +60,7 @@ describe("Local Debug Tests", function () {
 
       await waitForTerminal(
         LocalDebugTaskLabel.StartApplication,
-        "restify listening to"
+        LocalDebugTaskResult.FrontendStarted
       );
 
       await stopDebugging();
@@ -72,56 +74,64 @@ describe("Local Debug Tests", function () {
 
       await cleanAppStudio(localDebugTestContext.appName);
 
-      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+      await driver.sleep(Timeout.shortTimeLoading);
 
       try {
+        await clearNotifications();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "restify listening to"
+          LocalDebugTaskResult.FrontendStarted
         );
         // check if there is error "Could not attach to main target"
         await driver.sleep(Timeout.startdebugging);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "restify listening to"
+          LocalDebugTaskResult.FrontendStarted
         );
       } catch {
-        const dialog = new ModalDialog();
-        console.log(`click "Cancel" button for error dialog`);
-        await dialog.pushButton("Cancel");
-        await driver.sleep(Timeout.shortTimeLoading);
-        console.log(
-          `Clicked button "Cancel" for failing to attach to main target`
-        );
-        await stopDebugging();
-        await driver.sleep(Timeout.stopdebugging);
+        try {
+          console.log(`Try to click "Cancel" button for error dialog`);
+          const dialog = new ModalDialog();
+          await dialog.pushButton("Cancel");
+          await driver.sleep(Timeout.shortTimeLoading);
+          console.log(
+            `Clicked button "Cancel" for failing to attach to main target`
+          );
+          await stopDebugging();
+          await driver.sleep(Timeout.stopdebugging);
+        } catch {
+          console.log(`No error for failing to attach to main target`);
+        }
+
         try {
           await killPort(53000);
           console.log(`close port 53000 successfully`);
         } catch (error) {
           console.log(`close port 53000 failed`);
         }
-        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+
         try {
+          await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
+            LocalDebugTaskResult.FrontendStarted
           );
           // check if there is error "Debug Anyway"
           await driver.sleep(Timeout.startdebugging);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
+            LocalDebugTaskResult.FrontendStarted
           );
         } catch {
+          console.log(`Try to click "Debug Anyway" button for error dialog`);
           const dialog = new ModalDialog();
-          console.log(`click "Debug Anyway" button for error dialog`);
           await dialog.pushButton("Debug Anyway");
           console.log(`Clicked button "Debug Anyway"`);
           await driver.sleep(Timeout.shortTimeLoading);
           await waitForTerminal(
             LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
+            LocalDebugTaskResult.FrontendStarted
           );
         }
       }

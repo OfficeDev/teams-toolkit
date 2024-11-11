@@ -178,11 +178,12 @@ export enum Capability {
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
   ApiPlugin = "api-plugin",
+  DeclarativeAgent = "declarative-agent",
 }
 
 export enum Trigger {
   Http = "http-functions",
-  Restify = "http-restify",
+  Express = "http-express",
   Timmer = "timer-functions",
 }
 
@@ -349,7 +350,7 @@ export type AppType =
   | "bot"
   | "crbot" // command and response bot (name cannot be too long or it will exceed teams app name limit)
   | "funcnoti" // functions notification bot
-  | "restnoti" // restify notification bot
+  | "expressnoti" // express notification bot
   | "msg"
   | "msgsa"
   | "m365lp"
@@ -406,6 +407,9 @@ export enum LocalDebugTaskLabel {
 
 export class LocalDebugTaskResult {
   static readonly FrontendSuccess = "Compiled successfully";
+  static readonly FrontendReady = "ready";
+  static readonly FrontendNoIssue = "webpack compiled";
+  static readonly FrontendStarted = "Express server listening on";
   static readonly StartSuccess = "started successfully";
   static readonly AzuriteSuccess = "Azurite Table service is successfully";
   static readonly CompiledSuccess = "Found 0 errors";
@@ -418,11 +422,13 @@ export class LocalDebugTaskResult {
   static readonly WebServerSuccess = "press h to show help";
   static readonly DockerFinish = "press any key to close it";
   static readonly DevtunnelSuccess = "Ready to accept connections for tunnel:";
+  static readonly FunctionStarted = "Worker process started and initialized";
 }
 
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
   PythonDebugConsole = "Python Debug Console",
+  StartTestTool = "Start Test Tool",
 }
 
 export enum LocalDebugError {
@@ -439,6 +445,7 @@ export class LocalDebugTaskInfo {
 
 export class DebugItemSelect {
   static readonly DebugInTeamsUsingChrome = "Debug in Teams (Chrome)";
+  static readonly DebugInTestTool = "Debug in Test Tool";
 }
 
 export class TestFilePath {

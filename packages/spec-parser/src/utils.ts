@@ -128,27 +128,36 @@ export class Utils {
 
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
-
-      if (responseObject?.content) {
-        for (const contentType of Object.keys(responseObject.content)) {
-          // json media type can also be "application/json; charset=utf-8"
-          if (contentType.indexOf("application/json") >= 0) {
-            multipleMediaType = false;
-            json = responseObject.content[contentType];
-            if (Utils.containMultipleMediaTypes(responseObject)) {
-              multipleMediaType = true;
-              if (!allowMultipleMediaType) {
-                json = {};
-              }
-            } else {
-              return { json, multipleMediaType };
-            }
-          }
-        }
+      if (!responseObject) {
+        continue;
+      }
+      multipleMediaType = Utils.containMultipleMediaTypes(responseObject);
+      if (!allowMultipleMediaType && multipleMediaType) {
+        json = {};
+        continue;
+      }
+      const mediaObj = Utils.getJsonContentType(responseObject);
+      if (Object.keys(mediaObj).length > 0) {
+        json = mediaObj;
+        return { json, multipleMediaType };
       }
     }
 
     return { json, multipleMediaType };
+  }
+
+  static getJsonContentType(
+    responseObject: OpenAPIV3.ResponseObject | OpenAPIV3.RequestBodyObject
+  ): OpenAPIV3.MediaTypeObject {
+    if (responseObject.content) {
+      for (const contentType of Object.keys(responseObject.content)) {
+        // json media type can also be "application/json; charset=utf-8"
+        if (contentType.indexOf("application/json") >= 0) {
+          return responseObject.content[contentType];
+        }
+      }
+    }
+    return {};
   }
 
   static convertPathToCamelCase(path: string): string {

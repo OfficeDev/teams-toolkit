@@ -421,6 +421,13 @@ describe("utils", () => {
       expect(multipleMediaType).to.be.false;
     });
 
+    it("should return an empty object if operationObject is undefined", () => {
+      const operationObject = undefined;
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
+      expect(multipleMediaType).to.be.false;
+    });
+
     it("should return the JSON response for status code 200", () => {
       const operationObject = {
         responses: {

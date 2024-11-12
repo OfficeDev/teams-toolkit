@@ -1942,7 +1942,6 @@ describe("updateManifestWithAiPlugin", () => {
             },
             delete: {
               operationId: "deletePet",
-              summary: "Delete pets",
               description: "Delete pets",
               parameters: [
                 {

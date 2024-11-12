@@ -215,44 +215,24 @@
           "visibility": "collapsed"
         },
         {
-          "id": "teamsfx-empty-project",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
           "id": "teamsfx-empty-project-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-with-chat",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-chat",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -1435,8 +1415,7 @@
               "svg": "media/walkthroughs/intelligent-apps/step6.svg"
             }
           }
-        ],
-        "when": "fx-extension.isApiCopilotPluginEnabled"
+        ]
       },
       {
         "id": "teamsToolkitGetStarted",

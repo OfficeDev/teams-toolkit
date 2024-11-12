@@ -251,14 +251,6 @@ export async function activate(context: vscode.ExtensionContext) {
     featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
   );
 
-  // Flags for "Build Intelligent Apps" walkthrough.
-  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotExtension)
-  );
-
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isOfficeAddIn",

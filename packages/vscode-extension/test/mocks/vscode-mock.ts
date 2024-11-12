@@ -108,7 +108,6 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
 (mockedVSCode as any).LanguageModelChatMessageRole = vscodeMocks.chat.LanguageModelChatMessageRole;
 mockedVSCode.TextDocumentSaveReason = vscodeMocks.TextDocumentSaveReason;
 (mockedVSCode as any).version = "test";
-
 // Setup window APIs
 (mockedVSCode as any).window = {
   activeTextEditor: undefined,

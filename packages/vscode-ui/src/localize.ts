@@ -16,6 +16,8 @@ export interface Localizer {
   internalErrorDisplayMessage(action: string): string;
   commandTimeoutErrorMessage(command: string): string;
   commandTimeoutErrorDisplayMessage(command: string): string;
+  commandExecutionErrorMessage(command: string): string;
+  commandExecutionErrorDisplayMessage(command: string): string;
   invalidInputErrorMessage?(name: string, reason: string): string;
   invalidInputDisplayMessage?(name: string, reason: string): string;
   missingInputErrorMessage?(name: string): string;
@@ -23,6 +25,12 @@ export interface Localizer {
 }
 
 export class DefaultLocalizer implements Localizer {
+  commandExecutionErrorMessage(command: string): string {
+    return "Execute command failure: " + command;
+  }
+  commandExecutionErrorDisplayMessage(command: string): string {
+    return "Execute command failure: " + command;
+  }
   commandTimeoutErrorMessage(command: string): string {
     return "Execute command timeout: " + command;
   }

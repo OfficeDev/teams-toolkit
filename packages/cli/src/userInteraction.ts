@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { confirm, password, input } from "@inquirer/prompts";
+import { confirm, input, password } from "@inquirer/prompts";
 import {
   Colors,
   ConfirmConfig,
@@ -30,6 +30,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
+  ScriptExecutionError,
   SelectSubscriptionError,
   UserCancelError,
   assembleError,
@@ -45,6 +46,7 @@ import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { errors } from "./resource";
 import { getColorizedString } from "./utils";
+import { spawn } from "child_process";
 
 export const inquirerPrompts = {
   confirm,
@@ -612,6 +614,44 @@ class CLIUserInteraction implements UserInteraction {
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {
     return new Progress(title, totalSteps);
+  }
+
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string | undefined;
+    shell?: string | undefined;
+    timeout?: number | undefined;
+    env?: { [k: string]: string } | undefined;
+    shellName?: string;
+    iconPath?: string;
+  }): Promise<Result<string, FxError>> {
+    return new Promise<Result<string, FxError>>((resolve) => {
+      const isWindows = process.platform === "win32";
+      const command = isWindows ? "cmd.exe" : "/bin/bash";
+      const commandArgs = isWindows ? ["/c", args.cmd] : ["-c", args.cmd];
+      logger.info(`Executing task: ${args.cmd}`);
+      const childProcess = spawn(command, commandArgs, {
+        stdio: "inherit",
+        cwd: args.workingDirectory,
+        timeout: args.timeout,
+        env: args.env,
+      });
+      childProcess.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(ok(""));
+        } else {
+          logger.error("Execute task failed with code:" + code);
+          resolve(
+            err(
+              new ScriptExecutionError(
+                new Error("Execute task failed with exit code:" + code),
+                args.cmd
+              )
+            )
+          );
+        }
+      });
+    });
   }
 }
 

@@ -145,7 +145,21 @@ describe("envUtils", () => {
       assert.isTrue(res.isOk());
     });
   });
-
+  describe("pathUtils.resolveFilePath", () => {
+    const sandbox = sinon.createSandbox();
+    beforeEach(() => {});
+    afterEach(async () => {
+      sandbox.restore();
+    });
+    it("relative path", async () => {
+      const res = pathUtils.resolveFilePath("/test");
+      assert.isTrue(res === "\\test" || res === "/test");
+    });
+    it("absolute path", async () => {
+      const res = pathUtils.resolveFilePath("/test", "/test2");
+      assert.isTrue(res === "\\test2" || res === "/test2");
+    });
+  });
   describe("pathUtils.readEnv", () => {
     it("happy path", async () => {
       sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));

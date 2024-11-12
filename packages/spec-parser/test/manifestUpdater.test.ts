@@ -1940,6 +1940,21 @@ describe("updateManifestWithAiPlugin", () => {
                 },
               ],
             },
+            delete: {
+              operationId: "deletePet",
+              summary: "Delete pets",
+              description: "Delete pets",
+              parameters: [
+                {
+                  name: "name",
+                  description: "Name of the pet",
+                  required: true,
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+            },
             post: {
               operationId: "createPet",
               summary: "Create a pet",
@@ -2013,6 +2028,17 @@ describe("updateManifestWithAiPlugin", () => {
             description: "Returns all pets from the system that the user has access to",
           },
           {
+            name: "deletePet",
+            description: "Delete pets",
+            capabilities: {
+              confirmation: {
+                type: "AdaptiveCard",
+                title: "Delete pets",
+                body: "* **Name**: {{function.parameters.name}}",
+              },
+            },
+          },
+          {
             name: "createPet",
             description: "Create a new pet in the store",
             capabilities: {
@@ -2051,7 +2077,7 @@ describe("updateManifestWithAiPlugin", () => {
             spec: {
               url: "spec/outputSpec.yaml",
             },
-            run_for_functions: ["getPets", "createPet"],
+            run_for_functions: ["getPets", "deletePet", "createPet"],
           },
         ],
       };
@@ -2065,7 +2091,7 @@ describe("updateManifestWithAiPlugin", () => {
         .resolves(false);
 
       const options: ParseOptions = {
-        allowMethods: ["get", "post"],
+        allowMethods: ["get", "post", "delete"],
         allowConfirmation: true,
         allowResponseSemantics: true,
       };

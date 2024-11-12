@@ -149,7 +149,7 @@ export class Utils {
   static getJsonContentType(
     responseObject: OpenAPIV3.ResponseObject | OpenAPIV3.RequestBodyObject
   ): OpenAPIV3.MediaTypeObject {
-    if (responseObject?.content) {
+    if (responseObject.content) {
       for (const contentType of Object.keys(responseObject.content)) {
         // json media type can also be "application/json; charset=utf-8"
         if (contentType.indexOf("application/json") >= 0) {

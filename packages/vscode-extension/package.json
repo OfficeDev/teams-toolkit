@@ -100,7 +100,7 @@
         }
       },
       "teamsfx-copilot-plugin": {
-        "description": "API Plugin icon in scaffold questions",
+        "description": "Agent icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E005"

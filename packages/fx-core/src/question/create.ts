@@ -99,7 +99,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
-      staticOptions.push(ProjectTypeOptions.copilotExtension(inputs.platform));
+      staticOptions.push(ProjectTypeOptions.DeclarativeAgent(inputs.platform));
 
       if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
         staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
@@ -194,7 +194,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.officeMetaOS().id:
         case ProjectTypeOptions.officeAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
-        case ProjectTypeOptions.copilotExtension().id:
+        case ProjectTypeOptions.DeclarativeAgent().id:
           return getLocalizedString(
             "core.createProjectQuestion.projectType.copilotExtension.title"
           );
@@ -241,7 +241,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
           projectType,
           inputs[QuestionNames.OfficeAddinHost]
         );
-      } else if (projectType === ProjectTypeOptions.copilotExtension().id) {
+      } else if (projectType === ProjectTypeOptions.DeclarativeAgent().id) {
         return CapabilityOptions.copilotExtensions();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {
         return CapabilityOptions.customCopilots();
@@ -250,7 +250,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       }
     },
     placeholder: (inputs: Inputs) => {
-      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.copilotExtension().id) {
+      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.DeclarativeAgent().id) {
         return getLocalizedString(
           "core.createProjectQuestion.projectType.copilotExtension.placeholder"
         );
@@ -1118,7 +1118,7 @@ export function apiOperationQuestion(
           input.length < 1 ||
           (input.length > 10 &&
             inputs[QuestionNames.CustomCopilotRag] !== CustomCopilotRagOptions.customApi().id &&
-            inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.copilotExtension().id)
+            inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.DeclarativeAgent().id)
         ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",

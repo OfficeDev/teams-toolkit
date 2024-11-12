@@ -263,13 +263,16 @@ export class ProjectTypeOptions {
     ];
   }
 
-  static copilotExtension(platform?: Platform): OptionItem {
+  static DeclarativeAgent(platform?: Platform): OptionItem {
     return {
+      // todo: check all usage of this id
       id: "copilot-agent-type",
       label: `${
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
-      }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.detail"),
+      }${getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label")}`,
+      detail: getLocalizedString(
+        "core.createProjectQuestion.projectType.declarativeCopilot.detail"
+      ),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }

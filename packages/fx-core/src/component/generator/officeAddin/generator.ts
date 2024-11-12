@@ -140,7 +140,7 @@ export class OfficeAddinGenerator {
         const projectLink =
           projectType === ProjectTypeOptions.officeMetaOS().id
             ? "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/json-wxpo-preview.zip"
-            : "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/yo-office.zip";
+            : "";
 
         // Copy project template files from project repository
         if (projectLink) {

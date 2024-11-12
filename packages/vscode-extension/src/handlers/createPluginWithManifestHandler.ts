@@ -84,7 +84,7 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
     } else {
       inputs.capabilities = CapabilityOptions.apiPlugin().id;
     }
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.copilotExtension().id;
+    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.DeclarativeAgent().id;
     inputs[QuestionNames.Folder] = outputFolder;
     result = await runCommand(Stage.create, inputs);
 

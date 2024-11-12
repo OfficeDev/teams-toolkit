@@ -1732,7 +1732,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1781,7 +1781,7 @@ describe("scaffold question", () => {
         inputs[QuestionNames.ApiPluginManifestPath] = "api-plugin-manifest-path";
         inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
         inputs[QuestionNames.ApiOperation] = "api-plugin-manifest-path";
-        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.copilotExtension().id;
+        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.DeclarativeAgent().id;
         const questions: string[] = [];
         const visitor: QuestionTreeVisitor = async (
           question: Question,
@@ -1818,7 +1818,7 @@ describe("scaffold question", () => {
         inputs[QuestionNames.ApiPluginManifestPath] = "api-plugin-manifest-path";
         inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
         inputs[QuestionNames.ApiOperation] = "api-plugin-manifest-path";
-        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.copilotExtension().id;
+        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.DeclarativeAgent().id;
         const questions: string[] = [];
         const visitor: QuestionTreeVisitor = async (
           question: Question,
@@ -1868,7 +1868,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1909,7 +1909,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1949,7 +1949,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -2006,7 +2006,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -2363,7 +2363,7 @@ describe("scaffold question", () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.ProjectType]: ProjectTypeOptions.copilotExtension().id,
+            [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
             [QuestionNames.ApiSpecLocation]: "apispec",
             supportedApisFromApiSpec: [
               {
@@ -3325,7 +3325,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -3376,7 +3376,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -3428,7 +3428,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            return ok({ type: "success", result: ProjectTypeOptions.copilotExtension().id });
+            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);

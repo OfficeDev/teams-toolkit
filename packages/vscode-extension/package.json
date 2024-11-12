@@ -99,7 +99,7 @@
           "fontCharacter": "\\E004"
         }
       },
-      "teamsfx-copilot-plugin": {
+      "teamsfx-agent": {
         "description": "Agent icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",

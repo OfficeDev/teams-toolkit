@@ -267,12 +267,10 @@ export class ProjectTypeOptions {
     return {
       // todo: check all usage of this id
       id: "copilot-agent-type",
-      label: `${
-        platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
-      }${getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label")}`,
-      detail: getLocalizedString(
-        "core.createProjectQuestion.projectType.declarativeCopilot.detail"
-      ),
+      label: `${platform === Platform.VSCode ? "$(teamsfx-agent) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.declarativeAgent.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.detail"),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }

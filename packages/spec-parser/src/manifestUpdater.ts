@@ -153,45 +153,11 @@ export class ManifestUpdater {
         for (const method in operations) {
           if (options.allowMethods!.includes(method)) {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
-            const confirmationBodies: string[] = [];
             if (operationItem) {
               const operationId = operationItem.operationId!;
               const safeFunctionName = operationId.replace(/[^a-zA-Z0-9]/g, "_");
               const description = operationItem.description ?? "";
               const summary = operationItem.summary;
-              const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
-              const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
-
-              if (paramObject) {
-                for (let i = 0; i < paramObject.length; i++) {
-                  const param = paramObject[i];
-                  const schema = param.schema as OpenAPIV3.SchemaObject;
-                  ManifestUpdater.checkSchema(schema, method, pathUrl);
-                  confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
-                }
-              }
-
-              if (requestBody) {
-                const requestJsonBody = requestBody.content!["application/json"];
-                const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-                if (Utils.isObjectSchema(requestBodySchema)) {
-                  for (const property in requestBodySchema.properties) {
-                    const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
-                    ManifestUpdater.checkSchema(schema, method, pathUrl);
-                    confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
-                  }
-                } else {
-                  throw new SpecParserError(
-                    Utils.format(
-                      ConstantString.UnsupportedSchema,
-                      method,
-                      pathUrl,
-                      JSON.stringify(requestBodySchema)
-                    ),
-                    ErrorType.UpdateManifestFailed
-                  );
-                }
-              }
 
               let funcDescription = operationItem.description || operationItem.summary || "";
               if (funcDescription.length > ConstantString.FunctionDescriptionMaxLens) {
@@ -241,16 +207,54 @@ export class ManifestUpdater {
               }
 
               if (options.allowConfirmation && method !== ConstantString.GetMethod) {
-                if (!funcObj.capabilities) {
-                  funcObj.capabilities = {};
+                const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
+                const requestBody = operationItem.requestBody as OpenAPIV3.RequestBodyObject;
+                const confirmationBodies: string[] = [];
+
+                if (paramObject) {
+                  for (let i = 0; i < paramObject.length; i++) {
+                    const param = paramObject[i];
+                    const schema = param.schema as OpenAPIV3.SchemaObject;
+                    ManifestUpdater.checkSchema(schema, method, pathUrl);
+                    confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
+                  }
                 }
 
-                funcObj.capabilities.confirmation = {
-                  type: "AdaptiveCard",
-                  title: operationItem.summary ?? description,
-                };
+                if (requestBody) {
+                  const requestJsonBody = Utils.getJsonContentType(requestBody);
+
+                  const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+                  if (Utils.isObjectSchema(requestBodySchema)) {
+                    for (const property in requestBodySchema.properties) {
+                      const schema = requestBodySchema.properties[
+                        property
+                      ] as OpenAPIV3.SchemaObject;
+                      ManifestUpdater.checkSchema(schema, method, pathUrl);
+                      confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
+                    }
+                  } else {
+                    throw new SpecParserError(
+                      Utils.format(
+                        ConstantString.UnsupportedSchema,
+                        method,
+                        pathUrl,
+                        JSON.stringify(requestBodySchema)
+                      ),
+                      ErrorType.UpdateManifestFailed
+                    );
+                  }
+                }
 
                 if (confirmationBodies.length > 0) {
+                  if (!funcObj.capabilities) {
+                    funcObj.capabilities = {};
+                  }
+
+                  funcObj.capabilities.confirmation = {
+                    type: "AdaptiveCard",
+                    title: operationItem.summary ?? description,
+                  };
+
                   funcObj.capabilities.confirmation.body = confirmationBodies.join("\n");
                 }
               }

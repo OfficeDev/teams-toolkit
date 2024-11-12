@@ -1871,12 +1871,6 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "deletePet",
             description: "Delete a pet in the store",
-            capabilities: {
-              confirmation: {
-                type: "AdaptiveCard",
-                title: "Delete a pet in the store",
-              },
-            },
           },
         ],
         runtimes: [
@@ -3788,8 +3782,8 @@ describe("updateManifestWithAiPlugin", () => {
       ],
       paths: {
         "/pets": {
-          get: {
-            operationId: "getPets",
+          post: {
+            operationId: "postPets",
             summary: "Get all pets",
             description: "Returns all pets from the system that the user has access to",
             parameters: [
@@ -3833,6 +3827,7 @@ describe("updateManifestWithAiPlugin", () => {
     try {
       const options: ParseOptions = {
         allowMethods: ["get", "post"],
+        allowConfirmation: true,
       };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
@@ -3846,7 +3841,7 @@ describe("updateManifestWithAiPlugin", () => {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
       expect(err.message).to.equal(
-        "Unsupported schema in get /pets: " +
+        "Unsupported schema in post /pets: " +
           JSON.stringify({
             type: "object",
             properties: {
@@ -3912,6 +3907,7 @@ describe("updateManifestWithAiPlugin", () => {
     try {
       const options: ParseOptions = {
         allowMethods: ["get", "post"],
+        allowConfirmation: true,
       };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,

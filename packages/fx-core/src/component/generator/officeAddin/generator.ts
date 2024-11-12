@@ -39,6 +39,7 @@ import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
 import { envUtil } from "../../utils/envUtil";
+import { getUuid } from "../../../common/stringUtils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -256,7 +257,9 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
         : lang;
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
-    return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
+    return Promise.resolve(
+      ok([{ templateName: tplName, language: lang, replaceMap: { manifestId: getUuid() } }])
+    );
   }
 
   async post(

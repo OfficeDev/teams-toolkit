@@ -1564,11 +1564,6 @@
     "configuration": {
       "title": "Teams Toolkit",
       "properties": {
-        "fx-extension.developCopilotPlugin": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Get more info from [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)."
-        },
         "fx-extension.logLevel": {
           "type": "string",
           "enum": [

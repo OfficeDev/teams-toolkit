@@ -14,8 +14,7 @@
           "data_path": "$.results",
           "properties": {
             "title": "$.title",
-            "subtitle": "$.description",
-            "url": "$.image"
+            "subtitle": "$.description"
           },
           "static_template": {
             "type": "AdaptiveCard",

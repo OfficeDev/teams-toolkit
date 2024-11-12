@@ -8,12 +8,12 @@
       "image": "https://www.howmuchisit.org/wp-content/uploads/2011/01/oil-change.jpg"
   },
   {
-    "id": "2",
-    "title": "Brake repairs",
-    "description": "Conduct brake repairs, including replacing worn brake pads, resurfacing or replacing brake rotors, and repairing or replacing other components of the brake system.",
-    "assignedTo": "Issac Fielder",
-    "date": "2023-05-24",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Disk_brake_dsc03680.jpg/320px-Disk_brake_dsc03680.jpg"
+      "id": "2",
+      "title": "Brake repairs",
+      "description": "Conduct brake repairs, including replacing worn brake pads, resurfacing or replacing brake rotors, and repairing or replacing other components of the brake system.",
+      "assignedTo": "Issac Fielder",
+      "date": "2023-05-24",
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Disk_brake_dsc03680.jpg/320px-Disk_brake_dsc03680.jpg"
   },
   {
       "id": "3",

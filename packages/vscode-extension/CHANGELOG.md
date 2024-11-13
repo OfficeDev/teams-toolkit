@@ -2,7 +2,7 @@
 
 > Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of pre-released versions, please refer to the [Teams Toolkit Pre-release Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/PRERELEASE.md).
 
-## 5.10.1 - Nov 12, 2024
+## 5.10.1 - Nov 13, 2024
 
 This patch version update of Teams Toolkit introduces several incremental enhancements:
 

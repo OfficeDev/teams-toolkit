@@ -1,0 +1,184 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build (Development)",
+      "type": "npm",
+      "script": "build:dev",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "dependsOn": [
+        "Install"
+      ]
+    },
+    {
+      "label": "Build (Production)",
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "dependsOn": [
+        "Install"
+      ]
+    },
+    {
+      "label": "Debug: Excel Desktop",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "start",
+        "--",
+        "--app",
+        "excel"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Debug: Outlook Desktop",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "start",
+        "--",
+        "--app",
+        "outlook"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": [],
+      "script": "start",
+      "dependsOn": [
+        "Check OS",
+        "Install"
+      ]
+    },
+    {
+      "label": "Debug: PowerPoint Desktop",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "start",
+        "--",
+        "--app",
+        "powerpoint"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Debug: Word Desktop",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "start",
+        "--",
+        "--app",
+        "word"
+      ],
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev Server",
+      "type": "npm",
+      "script": "dev-server",
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Install",
+      "type": "npm",
+      "script": "install",
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Lint: Check for problems",
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": [
+        "$eslint-stylish"
+      ]
+    },
+    {
+      "label": "Lint: Fix all auto-fixable problems",
+      "type": "npm",
+      "script": "lint:fix",
+      "problemMatcher": [
+        "$eslint-stylish"
+      ]
+    },
+    {
+      "label": "Stop Debug",
+      "type": "npm",
+      "script": "stop",
+      "presentation": {
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Watch",
+      "type": "npm",
+      "script": "watch",
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Check OS",
+      "type": "shell",
+      "windows": {
+        "command": "echo 'Sideloading in Outlook on Windows is supported'"
+      },
+      "linux": {
+        "command": "echo 'Sideloading on Linux is not supported' && exit 1"
+      },
+      "osx": {
+        "command": "echo 'Sideloading in Outlook on Mac is not supported' && exit 1"
+      },
+      "presentation": {
+        "clear": true,
+        "panel": "dedicated"
+      }
+    }
+  ]
+}

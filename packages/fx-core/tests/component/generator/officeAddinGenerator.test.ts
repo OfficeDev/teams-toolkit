@@ -210,7 +210,7 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
-    chai.expect(result.isErr()).to.eq(true);
+    chai.expect(result.isOk()).to.eq(true);
   });
 
   it("should copy addin files and updateManifest if addin folder is specified with json manifest", async () => {
@@ -704,7 +704,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
-    chai.expect(result.isErr()).to.eq(true);
+    chai.expect(result.isOk()).to.eq(true);
   });
 
   const testCases = [

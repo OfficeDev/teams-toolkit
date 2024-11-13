@@ -52,17 +52,6 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
     },
     sp.GetService<ILoggerFactory>()
 ));
-builder.Services.AddSingleton<OpenAIModel>(sp => new(
-    new AzureOpenAIModelOptions(
-        config.Azure.OpenAIApiKey,
-        config.Azure.OpenAIDeploymentName,
-        config.Azure.OpenAIEndpoint
-    )
-    {
-        LogRequests = true
-    },
-    sp.GetService<ILoggerFactory>()
-));
 
 // Create the bot as transient. In this case the ASP Controller is expecting an IBot.
 builder.Services.AddTransient<IBot>(sp =>

@@ -529,8 +529,6 @@
   "core.common.invalidReason.PostBodySchemaIsNotJson": "post body schema is not json",
   "core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema": "post body contains required unsupported schema",
   "core.common.invalidReason.ParamsContainRequiredUnsupportedSchema": "params contain required unsupported schema",
-  "core.common.invalidReason.ParamsContainsNestedObject": "params contain nested object",
-  "core.common.invalidReason.RequestBodyContainsNestedObject": "request body contains nested object",
   "core.common.invalidReason.ExceededRequiredParamsLimit": "exceeded required params limit",
   "core.common.invalidReason.NoParameter": "no parameter",
   "core.common.invalidReason.NoAPIInfo": "no API info",

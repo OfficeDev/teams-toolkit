@@ -17,18 +17,6 @@ import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifes
 import { SpecParserError } from "./specParserError";
 
 export class Utils {
-  static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
-    if (this.isObjectSchema(schema)) {
-      for (const property in schema.properties) {
-        const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
-        if (this.isObjectSchema(nestedSchema)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   static isObjectSchema(schema: OpenAPIV3.SchemaObject): boolean {
     return schema.type === "object" || (!schema.type && !!schema.properties);
   }

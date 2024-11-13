@@ -119,8 +119,6 @@ export enum ErrorType {
   PostBodySchemaIsNotJson = "post-body-schema-is-not-json",
   PostBodyContainsRequiredUnsupportedSchema = "post-body-contains-required-unsupported-schema",
   ParamsContainRequiredUnsupportedSchema = "params-contain-required-unsupported-schema",
-  ParamsContainsNestedObject = "params-contains-nested-object",
-  RequestBodyContainsNestedObject = "request-body-contains-nested-object",
   ExceededRequiredParamsLimit = "exceeded-required-params-limit",
   NoParameter = "no-parameter",
   NoAPIInfo = "no-api-info",

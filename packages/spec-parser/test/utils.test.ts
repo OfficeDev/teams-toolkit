@@ -384,35 +384,6 @@ describe("utils", () => {
     });
   });
 
-  describe("hasNestedObjectInSchema", () => {
-    it("should return false if schema type is not object", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "string",
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
-    });
-
-    it("should return false if schema type is object but no nested object property", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-        },
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
-    });
-
-    it("should return true if schema type is object and has nested object property", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "object",
-        properties: {
-          nestedObject: { type: "object" },
-        },
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.true;
-    });
-  });
-
   describe("getResponseJson", () => {
     it("should return an empty object if no JSON response is defined", () => {
       const operationObject = {};

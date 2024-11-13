@@ -446,8 +446,6 @@ describe("formatValidationErrors", () => {
             reason: [
               ErrorType.PostBodyContainsRequiredUnsupportedSchema,
               ErrorType.ParamsContainRequiredUnsupportedSchema,
-              ErrorType.ParamsContainsNestedObject,
-              ErrorType.RequestBodyContainsNestedObject,
               ErrorType.ExceededRequiredParamsLimit,
               ErrorType.NoParameter,
               ErrorType.NoAPIInfo,
@@ -521,8 +519,6 @@ describe("formatValidationErrors", () => {
     const errorMessage2 = [
       getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
       getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
-      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
-      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
       getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
       getLocalizedString("core.common.invalidReason.NoParameter"),
       getLocalizedString("core.common.invalidReason.NoAPIInfo"),
@@ -576,8 +572,6 @@ describe("formatValidationErrors", () => {
             reason: [
               ErrorType.PostBodyContainsRequiredUnsupportedSchema,
               ErrorType.ParamsContainRequiredUnsupportedSchema,
-              ErrorType.ParamsContainsNestedObject,
-              ErrorType.RequestBodyContainsNestedObject,
               ErrorType.ExceededRequiredParamsLimit,
               ErrorType.NoParameter,
               ErrorType.NoAPIInfo,
@@ -610,8 +604,6 @@ describe("formatValidationErrors", () => {
     const errorMessage2 = [
       getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
       getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
-      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
-      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
       getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
       getLocalizedString("core.common.invalidReason.NoParameter"),
       getLocalizedString("core.common.invalidReason.NoAPIInfo"),

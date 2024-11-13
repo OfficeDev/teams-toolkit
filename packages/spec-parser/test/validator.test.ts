@@ -2590,14 +2590,11 @@ describe("Validator", () => {
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid, reason } = validator.validateAPI(method, path);
       assert.strictEqual(isValid, false);
-      expect(reason).to.have.members([
-        ErrorType.ParamsContainsNestedObject,
-        ErrorType.PostBodySchemaIsNotJson,
-      ]);
-      expect(reason.length).equals(2);
+      expect(reason).to.have.members([ErrorType.PostBodySchemaIsNotJson]);
+      expect(reason.length).equals(1);
     });
 
-    it("should return false if method is POST, but requestBody contain nested object", () => {
+    it("should return true if method is POST, but requestBody contain nested object", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -2668,8 +2665,7 @@ describe("Validator", () => {
 
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      assert.deepEqual(reason, [ErrorType.RequestBodyContainsNestedObject]);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is POST, but requestBody contain nested object with undefined type", () => {
@@ -2741,8 +2737,7 @@ describe("Validator", () => {
 
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      assert.deepEqual(reason, [ErrorType.RequestBodyContainsNestedObject]);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if contain circular reference", () => {

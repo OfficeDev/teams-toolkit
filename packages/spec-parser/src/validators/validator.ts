@@ -263,12 +263,6 @@ export abstract class Validator {
     const isRequiredWithoutDefault = isRequired && schema.default === undefined;
     const isCopilot = this.projectType === ProjectType.Copilot;
 
-    if (isCopilot && Utils.hasNestedObjectInSchema(schema)) {
-      paramResult.isValid = false;
-      paramResult.reason = [ErrorType.RequestBodyContainsNestedObject];
-      return paramResult;
-    }
-
     if (
       schema.type === "string" ||
       schema.type === "integer" ||
@@ -322,12 +316,6 @@ export abstract class Validator {
     for (let i = 0; i < paramObject.length; i++) {
       const param = paramObject[i];
       const schema = param.schema as OpenAPIV3.SchemaObject;
-
-      if (isCopilot && Utils.hasNestedObjectInSchema(schema)) {
-        paramResult.isValid = false;
-        paramResult.reason.push(ErrorType.ParamsContainsNestedObject);
-        continue;
-      }
 
       const isRequiredWithoutDefault = param.required && schema.default === undefined;
 

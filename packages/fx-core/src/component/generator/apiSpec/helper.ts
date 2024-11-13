@@ -976,10 +976,6 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
       );
     case ErrorType.ParamsContainRequiredUnsupportedSchema:
       return getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema");
-    case ErrorType.ParamsContainsNestedObject:
-      return getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject");
-    case ErrorType.RequestBodyContainsNestedObject:
-      return getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject");
     case ErrorType.ExceededRequiredParamsLimit:
       return getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit");
     case ErrorType.NoParameter:

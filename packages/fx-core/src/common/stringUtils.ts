@@ -21,7 +21,7 @@ export function maskSecret(inputText?: string, option?: MaskSecretOptions): stri
   if (!inputText) return "";
   const replace = option?.replace || SECRET_REPLACE;
   let output = maskSecretFromEnv(inputText);
-  output = secretMasker.maskSecret(output, replace);
+  output = secretMasker.maskSecret(output, replace, option?.whiteList);
   return output;
 }
 

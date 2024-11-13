@@ -24,6 +24,7 @@ import {
   telemetryUtils,
   getHashedEnv,
   isUserCancelError,
+  maskSecret,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep, pick } from "lodash";
 import path from "path";
@@ -89,6 +90,9 @@ class CLIEngine {
       globalOptionValues: {},
       argumentValues: [],
       telemetryProperties: {
+        [TelemetryProperty.CommandFull]: maskSecret(args.join(" "), {
+          replace: "***",
+        }),
         [TelemetryProperty.CommandName]: foundCommand.fullName,
         [TelemetryProperty.Component]: TelemetryComponentType,
         [TelemetryProperty.RunFrom]: tryDetectCICDPlatform(),

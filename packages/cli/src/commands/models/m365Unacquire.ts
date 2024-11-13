@@ -66,7 +66,7 @@ export const m365UnacquireCommand: CLICommand = {
     },
   ],
   telemetry: {
-    event: TelemetryEvent.M365Unacquire,
+    event: TelemetryEvent.Uninstall,
   },
   defaultInteractiveOption: true,
   handler: async (ctx) => {

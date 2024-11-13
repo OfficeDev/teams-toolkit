@@ -686,7 +686,7 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
         [QuestionNames.ApiAuth]: ApiAuthOptions.none().id,
@@ -705,7 +705,7 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
         [QuestionNames.ApiAuth]: ApiAuthOptions.apiKey().id,
@@ -724,7 +724,7 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.newApi().id,
         [QuestionNames.ApiAuth]: ApiAuthOptions.oauth().id,
@@ -763,7 +763,7 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.AppName]: randomAppName(),
@@ -783,7 +783,7 @@ describe("coordinator create", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         folder: ".",
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.AppName]: randomAppName(),
@@ -801,7 +801,7 @@ describe("coordinator create", () => {
       sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
         [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
       };
@@ -822,8 +822,8 @@ describe("coordinator create", () => {
       sandbox.stub(coordinator, "ensureTrackingId").resolves(ok("mock-id"));
       const inputs: Inputs = {
         platform: Platform.VSCode,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeAgent().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.WithPlugin]: "yes",
       };

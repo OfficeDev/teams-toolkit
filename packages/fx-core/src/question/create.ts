@@ -99,7 +99,7 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
-      staticOptions.push(ProjectTypeOptions.DeclarativeAgent(inputs.platform));
+      staticOptions.push(ProjectTypeOptions.Agent(inputs.platform));
 
       if (getRuntime(inputs) === RuntimeOptions.NodeJS().id) {
         staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
@@ -194,7 +194,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.officeMetaOS().id:
         case ProjectTypeOptions.officeAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
-        case ProjectTypeOptions.DeclarativeAgent().id:
+        case ProjectTypeOptions.Agent().id:
           return getLocalizedString(
             "core.createProjectQuestion.projectType.copilotExtension.title"
           );
@@ -241,8 +241,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
           projectType,
           inputs[QuestionNames.OfficeAddinHost]
         );
-      } else if (projectType === ProjectTypeOptions.DeclarativeAgent().id) {
-        return CapabilityOptions.copilotExtensions();
+      } else if (projectType === ProjectTypeOptions.Agent().id) {
+        return CapabilityOptions.agents();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {
         return CapabilityOptions.customCopilots();
       } else {
@@ -250,7 +250,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       }
     },
     placeholder: (inputs: Inputs) => {
-      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.DeclarativeAgent().id) {
+      if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.Agent().id) {
         return getLocalizedString(
           "core.createProjectQuestion.projectType.copilotExtension.placeholder"
         );
@@ -263,6 +263,10 @@ export function capabilityQuestion(): SingleSelectQuestion {
     },
     forgetLastValue: true,
     skipSingleOption: (inputs: Inputs): boolean => {
+      const projectType = inputs[QuestionNames.ProjectType];
+      if (projectType === ProjectTypeOptions.Agent().id) {
+        return true;
+      }
       return isFromDevPortal(inputs);
     },
   };
@@ -1118,7 +1122,7 @@ export function apiOperationQuestion(
           input.length < 1 ||
           (input.length > 10 &&
             inputs[QuestionNames.CustomCopilotRag] !== CustomCopilotRagOptions.customApi().id &&
-            inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.DeclarativeAgent().id)
+            inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.Agent().id)
         ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
@@ -1305,13 +1309,13 @@ export function apiPluginStartQuestion(doesProjectExists?: boolean): SingleSelec
     type: "singleSelect",
     name: QuestionNames.ApiPluginType,
     title: (inputs: Inputs) => {
-      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
+      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id ||
         doesProjectExists
         ? getLocalizedString("core.createProjectQuestion.addApiPlugin.title")
         : getLocalizedString("core.createProjectQuestion.createApiPlugin.title");
     },
     placeholder: (inputs: Inputs) => {
-      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id ||
+      return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id ||
         doesProjectExists
         ? getLocalizedString("core.createProjectQuestion.addApiPlugin.placeholder")
         : getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.placeholder");
@@ -1506,7 +1510,7 @@ export function capabilitySubTree(): IQTreeNode {
         data: meArchitectureQuestion(),
       },
       {
-        condition: { equals: CapabilityOptions.declarativeCopilot().id },
+        condition: { equals: CapabilityOptions.declarativeAgent().id },
         data: declarativeCopilotPluginQuestion(),
       },
       {
@@ -1560,7 +1564,7 @@ export function capabilitySubTree(): IQTreeNode {
                 featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
                 inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
                 (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
-                  inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id)
+                  inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id)
               )
             )
           );
@@ -1657,7 +1661,7 @@ export function capabilitySubTree(): IQTreeNode {
             featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
             inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
             (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
-              inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) &&
+              inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id) &&
             !inputs[QuestionNames.ApiPluginManifestPath]
           );
         },
@@ -1671,7 +1675,7 @@ export function capabilitySubTree(): IQTreeNode {
             featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
             inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
             (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
-              inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) &&
+              inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id) &&
             !inputs[QuestionNames.ApiPluginManifestPath]
           );
         },

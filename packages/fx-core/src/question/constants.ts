@@ -263,7 +263,7 @@ export class ProjectTypeOptions {
     ];
   }
 
-  static DeclarativeAgent(platform?: Platform): OptionItem {
+  static Agent(platform?: Platform): OptionItem {
     return {
       // todo: check all usage of this id
       id: "copilot-agent-type",
@@ -514,7 +514,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
       CapabilityOptions.empty(),
-      ...CapabilityOptions.copilotExtensions(inputs),
+      ...CapabilityOptions.agents(),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
@@ -613,15 +613,8 @@ export class CapabilityOptions {
     return items;
   }
 
-  static copilotExtensions(inputs?: Inputs, isStatic?: boolean): OptionItem[] {
-    if (isStatic) {
-      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
-    }
-    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
-      return [CapabilityOptions.apiPlugin()];
-    } else {
-      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
-    }
+  static agents(): OptionItem[] {
+    return [CapabilityOptions.declarativeAgent()];
   }
 
   static customCopilots(): OptionItem[] {
@@ -650,7 +643,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.copilotExtensions(inputs, true),
+      ...CapabilityOptions.agents(),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
@@ -670,7 +663,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
+    capabilityOptions.push(...CapabilityOptions.agents());
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
@@ -733,7 +726,7 @@ export class CapabilityOptions {
   }
 
   // copilot extension - declarative copilot
-  static declarativeCopilot(): OptionItem {
+  static declarativeAgent(): OptionItem {
     return {
       id: "declarative-agent",
       label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
@@ -1287,7 +1280,7 @@ export class ApiPluginStartOptions {
   static all(inputs: Inputs, doesProjectExists?: boolean): OptionItem[] {
     if (doesProjectExists) {
       return [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()];
-    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id) {
       return [
         ApiPluginStartOptions.newApi(),
         ApiPluginStartOptions.apiSpec(),

@@ -1732,7 +1732,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1781,7 +1781,7 @@ describe("scaffold question", () => {
         inputs[QuestionNames.ApiPluginManifestPath] = "api-plugin-manifest-path";
         inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
         inputs[QuestionNames.ApiOperation] = "api-plugin-manifest-path";
-        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.DeclarativeAgent().id;
+        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.Agent().id;
         const questions: string[] = [];
         const visitor: QuestionTreeVisitor = async (
           question: Question,
@@ -1813,12 +1813,12 @@ describe("scaffold question", () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
-        inputs[QuestionNames.Capabilities] = CapabilityOptions.declarativeCopilot().id;
+        inputs[QuestionNames.Capabilities] = CapabilityOptions.declarativeAgent().id;
         inputs[QuestionNames.ApiSpecLocation] = "api-spec-path";
         inputs[QuestionNames.ApiPluginManifestPath] = "api-plugin-manifest-path";
         inputs[QuestionNames.ApiPluginType] = ApiPluginStartOptions.apiSpec().id;
         inputs[QuestionNames.ApiOperation] = "api-plugin-manifest-path";
-        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.DeclarativeAgent().id;
+        inputs[QuestionNames.ProjectType] = ProjectTypeOptions.Agent().id;
         const questions: string[] = [];
         const visitor: QuestionTreeVisitor = async (
           question: Question,
@@ -1868,7 +1868,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1909,12 +1909,12 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: CapabilityOptions.declarativeCopilot().id });
+            return ok({ type: "success", result: CapabilityOptions.declarativeAgent().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             return ok({ type: "success", result: ApiPluginStartOptions.apiSpec().id });
           } else if (question.name === QuestionNames.WithPlugin) {
@@ -1949,7 +1949,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -2006,7 +2006,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -2363,7 +2363,7 @@ describe("scaffold question", () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
-            [QuestionNames.ProjectType]: ProjectTypeOptions.DeclarativeAgent().id,
+            [QuestionNames.ProjectType]: ProjectTypeOptions.Agent().id,
             [QuestionNames.ApiSpecLocation]: "apispec",
             supportedApisFromApiSpec: [
               {
@@ -3325,7 +3325,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -3336,7 +3336,7 @@ describe("scaffold question", () => {
               title,
               getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.title")
             );
-            return ok({ type: "success", result: CapabilityOptions.declarativeCopilot().id });
+            return ok({ type: "success", result: CapabilityOptions.declarativeAgent().id });
           } else if (question.name === QuestionNames.WithPlugin) {
             return ok({ type: "success", result: "no" });
           } else if (question.name === QuestionNames.AppName) {
@@ -3376,13 +3376,13 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 1);
 
-            return ok({ type: "success", result: CapabilityOptions.declarativeCopilot().id });
+            return ok({ type: "success", result: CapabilityOptions.declarativeAgent().id });
           } else if (question.name === QuestionNames.WithPlugin) {
             const select = question as SingleSelectQuestion;
             const options = select.staticOptions;
@@ -3428,7 +3428,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            return ok({ type: "success", result: ProjectTypeOptions.DeclarativeAgent().id });
+            return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -3438,7 +3438,7 @@ describe("scaffold question", () => {
               title,
               getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.title")
             );
-            return ok({ type: "success", result: CapabilityOptions.declarativeCopilot().id });
+            return ok({ type: "success", result: CapabilityOptions.declarativeAgent().id });
           } else if (question.name === QuestionNames.WithPlugin) {
             return ok({ type: "success", result: DeclarativeCopilotTypeOptions.withPlugin().id });
           } else if (question.name === QuestionNames.ApiPluginType) {

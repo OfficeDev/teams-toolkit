@@ -385,6 +385,13 @@ class CLIUserInteraction implements UserInteraction {
         }
       }
     }
+    if (config.default === "all") {
+      config.default = (config.options as StaticOptions).map((o) =>
+        typeof o === "string" ? o : o.id
+      );
+    } else if (config.default === "none") {
+      config.default = [];
+    }
     const [choices, defaultValue] = this.toChoices(
       config.options as StaticOptions,
       config.default as string[]

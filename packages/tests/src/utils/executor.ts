@@ -46,7 +46,9 @@ export class Executor {
           if (
             (skipErrorMessage &&
               result.stderr.toLowerCase().includes(skipErrorMessage)) ||
-            result.stderr.toLowerCase().includes("warning")
+            result.stderr
+              .toLowerCase()
+              .includes(LocalDebugError.DeprecatedError)
           ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };

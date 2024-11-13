@@ -1998,7 +1998,6 @@ describe("getQuestions", async () => {
   it("happy path", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.CopilotExtension]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2040,7 +2039,6 @@ describe("getQuestions", async () => {
   it("happy path with runtime", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "true",
-      [FeatureFlagName.CopilotExtension]: "false",
     });
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -2082,9 +2080,7 @@ describe("getQuestions", async () => {
   });
 
   it("happy path: API Copilot plugin enabled", async () => {
-    const restore = mockedEnv({
-      [FeatureFlagName.CopilotExtension]: "true",
-    });
+    const restore = mockedEnv({});
     const core = new FxCore(tools);
     const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
     assert.isTrue(res.isOk());

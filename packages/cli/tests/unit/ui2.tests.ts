@@ -130,6 +130,21 @@ describe("UserInteraction(CLI) 2", () => {
       const result = await UI.selectOptions(config);
       assert.isTrue(result.isOk());
     });
+    it("success with default=all", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          return [
+            { id: "a", label: "a" },
+            { id: "b", label: "b" },
+          ];
+        },
+        default: "all",
+      };
+      const result = await UI.selectOptions(config);
+      assert.isTrue(result.isOk());
+    });
     it("success with default=none", async () => {
       const config: MultiSelectConfig = {
         name: "test",

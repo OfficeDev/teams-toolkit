@@ -5,7 +5,7 @@ import { assert } from "chai";
 import "mocha";
 import { environmentNameManager } from "../../src/core/environmentName";
 import { QuestionNames } from "../../src/question/constants";
-import { selectTargetEnvQuestion } from "../../src/question/other";
+import { kiotaRegenerateQuestion, selectTargetEnvQuestion } from "../../src/question/other";
 
 describe("env question", () => {
   it("should not show testtool env", async () => {
@@ -34,5 +34,12 @@ describe("env question", () => {
       const envs = (await dynamicOptions(inputs)) as string[];
       assert.notInclude(envs, environmentNameManager.getTestToolEnvName());
     }
+  });
+});
+
+describe("kiotaRegenerate question", () => {
+  it("should ask for manifest", async () => {
+    const question = kiotaRegenerateQuestion();
+    assert.equal(question.data.name, QuestionNames.TeamsAppManifestFilePath);
   });
 });

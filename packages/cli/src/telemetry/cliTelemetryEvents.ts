@@ -155,8 +155,6 @@ export enum TelemetryProperty {
   Env = "env",
   SettingsVersion = "settings-version",
   NewProjectId = "new-project-id",
-  IsM365 = "is-office",
-  IsCreatingM365 = "is-creating-office",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
 

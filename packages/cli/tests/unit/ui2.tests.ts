@@ -118,6 +118,30 @@ describe("UserInteraction(CLI) 2", () => {
       const result = await UI.selectOptions(config);
       assert.isTrue(result.isErr());
     });
+    it("success with default=all", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          return ["a", "b", "c"];
+        },
+        default: "all",
+      };
+      const result = await UI.selectOptions(config);
+      assert.isTrue(result.isOk());
+    });
+    it("success with default=none", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          return ["a", "b", "c"];
+        },
+        default: "none",
+      };
+      const result = await UI.selectOptions(config);
+      assert.isTrue(result.isOk());
+    });
   });
 
   describe("selectOption", () => {

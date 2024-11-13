@@ -18,7 +18,11 @@ import { getLocalDebugSession } from "../common/localDebugSession";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { openTerminalDisplayMessage, openTerminalMessage } from "../common/debugConstants";
+import {
+  openTerminalDisplayMessage,
+  openTerminalMessage,
+  debugInDesktopClientReadMoreLink,
+} from "../common/debugConstants";
 import { getSystemInputs } from "../../utils/systemEnvUtils";
 import { core, tools } from "../../globalVariables";
 import path from "path";
@@ -85,9 +89,7 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
           )
           .then((selection) => {
             if (selection === readMore) {
-              void vscode.env.openExternal(
-                vscode.Uri.parse("https://aka.ms/teamsfx-debug-in-desktop-client")
-              );
+              void vscode.env.openExternal(vscode.Uri.parse(debugInDesktopClientReadMoreLink));
             }
           });
       } else {
@@ -103,9 +105,7 @@ export class LaunchDesktopClientTerminal extends BaseTaskTerminal {
             `${localize("teamstoolkit.common.readMore")}`
           );
           if (userSelected === readMore) {
-            void vscode.env.openExternal(
-              vscode.Uri.parse("https://aka.ms/teamsfx-debug-in-desktop-client")
-            );
+            void vscode.env.openExternal(vscode.Uri.parse(debugInDesktopClientReadMoreLink));
           } else if (userSelected != "Continue") {
             return err(new UserCancelError());
           } else {

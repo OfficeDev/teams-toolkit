@@ -39,6 +39,8 @@ export const errorDetail = `
 
 export const m365AppsPrerequisitesHelpLink = "https://aka.ms/teamsfx-m365-apps-prerequisites";
 export const clearAADAfterLocalDebugHelpLink = "https://aka.ms/teamsfx-clear-aad-after-local-debug";
+export const debugInDesktopClientReadMoreLink =
+  "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-apps-in-teams-desktop-client";
 
 export enum Host {
   teams = "teams.microsoft.com",

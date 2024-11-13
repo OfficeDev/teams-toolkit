@@ -159,8 +159,9 @@ export enum TelemetryProperty {
   HostType = "host-type",
 
   RunFrom = "run-from",
-
+  IsCreatingM365 = "is-creating-office",
   // command related property
+  CommandFull = "command-full",
   CommandName = "command-name",
   CommandHelp = "command-help",
   CommandVersion = "command-version",

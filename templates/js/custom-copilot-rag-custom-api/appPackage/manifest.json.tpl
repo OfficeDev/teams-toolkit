@@ -31,14 +31,7 @@
                 "groupChat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false,
-            "commandLists": [
-                {
-                    "scopes": [
-                        "personal"
-                    ]
-                }
-            ]
+            "isNotificationOnly": false
         }
     ],
     "composeExtensions": [],

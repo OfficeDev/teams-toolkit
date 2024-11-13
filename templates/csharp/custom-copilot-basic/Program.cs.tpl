@@ -7,6 +7,7 @@ using Microsoft.Teams.AI.AI.Models;
 using Microsoft.Teams.AI.AI.Planners;
 using Microsoft.Teams.AI.AI.Prompts;
 using Microsoft.Teams.AI.State;
+using Microsoft.Teams.AI.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,16 +33,25 @@ builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
-{{#useOpenAI}}
 builder.Services.AddSingleton<OpenAIModel>(sp => new(
+{{#useOpenAI}}
     new OpenAIModelOptions(config.OpenAI.ApiKey, config.OpenAI.DefaultModel)
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+    new AzureOpenAIModelOptions(
+        config.Azure.OpenAIApiKey,
+        config.Azure.OpenAIDeploymentName,
+        config.Azure.OpenAIEndpoint
+    )
+{{/useAzureOpenAI}}
     {
-        LogRequests = true
+        LogRequests = true,
+{{#CEAEnabled}}
+        Stream = true,
+{{/CEAEnabled}}
     },
     sp.GetService<ILoggerFactory>()
 ));
-{{/useOpenAI}}
-{{#useAzureOpenAI}}
 builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new AzureOpenAIModelOptions(
         config.Azure.OpenAIApiKey,
@@ -53,7 +63,6 @@ builder.Services.AddSingleton<OpenAIModel>(sp => new(
     },
     sp.GetService<ILoggerFactory>()
 ));
-{{/useAzureOpenAI}}
 
 // Create the bot as transient. In this case the ASP Controller is expecting an IBot.
 builder.Services.AddTransient<IBot>(sp =>
@@ -82,8 +91,11 @@ builder.Services.AddTransient<IBot>(sp =>
         loggerFactory: loggerFactory
     );
 
+    AIOptions<TurnState> options = new(planner);
+    options.EnableFeedbackLoop = true;
+
     Application<TurnState> app = new ApplicationBuilder<TurnState>()
-        .WithAIOptions(new(planner))
+        .WithAIOptions(options)
         .WithStorage(sp.GetService<IStorage>())
         .Build();
 
@@ -97,6 +109,12 @@ builder.Services.AddTransient<IBot>(sp =>
                 await turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
             }
         }
+    });
+
+    app.OnFeedbackLoop((turnContext, turnState, feedbackLoopData, _) =>
+    {
+        Console.WriteLine($"Your feedback is {turnContext.Activity.Value.ToString()}");
+        return Task.CompletedTask;
     });
 
     return app;

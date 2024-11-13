@@ -19,7 +19,6 @@ import {
 } from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
-import { on } from "events";
 
 export class Executor {
   static async execute(
@@ -45,8 +44,11 @@ export class Executor {
 
         if (result.stderr) {
           if (
-            skipErrorMessage &&
-            result.stderr.toLowerCase().includes(skipErrorMessage)
+            (skipErrorMessage &&
+              result.stderr.toLowerCase().includes(skipErrorMessage)) ||
+            result.stderr
+              .toLowerCase()
+              .includes(LocalDebugError.DeprecatedError)
           ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };

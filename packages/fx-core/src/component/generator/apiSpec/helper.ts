@@ -1532,3 +1532,19 @@ const EnvNameMapping: { [authType: string]: string } = {
 export function getEnvName(authName: string, authType?: string): string {
   return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
 }
+
+export async function copyKiotaFolder(specPath: string, projectPath: string): Promise<void> {
+  const originKiotaFolder = path.join(path.dirname(specPath), "..", ".kiota");
+  if (!(await fs.pathExists(originKiotaFolder))) {
+    return;
+  }
+
+  const destinationKiotaFolder = path.join(projectPath, ".kiota");
+  if (await fs.pathExists(destinationKiotaFolder)) {
+    return;
+  }
+
+  await fs.ensureDir(destinationKiotaFolder);
+  await fs.copy(originKiotaFolder, destinationKiotaFolder, { recursive: true });
+  return;
+}

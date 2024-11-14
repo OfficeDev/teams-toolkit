@@ -46,6 +46,7 @@
         "DebugTarget": "Start Project"
       }
     ]
+{{#CEAEnabled}}
   },
   {
     "Name": "Microsoft 365 Copilot (browser)",
@@ -69,6 +70,7 @@
         "DebugTarget": "Start Project"
       }
     ]
+{{/CEAEnabled}}
 {{#enableTestToolByDefault}}
   }
 {{/enableTestToolByDefault}}

@@ -97,22 +97,22 @@ builder.Services.AddTransient<IBot>(sp =>
         loggerFactory: loggerFactory
     );
 
-    AIOptions<TurnState> options = new(planner);
+    AIOptions<AppState> options = new(planner);
     options.EnableFeedbackLoop = true;
 
     IStorage storage = sp.GetService<IStorage>()!;
     TeamsAdapter adapter = sp.GetService<TeamsAdapter>()!;
     IConfidentialClientApplication msal = sp.GetService<IConfidentialClientApplication>();
     string signInLink = $"https://{config.BOT_DOMAIN}/auth-start.html";
-    AuthenticationOptions<AppState> options = new();
-    options.AutoSignIn = (context, cancellationToken) => Task.FromResult(true);
-    options.AddAuthentication("graph", new TeamsSsoSettings(new string[] { "Files.Read.All" }, signInLink, msal));
+    AuthenticationOptions<AppState> authOptions = new();
+    authOptions.AutoSignIn = (context, cancellationToken) => Task.FromResult(true);
+    authOptions.AddAuthentication("graph", new TeamsSsoSettings(new string[] { "Files.Read.All" }, signInLink, msal));
 
     Application<AppState> app = new ApplicationBuilder<AppState>()
         .WithAIOptions(options)
         .WithStorage(sp.GetService<IStorage>())
         .WithTurnStateFactory(() => new AppState())
-        .WithAuthentication(adapter, options)
+        .WithAuthentication(adapter, authOptions)
         .Build();
 
     app.OnConversationUpdate("membersAdded", async (turnContext, turnState, cancellationToken) =>

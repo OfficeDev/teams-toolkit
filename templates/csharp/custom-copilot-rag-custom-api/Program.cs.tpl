@@ -7,7 +7,6 @@ using Microsoft.Teams.AI.AI.Models;
 using Microsoft.Teams.AI.AI.Planners;
 using Microsoft.Teams.AI.AI.Prompts;
 using Microsoft.Teams.AI.State;
-using Microsoft.Teams.AI.AI;
 using RestSharp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,25 +33,28 @@ builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
-builder.Services.AddSingleton<OpenAIModel>(sp => new(
 {{#useOpenAI}}
+builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new OpenAIModelOptions(config.OpenAI.ApiKey, config.OpenAI.DefaultModel)
+    {
+        LogRequests = true
+    },
+    sp.GetService<ILoggerFactory>()
+));
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
+builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new AzureOpenAIModelOptions(
         config.Azure.OpenAIApiKey,
         config.Azure.OpenAIDeploymentName,
         config.Azure.OpenAIEndpoint
     )
-{{/useAzureOpenAI}}
     {
-        LogRequests = true,
-{{#CEAEnabled}}
-        Stream = true,
-{{/CEAEnabled}}
+        LogRequests = true
     },
     sp.GetService<ILoggerFactory>()
 ));
+{{/useAzureOpenAI}}
 
 // Create the bot as transient. In this case the ASP Controller is expecting an IBot.
 builder.Services.AddTransient<IBot>(sp =>
@@ -87,13 +89,10 @@ builder.Services.AddTransient<IBot>(sp =>
         loggerFactory: loggerFactory
     );
 
-    AIOptions<TurnState> options = new(planner);
-    options.EnableFeedbackLoop = true;
-
     var bot = new APIBot(new()
     {
         Storage = sp.GetService<IStorage>(),
-        AI = options,
+        AI = new(planner),
         LoggerFactory = loggerFactory,
     });
     
@@ -107,12 +106,6 @@ builder.Services.AddTransient<IBot>(sp =>
                 await turnContext.SendActivityAsync(MessageFactory.Text(welcomeText), cancellationToken);
             }
         }
-    });
-
-    bot.OnFeedbackLoop((turnContext, turnState, feedbackLoopData, _) =>
-    {
-        Console.WriteLine($"Your feedback is {turnContext.Activity.Value.ToString()}");
-        return Task.CompletedTask;
     });
 
     return bot;

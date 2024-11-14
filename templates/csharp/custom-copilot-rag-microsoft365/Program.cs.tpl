@@ -7,7 +7,6 @@ using Microsoft.Teams.AI.AI.Models;
 using Microsoft.Teams.AI.AI.Planners;
 using Microsoft.Teams.AI.AI.Prompts;
 using Microsoft.Teams.AI.State;
-using Microsoft.Teams.AI.AI;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
 using {{SafeProjectName}}.Model;
@@ -36,25 +35,28 @@ builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<TeamsAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 
-builder.Services.AddSingleton<OpenAIModel>(sp => new(
 {{#useOpenAI}}
+builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new OpenAIModelOptions(config.OpenAI.ApiKey, config.OpenAI.DefaultModel)
+    {
+        LogRequests = true
+    },
+    sp.GetService<ILoggerFactory>()
+));
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
+builder.Services.AddSingleton<OpenAIModel>(sp => new(
     new AzureOpenAIModelOptions(
         config.Azure.OpenAIApiKey,
         config.Azure.OpenAIDeploymentName,
         config.Azure.OpenAIEndpoint
     )
-{{/useAzureOpenAI}}
     {
-        LogRequests = true,
-{{#CEAEnabled}}
-        Stream = true,
-{{/CEAEnabled}}
+        LogRequests = true
     },
     sp.GetService<ILoggerFactory>()
 ));
+{{/useAzureOpenAI}}
 
 builder.Services.AddSingleton(sp =>
 {
@@ -97,22 +99,19 @@ builder.Services.AddTransient<IBot>(sp =>
         loggerFactory: loggerFactory
     );
 
-    AIOptions<AppState> options = new(planner);
-    options.EnableFeedbackLoop = true;
-
     IStorage storage = sp.GetService<IStorage>()!;
     TeamsAdapter adapter = sp.GetService<TeamsAdapter>()!;
     IConfidentialClientApplication msal = sp.GetService<IConfidentialClientApplication>();
     string signInLink = $"https://{config.BOT_DOMAIN}/auth-start.html";
-    AuthenticationOptions<AppState> authOptions = new();
-    authOptions.AutoSignIn = (context, cancellationToken) => Task.FromResult(true);
-    authOptions.AddAuthentication("graph", new TeamsSsoSettings(new string[] { "Files.Read.All" }, signInLink, msal));
+    AuthenticationOptions<AppState> options = new();
+    options.AutoSignIn = (context, cancellationToken) => Task.FromResult(true);
+    options.AddAuthentication("graph", new TeamsSsoSettings(new string[] { "Files.Read.All" }, signInLink, msal));
 
     Application<AppState> app = new ApplicationBuilder<AppState>()
-        .WithAIOptions(options)
+        .WithAIOptions(new(planner))
         .WithStorage(sp.GetService<IStorage>())
         .WithTurnStateFactory(() => new AppState())
-        .WithAuthentication(adapter, authOptions)
+        .WithAuthentication(adapter, options)
         .Build();
 
     app.OnConversationUpdate("membersAdded", async (turnContext, turnState, cancellationToken) =>
@@ -138,12 +137,7 @@ builder.Services.AddTransient<IBot>(sp =>
         await turnContext.SendActivityAsync("Failed to login");
         await turnContext.SendActivityAsync($"Error message: { error.Message}");
     });
-    app.OnFeedbackLoop((turnContext, turnState, feedbackLoopData, _) =>
-    {
-        Console.WriteLine($"Your feedback is {turnContext.Activity.Value.ToString()}");
-        return Task.CompletedTask;
-    });
-    
+
     return app;
 });
 

@@ -5,7 +5,6 @@ using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.AI.Planners;
 using Microsoft.Teams.AI.AI.Planners.Experimental;
-using Microsoft.Teams.AI.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,11 +43,9 @@ builder.Services.AddTransient<IBot>(sp =>
     ILoggerFactory loggerFactory = sp.GetService<ILoggerFactory>();
 
     IPlanner<AssistantsState> planner = new AssistantsPlanner<AssistantsState>(sp.GetService<AssistantsPlannerOptions>()!, loggerFactory);
-    AIOptions<AssistantsState> options = new(planner);
-    options.EnableFeedbackLoop = true;
 
     Application<AssistantsState> app = new ApplicationBuilder<AssistantsState>()
-        .WithAIOptions(options)
+        .WithAIOptions(new(planner))
         .WithStorage(sp.GetService<IStorage>())
         .Build();
 
@@ -65,11 +62,6 @@ builder.Services.AddTransient<IBot>(sp =>
     });
 
     app.AI.ImportActions(new ActionHandlers());
-    app.OnFeedbackLoop((turnContext, turnState, feedbackLoopData, _) =>
-    {
-        Console.WriteLine($"Your feedback is {turnContext.Activity.Value.ToString()}");
-        return Task.CompletedTask;
-    });
 
     // Listen for user to say "/reset".
     app.OnMessage("/reset", ActivityHandlers.ResetMessageHandler);

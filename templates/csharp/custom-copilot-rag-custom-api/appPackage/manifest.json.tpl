@@ -1,14 +1,7 @@
 {
-    {{#CEAEnabled}} 
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/vdevPreview/MicrosoftTeams.schema.json",
-    "manifestVersion": "devPreview",
-    "version": "1.0.0",
-    {{/CEAEnabled}}
-    {{^CEAEnabled}} 
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
     "manifestVersion": "1.19",
     "version": "1.0.0",
-    {{/CEAEnabled}}
     "id": "${{TEAMS_APP_ID}}",
     "developer": {
         "name": "Teams App, Inc.",
@@ -29,47 +22,16 @@
         "full": "Full description of {{appName}}"
     },
     "accentColor": "#FFFFFF",
-    {{#CEAEnabled}} 
-    "copilotAgents": {
-        "customEngineAgents": [
-            {
-                "type": "bot",
-                "id": "${{BOT_ID}}"
-            }
-        ]
-    },
-    {{/CEAEnabled}}
     "bots": [
         {
-            "botId": "${{BOT_ID}}",
-            "scopes": [
-                "personal",
-                "team",
-                "groupChat"
-            ],
-            "supportsFiles": false,
-            "isNotificationOnly": false,
-            "commandLists": [
-                {
-                    "scopes": [
-                        "personal"
-                    ],
-                    "commands": [
-                        {
-                            "title": "List Contoso history in table",
-                            "description": "Tell me the history of Contoso Electronics, format in a table."
-                        },
-                        {
-                            "title": "Compare Contoso Electronics plan",
-                            "description": "Compare different Contoso Electronics benefit package plans"
-                        },
-                        {
-                            "title": "Summarize PerksPlus Program",
-                            "description": "Summarize Contoso Electronics PerksPlus Program"
-                        }
-                    ]
-                }
-            ]
+        "botId": "${{BOT_ID}}",
+        "scopes": [
+            "personal",
+            "team",
+            "groupChat"
+        ],
+        "supportsFiles": false,
+        "isNotificationOnly": false
         }
     ],
     "composeExtensions": [

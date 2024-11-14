@@ -95,6 +95,23 @@ provision:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
 {{/MicrosoftEntra}}
 
+  - uses: oauth/update
+    with:
+{{#MicrosoftEntra}}
+      name: aadAuthCode
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
+{{/MicrosoftEntra}}
+{{^MicrosoftEntra}}
+      name: oAuth2AuthCode
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      configurationId: ${{OAUTH2AUTHCODE_CONFIGURATION_ID}}
+{{/MicrosoftEntra}}
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

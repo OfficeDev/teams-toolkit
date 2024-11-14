@@ -1,6 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { remove } from "lodash";
+import * as path from "path";
+import {
+  commands,
+  Disposable,
+  env,
+  InputBox,
+  QuickInputButton,
+  QuickInputButtons,
+  QuickPick,
+  QuickPickItem,
+  QuickPickItemKind,
+  ShellExecution,
+  Task,
+  TaskProcessEndEvent,
+  tasks,
+  TaskScope,
+  ThemeIcon,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
+
 import {
   Colors,
   ConfirmConfig,
@@ -31,28 +54,6 @@ import {
   UIConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { remove } from "lodash";
-import * as path from "path";
-import {
-  commands,
-  Disposable,
-  env,
-  InputBox,
-  QuickInputButton,
-  QuickInputButtons,
-  QuickPick,
-  QuickPickItem,
-  QuickPickItemKind,
-  ShellExecution,
-  Task,
-  TaskProcessEndEvent,
-  tasks,
-  TaskScope,
-  ThemeIcon,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
 import {
   EmptyOptionsError,
   InternalUIError,
@@ -393,8 +394,10 @@ export class VSCodeUI implements UserInteraction {
             }
             if (typeof config.default === "function") {
               defaultValue = await config.default();
-            } else {
-              defaultValue = config.default || [];
+            } else if (config.default === "all") {
+              defaultValue = options.map((o) => (typeof o === "string" ? o : o.id));
+            } else if (config.default === "none") {
+              defaultValue = [];
             }
           } catch (e) {
             resolve(err(this.assembleError(e)));
@@ -788,7 +791,7 @@ export class VSCodeUI implements UserInteraction {
     return this.selectFileInQuickPick(
       config,
       "files",
-      config.default ? config.default.join(";") : undefined
+      config.default && typeof config.default !== "string" ? config.default.join(";") : undefined
     );
   }
 

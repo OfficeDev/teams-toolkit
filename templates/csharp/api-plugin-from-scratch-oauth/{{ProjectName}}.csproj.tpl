@@ -24,6 +24,9 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.16.2" />
+		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.2.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +37,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="appsettings.Development.json">
+			<DependentUpon>appsettings.json</DependentUpon>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Never</CopyToPublishDirectory>
+		</None>
   </ItemGroup>
 
   <ItemGroup>

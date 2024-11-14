@@ -75,6 +75,7 @@ export enum Stage {
   copilotPluginAddAPI = "copilotPluginAddAPI",
   syncManifest = "syncManifest",
   addPlugin = "addPlugin",
+  kiotaRegenerate = "kiotaRegenerate",
 }
 
 export enum TelemetryEvent {

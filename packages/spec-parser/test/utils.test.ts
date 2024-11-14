@@ -132,6 +132,12 @@ describe("utils", () => {
       ]);
     });
 
+    it("should not return an error if the server URL is http and allowHttp is true", () => {
+      const servers = [{ url: "http://example.com" }];
+      const errors = Utils.checkServerUrl(servers, true);
+      assert.deepStrictEqual(errors, []);
+    });
+
     it("should return an error if the server URL protocol is not HTTPS", () => {
       const servers = [{ url: "http://example.com" }];
       const errors = Utils.checkServerUrl(servers);

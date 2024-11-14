@@ -97,6 +97,7 @@
             "type": "msedge",
             "request": "launch",
             "url": "https://www.office.com/chat?auth=2&${account-hint}",
+            "cascadeTerminateToConfigurations": ["Attach to Local Service"],
             "presentation": {
                 "group": "3-M365",
                 "order": 3

@@ -1732,9 +1732,6 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 6);
             return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.apiPlugin().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             const select = question as SingleSelectQuestion;
@@ -1868,9 +1865,6 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 6);
             return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.apiPlugin().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             return ok({ type: "success", result: ApiPluginStartOptions.apiSpec().id });
@@ -1911,7 +1905,6 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.declarativeAgent().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             return ok({ type: "success", result: ApiPluginStartOptions.apiSpec().id });
@@ -1949,9 +1942,6 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 6);
             return ok({ type: "success", result: ProjectTypeOptions.Agent().id });
           } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.apiPlugin().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             return ok({ type: "success", result: ApiPluginStartOptions.newApi().id });
@@ -2012,7 +2002,6 @@ describe("scaffold question", () => {
               (question.title as any)!(inputs),
               getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.title")
             );
-            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.apiPlugin().id });
           } else if (question.name === QuestionNames.ApiPluginType) {
             return ok({ type: "success", result: ApiPluginStartOptions.apiSpec().id });

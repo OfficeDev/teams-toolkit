@@ -346,9 +346,7 @@ export class ManifestUpdater {
 
     if (options.allowConversationStarters && conversationStarters.length > 0) {
       if (!apiPlugin.capabilities) {
-        apiPlugin.capabilities = {
-          localization: {},
-        };
+        apiPlugin.capabilities = {};
       }
       if (!apiPlugin.capabilities.conversation_starters) {
         apiPlugin.capabilities.conversation_starters = conversationStarters

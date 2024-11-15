@@ -64,6 +64,9 @@ describe("ActionInjector", () => {
           - uses: oauth/register
             with:
               name: oauthName
+          - uses: teamsApp/create
+            with:
+              name: oAuth2AuthCode
       `;
 
       sandbox.stub(fs, "readFile").resolves(ymlContent as any);

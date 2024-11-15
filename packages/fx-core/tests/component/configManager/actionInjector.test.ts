@@ -61,6 +61,9 @@ describe("ActionInjector", () => {
             writeToEnvironmentFile:
               teamsAppId: TEAMS_APP_ID
           - uses: apiKey/register
+          - uses: oauth/register
+            with:
+              name: oauthName
       `;
 
       sandbox.stub(fs, "readFile").resolves(ymlContent as any);
@@ -79,6 +82,7 @@ describe("ActionInjector", () => {
         registrationIdEnvName: "TEST_AUTH_CONFIGURATION_ID",
       });
       assert.isTrue(writeStub.args[0][1].includes("oauth/register"));
+      assert.isTrue(writeStub.args[0][1].includes("oauthName"));
       assert.isFalse(writeStub.args[0][1].includes("apiKey/register"));
     });
 

@@ -74,7 +74,10 @@ export class ActionInjector {
           if (forceToAddNew) {
             return uses;
           } else {
-            return uses !== actionName && uses !== "apiKey/register";
+            return (
+              uses != "apiKey/register" &&
+              (uses !== actionName || item.get("with")?.get("name") !== authName)
+            );
           }
         });
         const existingConfigurationIdEnvNames: string[] = provisionNode.items
@@ -145,7 +148,10 @@ export class ActionInjector {
           if (forceToAddNew) {
             return uses;
           } else {
-            return uses !== actionName && uses !== "oauth/register";
+            return (
+              uses != "oauth/register" &&
+              (uses !== actionName || item.get("with")?.get("name") !== authName)
+            );
           }
         });
         const existingRegistrationIdEnvNames: string[] = provisionNode.items

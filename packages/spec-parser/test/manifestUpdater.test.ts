@@ -2750,7 +2750,6 @@ describe("updateManifestWithAiPlugin", () => {
               text: "This is a long long long long long description tha",
             },
           ],
-          localization: {},
         },
         functions: [
           {

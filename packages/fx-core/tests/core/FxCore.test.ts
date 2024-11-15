@@ -3497,6 +3497,17 @@ describe("copilotPlugin", async () => {
             },
           },
           {
+            uses: "apiKey/register",
+            with: {
+              name: "api_key2",
+              appId: "${{TEAMS_APP_ID}}",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+            },
+            writeToEnvironmentFile: {
+              registrationId: "API_KEY1_REGISTRATION_ID",
+            },
+          },
+          {
             uses: "teamsApp/zipAppPackage",
             with: {
               manifestPath: "./appPackage/manifest.json",
@@ -3598,7 +3609,7 @@ describe("copilotPlugin", async () => {
         {
           uses: "apiKey/register",
           writeToEnvironmentFile: {
-            registrationId: "BEARERAUTH1_REGISTRATION_ID",
+            registrationId: "BEARERAUTH1_REGISTRATION_ID1",
           },
         },
         {
@@ -3642,6 +3653,12 @@ describe("copilotPlugin", async () => {
             },
             writeToEnvironmentFile: {
               registrationId: "BEARERAUTH1_REGISTRATION_ID",
+            },
+          },
+          {
+            uses: "apiKey/register",
+            writeToEnvironmentFile: {
+              registrationId: "BEARERAUTH1_REGISTRATION_ID1",
             },
           },
           {
@@ -3793,6 +3810,16 @@ describe("copilotPlugin", async () => {
             },
             writeToEnvironmentFile: {
               registrationId: "BEARERAUTH1_REGISTRATION_ID",
+            },
+          },
+          {
+            uses: "apiKey/register",
+            with: {
+              appId: "${{TEAMS_APP_ID}}",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+            },
+            writeToEnvironmentFile: {
+              registrationId: "API_KEY1_REGISTRATION_ID",
             },
           },
           {
@@ -4240,6 +4267,17 @@ describe("copilotPlugin", async () => {
             },
             writeToEnvironmentFile: {
               registrationId: "BEARERAUTH1_REGISTRATION_ID",
+            },
+          },
+          {
+            uses: "apiKey/register",
+            with: {
+              name: "api_key_unknown",
+              appId: "${{TEAMS_APP_ID}}",
+              apiSpecPath: ".appPackage/apiSpecificationFiles/openapi.json",
+            },
+            writeToEnvironmentFile: {
+              registrationId: "API_KEY_UNKNOWN_REGISTRATION_ID",
             },
           },
           {

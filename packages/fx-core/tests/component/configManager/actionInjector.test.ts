@@ -62,6 +62,7 @@ describe("ActionInjector", () => {
               teamsAppId: TEAMS_APP_ID
           - uses: apiKey/register
           - uses: oauth/register
+          - uses: oauth/register
             with:
               name: oauthName
           - uses: teamsApp/create

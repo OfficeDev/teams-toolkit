@@ -78,7 +78,6 @@
     }
   ],
   "capabilities": {
-    "localization": {},
     "conversation_starters": [
       {
         "text": "List all repairs"

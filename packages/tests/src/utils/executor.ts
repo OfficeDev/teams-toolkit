@@ -49,7 +49,7 @@ export class Executor {
             result.stderr
               .toLowerCase()
               .includes(LocalDebugError.DeprecatedError) ||
-            result.stderr.toLowerCase().includes(LocalDebugError.WarningError)
+            result.stderr.includes(LocalDebugError.WarningCapError)
           ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };

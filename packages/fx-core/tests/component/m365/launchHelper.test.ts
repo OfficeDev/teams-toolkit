@@ -11,13 +11,23 @@ import { PackageService } from "../../../src/component/m365/packageService";
 import { HubTypes } from "../../../src/question";
 import { outlookCopilotAppId } from "../../../src/component/m365/constants";
 import { MockedM365Provider } from "../../core/utils";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { FeatureFlagName } from "../../../src";
 
 describe("LaunchHelper", () => {
   const m365TokenProvider = new MockedM365Provider();
   const launchHelper = new LaunchHelper(m365TokenProvider);
+  let mockedEnvRestore: RestoreFn = () => {};
 
   afterEach(() => {
     sinon.restore();
+    mockedEnvRestore();
+  });
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.MultiTenant]: "true",
+    });
   });
 
   describe("getLaunchUrl", () => {

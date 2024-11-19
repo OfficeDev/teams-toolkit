@@ -265,7 +265,6 @@ export class ProjectTypeOptions {
 
   static Agent(platform?: Platform): OptionItem {
     return {
-      // todo: check all usage of this id
       id: "copilot-agent-type",
       label: `${platform === Platform.VSCode ? "$(teamsfx-agent) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.declarativeAgent.label"

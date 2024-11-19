@@ -279,7 +279,7 @@ export class ManifestUpdater {
     } else {
       apiPlugin = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "",
         description_for_human: "",
         namespace: "",

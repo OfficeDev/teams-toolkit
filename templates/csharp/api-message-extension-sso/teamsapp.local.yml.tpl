@@ -53,6 +53,26 @@ provision:
       manifestPath: ./aad.manifest.json
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
+  - uses: oauth/register
+    with:
+      name: aadAuthCode
+      flow: authorizationCode
+      appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      identityProvider: MicrosoftEntra
+    writeToEnvironmentFile:
+      configurationId: AADAUTHCODE_CONFIGURATION_ID
+
+  - uses: oauth/update
+    with:
+      name: aadAuthCode
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
+
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
@@ -91,6 +111,14 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
+    with:
+      target: ../appsettings.Development.json
+      content:
+        ClientId: ${{AAD_APP_CLIENT_ID}}
+        TenantId: ${{AAD_APP_TENANT_ID}}
 {{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file

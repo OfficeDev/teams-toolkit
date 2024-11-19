@@ -4,18 +4,26 @@ using Microsoft.Extensions.Logging;
 
 namespace {{SafeProjectName}}
 {
-    public class Repair
+    public class Repairs
     {
         private readonly ILogger _logger;
+        private readonly AuthMiddleware _authMiddleware;
 
-        public Repair(ILoggerFactory loggerFactory)
+        public Repairs(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger<Repair>();
+            _logger = loggerFactory.CreateLogger<Repairs>();
+            _authMiddleware = authMiddleware;
         }
 
-        [Function("repair")]
+        [Function("repairs")]
         public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
+            if (!await _authMiddleware.ValidateTokenAsync(req, _logger))
+            {
+                var unauthorizedResponse = req.CreateResponse(System.Net.HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
+            }
+            
             // Log that the HTTP trigger function received a request.
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
@@ -24,6 +32,14 @@ namespace {{SafeProjectName}}
 
             // Get the repair records.
             var repairRecords = RepairData.GetRepairs();
+
+            // If the assignedTo query parameter is not provided, return all repair records.
+            if (string.IsNullOrEmpty(assignedTo))
+            {
+                var res = req.CreateResponse();
+                await res.WriteAsJsonAsync(new { results = repairRecords });
+                return res;
+            }
 
             // Filter the repair records by the assignedTo query parameter.
             var repairs = repairRecords.Where(r =>

@@ -47,6 +47,12 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  # Set OPENAPI_SERVER_URL for local launch
+  - uses: script
+    with:
+      run:
+        echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
+
   # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.
   - uses: aadApp/update
@@ -55,20 +61,6 @@ provision:
       # be replaced before apply to Microsoft Entra app
       manifestPath: ./aad.manifest.json
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
-
-  # Generate runtime appsettings to JSON file
-  - uses: file/createOrUpdateJsonFile
-    with:
-      target: ../appsettings.Development.json
-      content:
-        ClientId: ${{AAD_APP_CLIENT_ID}}
-        TenantId: ${{AAD_APP_TENANT_ID}}
-
-  # Set OPENAPI_SERVER_URL for local launch
-  - uses: script
-    with:
-      run:
-        echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
 
   - uses: oauth/register
     with:
@@ -94,6 +86,15 @@ provision:
     writeToEnvironmentFile:
       configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
 {{/MicrosoftEntra}}
+
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
+    with:
+      target: ../appsettings.Development.json
+      content:
+        ClientId: ${{AAD_APP_CLIENT_ID}}
+        TenantId: ${{AAD_APP_TENANT_ID}}
+
 
   - uses: oauth/update
     with:

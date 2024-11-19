@@ -41,6 +41,14 @@ export class Executor {
           timeout: timeout ?? 0,
         };
         const result = await execAsync(command, options);
+        console.log(
+          "result.stderr.includes(LocalDebugError.WarningCapError): ",
+          result.stderr.includes(LocalDebugError.WarningCapError)
+        );
+        console.log(
+          "result.stderr.includes(LocalDebugError.WarningCapError): ",
+          result.stderr.toString().includes(LocalDebugError.WarningCapError)
+        );
 
         if (result.stderr) {
           if (

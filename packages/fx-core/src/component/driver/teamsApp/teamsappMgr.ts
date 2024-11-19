@@ -127,6 +127,8 @@ class TeamsAppMgr {
         }
       }
     }
+    env = env || inputs.env;
+    process.env.TEAMSFX_ENV = env;
     return ok(env);
   }
 

@@ -38,7 +38,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -86,7 +86,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -148,7 +148,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -212,7 +212,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -296,7 +296,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -342,7 +342,7 @@ describe("adaptiveCardGenerator", () => {
       };
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -369,7 +369,7 @@ describe("adaptiveCardGenerator", () => {
       };
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -399,7 +399,7 @@ describe("adaptiveCardGenerator", () => {
       };
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -420,7 +420,7 @@ describe("adaptiveCardGenerator", () => {
       const schema = {};
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -475,7 +475,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {

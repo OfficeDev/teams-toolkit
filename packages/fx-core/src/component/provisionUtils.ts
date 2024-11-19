@@ -142,7 +142,8 @@ class ProvisionUtils {
       return err(new M365TokenJSONNotFoundError());
     }
     const tenantIdInToken = (appStudioTokenJson as any).tid;
-    const tenantUserName = (appStudioTokenJson as any).upn;
+    const tenantUserName =
+      (appStudioTokenJson as any).upn ?? (appStudioTokenJson as any).unique_name;
     if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
       return err(new M365TenantIdNotFoundInTokenError());
     }

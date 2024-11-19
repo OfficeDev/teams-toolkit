@@ -12,6 +12,7 @@ import {
   ErrorResult,
   ErrorType,
   ParseOptions,
+  ProjectType,
 } from "./interfaces";
 import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
 import { SpecParserError } from "./specParserError";
@@ -184,7 +185,7 @@ export class Utils {
     return newStr;
   }
 
-  static checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
+  static checkServerUrl(servers: OpenAPIV3.ServerObject[], allowHttp = false): ErrorResult[] {
     const errors: ErrorResult[] = [];
 
     let serverUrl;
@@ -207,8 +208,7 @@ export class Utils {
         content: ConstantString.RelativeServerUrlNotSupported,
         data: servers,
       });
-    } else if (protocol !== "https:") {
-      // Http server url is not supported
+    } else if (protocol !== "https:" && !(protocol === "http:" && allowHttp)) {
       const protocolString = protocol.slice(0, -1);
       errors.push({
         type: ErrorType.UrlProtocolNotSupported,
@@ -227,11 +227,13 @@ export class Utils {
     let hasPathLevelServers = false;
     let hasOperationLevelServers = false;
 
+    const allowHttp = options.projectType === ProjectType.Copilot;
+
     if (spec.servers && spec.servers.length >= 1) {
       hasTopLevelServers = true;
 
       // for multiple server, we only use the first url
-      const serverErrors = Utils.checkServerUrl(spec.servers);
+      const serverErrors = Utils.checkServerUrl(spec.servers, allowHttp);
       errors.push(...serverErrors);
     }
 
@@ -241,7 +243,7 @@ export class Utils {
 
       if (methods?.servers && methods.servers.length >= 1) {
         hasPathLevelServers = true;
-        const serverErrors = Utils.checkServerUrl(methods.servers);
+        const serverErrors = Utils.checkServerUrl(methods.servers, allowHttp);
 
         errors.push(...serverErrors);
       }
@@ -251,7 +253,7 @@ export class Utils {
         if (options.allowMethods?.includes(method) && operationObject) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
             hasOperationLevelServers = true;
-            const serverErrors = Utils.checkServerUrl(operationObject.servers);
+            const serverErrors = Utils.checkServerUrl(operationObject.servers, allowHttp);
             errors.push(...serverErrors);
           }
         }

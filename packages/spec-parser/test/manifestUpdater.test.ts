@@ -222,7 +222,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -389,7 +389,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -688,7 +688,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -878,7 +878,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -1127,7 +1127,7 @@ describe("updateManifestWithAiPlugin", () => {
                   subtitle: "$.id",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       type: "Container",
@@ -2052,7 +2052,7 @@ describe("updateManifestWithAiPlugin", () => {
                   title: "$.name",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",

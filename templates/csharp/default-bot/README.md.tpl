@@ -1,26 +1,22 @@
 # Welcome to Teams Toolkit!
 
 ## Quick Start
-{{#enableTestToolByDefault}}
+
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 2. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
+
+## Debug in Teams
+
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
 2. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
 3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to
-4. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-5. In the launched browser, select the Add button to load the app in Teams
-6. In the chat bar, type and send anything to your bot to trigger a response
-{{/enableTestToolByDefault}}
+4. In Startup Item, select "Microsoft Teams (browser)"
+5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+6. In the launched browser, select the Add button to load the app in Teams
+7. In the chat bar, type and send anything to your bot to trigger a response
 
 > For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
-
-{{^enableTestToolByDefault}}
-## Debug in Test Tool
-Teams App Test Tool allows developers test and debug bots locally without needing Microsoft 365 accounts, development tunnels, or Teams app and bot registration. See https://aka.ms/teams-toolkit-vs-test-tool for more details.
-{{/enableTestToolByDefault}}
 
 ## Learn more
 

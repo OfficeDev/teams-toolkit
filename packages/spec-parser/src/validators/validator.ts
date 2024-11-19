@@ -197,8 +197,8 @@ export abstract class Validator {
       // should contain server URL
       result.reason.push(ErrorType.NoServerInformation);
     } else {
-      // server url should be absolute url with https protocol
-      const serverValidateResult = Utils.checkServerUrl([serverObj]);
+      const allowHttp = this.projectType === ProjectType.Copilot;
+      const serverValidateResult = Utils.checkServerUrl([serverObj], allowHttp);
       result.reason.push(...serverValidateResult.map((item) => item.type));
     }
 

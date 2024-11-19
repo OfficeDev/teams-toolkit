@@ -39,7 +39,7 @@ describe("adaptiveCardWrapper", () => {
             url: "${imageUrl}",
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = wrapResponseSemantics(card, "$");
@@ -53,7 +53,7 @@ describe("adaptiveCardWrapper", () => {
     it("should infer response semanitcs card with json path correctly", () => {
       const card: AdaptiveCard = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -101,7 +101,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -133,7 +133,7 @@ describe("adaptiveCardWrapper", () => {
             ],
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -148,7 +148,7 @@ describe("adaptiveCardWrapper", () => {
         type: "AdaptiveCard",
         version: "1.5",
         body: [],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -174,7 +174,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -200,7 +200,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -221,7 +221,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -247,7 +247,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const result = inferPreviewCardTemplate(card);
@@ -279,7 +279,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const expectedWrappedCard = {
@@ -319,7 +319,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const expectedWrappedCard = {
@@ -364,7 +364,7 @@ describe("adaptiveCardWrapper", () => {
             wrap: true,
           },
         ],
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
       };
 
       const expectedWrappedCard = {

@@ -44,12 +44,12 @@ export class Executor {
 
         if (result.stderr) {
           if (
-            (skipErrorMessage &&
-              result.stderr.toLowerCase().includes(skipErrorMessage)) ||
-            result.stderr
-              .toLowerCase()
-              .includes(LocalDebugError.DeprecatedError) ||
-            result.stderr.includes(LocalDebugError.WarningCapError)
+            skipErrorMessage &&
+            (result.stderr.toLowerCase().includes(skipErrorMessage) ||
+              result.stderr
+                .toLowerCase()
+                .includes(LocalDebugError.DeprecatedError) ||
+              result.stderr.includes(LocalDebugError.WarningCapError))
           ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };

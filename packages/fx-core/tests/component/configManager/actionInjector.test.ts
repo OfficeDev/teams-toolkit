@@ -191,6 +191,57 @@ describe("ActionInjector", () => {
 
       assert.equal(countOccurrences(writeStub.args[0][1], "oauth/register"), 2);
     });
+
+    it("should check for authName and specPath in existing OAuth actions", async () => {
+      const ymlPath = "path/to/yml";
+      const authName = "testAuth";
+      const specRelativePath = "path/to/spec";
+
+      const ymlContent = `
+        provision:
+          - uses: teamsApp/create
+            with:
+              # Teams app name
+              name: test
+            # Write the information of created resources into environment file for
+            # the specified environment variable(s).
+            writeToEnvironmentFile:
+              teamsAppId: TEAMS_APP_ID
+          - uses: oauth/register
+            with:
+              name: ${authName}
+              appId: appId
+              apiSpecPath: ./appPackage/apiSpecificationFile/openapi_3.yaml
+              flow: authorizationCode
+            writeToEnvironmentFile:
+              configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+          - uses: oauth/register
+            with:
+              name: authName
+              appId: appId
+              apiSpecPath: ${specRelativePath}
+              flow: authorizationCode
+            writeToEnvironmentFile:
+              configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID1
+          - uses: apiKey/register
+      `;
+
+      sandbox.stub(fs, "readFile").resolves(ymlContent as any);
+      sandbox
+        .stub(Utils, "getSafeRegistrationIdEnvName")
+        .returns("OAUTH2AUTHCODE_CONFIGURATION_ID");
+      sandbox.stub(ActionInjector, "getTeamsAppIdEnvName").returns("TEAMS_APP_ID");
+
+      const result = await ActionInjector.injectCreateOAuthAction(
+        ymlPath,
+        authName,
+        specRelativePath,
+        false
+      );
+
+      assert.isTrue(writeStub.args[0][1].includes("apiKey/register"));
+      assert.equal(countOccurrences(writeStub.args[0][1], "oauth/register"), 3);
+    });
   });
 
   describe("injectCreateAPIKeyAction", () => {
@@ -351,6 +402,57 @@ describe("ActionInjector", () => {
       });
 
       assert.equal(countOccurrences(writeStub.args[0][1], "apiKey/register"), 2);
+    });
+
+    it("should check for authName and specPath in existing OAuth actions", async () => {
+      const ymlPath = "path/to/yml";
+      const authName = "testAuth";
+      const specRelativePath = "path/to/spec";
+
+      const ymlContent = `
+        provision:
+          - uses: teamsApp/create
+            with:
+              # Teams app name
+              name: test
+            # Write the information of created resources into environment file for
+            # the specified environment variable(s).
+            writeToEnvironmentFile:
+              teamsAppId: TEAMS_APP_ID
+          - uses: apiKey/register
+            with:
+              name: ${authName}
+              appId: appId
+              apiSpecPath: ./appPackage/apiSpecificationFile/openapi_3.yaml
+              flow: authorizationCode
+            writeToEnvironmentFile:
+              configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+          - uses: apiKey/register
+            with:
+              name: authName
+              appId: appId
+              apiSpecPath: ${specRelativePath}
+              flow: authorizationCode
+            writeToEnvironmentFile:
+              configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID1
+          - uses: oauth/register
+      `;
+
+      sandbox.stub(fs, "readFile").resolves(ymlContent as any);
+      sandbox
+        .stub(Utils, "getSafeRegistrationIdEnvName")
+        .returns("OAUTH2AUTHCODE_CONFIGURATION_ID");
+      sandbox.stub(ActionInjector, "getTeamsAppIdEnvName").returns("TEAMS_APP_ID");
+
+      const result = await ActionInjector.injectCreateOAuthAction(
+        ymlPath,
+        authName,
+        specRelativePath,
+        false
+      );
+
+      assert.isTrue(writeStub.args[0][1].includes("oauth/register"));
+      assert.equal(countOccurrences(writeStub.args[0][1], "apiKey/register"), 3);
     });
   });
 });

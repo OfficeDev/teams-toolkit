@@ -74,26 +74,6 @@ provision:
       manifestPath: ./aad.manifest.json
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
-  - uses: oauth/register
-    with:
-      name: aadAuthCode
-      flow: authorizationCode
-      appId: ${{TEAMS_APP_ID}}
-      clientId: ${{AAD_APP_CLIENT_ID}}
-      # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
-      identityProvider: MicrosoftEntra
-    writeToEnvironmentFile:
-      configurationId: AADAUTHCODE_CONFIGURATION_ID
-
-  - uses: oauth/update
-    with:
-      name: aadAuthCode
-      appId: ${{TEAMS_APP_ID}}
-      # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
-      configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
-
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

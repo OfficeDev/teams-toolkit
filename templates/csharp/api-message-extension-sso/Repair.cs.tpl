@@ -4,18 +4,18 @@ using Microsoft.Extensions.Logging;
 
 namespace {{SafeProjectName}}
 {
-    public class Repairs
+    public class Repair
     {
         private readonly ILogger _logger;
         private readonly AuthMiddleware _authMiddleware;
 
-        public Repairs(ILoggerFactory loggerFactory, AuthMiddleware authMiddleware)
+        public Repair(ILoggerFactory loggerFactory, AuthMiddleware authMiddleware)
         {
-            _logger = loggerFactory.CreateLogger<Repairs>();
+            _logger = loggerFactory.CreateLogger<Repair>();
             _authMiddleware = authMiddleware;
         }
 
-        [Function("repairs")]
+        [Function("repair")]
         public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
             if (!await _authMiddleware.ValidateTokenAsync(req, _logger))
@@ -32,14 +32,6 @@ namespace {{SafeProjectName}}
 
             // Get the repair records.
             var repairRecords = RepairData.GetRepairs();
-
-            // If the assignedTo query parameter is not provided, return all repair records.
-            if (string.IsNullOrEmpty(assignedTo))
-            {
-                var res = req.CreateResponse();
-                await res.WriteAsJsonAsync(new { results = repairRecords });
-                return res;
-            }
 
             // Filter the repair records by the assignedTo query parameter.
             var repairs = repairRecords.Where(r =>

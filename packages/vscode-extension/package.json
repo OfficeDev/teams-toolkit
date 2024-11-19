@@ -57,7 +57,6 @@
     "onCommand:workbench.action.debug.start",
     "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
-    "onView:teamsfx-empty-project",
     "onUri",
     "workspaceContains:/**/manifest.json",
     "workspaceContains:/manifest*.xml"
@@ -125,18 +124,8 @@
     },
     "viewsWelcome": [
       {
-        "view": "teamsfx-empty-project",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
         "view": "teamsfx-empty-project-with-api-copilot-plugin",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat.content%",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -145,18 +134,8 @@
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-new-user",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
         "view": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat.content%",
         "enablement": "fx-extension.initialized"
       },
       {

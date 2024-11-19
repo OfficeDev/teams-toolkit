@@ -75,8 +75,9 @@ export class ActionInjector {
             return uses;
           } else {
             return (
-              uses != "apiKey/register" &&
-              (uses !== actionName || item.get("with")?.get("name") !== authName)
+              uses != actionName ||
+              item.get("with")?.get("apiSpecPath") !== specRelativePath ||
+              item.get("with")?.get("name") !== authName
             );
           }
         });
@@ -149,8 +150,9 @@ export class ActionInjector {
             return uses;
           } else {
             return (
-              uses != "oauth/register" &&
-              (uses !== actionName || item.get("with")?.get("name") !== authName)
+              uses != actionName ||
+              item.get("with")?.get("apiSpecPath") !== specRelativePath ||
+              item.get("with")?.get("name") !== authName
             );
           }
         });

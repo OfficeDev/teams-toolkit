@@ -87,7 +87,6 @@ describe("ActionInjector", () => {
       });
       assert.isTrue(writeStub.args[0][1].includes("oauth/register"));
       assert.isTrue(writeStub.args[0][1].includes("oauthName"));
-      assert.isFalse(writeStub.args[0][1].includes("apiKey/register"));
     });
 
     it("should throw InjectOAuthActionFailedError if provision node is missing", async () => {
@@ -253,7 +252,6 @@ describe("ActionInjector", () => {
         defaultRegistrationIdEnvName: "TEST_AUTH_CONFIGURATION_ID",
         registrationIdEnvName: "TEST_AUTH_CONFIGURATION_ID",
       });
-      assert.isFalse(writeStub.args[0][1].includes("oauth/register"));
       assert.isTrue(writeStub.args[0][1].includes("apiKey/register"));
     });
 

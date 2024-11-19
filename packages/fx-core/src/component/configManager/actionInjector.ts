@@ -7,9 +7,18 @@ import { parseDocument } from "yaml";
 import { InjectAPIKeyActionFailedError, InjectOAuthActionFailedError } from "../../error/common";
 
 export class ActionInjector {
-  static hasActionWithName(provisionNode: any, action: string, name: string): any {
+  static hasActionWithName(
+    provisionNode: any,
+    action: string,
+    name: string,
+    specRelativePath: string
+  ): any {
     const hasAuthAction = provisionNode.items.some(
-      (item: any) => item.get("uses") === action && item.get("with")?.get("name") === name
+      (item: any) =>
+        item.get("uses") === action &&
+        !!item.get("with") &&
+        item.get("with").get("name") === name &&
+        item.get("with").get("apiSpecPath") === specRelativePath
     );
     return hasAuthAction;
   }
@@ -67,7 +76,12 @@ export class ActionInjector {
     const document = parseDocument(ymlContent);
     const provisionNode = document.get("provision") as any;
     if (provisionNode) {
-      const hasOAuthAction = ActionInjector.hasActionWithName(provisionNode, actionName, authName);
+      const hasOAuthAction = ActionInjector.hasActionWithName(
+        provisionNode,
+        actionName,
+        authName,
+        specRelativePath
+      );
       if (!hasOAuthAction || forceToAddNew) {
         provisionNode.items = provisionNode.items.filter((item: any) => {
           const uses = item.get("uses");
@@ -75,8 +89,10 @@ export class ActionInjector {
             return uses;
           } else {
             return (
-              uses != "apiKey/register" &&
-              (uses !== actionName || item.get("with")?.get("name") !== authName)
+              uses != actionName ||
+              !item.get("with") ||
+              item.get("with").get("apiSpecPath") !== specRelativePath ||
+              item.get("with").get("name") !== authName
             );
           }
         });
@@ -140,7 +156,12 @@ export class ActionInjector {
     const provisionNode = document.get("provision") as any;
 
     if (provisionNode) {
-      const hasApiKeyAction = ActionInjector.hasActionWithName(provisionNode, actionName, authName);
+      const hasApiKeyAction = ActionInjector.hasActionWithName(
+        provisionNode,
+        actionName,
+        authName,
+        specRelativePath
+      );
 
       if (!hasApiKeyAction || forceToAddNew) {
         provisionNode.items = provisionNode.items.filter((item: any) => {
@@ -149,8 +170,10 @@ export class ActionInjector {
             return uses;
           } else {
             return (
-              uses != "oauth/register" &&
-              (uses !== actionName || item.get("with")?.get("name") !== authName)
+              uses != actionName ||
+              !item.get("with") ||
+              item.get("with").get("apiSpecPath") !== specRelativePath ||
+              item.get("with").get("name") !== authName
             );
           }
         });

@@ -16,8 +16,9 @@ export class ActionInjector {
     const hasAuthAction = provisionNode.items.some(
       (item: any) =>
         item.get("uses") === action &&
-        item.get("with")?.get("name") === name &&
-        item.get("with")?.get("apiSpecPath") === specRelativePath
+        !!item.get("with") &&
+        item.get("with").get("name") === name &&
+        item.get("with").get("apiSpecPath") === specRelativePath
     );
     return hasAuthAction;
   }
@@ -89,8 +90,9 @@ export class ActionInjector {
           } else {
             return (
               uses != actionName ||
-              item.get("with")?.get("apiSpecPath") !== specRelativePath ||
-              item.get("with")?.get("name") !== authName
+              !item.get("with") ||
+              item.get("with").get("apiSpecPath") !== specRelativePath ||
+              item.get("with").get("name") !== authName
             );
           }
         });
@@ -169,8 +171,9 @@ export class ActionInjector {
           } else {
             return (
               uses != actionName ||
-              item.get("with")?.get("apiSpecPath") !== specRelativePath ||
-              item.get("with")?.get("name") !== authName
+              !item.get("with") ||
+              item.get("with").get("apiSpecPath") !== specRelativePath ||
+              item.get("with").get("name") !== authName
             );
           }
         });

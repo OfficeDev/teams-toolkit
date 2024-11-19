@@ -7,7 +7,6 @@ import {
   TemplateProjectFolder,
   Capability,
   LocalDebugError,
-  Project,
 } from "./constants";
 import path from "path";
 import fs from "fs-extra";
@@ -43,15 +42,17 @@ export class Executor {
         const result = await execAsync(command, options);
 
         if (result.stderr) {
-          if (
-            (skipErrorMessage &&
-              result.stderr.toLowerCase().includes(skipErrorMessage)) ||
-            result.stderr
-              .toLowerCase()
-              .includes(LocalDebugError.DeprecatedError)
-          ) {
-            console.log(`[Skip Warning] ${result.stderr}`);
-            return { success: true, ...result };
+          if (skipErrorMessage) {
+            if (
+              result.stderr.includes(skipErrorMessage) ||
+              result.stderr.toLowerCase().includes(skipErrorMessage) ||
+              result.stderr
+                .toLowerCase()
+                .includes(LocalDebugError.DeprecatedError)
+            ) {
+              console.log(`[Skip Warning] ${result.stderr}`);
+              return { success: true, ...result };
+            }
           }
           // the command exit with 0
           console.log(

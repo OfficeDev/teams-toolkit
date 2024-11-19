@@ -58,6 +58,36 @@ describe("LaunchHelper", () => {
       );
     });
 
+    it("getLaunchUrl: Teams, signed in - multi tenant off", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.MultiTenant]: "false",
+      });
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const properties: ManifestProperties = {
+        capabilities: ["staticTab"],
+        id: "test-id",
+        version: "1.0.0",
+        manifestVersion: "1.16",
+        isApiME: false,
+        isSPFx: false,
+        isApiMeAAD: false,
+      };
+      const result = await launchHelper.getLaunchUrl(HubTypes.teams, "test-id", properties);
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
     it("getLaunchUrl: Teams, signed in, copilot plugin", async () => {
       sinon.stub(m365TokenProvider, "getStatus").resolves(
         ok({

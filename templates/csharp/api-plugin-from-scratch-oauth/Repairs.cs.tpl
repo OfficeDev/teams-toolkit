@@ -9,7 +9,7 @@ namespace {{SafeProjectName}}
         private readonly ILogger _logger;
         private readonly AuthMiddleware _authMiddleware;
 
-        public Repairs(ILoggerFactory loggerFactory)
+        public Repairs(ILoggerFactory loggerFactory, AuthMiddleware authMiddleware)
         {
             _logger = loggerFactory.CreateLogger<Repairs>();
             _authMiddleware = authMiddleware;

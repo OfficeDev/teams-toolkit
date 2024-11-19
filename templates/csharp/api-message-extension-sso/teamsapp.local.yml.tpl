@@ -117,8 +117,8 @@ provision:
     with:
       target: ../appsettings.Development.json
       content:
-        ClientId: ${{AAD_APP_CLIENT_ID}}
-        TenantId: ${{AAD_APP_TENANT_ID}}
+        CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        TENANT_ID: ${{AAD_APP_TENANT_ID}}
 {{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file

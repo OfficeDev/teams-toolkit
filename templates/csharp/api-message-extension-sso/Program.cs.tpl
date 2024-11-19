@@ -1,4 +1,3 @@
-using agent_test_1;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,15 +8,21 @@ var host = new HostBuilder()
     .ConfigureAppConfiguration((hostContext, builder) =>
     {
         var context = hostContext.HostingEnvironment;
-        builder
+        var configuration = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(context.ContentRootPath, "appsettings.json"), optional: true, reloadOnChange: false)
-            .AddJsonFile(Path.Combine(context.ContentRootPath, $"appsettings.{context.EnvironmentName}.json"), optional: true, reloadOnChange: false);
+            .AddJsonFile(Path.Combine(context.ContentRootPath, $"appsettings.{context.EnvironmentName}.json"), optional: true, reloadOnChange: false)
+            .Build();
+        builder.AddConfiguration(configuration);
+        var config = builder.Build().Get<ConfigOptions>();
+        builder.AddInMemoryCollection(new Dictionary<string, string>()
+        {
+            { "tenantId", config.TENANT_ID },
+            { "clientId", config.CLIENT_ID }
+        });
     })
     .ConfigureServices((hostContext, services) =>
     {
         var configuration = hostContext.Configuration;
-
-        var configOptions = configuration.Get<ConfigOptions>();
 
         services.AddSingleton(hostContext.HostingEnvironment.ContentRootPath);
         services.AddSingleton<TokenValidator>(provider =>

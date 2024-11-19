@@ -242,6 +242,51 @@ describe("ActionInjector", () => {
       assert.isTrue(writeStub.args[0][1].includes("apiKey/register"));
       assert.equal(countOccurrences(writeStub.args[0][1], "oauth/register"), 3);
     });
+
+    it("should skip if same authName and specPath exists in existing OAuth actions", async () => {
+      const ymlPath = "path/to/yml";
+      const authName = "testAuth";
+      const specRelativePath = "path/to/spec";
+
+      const ymlContent = `
+        provision:
+          - uses: teamsApp/create
+            with:
+              # Teams app name
+              name: test
+            # Write the information of created resources into environment file for
+            # the specified environment variable(s).
+            writeToEnvironmentFile:
+              teamsAppId: TEAMS_APP_ID
+          - uses: oauth/register
+            with:
+              apiSpecPath: ${specRelativePath}
+          - uses: oauth/register
+            with:
+              name: ${authName}
+              appId: appId
+              apiSpecPath: ${specRelativePath}
+              flow: authorizationCode
+            writeToEnvironmentFile:
+              configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+          - uses: apiKey/register
+      `;
+
+      sandbox.stub(fs, "readFile").resolves(ymlContent as any);
+      sandbox
+        .stub(Utils, "getSafeRegistrationIdEnvName")
+        .returns("OAUTH2AUTHCODE_CONFIGURATION_ID");
+      sandbox.stub(ActionInjector, "getTeamsAppIdEnvName").returns("TEAMS_APP_ID");
+
+      const result = await ActionInjector.injectCreateOAuthAction(
+        ymlPath,
+        authName,
+        specRelativePath,
+        false
+      );
+
+      assert.isTrue(writeStub.notCalled);
+    });
   });
 
   describe("injectCreateAPIKeyAction", () => {
@@ -444,7 +489,7 @@ describe("ActionInjector", () => {
         .returns("OAUTH2AUTHCODE_CONFIGURATION_ID");
       sandbox.stub(ActionInjector, "getTeamsAppIdEnvName").returns("TEAMS_APP_ID");
 
-      const result = await ActionInjector.injectCreateOAuthAction(
+      const result = await ActionInjector.injectCreateAPIKeyAction(
         ymlPath,
         authName,
         specRelativePath,
@@ -453,6 +498,51 @@ describe("ActionInjector", () => {
 
       assert.isTrue(writeStub.args[0][1].includes("oauth/register"));
       assert.equal(countOccurrences(writeStub.args[0][1], "apiKey/register"), 3);
+    });
+
+    it("should skip if same authName and specPath exists in existing OAuth actions", async () => {
+      const ymlPath = "path/to/yml";
+      const authName = "testAuth";
+      const specRelativePath = "path/to/spec";
+
+      const ymlContent = `
+        provision:
+          - uses: teamsApp/create
+            with:
+              # Teams app name
+              name: test
+            # Write the information of created resources into environment file for
+            # the specified environment variable(s).
+            writeToEnvironmentFile:
+              teamsAppId: TEAMS_APP_ID
+          - uses: apiKey/register
+            with:
+              apiSpecPath: ${specRelativePath}
+          - uses: apiKey/register
+            with:
+              name: ${authName}
+              appId: appId
+              apiSpecPath: ${specRelativePath}
+              flow: authorizationCode
+            writeToEnvironmentFile:
+              configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID
+          - uses: oauth/register
+      `;
+
+      sandbox.stub(fs, "readFile").resolves(ymlContent as any);
+      sandbox
+        .stub(Utils, "getSafeRegistrationIdEnvName")
+        .returns("OAUTH2AUTHCODE_CONFIGURATION_ID");
+      sandbox.stub(ActionInjector, "getTeamsAppIdEnvName").returns("TEAMS_APP_ID");
+
+      const result = await ActionInjector.injectCreateAPIKeyAction(
+        ymlPath,
+        authName,
+        specRelativePath,
+        false
+      );
+
+      assert.isTrue(writeStub.notCalled);
     });
   });
 });

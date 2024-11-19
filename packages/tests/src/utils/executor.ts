@@ -41,23 +41,14 @@ export class Executor {
           timeout: timeout ?? 0,
         };
         const result = await execAsync(command, options);
-        console.log(
-          "result.stderr.includes(LocalDebugError.WarningCapError): ",
-          result.stderr.includes(LocalDebugError.WarningCapError)
-        );
-        console.log(
-          "result.stderr.includes(LocalDebugError.WarningCapError): ",
-          result.stderr.toString().includes(LocalDebugError.WarningCapError)
-        );
 
         if (result.stderr) {
           if (
-            skipErrorMessage &&
-            (result.stderr.toLowerCase().includes(skipErrorMessage) ||
-              result.stderr
-                .toLowerCase()
-                .includes(LocalDebugError.DeprecatedError) ||
-              result.stderr.includes(LocalDebugError.WarningCapError))
+            (skipErrorMessage &&
+              result.stderr.toLowerCase().includes(skipErrorMessage)) ||
+            result.stderr
+              .toLowerCase()
+              .includes(LocalDebugError.DeprecatedError)
           ) {
             console.log(`[Skip Warning] ${result.stderr}`);
             return { success: true, ...result };
@@ -231,7 +222,15 @@ export class Executor {
   }
 
   static async deploy(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "deploy", env);
+    return this.executeCmd(
+      workspace,
+      "deploy",
+      env,
+      undefined,
+      undefined,
+      undefined,
+      LocalDebugError.WarningCapError
+    );
   }
 
   static async deployWithCustomizedProcessEnv(

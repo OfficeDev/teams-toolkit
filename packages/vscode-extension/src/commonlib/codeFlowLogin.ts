@@ -92,6 +92,14 @@ export class CodeFlowLogin {
         this.account = dataCache;
         this.status = loggedIn;
       }
+
+      if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+        const tenantCache = await loadTenantId(this.accountName);
+        if (tenantCache) {
+          const allAccounts = await this.msalTokenCache.getAllAccounts();
+          this.account = allAccounts.find((account) => account.tenantId == tenantCache);
+        }
+      }
     } else if (this.status !== loggingIn) {
       this.account = undefined;
       this.status = loggedOut;
@@ -392,11 +400,12 @@ export class CodeFlowLogin {
       if (tenantId) {
         const allAccounts = await this.msalTokenCache.getAllAccounts();
         tenantedAccount = allAccounts.find((account) => account.tenantId == tenantId);
+        this.account = tenantedAccount ?? this.account;
       }
 
       try {
         const res = await this.pca.acquireTokenSilent({
-          account: tenantedAccount ? tenantedAccount : this.account,
+          account: this.account,
           scopes: scopes,
           forceRefresh: tenantedAccount ? false : true,
           authority: tenantId ? BASE_AUTHORITY + tenantId : this.config.auth.authority,

@@ -52,6 +52,7 @@ provision:
     with:
       run:
         echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
+        echo "::set-teamsfx-env OPENAPI_SERVER_DOMAIN=${{DEV_TUNNEL_URL}}";
 
   # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.
@@ -104,24 +105,6 @@ provision:
       content:
         CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
         TENANT_ID: ${{AAD_APP_TENANT_ID}}
-
-
-  - uses: oauth/update
-    with:
-{{#MicrosoftEntra}}
-      name: aadAuthCode
-      appId: ${{TEAMS_APP_ID}}
-      # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
-      configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
-{{/MicrosoftEntra}}
-{{^MicrosoftEntra}}
-      name: oAuth2AuthCode
-      appId: ${{TEAMS_APP_ID}}
-      # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
-      configurationId: ${{OAUTH2AUTHCODE_CONFIGURATION_ID}}
-{{/MicrosoftEntra}}
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage

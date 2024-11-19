@@ -223,6 +223,12 @@ describe("ActionInjector", () => {
               flow: authorizationCode
             writeToEnvironmentFile:
               configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID1
+          - uses: oauth/register
+            with:
+              apiSpecPath: ${specRelativePath}
+          - uses: oauth/register
+            with:
+              name: ${authName}
           - uses: apiKey/register
       `;
 
@@ -240,7 +246,7 @@ describe("ActionInjector", () => {
       );
 
       assert.isTrue(writeStub.args[0][1].includes("apiKey/register"));
-      assert.equal(countOccurrences(writeStub.args[0][1], "oauth/register"), 3);
+      assert.equal(countOccurrences(writeStub.args[0][1], "oauth/register"), 5);
     });
 
     it("should skip if same authName and specPath exists in existing OAuth actions", async () => {
@@ -258,9 +264,6 @@ describe("ActionInjector", () => {
             # the specified environment variable(s).
             writeToEnvironmentFile:
               teamsAppId: TEAMS_APP_ID
-          - uses: oauth/register
-            with:
-              apiSpecPath: ${specRelativePath}
           - uses: oauth/register
             with:
               name: ${authName}
@@ -480,6 +483,12 @@ describe("ActionInjector", () => {
               flow: authorizationCode
             writeToEnvironmentFile:
               configurationId: OAUTH2AUTHCODE_CONFIGURATION_ID1
+          - uses: apiKey/register
+            with:
+              apiSpecPath: ${specRelativePath}
+          - uses: apiKey/register
+            with:
+              name: ${authName}
           - uses: oauth/register
       `;
 
@@ -497,7 +506,7 @@ describe("ActionInjector", () => {
       );
 
       assert.isTrue(writeStub.args[0][1].includes("oauth/register"));
-      assert.equal(countOccurrences(writeStub.args[0][1], "apiKey/register"), 3);
+      assert.equal(countOccurrences(writeStub.args[0][1], "apiKey/register"), 5);
     });
 
     it("should skip if same authName and specPath exists in existing OAuth actions", async () => {
@@ -515,9 +524,6 @@ describe("ActionInjector", () => {
             # the specified environment variable(s).
             writeToEnvironmentFile:
               teamsAppId: TEAMS_APP_ID
-          - uses: apiKey/register
-            with:
-              apiSpecPath: ${specRelativePath}
           - uses: apiKey/register
             with:
               name: ${authName}

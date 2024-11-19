@@ -35,8 +35,7 @@ var host = new HostBuilder()
             var audience = configuration["clientId"];
             var issuer = $"https://login.microsoftonline.com/{configuration["tenantId"]}/v2.0";
             var allowedTenants = new[] { configuration["tenantId"] };
-            var scopes = new[] { "repairs_read" };
-            return new AuthMiddleware(tokenValidator, audience, issuer, allowedTenants, scopes);
+            return new AuthMiddleware(tokenValidator, audience, issuer, allowedTenants, null);
         });
     })
     .Build();

@@ -82,7 +82,7 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
       inputs.capabilities = CapabilityOptions.declarativeAgent().id;
       inputs[QuestionNames.WithPlugin] = "yes";
     } else {
-      inputs.capabilities = CapabilityOptions.declarativeAgent().id;
+      inputs.capabilities = CapabilityOptions.apiPlugin().id;
     }
     inputs[QuestionNames.ProjectType] = ProjectTypeOptions.Agent().id;
     inputs[QuestionNames.Folder] = outputFolder;

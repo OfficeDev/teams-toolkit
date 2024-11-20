@@ -1,10 +1,11 @@
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import json
 import os
 import sys
 import traceback
 from typing import Generic, TypeVar
+
 
 from botbuilder.core import MemoryStorage, TurnContext
 from teams import Application, ApplicationOptions, TeamsAdapter
@@ -14,6 +15,7 @@ from teams.ai.planners import ActionPlanner, ActionPlannerOptions
 from teams.ai.prompts import PromptManager, PromptManagerOptions
 from teams.ai.actions import ActionTypes
 from teams.state import TurnState
+from teams.feedback_loop_data import FeedbackLoopData
 
 from azure_ai_search_data_source import AzureAISearchDataSource, AzureAISearchDataSourceOptions
 from config import Config

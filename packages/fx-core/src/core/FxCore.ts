@@ -1865,6 +1865,7 @@ export class FxCore {
     const isGenerateFromApiSpec =
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id;
     const isKiotaIntegration =
+      inputs.platform === Platform.VSCode &&
       featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
       !!inputs[QuestionNames.ApiPluginManifestPath];
 

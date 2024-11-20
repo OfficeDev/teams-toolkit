@@ -102,7 +102,7 @@
   "teamstoolkit.commands.switchTenant.m365.title": "Switch between your available tenants for Microsoft 365 account",
   "teamstoolkit.commands.switchTenant.azure.title": "Switch between your available tenants for Azure account",
   "teamstoolkit.commands.switchTenant.progressbar.title": "Switch tenant",
-  "teamstoolkit.commands.switchTenant.progressbar.detail": "Teams Toolkit is switching from your current tenant to the newly selected tenant.",
+  "teamstoolkit.commands.switchTenant.progressbar.detail": "Teams Toolkit is now switching to the newly selected tenant.",
   "teamstoolkit.commands.signOut.title": "Sign Out",
   "teamstoolkit.commands.checkCopilotAccess.title": "Check Copilot Access",
   "teamstoolkit.commands.updateManifest.title": "Update Teams App",

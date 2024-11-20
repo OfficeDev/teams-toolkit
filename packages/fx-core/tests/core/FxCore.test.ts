@@ -6205,6 +6205,7 @@ describe("kiotaRegenerate", async () => {
     sandbox
       .stub(CopilotPluginHelper, "injectAuthAction")
       .resolves({ defaultRegistrationIdEnvName: "test", registrationIdEnvName: "test" });
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     const core = new FxCore(tools);
     const result = await core.kiotaRegenerate(inputs);
@@ -6270,10 +6271,76 @@ describe("kiotaRegenerate", async () => {
     sandbox
       .stub(copilotGptManifestUtils, "addAction")
       .resolves(ok({} as DeclarativeCopilotManifestSchema));
+    sandbox.stub(CopilotPluginHelper, "generateFromApiSpec").resolves(ok({ warnings: [] }));
 
     const core = new FxCore(tools);
     const result = await core.kiotaRegenerate(inputs);
     assert.isTrue(result.isOk());
+  });
+
+  it("should throw error if fail to update plugin manifest", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.TeamsAppManifestFilePath]: "manifest.json",
+      [QuestionNames.ApiPluginManifestPath]: "test-aiplugin.json",
+      [QuestionNames.ApiSpecLocation]: "test-openapi.yaml",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.copilotExtensions = {
+      declarativeCopilots: [
+        {
+          file: "test1.json",
+          id: "action_1",
+        },
+      ],
+    };
+
+    sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sandbox.stub(copilotGptManifestUtils, "getManifestPath").resolves(ok("dcManifest.json"));
+    sandbox.stub(copilotGptManifestUtils, "readCopilotGptManifestFile").resolves(
+      ok({
+        actions: [
+          {
+            id: "action_1",
+            file: "test-aiplugin.json",
+          },
+        ],
+      } as DeclarativeCopilotManifestSchema)
+    );
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "GET /user/{userId}",
+          server: "https://example.com",
+          operationId: "getExample",
+          isValid: true,
+          reason: [],
+          auth: {
+            name: "bearerAuth",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+    sandbox
+      .stub(CopilotPluginHelper, "injectAuthAction")
+      .resolves({ defaultRegistrationIdEnvName: "test", registrationIdEnvName: "test" });
+    sandbox
+      .stub(CopilotPluginHelper, "generateFromApiSpec")
+      .resolves(err(new UserError("fake-error-source", "fake-error-name", "fake-error-message")));
+
+    const core = new FxCore(tools);
+    const result = await core.kiotaRegenerate(inputs);
+    assert.isTrue(result.isErr());
   });
 
   it("should throw error if no project path", async () => {

@@ -2102,6 +2102,7 @@ export class FxCore {
 
     const teamsManifestPath = inputs[QuestionNames.ManifestPath];
     const appPackageFolder = path.dirname(teamsManifestPath);
+    const context = createContext();
 
     // validate the project is valid for adding plugin
     const manifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
@@ -2188,6 +2189,24 @@ export class FxCore {
       pluginManifestFilePath,
       false
     );
+
+    // Add dc to plugin manifest
+    const generateRes = await generateFromApiSpec(
+      specParser,
+      teamsManifestPath,
+      inputs,
+      context,
+      Stage.kiotaRegenerate,
+      ProjectType.Copilot,
+      {
+        destinationApiSpecFilePath: inputs[QuestionNames.ApiSpecLocation].trim(),
+        pluginManifestFilePath: inputs[QuestionNames.ApiPluginManifestPath].trim(),
+      }
+    );
+    if (generateRes.isErr()) {
+      return err(generateRes.error);
+    }
+
     return ok(undefined);
   }
 

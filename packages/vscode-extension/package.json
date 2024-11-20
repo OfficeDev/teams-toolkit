@@ -57,6 +57,7 @@
     "onCommand:workbench.action.debug.start",
     "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
+    "onView:teamsfx-empty-project",
     "onUri",
     "workspaceContains:/**/manifest.json",
     "workspaceContains:/manifest*.xml"
@@ -124,22 +125,22 @@
     },
     "viewsWelcome": [
       {
-        "view": "teamsfx-empty-project-with-api-copilot-plugin",
+        "view": "teamsfx-empty-project",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
+        "view": "teamsfx-empty-project-with-chat",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
+        "view": "teamsfx-empty-project-new-user",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
+        "view": "teamsfx-empty-project-new-user-with-chat",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
@@ -194,22 +195,22 @@
           "visibility": "collapsed"
         },
         {
-          "id": "teamsfx-empty-project-with-api-copilot-plugin",
+          "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
-          "id": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
+          "id": "teamsfx-empty-project-with-chat",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
-          "id": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
+          "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
-          "id": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
+          "id": "teamsfx-empty-project-new-user-with-chat",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },

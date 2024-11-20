@@ -16,7 +16,6 @@ export interface PluginManifestSchema {
   functions?: FunctionObject[];
   runtimes?: (RuntimeObjectLocalplugin | RuntimeObjectOpenapi)[];
   capabilities?: {
-    localization: LocalizationObject;
     conversation_starters?: ConversationStarter[];
     [k: string]: unknown;
   };

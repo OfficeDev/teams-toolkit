@@ -2,6 +2,15 @@
 
 > Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of pre-released versions, please refer to the [Teams Toolkit Pre-release Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/PRERELEASE.md).
 
+## 5.10.1 - Nov 19, 2024
+
+This patch version update of Teams Toolkit introduces several incremental enhancements:
+
+- **Terminology Update**: The term `Copilot Agent` has been updated to `Agent` in the user interface. [#12672](https://github.com/OfficeDev/teams-toolkit/pull/12672)
+- **Debug Session Improvement**: Resolved an issue where child processes were not fully terminated when a debug session was stopped. [#12673](https://github.com/OfficeDev/teams-toolkit/pull/12673)
+- **Manifest Validation Fix**: Addressed a problem where manifest validation failed with multi-line user instructions for declarative agents. [#12677](https://github.com/OfficeDev/teams-toolkit/pull/12677)
+- **Schema Validation Fix**: Corrected an issue where manifest schema validation was unsuccessful for projects that included an API Plugin. [#12679](https://github.com/OfficeDev/teams-toolkit/pull/12679)
+
 ## 5.10.0 - Oct 16, 2024
 
 This update represents a minor version increment of the Teams Toolkit, introducing new features and addressing user-reported bugs. These incremental enhancements were previously documented in the prerelease version and a series of blog posts:

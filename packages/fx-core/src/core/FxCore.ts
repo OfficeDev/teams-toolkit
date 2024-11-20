@@ -1986,18 +1986,14 @@ export class FxCore {
         ? inputs[QuestionNames.ApiPluginManifestPath].trim()
         : await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(
             appPackageFolder,
-            isKiotaIntegration
-              ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
-              : undefined,
-            isKiotaIntegration
+            undefined
           );
       const destinationApiSpecPath = isKiotaIntegration
         ? inputs[QuestionNames.ApiSpecLocation].trim()
         : await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
             inputs[QuestionNames.ApiSpecLocation].trim(),
-            path.join(appPackageFolder, isKiotaIntegration ? "" : DefaultApiSpecFolderName),
-            isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined,
-            isKiotaIntegration
+            path.join(appPackageFolder, DefaultApiSpecFolderName),
+            undefined
           );
 
       const generateRes = await generateFromApiSpec(

@@ -216,7 +216,7 @@ export class ProjectTypeOptions {
         "core.MessageExtensionOption.label"
       )}`,
       detail: getLocalizedString(
-        "core.createProjectQuestion.projectType.messageExtension.agentEnabled.detail"
+        "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
       ),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
@@ -455,7 +455,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: getLocalizedString("core.M365SearchAppOptionItem.agent.detail"),
+      detail: getLocalizedString("core.M365SearchAppOptionItem.copilot.detail"),
     };
   }
 

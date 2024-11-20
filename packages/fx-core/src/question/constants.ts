@@ -728,10 +728,8 @@ export class CapabilityOptions {
   static declarativeAgent(): OptionItem {
     return {
       id: "declarative-agent",
-      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.projectType.declarativeCopilot.detail"
-      ),
+      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.label"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.detail"),
     };
   }
 

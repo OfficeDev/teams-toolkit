@@ -45,14 +45,6 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'SCM_ZIPDEPLOY_DONOT_PRESERVE_FILETIME'
           value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
-        {
-          name: 'CLIENT_ID'
-          value: aadAppClientId
-        }
-        {
-          name: 'TENANT_ID'
-          value: aadAppTenantId
-        }
       ]
       ftpsState: 'FtpsOnly'
     }

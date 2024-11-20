@@ -9,17 +9,16 @@ import { FxError, LogProvider, Result, err, ok } from "@microsoft/teamsfx-api";
 import child_process from "child_process";
 import fs from "fs-extra";
 import iconv from "iconv-lite";
-import os from "os";
-import * as path from "path";
 import { Service } from "typedi";
+import { maskSecret } from "../../../common/stringUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { getSystemEncoding } from "../../utils/charsetUtils";
 import { DotenvOutput } from "../../utils/envUtil";
+import { pathUtils } from "../../utils/pathUtils";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { maskSecret } from "../../../common/stringUtils";
 
 const ACTION_NAME = "script";
 
@@ -102,6 +101,28 @@ export async function executeCommand(
   timeout?: number,
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
+  const workingDir = pathUtils.resolveFilePath(projectPath, workingDirectory);
+  if (ui?.runCommand) {
+    const res = await ui.runCommand({
+      cmd: command,
+      workingDirectory: workingDir,
+      timeout: timeout,
+      shell: shell,
+    });
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    const outputString = res.value;
+    const outputObject = parseSetOutputCommand(command);
+    if (Object.keys(outputObject).length > 0)
+      logProvider.verbose(
+        `script output env variables: ${maskSecret(JSON.stringify(outputObject), {
+          replace: "***",
+        })}`
+      );
+    return ok([outputString, outputObject]);
+  }
+
   let systemEncoding = await getSystemEncoding(command);
   if (command.startsWith("dotnet ")) {
     systemEncoding = "utf-8";
@@ -110,15 +131,9 @@ export async function executeCommand(
   return new Promise((resolve) => {
     const finalShell = shell || dshell;
     const finalCmd = command;
-    const platform = os.platform();
-    let workingDir = workingDirectory || ".";
-    workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
-    if (platform === "win32") {
-      workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
-    }
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
-      appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
+      appendFile = pathUtils.resolveFilePath(projectPath, redirectTo);
     }
     logProvider.verbose(
       `Start to run command: "${maskSecret(finalCmd, {
@@ -220,8 +235,4 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
     output[key] = value;
   }
   return output;
-}
-
-export function capitalizeFirstLetter(raw: string): string {
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
 }

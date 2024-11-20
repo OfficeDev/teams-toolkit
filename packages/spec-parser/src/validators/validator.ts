@@ -170,26 +170,6 @@ export abstract class Validator {
     return result;
   }
 
-  protected validateResponse(method: string, path: string): APIValidationResult {
-    const result: APIValidationResult = { isValid: true, reason: [] };
-
-    const operationObject = (this.spec.paths[path] as any)[method] as OpenAPIV3.OperationObject;
-
-    const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
-
-    if (this.options.projectType === ProjectType.SME) {
-      // only support response body only contains “application/json” content type
-      if (multipleMediaType) {
-        result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
-      } else if (Object.keys(json).length === 0) {
-        // response body should not be empty
-        result.reason.push(ErrorType.ResponseJsonIsEmpty);
-      }
-    }
-
-    return result;
-  }
-
   protected validateServer(method: string, path: string): APIValidationResult {
     const result: APIValidationResult = { isValid: true, reason: [] };
     const serverObj = Utils.getServerObject(this.spec, method, path);
@@ -197,8 +177,8 @@ export abstract class Validator {
       // should contain server URL
       result.reason.push(ErrorType.NoServerInformation);
     } else {
-      // server url should be absolute url with https protocol
-      const serverValidateResult = Utils.checkServerUrl([serverObj]);
+      const allowHttp = this.projectType === ProjectType.Copilot;
+      const serverValidateResult = Utils.checkServerUrl([serverObj], allowHttp);
       result.reason.push(...serverValidateResult.map((item) => item.type));
     }
 
@@ -243,133 +223,5 @@ export abstract class Validator {
     }
 
     return { isValid: false, reason: [ErrorType.AuthTypeIsNotSupported] };
-  }
-
-  protected checkPostBodySchema(
-    schema: OpenAPIV3.SchemaObject,
-    isRequired = false
-  ): CheckParamResult {
-    const paramResult: CheckParamResult = {
-      requiredNum: 0,
-      optionalNum: 0,
-      isValid: true,
-      reason: [],
-    };
-
-    if (Object.keys(schema).length === 0) {
-      return paramResult;
-    }
-
-    const isRequiredWithoutDefault = isRequired && schema.default === undefined;
-    const isCopilot = this.projectType === ProjectType.Copilot;
-
-    if (isCopilot && Utils.hasNestedObjectInSchema(schema)) {
-      paramResult.isValid = false;
-      paramResult.reason = [ErrorType.RequestBodyContainsNestedObject];
-      return paramResult;
-    }
-
-    if (
-      schema.type === "string" ||
-      schema.type === "integer" ||
-      schema.type === "boolean" ||
-      schema.type === "number"
-    ) {
-      if (isRequiredWithoutDefault) {
-        paramResult.requiredNum = paramResult.requiredNum + 1;
-      } else {
-        paramResult.optionalNum = paramResult.optionalNum + 1;
-      }
-    } else if (Utils.isObjectSchema(schema)) {
-      const { properties } = schema;
-      for (const property in properties) {
-        let isRequired = false;
-        if (schema.required && schema.required?.indexOf(property) >= 0) {
-          isRequired = true;
-        }
-        const result = this.checkPostBodySchema(
-          properties[property] as OpenAPIV3.SchemaObject,
-          isRequired
-        );
-        paramResult.requiredNum += result.requiredNum;
-        paramResult.optionalNum += result.optionalNum;
-        paramResult.isValid = paramResult.isValid && result.isValid;
-        paramResult.reason.push(...result.reason);
-      }
-    } else {
-      if (isRequiredWithoutDefault && !isCopilot) {
-        paramResult.isValid = false;
-        paramResult.reason.push(ErrorType.PostBodyContainsRequiredUnsupportedSchema);
-      }
-    }
-    return paramResult;
-  }
-
-  protected checkParamSchema(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
-    const paramResult: CheckParamResult = {
-      requiredNum: 0,
-      optionalNum: 0,
-      isValid: true,
-      reason: [],
-    };
-
-    if (!paramObject) {
-      return paramResult;
-    }
-
-    const isCopilot = this.projectType === ProjectType.Copilot;
-
-    for (let i = 0; i < paramObject.length; i++) {
-      const param = paramObject[i];
-      const schema = param.schema as OpenAPIV3.SchemaObject;
-
-      if (isCopilot && Utils.hasNestedObjectInSchema(schema)) {
-        paramResult.isValid = false;
-        paramResult.reason.push(ErrorType.ParamsContainsNestedObject);
-        continue;
-      }
-
-      const isRequiredWithoutDefault = param.required && schema.default === undefined;
-
-      if (isCopilot) {
-        if (isRequiredWithoutDefault) {
-          paramResult.requiredNum = paramResult.requiredNum + 1;
-        } else {
-          paramResult.optionalNum = paramResult.optionalNum + 1;
-        }
-        continue;
-      }
-
-      if (param.in === "header" || param.in === "cookie") {
-        if (isRequiredWithoutDefault) {
-          paramResult.isValid = false;
-          paramResult.reason.push(ErrorType.ParamsContainRequiredUnsupportedSchema);
-        }
-        continue;
-      }
-
-      if (
-        schema.type !== "boolean" &&
-        schema.type !== "string" &&
-        schema.type !== "number" &&
-        schema.type !== "integer"
-      ) {
-        if (isRequiredWithoutDefault) {
-          paramResult.isValid = false;
-          paramResult.reason.push(ErrorType.ParamsContainRequiredUnsupportedSchema);
-        }
-        continue;
-      }
-
-      if (param.in === "query" || param.in === "path") {
-        if (isRequiredWithoutDefault) {
-          paramResult.requiredNum = paramResult.requiredNum + 1;
-        } else {
-          paramResult.optionalNum = paramResult.optionalNum + 1;
-        }
-      }
-    }
-
-    return paramResult;
   }
 }

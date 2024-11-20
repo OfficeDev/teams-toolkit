@@ -132,6 +132,12 @@ describe("utils", () => {
       ]);
     });
 
+    it("should not return an error if the server URL is http and allowHttp is true", () => {
+      const servers = [{ url: "http://example.com" }];
+      const errors = Utils.checkServerUrl(servers, true);
+      assert.deepStrictEqual(errors, []);
+    });
+
     it("should return an error if the server URL protocol is not HTTPS", () => {
       const servers = [{ url: "http://example.com" }];
       const errors = Utils.checkServerUrl(servers);
@@ -384,38 +390,16 @@ describe("utils", () => {
     });
   });
 
-  describe("hasNestedObjectInSchema", () => {
-    it("should return false if schema type is not object", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "string",
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
-    });
-
-    it("should return false if schema type is object but no nested object property", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-        },
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
-    });
-
-    it("should return true if schema type is object and has nested object property", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "object",
-        properties: {
-          nestedObject: { type: "object" },
-        },
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.true;
-    });
-  });
-
   describe("getResponseJson", () => {
     it("should return an empty object if no JSON response is defined", () => {
       const operationObject = {};
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
+      expect(multipleMediaType).to.be.false;
+    });
+
+    it("should return an empty object if operationObject is undefined", () => {
+      const operationObject = undefined;
       const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
       expect(multipleMediaType).to.be.false;

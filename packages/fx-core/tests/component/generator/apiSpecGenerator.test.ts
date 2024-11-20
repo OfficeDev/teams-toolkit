@@ -436,7 +436,6 @@ describe("formatValidationErrors", () => {
               ErrorType.PostBodyContainMultipleMediaTypes,
               ErrorType.ResponseContainMultipleMediaTypes,
               ErrorType.ResponseJsonIsEmpty,
-              ErrorType.PostBodySchemaIsNotJson,
               ErrorType.MethodNotAllowed,
               ErrorType.UrlPathNotExist,
             ],
@@ -446,8 +445,6 @@ describe("formatValidationErrors", () => {
             reason: [
               ErrorType.PostBodyContainsRequiredUnsupportedSchema,
               ErrorType.ParamsContainRequiredUnsupportedSchema,
-              ErrorType.ParamsContainsNestedObject,
-              ErrorType.RequestBodyContainsNestedObject,
               ErrorType.ExceededRequiredParamsLimit,
               ErrorType.NoParameter,
               ErrorType.NoAPIInfo,
@@ -514,15 +511,12 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
-      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
       getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
       getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
     ];
     const errorMessage2 = [
       getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
       getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
-      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
-      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
       getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
       getLocalizedString("core.common.invalidReason.NoParameter"),
       getLocalizedString("core.common.invalidReason.NoAPIInfo"),
@@ -566,7 +560,6 @@ describe("formatValidationErrors", () => {
               ErrorType.PostBodyContainMultipleMediaTypes,
               ErrorType.ResponseContainMultipleMediaTypes,
               ErrorType.ResponseJsonIsEmpty,
-              ErrorType.PostBodySchemaIsNotJson,
               ErrorType.MethodNotAllowed,
               ErrorType.UrlPathNotExist,
             ],
@@ -576,8 +569,6 @@ describe("formatValidationErrors", () => {
             reason: [
               ErrorType.PostBodyContainsRequiredUnsupportedSchema,
               ErrorType.ParamsContainRequiredUnsupportedSchema,
-              ErrorType.ParamsContainsNestedObject,
-              ErrorType.RequestBodyContainsNestedObject,
               ErrorType.ExceededRequiredParamsLimit,
               ErrorType.NoParameter,
               ErrorType.NoAPIInfo,
@@ -603,15 +594,12 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
-      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
       getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
       getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
     ];
     const errorMessage2 = [
       getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
       getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
-      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
-      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
       getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
       getLocalizedString("core.common.invalidReason.NoParameter"),
       getLocalizedString("core.common.invalidReason.NoAPIInfo"),
@@ -965,7 +953,7 @@ describe("updateForCustomApi", async () => {
     sandbox.stub(AdaptiveCardGenerator, "generateAdaptiveCard").returns([
       {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -2890,6 +2878,11 @@ describe("SpecGenerator", async () => {
       });
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+      const copyKiotaFolder = sandbox.stub(fs, "copy").callsFake((src, dest, options) => {
+        assert.isTrue(src.endsWith(".kiota"));
+        assert.isTrue(dest.endsWith(".kiota"));
+      });
       const generateBasedOnSpec = sandbox
         .stub(SpecParser.prototype, "generateForCopilot")
         .callsFake(async (manifestPath, filter, outputSpecPath, pluginFilePath) => {
@@ -2903,6 +2896,137 @@ describe("SpecGenerator", async () => {
       const result = await generator.post(context, inputs, "projectPath");
       assert.isTrue(result.isOk());
       assert.isTrue(generateBasedOnSpec.calledOnce);
+      assert.isTrue(copyKiotaFolder.calledOnce);
+    });
+
+    it("generate for kiota without .kiota folder", async function () {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.KiotaIntegration]: "true" });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.AppName]: "test",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.ApiPluginManifestPath]: "test.json",
+        [QuestionNames.ProjectType]: "copilot-agent-type",
+        getTemplateInfosState: {
+          templateName: "api-plugin-existing-api",
+          isPlugin: true,
+          uri: "https://test.com",
+          isYaml: true,
+          type: ProjectType.Copilot,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "list").resolves({
+        APIs: [
+          {
+            api: "api1",
+            server: "https://test",
+            operationId: "get",
+            auth: {
+              name: "test",
+              authScheme: {
+                type: "http",
+                scheme: "bearer",
+              },
+            },
+            isValid: true,
+            reason: [],
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+      const copyKiotaFolder = sandbox.stub(fs, "copy").resolves();
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generateForCopilot")
+        .callsFake(async (manifestPath, filter, outputSpecPath, pluginFilePath) => {
+          assert.isTrue(outputSpecPath.includes("test.yaml"));
+          assert.isTrue(pluginFilePath.includes("test.json"));
+          return { allSuccess: true, warnings: [] };
+        });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
+      assert.isTrue(copyKiotaFolder.notCalled);
+    });
+
+    it("generate for kiota with .kiota folder already exists", async function () {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.KiotaIntegration]: "true" });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: "path",
+        [QuestionNames.AppName]: "test",
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.ApiSpecLocation]: "test.yaml",
+        [QuestionNames.ApiOperation]: ["operation1"],
+        [QuestionNames.Capabilities]: CapabilityOptions.apiPlugin().id,
+        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
+        [QuestionNames.ApiPluginManifestPath]: "test.json",
+        [QuestionNames.ProjectType]: "copilot-agent-type",
+        getTemplateInfosState: {
+          templateName: "api-plugin-existing-api",
+          isPlugin: true,
+          uri: "https://test.com",
+          isYaml: true,
+          type: ProjectType.Copilot,
+        },
+      };
+      const context = createContext();
+      sandbox
+        .stub(SpecParser.prototype, "validate")
+        .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+      sandbox.stub(SpecParser.prototype, "list").resolves({
+        APIs: [
+          {
+            api: "api1",
+            server: "https://test",
+            operationId: "get",
+            auth: {
+              name: "test",
+              authScheme: {
+                type: "http",
+                scheme: "bearer",
+              },
+            },
+            isValid: true,
+            reason: [],
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(true);
+      const copyKiotaFolder = sandbox.stub(fs, "copy").resolves();
+      const generateBasedOnSpec = sandbox
+        .stub(SpecParser.prototype, "generateForCopilot")
+        .callsFake(async (manifestPath, filter, outputSpecPath, pluginFilePath) => {
+          assert.isTrue(outputSpecPath.includes("test.yaml"));
+          assert.isTrue(pluginFilePath.includes("test.json"));
+          return { allSuccess: true, warnings: [] };
+        });
+      sandbox.stub(pluginGeneratorHelper, "generateScaffoldingSummary").resolves("");
+
+      const generator = new SpecGenerator();
+      const result = await generator.post(context, inputs, "projectPath");
+      assert.isTrue(result.isOk());
+      assert.isTrue(generateBasedOnSpec.calledOnce);
+      assert.isTrue(copyKiotaFolder.notCalled);
     });
   });
 });

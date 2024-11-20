@@ -222,7 +222,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -389,7 +389,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -688,7 +688,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -878,7 +878,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -1127,7 +1127,7 @@ describe("updateManifestWithAiPlugin", () => {
                   subtitle: "$.id",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       type: "Container",
@@ -1871,12 +1871,6 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "deletePet",
             description: "Delete a pet in the store",
-            capabilities: {
-              confirmation: {
-                type: "AdaptiveCard",
-                title: "Delete a pet in the store",
-              },
-            },
           },
         ],
         runtimes: [
@@ -1942,6 +1936,20 @@ describe("updateManifestWithAiPlugin", () => {
                   required: true,
                   schema: {
                     type: "integer",
+                  },
+                },
+              ],
+            },
+            delete: {
+              operationId: "deletePet",
+              description: "Delete pets",
+              parameters: [
+                {
+                  name: "name",
+                  description: "Name of the pet",
+                  required: true,
+                  schema: {
+                    type: "string",
                   },
                 },
               ],
@@ -2019,6 +2027,17 @@ describe("updateManifestWithAiPlugin", () => {
             description: "Returns all pets from the system that the user has access to",
           },
           {
+            name: "deletePet",
+            description: "Delete pets",
+            capabilities: {
+              confirmation: {
+                type: "AdaptiveCard",
+                title: "Delete pets",
+                body: "* **Name**: {{function.parameters.name}}",
+              },
+            },
+          },
+          {
             name: "createPet",
             description: "Create a new pet in the store",
             capabilities: {
@@ -2033,7 +2052,7 @@ describe("updateManifestWithAiPlugin", () => {
                   title: "$.name",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -2057,7 +2076,7 @@ describe("updateManifestWithAiPlugin", () => {
             spec: {
               url: "spec/outputSpec.yaml",
             },
-            run_for_functions: ["getPets", "createPet"],
+            run_for_functions: ["getPets", "deletePet", "createPet"],
           },
         ],
       };
@@ -2071,7 +2090,7 @@ describe("updateManifestWithAiPlugin", () => {
         .resolves(false);
 
       const options: ParseOptions = {
-        allowMethods: ["get", "post"],
+        allowMethods: ["get", "post", "delete"],
         allowConfirmation: true,
         allowResponseSemantics: true,
       };
@@ -3787,8 +3806,8 @@ describe("updateManifestWithAiPlugin", () => {
       ],
       paths: {
         "/pets": {
-          get: {
-            operationId: "getPets",
+          post: {
+            operationId: "postPets",
             summary: "Get all pets",
             description: "Returns all pets from the system that the user has access to",
             parameters: [
@@ -3832,6 +3851,7 @@ describe("updateManifestWithAiPlugin", () => {
     try {
       const options: ParseOptions = {
         allowMethods: ["get", "post"],
+        allowConfirmation: true,
       };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
@@ -3845,7 +3865,7 @@ describe("updateManifestWithAiPlugin", () => {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
       expect(err.message).to.equal(
-        "Unsupported schema in get /pets: " +
+        "Unsupported schema in post /pets: " +
           JSON.stringify({
             type: "object",
             properties: {
@@ -3911,6 +3931,7 @@ describe("updateManifestWithAiPlugin", () => {
     try {
       const options: ParseOptions = {
         allowMethods: ["get", "post"],
+        allowConfirmation: true,
       };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,

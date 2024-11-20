@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { find, remove } from "lodash";
+import { remove } from "lodash";
 import * as path from "path";
 import {
   commands,
@@ -13,7 +13,11 @@ import {
   QuickPick,
   QuickPickItem,
   QuickPickItemKind,
-  Terminal,
+  ShellExecution,
+  Task,
+  TaskProcessEndEvent,
+  tasks,
+  TaskScope,
   ThemeIcon,
   Uri,
   window,
@@ -50,9 +54,15 @@ import {
   UIConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { ProgressHandler } from "./progressHandler";
-import { EmptyOptionsError, InternalUIError, ScriptTimeoutError, UserCancelError } from "./error";
+import {
+  EmptyOptionsError,
+  InternalUIError,
+  ScriptExecutionError,
+  ScriptTimeoutError,
+  UserCancelError,
+} from "./error";
 import { DefaultLocalizer, Localizer } from "./localize";
+import { ProgressHandler } from "./progressHandler";
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
@@ -384,8 +394,10 @@ export class VSCodeUI implements UserInteraction {
             }
             if (typeof config.default === "function") {
               defaultValue = await config.default();
-            } else {
-              defaultValue = config.default || [];
+            } else if (config.default === "all") {
+              defaultValue = options.map((o) => (typeof o === "string" ? o : o.id));
+            } else if (config.default === "none") {
+              defaultValue = [];
             }
           } catch (e) {
             resolve(err(this.assembleError(e)));
@@ -779,7 +791,7 @@ export class VSCodeUI implements UserInteraction {
     return this.selectFileInQuickPick(
       config,
       "files",
-      config.default ? config.default.join(";") : undefined
+      config.default && typeof config.default !== "string" ? config.default.join(";") : undefined
     );
   }
 
@@ -1105,42 +1117,59 @@ export class VSCodeUI implements UserInteraction {
   }): Promise<Result<string, FxError>> {
     const cmd = args.cmd;
     const workingDirectory = args.workingDirectory;
-    const shell = args.shell;
     const timeout = args.timeout;
     const env = args.env;
-    const timeoutPromise = new Promise((_resolve: (value: string) => void, reject) => {
-      const wait = setTimeout(() => {
-        clearTimeout(wait);
-        reject(
-          new ScriptTimeoutError(
-            this.localizer.commandTimeoutErrorMessage(cmd),
-            this.localizer.commandTimeoutErrorDisplayMessage(cmd)
-          )
-        );
-      }, timeout ?? 1000 * 60 * 5);
-    });
-
-    try {
-      let terminal: Terminal | undefined;
-      const name = args.shellName ?? (shell ? `${this.terminalName}-${shell}` : this.terminalName);
-      if (
-        window.terminals.length === 0 ||
-        (terminal = find(window.terminals, (value) => value.name === name)) === undefined
-      ) {
-        terminal = window.createTerminal({
-          name,
-          shellPath: shell,
+    const timeoutPromise = timeout
+      ? new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject(
+              new ScriptTimeoutError(
+                this.localizer.commandTimeoutErrorMessage(cmd),
+                this.localizer.commandTimeoutErrorDisplayMessage(cmd)
+              )
+            );
+          }, timeout ?? 1000 * 60 * 30);
+        })
+      : undefined;
+    const taskPromise = new Promise((resolve, reject) => {
+      const task = new Task(
+        { type: "shell", task: "Execute script action" },
+        TaskScope.Workspace,
+        "Execute script action",
+        "ms-teams-vscode-extension",
+        new ShellExecution(cmd, {
           cwd: workingDirectory,
-          env,
-          iconPath: args.iconPath ? new ThemeIcon(args.iconPath) : undefined,
-        });
+          env: env,
+        })
+      );
+      task.isBackground = true;
+      void tasks.executeTask(task);
+      tasks.onDidEndTaskProcess((e: TaskProcessEndEvent) => {
+        if (
+          e.execution.task.name === "Execute script action" &&
+          e.execution.task.source === "ms-teams-vscode-extension"
+        ) {
+          if (e.exitCode === 0) {
+            resolve(undefined);
+          } else {
+            void window.showErrorMessage(`Execute task failed with exit code ${e.exitCode || ""}`);
+            reject(
+              new ScriptExecutionError(
+                this.localizer.commandExecutionErrorMessage(cmd),
+                this.localizer.commandExecutionErrorDisplayMessage(cmd)
+              )
+            );
+          }
+        }
+      });
+    });
+    try {
+      if (timeout) {
+        await Promise.race([taskPromise, timeoutPromise]);
+      } else {
+        await taskPromise;
       }
-      terminal.show();
-      terminal.sendText(cmd);
-
-      const processId = await Promise.race([terminal.processId, timeoutPromise]);
-      await sleep(500);
-      return ok(processId?.toString() ?? "");
+      return ok("");
     } catch (error) {
       return err(this.assembleError(error));
     }

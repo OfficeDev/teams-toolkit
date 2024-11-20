@@ -12,23 +12,12 @@ import {
   ErrorResult,
   ErrorType,
   ParseOptions,
+  ProjectType,
 } from "./interfaces";
 import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
 import { SpecParserError } from "./specParserError";
 
 export class Utils {
-  static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
-    if (this.isObjectSchema(schema)) {
-      for (const property in schema.properties) {
-        const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
-        if (this.isObjectSchema(nestedSchema)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   static isObjectSchema(schema: OpenAPIV3.SchemaObject): boolean {
     return schema.type === "object" || (!schema.type && !!schema.properties);
   }
@@ -128,27 +117,36 @@ export class Utils {
 
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
-
-      if (responseObject?.content) {
-        for (const contentType of Object.keys(responseObject.content)) {
-          // json media type can also be "application/json; charset=utf-8"
-          if (contentType.indexOf("application/json") >= 0) {
-            multipleMediaType = false;
-            json = responseObject.content[contentType];
-            if (Utils.containMultipleMediaTypes(responseObject)) {
-              multipleMediaType = true;
-              if (!allowMultipleMediaType) {
-                json = {};
-              }
-            } else {
-              return { json, multipleMediaType };
-            }
-          }
-        }
+      if (!responseObject) {
+        continue;
+      }
+      multipleMediaType = Utils.containMultipleMediaTypes(responseObject);
+      if (!allowMultipleMediaType && multipleMediaType) {
+        json = {};
+        continue;
+      }
+      const mediaObj = Utils.getJsonContentType(responseObject);
+      if (Object.keys(mediaObj).length > 0) {
+        json = mediaObj;
+        return { json, multipleMediaType };
       }
     }
 
     return { json, multipleMediaType };
+  }
+
+  static getJsonContentType(
+    responseObject: OpenAPIV3.ResponseObject | OpenAPIV3.RequestBodyObject
+  ): OpenAPIV3.MediaTypeObject {
+    if (responseObject.content) {
+      for (const contentType of Object.keys(responseObject.content)) {
+        // json media type can also be "application/json; charset=utf-8"
+        if (contentType.indexOf("application/json") >= 0) {
+          return responseObject.content[contentType];
+        }
+      }
+    }
+    return {};
   }
 
   static convertPathToCamelCase(path: string): string {
@@ -187,7 +185,7 @@ export class Utils {
     return newStr;
   }
 
-  static checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
+  static checkServerUrl(servers: OpenAPIV3.ServerObject[], allowHttp = false): ErrorResult[] {
     const errors: ErrorResult[] = [];
 
     let serverUrl;
@@ -210,8 +208,7 @@ export class Utils {
         content: ConstantString.RelativeServerUrlNotSupported,
         data: servers,
       });
-    } else if (protocol !== "https:") {
-      // Http server url is not supported
+    } else if (protocol !== "https:" && !(protocol === "http:" && allowHttp)) {
       const protocolString = protocol.slice(0, -1);
       errors.push({
         type: ErrorType.UrlProtocolNotSupported,
@@ -230,11 +227,13 @@ export class Utils {
     let hasPathLevelServers = false;
     let hasOperationLevelServers = false;
 
+    const allowHttp = options.projectType === ProjectType.Copilot;
+
     if (spec.servers && spec.servers.length >= 1) {
       hasTopLevelServers = true;
 
       // for multiple server, we only use the first url
-      const serverErrors = Utils.checkServerUrl(spec.servers);
+      const serverErrors = Utils.checkServerUrl(spec.servers, allowHttp);
       errors.push(...serverErrors);
     }
 
@@ -244,7 +243,7 @@ export class Utils {
 
       if (methods?.servers && methods.servers.length >= 1) {
         hasPathLevelServers = true;
-        const serverErrors = Utils.checkServerUrl(methods.servers);
+        const serverErrors = Utils.checkServerUrl(methods.servers, allowHttp);
 
         errors.push(...serverErrors);
       }
@@ -254,7 +253,7 @@ export class Utils {
         if (options.allowMethods?.includes(method) && operationObject) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
             hasOperationLevelServers = true;
-            const serverErrors = Utils.checkServerUrl(operationObject.servers);
+            const serverErrors = Utils.checkServerUrl(operationObject.servers, allowHttp);
             errors.push(...serverErrors);
           }
         }

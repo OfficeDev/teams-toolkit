@@ -22,7 +22,7 @@ namespace {{SafeProjectName}}
                     Description = "Conduct brake repairs, including replacing worn brake pads, resurfacing or replacing brake rotors, and repairing or replacing other components of the brake system.",
                     AssignedTo = "Issac Fielder",
                     Date = "2023-05-24",
-                    Image = "https://upload.wikimedia.org/wikipedia/commons/7/71/Disk_brake_dsc03680.jpg"
+                    Image = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Disk_brake_dsc03680.jpg/320px-Disk_brake_dsc03680.jpg"
                 },
                 new() {
                     Id = "3",

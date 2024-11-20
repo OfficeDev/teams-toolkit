@@ -368,3 +368,47 @@ export enum TaskRevealKind {
   Silent = 2,
   Never = 3,
 }
+
+export enum TaskScope {
+  /**
+   * The task is a global task. Global tasks are currently not supported.
+   */
+  Global = 1,
+
+  /**
+   * The task is a workspace task
+   */
+  Workspace = 2,
+}
+export class ShellExecution {
+  /**
+   * Creates a shell execution with a full command line.
+   *
+   * @param commandLine The command line to execute.
+   * @param options Optional options for the started the shell.
+   */
+  constructor(commandLine: string, options?: any) {
+    this.commandLine = commandLine;
+    this.options = options;
+  }
+  /**
+   * The shell command line. Is `undefined` if created with a command and arguments.
+   */
+  commandLine: string | undefined;
+
+  /**
+   * The shell command. Is `undefined` if created with a full command line.
+   */
+  command = "";
+
+  /**
+   * The shell args. Is `undefined` if created with a full command line.
+   */
+  args: string[] = [];
+
+  /**
+   * The shell options used when the command line is executed in a shell.
+   * Defaults to undefined.
+   */
+  options?: any;
+}

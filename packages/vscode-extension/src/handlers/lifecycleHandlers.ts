@@ -128,7 +128,7 @@ export async function addPluginHandler(...args: unknown[]) {
 
   const res = result.value;
   if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) && res.lastCommand) {
-    return handleTriggerKiotaCommand(args, res, TelemetryEvent.AddPlugin);
+    return handleTriggerKiotaCommand(args, res, TelemetryEvent.AddPlugin, res.projectPath);
   } else {
     return result;
   }
@@ -252,7 +252,12 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   return result;
 }
 
-function handleTriggerKiotaCommand(args: any[], result: any, event: string): Result<any, FxError> {
+function handleTriggerKiotaCommand(
+  args: any[],
+  result: any,
+  event: string,
+  projectPath?: string
+): Result<any, FxError> {
   if (!validateKiotaInstallation()) {
     void vscode.window
       .showInformationMessage(
@@ -295,6 +300,7 @@ function handleTriggerKiotaCommand(args: any[], result: any, event: string): Res
         lastCommand: result.lastCommand,
         manifestPath: result.manifestPath,
       },
+      projectPath: projectPath,
     });
     ExtTelemetry.sendTelemetryEvent(event, {
       [TelemetryProperty.KiotaInstalled]: "Yes",

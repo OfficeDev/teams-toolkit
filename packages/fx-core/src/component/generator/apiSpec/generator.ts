@@ -53,6 +53,7 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import {
   convertSpecParserErrorToFxError,
+  copyKiotaFolder,
   generateFromApiSpec,
   generateScaffoldingSummary,
   getEnvName,
@@ -405,6 +406,10 @@ export class SpecGenerator extends DefaultTemplateGenerator {
             error.message
           );
         }
+      }
+
+      if (isKiotaIntegration) {
+        await copyKiotaFolder(inputs[QuestionNames.ApiPluginManifestPath], destinationPath);
       }
 
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);

@@ -781,6 +781,12 @@ export function addPluginQuestionNode(): IQTreeNode {
   };
 }
 
+export function kiotaRegenerateQuestion(): IQTreeNode {
+  return {
+    data: selectTeamsAppManifestQuestion(),
+  };
+}
+
 export function apiSpecApiKeyConfirmQestion(): ConfirmQuestion {
   return {
     name: QuestionNames.ApiSpecApiKeyConfirm,

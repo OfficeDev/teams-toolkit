@@ -53,6 +53,11 @@ class PathUtils {
     const envFilePath = path.join(folderPath, `.env.${env}`);
     return ok(envFilePath);
   }
+  resolveFilePath(projectPath: string, absoluteOrRelativePath?: string): string {
+    if (!absoluteOrRelativePath) return projectPath;
+    if (path.isAbsolute(absoluteOrRelativePath)) return absoluteOrRelativePath;
+    return path.join(projectPath, absoluteOrRelativePath);
+  }
 }
 
 export const pathUtils = new PathUtils();

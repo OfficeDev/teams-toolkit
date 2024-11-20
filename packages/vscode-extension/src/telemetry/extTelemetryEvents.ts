@@ -303,6 +303,9 @@ export enum TelemetryEvent {
   UpdateAddPluginTreeview = "update-add-plugin-tree-view",
 
   AddPluginWithManifest = "add-plugin-with-manifest",
+
+  KiotaRegenerateStart = "kiota-regenerate-start",
+  KiotaRegenerate = "kiota-regenerate",
 }
 
 export enum TelemetryProperty {

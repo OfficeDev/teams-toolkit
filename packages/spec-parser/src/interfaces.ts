@@ -116,7 +116,6 @@ export enum ErrorType {
   PostBodyContainMultipleMediaTypes = "post-body-contain-multiple-media-types",
   ResponseContainMultipleMediaTypes = "response-contain-multiple-media-types",
   ResponseJsonIsEmpty = "response-json-is-empty",
-  PostBodySchemaIsNotJson = "post-body-schema-is-not-json",
   PostBodyContainsRequiredUnsupportedSchema = "post-body-contains-required-unsupported-schema",
   ParamsContainRequiredUnsupportedSchema = "params-contain-required-unsupported-schema",
   ExceededRequiredParamsLimit = "exceeded-required-params-limit",

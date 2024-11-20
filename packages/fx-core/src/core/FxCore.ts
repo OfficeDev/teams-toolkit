@@ -1854,6 +1854,7 @@ export class FxCore {
       !!!inputs[QuestionNames.ApiPluginManifestPath]
     ) {
       return ok({
+        projectPath: inputs.projectPath,
         lastCommand: KiotaLastCommands.addPlugin,
         manifestPath: inputs[QuestionNames.ManifestPath],
       });

@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.2/schema.json",
   "schema_version": "v2.2",
-  "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
   "namespace": "repairs",
+  "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
   "description_for_human": "Track your repair records",
   "description_for_model": "Plugin for searching a repair list, you can search by who's assigned to the repair.",
   "functions": [
@@ -14,7 +14,8 @@
           "data_path": "$.results",
           "properties": {
             "title": "$.title",
-            "subtitle": "$.description"
+            "subtitle": "$.description",
+            "url": "$.image"
           },
           "static_template": {
             "type": "AdaptiveCard",
@@ -60,18 +61,17 @@
             ]
           }
         }
-      }
+      } 
     }    
   ],
   "runtimes": [
     {
       "type": "OpenApi",
       "auth": {
-        "type": "ApiKeyPluginVault",
-        "reference_id": "${{APIKEY_REGISTRATION_ID}}"
+        "type": "None"
       },
       "spec": {
-        "url": "apiSpecificationFile/repair.yml",
+        "url": "apiSpecificationFile/repair.local.yml",
         "progress_style": "ShowUsageWithInputAndOutput"
       },
       "run_for_functions": ["listRepairs"]

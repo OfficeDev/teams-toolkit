@@ -77,7 +77,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -205,7 +205,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -372,7 +372,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -530,7 +530,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -671,7 +671,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -861,7 +861,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1111,7 +1111,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1284,7 +1284,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1433,7 +1433,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1572,7 +1572,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1716,7 +1716,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -1848,7 +1848,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -2009,7 +2009,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -2165,7 +2165,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -2292,7 +2292,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -2427,7 +2427,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -2550,7 +2550,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "<Please add description of the plugin>",
@@ -2734,7 +2734,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "<Please add description of the plugin>",
@@ -3518,7 +3518,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3650,7 +3650,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3738,7 +3738,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -4013,7 +4013,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const originalPluginManifest = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -4033,7 +4033,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -4179,7 +4179,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const originalPluginManifest = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -4199,7 +4199,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -4350,7 +4350,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const originalPluginManifest = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -4370,7 +4370,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.2/schema.json",
-  "schema_version": "v2.1",
+  "schema_version": "v2.2",
   "namespace": "repairs",
   "name_for_human": "ttk-plugin-copilot${{APP_NAME_SUFFIX}}",
   "description_for_human": "Track your repair records",

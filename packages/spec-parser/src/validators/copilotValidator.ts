@@ -11,7 +11,6 @@ import {
   SpecValidationResult,
 } from "../interfaces";
 import { Validator } from "./validator";
-import { Utils } from "../utils";
 
 export class CopilotValidator extends Validator {
   constructor(spec: OpenAPIV3.Document, options: ParseOptions) {
@@ -19,7 +18,6 @@ export class CopilotValidator extends Validator {
     this.projectType = ProjectType.Copilot;
     this.options = options;
     this.spec = spec;
-    this.checkCircularReference();
   }
 
   validateSpec(): SpecValidationResult {
@@ -52,11 +50,6 @@ export class CopilotValidator extends Validator {
     const methodAndPathResult = this.validateMethodAndPath(method, path);
     if (!methodAndPathResult.isValid) {
       return methodAndPathResult;
-    }
-
-    const circularReferenceResult = this.validateCircularReference(method, path);
-    if (!circularReferenceResult.isValid) {
-      return circularReferenceResult;
     }
 
     const operationObject = (this.spec.paths[path] as any)[method] as OpenAPIV3.OperationObject;

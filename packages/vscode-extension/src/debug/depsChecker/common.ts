@@ -220,7 +220,7 @@ async function selectPortsToKill(
       title: "Select process(es) to terminate",
       name: "select_processes",
       options: loadOptions,
-      default: "all",
+      default: ["all"],
     });
     if (res.isOk() && res.value.type === "success") {
       const processIds = res.value.result as string[];

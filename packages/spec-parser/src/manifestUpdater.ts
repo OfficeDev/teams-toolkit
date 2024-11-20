@@ -285,7 +285,7 @@ export class ManifestUpdater {
     } else {
       apiPlugin = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "",
         description_for_human: "",
         namespace: "",
@@ -350,9 +350,7 @@ export class ManifestUpdater {
 
     if (options.allowConversationStarters && conversationStarters.length > 0) {
       if (!apiPlugin.capabilities) {
-        apiPlugin.capabilities = {
-          localization: {},
-        };
+        apiPlugin.capabilities = {};
       }
       if (!apiPlugin.capabilities.conversation_starters) {
         apiPlugin.capabilities.conversation_starters = conversationStarters

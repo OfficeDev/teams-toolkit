@@ -404,7 +404,6 @@ export async function initTeamsPage(
         page.waitForNavigation(),
       ]);
       await page.waitForTimeout(Timeout.longTimeWait);
-      console.log("click add button");
 
       try {
         console.log("dismiss message");
@@ -415,13 +414,22 @@ export async function initTeamsPage(
 
       // default
       console.log("click add button");
-      let addInBtn;
+      let addBtn;
       try {
-        addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
       } catch {
-        throw "error to add app";
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
+        } catch {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("add_page"),
+            fullPage: true,
+          });
+          throw "error to add app";
+        }
       }
-      await addInBtn?.click();
+      await addBtn?.click();
+
       if (options?.type === "meeting") {
         // select meeting tab in dialog box
         const dialog = await page.waitForSelector("div[role='dialog']");
@@ -567,11 +575,24 @@ export async function reopenTeamsPage(
       }
       if (addApp) {
         await page.waitForTimeout(Timeout.longTimeWait);
-        console.log("click add button");
         // default
-        const addBtn = await page?.waitForSelector(
-          "button>span:has-text('Add')"
-        );
+        console.log("click add button");
+        let addBtn;
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        } catch {
+          try {
+            addBtn = await page?.waitForSelector(
+              "button>span:has-text('Open')"
+            );
+          } catch {
+            await page.screenshot({
+              path: getPlaywrightScreenshotPath("add_page"),
+              fullPage: true,
+            });
+            throw "error to add app";
+          }
+        }
         await addBtn?.click();
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);

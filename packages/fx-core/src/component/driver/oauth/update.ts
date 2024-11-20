@@ -183,6 +183,7 @@ export class UpdateOauthDriver implements StepDriver {
     authInfo: OauthInfo
   ): string[] {
     const diffMsgs: string[] = [];
+    const isMicrosoftEntra = current.identityProvider === "MicrosoftEntra";
     if (current.description !== input.name) {
       diffMsgs.push(`description: ${current.description as string} => ${input.name}`);
     }
@@ -218,7 +219,7 @@ export class UpdateOauthDriver implements StepDriver {
     // TODO: Need to separate the logic for different flows
     // Compare authorizationEndpoint
     if (
-      current.identityProvider !== "MicrosoftEntra" &&
+      !isMicrosoftEntra &&
       authInfo.authorizationEndpoint &&
       current.authorizationEndpoint !== authInfo.authorizationEndpoint
     ) {
@@ -229,7 +230,7 @@ export class UpdateOauthDriver implements StepDriver {
 
     // Compare tokenExchangeEndpoint
     if (
-      current.identityProvider !== "MicrosoftEntra" &&
+      !isMicrosoftEntra &&
       authInfo.tokenExchangeEndpoint &&
       current.tokenExchangeEndpoint !== authInfo.tokenExchangeEndpoint
     ) {
@@ -239,10 +240,7 @@ export class UpdateOauthDriver implements StepDriver {
     }
 
     // Compare tokenRefreshEndpoint
-    if (
-      current.identityProvider !== "MicrosoftEntra" &&
-      current.tokenRefreshEndpoint !== authInfo.tokenRefreshEndpoint
-    ) {
+    if (!isMicrosoftEntra && current.tokenRefreshEndpoint !== authInfo.tokenRefreshEndpoint) {
       diffMsgs.push(
         `tokenRefreshEndpoint: ${current.tokenRefreshEndpoint ?? "Undefined"} => ${
           authInfo.tokenRefreshEndpoint ?? "Undefined"
@@ -251,10 +249,7 @@ export class UpdateOauthDriver implements StepDriver {
     }
 
     // Compare scopes
-    if (
-      current.identityProvider !== "MicrosoftEntra" &&
-      !this.compareScopes(current.scopes, authInfo.scopes)
-    ) {
+    if (!isMicrosoftEntra && !this.compareScopes(current.scopes, authInfo.scopes)) {
       diffMsgs.push(
         `scopes: ${current.scopes.join(",")} => ${
           authInfo.scopes ? authInfo.scopes.join(",") : "Undefined"

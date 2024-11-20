@@ -1981,20 +1981,23 @@ export class FxCore {
     let destinationPluginManifestPath: string;
     // generate files
     if (isGenerateFromApiSpec && specParser) {
-      destinationPluginManifestPath =
-        await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(
-          appPackageFolder,
-          isKiotaIntegration
-            ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
-            : undefined,
-          isKiotaIntegration
-        );
-      const destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
-        inputs[QuestionNames.ApiSpecLocation].trim(),
-        path.join(appPackageFolder, isKiotaIntegration ? "" : DefaultApiSpecFolderName),
-        isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined,
-        isKiotaIntegration
-      );
+      destinationPluginManifestPath = isKiotaIntegration
+        ? inputs[QuestionNames.ApiPluginManifestPath].trim()
+        : await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(
+            appPackageFolder,
+            isKiotaIntegration
+              ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
+              : undefined,
+            isKiotaIntegration
+          );
+      const destinationApiSpecPath = isKiotaIntegration
+        ? inputs[QuestionNames.ApiSpecLocation].trim()
+        : await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
+            inputs[QuestionNames.ApiSpecLocation].trim(),
+            path.join(appPackageFolder, isKiotaIntegration ? "" : DefaultApiSpecFolderName),
+            isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined,
+            isKiotaIntegration
+          );
 
       const generateRes = await generateFromApiSpec(
         specParser,

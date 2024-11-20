@@ -74,33 +74,6 @@ export class CopilotValidator extends Validator {
     const validateServerResult = this.validateServer(method, path);
     result.reason.push(...validateServerResult.reason);
 
-    // validate response
-    const validateResponseResult = this.validateResponse(method, path);
-    result.reason.push(...validateResponseResult.reason);
-
-    // validate requestBody
-    const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
-    const requestJsonBody = requestBody?.content["application/json"];
-
-    if (requestJsonBody) {
-      const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-
-      if (!Utils.isObjectSchema(requestBodySchema)) {
-        result.reason.push(ErrorType.PostBodySchemaIsNotJson);
-      }
-
-      const requestBodyParamResult = this.checkPostBodySchema(
-        requestBodySchema,
-        requestBody.required
-      );
-      result.reason.push(...requestBodyParamResult.reason);
-    }
-
-    // validate parameters
-    const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
-    const paramResult = this.checkParamSchema(paramObject);
-    result.reason.push(...paramResult.reason);
-
     if (result.reason.length > 0) {
       result.isValid = false;
     }

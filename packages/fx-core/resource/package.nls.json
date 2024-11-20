@@ -526,7 +526,6 @@
   "core.common.invalidReason.PostBodyContainMultipleMediaTypes": "post body contains multiple media types",
   "core.common.invalidReason.ResponseContainMultipleMediaTypes": "response contains multiple media types",
   "core.common.invalidReason.ResponseJsonIsEmpty": "response json is empty",
-  "core.common.invalidReason.PostBodySchemaIsNotJson": "post body schema is not json",
   "core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema": "post body contains required unsupported schema",
   "core.common.invalidReason.ParamsContainRequiredUnsupportedSchema": "params contain required unsupported schema",
   "core.common.invalidReason.ExceededRequiredParamsLimit": "exceeded required params limit",

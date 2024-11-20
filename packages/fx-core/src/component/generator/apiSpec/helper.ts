@@ -968,8 +968,6 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
       return getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes");
     case ErrorType.ResponseJsonIsEmpty:
       return getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty");
-    case ErrorType.PostBodySchemaIsNotJson:
-      return getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson");
     case ErrorType.PostBodyContainsRequiredUnsupportedSchema:
       return getLocalizedString(
         "core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"

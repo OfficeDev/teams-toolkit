@@ -436,7 +436,6 @@ describe("formatValidationErrors", () => {
               ErrorType.PostBodyContainMultipleMediaTypes,
               ErrorType.ResponseContainMultipleMediaTypes,
               ErrorType.ResponseJsonIsEmpty,
-              ErrorType.PostBodySchemaIsNotJson,
               ErrorType.MethodNotAllowed,
               ErrorType.UrlPathNotExist,
             ],
@@ -512,7 +511,6 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
-      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
       getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
       getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
     ];
@@ -562,7 +560,6 @@ describe("formatValidationErrors", () => {
               ErrorType.PostBodyContainMultipleMediaTypes,
               ErrorType.ResponseContainMultipleMediaTypes,
               ErrorType.ResponseJsonIsEmpty,
-              ErrorType.PostBodySchemaIsNotJson,
               ErrorType.MethodNotAllowed,
               ErrorType.UrlPathNotExist,
             ],
@@ -597,7 +594,6 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
       getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
-      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
       getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
       getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
     ];

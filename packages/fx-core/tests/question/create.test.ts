@@ -2883,7 +2883,7 @@ describe("scaffold question", () => {
             {
               id: "get operation4",
               label: "get operation4",
-              detail: "",
+              detail: "Unsupported Authorization type",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",

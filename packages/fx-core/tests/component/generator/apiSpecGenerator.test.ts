@@ -1887,7 +1887,7 @@ describe("SpecGenerator", async () => {
         assert.isFalse(filterResult);
       }
 
-      inputs[QuestionNames.Capabilities] = CapabilityOptions.declarativeCopilot().id;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.declarativeAgent().id;
       res = await generator.getTemplateInfos(context, inputs, ".");
       assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -1929,7 +1929,7 @@ describe("SpecGenerator", async () => {
       const inputs: Inputs = {
         platform: Platform.CLI,
         projectPath: "./",
-        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeAgent().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.AppName]: "testapp",
       };
@@ -2758,7 +2758,7 @@ describe("SpecGenerator", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: "path",
-        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeAgent().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.withPlugin().id,
         [QuestionNames.ApiSpecLocation]: "https://test.com",
@@ -2796,7 +2796,7 @@ describe("SpecGenerator", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: "path",
-        [QuestionNames.Capabilities]: CapabilityOptions.declarativeCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.declarativeAgent().id,
         [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
         [QuestionNames.WithPlugin]: DeclarativeCopilotTypeOptions.withPlugin().id,
         [QuestionNames.ApiSpecLocation]: "https://test.com",

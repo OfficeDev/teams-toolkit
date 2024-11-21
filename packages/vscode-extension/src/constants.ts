@@ -3,7 +3,6 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
-  CopilotExtensionEnable = "developCopilotPlugin",
   LogLevel = "logLevel",
   EnableMicrosoftKiota = "enableMicrosoftKiota",
 }

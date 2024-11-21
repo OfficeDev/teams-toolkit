@@ -42,8 +42,6 @@ describe("Create Copilot plugin", () => {
     async function () {
       const env = Object.assign({}, process.env);
 
-      env["DEVELOP_COPILOT_EXTENSION"] = "true";
-
       const apiSpecPath = path.join(__dirname, "../", "testApiSpec.yml");
 
       console.log(apiSpecPath);

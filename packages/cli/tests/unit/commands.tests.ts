@@ -85,9 +85,6 @@ describe("CLI commands", () => {
 
   describe("getCreateCommand", async () => {
     it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "false",
-      });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
 
@@ -249,10 +246,6 @@ describe("CLI commands", () => {
 
   describe("getAddCommand", async () => {
     it("customize GPT is enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "true",
-      });
-
       const commands = addCommand();
       assert.isTrue(commands.commands?.length === 2);
     });
@@ -1111,21 +1104,6 @@ describe("CLI read-only commands", () => {
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("json", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "false",
-      });
-      const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "..." },
-        optionValues: { format: "json" },
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await listTemplatesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isFalse(!!messages.find((msg) => msg.includes("api-plugin")));
-    });
     it("table with description", async () => {
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "..." },
@@ -1147,22 +1125,6 @@ describe("CLI read-only commands", () => {
       };
       const res = await listTemplatesCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-    });
-
-    it("json: Copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlags.CopilotExtension.name]: "true",
-      });
-      const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "..." },
-        optionValues: { format: "json" },
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await listTemplatesCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(!!messages.find((msg) => msg.includes("api-plugin")));
     });
   });
   describe("listSamplesCommand", async () => {

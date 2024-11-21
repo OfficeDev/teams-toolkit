@@ -128,7 +128,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     let templateName = "";
     if (
       (capability === CapabilityOptions.apiPlugin().id ||
-        capability === CapabilityOptions.declarativeCopilot().id) &&
+        capability === CapabilityOptions.declarativeAgent().id) &&
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
     ) {
       templateName = apiPluginFromApiSpecTemplateName;
@@ -165,7 +165,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       authData = inputs.apiAuthData;
     }
     const isDeclarativeCopilot =
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id;
     merge(actionContext?.telemetryProps, {
       [telemetryProperties.templateName]: getTemplateInfosState.templateName,
       [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
@@ -306,7 +306,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     try {
       const getTemplateInfosState = inputs.getTemplateInfosState as TemplateInfosState;
       const isDeclarativeCopilot =
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id;
       const isKiotaIntegration =
         featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
         !!inputs[QuestionNames.ApiPluginManifestPath];

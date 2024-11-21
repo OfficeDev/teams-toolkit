@@ -42,8 +42,6 @@ describe("Create Copilot plugin", () => {
     async function () {
       const env = Object.assign({}, process.env);
 
-      env["DEVELOP_COPILOT_EXTENSION"] = "true";
-
       // create
       await CliHelper.createProjectWithCapability(
         appName,

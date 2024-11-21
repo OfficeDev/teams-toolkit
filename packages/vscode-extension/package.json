@@ -99,8 +99,8 @@
           "fontCharacter": "\\E004"
         }
       },
-      "teamsfx-copilot-plugin": {
-        "description": "API Plugin icon in scaffold questions",
+      "teamsfx-agent": {
+        "description": "Agent icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E005"
@@ -126,41 +126,21 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-with-api-copilot-plugin",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
         "view": "teamsfx-empty-project-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
         "view": "teamsfx-empty-project-new-user",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
         "view": "teamsfx-empty-project-new-user-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
@@ -217,42 +197,22 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -1435,8 +1395,7 @@
               "svg": "media/walkthroughs/intelligent-apps/step6.svg"
             }
           }
-        ],
-        "when": "fx-extension.isApiCopilotPluginEnabled"
+        ]
       },
       {
         "id": "teamsToolkitGetStarted",
@@ -1564,11 +1523,6 @@
     "configuration": {
       "title": "Teams Toolkit",
       "properties": {
-        "fx-extension.developCopilotPlugin": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Get more info from [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)."
-        },
         "fx-extension.logLevel": {
           "type": "string",
           "enum": [

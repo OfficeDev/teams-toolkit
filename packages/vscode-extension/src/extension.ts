@@ -177,6 +177,7 @@ import {
   CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
   officeChatParticipantId,
 } from "./officeChat/consts";
+import * as extensionPackage from "../package.json";
 import {
   chatCreateOfficeProjectCommandHandler,
   handleOfficeFeedback,
@@ -197,15 +198,19 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry, isM365Project } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
-import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
+import { getPackageVersion, getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
 import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
 import { kiotaRegenerate } from "./handlers/kiotaRegenerateHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
-  const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
-  featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
+  const value =
+    ((getPackageVersion(extensionPackage.version) === "beta" &&
+      featureFlagManager.getBooleanValue(CoreFeatureFlags.OfficeChatParticipant)) ||
+      getPackageVersion(extensionPackage.version) === "alpha") &&
+    semver.gte(vscode.version, "1.90.0");
+  featureFlagManager.setBooleanValue(CoreFeatureFlags.OfficeChatParticipant, value);
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
@@ -222,10 +227,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerActivateCommands(context);
 
   registerInternalCommands(context);
-
-  if (featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipant)) {
-    registerOfficeChatParticipant(context);
-  }
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -250,6 +251,17 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.isChatParticipantUIEntriesEnabled",
     featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
   );
+
+  // control whether to show office chat participant entry in chat
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isOfficeChatParticipantEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.OfficeChatParticipant)
+  );
+
+  if (featureFlagManager.getBooleanValue(CoreFeatureFlags.OfficeChatParticipant)) {
+    registerOfficeChatParticipant(context);
+  }
 
   // Flags for "Build Intelligent Apps" walkthrough.
   // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings

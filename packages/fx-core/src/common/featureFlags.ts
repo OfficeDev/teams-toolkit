@@ -25,6 +25,7 @@ export class FeatureFlagName {
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
   static readonly ChatParticipantUIEntries = "TEAMSFX_CHAT_PARTICIPANT_ENTRIES";
+  static readonly OfficeChatParticipant = "TEAMSFX_OFFICE_CHAT_PARTICIPANT";
   static readonly SMEOAuth = "SME_OAUTH";
   static readonly ShowDiagnostics = "TEAMSFX_SHOW_DIAGNOSTICS";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
@@ -75,6 +76,10 @@ export class FeatureFlags {
   };
   static readonly ChatParticipantUIEntries = {
     name: FeatureFlagName.ChatParticipantUIEntries,
+    defaultValue: "false",
+  };
+  static readonly OfficeChatParticipant = {
+    name: FeatureFlagName.OfficeChatParticipant,
     defaultValue: "false",
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };

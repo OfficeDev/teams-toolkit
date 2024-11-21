@@ -171,10 +171,10 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     });
 
     // For Kiota integration, we need to get auth info here
-    if (
+    const isKiotaIntegration =
       featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
-      inputs[QuestionNames.ApiPluginManifestPath]
-    ) {
+      inputs[QuestionNames.ApiPluginManifestPath];
+    if (isKiotaIntegration) {
       const operationsResult = await listOperations(
         context,
         inputs[QuestionNames.ApiSpecLocation],
@@ -238,9 +238,16 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         inputs.placeProjectFileInSolutionDir === "true",
         {
           authName: authData.authName,
-          openapiSpecPath: normalizePath(
-            path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
-          ),
+          openapiSpecPath: isKiotaIntegration
+            ? normalizePath(
+                path.join(
+                  AppPackageFolderName,
+                  path.basename(inputs[QuestionNames.ApiSpecLocation])
+                )
+              )
+            : normalizePath(
+                path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
+              ),
           registrationIdEnvName: envName,
           authType: authData.authType,
         },

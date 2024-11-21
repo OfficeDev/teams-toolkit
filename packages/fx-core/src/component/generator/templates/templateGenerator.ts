@@ -7,23 +7,27 @@ import {
   FxError,
   GeneratorResult,
   IGenerator,
+  IQTreeNode,
   Inputs,
   Result,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import { merge } from "lodash";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
+import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../question/constants";
+import { botTriggerQuestion, meArchitectureQuestion } from "../../../question/create";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import { ProgrammingLanguage, QuestionNames } from "../../../question/constants";
 import { Generator, templateDefaultOnActionError } from "../generator";
-import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
-import { merge } from "lodash";
 import { GeneratorContext, TemplateActionSeq } from "../generatorAction";
+import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
 import { TemplateInfo } from "./templateInfo";
 import { getTemplateName, tryGetTemplateName } from "./templateNames";
 import { getTemplateReplaceMap } from "./templateReplaceMap";
+import { Templates } from "../../../question/templates";
 
 export class DefaultTemplateGenerator implements IGenerator {
   // override this property to send telemetry event with different component name
@@ -123,5 +127,48 @@ export class DefaultTemplateGenerator implements IGenerator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
+  }
+
+  public getQuestionNode(): IQTreeNode | undefined {
+    return {
+      data: {
+        type: "group",
+      },
+      children: [
+        {
+          data: {
+            type: "singleSelect",
+            title: getLocalizedString("core.ProgrammingLanguageQuestion.title"),
+            name: QuestionNames.ProgrammingLanguage,
+            staticOptions: [
+              { id: ProgrammingLanguage.JS, label: "JavaScript" },
+              { id: ProgrammingLanguage.TS, label: "TypeScript" },
+              { id: ProgrammingLanguage.CSharp, label: "C#" },
+              { id: ProgrammingLanguage.PY, label: "Python" },
+            ],
+            dynamicOptions: (inputs: Inputs) => {
+              const templateName = inputs[QuestionNames.Capabilities];
+              const languages = Templates.filter((t) => t.name === templateName).map(
+                (t) => t.language
+              );
+              return languages;
+            },
+            skipSingleOption: true,
+          },
+        },
+        {
+          // Notification bot trigger sub-tree
+          condition: (input: Inputs) =>
+            input[QuestionNames.Capabilities] === CapabilityOptions.notificationBot().id,
+          data: botTriggerQuestion(),
+        },
+        {
+          // Search ME sub-tree
+          condition: (input: Inputs) =>
+            input[QuestionNames.Capabilities] === CapabilityOptions.m365SearchMe().id,
+          data: meArchitectureQuestion(),
+        },
+      ],
+    };
   }
 }

@@ -209,6 +209,10 @@ export abstract class Validator {
         };
       }
 
+      if (this.projectType === ProjectType.Copilot) {
+        return { isValid: true, reason: [] };
+      }
+
       for (const auths of authSchemeArray) {
         if (auths.length === 1) {
           if (

@@ -138,6 +138,7 @@ export enum WarningType {
   ConvertSwaggerToOpenAPI = "convert-swagger-to-openapi",
   FuncDescriptionTooLong = "function-description-too-long",
   OperationIdContainsSpecialCharacters = "operationid-contains-special-characters",
+  UnsupportedAuthType = "unsupported-auth-type",
   GenerateJsonDataFailed = "generate-json-data-failed",
   Unknown = "unknown",
 }

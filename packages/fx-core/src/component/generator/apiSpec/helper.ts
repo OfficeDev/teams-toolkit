@@ -334,7 +334,7 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
         ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
         : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
         ? getLocalizedString("core.copilotPlugin.api.oauth")
-        : "",
+        : getLocalizedString("core.copilotPlugin.api.notSupportedAuth"),
       data: {
         serverUrl: operation.server,
       },

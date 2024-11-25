@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  "mainEntryPointFilePath": "types/src/index.d.ts",
+  "mainEntryPointFilePath": "dist/types/src/index.d.ts",
   "docModel": {
     "enabled": true
   },
@@ -10,8 +10,8 @@
   },
   "dtsRollup": {
     "enabled": true,
-    "untrimmedFilePath": "./types/<unscopedPackageName>.d.ts",
-    "publicTrimmedFilePath": "./types/<unscopedPackageName>-public.d.ts"
+    "untrimmedFilePath": "dist/types/<unscopedPackageName>.d.ts",
+    "publicTrimmedFilePath": "dist/types/<unscopedPackageName>-public.d.ts"
   },
   "messages": {
     "tsdocMessageReporting": {

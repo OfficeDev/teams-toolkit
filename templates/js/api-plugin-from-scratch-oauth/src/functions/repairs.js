@@ -3,6 +3,8 @@
  * complete Azure Functions developer guide.
  */
 const { app } = require("@azure/functions");
+const { authMiddleware } = require("./middleware/authMiddleware");
+
 /**
  * This function handles the HTTP request and returns the repair information.
  *
@@ -48,5 +50,16 @@ async function repairs(req, context) {
 app.http("repairs", {
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: repairs,
+  handler: async (req, context) => {
+    // Check if the request is authenticated
+    const isAuthenticated = await authMiddleware(req);
+    if (!isAuthenticated) {
+      return {
+        status: 401,
+        body: "Unauthorized",
+      };
+    }
+    // Call the actual handler function
+    return repairs(req, context);
+  },
 });

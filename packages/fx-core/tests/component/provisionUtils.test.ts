@@ -474,6 +474,36 @@ describe("provisionUtils", () => {
         chai.assert.isTrue(res.error instanceof M365TenantIdNotFoundInTokenError);
       }
     });
+
+    it("happy pass - upn", async () => {
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok(""));
+      mocker
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "faked id", upn: "faked upn" }));
+      const res = await provisionUtils.getM365TenantId(tools.tokenProvider.m365TokenProvider);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.deepEqual(res.value, {
+          tenantIdInToken: "faked id",
+          tenantUserName: "faked upn",
+        });
+      }
+    });
+
+    it("happy pass - unique_name", async () => {
+      mocker.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok(""));
+      mocker
+        .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ tid: "faked id", unique_name: "faked unique name" }));
+      const res = await provisionUtils.getM365TenantId(tools.tokenProvider.m365TokenProvider);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.deepEqual(res.value, {
+          tenantIdInToken: "faked id",
+          tenantUserName: "faked unique name",
+        });
+      }
+    });
   });
   describe("arm", () => {
     let mockedEnvRestore: RestoreFn | undefined;

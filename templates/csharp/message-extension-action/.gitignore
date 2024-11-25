@@ -24,3 +24,7 @@ bld/
 
 # Notification local store
 .notification.localstore.json
+
+# Test Tool
+.notification.testtoolstore.json
+devTools

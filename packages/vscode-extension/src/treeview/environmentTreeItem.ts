@@ -122,7 +122,7 @@ export class EnvironmentNode extends DynamicNode {
       const provisionedSubId = subscriptionInfo?.subscriptionId;
 
       if (provisionedSubId) {
-        const subscriptions: SubscriptionInfo[] = await azureAccountManager.listSubscriptions();
+        const subscriptions: SubscriptionInfo[] = await azureAccountManager.listAllSubscriptions();
         const targetSub = subscriptions.find(
           (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
         );

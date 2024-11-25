@@ -201,6 +201,7 @@ import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils"
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
 import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
+import { kiotaRegenerate } from "./handlers/kiotaRegenerateHandler";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
@@ -248,14 +249,6 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isChatParticipantUIEntriesEnabled",
     featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
-  );
-
-  // Flags for "Build Intelligent Apps" walkthrough.
-  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotExtension)
   );
 
   await vscode.commands.executeCommand(
@@ -538,6 +531,12 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
       (args) => Correlator.run(createPluginWithManifest, args)
     );
     context.subscriptions.push(createPluginWithManifestCommand);
+
+    const kiotaRegenerateCommand = vscode.commands.registerCommand(
+      "fx-extension.kiotaregenerate",
+      (args) => Correlator.run(kiotaRegenerate, args)
+    );
+    context.subscriptions.push(kiotaRegenerateCommand);
   }
 }
 

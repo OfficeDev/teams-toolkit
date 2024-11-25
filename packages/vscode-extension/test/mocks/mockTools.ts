@@ -99,7 +99,7 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     };
   }
 
-  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+  switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
     throw new Error("Method not implemented.");
   }
 

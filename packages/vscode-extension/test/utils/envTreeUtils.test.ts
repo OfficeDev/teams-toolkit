@@ -1,5 +1,6 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
+import fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import { Uri } from "vscode";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
@@ -54,36 +55,33 @@ describe("EnvTreeUtils", () => {
     const m365TenantId = {
       teamsAppTenantId: "fakeTenantId",
     };
-    const provisionResult: Record<string, any> = {
-      solution: m365TenantId,
-    };
+
+    beforeEach(() => {
+      sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+    });
 
     afterEach(() => {
       sandbox.restore();
     });
 
     it("returns m365 tenantId successfully", async () => {
-      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(provisionResult);
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFileSync").returns("TEAMS_APP_TENANT_ID=fakeTenantId\n");
       const result = await envTreeUtils.getM365TenantFromEnv("test");
       chai.expect(result).equal("fakeTenantId");
     });
 
-    it("returns undefined if get provision result throws error", async () => {
-      sandbox.stub(fileSystemUtils, "getProvisionResultJson").rejects(new Error());
+    it("returns undefined if env file doesn't exist", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
       const result = await envTreeUtils.getM365TenantFromEnv("test");
-      chai.expect(result).is.undefined;
+      chai.expect(result).equal(undefined);
     });
 
-    it("returns undefined if get provision result returns undefined", async () => {
-      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves(undefined);
+    it("returns undefined if tenant id doesn't exist in env file", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFileSync").returns("");
       const result = await envTreeUtils.getM365TenantFromEnv("test");
-      chai.expect(result).is.undefined;
-    });
-
-    it("returns undefined if get provision result does not contain solution", async () => {
-      sandbox.stub(fileSystemUtils, "getProvisionResultJson").resolves({});
-      const result = await envTreeUtils.getM365TenantFromEnv("test");
-      chai.expect(result).is.undefined;
+      chai.expect(result).equal(undefined);
     });
   });
 

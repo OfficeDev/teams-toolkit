@@ -21,6 +21,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { SMEValidator } from "../src/validators/smeValidator";
 import { ValidatorFactory } from "../src/validators/validatorFactory";
 import { createHash } from "crypto";
+import { JsonDataGenerator } from "../src/jsonDataGenerator";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -1143,6 +1144,80 @@ describe("SpecParser", () => {
       expect(outputJSONStub.calledTwice).to.be.true;
     });
 
+    it("should return warning result if auth is not supported", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              security: [
+                {
+                  api_key: [],
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns(spec as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const updateManifestWithAiPluginStub = sinon
+        .stub(ManifestUpdater, "updateManifestWithAiPlugin")
+        .resolves([{}, {}, []] as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const pluginFilePath = "ai-plugin.json";
+      const result = await specParser.generateForCopilot(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        pluginFilePath
+      );
+
+      expect(result.allSuccess).to.be.true;
+      expect(result.warnings.length).equals(1);
+      expect(result.warnings[0].content).contains("Unsupported authorization type");
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(updateManifestWithAiPluginStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledTwice).to.be.true;
+    });
+
     it("should contains warning if operation id contains special characters", async () => {
       const specParser = new SpecParser("path/to/spec.yaml");
       const spec = {
@@ -1554,7 +1629,7 @@ describe("SpecParser", () => {
         .returns([
           {
             type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
             version: "1.5",
             body: [
               {
@@ -1565,6 +1640,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1578,6 +1655,76 @@ describe("SpecParser", () => {
       );
 
       expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledThrice).to.be.true;
+    });
+
+    it("should not return warning if schema is empty and not generate json data", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              operationId: "helloApi",
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {},
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
+
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns([
+          {
+            type: "AdaptiveCard",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
+            version: "1.5",
+            body: [
+              {
+                type: "TextBlock",
+                text: "id: ${id}",
+                wrap: true,
+              },
+            ],
+          },
+          "$",
+          {},
+          [],
+        ]);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const result = await specParser.generate(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath,
+        "path/to/adaptiveCardFolder"
+      );
+
+      expect(result.allSuccess).to.be.true;
+      expect(result.warnings.length).equals(0);
       expect(JsyamlSpy.calledOnce).to.be.true;
       expect(specFilterStub.calledOnce).to.be.true;
       expect(outputFileStub.calledOnce).to.be.true;
@@ -1630,7 +1777,7 @@ describe("SpecParser", () => {
         .returns([
           {
             type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
             version: "1.5",
             body: [
               {
@@ -1641,6 +1788,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1705,7 +1854,7 @@ describe("SpecParser", () => {
         .returns([
           {
             type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
             version: "1.5",
             body: [
               {
@@ -1716,6 +1865,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello"];
@@ -1819,7 +1970,7 @@ describe("SpecParser", () => {
         .returns([
           {
             type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
             version: "1.5",
             body: [
               {
@@ -1830,6 +1981,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello", "post /hello"];
@@ -1930,7 +2083,7 @@ describe("SpecParser", () => {
         .returns([
           {
             type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
             version: "1.5",
             body: [
               {
@@ -1941,6 +2094,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello", "post /hello"];
@@ -2046,7 +2201,7 @@ describe("SpecParser", () => {
         .returns([
           {
             type: "AdaptiveCard",
-            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
             version: "1.5",
             body: [
               {
@@ -2057,6 +2212,8 @@ describe("SpecParser", () => {
             ],
           },
           "$",
+          {},
+          [],
         ]);
 
       const filter = ["get /hello", "post /hello"];

@@ -75,7 +75,7 @@ export const m365SideloadingCommand: CLICommand = {
     },
   ],
   telemetry: {
-    event: TelemetryEvent.M365Sigeloading,
+    event: TelemetryEvent.Install,
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {

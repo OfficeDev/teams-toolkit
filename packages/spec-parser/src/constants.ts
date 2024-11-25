@@ -40,9 +40,14 @@ export class ConstantString {
   static readonly OperationIdContainsSpecialCharacters =
     "Operation id '%s' in OpenAPI description document contained special characters and was renamed to '%s'.";
 
+  static readonly AuthTypeIsNotSupported =
+    "Unsupported authorization type in API '%s'. No authorization will be used.";
+
   static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
   static readonly FuncDescriptionTooLong =
     "The description of the function '%s' is too long. The current length is %s characters, while the maximum allowed length is %s characters.";
+
+  static readonly GenerateJsonDataFailed = "Failed to generate JSON data for api: %s due to %s.";
 
   static readonly WrappedCardVersion = "devPreview";
   static readonly WrappedCardSchema =
@@ -52,7 +57,7 @@ export class ConstantString {
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";
   static readonly AdaptiveCardVersion = "1.5";
-  static readonly AdaptiveCardSchema = "http://adaptivecards.io/schemas/adaptive-card.json";
+  static readonly AdaptiveCardSchema = "https://adaptivecards.io/schemas/adaptive-card.json";
   static readonly AdaptiveCardType = "AdaptiveCard";
   static readonly TextBlockType = "TextBlock";
   static readonly ImageType = "Image";
@@ -130,5 +135,5 @@ export class ConstantString {
   static readonly FunctionDescriptionMaxLens = 100;
   static readonly DefaultPluginId = "plugin_1";
   static readonly PluginManifestSchema =
-    "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.1/schema.json";
+    "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.2/schema.json";
 }

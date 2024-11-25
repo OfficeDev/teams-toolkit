@@ -17,6 +17,7 @@ import {
   LocalDebugTaskLabel,
   ValidationContent,
   DebugItemSelect,
+  LocalDebugTaskResult,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -72,7 +73,7 @@ describe("Local Debug Tests", function () {
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(
           LocalDebugTaskLabel.StartApplication,
-          "restify listening to"
+          LocalDebugTaskResult.FrontendStarted
         );
 
         const teamsAppId = await localDebugTestContext.getTeamsAppId();

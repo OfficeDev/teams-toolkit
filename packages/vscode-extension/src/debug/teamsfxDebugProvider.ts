@@ -9,6 +9,8 @@ import {
   Correlator,
   environmentNameManager,
   envUtil,
+  featureFlagManager,
+  FeatureFlags,
   Hub,
   isValidProject,
   isValidProjectV3,
@@ -187,7 +189,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       debugConfiguration.teamsfxResolved = true;
     } catch (error: any) {
       void showError(error);
-      terminateAllRunningTeamsfxTasks();
+      await terminateAllRunningTeamsfxTasks();
       await vscode.debug.stopDebugging();
       // not for undefined
       if (telemetryIsRemote === false) {
@@ -223,7 +225,13 @@ async function generateAccountHint(includeTenantId = true): Promise<string> {
     }
   }
   if (includeTenantId && tenantId) {
-    return loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+      return loginHint
+        ? `tenantId=${tenantId}&appTenantId=${tenantId}&login_hint=${loginHint}`
+        : "";
+    } else {
+      return loginHint ? `appTenantId=${tenantId}&login_hint=${loginHint}` : "";
+    }
   } else {
     return loginHint ? `login_hint=${loginHint}` : "";
   }

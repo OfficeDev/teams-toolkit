@@ -30,7 +30,6 @@ export interface CreateProjectInputs extends Inputs {
     | "collect-form-message-extension"
     | "search-message-extension"
     | "link-unfurling"
-    | "api-plugin"
     | "declarative-agent"
     | "custom-copilot-basic"
     | "custom-copilot-rag"
@@ -42,7 +41,7 @@ export interface CreateProjectInputs extends Inputs {
     | "office-content-addin";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
-    | "http-restify"
+    | "http-express"
     | "http-webapi"
     | "http-and-timer-functions"
     | "http-functions"

@@ -7,9 +7,18 @@ import { parseDocument } from "yaml";
 import { InjectAPIKeyActionFailedError, InjectOAuthActionFailedError } from "../../error/common";
 
 export class ActionInjector {
-  static hasActionWithName(provisionNode: any, action: string, name: string): any {
+  static hasActionWithName(
+    provisionNode: any,
+    action: string,
+    name: string,
+    specRelativePath: string
+  ): any {
     const hasAuthAction = provisionNode.items.some(
-      (item: any) => item.get("uses") === action && item.get("with")?.get("name") === name
+      (item: any) =>
+        item.get("uses") === action &&
+        !!item.get("with") &&
+        item.get("with").get("name") === name &&
+        item.get("with").get("apiSpecPath") === specRelativePath
     );
     return hasAuthAction;
   }
@@ -58,32 +67,62 @@ export class ActionInjector {
   static async injectCreateOAuthAction(
     ymlPath: string,
     authName: string,
-    specRelativePath: string
-  ): Promise<void> {
+    specRelativePath: string,
+    forceToAddNew: boolean // If it from add plugin, then we will add another CreateOAuthAction
+  ): Promise<AuthActionInjectResult | undefined> {
     const ymlContent = await fs.readFile(ymlPath, "utf-8");
     const actionName = "oauth/register";
 
     const document = parseDocument(ymlContent);
     const provisionNode = document.get("provision") as any;
     if (provisionNode) {
-      const hasOAuthAction = ActionInjector.hasActionWithName(provisionNode, actionName, authName);
-      if (!hasOAuthAction) {
-        provisionNode.items = provisionNode.items.filter(
-          (item: any) => item.get("uses") !== actionName && item.get("uses") !== "apiKey/register"
+      const hasOAuthAction = ActionInjector.hasActionWithName(
+        provisionNode,
+        actionName,
+        authName,
+        specRelativePath
+      );
+      if (!hasOAuthAction || forceToAddNew) {
+        provisionNode.items = provisionNode.items.filter((item: any) => {
+          const uses = item.get("uses");
+          if (forceToAddNew) {
+            return uses;
+          } else {
+            return (
+              uses != actionName ||
+              !item.get("with") ||
+              item.get("with").get("apiSpecPath") !== specRelativePath ||
+              item.get("with").get("name") !== authName
+            );
+          }
+        });
+        const existingConfigurationIdEnvNames: string[] = provisionNode.items
+          .filter((item: any) => {
+            const uses = item.get("uses");
+            return uses == actionName;
+          })
+          .map((item: any) => item.get("writeToEnvironmentFile")?.get("configurationId"))
+          .filter((item: string | undefined) => {
+            return !!item;
+          });
+        const defaultEnvName = Utils.getSafeRegistrationIdEnvName(`${authName}_CONFIGURATION_ID`);
+        const registrationIdEnvName = this.findNextAvailableEnvName(
+          defaultEnvName,
+          existingConfigurationIdEnvNames
         );
         const teamsAppIdEnvName = ActionInjector.getTeamsAppIdEnvName(provisionNode);
         if (teamsAppIdEnvName) {
           const index: number = provisionNode.items.findIndex(
             (item: any) => item.get("uses") === "teamsApp/create"
           );
-          const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_CONFIGURATION_ID`);
+
           const flow = "authorizationCode";
           const action = ActionInjector.generateAuthAction(
             actionName,
             authName,
             teamsAppIdEnvName,
             specRelativePath,
-            envName,
+            registrationIdEnvName,
             flow
           );
           provisionNode.items.splice(index + 1, 0, action);
@@ -92,17 +131,24 @@ export class ActionInjector {
         }
 
         await fs.writeFile(ymlPath, document.toString(), "utf8");
+        return {
+          defaultRegistrationIdEnvName: defaultEnvName,
+          registrationIdEnvName: registrationIdEnvName,
+        };
       }
     } else {
       throw new InjectOAuthActionFailedError();
     }
+
+    return undefined;
   }
 
   static async injectCreateAPIKeyAction(
     ymlPath: string,
     authName: string,
-    specRelativePath: string
-  ): Promise<void> {
+    specRelativePath: string,
+    forceToAddNew: boolean // If it from add plugin, then we will add another CreateApiKeyAction
+  ): Promise<AuthActionInjectResult | undefined> {
     const ymlContent = await fs.readFile(ymlPath, "utf-8");
     const actionName = "apiKey/register";
 
@@ -110,24 +156,52 @@ export class ActionInjector {
     const provisionNode = document.get("provision") as any;
 
     if (provisionNode) {
-      const hasApiKeyAction = ActionInjector.hasActionWithName(provisionNode, actionName, authName);
+      const hasApiKeyAction = ActionInjector.hasActionWithName(
+        provisionNode,
+        actionName,
+        authName,
+        specRelativePath
+      );
 
-      if (!hasApiKeyAction) {
-        provisionNode.items = provisionNode.items.filter(
-          (item: any) => item.get("uses") !== actionName && item.get("uses") !== "oauth/register"
-        );
+      if (!hasApiKeyAction || forceToAddNew) {
+        provisionNode.items = provisionNode.items.filter((item: any) => {
+          const uses = item.get("uses");
+          if (forceToAddNew) {
+            return uses;
+          } else {
+            return (
+              uses != actionName ||
+              !item.get("with") ||
+              item.get("with").get("apiSpecPath") !== specRelativePath ||
+              item.get("with").get("name") !== authName
+            );
+          }
+        });
+        const existingRegistrationIdEnvNames: string[] = provisionNode.items
+          .filter((item: any) => {
+            const uses = item.get("uses");
+            return uses == actionName;
+          })
+          .map((item: any) => item.get("writeToEnvironmentFile")?.get("registrationId"))
+          .filter((item: string | undefined) => {
+            return !!item;
+          });
         const teamsAppIdEnvName = ActionInjector.getTeamsAppIdEnvName(provisionNode);
+        const defaultEnvName = Utils.getSafeRegistrationIdEnvName(`${authName}_REGISTRATION_ID`);
+        const registrationIdEnvName = this.findNextAvailableEnvName(
+          defaultEnvName,
+          existingRegistrationIdEnvNames
+        );
         if (teamsAppIdEnvName) {
           const index: number = provisionNode.items.findIndex(
             (item: any) => item.get("uses") === "teamsApp/create"
           );
-          const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_REGISTRATION_ID`);
           const action = ActionInjector.generateAuthAction(
             actionName,
             authName,
             teamsAppIdEnvName,
             specRelativePath,
-            envName
+            registrationIdEnvName
           );
           provisionNode.items.splice(index + 1, 0, action);
         } else {
@@ -135,9 +209,29 @@ export class ActionInjector {
         }
 
         await fs.writeFile(ymlPath, document.toString(), "utf8");
+        return {
+          defaultRegistrationIdEnvName: defaultEnvName,
+          registrationIdEnvName: registrationIdEnvName,
+        };
       }
     } else {
       throw new InjectAPIKeyActionFailedError();
     }
+    return undefined;
   }
+
+  static findNextAvailableEnvName(baseEnvName: string, existingEnvNames: string[]): string {
+    let suffix = 1;
+    let envName = baseEnvName;
+    while (existingEnvNames.includes(envName)) {
+      envName = `${baseEnvName}${suffix}`;
+      suffix++;
+    }
+    return envName;
+  }
+}
+
+export interface AuthActionInjectResult {
+  defaultRegistrationIdEnvName: string | undefined; // The default registration id env name without suffix
+  registrationIdEnvName: string | undefined; // The real env name of registration id we write in the yaml file
 }

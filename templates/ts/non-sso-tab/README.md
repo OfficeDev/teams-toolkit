@@ -8,7 +8,7 @@ This template showcases how Microsoft Teams supports the ability to run web-base
 >
 > To run the basic tab template in your local dev machine, you will need:
 >
-> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - [Node.js](https://nodejs.org/), supported versions: 18, 20
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
 >   Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
@@ -40,7 +40,7 @@ The following files can be customized and demonstrate an example implementation 
 | `src/static/scripts/teamsapp.js` | A script that calls `teamsjs` SDK to get the context of on which Microsoft 365 application your app is running. |
 | `src/static/styles/custom.css`   | css file for the app.                                                                                           |
 | `src/static/views/hello.html`    | html file for the app.                                                                                          |
-| `src/app.ts`                     | Starting a restify server.                                                                                      |
+| `src/app.ts`                     | Starting an `express` server.                                                                                   |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

@@ -37,18 +37,56 @@ enum BaseConfig {
   API_ENDPOINT = "API_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
   IDENTITY_ID = "IDENTITY_ID",
+  WEBSITE_CONTENTSHARE = "WEBSITE_CONTENTSHARE",
 }
+
+export enum ValidatorType {
+  API_ENDPOINT = "API_ENDPOINT",
+  FUNCTION_NAME = "FUNCTION_NAME",
+}
+
+type ConfigValidator = (webappSettings: any) => Promise<void>;
 
 export class FunctionValidator {
   private ctx: any;
   private projectPath: string;
   private env: string;
+  private customConfigsToValidate: ValidatorType[];
 
   private subscriptionId: string;
   private rg: string;
   private functionAppName: string;
 
-  constructor(ctx: any, projectPath: string, env: string) {
+  private readonly configValidatorMap: Record<ValidatorType, ConfigValidator> =
+    {
+      [ValidatorType.API_ENDPOINT]: async (
+        webappSettings: any
+      ): Promise<void> => {
+        const endpoint =
+          this.ctx?.[EnvConstants.FUNCTION_ENDPOINT] ??
+          this.ctx?.[EnvConstants.FUNCTION_ENDPOINT_2];
+        chai.assert.exists(endpoint);
+        chai.assert.equal(webappSettings[BaseConfig.API_ENDPOINT], endpoint);
+      },
+
+      [ValidatorType.FUNCTION_NAME]: async (
+        webappSettings: any
+      ): Promise<void> => {
+        const contentShare = webappSettings[BaseConfig.WEBSITE_CONTENTSHARE];
+        if (contentShare) {
+          const functionNameInAzure = contentShare.split("-")[0];
+          chai.assert.exists(functionNameInAzure);
+          chai.assert.equal(functionNameInAzure, this.functionAppName);
+        }
+      },
+    };
+
+  constructor(
+    ctx: any,
+    projectPath: string,
+    env: string,
+    customConfigsToValidate?: ValidatorType[]
+  ) {
     console.log("Start to init validator for function.");
 
     this.ctx = ctx;
@@ -66,6 +104,10 @@ export class FunctionValidator {
     chai.assert.exists(this.rg);
     this.functionAppName = getSiteNameFromResourceId(resourceId);
     chai.assert.exists(this.functionAppName);
+
+    this.customConfigsToValidate = customConfigsToValidate ?? [
+      ValidatorType.API_ENDPOINT,
+    ];
 
     console.log("Successfully init validator for function.");
   }
@@ -86,13 +128,11 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
-    const endpoint =
-      (this.ctx[EnvConstants.FUNCTION_ENDPOINT] as string) ??
-      (this.ctx[EnvConstants.FUNCTION_ENDPOINT_2] as string);
-    chai.assert.equal(
-      webappSettingsResponse[BaseConfig.API_ENDPOINT],
-      endpoint
-    );
+
+    for (const validatorType of this.customConfigsToValidate) {
+      const validator = this.configValidatorMap[validatorType];
+      await validator(webappSettingsResponse);
+    }
 
     console.log("Successfully validate Function Provision.");
   }

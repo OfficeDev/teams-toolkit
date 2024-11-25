@@ -41,7 +41,14 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
     };
     const result = await VS_CODE_UI.selectOption(config);
     if (result.isOk()) {
+      const progressHandler = VS_CODE_UI.createProgressBar(
+        localize("teamstoolkit.commands.switchTenant.progressbar.title"),
+        1
+      );
+      await progressHandler.start();
+      await progressHandler.next(localize("teamstoolkit.commands.switchTenant.progressbar.detail"));
       const switchRes = await M365TokenInstance.switchTenant(result.value.result as string);
+      await progressHandler.end(switchRes.isOk());
       if (switchRes.isOk()) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
           [TelemetryProperty.AccountType]: AccountType.M365,
@@ -98,20 +105,34 @@ export async function onSwitchAzureTenant(...args: unknown[]): Promise<void> {
     },
   };
   const result = await VS_CODE_UI.selectOption(config);
+  let error: any;
   if (result.isOk()) {
-    // TODO: set tenant
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      ...getTriggerFromProperty(args),
-    });
-    return;
-  } else {
-    if (!isUserCancelError(result.error)) {
-      void showError(result.error);
+    const progressHandler = VS_CODE_UI.createProgressBar(
+      localize("teamstoolkit.commands.switchTenant.progressbar.title"),
+      1
+    );
+    await progressHandler.start();
+    await progressHandler.next(localize("teamstoolkit.commands.switchTenant.progressbar.detail"));
+    const switchRes = await azureAccountManager.switchTenant(result.value.result as string);
+    await progressHandler.end(switchRes.isOk());
+    if (switchRes.isOk()) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        ...getTriggerFromProperty(args),
+      });
+      return;
+    } else {
+      error = switchRes.error;
     }
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, result.error, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      ...getTriggerFromProperty(args),
-    });
+  } else {
+    error = result.error;
   }
+
+  if (!isUserCancelError(error)) {
+    void showError(error);
+  }
+  ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SwitchTenant, error, {
+    [TelemetryProperty.AccountType]: AccountType.Azure,
+    ...getTriggerFromProperty(args),
+  });
 }

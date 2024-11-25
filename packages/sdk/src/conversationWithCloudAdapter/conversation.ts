@@ -185,15 +185,17 @@ export class ConversationBot {
    * @param logic - The additional function to handle bot context.
    *
    * @example
-   * For example, to use with Restify:
+   * For example, to use with Express:
    * ``` typescript
    * // The default/empty behavior
-   * server.use(restify.plugins.bodyParser());
-   * server.post("api/messages", conversationBot.requestHandler);
+   * const expressApp = express();
+   * expressApp.use(express.json());
+   * expressApp.post("/api/notification", conversationBot.requestHandler);
    *
    * // Or, add your own logic
-   * server.use(restify.plugins.bodyParser());
-   * server.post("api/messages", async (req, res) => {
+   * const expressApp = express();
+   * expressApp.use(express.json());
+   * expressApp.post("/api/notification", async (req, res) => {
    *   await conversationBot.requestHandler(req, res, async (context) => {
    *     // your-own-context-logic
    *   });

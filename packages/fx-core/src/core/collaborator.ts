@@ -351,7 +351,10 @@ export async function listCollaborator(
             content: getLocalizedString("core.collaboration.TeamsAppOwner"),
             color: Colors.BRIGHT_WHITE,
           },
-          { content: teamsAppOwner.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
+          {
+            content: teamsAppOwner.userPrincipalName ?? teamsAppOwner.displayName,
+            color: Colors.BRIGHT_MAGENTA,
+          },
           { content: `.\n`, color: Colors.BRIGHT_WHITE }
         );
       }

@@ -6,10 +6,8 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Service } from "typedi";
-
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
-
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { wrapRun } from "../../utils/common";
@@ -18,6 +16,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
+import { pathUtils } from "../../utils/pathUtils";
 
 const actionName = "file/createOrUpdateEnvironmentFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
@@ -61,7 +60,7 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
   }> {
     try {
       this.validateArgs(args);
-      const target = this.getAbsolutePath(args.target!, context.projectPath);
+      const target = pathUtils.resolveFilePath(context.projectPath, args.target);
       await fs.ensureFile(target);
       const envs = dotenv.parse(await fs.readFile(target));
       context.logProvider?.debug(`Existing envs: ${JSON.stringify(envs)}`);
@@ -70,8 +69,20 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       );
       context.logProvider?.debug(`Updated envs: ${JSON.stringify(updatedEnvs)}`);
       await fs.writeFile(target, updatedEnvs.join(os.EOL));
+      const map = new Map<string, string>();
+      const envFilePathRes = await pathUtils.getEnvFilePath(
+        context.projectPath,
+        process.env.TEAMSFX_ENV || "dev"
+      );
+      if (envFilePathRes.isOk()) {
+        if (path.resolve(target) === path.resolve(envFilePathRes.value!)) {
+          for (const key of Object.keys(args.envs)) {
+            map.set(key, args.envs[key]);
+          }
+        }
+      }
       return {
-        output: new Map<string, string>(),
+        output: map,
         summaries: [
           getLocalizedString(
             "driver.file.createOrUpdateEnvironmentFile.summary",
@@ -114,11 +125,5 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
-  }
-
-  private getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string) {
-    return path.isAbsolute(relativeOrAbsolutePath)
-      ? relativeOrAbsolutePath
-      : path.join(projectPath, relativeOrAbsolutePath);
   }
 }

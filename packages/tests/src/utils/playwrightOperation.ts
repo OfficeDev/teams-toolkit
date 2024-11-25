@@ -220,7 +220,6 @@ export async function initPage(
       console.log("No Open App button");
     }
     console.log("[success] app loaded");
-    await page.waitForTimeout(Timeout.longTimeWait);
   });
 
   return page;
@@ -405,7 +404,6 @@ export async function initTeamsPage(
         page.waitForNavigation(),
       ]);
       await page.waitForTimeout(Timeout.longTimeWait);
-      console.log("click add button");
 
       try {
         console.log("dismiss message");
@@ -416,14 +414,12 @@ export async function initTeamsPage(
 
       // default
       console.log("click add button");
-      let addInBtn;
+      let addBtn;
       try {
-        addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
       } catch {
         try {
-          addInBtn = await page?.waitForSelector(
-            "button>span:has-text('Open')"
-          );
+          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
         } catch {
           await page.screenshot({
             path: getPlaywrightScreenshotPath("add_page"),
@@ -432,7 +428,8 @@ export async function initTeamsPage(
           throw "error to add app";
         }
       }
-      await addInBtn?.click();
+      await addBtn?.click();
+
       if (options?.type === "meeting") {
         // select meeting tab in dialog box
         const dialog = await page.waitForSelector("div[role='dialog']");
@@ -516,7 +513,6 @@ export async function initTeamsPage(
           console.log("No save button to click");
         }
       }
-      await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("successful to add teams app!!!");
     });
 
@@ -579,11 +575,24 @@ export async function reopenTeamsPage(
       }
       if (addApp) {
         await page.waitForTimeout(Timeout.longTimeWait);
-        console.log("click add button");
         // default
-        const addBtn = await page?.waitForSelector(
-          "button>span:has-text('Add')"
-        );
+        console.log("click add button");
+        let addBtn;
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        } catch {
+          try {
+            addBtn = await page?.waitForSelector(
+              "button>span:has-text('Open')"
+            );
+          } catch {
+            await page.screenshot({
+              path: getPlaywrightScreenshotPath("add_page"),
+              fullPage: true,
+            });
+            throw "error to add app";
+          }
+        }
         await addBtn?.click();
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -2316,6 +2325,45 @@ export async function validateBasicDashboardTab(page: Page) {
 
 export async function validateDashboardTab(page: Page) {
   try {
+    await RetryHandler.retry(async () => {
+      console.log("Before popup");
+      const popup = await page.waitForEvent("popup");
+      console.log("after popup");
+      if (popup && !popup?.isClosed()) {
+        await popup
+          .click('button:has-text("Reload")', {
+            timeout: Timeout.playwrightConsentPageReload,
+          })
+          .catch(() => {});
+        console.log("click Accept button");
+        await page.waitForTimeout(Timeout.longTimeWait);
+        try {
+          // input password
+          console.log(`fill in password`);
+          await popup.fill(
+            "input.input[type='password'][name='passwd']",
+            Env.password
+          );
+          // sign in
+          await Promise.all([
+            popup.click("input.button[type='submit'][value='Sign in']"),
+            popup.waitForNavigation(),
+          ]);
+          await popup.click("input.button[type='submit'][value='Accept']");
+          try {
+            await popup?.close();
+          } catch (error) {
+            console.log("popup is closed");
+          }
+        } catch (error) {
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("login_error"),
+            fullPage: true,
+          });
+          throw error;
+        }
+      }
+    });
     console.log("start to verify dashboard tab");
     await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(

@@ -37,11 +37,11 @@ class SecretMasker {
     // If the decision function value is positive, classify as 1 (secret), otherwise 0 (non-secret)
     return decisionValue > 0 ? 1 : 0;
   }
-  maskSecret(text: string, replace = "***"): string {
+  maskSecret(text: string, replace = "***", whiteList?: string[]): string {
     const tokens = extractFeatures(text);
     for (const token of tokens) {
       if (token.type === "splitter") continue;
-      if (WHITE_LIST.includes(token.token)) continue;
+      if (whiteList && whiteList.includes(token.token)) continue;
       const prediction = this.predict(token.vector!);
       token.label = prediction;
       if (prediction === 1) {

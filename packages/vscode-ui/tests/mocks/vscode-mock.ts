@@ -45,7 +45,8 @@ function initialize() {
     return originalLoad.apply(this, arguments);
   };
 }
-
+mockedVSCode.TaskScope = vscodeMocks.TaskScope;
+mockedVSCode.ShellExecution = vscodeMocks.ShellExecution;
 mockedVSCode.MarkdownString = vscodeMocks.MarkdownString;
 mockedVSCode.Hover = vscodeMocks.Hover;
 mockedVSCode.Disposable = vscodeMocks.Disposable as any;
@@ -130,7 +131,12 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
   createFileSystemWatcher: (globPattern: vscode.GlobPattern) => {},
   getConfiguration: () => {},
 };
-
+(mockedVSCode as any).tasks = {
+  executeTask: () => {},
+  onDidEndTaskProcess: () => {
+    return { dispose: () => {} };
+  },
+};
 // Setup extensions APIs
 mockedVSCode.extensions = {
   getExtension: () => {

@@ -64,8 +64,8 @@ export class MockedAzureAccountProvider implements AzureAccountProvider {
   async signout(): Promise<boolean> {
     return true;
   }
-  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
-    return ok("fakeToken");
+  async switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
+    return ok(new MyTokenCredential());
   }
   async setStatusChangeMap(
     name: string,
@@ -242,7 +242,7 @@ export class MockUserInteraction implements UserInteraction {
     timeout?: number;
     env?: { [k: string]: string };
   }): Promise<Result<string, FxError>> {
-    throw new Error(`Method openUrl not implemented: runCommand`);
+    return ok("");
   }
 
   async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {

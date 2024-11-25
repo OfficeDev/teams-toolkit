@@ -34,7 +34,7 @@ export class AzureAccountNode extends DynamicNode {
       }
     }
     this.contextValue = "signedinAzure";
-    this.eventEmitter.fire(undefined);
+    this.eventEmitter.fire(this);
     return false;
   }
 

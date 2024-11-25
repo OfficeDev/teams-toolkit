@@ -277,6 +277,7 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  InvokeTeamsAgentStart = "invoke-teams-agent-start",
   InvokeTeamsAgent = "invoke-teams-agent",
 
   // Copilot Chat
@@ -302,6 +303,9 @@ export enum TelemetryEvent {
   UpdateAddPluginTreeview = "update-add-plugin-tree-view",
 
   AddPluginWithManifest = "add-plugin-with-manifest",
+
+  KiotaRegenerateStart = "kiota-regenerate-start",
+  KiotaRegenerate = "kiota-regenerate",
 }
 
 export enum TelemetryProperty {
@@ -423,7 +427,6 @@ export enum TelemetryProperty {
   CopilotChatResponseToken = "copilot-chat-response-token",
   KiotaInstalled = "kiota-installed",
   ShowAddPluginTreeView = "show-add-plugin-tree-view",
-  InstallTarget = "install-target",
 }
 
 export enum TelemetryMeasurements {

@@ -3,7 +3,6 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
-  CopilotExtensionEnable = "developCopilotPlugin",
   LogLevel = "logLevel",
   EnableMicrosoftKiota = "enableMicrosoftKiota",
 }
@@ -36,6 +35,7 @@ export enum GlobalKey {
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
   SampleGalleryInitialSample = "teamsToolkit:sampleGallery:initialSample",
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
+  DoNotRemindInstallTeamsAgent = "teamsToolkit:doNotRemindInstallTeamsAgent",
 }
 
 export enum CommandKey {

@@ -35,12 +35,17 @@ This app template allows Teams to interact directly with third-party data, apps,
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                         | Contents                                                            |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| `src/functions/repair.js`                    | The main file of a function in Azure Functions.                     |
-| `src/repairsData.json`                       | The data source for the repair API.                                 |
-| `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API. |
-| `appPackage/responseTemplates/repair.json`   | A generated Adaptive Card that used to render API response.         |
+| File                                            | Contents                                                                                                                      |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src/functions/repair.js`                       | The main file of a function in Azure Functions.                                                                               |
+| `src/functions/middleware/tokenCacheWrapper.js` | A wrapper class that handles caching of JWT signing keys to improve performance of token validation.                          |
+| `src/functions/middleware/tokenValidator.js`    | Core class for validating JWT tokens from Microsoft Entra, including checks for claims, scopes, roles, and tenant validation. |
+| `src/functions/middleware/authMiddleware.js`    | Middleware function that handles authorization using JWT tokens, integrating with the token validator.                        |
+| `src/functions/middleware/utils.js`             | Utility functions for authentication, including retrieving JWKS URIs for different cloud environments.                        |
+| `src/functions/middleware/config.js`            | Configuration file that exports Microsoft Entra app settings from environment variables.                                      |
+| `src/repairsData.json`                          | The data source for the repair API.                                                                                           |
+| `appPackage/apiSpecificationFile/repair.yml`    | A file that describes the structure and behavior of the repair API.                                                           |
+| `appPackage/responseTemplates/repair.json`      | A generated Adaptive Card that used to render API response.                                                                   |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -53,8 +58,6 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## How Microsoft Entra works
 
 ![microsoft-entra-flow](https://github.com/OfficeDev/TeamsFx/assets/107838226/846e7a60-8cc1-4d8b-852e-2aec93b61fe9)
-
-> **Note**: The Azure Active Directory (AAD) flow is only functional in remote environments. It cannot be tested in a local environment due to the lack of authentication support in Azure Function core tools.
 
 ## Addition information and references
 

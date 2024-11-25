@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { confirm, password, input } from "@inquirer/prompts";
+import { confirm, input, password } from "@inquirer/prompts";
 import {
   Colors,
   ConfirmConfig,
@@ -30,6 +30,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
+  ScriptExecutionError,
   SelectSubscriptionError,
   UserCancelError,
   assembleError,
@@ -45,6 +46,13 @@ import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { errors } from "./resource";
 import { getColorizedString } from "./utils";
+import { spawn } from "child_process";
+
+export const inquirerPrompts = {
+  confirm,
+  password,
+  input,
+};
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -113,10 +121,16 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue || "");
     }
     ScreenManager.pause();
-    const answer = await input({
+    const answer = await inquirerPrompts.input({
       message,
       default: defaultValue,
       validate,
+      theme: {
+        prefix: {
+          idle: "\x1b[32m?\x1b[0m", // Green question mark displayed when input is in progress
+          done: "\x1b[32m?\x1b[0m", // Green question mark displayed when input is completed
+        },
+      },
     });
     ScreenManager.continue();
     return ok(answer);
@@ -132,7 +146,7 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue || "");
     }
     ScreenManager.pause();
-    const answer = await password({
+    const answer = await inquirerPrompts.password({
       message,
       mask: "*",
       validate,
@@ -165,7 +179,7 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue !== undefined ? defaultValue : true);
     }
     ScreenManager.pause();
-    const answer = await confirm({
+    const answer = await inquirerPrompts.confirm({
       message,
       default: defaultValue ?? true,
       transformer,
@@ -370,6 +384,13 @@ class CLIUserInteraction implements UserInteraction {
           return ok({ type: "skip", result: (answers as OptionItem[]).map((a) => a.id) });
         }
       }
+    }
+    if (config.default === "all") {
+      config.default = (config.options as StaticOptions).map((o) =>
+        typeof o === "string" ? o : o.id
+      );
+    } else if (config.default === "none") {
+      config.default = [];
     }
     const [choices, defaultValue] = this.toChoices(
       config.options as StaticOptions,
@@ -600,6 +621,44 @@ class CLIUserInteraction implements UserInteraction {
 
   public createProgressBar(title: string, totalSteps: number): IProgressHandler {
     return new Progress(title, totalSteps);
+  }
+
+  async runCommand(args: {
+    cmd: string;
+    workingDirectory?: string | undefined;
+    shell?: string | undefined;
+    timeout?: number | undefined;
+    env?: { [k: string]: string } | undefined;
+    shellName?: string;
+    iconPath?: string;
+  }): Promise<Result<string, FxError>> {
+    return new Promise<Result<string, FxError>>((resolve) => {
+      const isWindows = process.platform === "win32";
+      const command = isWindows ? "cmd.exe" : "/bin/bash";
+      const commandArgs = isWindows ? ["/c", args.cmd] : ["-c", args.cmd];
+      logger.info(`Executing task: ${args.cmd}`);
+      const childProcess = spawn(command, commandArgs, {
+        stdio: "inherit",
+        cwd: args.workingDirectory,
+        timeout: args.timeout,
+        env: args.env,
+      });
+      childProcess.on("close", (code: number) => {
+        if (code === 0) {
+          resolve(ok(""));
+        } else {
+          logger.error("Execute task failed with code:" + code);
+          resolve(
+            err(
+              new ScriptExecutionError(
+                new Error("Execute task failed with exit code:" + code),
+                args.cmd
+              )
+            )
+          );
+        }
+      });
+    });
   }
 }
 

@@ -14,6 +14,7 @@ import {
 import { TelemetryTriggerFrom } from "../../../src/telemetry/extTelemetryEvents";
 import * as tool from "@microsoft/teamsfx-core/build/common/tools";
 import * as vsc_ui from "../../../src/qm/vsc_ui";
+import { LoginFailureError } from "../../../src/commonlib/codeFlowLogin";
 
 describe("onSwitchM365Tenant", () => {
   const sandbox = sinon.createSandbox();
@@ -178,6 +179,55 @@ describe("onSwitchAzureTenant", () => {
     }
   });
 
+  it("User cancelled", async () => {
+    sandbox.stub(azureAccountManager, "getIdentityCredentialAsync").resolves({
+      getToken: () => {
+        return Promise.resolve(null);
+      },
+    });
+    selectOptionStub = sandbox
+      .stub(vsc_ui.VS_CODE_UI, "selectOption")
+      .resolves(err(new UserCancelError()));
+
+    await onSwitchAzureTenant(TelemetryTriggerFrom.SideBar);
+
+    chai.assert.isTrue(sendTelemetryEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+  });
+
+  it("Failed to switch tenant", async () => {
+    sandbox.stub(azureAccountManager, "getIdentityCredentialAsync").resolves({
+      getToken: () => {
+        return Promise.resolve({ token: "faked token", expiresOnTimestamp: 0 });
+      },
+    });
+    sandbox.stub(tool, "listAllTenants").resolves([
+      {
+        tenantId: "0022fd51-06f5-4557-8a34-69be98de6e20",
+        displayName: "MSFT",
+        defaultDomain: "t815h.onmicrosoft.com",
+      },
+      {
+        tenantId: "313ef12c-d7cb-4f01-af90-1b113db5aa9a",
+        displayName: "Cisco",
+        defaultDomain: "Cisco561.onmicrosoft.com",
+      },
+    ]);
+    selectOptionStub = sandbox
+      .stub(vsc_ui.VS_CODE_UI, "selectOption")
+      .resolves(ok({ type: "success" }));
+    const switchTenantStub = sandbox
+      .stub(azureAccountManager, "switchTenant")
+      .resolves(err(LoginFailureError()));
+
+    await onSwitchAzureTenant(TelemetryTriggerFrom.SideBar);
+
+    chai.assert.isTrue(sendTelemetryEventStub.calledOnce);
+    chai.assert.isTrue(sendTelemetryErrorEventStub.calledOnce);
+    chai.assert.isTrue(selectOptionStub.calledOnce);
+    chai.assert.isTrue(switchTenantStub.calledOnce);
+  });
+
   it("Succeed to switch tenant", async () => {
     sandbox.stub(azureAccountManager, "getIdentityCredentialAsync").resolves({
       getToken: () => {
@@ -199,12 +249,20 @@ describe("onSwitchAzureTenant", () => {
     selectOptionStub = sandbox
       .stub(vsc_ui.VS_CODE_UI, "selectOption")
       .resolves(ok({ type: "success" }));
+    const switchTenantStub = sandbox.stub(azureAccountManager, "switchTenant").resolves(
+      ok({
+        getToken: () => {
+          return Promise.resolve(null);
+        },
+      })
+    );
 
     await onSwitchAzureTenant(TelemetryTriggerFrom.SideBar);
 
     chai.assert.isTrue(sendTelemetryEventStub.calledTwice);
     chai.assert.isTrue(sendTelemetryErrorEventStub.notCalled);
     chai.assert.isTrue(selectOptionStub.calledOnce);
+    chai.assert.isTrue(switchTenantStub.calledOnce);
     const items = await selectOptionStub.args[0][0].options();
     chai.assert.deepEqual(items, [
       {

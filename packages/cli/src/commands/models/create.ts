@@ -44,17 +44,6 @@ function adjustOptions(options: CLICommandOption[]) {
     }
   }
 
-  // if (!isCopilotExtensionEnabled()) {
-  //   //skip Copilot extension questions if the feature flag is not enabled.
-  //   const questionsToDelete = [
-  //     QuestionNames.ApiPluginType,
-  //     QuestionNames.WithPlugin,
-  //     QuestionNames.PluginManifestFilePath,
-  //     QuestionNames.PluginOpenApiSpecFilePath,
-  //   ];
-  //   options = options.filter((option) => !questionsToDelete.includes(option.name as QuestionNames));
-  // }
-
   return options;
 }
 

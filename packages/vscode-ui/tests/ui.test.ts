@@ -21,6 +21,8 @@ import {
   Disposable,
   QuickInputButton,
   QuickPick,
+  Task,
+  tasks,
   Terminal,
   TextDocument,
   window,
@@ -40,20 +42,11 @@ describe("UI Unit Tests", async () => {
 
   describe("Manually", () => {
     it("Show Progress 2", async function (this: Mocha.Context) {
-      this.timeout(0);
       const handler = ui.createProgressBar("Test Progress Bar", 3);
       await handler.start("Prepare");
-      await sleep(2 * 1000);
-
       await handler.next("First step");
-      await sleep(2 * 1000);
-
       await handler.next("Second step");
-      await sleep(2 * 1000);
-
       await handler.next("Third step");
-      await sleep(2 * 1000);
-
       await handler.end(true);
     });
   });
@@ -95,11 +88,6 @@ describe("UI Unit Tests", async () => {
       if (result.isOk()) {
         expect(result.value.result).to.equal("default folder");
       }
-      // expect(
-      //   telemetryStub.calledOnceWith("select-folder", {
-      //     "selected-option": "default",
-      //   })
-      // ).is.true;
       sinon.restore();
     });
 
@@ -396,42 +384,26 @@ describe("UI Unit Tests", async () => {
     afterEach(() => {
       sandbox.restore();
     });
-
-    it("runs command successfully", async function (this: Mocha.Context) {
-      const timer = sandbox.useFakeTimers();
-      const mockTerminal = stubInterface<Terminal>();
-      sandbox.stub(window, "createTerminal").returns(mockTerminal);
-
-      const runCmd = ui.runCommand({ cmd: "test" });
-      await timer.tickAsync(1000);
-      const result = await runCmd;
-
-      expect(mockTerminal.show.calledOnce).to.be.true;
-      expect(mockTerminal.sendText.calledOnceWithExactly("test")).to.be.true;
-      expect(result.isOk()).is.true;
-      timer.restore();
-    });
-
     it("runs command timeout", async function (this: Mocha.Context) {
       const timer = sandbox.useFakeTimers();
-      const mockTerminal = {
-        show: sinon.stub(),
-        sendText: sinon.stub(),
-        processId: new Promise((resolve: (value: string) => void, reject) => {
-          const wait = setTimeout(() => {
-            clearTimeout(wait);
-            resolve("1");
-          }, 1000);
-        }),
-      } as unknown as Terminal;
-      sandbox.stub(window, "createTerminal").returns(mockTerminal);
-
       const runCmd = ui.runCommand({ cmd: "test", timeout: 200 });
+      sandbox.stub(tasks, "executeTask").resolves();
       await timer.tickAsync(2000);
       const result = await runCmd;
-
       expect(result.isErr()).is.true;
       timer.restore();
+    });
+    it("runs command successfully", async function (this: Mocha.Context) {
+      sandbox.stub(tasks, "executeTask").resolves();
+      const disposable = { dispose: () => {} };
+      const stub = sandbox.stub(tasks, "onDidEndTaskProcess").returns(disposable);
+      stub.yields({
+        exitCode: 0,
+        execution: { task: { name: "Execute script action", source: "ms-teams-vscode-extension" } },
+      });
+      const runCmd = ui.runCommand({ cmd: "test" });
+      const result = await runCmd;
+      expect(result.isOk()).is.true;
     });
   });
 

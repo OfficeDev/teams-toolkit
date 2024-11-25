@@ -1104,37 +1104,19 @@ export function declarativeAgentToBotQuestionNode(): IQTreeNode {
     },
     children: [
       {
-        data: selectDeclarativeAgentQuestion(),
+        data: multiTenantQuestion(),
       },
+      selectTeamsAppManifestQuestionNode(),
     ],
   };
 }
 
-export function selectDeclarativeAgentQuestion(): SingleFileQuestion {
+export function multiTenantQuestion(): ConfirmQuestion {
   return {
-    name: QuestionNames.DeclarativeAgentFilePath,
-    cliName: "declarative-agent-file",
-    cliShortName: "d",
-    cliDescription:
-      "Specify the path for Declarative Agent file. It can be either absolute path or relative path to the project root folder, with default at './appPackage/declarativeAgent.json'",
-    title: getLocalizedString("core.selectDeclarativeAgentQuestion.title"),
-    type: "singleFile",
-    default: (inputs: Inputs): string | undefined => {
-      if (inputs.platform === Platform.CLI_HELP) {
-        return "./appPackage/declarativeAgent.json";
-      } else {
-        if (!inputs.projectPath) return undefined;
-        const declarativeAgentPath = path.join(
-          inputs.projectPath,
-          AppPackageFolderName,
-          "declarativeAgent.json"
-        );
-        if (fs.pathExistsSync(declarativeAgentPath)) {
-          return declarativeAgentPath;
-        } else {
-          return undefined;
-        }
-      }
-    },
+    name: QuestionNames.MultiTenant,
+    title: "Should the bot being created support multi tenant?",
+    type: "confirm",
+    default: false,
+    required: false,
   };
 }

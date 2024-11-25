@@ -18,6 +18,7 @@ export {
   AppStudioScopes,
   AuthSvcScopes,
   AzureScopes,
+  CopilotStudioScopes,
   GraphReadUserScopes,
   GraphScopes,
   SPFxScopes,

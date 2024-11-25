@@ -11,6 +11,8 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 
 export interface DeclarativeAgentBotInputs extends Inputs {
-  /** @description Select Declarative Agent file */
-  "declarative-agent-path"?: string;
+  /** @description Should the bot being created support multi tenant? */
+  "multi-tenant"?: string;
+  /** @description Select Teams manifest.json File */
+  "manifest-path"?: string;
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, CopilotStudioScopes } from "@microsoft/teamsfx-core";
 import { TextType, colorize } from "../../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../../commonlib/azureLogin";
 import AzureTokenCIProvider from "../../commonlib/azureLoginCI";
@@ -23,10 +23,10 @@ class AccountUtils {
   }
 
   async outputM365Info(commandType: "login" | "show"): Promise<boolean> {
-    const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({
-      scopes: AppStudioScopes,
+    const tokenJsonRes = await M365TokenProvider.getJsonObject({
+      scopes: [...AppStudioScopes, ...CopilotStudioScopes],
     });
-    const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
+    const result = tokenJsonRes.isOk() ? tokenJsonRes.value : undefined;
     if (result) {
       const username = (result as any).upn;
       if (commandType === "login") {

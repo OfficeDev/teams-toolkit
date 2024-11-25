@@ -158,7 +158,7 @@ function escapeEmptyVariable(
 
 function updateTokens(
   tokens: string[][],
-  view: Record<string, string | undefined>,
+  view: Record<string, any | undefined>,
   tags: [string, string],
   accShift: number
 ): number {
@@ -174,7 +174,16 @@ function updateTokens(
     } else if (token[0] === "#" || token[0] === "^") {
       token[2] += accShift;
       token[3] += accShift;
-      accShift += updateTokens(token[4] as any, view, tags, accShift);
+
+      let rootView = view;
+      if (Array.isArray(view[token[1]])) {
+        rootView = view[token[1]][0];
+      } else if (typeof view[token[1]] === "object") {
+        rootView = view[token[1]];
+      }
+
+      accShift += updateTokens(token[4] as any, rootView, tags, accShift);
+
       token[5] += accShift;
     }
   }

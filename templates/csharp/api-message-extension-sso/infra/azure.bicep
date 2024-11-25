@@ -56,11 +56,11 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
         {
-          name: 'M365_CLIENT_ID'
+          name: 'CLIENT_ID'
           value: aadAppClientId
         }
         {
-          name: 'M365_TENANT_ID'
+          name: 'TENANT_ID'
           value: aadAppTenantId
         }
         {

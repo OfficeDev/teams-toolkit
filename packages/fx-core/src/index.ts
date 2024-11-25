@@ -29,7 +29,6 @@ export {
   featureFlagManager,
   isFeatureFlagEnabled,
   FeatureFlagName,
-  isCopilotExtensionEnabled,
 } from "./common/featureFlags";
 export { globalStateGet, globalStateUpdate } from "./common/globalState";
 export { getDefaultString, getLocalizedString } from "./common/localizeUtils";

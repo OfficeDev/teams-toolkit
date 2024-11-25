@@ -91,6 +91,24 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
+    with:
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      target: ../appsettings.Development.json
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      target: ../{{appName}}/appsettings.Development.json
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
+{{^isNewProjectTypeEnabled}}
+      target: ./appsettings.Development.json
+{{/isNewProjectTypeEnabled}}
+      content:
+        CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        TENANT_ID: ${{AAD_APP_TENANT_ID}}
 {{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file

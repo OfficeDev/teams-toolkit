@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 import json
+from dataclasses import asdict
 from botbuilder.core import MemoryStorage, TurnContext
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.ai import AIOptions
@@ -9,6 +10,7 @@ from teams.ai.models import AzureOpenAIModelOptions, OpenAIModel, OpenAIModelOpt
 from teams.ai.planners import ActionPlanner, ActionPlannerOptions
 from teams.ai.prompts import PromptManager, PromptManagerOptions
 from teams.state import TurnState
+from teams.feedback_loop_data import FeedbackLoopData
 
 from my_data_source import MyDataSource
 

@@ -101,7 +101,7 @@ class Coordinator {
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
       !inputs[QuestionNames.ApiPluginManifestPath] &&
       (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id)
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id)
     ) {
       const lastCommand =
         inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id

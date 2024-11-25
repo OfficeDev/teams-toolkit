@@ -24,9 +24,9 @@
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.22.9" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.9" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
-	  <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
-	  <PackageReference Include="Microsoft.Identity.Web.TokenCache" Version="2.16.0" />
-	  <PackageReference Include="Microsoft.Teams.AI" Version="1.8.*" />
+    <PackageReference Include="Microsoft.Graph" Version="4.54.0" />
+    <PackageReference Include="Microsoft.Identity.Web.TokenCache" Version="2.16.0" />
+    <PackageReference Include="Microsoft.Teams.AI" Version="1.8.*" />
     <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.36.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />

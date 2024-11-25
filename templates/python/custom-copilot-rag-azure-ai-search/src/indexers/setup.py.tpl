@@ -47,7 +47,7 @@ async def create_index_if_not_exists(client: SearchIndexClient, name: str):
             SimpleField(name="docId", type=SearchFieldDataType.String, key=True),
             SimpleField(name="docTitle", type=SearchFieldDataType.String),
             SearchableField(name="description", type=SearchFieldDataType.String, searchable=True),
-            SearchField(name="descriptionVector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single), searchable=True, vector_search_dimensions=1536, vector_search_profile_name='my-vector-config'),
+            SearchField(name="descriptionVector", type=SearchFieldDataType.Collection(SearchFieldDataType.Single), hidden=False, searchable=True, vector_search_dimensions=1536, vector_search_profile_name='my-vector-config'),
         ],
         scoring_profiles=[],
         cors_options=CorsOptions(allowed_origins=["*"]),

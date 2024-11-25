@@ -30,7 +30,6 @@ export interface CreateProjectInputs extends Inputs {
     | "collect-form-message-extension"
     | "search-message-extension"
     | "link-unfurling"
-    | "api-plugin"
     | "declarative-agent"
     | "custom-copilot-basic"
     | "custom-copilot-rag"

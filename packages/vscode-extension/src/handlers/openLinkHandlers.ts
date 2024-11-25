@@ -153,8 +153,8 @@ export async function openReportIssues(...args: unknown[]): Promise<Result<boole
 
 export async function openDocumentHandler(...args: unknown[]): Promise<Result<boolean, FxError>> {
   let documentName = "general";
-  if (args && args.length >= 2) {
-    documentName = args[1] as string;
+  if (args && args.length >= 2 && typeof args[1] === "string") {
+    documentName = args[1];
   }
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),

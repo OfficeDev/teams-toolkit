@@ -46,7 +46,7 @@ jobs:
           exit 1
 
       - name: Validate inputs for release
-        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/release/') && (github.event.inputs.preid != 'stable' && github.event.inputs.preid != 'rc')}}
+        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/release/')}}
         run: |
           echo It's only allowed to release stable on release branch
           exit 1
@@ -104,7 +104,7 @@ jobs:
           npx lerna version prerelease --preid=alpha.$(git rev-parse --short HEAD) --exact --no-push --allow-branch dev --yes
 
       - name: release beta packages to npmjs.org
-        if: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
+        if: ${{ github.ref != 'refs/heads/dev' && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'beta' }}
         run: |
           npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
 

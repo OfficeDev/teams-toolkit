@@ -8,8 +8,13 @@
 import { Capability } from "../../utils/constants";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { CaseFactory } from "../caseFactory";
+import { FeatureFlagName } from "../../../../fx-core/src/common/featureFlags";
 
-class DeclarativeAgentWithEntra extends CaseFactory {}
+class DeclarativeAgentWithEntra extends CaseFactory {
+  public override async onBefore(): Promise<void> {
+    process.env[FeatureFlagName.ApiPluginAAD] = "true";
+  }
+}
 
 const myRecord: Record<string, string> = {};
 myRecord["with-plugin"] = "yes";

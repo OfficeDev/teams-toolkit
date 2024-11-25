@@ -8,8 +8,18 @@
 import { Capability } from "../../utils/constants";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { CaseFactory } from "../caseFactory";
+import path from "path";
+import * as fs from "fs-extra";
 
-class DeclarativeAgentWithApiKeyAuth extends CaseFactory {}
+class DeclarativeAgentWithApiKeyAuth extends CaseFactory {
+  public override async onAfterCreate(projectPath: string): Promise<void> {
+    const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
+    const fileContent = fs.readFileSync(userFile, `utf8`);
+    const SECRET_API_KEY = "SECRET_API_KEY=fakeApiKey";
+    fileContent.replace(/SECRET_API_KEY=.*/, SECRET_API_KEY);
+    console.log(`add key ${SECRET_API_KEY} to .env.dev.user file`);
+  }
+}
 
 const myRecord: Record<string, string> = {};
 myRecord["with-plugin"] = "yes";

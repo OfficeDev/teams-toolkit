@@ -17,18 +17,21 @@ export class DeclarativeAgentBotContext {
   tokenProvider: M365TokenProvider | undefined = undefined;
   declarativeAgentId?: string;
   teamsBotId?: string;
+  multiTenant = false;
 
   static async create(
     env: string,
     projectPath: string,
     declarativeAgentManifestPath: string,
-    tokenProvider: M365TokenProvider
+    tokenProvider: M365TokenProvider,
+    multiTenant: boolean
   ): Promise<DeclarativeAgentBotContext> {
     const context = new DeclarativeAgentBotContext(
       env,
       projectPath,
       declarativeAgentManifestPath,
-      tokenProvider
+      tokenProvider,
+      multiTenant
     );
     await fs.ensureDir(context.backupPath);
     return context;
@@ -38,13 +41,15 @@ export class DeclarativeAgentBotContext {
     env: string,
     projectPath: string,
     declarativeAgentManifestPath: string,
-    tokenProvider: M365TokenProvider
+    tokenProvider: M365TokenProvider,
+    multiTenant: boolean
   ) {
     this.env = env;
     this.projectPath = projectPath;
     this.declarativeAgentManifestPath = declarativeAgentManifestPath;
     this.tokenProvider = tokenProvider;
     this.backupPath = path.join(this.projectPath, backupFolder);
+    this.multiTenant = multiTenant;
   }
 
   async backup(_path: string): Promise<boolean> {

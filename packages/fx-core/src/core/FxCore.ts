@@ -2127,20 +2127,16 @@ export class FxCore {
     const teamsManifestPath = inputs[QuestionNames.ManifestPath];
 
     // validate the project is valid for creating declarative agent bot
-    const manifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
-    if (manifestRes.isErr()) {
-      return err(manifestRes.error);
+    const teamsManifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
+    if (teamsManifestRes.isErr()) {
+      return err(teamsManifestRes.error);
     }
-
-    // read declarative agent manifest
-    const declarativeAgentManifestPath = inputs[QuestionNames.DeclarativeAgentFilePath];
-    const declarativeAgentManifesRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
-      declarativeAgentManifestPath
+    const declarativeAgentManifesRes = await copilotGptManifestUtils.getManifestPath(
+      teamsManifestPath
     );
     if (declarativeAgentManifesRes.isErr()) {
       return err(declarativeAgentManifesRes.error);
     }
-    const declarativeAgentManifest = declarativeAgentManifesRes.value;
 
     // user confirm
     const confirmRes = await context.userInteraction.showMessage(
@@ -2160,8 +2156,9 @@ export class FxCore {
     const declarativeAgentBotContext = await DeclarativeAgentBotContext.create(
       inputs.env,
       inputs.projectPath,
-      declarativeAgentManifestPath,
-      inputs.tokenProvider
+      declarativeAgentManifesRes.value,
+      inputs.tokenProvider,
+      inputs[QuestionNames.MultiTenant]
     );
     await create(declarativeAgentBotContext);
 

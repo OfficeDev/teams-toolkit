@@ -14,8 +14,12 @@ import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
 import { envUtil } from "../utils/envUtil";
 import { DeclarativeAgentBotContext } from "./declarativeAgentBotContext";
 import { DeclarativeAgentBotDefinition } from "./declarativeAgentDefinition";
+import { loadStateFromEnv } from "../driver/util/utils";
 
 const launchJsonFile = ".vscode/launch.json";
+const defaultOutputNames = {
+  m365AppId: "M365_APP_ID",
+};
 
 export async function create(context: DeclarativeAgentBotContext): Promise<void> {
   await wrapExecution(context);
@@ -101,27 +105,27 @@ async function uppdateManifest(context: DeclarativeAgentBotContext): Promise<voi
 }
 
 async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> {
-  const copilotGptManifestPath = path.join(
-    context.projectPath,
-    context.declarativeAgentManifestPath
-  );
-  const copilotGptManifest = await copilotGptManifestUtils.readCopilotGptManifestFile(
-    copilotGptManifestPath
-  );
-  if (copilotGptManifest.isErr()) {
+  const agentManifestPath = path.join(context.projectPath, context.declarativeAgentManifestPath);
+  const agentManifest = await copilotGptManifestUtils.readCopilotGptManifestFile(agentManifestPath);
+  if (agentManifest.isErr()) {
     return;
+  }
+
+  const state = loadStateFromEnv(new Map(Object.entries(defaultOutputNames)));
+  if (!state.m365AppId) {
+    throw new Error("M365 app id is not found in .env file");
   }
 
   // construct payload for bot provisioning
   const payload: DeclarativeAgentBotDefinition = {
     GptDefinition: {
-      id: copilotGptManifest.value.id,
-      name: copilotGptManifest.value.name,
-      description: copilotGptManifest.value.description,
-      instructions: copilotGptManifest.value.instructions,
+      id: agentManifest.value.id,
+      name: agentManifest.value.name,
+      teams_app_id: state.m365AppId,
     },
-    PersistentModel: 1,
+    PersistentModel: 0,
     EnableChannels: ["msteams"],
+    IsMultiTenant: context.multiTenant,
   };
 
   // provision bot
@@ -130,11 +134,10 @@ async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> 
   });
 
   if (result.isErr()) {
-    return;
+    throw result.error;
   }
 
-  const accessToken = result.value;
-  await copilotStudioClient.createBot(accessToken, payload);
+  await copilotStudioClient.createBot(result.value, payload);
 }
 
 async function getBotId(context: DeclarativeAgentBotContext): Promise<void> {

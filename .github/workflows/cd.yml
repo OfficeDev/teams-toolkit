@@ -45,12 +45,6 @@ jobs:
           echo It's only allowed to release RC and stable on main branch.
           exit 1
 
-      - name: Validate inputs for release
-        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/release/')}}
-        run: |
-          echo It's only allowed to release stable on release branch
-          exit 1
-
       - name: Valiadte inputs for dev
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid != 'alpha' }}
         run: |

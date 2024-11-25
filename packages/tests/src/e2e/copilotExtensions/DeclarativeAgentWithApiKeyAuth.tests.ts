@@ -15,7 +15,7 @@ class DeclarativeAgentWithApiKeyAuth extends CaseFactory {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
     const fileContent = fs.readFileSync(userFile, `utf8`);
-    const SECRET_API_KEY = "SECRET_API_KEY=fakeApiKey";
+    const SECRET_API_KEY = "SECRET_API_KEY=fakeApiKey12345";
     fileContent.replace(/SECRET_API_KEY=.*/, SECRET_API_KEY);
     console.log(`add key ${SECRET_API_KEY} to .env.dev.user file`);
   }

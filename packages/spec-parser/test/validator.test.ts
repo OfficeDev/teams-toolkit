@@ -2604,6 +2604,75 @@ describe("Validator", () => {
       const { isValid, reason } = validator.validateAPI(method, path);
       assert.strictEqual(isValid, true);
     });
+
+    it("should return true if method has unsupported auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  api_key: [],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: true,
+        allowBearerTokenAuth: true,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid, reason } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, true);
+    });
   });
 
   describe("TeamsAIValidator", () => {

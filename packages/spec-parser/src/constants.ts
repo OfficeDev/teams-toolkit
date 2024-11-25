@@ -40,6 +40,9 @@ export class ConstantString {
   static readonly OperationIdContainsSpecialCharacters =
     "Operation id '%s' in OpenAPI description document contained special characters and was renamed to '%s'.";
 
+  static readonly AuthTypeIsNotSupported =
+    "Unsupported authorization type in API '%s'. No authorization will be used.";
+
   static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
   static readonly FuncDescriptionTooLong =
     "The description of the function '%s' is too long. The current length is %s characters, while the maximum allowed length is %s characters.";

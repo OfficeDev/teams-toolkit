@@ -44,6 +44,29 @@ export class Utils {
     );
   }
 
+  static isNotSupportedAuth(authSchemeArray: AuthInfo[][]): boolean {
+    if (authSchemeArray.length === 0) {
+      return false;
+    }
+
+    if (authSchemeArray.length > 0 && authSchemeArray.every((auths) => auths.length > 1)) {
+      return true;
+    }
+
+    for (const auths of authSchemeArray) {
+      if (auths.length === 1) {
+        if (
+          Utils.isOAuthWithAuthCodeFlow(auths[0].authScheme) ||
+          Utils.isBearerTokenAuth(auths[0].authScheme)
+        ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
   static getAuthArray(
     securities: OpenAPIV3.SecurityRequirementObject[] | undefined,
     spec: OpenAPIV3.Document

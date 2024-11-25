@@ -316,6 +316,16 @@ export class SpecParser {
         for (const method in operations) {
           const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
           const operationId = operationItem.operationId!;
+
+          const authArray = Utils.getAuthArray(operationItem.security, newSpec);
+          if (Utils.isNotSupportedAuth(authArray)) {
+            result.warnings.push({
+              type: WarningType.UnsupportedAuthType,
+              content: Utils.format(ConstantString.AuthTypeIsNotSupported, operationId),
+              data: operationId,
+            });
+          }
+
           const containsSpecialCharacters = /[^a-zA-Z0-9_]/.test(operationId);
           if (!containsSpecialCharacters) {
             continue;

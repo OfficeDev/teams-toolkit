@@ -1784,7 +1784,7 @@
               "$ref": "#/definitions/envVarName"
             },
             "applicationIdUri": {
-              "description": "Required. The Application ID URI of created OAuth registration.",
+              "description": "The Application ID URI of created OAuth registration.",
               "$ref": "#/definitions/envVarName"
             }
           }

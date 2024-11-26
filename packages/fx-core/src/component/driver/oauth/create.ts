@@ -116,10 +116,15 @@ export class CreateOauthDriver implements StepDriver {
           outputEnvVarNames.get(OutputKeys.configurationId)!,
           oauthRegistrationRes.configurationRegistrationId.oAuthConfigId
         );
-        outputs.set(
-          outputEnvVarNames.get(OutputKeys.applicationIdUri)!,
-          oauthRegistrationRes.resourceIdentifierUri
-        );
+        if (
+          args.identityProvider === "MicrosoftEntra" &&
+          outputEnvVarNames.get(OutputKeys.applicationIdUri)
+        ) {
+          outputs.set(
+            outputEnvVarNames.get(OutputKeys.applicationIdUri)!,
+            oauthRegistrationRes.resourceIdentifierUri
+          );
+        }
 
         const summary = getLocalizedString(
           logMessageKeys.successCreateOauth,

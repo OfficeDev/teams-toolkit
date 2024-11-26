@@ -334,3 +334,14 @@ export interface ExistingPluginManifestInfo {
   manifestPath: string;
   specPath: string;
 }
+
+export interface OperationAuthInfoMap {
+  [operationId: string]: AuthInfo;
+}
+
+export interface FunctionClassificationMap {
+  [authType: string]: {
+    functionNames: string[];
+    authName: string;
+  };
+}

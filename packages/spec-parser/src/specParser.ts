@@ -308,14 +308,26 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      const authInfo = Utils.getAuthInfo(newSpec);
-
       const paths = newUnResolvedSpec.paths;
       for (const pathUrl in paths) {
         const operations = paths[pathUrl];
         for (const method in operations) {
           const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
           const operationId = operationItem.operationId!;
+
+          const containsSpecialCharacters = /[^a-zA-Z0-9_]/.test(operationId);
+          if (containsSpecialCharacters) {
+            operationItem.operationId = operationId.replace(/[^a-zA-Z0-9]/g, "_");
+            result.warnings.push({
+              type: WarningType.OperationIdContainsSpecialCharacters,
+              content: Utils.format(
+                ConstantString.OperationIdContainsSpecialCharacters,
+                operationId,
+                operationItem.operationId
+              ),
+              data: operationId,
+            });
+          }
 
           const authArray = Utils.getAuthArray(operationItem.security, newSpec);
           if (Utils.isNotSupportedAuth(authArray)) {
@@ -325,21 +337,6 @@ export class SpecParser {
               data: operationId,
             });
           }
-
-          const containsSpecialCharacters = /[^a-zA-Z0-9_]/.test(operationId);
-          if (!containsSpecialCharacters) {
-            continue;
-          }
-          operationItem.operationId = operationId.replace(/[^a-zA-Z0-9]/g, "_");
-          result.warnings.push({
-            type: WarningType.OperationIdContainsSpecialCharacters,
-            content: Utils.format(
-              ConstantString.OperationIdContainsSpecialCharacters,
-              operationId,
-              operationItem.operationId
-            ),
-            data: operationId,
-          });
         }
       }
 
@@ -355,6 +352,8 @@ export class SpecParser {
             specPath: this.pathOrSpec as string,
           }
         : undefined;
+
+      const authMap = Utils.getAuthMap(newSpec);
       const [updatedManifest, apiPlugin, warnings] =
         await ManifestUpdater.updateManifestWithAiPlugin(
           manifestPath,
@@ -362,7 +361,7 @@ export class SpecParser {
           pluginFilePath,
           newSpec,
           this.options,
-          authInfo,
+          authMap,
           existingPluginManifestInfo
         );
 

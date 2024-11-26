@@ -8,11 +8,17 @@ import os from "os";
 import "mocha";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { SpecParserError } from "../src/specParserError";
-import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningType } from "../src/interfaces";
+import {
+  AuthInfo,
+  ErrorType,
+  OperationAuthInfoMap,
+  ParseOptions,
+  ProjectType,
+  WarningType,
+} from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
-import { PluginManifestSchema } from "@microsoft/teams-manifest";
-import { ManifestUtil } from "@microsoft/teams-manifest";
+import { PluginManifestSchema, ManifestUtil } from "@microsoft/teams-manifest";
 describe("updateManifestWithAiPlugin", () => {
   beforeEach(() => {
     sinon.stub(ManifestUtil, "useCopilotExtensionsInSchema").resolves(false);
@@ -117,7 +123,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -282,7 +289,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -449,7 +457,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -570,7 +579,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -753,7 +763,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -955,7 +966,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1198,7 +1210,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1303,7 +1316,7 @@ describe("updateManifestWithAiPlugin", () => {
             type: "OpenApi",
             auth: {
               type: "OAuthPluginVault",
-              reference_id: "${{OAUTH_CONFIGURATION_ID}}",
+              reference_id: "${{OAUTH_REGISTRATION_ID}}",
             },
             spec: {
               url: "spec/outputSpec.yaml",
@@ -1342,6 +1355,10 @@ describe("updateManifestWithAiPlugin", () => {
           },
         },
       };
+      const authMap: OperationAuthInfoMap = {
+        ["getPets"]: authInfo,
+        ["createPet"]: authInfo,
+      };
 
       const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
@@ -1349,7 +1366,7 @@ describe("updateManifestWithAiPlugin", () => {
         pluginFilePath,
         spec,
         options,
-        authInfo
+        authMap
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1482,13 +1499,18 @@ describe("updateManifestWithAiPlugin", () => {
         },
       };
 
+      const authMap: OperationAuthInfoMap = {
+        ["getPets"]: authInfo,
+        ["createPet"]: authInfo,
+      };
+
       const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
         spec,
         options,
-        authInfo
+        authMap
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1621,13 +1643,18 @@ describe("updateManifestWithAiPlugin", () => {
         },
       };
 
+      const authMap: OperationAuthInfoMap = {
+        ["getPets"]: authInfo,
+        ["createPet"]: authInfo,
+      };
+
       const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
         spec,
         options,
-        authInfo
+        authMap
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1755,7 +1782,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -1903,7 +1931,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2099,7 +2128,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2227,7 +2257,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -2355,7 +2386,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -2489,7 +2521,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -2613,7 +2646,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2822,7 +2856,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2975,7 +3010,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -3151,7 +3187,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3287,7 +3324,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3444,7 +3482,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3573,7 +3612,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3706,7 +3746,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3784,7 +3825,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3858,7 +3900,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -3938,7 +3981,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -4104,7 +4148,7 @@ describe("updateManifestWithAiPlugin", () => {
       pluginFilePath,
       spec,
       options,
-      undefined,
+      {},
       {
         manifestPath: existingPluginManifestPath,
         specPath: specPath,
@@ -4270,7 +4314,7 @@ describe("updateManifestWithAiPlugin", () => {
       pluginFilePath,
       spec,
       options,
-      undefined,
+      {},
       {
         manifestPath: existingPluginManifestPath,
         specPath: specPath,
@@ -4442,7 +4486,7 @@ describe("updateManifestWithAiPlugin", () => {
       pluginFilePath,
       spec,
       options,
-      undefined,
+      {},
       {
         manifestPath: existingPluginManifestPath,
         specPath: specPath,
@@ -5145,7 +5189,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "oAuth2.0",
             oAuthConfiguration: {
-              oauthConfigurationId: "${{OAUTH_AUTH_CONFIGURATION_ID}}",
+              oauthConfigurationId: "${{OAUTH_AUTH_REGISTRATION_ID}}",
             },
           },
           commands: [

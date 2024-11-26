@@ -231,7 +231,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       azureOpenAIDeploymentName,
     };
     if (authData?.authName) {
-      const envName = getEnvName(authData.authName, authData.authType);
+      const envName = getEnvName(authData.authName);
       context.templateVariables = Generator.getDefaultVariables(
         appName,
         safeProjectNameFromVS,

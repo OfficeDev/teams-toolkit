@@ -177,9 +177,9 @@ function updateTokens(
 
       let rootView = view;
       if (Array.isArray(view[token[1]])) {
-        rootView = view[token[1]][0];
+        rootView = {...view, ...view[token[1]][0]};
       } else if (typeof view[token[1]] === "object") {
-        rootView = view[token[1]];
+        rootView = {...view, ...view[token[1]]};
       }
 
       accShift += updateTokens(token[4] as any, rootView, tags, accShift);

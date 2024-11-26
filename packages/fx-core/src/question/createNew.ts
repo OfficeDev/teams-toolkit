@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, IQTreeNode, Platform } from "@microsoft/teamsfx-api";
-import { CapabilityOptions, ProjectTypeOptions, QuestionNames } from "./constants";
+import { Inputs, IQTreeNode, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../common/localizeUtils";
-import { DefaultTemplateGenerator } from "../component/generator/templates/templateGenerator";
+import { defaultGenerator } from "../component/generator/templates/templateGenerator";
+import { CapabilityOptions, ProjectTypeOptions, QuestionNames } from "./constants";
 import { appNameQuestion, folderQuestion } from "./create";
 
 export function createNewM365Node(): IQTreeNode {
@@ -40,6 +40,11 @@ export function createNewM365Node(): IQTreeNode {
           staticOptions: [],
           dynamicOptions: (inputs: Inputs) => CapabilityOptions.bots(inputs),
           placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+          onDidSelection: (selected: string | OptionItem, inputs: Inputs) => {
+            if ((selected as OptionItem).data) {
+              inputs[QuestionNames.TemplateName] = (selected as OptionItem).data as string;
+            }
+          },
         },
       },
       {
@@ -68,7 +73,72 @@ export function createNewM365Node(): IQTreeNode {
           placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
         },
       },
-      new DefaultTemplateGenerator().getQuestionNode()!, // question node defined by generator
+      defaultGenerator.getQuestionNode(), // question node defined by generator
+      {
+        // root folder
+        data: folderQuestion(),
+      },
+      {
+        // app name
+        data: appNameQuestion(),
+      },
+    ],
+  };
+  return node;
+}
+
+export function createNewAgentNode(): IQTreeNode {
+  const node: IQTreeNode = {
+    data: { type: "group" },
+    children: [
+      // category level 1
+      {
+        condition: (inputs: Inputs) =>
+          inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI,
+        data: {
+          name: QuestionNames.ProjectType,
+          title: getLocalizedString("core.createProjectQuestion.title"),
+          type: "singleSelect",
+          staticOptions: [],
+          dynamicOptions: (inputs: Inputs) => [
+            ProjectTypeOptions.Agent(inputs.platform),
+            ProjectTypeOptions.customCopilot(inputs.platform),
+          ],
+        },
+        cliOptionDisabled: "self",
+      },
+      // category level 2
+      {
+        // Agent
+        condition: (inputs: Inputs) =>
+          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.Agent().id,
+        data: {
+          name: QuestionNames.Capabilities,
+          title: getLocalizedString(
+            "core.createProjectQuestion.projectType.copilotExtension.title"
+          ),
+          type: "singleSelect",
+          staticOptions: CapabilityOptions.agents(),
+          placeholder: getLocalizedString(
+            "core.createProjectQuestion.projectType.copilotExtension.placeholder"
+          ),
+        },
+      },
+      {
+        // customCopilot
+        condition: (inputs: Inputs) =>
+          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.customCopilot().id,
+        data: {
+          name: QuestionNames.Capabilities,
+          title: getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title"),
+          type: "singleSelect",
+          staticOptions: CapabilityOptions.customCopilots(),
+          placeholder: getLocalizedString(
+            "core.createProjectQuestion.projectType.customCopilot.placeholder"
+          ),
+        },
+      },
+      defaultGenerator.getQuestionNode(), // question node defined by generator
       {
         // root folder
         data: folderQuestion(),

@@ -5,6 +5,7 @@ import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
+import { TemplateNames } from "./templates";
 
 export enum QuestionNames {
   Scratch = "scratch",
@@ -106,6 +107,8 @@ export enum QuestionNames {
   ImportPlugin = "import-plugin",
   PluginManifestFilePath = "plugin-manifest-path",
   PluginOpenApiSpecFilePath = "plugin-opeanapi-spec-path",
+
+  TemplateName = "template-name",
 }
 
 export const AppNamePattern =
@@ -312,6 +315,7 @@ export class CapabilityOptions {
       id: "bot",
       label: `${getLocalizedString("core.BotNewUIOption.label")}`,
       detail: getLocalizedString("core.BotNewUIOption.detail"),
+      data: TemplateNames.DefaultBot,
     };
   }
   static notificationBot(): OptionItem {
@@ -335,7 +339,7 @@ export class CapabilityOptions {
     return {
       // id must match cli `yargsHelp`
       id: "command-bot",
-      label: `${getLocalizedString("core.CommandAndResponseOption.label")}`,
+      label: getLocalizedString("core.CommandAndResponseOption.label"),
       detail: getLocalizedString("core.CommandAndResponseOption.detail"),
       data: "https://aka.ms/teamsfx-create-command",
       buttons: [
@@ -352,7 +356,7 @@ export class CapabilityOptions {
     const item: OptionItem = {
       // id must match cli `yargsHelp`
       id: "workflow-bot",
-      label: `${getLocalizedString("core.WorkflowOption.label")}`,
+      label: getLocalizedString("core.WorkflowOption.label"),
       detail: getLocalizedString("core.WorkflowOption.detail"),
       data: "https://aka.ms/teamsfx-create-workflow",
       buttons: [
@@ -738,6 +742,7 @@ export class CapabilityOptions {
       id: "ai-bot",
       label: getLocalizedString("core.aiBotOption.label"),
       detail: getLocalizedString("core.aiBotOption.detail"),
+      data: TemplateNames.AIBot,
     };
   }
 
@@ -747,6 +752,7 @@ export class CapabilityOptions {
       label: getLocalizedString("core.aiAssistantBotOption.label"),
       detail: getLocalizedString("core.aiAssistantBotOption.detail"),
       description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
+      data: TemplateNames.AIAssistantBot,
     };
   }
 

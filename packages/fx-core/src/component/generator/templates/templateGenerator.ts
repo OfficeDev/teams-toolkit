@@ -129,33 +129,12 @@ export class DefaultTemplateGenerator implements IGenerator {
     });
   }
 
-  public getQuestionNode(): IQTreeNode | undefined {
+  public getQuestionNode(): IQTreeNode {
     return {
       data: {
         type: "group",
       },
       children: [
-        {
-          data: {
-            type: "singleSelect",
-            title: getLocalizedString("core.ProgrammingLanguageQuestion.title"),
-            name: QuestionNames.ProgrammingLanguage,
-            staticOptions: [
-              { id: ProgrammingLanguage.JS, label: "JavaScript" },
-              { id: ProgrammingLanguage.TS, label: "TypeScript" },
-              { id: ProgrammingLanguage.CSharp, label: "C#" },
-              { id: ProgrammingLanguage.PY, label: "Python" },
-            ],
-            dynamicOptions: (inputs: Inputs) => {
-              const templateName = inputs[QuestionNames.Capabilities];
-              const languages = Templates.filter((t) => t.name === templateName).map(
-                (t) => t.language
-              );
-              return languages;
-            },
-            skipSingleOption: true,
-          },
-        },
         {
           // Notification bot trigger sub-tree
           condition: (input: Inputs) =>
@@ -168,7 +147,30 @@ export class DefaultTemplateGenerator implements IGenerator {
             input[QuestionNames.Capabilities] === CapabilityOptions.m365SearchMe().id,
           data: meArchitectureQuestion(),
         },
+        {
+          data: {
+            type: "singleSelect",
+            title: getLocalizedString("core.ProgrammingLanguageQuestion.title"),
+            name: QuestionNames.ProgrammingLanguage,
+            staticOptions: [
+              { id: ProgrammingLanguage.JS, label: "JavaScript" },
+              { id: ProgrammingLanguage.TS, label: "TypeScript" },
+              { id: ProgrammingLanguage.CSharp, label: "C#" },
+              { id: ProgrammingLanguage.PY, label: "Python" },
+            ],
+            dynamicOptions: (inputs: Inputs) => {
+              const templateName = inputs[QuestionNames.TemplateName]; //inputs[QuestionNames.Capabilities];
+              const languages = Templates.filter((t) => t.name === templateName).map(
+                (t) => t.language
+              );
+              return languages;
+            },
+            skipSingleOption: true,
+          },
+        },
       ],
     };
   }
 }
+
+export const defaultGenerator = new DefaultTemplateGenerator();

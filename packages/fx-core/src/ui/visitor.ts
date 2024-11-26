@@ -203,6 +203,13 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       }
       if (skipSingle && question.staticOptions.length === 1) {
         const returnResult = getSingleOption(question, question.staticOptions);
+        if (question.type === "singleSelect") {
+          let selected = returnResult as string | OptionItem;
+          if (typeof selected === "string") {
+            selected = question.staticOptions[0];
+          }
+          await question.onDidSelection?.(selected, inputs);
+        }
         return ok({ type: "skip", result: returnResult });
       }
       options = question.staticOptions;
@@ -211,7 +218,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       const validationFunc = question.validation
         ? getValidationFunction<string>(question.validation, inputs)
         : undefined;
-      return await ui.selectOption({
+      const res = await ui.selectOption({
         name: question.name,
         title: title,
         options: options,
@@ -225,6 +232,17 @@ export const questionVisitor: QuestionTreeVisitor = async function (
         validation: validationFunc,
         skipSingleOption: skipSingle,
       });
+      if (res.isOk() && res.value.type === "success") {
+        let selected = res.value.result;
+        if (typeof selected === "string") {
+          const options = res.value.options as string[] | OptionItem[];
+          if (options && options.length > 0 && typeof options[0] !== "string") {
+            selected = (options as OptionItem[]).find((o: OptionItem) => o.id === selected);
+          }
+        }
+        await question.onDidSelection?.(selected!, inputs);
+      }
+      return res;
     } else {
       const validationFunc = question.validation
         ? getValidationFunction<string[]>(question.validation, inputs)

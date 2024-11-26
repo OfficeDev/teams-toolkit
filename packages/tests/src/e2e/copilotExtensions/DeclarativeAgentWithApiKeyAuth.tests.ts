@@ -33,6 +33,7 @@ new DeclarativeAgentWithApiKeyAuth(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
+  {},
   myRecord
 ).test();
 
@@ -42,5 +43,6 @@ new DeclarativeAgentWithApiKeyAuth(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
+  {},
   myRecord
 ).test();

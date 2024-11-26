@@ -27,6 +27,7 @@ new DeclarativeAgentWithEntra(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
+  {},
   myRecord
 ).test();
 
@@ -36,5 +37,6 @@ new DeclarativeAgentWithEntra(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
+  {},
   myRecord
 ).test();

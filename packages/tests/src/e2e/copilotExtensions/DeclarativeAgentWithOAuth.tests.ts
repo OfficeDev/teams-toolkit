@@ -22,6 +22,7 @@ new DeclarativeAgentWithOAutTestCase(
   "huimaio@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
+  {},
   myRecord
 ).test();
 
@@ -31,5 +32,6 @@ new DeclarativeAgentWithOAutTestCase(
   "huimaio@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
+  {},
   myRecord
 ).test();

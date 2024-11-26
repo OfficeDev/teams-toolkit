@@ -22,6 +22,7 @@ new DeclarativeAgentWithNoneAuth(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
+  {},
   myRecord
 ).test();
 
@@ -31,5 +32,6 @@ new DeclarativeAgentWithNoneAuth(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
+  {},
   myRecord
 ).test();

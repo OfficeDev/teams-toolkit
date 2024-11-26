@@ -11,6 +11,7 @@ import {
   AuthType,
   ErrorResult,
   ErrorType,
+  OperationAuthInfoMap,
   ParseOptions,
   ProjectType,
 } from "./interfaces";
@@ -96,6 +97,25 @@ export class Utils {
     result.sort((a, b) => a[0].name.localeCompare(b[0].name));
 
     return result;
+  }
+
+  static getAuthMap(spec: OpenAPIV3.Document): OperationAuthInfoMap {
+    const authMap: OperationAuthInfoMap = {};
+
+    for (const url in spec.paths) {
+      for (const method in spec.paths[url]) {
+        const operation = (spec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
+
+        const authArray = Utils.getAuthArray(operation.security, spec);
+
+        if (authArray && authArray.length > 0) {
+          const currentAuth = authArray[0][0];
+          authMap[operation.operationId!] = currentAuth;
+        }
+      }
+    }
+
+    return authMap;
   }
 
   static getAuthInfo(spec: OpenAPIV3.Document): AuthInfo | undefined {

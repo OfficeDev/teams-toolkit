@@ -1522,13 +1522,10 @@ export async function updateForCustomApi(
   return warnings;
 }
 
-const EnvNameMapping: { [authType: string]: string } = {
-  apiKey: "REGISTRATION_ID",
-  oauth2: "CONFIGURATION_ID",
-};
+const EnvNamePostfix = "REGISTRATION_ID";
 
-export function getEnvName(authName: string, authType?: string): string {
-  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
+export function getEnvName(authName: string): string {
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNamePostfix}`);
 }
 
 export async function copyKiotaFolder(specPath: string, projectPath: string): Promise<void> {

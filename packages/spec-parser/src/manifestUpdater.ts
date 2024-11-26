@@ -9,6 +9,8 @@ import {
   AuthInfo,
   ErrorType,
   ExistingPluginManifestInfo,
+  FunctionClassificationMap,
+  OperationAuthInfoMap,
   ParseOptions,
   ProjectType,
   WarningResult,
@@ -36,7 +38,7 @@ export class ManifestUpdater {
     apiPluginFilePath: string,
     spec: OpenAPIV3.Document,
     options: ParseOptions,
-    authInfo?: AuthInfo,
+    authMap: OperationAuthInfoMap,
     existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
@@ -75,7 +77,7 @@ export class ManifestUpdater {
       specRelativePath,
       apiPluginFilePath,
       appName,
-      authInfo,
+      authMap,
       options,
       existingPluginManifestInfo
     );
@@ -115,36 +117,17 @@ export class ManifestUpdater {
     specRelativePath: string,
     apiPluginFilePath: string,
     appName: string,
-    authInfo: AuthInfo | undefined,
+    authMap: OperationAuthInfoMap,
     options: ParseOptions,
     existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[PluginManifestSchema, WarningResult[]]> {
     const warnings: WarningResult[] = [];
     const functions: FunctionObject[] = [];
-    const functionNames: string[] = [];
+    const functionNamesMap: FunctionClassificationMap = {};
+
     const conversationStarters: string[] = [];
 
     const paths = spec.paths;
-
-    const pluginAuthObj: AuthObject = {
-      type: "None",
-    };
-
-    if (authInfo) {
-      if (Utils.isOAuthWithAuthCodeFlow(authInfo.authScheme)) {
-        pluginAuthObj.type = "OAuthPluginVault";
-      } else if (Utils.isBearerTokenAuth(authInfo.authScheme)) {
-        pluginAuthObj.type = "ApiKeyPluginVault";
-      }
-
-      if (pluginAuthObj.type !== "None") {
-        const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-          `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
-        );
-
-        pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
-      }
-    }
 
     for (const pathUrl in paths) {
       const pathItem = paths[pathUrl];
@@ -260,7 +243,30 @@ export class ManifestUpdater {
               }
 
               functions.push(funcObj);
-              functionNames.push(safeFunctionName);
+
+              const authInfo = authMap[operationId];
+              let key = "None";
+              let authName = "None";
+
+              if (authInfo) {
+                if (Utils.isOAuthWithAuthCodeFlow(authInfo.authScheme)) {
+                  key = "OAuthPluginVault";
+                  authName = authInfo.name;
+                } else if (Utils.isBearerTokenAuth(authInfo.authScheme)) {
+                  key = "ApiKeyPluginVault";
+                  authName = authInfo.name;
+                }
+              }
+
+              if (functionNamesMap[key]) {
+                functionNamesMap[key].functionNames.push(safeFunctionName);
+              } else {
+                functionNamesMap[key] = {
+                  functionNames: [safeFunctionName],
+                  authName: authName,
+                };
+              }
+
               const conversationStarterStr = (summary ?? description).slice(
                 0,
                 ConstantString.ConversationStarterMaxLens
@@ -272,6 +278,13 @@ export class ManifestUpdater {
           }
         }
       }
+    }
+
+    if (Object.keys(functionNamesMap).length === 0) {
+      functionNamesMap["None"] = {
+        functionNames: [],
+        authName: "None",
+      };
     }
 
     let apiPlugin: PluginManifestSchema;
@@ -316,23 +329,41 @@ export class ManifestUpdater {
         (runtime) => runtime.spec.url !== relativePath
       );
     }
-    const index = apiPlugin.runtimes.findIndex(
-      (runtime) =>
-        runtime.spec.url === specRelativePath &&
-        runtime.type === "OpenApi" &&
-        (runtime.auth?.type ?? "None") === pluginAuthObj.type
-    );
-    if (index === -1) {
-      apiPlugin.runtimes.push({
-        type: "OpenApi",
-        auth: pluginAuthObj,
-        spec: {
-          url: specRelativePath,
-        },
-        run_for_functions: functionNames,
-      });
-    } else {
-      apiPlugin.runtimes[index].run_for_functions = functionNames;
+
+    for (const authType in functionNamesMap) {
+      const pluginAuthObj: AuthObject = {
+        type: authType as any,
+      };
+
+      const authName = functionNamesMap[authType].authName;
+
+      if (pluginAuthObj.type !== "None") {
+        const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
+          `${authName}_${ConstantString.RegistrationIdPostfix}`
+        );
+
+        pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
+      }
+
+      const functionNamesInfo = functionNamesMap[authType];
+      const index = apiPlugin.runtimes.findIndex(
+        (runtime) =>
+          runtime.spec.url === specRelativePath &&
+          runtime.type === "OpenApi" &&
+          (runtime.auth?.type ?? "None") === authType
+      );
+      if (index === -1) {
+        apiPlugin.runtimes.push({
+          type: "OpenApi",
+          auth: pluginAuthObj,
+          spec: {
+            url: specRelativePath,
+          },
+          run_for_functions: functionNamesInfo.functionNames,
+        });
+      } else {
+        apiPlugin.runtimes[index].run_for_functions = functionNamesInfo.functionNames;
+      }
     }
 
     if (!apiPlugin.name_for_human) {
@@ -395,7 +426,7 @@ export class ManifestUpdater {
         if (authInfo) {
           const auth = authInfo.authScheme;
           const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-            `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
+            `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
             (composeExtension as any).authorization = {

@@ -270,6 +270,7 @@ jobs:
             echo "can't find target case in $file"
             exit 1
           else
+            echo "M365 account ${{ secrets.TEST_M365_NAME }}. Tenant id ${{ secrets.TEST_M365_TENANT_ID }}"
             npx mocha --reporter mochawesome --timeout 1200000 $file
           fi
 

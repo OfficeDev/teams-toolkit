@@ -27,7 +27,6 @@ new DeclarativeAgentWithEntra(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
-  { skipValidate: true },
   myRecord
 ).test();
 
@@ -37,6 +36,5 @@ new DeclarativeAgentWithEntra(
   "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
-  { skipValidate: true },
   myRecord
 ).test();

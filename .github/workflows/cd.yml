@@ -36,13 +36,7 @@ jobs:
       - name: Validate CD branch
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.ref != 'refs/heads/dev' && !startsWith(github.ref, 'refs/heads/release/') }}
         run: |
-          echo It's not allowed to run CD on other branch except main and dev.
-          exit 1
-
-      - name: Validate inputs for main or hotfix
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid != 'beta' && github.event.inputs.preid != 'rc' && github.event.inputs.preid != 'stable' }}
-        run: |
-          echo It's only allowed to release RC and stable on main branch.
+          echo It's not allowed to run CD on other branch except main, hotfix, dev or release branch.
           exit 1
 
       - name: Valiadte inputs for dev
@@ -103,17 +97,17 @@ jobs:
           npx lerna version prerelease --preid=beta.$(date "+%Y%m%d%H") --exact --no-push --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && !startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version prerelease --conventional-prerelease --preid=rc --no-changelog --yes
 
       - name: version rc npm packages to npmjs.org on hotfix
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && (startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/')) && github.event.inputs.skip-version-rc == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version prerelease --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 
       - name: version stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/') || startsWith(github.ref, 'refs/heads/release/')) && github.event.inputs.preid == 'stable' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/dev' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
 

@@ -108,7 +108,7 @@ export class CodeFlowLogin {
 
   async login(scopes: Array<string>, loginHint?: string, tenantId?: string): Promise<string> {
     if (process.env.CODESPACES == "true") {
-      return await this.loginInCodeSpace(scopes);
+      return await this.loginInCodeSpace(scopes, tenantId);
     }
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
@@ -255,7 +255,7 @@ export class CodeFlowLogin {
     return accessToken;
   }
 
-  async loginInCodeSpace(scopes: Array<string>): Promise<string> {
+  async loginInCodeSpace(scopes: Array<string>, tenantId?: string): Promise<string> {
     let callbackUri: Uri = await env.asExternalUri(
       Uri.parse(`${env.uriScheme}://${extensionID}/${codeSpacesAuthComplete}`)
     );
@@ -272,6 +272,10 @@ export class CodeFlowLogin {
     const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
       await CodeFlowLogin.sha256(codeVerifier)
     );
+    const authority =
+      featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) && tenantId
+        ? BASE_AUTHORITY + tenantId
+        : undefined;
     const authCodeUrlParameters: AuthorizationUrlRequest = {
       scopes: scopes,
       codeChallenge: codeChallenge,
@@ -279,6 +283,7 @@ export class CodeFlowLogin {
       redirectUri: vscodeRedirect,
       prompt: "select_account",
       state: state,
+      authority: authority,
     };
     const signInUrl: string = await this.pca.getAuthCodeUrl(authCodeUrlParameters);
     const uri: Uri = Uri.parse(signInUrl);

@@ -116,6 +116,10 @@ export class CreateOauthDriver implements StepDriver {
           outputEnvVarNames.get(OutputKeys.configurationId)!,
           oauthRegistrationRes.configurationRegistrationId.oAuthConfigId
         );
+        outputs.set(
+          outputEnvVarNames.get(OutputKeys.applicationIdUri)!,
+          oauthRegistrationRes.resourceIdentifierUri
+        );
 
         const summary = getLocalizedString(
           logMessageKeys.successCreateOauth,

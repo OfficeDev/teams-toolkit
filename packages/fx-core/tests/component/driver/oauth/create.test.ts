@@ -77,6 +77,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -148,6 +149,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -213,6 +215,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -279,6 +282,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -352,6 +356,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -419,6 +424,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -487,6 +493,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -559,6 +566,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -629,6 +637,7 @@ describe("CreateOauthDriver", () => {
           configurationRegistrationId: {
             oAuthConfigId: "mockedRegistrationId",
           },
+          resourceIdentifierUri: "mockedResourceIdentifierUri",
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({

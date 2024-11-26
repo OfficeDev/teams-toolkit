@@ -257,10 +257,13 @@ describe("CreateOauthDriver", () => {
       flow: "authorizationCode",
       identityProvider: "MicrosoftEntra",
     };
-    const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    const outputEnvVarNamesTmp = new Map<string, string>(Object.entries(outputKeys));
+    outputEnvVarNamesTmp.set("applicationIdUri", "APPLICATION_ID_URI");
+    const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNamesTmp);
     expect(result.result.isOk()).to.be.true;
     if (result.result.isOk()) {
       expect(result.result.value.get(outputKeys.configurationId)).to.equal("mockedRegistrationId");
+      expect(result.result.value.get("APPLICATION_ID_URI")).to.equal("mockedResourceIdentifierUri");
       expect(result.summaries.length).to.equal(1);
     }
   });

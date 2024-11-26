@@ -1296,7 +1296,7 @@
           },
           "contextMenus": {
             "$ref": "#/definitions/extensionContextMenuArray",
-            "descriptions": "Specifies the context menus for your extension. A context menu is a shortcut menu that appears when a user right-clicks (selects and holds) in the Office UI. Min size 1."
+            "description": "Specifies the context menus for your extension. A context menu is a shortcut menu that appears when a user right-clicks (selects and holds) in the Office UI. Min size 1."
           }
         },
         "additionalProperties": false

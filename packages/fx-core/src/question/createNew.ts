@@ -7,6 +7,12 @@ import { defaultGenerator } from "../component/generator/templates/templateGener
 import { CapabilityOptions, ProjectTypeOptions, QuestionNames } from "./constants";
 import { appNameQuestion, folderQuestion } from "./create";
 
+function onDidSelectionCategory(selected: string | OptionItem, inputs: Inputs): void {
+  if ((selected as OptionItem).data) {
+    inputs[QuestionNames.TemplateName] = (selected as OptionItem).data as string;
+  }
+}
+
 export function createNewM365Node(): IQTreeNode {
   const node: IQTreeNode = {
     data: { type: "group" },
@@ -40,11 +46,7 @@ export function createNewM365Node(): IQTreeNode {
           staticOptions: [],
           dynamicOptions: (inputs: Inputs) => CapabilityOptions.bots(inputs),
           placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
-          onDidSelection: (selected: string | OptionItem, inputs: Inputs) => {
-            if ((selected as OptionItem).data) {
-              inputs[QuestionNames.TemplateName] = (selected as OptionItem).data as string;
-            }
-          },
+          onDidSelection: onDidSelectionCategory,
         },
       },
       {
@@ -57,6 +59,7 @@ export function createNewM365Node(): IQTreeNode {
           type: "singleSelect",
           staticOptions: CapabilityOptions.tabs(),
           placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+          onDidSelection: onDidSelectionCategory,
         },
       },
       {
@@ -71,6 +74,7 @@ export function createNewM365Node(): IQTreeNode {
           type: "singleSelect",
           staticOptions: CapabilityOptions.mes(),
           placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+          onDidSelection: onDidSelectionCategory,
         },
       },
       defaultGenerator.getQuestionNode(), // question node defined by generator

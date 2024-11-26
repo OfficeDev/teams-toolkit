@@ -15,8 +15,8 @@ dependencies:
     specifier: ^3.0.7
     version: 3.0.7
   '@microsoft/teams-js':
-    specifier: ^2.31.1
-    version: 2.31.1
+    specifier: ^2.32.0-beta
+    version: 2.32.0-beta.0
   '@microsoft/teamsfx':
     specifier: workspace:*
     version: link:../sdk
@@ -3577,8 +3577,8 @@ packages:
       tslib: 2.7.0
     dev: false
 
-  /@microsoft/teams-js@2.31.1:
-    resolution: {integrity: sha512-HzUYELJxukST2lG3dlTOjSZNg9G+6JeWcXF6gEJU6OEFpdWN2EKlUBw2q4VLQFwwHV2I9+eCOALOEHFhGtEQxQ==}
+  /@microsoft/teams-js@2.32.0-beta.0:
+    resolution: {integrity: sha512-BTXpt02vthS2QtPcZpQJSmuK1S6vAWZhoqxWoV+/NEwOP81AQ6c2RJzaHv5gEhHhELhEgZpxMfhPiRWIIf7sUA==}
     dependencies:
       base64-js: 1.5.1
       debug: 4.3.7

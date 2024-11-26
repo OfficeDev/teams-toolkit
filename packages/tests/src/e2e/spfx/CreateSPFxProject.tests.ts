@@ -123,6 +123,12 @@ describe("Start a new project", function () {
 
       {
         // deploy
+        console.log(
+          `DEBUG: current M365 account is: ${process.env.M365_ACCOUNT_NAME}`
+        );
+        console.log(
+          `DEBUG: current M365 tenant is: ${process.env.M365_TENANT_ID}`
+        );
         const result = await Executor.deploy(
           projectPath,
           environmentNameManager.getDefaultEnvName()

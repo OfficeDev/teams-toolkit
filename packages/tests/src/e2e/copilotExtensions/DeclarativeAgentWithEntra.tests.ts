@@ -2,34 +2,39 @@
 // Licensed under the MIT license.
 
 /**
- * @author Hui Miao <huimaio@microsoft.com>
+ * @author Yimin Jin <yiminjin@microsoft.com>
  */
 
 import { Capability } from "../../utils/constants";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { CaseFactory } from "../caseFactory";
+import { FeatureFlagName } from "../../../../fx-core/src/common/featureFlags";
 
-class DeclarativeAgentWithOAutTestCase extends CaseFactory {}
+class DeclarativeAgentWithEntra extends CaseFactory {
+  public override async onBefore(): Promise<void> {
+    process.env[FeatureFlagName.ApiPluginAAD] = "true";
+  }
+}
 
 const myRecord: Record<string, string> = {};
 myRecord["with-plugin"] = "yes";
 myRecord["api-plugin-type"] = "new-api";
-myRecord["api-auth"] = "oauth";
+myRecord["api-auth"] = "microsoft-entra";
 
-new DeclarativeAgentWithOAutTestCase(
+new DeclarativeAgentWithEntra(
   Capability.DeclarativeAgent,
-  30310025,
-  "huimaio@microsoft.com",
+  30310142,
+  "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
   {},
   myRecord
 ).test();
 
-new DeclarativeAgentWithOAutTestCase(
+new DeclarativeAgentWithEntra(
   Capability.DeclarativeAgent,
-  30032802,
-  "huimaio@microsoft.com",
+  30309989,
+  "yiminjin@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
   {},

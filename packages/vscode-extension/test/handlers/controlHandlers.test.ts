@@ -14,6 +14,7 @@ import {
   openSamplesHandler,
   openWelcomeHandler,
   saveTextDocumentHandler,
+  selectWalkthroughHandler,
 } from "../../src/handlers/controlHandlers";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import {
@@ -22,6 +23,8 @@ import {
   TelemetryUpdateAppReason,
 } from "../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../src/utils/commonUtils";
+import { getDefaultString } from "../../src/utils/localizeUtils";
+import { getWalkThroughId } from "../../src/utils/projectStatusUtils";
 
 describe("Control Handlers", () => {
   describe("openWelcomeHandler", () => {
@@ -320,6 +323,40 @@ describe("Control Handlers", () => {
       await openLifecycleTreeview();
 
       chai.assert.isTrue(executeCommandStub.calledWith("workbench.view.extension.teamsfx"));
+    });
+  });
+
+  describe("selectWalkthroughHandler", () => {
+    let quickPickStub: sinon.SinonStub;
+    let executeCommandStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      // Stubbing VS Code APIs
+      quickPickStub = sinon.stub(vscode.window, "showQuickPick");
+      executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("should select the Teams Toolkit walkthrough", async () => {
+      quickPickStub.resolves({
+        label: getDefaultString("teamstoolkit.walkthroughs.title"),
+        detail: "Some description",
+      });
+
+      executeCommandStub.callsFake((command: string, ...args: any[]) => {
+        chai.assert(command, "workbench.action.openWalkthrough");
+        chai.assert(args[0], getWalkThroughId());
+        return "Success";
+      });
+
+      const result = await selectWalkthroughHandler();
+
+      chai.assert.isTrue(quickPickStub.calledOnce);
+      chai.assert.isTrue(executeCommandStub.calledOnce);
+      chai.assert.isTrue(result.isOk());
     });
   });
 });

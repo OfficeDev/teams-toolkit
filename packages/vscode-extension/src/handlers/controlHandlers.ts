@@ -76,6 +76,16 @@ export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unk
   return Promise.resolve(ok(data));
 }
 
+export async function selectWalkthroughHandler(
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  const data = await vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    getWalkThroughId()
+  );
+  return Promise.resolve(ok(data));
+}
+
 export async function openSamplesHandler(...args: unknown[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.SampleGallery, args);

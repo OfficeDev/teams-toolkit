@@ -25,7 +25,6 @@ import { openFolderInExplorer } from "../utils/commonUtils";
 import { getWalkThroughId } from "../utils/projectStatusUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
 import { getDefaultString } from "../utils/localizeUtils";
-import { get } from "lodash";
 
 export async function openLifecycleTreeview(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(

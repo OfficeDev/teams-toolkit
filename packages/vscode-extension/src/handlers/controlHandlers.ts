@@ -79,9 +79,23 @@ export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unk
 export async function selectWalkthroughHandler(
   ...args: unknown[]
 ): Promise<Result<unknown, FxError>> {
+  const TeamsToolkitOption = "Get Started with Teams Toolkit";
+  const BuildingIntelligentAppsOption = "Get Started with Building Intelligent Apps";
+  const walkthroughChoice = await vscode.window.showQuickPick(
+    [TeamsToolkitOption, BuildingIntelligentAppsOption],
+    {
+      placeHolder: "Select a Walkthrough to open",
+    }
+  );
+  let walkthroughId = "";
+  if (walkthroughChoice === TeamsToolkitOption) {
+    walkthroughId = getWalkThroughId();
+  } else {
+    walkthroughId = "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps";
+  }
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
-    getWalkThroughId()
+    walkthroughId
   );
   return Promise.resolve(ok(data));
 }

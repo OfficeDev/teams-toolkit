@@ -358,5 +358,70 @@ describe("Control Handlers", () => {
       chai.assert.isTrue(executeCommandStub.calledOnce);
       chai.assert.isTrue(result.isOk());
     });
+
+    it("should select the Teams Toolkit walkthrough with chat", async () => {
+      sinon.stub(featureFlagManager, "getBooleanValue").returns(true);
+      quickPickStub.callsFake(
+        (items: vscode.QuickPickItem[], options?: vscode.QuickPickOptions) => {
+          chai.assert.isTrue(items.length == 2);
+          chai.assert.isTrue(
+            items[0].detail === getDefaultString("teamstoolkit.walkthroughs.withChat.description")
+          );
+          return Promise.resolve({
+            label: getDefaultString("teamstoolkit.walkthroughs.title"),
+            detail: "Some description",
+          });
+        }
+      );
+
+      executeCommandStub.callsFake((command: string, ...args: any[]) => {
+        chai.assert(command, "workbench.action.openWalkthrough");
+        chai.assert(args[0], getWalkThroughId());
+        return "Success";
+      });
+
+      const result = await selectWalkthroughHandler();
+
+      chai.assert.isTrue(quickPickStub.calledOnce);
+      chai.assert.isTrue(executeCommandStub.calledOnce);
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("should select the declarative agent walkthrough", async () => {
+      quickPickStub.resolves({
+        label: getDefaultString("teamstoolkit.walkthroughs.buildIntelligentApps.title"),
+        detail: "Some description",
+      });
+
+      executeCommandStub.callsFake((command: string, ...args: any[]) => {
+        chai.assert(command, "workbench.action.openWalkthrough");
+        chai.assert(args[0], "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps");
+        return "Success";
+      });
+
+      const result = await selectWalkthroughHandler();
+
+      chai.assert.isTrue(quickPickStub.calledOnce);
+      chai.assert.isTrue(executeCommandStub.calledOnce);
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("should select the declarative agent walkthrough - empty label", async () => {
+      quickPickStub.resolves({
+        detail: "Some description",
+      });
+
+      executeCommandStub.callsFake((command: string, ...args: any[]) => {
+        chai.assert(command, "workbench.action.openWalkthrough");
+        chai.assert(args[0], "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps");
+        return "Success";
+      });
+
+      const result = await selectWalkthroughHandler();
+
+      chai.assert.isTrue(quickPickStub.calledOnce);
+      chai.assert.isTrue(executeCommandStub.calledOnce);
+      chai.assert.isTrue(result.isOk());
+    });
   });
 });

@@ -2,7 +2,12 @@
 // Licensed under the MIT license.
 
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
-import { isValidProject, manifestUtils } from "@microsoft/teamsfx-core";
+import {
+  featureFlagManager,
+  FeatureFlags,
+  isValidProject,
+  manifestUtils,
+} from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";
 import * as vscode from "vscode";
@@ -19,6 +24,8 @@ import {
 import { openFolderInExplorer } from "../utils/commonUtils";
 import { getWalkThroughId } from "../utils/projectStatusUtils";
 import { getTriggerFromProperty } from "../utils/telemetryUtils";
+import { getDefaultString } from "../utils/localizeUtils";
+import { get } from "lodash";
 
 export async function openLifecycleTreeview(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(
@@ -79,16 +86,28 @@ export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unk
 export async function selectWalkthroughHandler(
   ...args: unknown[]
 ): Promise<Result<unknown, FxError>> {
-  const TeamsToolkitOption = "Get Started with Teams Toolkit";
-  const BuildingIntelligentAppsOption = "Get Started with Building Intelligent Apps";
-  const walkthroughChoice = await vscode.window.showQuickPick(
-    [TeamsToolkitOption, BuildingIntelligentAppsOption],
-    {
-      placeHolder: "Select a Walkthrough to open",
-    }
+  const TeamsToolkitOptionLabel = getDefaultString("teamstoolkit.walkthroughs.title");
+  const BuildingIntelligentAppsLabel = getDefaultString(
+    "teamstoolkit.walkthroughs.buildIntelligentApps.title"
   );
+  const walkthroughChoices: vscode.QuickPickItem[] = [
+    {
+      label: TeamsToolkitOptionLabel,
+      detail: featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipantUIEntries)
+        ? getDefaultString("teamstoolkit.walkthroughs.withChat.description")
+        : getDefaultString("teamstoolkit.walkthroughs.description"),
+    },
+    {
+      label: BuildingIntelligentAppsLabel,
+      detail: getDefaultString("teamstoolkit.walkthroughs.buildIntelligentApps.description"),
+    },
+  ];
+  const walkthroughChoice = await vscode.window.showQuickPick(walkthroughChoices, {
+    placeHolder: getDefaultString("teamstoolkit.walkthroughs.select.placeholder"),
+    title: getDefaultString("teamstoolkit.walkthroughs.select.title"),
+  });
   let walkthroughId = "";
-  if (walkthroughChoice === TeamsToolkitOption) {
+  if (walkthroughChoice?.label === TeamsToolkitOptionLabel) {
     walkthroughId = getWalkThroughId();
   } else {
     walkthroughId = "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps";

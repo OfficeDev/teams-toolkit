@@ -4,6 +4,9 @@ import fs from "fs";
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    global: {},
+  },
   server: {
     port: 53000,
     https: {

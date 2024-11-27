@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 import * as util from "util";
 
+import { ProductName } from "@microsoft/teamsfx-api";
 import { Hub, TaskLabel } from "@microsoft/teamsfx-core";
 import { ExtensionErrors } from "../../error/error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { ProductName } from "@microsoft/teamsfx-api";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -130,13 +130,15 @@ export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
   summary: "Summary:",
   learnMore: (link: string) =>
     `Visit ${link} to get more info about 'Validate prerequisites' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
+  learnMoreHelpLink:
+    "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#accounts-to-build-your-teams-app",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   showDetailMessage: openOutputMessage,
   showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
+  errorHelpLink:
+    "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#accounts-to-build-your-teams-app",
   durationMessage: (duration: number) =>
     `Finished 'Validate prerequisites' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };

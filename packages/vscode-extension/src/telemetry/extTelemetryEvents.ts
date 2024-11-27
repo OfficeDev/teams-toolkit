@@ -195,7 +195,8 @@ export enum TelemetryEvent {
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
   OpenCopilotEnroll = "open-copilot-enroll",
-  OpenSideloadingLearnMore = "open-sideloading-learn-more",
+  OpenSideloadingEnable = "open-sideloading-learn-more",
+  OpenTestTenantLink = "open-test-tenant-link",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -454,7 +455,6 @@ export enum TelemetryTriggerFrom {
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",
   AccountHelp = "AccountHelp",
-  SideloadingDisabled = "SideloadingDisabled",
   SampleGallery = "SampleGallery",
   SampleDetailPage = "SampleDetailPage",
   CopilotChat = "CopilotChat",

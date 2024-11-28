@@ -259,7 +259,15 @@ async function checkPort(
       let portsInUse = await localEnvManager.getPortsInUse(ports);
       LocalDebugPorts.conflictPorts = portsInUse;
       if (portsInUse.length > 0) {
-        await selectPortsToKill(portsInUse);
+        const killRes = await selectPortsToKill(portsInUse);
+        if (killRes.isErr()) {
+          return {
+            checker: Checker.Ports,
+            result: ResultStatus.failed,
+            failureMsg: doctorConstant.Port,
+            error: killRes.error,
+          };
+        }
         // wait some time
         await new Promise((resolve) => setTimeout(resolve, 2000));
         // recheck

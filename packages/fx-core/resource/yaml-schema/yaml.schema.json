@@ -14,7 +14,7 @@
     "version": {
       "type": "string",
       "description": "The version of the yaml file schema",
-      "const": "v1.6"
+      "const": "v1.8"
     },
     "additionalMetadata": {
       "type": "object",
@@ -1781,6 +1781,10 @@
           "properties": {
             "configurationId": {
               "description": "Required. The configuration id of created OAuth registration.",
+              "$ref": "#/definitions/envVarName"
+            },
+            "applicationIdUri": {
+              "description": "The Application ID URI of created OAuth registration.",
               "$ref": "#/definitions/envVarName"
             }
           }

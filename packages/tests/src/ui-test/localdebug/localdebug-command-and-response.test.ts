@@ -83,7 +83,7 @@ describe("Command And Response Bot Local Debug Tests", function () {
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
         await waitForTerminal(
           LocalDebugTaskLabel.StartBotApp,
-          LocalDebugTaskInfo.StartBotAppInfo
+          LocalDebugTaskInfo.StartBotInfo
         );
 
         // check if there is error "Could not attach to main target"
@@ -91,7 +91,7 @@ describe("Command And Response Bot Local Debug Tests", function () {
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,
-            LocalDebugTaskInfo.StartBotAppInfo
+            LocalDebugTaskInfo.StartBotInfo
           );
         } catch {
           const dialog = new ModalDialog();
@@ -113,14 +113,14 @@ describe("Command And Response Bot Local Debug Tests", function () {
           try {
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
 
             // check if there is error "Debug Anyway"
             await driver.sleep(Timeout.startdebugging);
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
           } catch {
             const dialog = new ModalDialog();
@@ -130,7 +130,7 @@ describe("Command And Response Bot Local Debug Tests", function () {
             await driver.sleep(Timeout.shortTimeLoading);
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
           }
         }

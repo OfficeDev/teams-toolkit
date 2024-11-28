@@ -17,9 +17,9 @@ When you extend Microsoft 365 Copilot, you maximize the efficiency of your apps 
 ![image](https://github.com/user-attachments/assets/1c125380-a935-4f65-a3b8-e8b9a646f3bc)
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
-# Overview of the declarative agent with API plugin template
+# Overview of the Declarative Agent with API Plugin template
 
-## Build a declarative agent with an API Plugin from a new API with Azure Functions
+## Build a Declarative Agent with API Plugin from a new API with Azure Functions
 
 With the declarative agent, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative agent can be used to create a grocery list based on a meal plan that you send to Copilot.
 
@@ -99,6 +99,16 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
+
+{{#DeclarativeCopilot}}
+## Extend the template
+
+- [Add conversation starters](https://learn.microsoft.com/microsoft-365-copilot/extensibility/build-declarative-agents?tabs=ttk&tutorial-step=3): Conversation starters are hints that are displayed to the user to demonstrate how they can get started using the declarative agent.
+- [Add web content](https://learn.microsoft.com/microsoft-365-copilot/extensibility/build-declarative-agents?tabs=ttk&tutorial-step=4) for the ability to search web information.
+- [Add OneDrive and SharePoint content](https://learn.microsoft.com/microsoft-365-copilot/extensibility/build-declarative-agents?tabs=ttk&tutorial-step=5) as grounding knowledge for the agent.
+- [Add Microsoft Graph connectors content](https://learn.microsoft.com/microsoft-365-copilot/extensibility/build-declarative-agents?tabs=ttk&tutorial-step=6) to ground agent with enterprise knowledge.
+- [Add API plugins](https://learn.microsoft.com/microsoft-365-copilot/extensibility/build-declarative-agents?tabs=ttk&tutorial-step=7) for agent to interact with REST APIs.
+{{/DeclarativeCopilot}}
 
 ## Addition information and references
 

@@ -81,7 +81,7 @@ deploy:
   - uses: cli/runNpmCommand
     name: install dependencies
     with:
-      args: install --production
+      args: install
 
   # Deploy your application to Azure Functions using the zip deploy feature.
   # For additional details, see at https://aka.ms/zip-deploy-to-azure-functions

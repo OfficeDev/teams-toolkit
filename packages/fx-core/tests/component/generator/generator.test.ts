@@ -708,6 +708,39 @@ describe("render template", () => {
     assert.equal(result2, expectedResult2);
   });
 
+  it("should render array element", () => {
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{#person}}{{name}},{{email}}{{/person}}");
+    const variables1 = {
+      person: [
+        { name: "name1", email: "email1" },
+        { name: "name2", email: "email2" },
+      ],
+    };
+    const expectedResult1 = "name1,email1name2,email2";
+
+    // execute
+    const result1 = renderTemplateFileData(filename, fileData, variables1 as any);
+
+    // assert
+    assert.equal(result1, expectedResult1);
+  });
+
+  it("should render object element", () => {
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{#person}}{{name}},{{email}}{{/person}}");
+    const variables1 = {
+      person: { name: "name1", email: "email1" },
+    };
+    const expectedResult1 = "name1,email1";
+
+    // execute
+    const result1 = renderTemplateFileData(filename, fileData, variables1 as any);
+
+    // assert
+    assert.equal(result1, expectedResult1);
+  });
+
   it("do not escape empty string variable", () => {
     // arrange
     const filename = "test.tpl";

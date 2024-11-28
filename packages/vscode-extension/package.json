@@ -1669,6 +1669,7 @@
     "@microsoft/dev-tunnels-contracts": "1.1.45",
     "@microsoft/dev-tunnels-management": "1.1.45",
     "@microsoft/dev-tunnels-ssh": "3.12.5",
+    "@microsoft/dev-tunnels-ssh-tcp": "3.12.5",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
     "@microsoft/tiktokenizer": "^1.0.4",

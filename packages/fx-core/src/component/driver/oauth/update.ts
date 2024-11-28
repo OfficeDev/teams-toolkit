@@ -18,7 +18,7 @@ import {
 } from "../teamsApp/interfaces/OauthRegistration";
 import { OauthNameTooLongError } from "./error/oauthNameTooLong";
 import { UpdateOauthArgs } from "./interface/updateOauthArgs";
-import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
+import { logMessageKeys } from "./utility/constants";
 import { getandValidateOauthInfoFromSpec, OauthInfo, validateSecret } from "./utility/utility";
 import { OauthDisablePKCEError } from "./error/oauthDisablePKCEError";
 
@@ -264,7 +264,7 @@ export class UpdateOauthDriver implements StepDriver {
       current.tokenExchangeEndpoint !== authInfo.tokenExchangeEndpoint
     ) {
       diffMsgs.push(
-        `tokenExchangeEndpoint: ${current.tokenExchangeEndpoint ?? ""} => ${
+        `tokenExchangeEndpoint: ${current.tokenExchangeEndpoint!} => ${
           authInfo.tokenExchangeEndpoint
         }`
       );
@@ -273,7 +273,7 @@ export class UpdateOauthDriver implements StepDriver {
     // Compare tokenRefreshEndpoint
     if (!isMicrosoftEntra && current.tokenRefreshEndpoint !== authInfo.tokenRefreshEndpoint) {
       diffMsgs.push(
-        `tokenRefreshEndpoint: ${current.tokenRefreshEndpoint ?? "Undefined"} => ${
+        `tokenRefreshEndpoint: ${current.tokenRefreshEndpoint!} => ${
           authInfo.tokenRefreshEndpoint ?? "Undefined"
         }`
       );

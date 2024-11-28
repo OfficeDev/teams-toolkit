@@ -130,15 +130,13 @@ export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
   summary: "Summary:",
   learnMore: (link: string) =>
     `Visit ${link} to get more info about 'Validate prerequisites' task.`,
-  learnMoreHelpLink:
-    "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#accounts-to-build-your-teams-app",
+  learnMoreHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   showDetailMessage: openOutputMessage,
   showDetailDisplayMessage: openOutputDisplayMessage,
-  errorHelpLink:
-    "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#accounts-to-build-your-teams-app",
+  errorHelpLink: "https://aka.ms/teamsfx-tasks/check-prerequisites",
   durationMessage: (duration: number) =>
     `Finished 'Validate prerequisites' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };

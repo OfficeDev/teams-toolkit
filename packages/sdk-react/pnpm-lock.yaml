@@ -15,8 +15,8 @@ dependencies:
     specifier: ^3.0.7
     version: 3.0.7
   '@microsoft/teams-js':
-    specifier: ^2.32.0-beta
-    version: 2.32.0-beta.0
+    specifier: ^2.32.0-beta.1
+    version: 2.32.0-beta.1
   '@microsoft/teamsfx':
     specifier: workspace:*
     version: link:../sdk
@@ -43,6 +43,9 @@ devDependencies:
   '@istanbuljs/nyc-config-typescript':
     specifier: ^1.0.2
     version: 1.0.2(nyc@17.1.0)
+  '@jest/globals':
+    specifier: ^29.7.0
+    version: 29.7.0
   '@testing-library/react':
     specifier: ^16.0.1
     version: 16.0.1(@testing-library/dom@10.4.0)(@types/react-dom@18.3.0)(@types/react@18.3.9)(react-dom@18.3.1)(react@18.3.1)
@@ -3577,8 +3580,8 @@ packages:
       tslib: 2.7.0
     dev: false
 
-  /@microsoft/teams-js@2.32.0-beta.0:
-    resolution: {integrity: sha512-BTXpt02vthS2QtPcZpQJSmuK1S6vAWZhoqxWoV+/NEwOP81AQ6c2RJzaHv5gEhHhELhEgZpxMfhPiRWIIf7sUA==}
+  /@microsoft/teams-js@2.32.0-beta.1:
+    resolution: {integrity: sha512-pgFzeZpQS9Ky4gwxEyl4Tu8vBZMrT4Hqbd/yviOniR3A6MKbsMJhygi7nUj/M1EczW90S+HkuGihSKypKzxI2A==}
     dependencies:
       base64-js: 1.5.1
       debug: 4.3.7

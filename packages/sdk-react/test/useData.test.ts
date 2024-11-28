@@ -5,6 +5,7 @@
  * @jest-environment jsdom
  */
 
+import { describe, expect } from "@jest/globals";
 import { renderHook, waitFor } from "@testing-library/react";
 import { useData } from "../src/useData";
 

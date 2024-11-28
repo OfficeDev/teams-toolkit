@@ -33,6 +33,7 @@
     "@babel/preset-react": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@jest/globals": "^29.7.0",
     "@testing-library/react": "^16.0.1",
     "@types/enzyme": "^3.10.18",
     "@types/jest": "^29.5.13",
@@ -68,7 +69,7 @@
   "peerDependencies": {
     "@fluentui/react-components": "^9.54.16",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "@microsoft/teams-js": "^2.32.0-beta",
+    "@microsoft/teams-js": "^2.32.0-beta.1",
     "@microsoft/teamsfx": "^3.0.0-alpha",
     "react": ">=16.8.0 <19.0.0",
     "react-dom": ">=16.8.0 <19.0.0"

@@ -61,6 +61,7 @@ export enum TemplateProject {
   HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
   FoodCatalog = "Ingest Custom API Data into Microsoft 365 with a Microsoft Graph Connector",
   RedditLink = "Format Reddit Link into Adaptive Card",
+  IntelligentDataChart = "Intelligent Data Chart Generator",
 }
 
 export enum TemplateProjectFolder {
@@ -97,6 +98,7 @@ export enum TemplateProjectFolder {
   HelloWorldTabDocker = "hello-world-tab-docker",
   FoodCatalog = "nodejs-typescript-food-catalog",
   RedditLink = "nodejs",
+  IntelligentDataChart = "intelligent-data-chart-generator",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -140,6 +142,8 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
       TemplateProjectFolder.HelloWorldTabDocker,
     [TemplateProject.FoodCatalog]: TemplateProjectFolder.FoodCatalog,
     [TemplateProject.RedditLink]: TemplateProjectFolder.RedditLink,
+    [TemplateProject.IntelligentDataChart]:
+      TemplateProjectFolder.IntelligentDataChart,
   };
 
 export enum Resource {

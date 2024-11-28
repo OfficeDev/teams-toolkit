@@ -3027,3 +3027,23 @@ export async function validateMeeting(page: Page, name: string) {
     throw error;
   }
 }
+
+export async function validateIntelligentDataChart(page: Page) {
+  try {
+    console.log("start to verify Intelligent Data Chart");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(
+      "span:has-text('Intelligent Data Chart Generator')"
+    );
+    console.log("Intelligent Data Chart loaded successfully");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

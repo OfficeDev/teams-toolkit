@@ -8,12 +8,15 @@
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
+import { validateIntelligentDataChart } from "../../utils/playwrightOperation";
 import { SampledebugContext } from "./sampledebugContext";
 import { expect } from "chai";
 import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
 import { OpenAiKey } from "../../utils/env";
+import { Page } from "playwright";
 
+const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
 class IntelligentDataChartTestCase extends CaseFactory {
   public override async onBefore(
     sampledebugContext: SampledebugContext,
@@ -39,6 +42,7 @@ class IntelligentDataChartTestCase extends CaseFactory {
 	[SalesOrderDetailID] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]`,
+      `SET IDENTITY_INSERT [SalesOrderDetail] ON ;`,
       `INSERT [SalesOrderDetail] ([SalesOrderID], [SalesOrderDetailID], [OrderQty], [ProductID], [UnitPrice], [UnitPriceDiscount], [rowguid], [ModifiedDate]) VALUES (71774, 110562, 1, 836, 356.8980, 0.0000, N'e3a1994c-7a68-4ce8-96a3-77fdd3bbd730', CAST(N'2023-04-18T19:39:54.000' AS DateTime));`,
       `INSERT [SalesOrderDetail] ([SalesOrderID], [SalesOrderDetailID], [OrderQty], [ProductID], [UnitPrice], [UnitPriceDiscount], [rowguid], [ModifiedDate]) VALUES (71782, 110697, 2, 951, 242.9940, 0.0000, N'35d889d9-676a-4b95-a2ea-28da743c25a7', CAST(N'2023-11-30T14:22:33.000' AS DateTime));`,
     ];
@@ -77,7 +81,6 @@ class IntelligentDataChartTestCase extends CaseFactory {
       azSqlHelper?.sqlDatabaseName ?? ""
     );
 
-    const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
     const azureOpenAiKey = OpenAiKey.azureOpenAiKey
       ? OpenAiKey.azureOpenAiKey
       : "fake";
@@ -95,6 +98,9 @@ class IntelligentDataChartTestCase extends CaseFactory {
       "SECRET_OPENAI_DEPLOYMENT_NAME",
       azureOpenAiModelDeploymentName
     );
+  }
+  override async onValidate(page: Page): Promise<void> {
+    return await validateIntelligentDataChart(page);
   }
 }
 

@@ -1833,6 +1833,14 @@
             "isPKCEEnabled": {
               "type": "boolean",
               "description": "Whether PKCE is enabled for OAuth registration. Default is false."
+            },
+            "clientId": {
+              "type": "string",
+              "description": "The client id of OAuth registration."
+            },
+            "clientSecret": {
+              "type": "string",
+              "description": "The client secret of OAuth registration."
             }
           }
         }

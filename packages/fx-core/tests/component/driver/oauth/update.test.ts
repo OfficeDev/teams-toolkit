@@ -18,6 +18,7 @@ import {
 } from "../../../../src/component/driver/teamsApp/interfaces/OauthRegistration";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../../../core/utils";
+import * as utiltiy from "../../../../src/component/driver/oauth/utility/utility";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -526,7 +527,16 @@ describe("CreateOauthDriver", () => {
       flow: "authorizationCode",
       refreshUrl: "mockedRefreshUrl",
       isPKCEEnabled: "invalid",
+      identityProvider: "Custom",
+      configurationId: "mockedRegistrationId",
     };
+    sinon.stub(utiltiy, "getandValidateOauthInfoFromSpec").resolves({} as any);
+    sinon.stub(teamsDevPortalClient, "getOauthRegistrationById").resolves(
+      ok({
+        identityProvider: "Custom",
+      }) as any
+    );
+
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {

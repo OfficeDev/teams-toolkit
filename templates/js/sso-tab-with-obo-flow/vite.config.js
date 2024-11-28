@@ -5,7 +5,7 @@ import fs from "fs";
 export default defineConfig({
   plugins: [react()],
   define: {
-    global: {},
+    global: "globalThis",
   },
   server: {
     port: 53000,

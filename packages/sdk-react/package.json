@@ -33,7 +33,6 @@
     "@babel/preset-react": "^7.24.7",
     "@babel/preset-typescript": "^7.24.7",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@jest/globals": "^29.7.0",
     "@testing-library/react": "^16.0.1",
     "@types/enzyme": "^3.10.18",
     "@types/jest": "^29.5.13",

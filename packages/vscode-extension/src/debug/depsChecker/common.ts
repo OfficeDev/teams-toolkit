@@ -260,10 +260,18 @@ async function checkPort(
       LocalDebugPorts.conflictPorts = portsInUse;
       if (portsInUse.length > 0) {
         const killRes = await selectPortsToKill(portsInUse);
-        if (killRes.isOk()) {
-          // recheck
-          portsInUse = await localEnvManager.getPortsInUse(ports);
+        if (killRes.isErr()) {
+          return {
+            checker: Checker.Ports,
+            result: ResultStatus.failed,
+            failureMsg: doctorConstant.Port,
+            error: killRes.error,
+          };
         }
+        // wait some time
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // recheck
+        portsInUse = await localEnvManager.getPortsInUse(ports);
       }
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;

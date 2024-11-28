@@ -64,11 +64,14 @@ describe("checkAccessCallback", () => {
 
   describe("CheckSideloading", () => {
     const sandbox = sinon.createSandbox();
-    const clock = sandbox.useFakeTimers();
+    let clock: sinon.SinonFakeTimers;
 
     afterEach(() => {
-      sandbox.restore();
+      if (clock) {
+        clock.restore();
+      }
       clock.restore();
+      sandbox.restore();
     });
 
     beforeEach(() => {
@@ -82,6 +85,7 @@ describe("checkAccessCallback", () => {
         .resolves(ok("Enable Custom App Upload"));
       const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
 
+      clock = sandbox.useFakeTimers();
       await checkSideloadingCallback();
       await clock.tickAsync(5000);
 
@@ -95,6 +99,7 @@ describe("checkAccessCallback", () => {
         .resolves(ok("Use Test Tenant"));
       const openUrlStub = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl");
 
+      clock = sandbox.useFakeTimers();
       await checkSideloadingCallback();
       await clock.tickAsync(5000);
 

@@ -11,6 +11,7 @@ import {
   ConfigFolderName,
   FxError,
   LogLevel as LLevel,
+  ok,
   OptionItem,
   Result,
   SingleSelectConfig,
@@ -21,11 +22,13 @@ import {
   AzureScopes,
   isValidProjectV3,
   InvalidAzureSubscriptionError,
+  featureFlagManager,
+  FeatureFlags,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import CLIUIInstance from "../userInteraction";
-import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
+import { AzureSpCrypto, CryptoCachePlugin, loadTenantId, saveTenantId } from "./cacheAccess";
 import { CodeFlowLogin, ConvertTokenToJson, checkIsOnline } from "./codeFlowLogin";
 import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
 import {
@@ -180,8 +183,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(AzureAccountManager.teamsFxTokenCredential);
   }
 
-  switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
-    throw new Error("Method not implemented.");
+  async switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
+    await saveTenantId(accountName, tenantId);
+    return Promise.resolve(ok(AzureAccountManager.teamsFxTokenCredential));
   }
 
   private async updateLoginStatus(): Promise<void> {
@@ -201,14 +205,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async login(showDialog: boolean, tenantId?: string): Promise<void> {
-    let accessToken;
-    if (tenantId && tenantId.length > 0) {
-      accessToken = await AzureAccountManager.codeFlowTenantInstance.getToken(tenantId);
-    } else {
-      accessToken = await AzureAccountManager.codeFlowInstance.getToken();
+    const accessToken = await AzureAccountManager.codeFlowInstance.getTokenByScopes(AzureScopes);
+    const tokenJson = await this.getJsonObject(false, tenantId);
+    if (accessToken.isOk() && accessToken.value) {
+      this.setMemoryCache(accessToken.value, tokenJson);
     }
-    const tokenJson = await this.getJsonObject(false);
-    this.setMemoryCache(accessToken, tokenJson);
   }
 
   private setMemoryCache(accessToken: string | undefined, tokenJson: any) {
@@ -246,15 +247,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
-    let token;
-    if (AzureAccountManager.codeFlowTenantInstance === undefined) {
-      token = await AzureAccountManager.codeFlowInstance.getToken();
-    } else {
-      token = await AzureAccountManager.codeFlowTenantInstance.getToken();
-    }
-    if (token) {
-      const array = token!.split(".");
+  async getJsonObject(
+    showDialog = true,
+    tenantId?: string
+  ): Promise<Record<string, unknown> | undefined> {
+    const token = await AzureAccountManager.codeFlowInstance.getTokenByScopes(
+      AzureScopes,
+      true,
+      tenantId
+    );
+
+    if (token.isOk() && token.value) {
+      const array = token.value!.split(".");
       const buff = Buffer.from(array[1], "base64");
       return Promise.resolve(JSON.parse(buff.toString("utf-8")));
     } else {
@@ -329,11 +333,17 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         const tenantTokenCredential: TeamsFxTokenCredential = new TeamsFxTokenCredential(
           AzureAccountManager.codeFlowInstance
         );
+        const cachedTenantId = await loadTenantId(accountName);
+        const multiTenantEnabled = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant);
         for await (const page of tenantClient.tenants.list().byPage({ maxPageSize: 100 })) {
           for (const tenant of page) {
-            if (tenant.tenantId) {
+            if (
+              multiTenantEnabled && cachedTenantId
+                ? tenant.tenantId && tenant.tenantId == cachedTenantId
+                : tenant.tenantId
+            ) {
               try {
-                tenantTokenCredential.setTenantId(tenant.tenantId);
+                tenantTokenCredential.setTenantId(tenant.tenantId as string);
                 const subscriptionClient = new SubscriptionClient(tenantTokenCredential);
                 for await (const subPage of subscriptionClient.subscriptions
                   .list()
@@ -342,7 +352,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
                     arr.push({
                       subscriptionId: item.subscriptionId!,
                       subscriptionName: item.displayName!,
-                      tenantId: tenant.tenantId,
+                      tenantId: tenant.tenantId as string,
                     });
                   }
                 }
@@ -352,7 +362,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
                     CLILogProvider.necessaryLog(LLevel.Info, changeLoginTenantMessage);
                     showMFA = false;
                   }
-                  CLILogProvider.necessaryLog(LLevel.Info, tenant.tenantId);
+                  CLILogProvider.necessaryLog(LLevel.Info, tenant.tenantId as string);
                 }
               }
             }

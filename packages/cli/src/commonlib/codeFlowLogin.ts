@@ -20,7 +20,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { UTF8, clearCache, loadAccountId, saveAccountId } from "./cacheAccess";
+import { UTF8, clearCache, loadAccountId, loadTenantId, saveAccountId } from "./cacheAccess";
 import {
   MFACode,
   azureLoginMessage,
@@ -29,6 +29,7 @@ import {
   sendFileTimeout,
 } from "./common/constant";
 import CliCodeLogInstance from "./log";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
@@ -87,12 +88,20 @@ export class CodeFlowLogin {
       if (dataCache) {
         this.account = dataCache;
       }
+
+      if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)) {
+        const tenantCache = await loadTenantId(this.accountName);
+        if (tenantCache) {
+          const allAccounts = await this.msalTokenCache.getAllAccounts();
+          this.account = allAccounts.find((account) => account.tenantId == tenantCache);
+        }
+      }
     } else {
       this.account = undefined;
     }
   }
 
-  async login(scopes: Array<string>): Promise<string> {
+  async login(scopes: Array<string>, tenantId?: string): Promise<string> {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
     });
@@ -121,12 +130,17 @@ export class CodeFlowLogin {
       this.destroySockets();
     });
 
+    const authority =
+      featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) && tenantId
+        ? env.activeDirectoryEndpointUrl + tenantId
+        : undefined;
     const authCodeUrlParameters = {
       scopes: scopes,
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
       prompt: "select_account",
+      authority: authority,
     };
 
     let deferredRedirect: Deferred<string>;
@@ -301,19 +315,36 @@ export class CodeFlowLogin {
     }
   }
 
-  async getTokenByScopes(scopes: Array<string>, refresh = true): Promise<Result<string, FxError>> {
+  async getTokenByScopes(
+    scopes: Array<string>,
+    refresh = true,
+    tenantId?: string
+  ): Promise<Result<string, FxError>> {
     if (!this.account) {
       await this.reloadCache();
     }
+
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) && !tenantId) {
+      tenantId = await loadTenantId(this.accountName);
+    }
     if (!this.account) {
-      const accessToken = await this.login(scopes);
+      const accessToken = await this.login(scopes, tenantId);
       return ok(accessToken);
     } else {
+      let tenantedAccount: AccountInfo | undefined = undefined;
+      if (tenantId) {
+        const allAccounts = await this.msalTokenCache.getAllAccounts();
+        tenantedAccount = allAccounts.find((account) => account.tenantId == tenantId);
+        this.account = tenantedAccount ?? this.account;
+      }
       try {
         const res = await this.pca.acquireTokenSilent({
           account: this.account,
           scopes: scopes,
-          forceRefresh: false,
+          forceRefresh: tenantedAccount ? false : true,
+          authority: tenantId
+            ? env.activeDirectoryEndpointUrl + tenantId
+            : this.config.auth.authority,
         });
         if (res) {
           return ok(res.accessToken);

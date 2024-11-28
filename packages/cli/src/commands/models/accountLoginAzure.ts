@@ -69,13 +69,16 @@ export const accountLoginAzureCommand: CLICommand = {
       }
     }
     await AzureTokenProvider.signout();
-    await accountUtils.outputAzureInfo(
+    const res = await accountUtils.outputAzureInfo(
       "login",
       args.tenant as string,
       isSP,
       args.username as string,
       args.password as string
     );
+    if (res) {
+      await AzureTokenProvider.switchTenant(args.tenant as string);
+    }
     return ok(undefined);
   },
 };

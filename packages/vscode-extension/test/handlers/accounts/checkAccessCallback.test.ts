@@ -1,16 +1,16 @@
-import * as sinon from "sinon";
+import { ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
-import * as localizeUtils from "../../../src/utils/localizeUtils";
-import * as vsc_ui from "../../../src/qm/vsc_ui";
+import * as sinon from "sinon";
 import * as vscode from "vscode";
+import { PanelType } from "../../../src/controls/PanelType";
+import { WebviewPanel } from "../../../src/controls/webviewPanel";
 import {
   checkCopilotCallback,
   checkSideloadingCallback,
 } from "../../../src/handlers/accounts/checkAccessCallback";
-import { ok } from "@microsoft/teamsfx-api";
+import * as vsc_ui from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
-import { WebviewPanel } from "../../../src/controls/webviewPanel";
-import { PanelType } from "../../../src/controls/PanelType";
+import * as localizeUtils from "../../../src/utils/localizeUtils";
 
 describe("checkAccessCallback", () => {
   describe("checkCopilotCallback", () => {
@@ -64,6 +64,7 @@ describe("checkAccessCallback", () => {
 
   describe("CheckSideloading", () => {
     const sandbox = sinon.createSandbox();
+    const clock = sandbox.useFakeTimers();
 
     afterEach(() => {
       sandbox.restore();
@@ -71,23 +72,36 @@ describe("checkAccessCallback", () => {
 
     beforeEach(() => {
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
     });
 
-    it("checkSideloadingCallback()", async () => {
-      sandbox.stub(localizeUtils, "localize").returns("");
-      let showMessageCalledCount = 0;
-      sandbox.stub(vsc_ui, "VS_CODE_UI").value({
-        showMessage: async () => {
-          showMessageCalledCount += 1;
-          return Promise.resolve(ok("Get More Info"));
-        },
-      });
+    it("checkSideloadingCallback() - click custom app upload button", async () => {
+      const showMessageStub = sandbox
+        .stub(vsc_ui.VS_CODE_UI, "showMessage")
+        .resolves(ok("Enable Custom App Upload"));
       const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
 
-      checkSideloadingCallback();
+      await checkSideloadingCallback();
+      await clock.tickAsync(5000);
 
-      chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.assert.calledOnce(showMessageStub);
       sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
+    });
+
+    it("checkSideloadingCallback() - click test tenant button", async () => {
+      const showMessageStub = sandbox
+        .stub(vsc_ui.VS_CODE_UI, "showMessage")
+        .resolves(ok("Use Test Tenant"));
+      const openUrlStub = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl");
+
+      await checkSideloadingCallback();
+      await clock.tickAsync(5000);
+
+      sinon.assert.calledOnce(showMessageStub);
+      sinon.assert.calledOnceWithExactly(
+        openUrlStub,
+        "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#enable-custom-app-upload-using-admin-center"
+      );
     });
   });
 });

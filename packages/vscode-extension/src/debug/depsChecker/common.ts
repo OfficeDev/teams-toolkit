@@ -259,11 +259,11 @@ async function checkPort(
       let portsInUse = await localEnvManager.getPortsInUse(ports);
       LocalDebugPorts.conflictPorts = portsInUse;
       if (portsInUse.length > 0) {
-        const killRes = await selectPortsToKill(portsInUse);
-        if (killRes.isOk()) {
-          // recheck
-          portsInUse = await localEnvManager.getPortsInUse(ports);
-        }
+        await selectPortsToKill(portsInUse);
+        // wait some time
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // recheck
+        portsInUse = await localEnvManager.getPortsInUse(ports);
       }
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;

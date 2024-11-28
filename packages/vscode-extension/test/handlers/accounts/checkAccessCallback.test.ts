@@ -68,6 +68,7 @@ describe("checkAccessCallback", () => {
 
     afterEach(() => {
       sandbox.restore();
+      clock.restore();
     });
 
     beforeEach(() => {

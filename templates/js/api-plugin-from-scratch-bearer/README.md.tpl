@@ -17,9 +17,9 @@ When you extend Microsoft 365 Copilot, you maximize the efficiency of your apps 
 ![image](https://github.com/user-attachments/assets/1c125380-a935-4f65-a3b8-e8b9a646f3bc)
 {{/DeclarativeCopilot}}
 {{#DeclarativeCopilot}}
-# Overview of the declarative agent with API plugin template
+# Overview of the Declarative Agent with API Plugin template
 
-## Build a declarative agent with an API Plugin from a new API with Azure Functions
+## Build a Declarative Agent with API Plugin from a new API with Azure Functions
 
 With the declarative agent, you can build a custom version of Copilot that can be used for specific scenarios, such as for specialized knowledge, implementing specific processes, or simply to save time by reusing a set of AI prompts. For example, a grocery shopping Copilot declarative agent can be used to create a grocery list based on a meal plan that you send to Copilot.
 

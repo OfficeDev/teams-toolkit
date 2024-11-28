@@ -547,7 +547,7 @@
   "core.envFunc.readFile.errorMessage": "Unable to read from \"%s\". %s",
   "core.error.checkOutput.vsc": "Check [Output panel](command:fx-extension.showOutputChannel) for details.",
   "core.importAddin.label": "Import an Existing Outlook Add-ins",
-  "core.importAddin.detail": "Upgrade an Add-in project to the latest app manifest and project structure",
+  "core.importAddin.detail": "Upgrade an add-in project to the latest app manifest and project structure",
   "core.importOfficeAddin.label": "Upgrade an Existing Office Add-in",
   "core.officeContentAddin.label": "Content Add-in",
   "core.officeContentAddin.detail": "Create new objects for Excel or PowerPoint",

@@ -100,7 +100,7 @@ class IntelligentDataChartTestCase extends CaseFactory {
     );
   }
   override async onValidate(page: Page): Promise<void> {
-    return await validateIntelligentDataChart(page);
+    return await validateIntelligentDataChart(page, isRealKey);
   }
 }
 

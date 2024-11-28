@@ -3028,7 +3028,10 @@ export async function validateMeeting(page: Page, name: string) {
   }
 }
 
-export async function validateIntelligentDataChart(page: Page) {
+export async function validateIntelligentDataChart(
+  page: Page,
+  isRealKey: boolean
+) {
   try {
     console.log("start to verify Intelligent Data Chart");
     const frameElementHandle = await page.waitForSelector(
@@ -3038,6 +3041,10 @@ export async function validateIntelligentDataChart(page: Page) {
     await frame?.waitForSelector(
       "span:has-text('Intelligent Data Chart Generator')"
     );
+    if (isRealKey) {
+      console.log("start to verify ai generated data");
+      await frame?.waitForSelector("span:has-text('Real Key')");
+    }
     console.log("Intelligent Data Chart loaded successfully");
   } catch (error) {
     await page.screenshot({

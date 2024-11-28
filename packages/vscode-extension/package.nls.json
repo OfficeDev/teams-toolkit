@@ -141,7 +141,7 @@
   "teamstoolkit.commandsTreeViewProvider.previewDescription": "Debug and preview your Teams app",
   "teamstoolkit.commandsTreeViewProvider.previewTitle": "Preview Your Teams App (F5)",
   "_teamstoolkit.commandsTreeViewProvider.previewTitle.comment": "'F5' is a shortcut key, no need to translate it.",
-  "teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle": "Get help from GitHub Copilot",
+  "teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle": "Get Help from GitHub Copilot",
   "teamstoolkit.commandsTreeViewProvider.getCopilotHelpDescription": "Chat with GitHub Copilot to know what you can do with your Teams app.",
   "teamstoolkit.commandsTreeViewProvider.provision.blockTooltip": "Unable to run command during provisioning. Try again after provisioning completes.",
   "teamstoolkit.commandsTreeViewProvider.provision.running": "Provisioning in progress...",

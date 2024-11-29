@@ -3051,6 +3051,7 @@ export async function validateIntelligentDataChart(
       await textarea?.press("Enter");
       await page.waitForTimeout(Timeout.shortTimeLoading);
       try {
+        console.log("start to verify SQL statement used");
         await frame?.waitForSelector("button:has-text('SQL statement used')");
       } catch (error) {
         await page.screenshot({

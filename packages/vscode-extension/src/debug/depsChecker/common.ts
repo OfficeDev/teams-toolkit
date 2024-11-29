@@ -228,13 +228,12 @@ async function selectPortsToKill(
             `Process(es) ${processInfo} have been killed.`,
             false
           );
+          return ok(undefined);
         }
       } else {
         LocalDebugPorts.terminateProcesses = [];
-        return err(new UserCancelError(ExtensionSource));
       }
     }
-    return ok(undefined);
   } else if (selectButton === "Learn More") {
     void VS_CODE_UI.openUrl(
       "https://github.com/OfficeDev/teams-toolkit/wiki/%7BDebug%7D-FAQ#what-to-do-if-some-port-is-already-in-use"

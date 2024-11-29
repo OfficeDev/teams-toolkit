@@ -37,7 +37,7 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
     .then(async (result) => {
       if (
         result.isOk() &&
-        result.value === localize("teamstoolkit.accountTree.sideloadingUseTestTenant")
+        result.value === localize("teamstoolkit.accountTree.sideloadingEnable")
       ) {
         await VS_CODE_UI.openUrl(
           "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#enable-custom-app-upload-using-admin-center"
@@ -45,7 +45,7 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTestTenantLink);
       } else if (
         result.isOk() &&
-        result.value === localize("teamstoolkit.accountTree.sideloadingEnable")
+        result.value === localize("teamstoolkit.accountTree.sideloadingUseTestTenant")
       ) {
         WebviewPanel.createOrShow(PanelType.AccountHelp);
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingEnable);

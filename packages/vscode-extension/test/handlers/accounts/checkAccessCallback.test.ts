@@ -79,24 +79,10 @@ describe("checkAccessCallback", () => {
       sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
     });
 
-    it("checkSideloadingCallback() - click custom app upload button", async () => {
+    it("checkSideloadingCallback() - click enable custom app upload button", async () => {
       const showMessageStub = sandbox
         .stub(vsc_ui.VS_CODE_UI, "showMessage")
         .resolves(ok("Enable Custom App Upload"));
-      const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
-
-      clock = sandbox.useFakeTimers();
-      await checkSideloadingCallback();
-      await clock.tickAsync(5000);
-
-      sinon.assert.calledOnce(showMessageStub);
-      sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
-    });
-
-    it("checkSideloadingCallback() - click test tenant button", async () => {
-      const showMessageStub = sandbox
-        .stub(vsc_ui.VS_CODE_UI, "showMessage")
-        .resolves(ok("Use Test Tenant"));
       const openUrlStub = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl");
 
       clock = sandbox.useFakeTimers();
@@ -108,6 +94,20 @@ describe("checkAccessCallback", () => {
         openUrlStub,
         "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#enable-custom-app-upload-using-admin-center"
       );
+    });
+
+    it("checkSideloadingCallback() - click use test tenant button", async () => {
+      const showMessageStub = sandbox
+        .stub(vsc_ui.VS_CODE_UI, "showMessage")
+        .resolves(ok("Use Test Tenant"));
+      const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
+
+      clock = sandbox.useFakeTimers();
+      await checkSideloadingCallback();
+      await clock.tickAsync(5000);
+
+      sinon.assert.calledOnce(showMessageStub);
+      sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
     });
   });
 });

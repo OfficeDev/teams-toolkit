@@ -3043,7 +3043,25 @@ export async function validateIntelligentDataChart(
     );
     if (isRealKey) {
       console.log("start to verify ai generated data");
-      await frame?.waitForSelector("span:has-text('Real Key')");
+      const textarea = await frame?.waitForSelector(
+        ".prompt-textarea textarea"
+      );
+      await textarea?.fill("Top 20 selling products");
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      await textarea?.press("Enter");
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      try {
+        await frame?.waitForSelector(
+          "span:has-text('The result could not be displayed. Please make sure your input is a valid one.')",
+          { state: "detached" }
+        );
+      } catch (error) {
+        await page.screenshot({
+          path: getPlaywrightScreenshotPath("search_error"),
+          fullPage: true,
+        });
+        throw error;
+      }
     }
     console.log("Intelligent Data Chart loaded successfully");
   } catch (error) {

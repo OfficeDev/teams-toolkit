@@ -207,11 +207,16 @@ jobs:
         run: |
           npm run setup
 
-      - name: Link CLI
-        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
+      - name: install cli for schedule
+        if: ${{  github.event_name == 'schedule' }}
         run: |
           cliVer=$(npm view @microsoft/teamsapp-cli dist-tags --json | jq -r '.alpha')
           npm install -g @microsoft/teamsapp-cli@$cliVer
+      
+      - name: link cli for workflow_dispatch
+        if: ${{  github.event_name == 'workflow_dispatch' }}
+        run: |
+          pnpm link --global
 
       - name: Update CLI and legacy-peer-deps for PR cases
         if: ${{  github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}

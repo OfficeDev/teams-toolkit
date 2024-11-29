@@ -8,7 +8,7 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import * as path from "path";
-import { editDotEnvFile, setBotSkuNameToB1Bicep } from "../commonUtils";
+import { editDotEnvFile } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 
 class IntelligentDataChartCase extends CaseFactory {

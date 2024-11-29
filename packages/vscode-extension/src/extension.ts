@@ -201,6 +201,7 @@ import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils"
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
 import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
+import { CustomLinkProvider } from "./linkProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
@@ -335,6 +336,9 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
   context.subscriptions.push(vscode.tasks.registerTaskProvider(TeamsFxTaskType, taskProvider));
   context.subscriptions.push(vscode.workspace.onWillSaveTextDocument(saveTextDocumentHandler));
+
+  const linkProvider = vscode.window.registerTerminalLinkProvider(new CustomLinkProvider());
+  context.subscriptions.push(linkProvider);
 }
 
 function activateOfficeDevRegistration(context: vscode.ExtensionContext) {

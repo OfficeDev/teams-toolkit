@@ -33,8 +33,9 @@ async function openGithubCopilotChat(query: string): Promise<Result<null, FxErro
   const eventName = "openCopilotChat";
   try {
     const options = {
-      query,
+      query: "#terminalSelection " + query,
       isPartialQuery: true,
+      variableIds: ["#editor", "#terminalSelection", "#terminalLastCommand"],
     };
     await vscode.commands.executeCommand("workbench.panel.chat.view.copilot.focus");
     await vscode.commands.executeCommand("workbench.action.chat.open", options);

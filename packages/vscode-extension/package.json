@@ -293,6 +293,21 @@
           "command": "fx-extension.openOfficeDevHelpFeedbackLink",
           "when": "view == teamsfx-officedev-help-and-feedback",
           "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.create",
+          "when": "view == terminal"
+        },
+        {
+          "command": "fx-extension.createAccount",
+          "when": "view == 'workbench.panel.output'"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "fx-extension.create",
+          "group": "navigation",
+          "when": "resourceFilename =~ /.*Teams Toolkit\\.log$/ || activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/"
         }
       ],
       "view/item/context": [

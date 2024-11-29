@@ -329,7 +329,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             this.writeEmitter.fire(`${msg}\r\n`);
           }
           if (err) {
-            this.writeEmitter.fire(`${err.message}\r\n`);
+            this.writeEmitter.fire(`[TeamsToolkitError]${err.message}[TeamsToolkitError]\r\n`);
           }
         }
       );

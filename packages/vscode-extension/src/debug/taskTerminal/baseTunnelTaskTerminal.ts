@@ -212,7 +212,9 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
-    this.writeEmitter.fire(`\r\n${tunnelDisplayMessages.errorTerminalMessage}\r\n`);
+    this.writeEmitter.fire(
+      `\r\n[TeamsToolkitError]${tunnelDisplayMessages.errorTerminalMessage}[TeamsToolkitError]\r\n`
+    );
 
     await this.progressHandler.end(false);
 

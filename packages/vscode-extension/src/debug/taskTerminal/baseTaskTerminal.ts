@@ -43,7 +43,9 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   close(): void {
     this.stop().catch((error) => {
-      this.writeEmitter.fire(`${error?.message as string}\r\n`);
+      this.writeEmitter.fire(
+        `[TeamsToolkitError]${error?.message as string}[TeamsToolkitError]\r\n`
+      );
     });
   }
 
@@ -65,9 +67,14 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected async stop(error?: any, outputError = true): Promise<void> {
     if (error) {
       const fxError: UserError | SystemError = assembleError(error);
-
+      const BLUE = "\u001b[34m";
+      const RED = "\u001b[31m"; // ANSI code for blue
+      const RESET = "\u001b[0m"; // ANSI code to reset color
+      this.writeEmitter.fire(`Click this: ${BLUE}[Run Command]${RESET}\r\n`);
       // TODO: add color
-      this.writeEmitter.fire(`${fxError.message}\r\n`);
+      this.writeEmitter.fire(
+        `${RED}[TeamsToolkitError]${fxError.message}[TeamsToolkitError]${RESET}\r\n`
+      );
 
       if (outputError) {
         showError(fxError).catch(() => {

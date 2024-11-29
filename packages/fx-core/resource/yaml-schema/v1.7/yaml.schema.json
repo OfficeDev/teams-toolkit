@@ -1708,7 +1708,7 @@
     },
     "oauthRegister": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "description": "Create an OAuth registration.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
@@ -1719,7 +1719,7 @@
         },
         "with": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "description": "Parameters for this action",
           "required": ["name", "appId", "apiSpecPath", "flow"],
           "properties": {
@@ -1775,7 +1775,7 @@
         },
         "writeToEnvironmentFile": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "description": "Write environment variables to environment file",
           "required": ["configurationId"],
           "properties": {
@@ -1789,7 +1789,7 @@
     },
     "oauthUpdate": {
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "description": "Update an OAuth registration.",
       "required": ["uses", "with"],
       "properties": {
@@ -1800,7 +1800,7 @@
         },
         "with": {
           "type": "object",
-          "additionalProperties": false,
+          "additionalProperties": true,
           "description": "Parameters for this action",
           "required": ["name", "appId", "apiSpecPath", "configurationId"],
           "properties": {

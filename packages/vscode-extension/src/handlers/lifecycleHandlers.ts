@@ -48,6 +48,31 @@ import * as stringUtil from "util";
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   let inputs: Inputs | undefined;
+
+  const selectedText = await vscode.env.clipboard.readText(); // Read clipboard content
+  if (selectedText) {
+    void vscode.window.showInformationMessage(`Selected Terminal: ${selectedText}`);
+    // Perform further actions with selectedText
+  } else {
+    void vscode.window.showWarningMessage("No text copied from the terminal!");
+  }
+  await vscode.commands.executeCommand("workbench.action.openActiveLogOutputFile");
+
+  // const editor = vscode.window.activeTextEditor;
+  //   if (editor) {
+
+  //     const document = editor.document;
+  //     const content = document.getText();
+
+  //     void vscode.window.showInformationMessage(`Log Content: \n${content.substring(0, 200)}...`);
+  //     const selection = editor.selection;
+  //     const selectedText = editor.document.getText(selection);
+  //     void vscode.window.showInformationMessage(`Selected text: ${selectedText}`);
+  //   } else {
+  //     void vscode.window.showInformationMessage('No text selected or active editor.');
+  //   }
+
+  console.log(args);
   if (args?.length === 1) {
     if (!!args[0].teamsAppFromTdp) {
       inputs = getSystemInputs();

@@ -70,7 +70,7 @@
   "teamstoolkit.commands.createAccount.requireSubscription": "Requires Visual Studio Subscription",
   "teamstoolkit.commands.createAccount.title": "Create Account",
   "teamstoolkit.commands.createEnvironment.title": "Create New Environment",
-  "teamstoolkit.commands.createProject.title": "Create New App",
+  "teamstoolkit.commands.createProject.title": "Troubleshoot with @teamsapp",
   "teamstoolkit.commands.debug.title": "Select and Start Debugging Teams App",
   "teamstoolkit.commands.deploy.title": "Deploy",
   "teamstoolkit.commands.updateAadAppManifest.title": "Update Microsoft Entra App",

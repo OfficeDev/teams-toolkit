@@ -3051,10 +3051,7 @@ export async function validateIntelligentDataChart(
       await textarea?.press("Enter");
       await page.waitForTimeout(Timeout.shortTimeLoading);
       try {
-        await frame?.waitForSelector(
-          "span:has-text('The result could not be displayed. Please make sure your input is a valid one.')",
-          { state: "detached" }
-        );
+        await frame?.waitForSelector("button:has-text('SQL statement used')");
       } catch (error) {
         await page.screenshot({
           path: getPlaywrightScreenshotPath("search_error"),

@@ -3042,24 +3042,25 @@ export async function validateIntelligentDataChart(
       "span:has-text('Intelligent Data Chart Generator')"
     );
     if (isRealKey) {
-      console.log("fill in: Sales statistic by month");
+      console.log("fill in: Top 20 selling products");
       const textarea = await frame?.waitForSelector(
         ".prompt-textarea textarea"
       );
-      await textarea?.fill("Sales statistic by month");
-      await page.waitForTimeout(Timeout.shortTimeWait);
-      await textarea?.press("Enter");
-      await page.waitForTimeout(Timeout.shortTimeLoading);
-      try {
+      await RetryHandler.retry(async () => {
+        await textarea?.selectText();
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        await textarea?.press("Backspace");
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        await textarea?.fill("Top 20 selling products");
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        const searchbtn = await frame?.waitForSelector(
+          ".prompt-textarea button"
+        );
+        await searchbtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
         console.log("start to verify SQL statement used");
         await frame?.waitForSelector("button:has-text('SQL statement used')");
-      } catch (error) {
-        await page.screenshot({
-          path: getPlaywrightScreenshotPath("search_error"),
-          fullPage: true,
-        });
-        throw error;
-      }
+      }, 5);
     }
     console.log("Intelligent Data Chart loaded successfully");
   } catch (error) {

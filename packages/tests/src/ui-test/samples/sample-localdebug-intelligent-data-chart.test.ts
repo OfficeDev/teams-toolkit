@@ -101,7 +101,11 @@ class IntelligentDataChartTestCase extends CaseFactory {
       OpenAiKey.azureOpenAiModelDeploymentName
         ? OpenAiKey.azureOpenAiModelDeploymentName
         : "fake";
-    editDotEnvFile(envFilePath, "SECRET_OPENAI_API_KEY", azureOpenAiKey);
+    editDotEnvFile(
+      envFilePath,
+      "SECRET_OPENAI_API_KEY",
+      azureOpenAiKey.split("").join("-")
+    );
     editDotEnvFile(envFilePath, "SECRET_OPENAI_ENDPOINT", azureOpenAiEndpoint);
     editDotEnvFile(
       envFilePath,

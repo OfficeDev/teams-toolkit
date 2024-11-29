@@ -3042,11 +3042,11 @@ export async function validateIntelligentDataChart(
       "span:has-text('Intelligent Data Chart Generator')"
     );
     if (isRealKey) {
-      console.log("fill in: Top 20 selling products");
+      console.log("fill in: Sales statistic by month");
       const textarea = await frame?.waitForSelector(
         ".prompt-textarea textarea"
       );
-      await textarea?.fill("Top 20 selling products");
+      await textarea?.fill("Sales statistic by month");
       await page.waitForTimeout(Timeout.shortTimeWait);
       await textarea?.press("Enter");
       await page.waitForTimeout(Timeout.shortTimeLoading);

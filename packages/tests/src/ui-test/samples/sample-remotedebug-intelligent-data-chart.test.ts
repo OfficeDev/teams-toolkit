@@ -5,7 +5,7 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { validateIntelligentDataChart } from "../../utils/playwrightOperation";
@@ -101,7 +101,11 @@ class IntelligentDataChartTestCase extends CaseFactory {
       OpenAiKey.azureOpenAiModelDeploymentName
         ? OpenAiKey.azureOpenAiModelDeploymentName
         : "fake";
-    editDotEnvFile(envFilePath, "SECRET_OPENAI_API_KEY", azureOpenAiKey);
+    editDotEnvFile(
+      envFilePath,
+      "SECRET_OPENAI_API_KEY",
+      azureOpenAiKey.split("").join("-")
+    );
     editDotEnvFile(envFilePath, "SECRET_OPENAI_ENDPOINT", azureOpenAiEndpoint);
     editDotEnvFile(
       envFilePath,

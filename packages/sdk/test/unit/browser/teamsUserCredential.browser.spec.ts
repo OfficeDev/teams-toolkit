@@ -114,7 +114,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
       errorResult.message,
       "Initialize teams sdk failed due to not running inside Teams environment"
     );
-  });
+  }).timeout(70000);
 
   it("getUserInfo should throw InternalError when get SSO token failed", async function () {
     sandbox

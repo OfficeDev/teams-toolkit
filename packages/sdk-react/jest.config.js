@@ -23,6 +23,7 @@ module.exports = {
     "^react($|/.+)": "<rootDir>/node_modules/react$1",
   },
   preset: "ts-jest",
+  setupFiles: ["<rootDir>/jest.setup.js"],
   testMatch: ["<rootDir>/test/*.test.(ts|tsx|js)"],
   collectCoverage: true,
   collectCoverageFrom: ["/src/*.{js,jsx,ts,tsx}", "!<rootDir>/node_modules/"],

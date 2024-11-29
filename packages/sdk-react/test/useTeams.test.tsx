@@ -11,6 +11,18 @@ import { useTeams } from "../src/useTeams";
 import { app, pages } from "@microsoft/teams-js";
 import { makeStyles, Title1, FluentProvider } from "@fluentui/react-components";
 
+jest.mock("@microsoft/teams-js", () => ({
+  app: {
+    initialize: jest.fn(),
+    registerOnThemeChangeHandler: jest.fn(),
+    getContext: jest.fn(),
+    notifyAppLoaded: jest.fn(),
+  },
+  pages: {
+    registerFullScreenHandler: jest.fn(),
+  },
+}));
+
 const useStyles = makeStyles({
   root: {
     display: "flex",
@@ -24,21 +36,26 @@ describe("useTeams", () => {
   let spyRegisterOnThemeChangeHandler: jest.SpyInstance;
   let spyRegisterFullScreenHandler: jest.SpyInstance;
   let spyGetContext: jest.SpyInstance;
+  let spyNotifyAppLoaded: jest.SpyInstance;
 
   beforeEach(() => {
     window.history.pushState({}, "", "/");
+
+    // Make the initialize property configurable and writable
+    Object.defineProperty(app, "initialize", {
+      configurable: true,
+      writable: true,
+    });
+
     spyInitialize = jest.spyOn(app, "initialize");
-    spyInitialize.mockImplementation(() => {
-      return Promise.resolve();
-    });
+    spyInitialize.mockImplementation(() => Promise.resolve());
+
     spyRegisterOnThemeChangeHandler = jest.spyOn(app, "registerOnThemeChangeHandler");
-    spyRegisterOnThemeChangeHandler.mockImplementation(() => {
-      return Promise.resolve();
-    });
+    spyRegisterOnThemeChangeHandler.mockImplementation(() => Promise.resolve());
+
     spyRegisterFullScreenHandler = jest.spyOn(pages, "registerFullScreenHandler");
-    spyRegisterFullScreenHandler.mockImplementation(() => {
-      return Promise.resolve();
-    });
+    spyRegisterFullScreenHandler.mockImplementation(() => Promise.resolve());
+
     spyGetContext = jest.spyOn(app, "getContext");
     spyGetContext.mockImplementation(() => {
       return Promise.resolve({
@@ -50,6 +67,9 @@ describe("useTeams", () => {
         },
       } as Partial<app.Context>);
     });
+
+    spyNotifyAppLoaded = jest.spyOn(app, "notifyAppLoaded");
+    spyNotifyAppLoaded.mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -391,7 +411,7 @@ describe("useTeams", () => {
       () => {
         expect(result.current[0].loading).toBe(false);
       },
-      { interval: 1 }
+      { interval: 1 },
     );
   });
 });

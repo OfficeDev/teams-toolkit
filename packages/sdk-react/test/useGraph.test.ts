@@ -12,6 +12,24 @@ import { ErrorWithCode, ErrorCode, UserInfo } from "@microsoft/teamsfx";
 import * as teamsfxlib from "@microsoft/teamsfx";
 import "isomorphic-fetch";
 
+jest.mock("@microsoft/teamsfx", () => {
+  return {
+    TeamsUserCredential: jest.fn().mockImplementation(() => {
+      return {
+        async login(): Promise<void> {},
+        async getToken(): Promise<null> {
+          return null;
+        },
+        async getUserInfo(): Promise<UserInfo> {
+          return {} as UserInfo;
+        },
+      };
+    }),
+    ErrorCode: jest.requireActual("@microsoft/teamsfx").ErrorCode,
+    ErrorWithCode: jest.requireActual("@microsoft/teamsfx").ErrorWithCode,
+  };
+});
+
 describe("useGraphWithCredential() hook tests", () => {
   beforeEach(() => {});
 
@@ -21,19 +39,6 @@ describe("useGraphWithCredential() hook tests", () => {
   });
 
   it("call function after initialized without options", async () => {
-    jest
-      .spyOn(teamsfxlib, "TeamsUserCredential")
-      .mockImplementation((): teamsfxlib.TeamsUserCredential => {
-        return {
-          async login(): Promise<void> {},
-          async getToken(): Promise<null> {
-            return null;
-          },
-          async getUserInfo(): Promise<UserInfo> {
-            return {} as UserInfo;
-          },
-        };
-      });
     let graphScope: string[] | undefined;
     const { result } = renderHook(() =>
       useGraphWithCredential(
@@ -181,6 +186,7 @@ describe("useGraphWithCredential() hook tests", () => {
           },
         };
       });
+
     let graphScope: string[] | undefined;
     const { result } = renderHook(() =>
       useGraphWithCredential(

@@ -93,6 +93,7 @@ provision:
 {{#MicrosoftEntra}}
       name: aadAuthCode
       appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
       # Path to OpenAPI description document
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
       configurationId: ${{AADAUTHCODE_CONFIGURATION_ID}}
@@ -100,6 +101,7 @@ provision:
 {{^MicrosoftEntra}}
       name: oAuth2AuthCode
       appId: ${{TEAMS_APP_ID}}
+      clientId: ${{AAD_APP_CLIENT_ID}}
       # Path to OpenAPI description document
       apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
       configurationId: ${{OAUTH2AUTHCODE_CONFIGURATION_ID}}

@@ -13,8 +13,6 @@ import { getUuid } from "../../commonlib/utilities";
 
 class IntelligentDataChartCase extends CaseFactory {
   override async onBeforeProvision(projectPath: string): Promise<void> {
-    // fix quota issue
-    await setBotSkuNameToB1Bicep(projectPath);
     const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
     editDotEnvFile(envFilePath, "SQL_USER", "Abc123321");
     editDotEnvFile(
@@ -33,6 +31,5 @@ class IntelligentDataChartCase extends CaseFactory {
 new IntelligentDataChartCase(
   TemplateProjectFolder.IntelligentDataChart,
   27852475,
-  "huimiao@microsoft.com",
-  ["sql"]
+  "huimiao@microsoft.com"
 ).test();

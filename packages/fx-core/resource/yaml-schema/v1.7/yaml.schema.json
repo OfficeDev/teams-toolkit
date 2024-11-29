@@ -1782,6 +1782,10 @@
             "configurationId": {
               "description": "Required. The configuration id of created OAuth registration.",
               "$ref": "#/definitions/envVarName"
+            },
+            "applicationIdUri": {
+              "description": "The Application ID URI of created OAuth registration.",
+              "$ref": "#/definitions/envVarName"
             }
           }
         }

@@ -225,7 +225,7 @@ async function selectPortsToKill(
       title: "Select process(es) to terminate",
       name: "select_processes",
       options: loadOptions,
-      default: ["all"],
+      default: "all",
     });
     if (res.isErr()) {
       return err(res.error);

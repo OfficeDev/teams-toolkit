@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 import { TextType, colorize } from "../../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../../commonlib/azureLogin";
 import AzureTokenCIProvider from "../../commonlib/azureLoginCI";
@@ -22,10 +22,14 @@ class AccountUtils {
     return true;
   }
 
-  async outputM365Info(commandType: "login" | "show"): Promise<boolean> {
-    const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({
-      scopes: AppStudioScopes,
-    });
+  async outputM365Info(commandType: "login" | "show", tenantId?: string): Promise<boolean> {
+    const tid = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) ? tenantId : undefined;
+    const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject(
+      {
+        scopes: AppStudioScopes,
+      },
+      tid
+    );
     const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
     if (result) {
       const username = (result as any).upn;
@@ -54,7 +58,8 @@ class AccountUtils {
       await AzureTokenCIProvider.init(userName, password, tenantId);
       azureProvider = AzureTokenCIProvider;
     }
-    const result = await azureProvider.getJsonObject(true);
+    const tid = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) ? tenantId : undefined;
+    const result = await azureProvider.getJsonObject(true, tid);
     if (result) {
       const subscriptions = await azureProvider.listSubscriptions();
       const username = (result as any).upn;

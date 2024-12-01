@@ -165,7 +165,10 @@ class MM365TokenProviderWrapper implements M365TokenProvider {
   getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
     return this.getProvider().getAccessToken(tokenRequest);
   }
-  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
+  getJsonObject(
+    tokenRequest: TokenRequest,
+    tenantId?: string
+  ): Promise<Result<Record<string, unknown>, FxError>> {
     return this.getProvider().getJsonObject(tokenRequest);
   }
   getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {

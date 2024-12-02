@@ -1871,7 +1871,9 @@ describe("SpecGenerator", async () => {
         [QuestionNames.AppName]: "testapp",
       };
       inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
-      inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
+      inputs.apiAuthData = [
+        { serverUrl: "https://test.com", authName: "test", authType: "apiKey" },
+      ];
       let res = await generator.getTemplateInfos(context, inputs, ".");
       assert.isTrue(res.isOk());
       if (res.isOk()) {
@@ -1961,7 +1963,9 @@ describe("SpecGenerator", async () => {
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       };
       inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
-      inputs.apiAuthData = { serverUrl: "https://test.com", authName: "test", authType: "apiKey" };
+      inputs.apiAuthData = [
+        { serverUrl: "https://test.com", authName: "test", authType: "apiKey" },
+      ];
       sandbox.stub(commonUtils, "isJsonSpecFile").throws();
       const res = await generator.getTemplateInfos(context, inputs, ".", { telemetryProps: {} });
       assert.isTrue(res.isOk());
@@ -2172,10 +2176,12 @@ describe("SpecGenerator", async () => {
         [QuestionNames.ApiSpecLocation]: "test.json",
         [QuestionNames.ApiOperation]: ["operation2"],
         supportedApisFromApiSpec: apiOperations,
-        apiAuthData: {
-          authType: "apiKey",
-          serverUrl: "",
-        },
+        apiAuthData: [
+          {
+            authType: "apiKey",
+            serverUrl: "",
+          },
+        ],
         getTemplateInfosState: {
           templateName: "copilot-plugin-existing-api",
           isPlugin: false,

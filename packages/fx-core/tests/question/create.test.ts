@@ -2220,10 +2220,12 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
-          assert.deepEqual(inputs.apiAuthData, {
-            serverUrl: "https://server1",
-            authName: "oauth2",
-          });
+          assert.deepEqual(inputs.apiAuthData, [
+            {
+              serverUrl: "https://server1",
+              authName: "oauth2",
+            },
+          ]);
           assert.isUndefined(res);
         });
 
@@ -2692,7 +2694,7 @@ describe("scaffold question", () => {
           assert.isUndefined(res);
         });
 
-        it(" validate operations should return error message when select APIs with multiple auth", async () => {
+        it(" validate operations should return not error message when select APIs with multiple auth", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -2731,13 +2733,7 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
-          assert.equal(
-            res,
-            getLocalizedString(
-              "core.createProjectQuestion.apiSpec.operation.multipleAuth",
-              ["auth1", "auth2"].join(", ")
-            )
-          );
+          assert.equal(res, undefined);
         });
 
         it("list operations error", async () => {

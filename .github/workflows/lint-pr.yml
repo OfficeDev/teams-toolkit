@@ -245,3 +245,93 @@ jobs:
           file_path: './version_info.txt'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  chery-pick-hotfix-to-dev-release:
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.base.ref, 'release') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get and filter branches
+        id: filter-branches
+        run: |          
+          # 找出版本号最大的 release 分支
+          LATEST_RELEASE=$(git branch -r | grep 'origin/release' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
+          echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Show filtered branches
+        run: |
+          echo "版本号最大的 release 分支："
+          echo '${{ steps.filter-branches.outputs.latest_release }}'
+
+      - name: Create PRs to latest release and dev
+        if: ${{ github.event.pull_request.base.ref != steps.filter-branches.outputs.latest_release }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prHead = context.payload.pull_request.head.ref;
+            const latestRelease = '${{ steps.filter-branches.outputs.latest_release }}';
+            const currentTarget = context.payload.pull_request.base.ref;
+            
+            async function createPR(base, title, body) {
+              // 检查是否已经存在相同的PR
+              const existingPRs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: `${context.repo.owner}:${prHead}`,
+                base: base,
+                state: 'open'
+              });
+              
+              if (existingPRs.data.length === 0) {
+                try {
+                  const newPR = await github.rest.pulls.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    title: title,
+                    head: prHead,
+                    base: base,
+                    body: body
+                  });
+                  
+                  // 在原PR上添加评论
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.pull_request.number,
+                    body: `已自动创建PR #${newPR.data.number} 以将这些更改同步到 ${base} 分支`
+                  });
+                  
+                  console.log(`Created PR #${newPR.data.number} to ${base}`);
+                  return newPR.data.number;
+                } catch (error) {
+                  console.log(`创建PR到 ${base} 时发生错误:`, error);
+                  core.setFailed(error.message);
+                }
+              } else {
+                console.log(`已存在到 ${base} 的PR，跳过创建`);
+                return null;
+              }
+            }
+            
+            // 创建 PR 到最新的 release 分支
+            await createPR(
+              latestRelease,
+              `[Auto] Forward ${currentTarget} changes to ${latestRelease}`,
+              `自动创建的PR，用于将变更从 ${currentTarget} 同步到最新的发布分支 ${latestRelease}。\n\n原始PR: #${context.payload.pull_request.number}`
+            );
+            
+            // 创建 PR 到 dev 分支
+            await createPR(
+              'dev',
+              `[Auto] Forward ${currentTarget} changes to dev`,
+              `自动创建的PR，用于将变更从 ${currentTarget} 同步到 dev 分支。\n\n原始PR: #${context.payload.pull_request.number}`
+            );

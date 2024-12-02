@@ -156,8 +156,8 @@ export class FindProcessError extends SystemError {
       source: source || "core",
       name: "FindProcessError",
       error: error,
-      message: getDefaultString(key),
-      displayMessage: getLocalizedString(key),
+      message: getDefaultString(key, error.message),
+      displayMessage: getLocalizedString(key, error.message),
       categories: [ErrorCategory.Internal],
     };
     super(errorOptions);

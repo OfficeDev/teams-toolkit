@@ -11,6 +11,7 @@ import {
 import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { accountUtils } from "./accountShow";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
@@ -64,7 +65,11 @@ export const accountLoginAzureCommand: CLICommand = {
         return err(new UserError(loginComponent, usageError, servicePrincipalLoginFormat));
       }
     } else {
-      if (args.username || args.password || args.tenant) {
+      if (
+        args.username ||
+        args.password ||
+        (args.tenant && !featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant))
+      ) {
         return err(new UserError(loginComponent, usageError, codeFlowLoginFormat));
       }
     }

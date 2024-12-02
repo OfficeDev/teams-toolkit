@@ -32,7 +32,7 @@ class AccountUtils {
     );
     const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
     if (result) {
-      const username = (result as any).upn;
+      const username = (result as any).upn ?? (result as any).unique_name;
       if (commandType === "login") {
         logger.outputSuccess(strings["account.login.m365"]);
       }
@@ -62,7 +62,7 @@ class AccountUtils {
     const result = await azureProvider.getJsonObject(true, tid);
     if (result) {
       const subscriptions = await azureProvider.listSubscriptions();
-      const username = (result as any).upn;
+      const username = (result as any).upn ?? (result as any).unique_name;
       if (commandType === "login") {
         logger.outputSuccess(strings["account.login.azure"]);
       }

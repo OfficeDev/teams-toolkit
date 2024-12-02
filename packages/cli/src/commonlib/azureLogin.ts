@@ -573,11 +573,10 @@ export default azureLogin;
 
 // todo merge with default export, this function fix bug when user already logins with service principal, and he logins interactively, default azureLogin will return azureLoginCIProvider
 export function getAzureProvider() {
-  return !ui.interactive
-    ? AzureSpCrypto.checkAzureSPFile()
-      ? AzureLoginCI
-      : AzureAccountProviderUserPassword
-    : AzureSpCrypto.checkAzureSPFile()
-    ? AzureLoginCI
+  if (AzureSpCrypto.checkAzureSPFile()) {
+    return AzureLoginCI;
+  }
+  return !ui.interactive && process.env.AZURE_ACCOUNT_NAME && process.env.AZURE_ACCOUNT_PASSWORD
+    ? AzureAccountProviderUserPassword
     : AzureAccountManager.getInstance();
 }

@@ -89,6 +89,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     }
     const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(
       tokenRequest.scopes,
+      true,
       tenantId
     );
     if (needLogin == true && M365Login.codeFlowInstance.account) {
@@ -200,8 +201,8 @@ class MM365TokenProviderWrapper implements M365TokenProvider {
   async signout(): Promise<boolean> {
     return await (this.getProvider() as any).signout();
   }
-  switchTenant(tenantId: string): Promise<Result<string, FxError>> {
-    throw new Error("Method not implemented.");
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    return await this.getProvider().switchTenant(tenantId);
   }
 }
 

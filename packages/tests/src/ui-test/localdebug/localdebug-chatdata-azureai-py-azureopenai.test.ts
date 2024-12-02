@@ -63,7 +63,7 @@ describe("Local Debug Tests", function () {
       validateFileExist(projectPath, "src/app.py");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
 
-      const isRealKey = false; // TODO: currently disable real key
+      const isRealKey = OpenAiKey.azureOpenAiKey ? true : false;
       // create azure search
       if (isRealKey) {
         const rgName = `${localDebugTestContext.appName}-local-rg`;

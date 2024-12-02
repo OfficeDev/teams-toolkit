@@ -2440,7 +2440,7 @@ describe("copilotPlugin", async () => {
       assert.equal(result.error.name, "testError");
     }
   });
-  it("add API - return multiple auth error", async () => {
+  it("add API - return multiple auth", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
@@ -2519,11 +2519,9 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+    sinon.stub(pluginGeneratorHelper, "injectAuthAction").resolves(undefined as any);
     const result = await core.copilotPluginAddAPI(inputs);
-    assert.isTrue(result.isErr());
-    if (result.isErr()) {
-      assert.equal((result.error as FxError).name, "MultipleAuthError");
-    }
+    assert.isTrue(result.isOk());
   });
 
   it("add API - return multiple server error", async () => {

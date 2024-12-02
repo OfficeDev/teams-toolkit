@@ -1144,13 +1144,6 @@ export function apiOperationQuestion(
           }
         }
 
-        if (authNames.size > 1) {
-          return getLocalizedString(
-            "core.createProjectQuestion.apiSpec.operation.multipleAuth",
-            Array.from(authNames).join(", ")
-          );
-        }
-
         if (serverUrls.size > 1) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.multipleServer",
@@ -1158,10 +1151,19 @@ export function apiOperationQuestion(
           );
         }
 
-        const authApi = operations.find((api) => !!api.data.authName && input.includes(api.id));
-        if (authApi) {
-          inputs.apiAuthData = authApi.data;
-        }
+        const seenAuthNames = new Set<string>();
+        const uniqueAuthApis = operations.filter((api) => {
+          if (
+            !!api.data.authName &&
+            input.includes(api.id) &&
+            !seenAuthNames.has(api.data.authName)
+          ) {
+            seenAuthNames.add(api.data.authName);
+            return true;
+          }
+          return false;
+        });
+        inputs.apiAuthData = uniqueAuthApis.map((authApi) => authApi.data);
       },
     },
     dynamicOptions: (inputs: Inputs) => {

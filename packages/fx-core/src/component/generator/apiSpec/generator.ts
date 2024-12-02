@@ -185,12 +185,6 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         const msg = operationsResult.error.map((e) => e.content).join("\n");
         return err(new UserError("generator", "ListOperationsFailed", msg));
       }
-
-      const operations = operationsResult.value;
-      const authApi = operations.find((api) => !!api.data.authName);
-      if (authApi) {
-        authData = authApi.data;
-      }
     }
 
     const appName = inputs[QuestionNames.AppName];
@@ -230,37 +224,43 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       azureOpenAIEndpoint,
       azureOpenAIDeploymentName,
     };
-    if (authData?.authName) {
-      const envName = getEnvName(authData.authName);
-      context.templateVariables = Generator.getDefaultVariables(
-        appName,
-        safeProjectNameFromVS,
-        inputs.targetFramework,
-        inputs.placeProjectFileInSolutionDir === "true",
-        {
-          authName: authData.authName,
-          openapiSpecPath: isKiotaIntegration
-            ? normalizePath(
-                path.join(
-                  AppPackageFolderName,
-                  path.basename(inputs[QuestionNames.ApiSpecLocation])
-                )
-              )
-            : normalizePath(
-                path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
-              ),
+
+    const auths = [];
+
+    const openapiSpecPath = isKiotaIntegration
+      ? normalizePath(
+          path.join(AppPackageFolderName, path.basename(inputs[QuestionNames.ApiSpecLocation]))
+        )
+      : normalizePath(
+          path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
+        );
+
+    if (authData && authData.length > 0) {
+      for (const auth of authData) {
+        const envName = getEnvName(auth.authName!);
+        auths.push({
+          authName: auth.authName!,
+          openapiSpecPath: openapiSpecPath,
           registrationIdEnvName: envName,
-          authType: authData.authType,
-        },
-        llmServiceData
-      );
+          authType: auth.authType,
+        });
+
+        context.templateVariables = Generator.getDefaultVariables(
+          appName,
+          safeProjectNameFromVS,
+          inputs.targetFramework,
+          inputs.placeProjectFileInSolutionDir === "true",
+          auths,
+          llmServiceData
+        );
+      }
     } else {
       context.templateVariables = Generator.getDefaultVariables(
         appName,
         safeProjectNameFromVS,
         inputs.targetFramework,
         inputs.placeProjectFileInSolutionDir === "true",
-        undefined,
+        [],
         llmServiceData
       );
     }
@@ -269,7 +269,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         getTemplateInfosState.url
       ).toString(),
       [telemetryProperties.generateType]: getTemplateInfosState.type.toString(),
-      [telemetryProperties.authType]: authData?.authName ?? "None",
+      [telemetryProperties.authType]: authData?.map((item) => item.authType).join(",") ?? "None",
     });
     inputs.getTemplateInfosState = getTemplateInfosState;
     return ok([

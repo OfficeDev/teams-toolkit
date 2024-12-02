@@ -224,36 +224,30 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       azureOpenAIEndpoint,
       azureOpenAIDeploymentName,
     };
-
-    const auths = [];
-
-    const openapiSpecPath = isKiotaIntegration
-      ? normalizePath(
-          path.join(AppPackageFolderName, path.basename(inputs[QuestionNames.ApiSpecLocation]))
-        )
-      : normalizePath(
-          path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
-        );
-
-    if (authData && authData.length > 0) {
-      for (const auth of authData) {
-        const envName = getEnvName(auth.authName!);
-        auths.push({
-          authName: auth.authName!,
-          openapiSpecPath: openapiSpecPath,
+    if (authData?.authName) {
+      const envName = getEnvName(authData.authName, authData.authType);
+      context.templateVariables = Generator.getDefaultVariables(
+        appName,
+        safeProjectNameFromVS,
+        inputs.targetFramework,
+        inputs.placeProjectFileInSolutionDir === "true",
+        {
+          authName: authData.authName,
+          openapiSpecPath: isKiotaIntegration
+            ? normalizePath(
+                path.join(
+                  AppPackageFolderName,
+                  path.basename(inputs[QuestionNames.ApiSpecLocation])
+                )
+              )
+            : normalizePath(
+                path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
+              ),
           registrationIdEnvName: envName,
-          authType: auth.authType,
-        });
-
-        context.templateVariables = Generator.getDefaultVariables(
-          appName,
-          safeProjectNameFromVS,
-          inputs.targetFramework,
-          inputs.placeProjectFileInSolutionDir === "true",
-          auths,
-          llmServiceData
-        );
-      }
+          authType: authData.authType,
+        },
+        llmServiceData
+      );
     } else {
       context.templateVariables = Generator.getDefaultVariables(
         appName,

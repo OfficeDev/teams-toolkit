@@ -115,7 +115,7 @@ describe("Local Debug Tests", function () {
       // create azure search data
       if (isRealKey) {
         console.log("Start to create azure search data");
-        const installCmd = `python src/indexers/setup.py`;
+        const installCmd = `python src/indexers/setup.py --api-key ${azureOpenAiKey} --ai-search-key ${searchKey}`;
         const { success } = await Executor.execute(
           installCmd,
           projectPath,

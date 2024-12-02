@@ -156,7 +156,7 @@ describe("Remote debug Tests", function () {
         );
         editDotEnvFile(localEnvPath, "SECRET_AZURE_SEARCH_KEY", searchKey);
         editDotEnvFile(localEnvPath, "AZURE_SEARCH_ENDPOINT", searchEndpoint);
-        const installCmd = `python src/indexers/setup.py`;
+        const installCmd = `python src/indexers/setup.py --api-key ${azureOpenAiKey} --ai-search-key ${searchKey}`;
         const { success } = await Executor.execute(installCmd, projectPath);
         if (!success) {
           throw new Error("Failed to install packages");

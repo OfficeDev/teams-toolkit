@@ -336,3 +336,5 @@ async function main() {
   console.log("endpoint: ", searchHelper.endpoint);
   console.log("apiKey: ", searchHelper.apiKey);
 }
+
+main();

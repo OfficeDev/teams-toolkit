@@ -384,8 +384,10 @@ export class VSCodeUI implements UserInteraction {
             }
             if (typeof config.default === "function") {
               defaultValue = await config.default();
-            } else {
-              defaultValue = config.default || [];
+            } else if (config.default === "all") {
+              defaultValue = options.map((o) => (typeof o === "string" ? o : o.id));
+            } else if (config.default === "none") {
+              defaultValue = [];
             }
           } catch (e) {
             resolve(err(this.assembleError(e)));
@@ -779,7 +781,7 @@ export class VSCodeUI implements UserInteraction {
     return this.selectFileInQuickPick(
       config,
       "files",
-      config.default ? config.default.join(";") : undefined
+      config.default && typeof config.default !== "string" ? config.default.join(";") : undefined
     );
   }
 

@@ -36,7 +36,9 @@
             "sample-localdebug-outlook-signature",
             "sample-remotedebug-outlook-signature",
             "sample-localdebug-reddit-link",
-            "sample-remotedebug-reddit-link"
+            "sample-remotedebug-reddit-link",
+            "sample-localdebug-intelligent-data-chart",
+            "sample-remotedebug-intelligent-data-chart"
         ]
     },
     {

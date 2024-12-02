@@ -113,6 +113,22 @@ describe("Open link handlers", () => {
 
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
     });
+    it("opens build app guide when clicked from left pane", async () => {
+      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
+      const openUrl = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      await openDocumentHandler("documentName", "build-apps");
+
+      chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teamstoolkit-build-app"));
+    });
+    it("opens build agent guide when clicked from left pane", async () => {
+      sandbox.stub(vsc_ui, "VS_CODE_UI").value(new vsc_ui.VsCodeUI(<vscode.ExtensionContext>{}));
+      const openUrl = sandbox.stub(vsc_ui.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      await openDocumentHandler("documentName", "build-agents");
+
+      chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teamstoolkit-build-agent"));
+    });
   });
 
   describe("openLifecycleLinkHandler", () => {

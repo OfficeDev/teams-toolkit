@@ -1,7 +1,8 @@
 import json from "@rollup/plugin-json";
-import typescriptPlugin from "rollup-plugin-typescript2";
+import terser from "@rollup/plugin-terser";
 import typescript from "typescript";
-import pkg from "./package.json";
+import typescriptPlugin from "@rollup/plugin-typescript";
+import pkg from "./package.json" assert { type: "json" };
 
 const deps = Object.keys(Object.assign({}, pkg.peerDependencies, pkg.dependencies));
 
@@ -10,28 +11,20 @@ const nodeDeps = [...deps, "crypto", "fs", "path", "https"];
 /**
  * ES5 Builds
  */
-const es5BuildPlugins = [
-  typescriptPlugin({
-    typescript,
-    abortOnError: false,
-  }),
-  json(),
-];
+const es5BuildPlugins = [json(), terser(), typescriptPlugin({ typescript: typescript })];
 
 /**
  * ES2017 Builds
  */
 const es2017Plugins = [
-  typescriptPlugin({
-    typescript,
-    tsconfigOverride: {
-      compilerOptions: {
-        target: "es2017",
-      },
-    },
-    abortOnError: false,
-  }),
   json({ preferConst: true }),
+  terser(),
+  typescriptPlugin({
+    typescript: typescript,
+    compilerOptions: {
+      target: "es2017",
+    },
+  }),
 ];
 
 const es5Builds = [
@@ -55,45 +48,48 @@ const es5Builds = [
     output: [{ file: pkg.main, format: "cjs", sourcemap: true }],
     external: (id) => nodeDeps.some((dep) => id === dep || id.startsWith(`${dep}/`)),
     plugins: [
-      typescriptPlugin({
-        typescript,
-        abortOnError: false,
-        useTsconfigDeclarationDir: true,
-      }),
       json(),
+      terser(),
+      typescriptPlugin({
+        typescript: typescript,
+        tsconfig: "./tsconfig.json",
+        declarationDir: "./dist/types",
+        declaration: true,
+      }),
     ],
   },
 ];
 
 const es2017Builds = [
-  // Node
+  /**
+   * Node.js Build
+   */
   {
     input: "./src/index.ts",
-    output: {
-      file: pkg.module,
-      format: "es",
-      sourcemap: true,
-    },
-    plugins: [...es2017Plugins],
+    output: [
+      {
+        file: pkg.module,
+        format: "es",
+        sourcemap: true,
+      },
+    ],
     external: (id) => nodeDeps.some((dep) => id === dep || id.startsWith(`${dep}/`)),
-    treeshake: {
-      moduleSideEffects: false,
-    },
+    plugins: [...es2017Plugins],
   },
-
-  // Browser
+  /**
+   * Browser Builds
+   */
   {
     input: "./src/index.browser.ts",
-    output: {
-      file: pkg.browser,
-      format: "es",
-      sourcemap: true,
-    },
-    plugins: [...es2017Plugins],
+    output: [
+      {
+        file: pkg.browser,
+        format: "es",
+        sourcemap: true,
+      },
+    ],
     external: (id) => deps.some((dep) => id === dep || id.startsWith(`${dep}/`)),
-    treeshake: {
-      moduleSideEffects: false,
-    },
+    plugins: [...es2017Plugins],
   },
 ];
 

@@ -924,5 +924,6 @@
   "error.dep.NodejsNotLtsError": "Node.js (%s) is not a LTS version (%s). Go to https://nodejs.org to install LTS Node.js.",
   "error.dep.NodejsNotRecommendedError": "Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version. The supported node versions are specified in the package.json. Go to https://nodejs.org to install a supported Node.js.",
   "error.dep.VxTestAppInvalidInstallOptionsError": "Invalid argument for video extensibility test app prerequisites checker. Please review tasks.json file to ensure all arguments are correctly formatted and valid.",
-  "error.dep.VxTestAppValidationError": "Unable to validate video extensibility test app after installation."
+  "error.dep.VxTestAppValidationError": "Unable to validate video extensibility test app after installation.",
+  "error.dep.FindProcessError": "Unable to find process(es) by pid or port. %s"
 }

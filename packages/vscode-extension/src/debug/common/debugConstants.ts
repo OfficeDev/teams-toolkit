@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 import * as util from "util";
 
+import { ProductName } from "@microsoft/teamsfx-api";
 import { Hub, TaskLabel } from "@microsoft/teamsfx-core";
 import { ExtensionErrors } from "../../error/error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { ProductName } from "@microsoft/teamsfx-api";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";

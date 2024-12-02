@@ -245,3 +245,91 @@ jobs:
           file_path: './version_info.txt'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  create-cherry-pick-issue:
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.base.ref, 'release') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest release branch
+        id: get-latest-release
+        run: |
+          # 找出版本号最大的 release 分支
+          LATEST_RELEASE=$(git branch -r | grep 'origin/release' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
+          echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+      - name: Create Issue
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const currentTarget = context.payload.pull_request.base.ref;
+            const latestRelease = '${{ steps.get-latest-release.outputs.latest_release }}';
+            const prNumber = context.payload.pull_request.number;
+            const prTitle = context.payload.pull_request.title;
+            const prAuthor = context.payload.pull_request.user.login;
+            
+            let targetBranches = ['dev'];
+            if (currentTarget !== latestRelease) {
+              targetBranches.push(latestRelease);
+            }
+            
+            const branchList = targetBranches.map(branch => `- [ ] ${branch}`).join('\n');
+            
+            const issueBody = `
+            ### Cherry-pick 提醒
+            
+            @${prAuthor} 你好！
+            
+            这是一个自动创建的提醒。你的 PR #${prNumber} (\`${prTitle}\`) 正在合并到 \`${currentTarget}\` 分支。
+            
+            请确保将这些更改也 cherry-pick 到以下分支：
+            ${branchList}
+            
+            #### 操作步骤：
+            1. 等待当前 PR 合并完成
+            2. 在本地执行以下操作：
+               \`\`\`bash
+               git fetch origin
+               git checkout <target_branch>
+               git cherry-pick <commit_hash>
+               git push origin <target_branch>
+               \`\`\`
+            3. 或者创建新的 PR 将这些更改合并到上述分支
+            
+            完成后请在上面的清单中打勾 ✓
+            
+            > 注：这是自动创建的 issue，完成所有操作后可以关闭此 issue。
+            `;
+            
+            try {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `[Cherry-pick] PR #${prNumber} 需要同步到其他分支`,
+                body: issueBody,
+                labels: ['cherry-pick-required']
+              });
+              
+              // 在 PR 中添加评论，链接到新创建的 issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `我已创建了一个 issue (#${issue.data.number}) 来跟踪需要进行的 cherry-pick 操作。`
+              });
+              
+              console.log(`Created issue #${issue.data.number}`);
+            } catch (error) {
+              console.log('创建 issue 时发生错误:', error);
+              core.setFailed(error.message);
+            }
+

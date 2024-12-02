@@ -63,12 +63,12 @@ export class Generator {
     const oauthActionData = [];
     for (const auth of authData ?? []) {
       const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
-        auth?.registrationIdEnvName ?? ""
+        auth.registrationIdEnvName
       );
 
       const actionData = {
-        ApiSpecAuthName: auth?.authName ?? "",
-        ApiSpecPath: auth?.openapiSpecPath ?? "",
+        ApiSpecAuthName: auth.authName,
+        ApiSpecPath: auth.openapiSpecPath,
         ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       };
 

@@ -1017,12 +1017,21 @@ describe("render template", () => {
           registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
           authType: "oauth2",
         },
+        {
+          authName: "authName2",
+          openapiSpecPath: "path/to/spec.yaml",
+          registrationIdEnvName: "AUTH-NAME2_REGISTRATION*ID",
+          authType: "apiKey",
+        },
       ]);
       assert.equal(vars.enableTestToolByDefault, "");
       assert.equal(vars.appName, "Test");
       assert.equal(vars.OAuth[0].ApiSpecAuthName, "authName");
       assert.equal(vars.OAuth[0].ApiSpecPath, "path/to/spec.yaml");
       assert.equal(vars.OAuth[0].ApiSpecAuthRegistrationIdEnvName, "AUTH_NAME_REGISTRATION_ID");
+      assert.equal(vars.ApiKey[0].ApiSpecAuthName, "authName2");
+      assert.equal(vars.ApiKey[0].ApiSpecPath, "path/to/spec.yaml");
+      assert.equal(vars.ApiKey[0].ApiSpecAuthRegistrationIdEnvName, "AUTH_NAME2_REGISTRATION_ID");
       assert.equal(vars.SafeProjectName, "Test");
       assert.equal(vars.SafeProjectNameLowerCase, "test");
     });

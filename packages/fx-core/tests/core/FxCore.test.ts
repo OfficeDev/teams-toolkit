@@ -2479,6 +2479,20 @@ describe("copilotPlugin", async () => {
           reason: [],
         },
         {
+          operationId: "getUserById2",
+          server: "https://server2",
+          api: "GET /user/{userId2}",
+          auth: {
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+        {
           operationId: "getStoreOrder",
           server: "https://server",
           api: "GET /store/order",
@@ -2501,8 +2515,8 @@ describe("copilotPlugin", async () => {
           reason: [],
         },
       ],
-      validAPICount: 2,
-      allAPICount: 2,
+      validAPICount: 3,
+      allAPICount: 3,
     };
 
     const core = new FxCore(tools);

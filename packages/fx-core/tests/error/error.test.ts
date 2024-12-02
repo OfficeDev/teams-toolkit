@@ -338,5 +338,9 @@ describe("DeveloperPortalAPIFailed error", function () {
       const err = new FindProcessError(new Error(), "test");
       assert.deepEqual(err.source, "test");
     });
+    it("happy no source", () => {
+      const err = new FindProcessError(new Error());
+      assert.deepEqual(err.source, "core");
+    });
   });
 });

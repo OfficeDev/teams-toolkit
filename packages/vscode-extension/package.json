@@ -301,13 +301,41 @@
         {
           "command": "fx-extension.createAccount",
           "when": "view == 'workbench.panel.output'"
+        },
+        {
+          "command": "fx-extension.create",
+          "when": "view == 'workbench.panel.repl.view'"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+          "group": "navigation"
+        }
+      ],
+      "terminal/title/context": [
+        {
+          "command": "fx-extension.openDocument",
+          "group": "navigation"
+        }
+      ],
+      "debug/callstack/context": [
+        {
+          "command": "fx-extension.create",
+          "group": "navigation"
+        }
+      ],
+      "debug/toolBar": [
+        {
+          "command": "fx-extension.createFromWalkthrough",
+          "group": "navigation"
         }
       ],
       "editor/context": [
         {
           "command": "fx-extension.create",
           "group": "navigation",
-          "when": "resourceFilename =~ /.*Teams Toolkit\\.log$/ || activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/"
+          "when": "(resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output')) && editor.hasSelection"
         }
       ],
       "view/item/context": [

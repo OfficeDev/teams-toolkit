@@ -552,6 +552,14 @@ async function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): Pr
       [TelemetryProperty.DebugSessionId]: event.id,
     });
 
+    const debugConsole = vscode.debug.activeDebugConsole;
+    console.log(event.name);
+    console.log(event.type);
+    console.log(event.id);
+    if (debugConsole) {
+      debugConsole.appendLine("Hello from your extension! You can try ask @teamsapp for help.");
+      debugConsole.appendLine("This is a custom log message.");
+    }
     await terminateAllRunningTeamsfxTasks();
 
     allRunningDebugSessions.delete(event.id);
@@ -609,4 +617,41 @@ export function registerTeamsfxTaskAndDebugEvents(): void {
       )
     )
   );
+
+  globalVariables.context.subscriptions.push(
+    vscode.debug.onDidStartDebugSession((event: vscode.DebugSession) =>
+      vscode.debug.activeDebugConsole.appendLine(`Hi@teamspapp.${event.name}`)
+    )
+  );
+
+  // globalVariables.context.subscriptions.push(
+  //   vscode.debug.onDidTerminateDebugSession((event: vscode.DebugSession) =>{
+  //     if (vscode.debug.sessions.length === 0) {
+  //     vscode.debug.activeDebugConsole.appendLine(`BYE@teamspapp.`)
+  //     }
+  //   }
+  //   )
+  // );
+
+  // {
+  //   vscode.debug.activeDebugConsole.appendLine(`Debug session terminated: ${event.name}`);
+  //   vscode.debug.activeDebugConsole.appendLine('Additional log after termination!!.');
+  //  }
+  // globalVariables.context.subscriptions.push(
+  //   vscode.debug.onDidChangeActiveDebugSession((session) => {
+  //     if (session) {
+  //       vscode.window.showInformationMessage(`Debug session "${session.name}" is now active.`);
+  //     } else {
+  //       vscode.window.showInformationMessage('Debug session has ended or changed.');
+  //       // Perform custom actions when a session becomes inactive
+
+  //     }
+  //   })
+  // );
+
+  // const debugConsole = vscode.debug.activeDebugConsole;
+  // if (debugConsole) {
+  //   debugConsole.appendLine('Hello from your extension! You can try ask @teamsapp for help.');
+  //   debugConsole.appendLine('This is a custom log message.');
+  // }
 }

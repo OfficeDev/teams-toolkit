@@ -48,8 +48,20 @@ import * as stringUtil from "util";
 export async function createNewProjectHandler(...args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   let inputs: Inputs | undefined;
+  //workbench.debug.action.copyAll
+  await vscode.commands.executeCommand("workbench.debug.action.copyAll").then((res) => {
+    console.log(res);
+  });
+  VsCodeLogInstance.outputChannel.appendLine("[TeamsToolkitError]Get Help[TeamsToolkitError]");
 
   const selectedText = await vscode.env.clipboard.readText(); // Read clipboard content
+  const debugConsole = vscode.debug.activeDebugConsole;
+  if (debugConsole) {
+    debugConsole.appendLine("Hello from your extension! See: https://aka.ms/vscode-debugger");
+    debugConsole.appendLine("This is a custom log message. See: [Run Command]");
+  } else {
+    void vscode.window.showWarningMessage("No active debug session to write to!");
+  }
   if (selectedText) {
     void vscode.window.showInformationMessage(`Selected Terminal: ${selectedText}`);
     // Perform further actions with selectedText

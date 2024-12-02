@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { performance } from "perf_hooks";
+import VsCodeLogInstance from "../commonlib/log";
 
 import { FxError, err, ok } from "@microsoft/teamsfx-api";
 import {
@@ -26,6 +27,7 @@ import { updateProjectStatus } from "../utils/projectStatusUtils";
 import { CommandKey } from "../constants";
 import { TeamsFxTaskType } from "./common/debugConstants";
 import detectPort from "detect-port";
+import * as vscode from "vscode";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -90,6 +92,13 @@ export async function sendDebugAllEvent(
 ): Promise<void> {
   const session = getLocalDebugSession();
   const now = performance.now();
+  VsCodeLogInstance.info(`Debug session ${session.id} ends.!!!!!`);
+
+  // vscode.window.terminals.forEach((terminal) => {
+  //   //terminal.show();
+  //   console.log(terminal.name);
+  //   terminal.sendText(`echo Reusing the existing terminal!${terminal.name} ${terminal.exitStatus}`);
+  // })
 
   if (globalVariables.workspaceUri?.fsPath) {
     await updateProjectStatus(

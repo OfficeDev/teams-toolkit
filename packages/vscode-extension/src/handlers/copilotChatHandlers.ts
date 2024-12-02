@@ -33,8 +33,8 @@ async function openGithubCopilotChat(query: string): Promise<Result<null, FxErro
   const eventName = "openCopilotChat";
   try {
     const options = {
-      query: "#terminalSelection " + query,
-      isPartialQuery: true,
+      query: query,
+      isPartialQuery: false,
       variableIds: ["#editor", "#terminalSelection", "#terminalLastCommand"],
     };
     await vscode.commands.executeCommand("workbench.panel.chat.view.copilot.focus");
@@ -156,7 +156,15 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
   const query =
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView ||
     triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
-      ? "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development."
+      ? `@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development.
+
+\`\`\`
+{
+  error code: "Error",
+  error message: "Error message"
+}
+\`\`\`
+`
       : "@teamsapp Write your own query message to find relevant templates or samples to build your Teams app and agent as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
   let res: Result<null, FxError>;
 

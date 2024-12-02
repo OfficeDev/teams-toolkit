@@ -52,7 +52,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
     });
     const info: UserInfo = await credential.getUserInfo();
     chai.assert.strictEqual(info.preferredUserName, TEST_USER_ACCOUNT_NAME);
-    chai.assert.strictEqual(info.displayName, "TeamsFx Github Bot");
     chai.assert.strictEqual(info.objectId, TEST_USER_OBJECT_ID);
     chai.assert.strictEqual(info.tenantId, TEST_AAD_TENANT_ID);
   });

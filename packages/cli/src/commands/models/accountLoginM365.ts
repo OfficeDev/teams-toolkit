@@ -25,7 +25,10 @@ export const accountLoginM365Command: CLICommand = {
   },
   handler: async (ctx) => {
     await M365TokenProvider.signout();
-    await accountUtils.outputM365Info("login", ctx.optionValues.tenant as string);
+    const res = await accountUtils.outputM365Info("login", ctx.optionValues.tenant as string);
+    if (res && ctx.optionValues.tenant) {
+      await M365TokenProvider.switchTenant(ctx.optionValues.tenant as string);
+    }
     return ok(undefined);
   },
 };

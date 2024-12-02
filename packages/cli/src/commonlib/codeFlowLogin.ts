@@ -20,7 +20,14 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { UTF8, clearCache, loadAccountId, loadTenantId, saveAccountId } from "./cacheAccess";
+import {
+  UTF8,
+  clearCache,
+  loadAccountId,
+  loadTenantId,
+  saveAccountId,
+  saveTenantId,
+} from "./cacheAccess";
 import {
   MFACode,
   azureLoginMessage,
@@ -253,8 +260,13 @@ export class CodeFlowLogin {
     (this.msalTokenCache as any).storage.setCache({});
     await clearCache(this.accountName);
     await saveAccountId(this.accountName, undefined);
+    await saveTenantId(this.accountName, undefined);
     this.account = undefined;
     return true;
+  }
+
+  async switchTenant(tenantId: string): Promise<void> {
+    return await saveTenantId(this.accountName, tenantId);
   }
 
   /**

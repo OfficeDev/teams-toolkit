@@ -4,6 +4,22 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### November 26, 2024
+
+#### New Features
+
+- **AI-Assisted Development**: We are excited to announce the latest AI-assisted development experience for Microsoft 365 developers: the GitHub Copilot extension for Teams Toolkit (`@teamsapp`). Leveraging AI capabilities, this extension significantly simplifies Teams app development and enables customization of Microsoft 365 Copilot with chat features. It streamlines key development scenarios that previously required extensive documentation. With the GitHub Copilot extension `teamsapp`, you can:
+
+  - Explore Teams app or Microsoft 365 Copilot agent development by using prompts such as `What types of apps can I build for Teams?`, `How can I create a real-world Teams app?`, or `What’s the difference between declarative and custom agents?`.
+  - Provide details about your intended Teams app or Microsoft 365 Copilot agent to receive relevant samples or templates to get started, such as 'I want to create a ToDo Teams app.' or 'I want to build a Microsoft 365 Copilot agent.'.
+  - Resolve issues encountered during Teams app or Microsoft 365 agent development by seeking assistance with queries like `My Teams app doesn’t sideload when debugging with Teams Toolkit.` or `My tab app SSO is not working on mobile platform.`.
+
+![GHCP](https://github.com/user-attachments/assets/856df8ff-4878-42ab-942a-6c0d66d323ea)
+
+#### Bug fixes
+
+- Resolved an issue where Teams Toolkit could fail to generate authentication actions when creating a declarative agent with an API plugin using Microsoft Kiota. [#12764](https://github.com/OfficeDev/teams-toolkit/pull/12764)
+
 ### November 19, 2024
 
 #### New Features

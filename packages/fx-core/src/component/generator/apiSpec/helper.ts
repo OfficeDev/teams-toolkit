@@ -1519,7 +1519,38 @@ export async function updateForCustomApi(
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
 
+  // 5. add prompt suggestions
+  const manifestPath = path.join(destinationPath, AppPackageFolderName, ManifestTemplateFileName);
+  await updatePromptSuggestions(specItems, manifestPath);
+
   return warnings;
+}
+
+async function updatePromptSuggestions(specItems: SpecObject[], manifestPath: string) {
+  const descriptions: string[] = specItems
+    .map((item) => item.item.summary ?? item.item.description)
+    .filter((item): item is string => item !== undefined)
+    .slice(0, 10);
+
+  const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+  if (manifestRes.isOk()) {
+    const manifest = manifestRes.value;
+    manifest.bots![0].commandLists = [
+      {
+        scopes: ["personal"],
+        commands: descriptions.map((des) => {
+          return {
+            title: des.slice(0, 32),
+            description: des.slice(0, 128),
+          };
+        }),
+      },
+    ];
+
+    await manifestUtils._writeAppManifest(manifest, manifestPath);
+  } else {
+    throw manifestRes.error;
+  }
 }
 
 const EnvNamePostfix = "REGISTRATION_ID";

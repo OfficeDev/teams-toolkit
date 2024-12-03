@@ -82,6 +82,7 @@
             "type": "msedge",
             "request": "launch",
             "url": "https://www.office.com/chat?auth=2&${account-hint}",
+            "cascadeTerminateToConfigurations": ["Attach to Local Service"],
             "presentation": {
                 "group": "2-M365",
                 "order": 3
@@ -93,6 +94,7 @@
             "type": "chrome",
             "request": "launch",
             "url": "https://www.office.com/chat?auth=2&${account-hint}",
+            "cascadeTerminateToConfigurations": ["Attach to Local Service"],
             "presentation": {
                 "group": "2-M365",
                 "order": 4

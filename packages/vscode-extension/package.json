@@ -385,6 +385,13 @@
           "group": "inline"
         }
       ],
+      "editor/context": [
+        {
+          "command": "fx-extension.teamsGitHubCopilotTroubleshoot",
+          "group": "navigation",
+          "when": "(resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output'))"
+        }
+      ],
       "editor/title/run": [
         {
           "command": "fx-extension.selectAndDebug",
@@ -907,6 +914,12 @@
         "title": "%teamstoolkit.commandsTreeViewProvider.syncManifest%",
         "category": "Teams",
         "enablement": "fx-extension.isSyncManifestEnabled"
+      },
+      {
+        "command": "fx-extension.teamsGitHubCopilotTroubleshoot",
+        "title": "Troubleshoot with @teamsapp",
+        "enablement": "editor.hasSelection",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [

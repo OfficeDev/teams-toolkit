@@ -269,7 +269,7 @@ jobs:
       - name: Create Issue
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }} # Use a PAT with the required permissions
           script: |
             const currentTarget = context.payload.pull_request.base.ref;
             const latestRelease = '${{ steps.get-latest-release.outputs.latest_release }}';

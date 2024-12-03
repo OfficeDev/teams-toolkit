@@ -1,7 +1,7 @@
 {
-    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.19/MicrosoftTeams.schema.json",
     "id": "{{manifestId}}",
-    "manifestVersion": "1.17",
+    "manifestVersion": "1.19",
     "version": "1.0.0",
     "name": {
         "short": "{{appName}}",

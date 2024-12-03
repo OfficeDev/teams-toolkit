@@ -262,9 +262,13 @@ jobs:
       - name: Get latest release branch
         id: get-latest-release
         run: |
-          # 找出版本号最大的 release 分支，仅包括 release/NUM 或 release/NUM.NUM 格式的分支
-          LATEST_RELEASE=$(git branch -r | grep -E '^  origin/release/[0-9]+(\.[0-9]+)?$' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
-          echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+          # 找出版本号最大的 release 分支，分为两类：
+          # 1. release/NUM 或 release/NUM.NUM 格式
+          LATEST_NUM_RELEASE=$(git branch -r | grep -E '^  origin/release/[0-9]+(\.[0-9]+)?$' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
+          # 2. release/VSNUMPNUM 格式
+          LATEST_VS_RELEASE=$(git branch -r | grep -E '^  origin/release/VS[0-9]+P[0-9]+$' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
+          echo "latest_num_release=$LATEST_NUM_RELEASE" >> $GITHUB_OUTPUT
+          echo "latest_vs_release=$LATEST_VS_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Create Issue
         uses: actions/github-script@v6
@@ -285,36 +289,36 @@ jobs:
             const branchList = targetBranches.map(branch => `- [ ] ${branch}`).join('\n');
             
             const issueBody = `
-            ### Cherry-pick 提醒
+            ### Cherry-pick Reminder
             
-            @${prAuthor} 你好！
+            @${prAuthor} Hello!
             
-            这是一个自动创建的提醒。你的 PR #${prNumber} (\`${prTitle}\`) 正在合并到 \`${currentTarget}\` 分支。
+            This is an automatically created reminder. Your PR #${prNumber} (\`${prTitle}\`) is being merged into the \`${currentTarget}\` branch.
             
-            请确保将这些更改也 cherry-pick 到以下分支：
+            Please ensure to cherry-pick these changes to the following branches:
             ${branchList}
             
-            #### 操作步骤：
-            1. 等待当前 PR 合并完成
-            2. 在本地执行以下操作：
+            #### Steps to Follow:
+            1. Wait for the current PR to be merged.
+            2. Execute the following commands locally:
                \`\`\`bash
                git fetch origin
                git checkout <target_branch>
                git cherry-pick <commit_hash>
                git push origin <target_branch>
                \`\`\`
-            3. 或者创建新的 PR 将这些更改合并到上述分支
+            3. Or create a new PR to merge these changes into the above branches.
             
-            完成后请在上面的清单中打勾 ✓
+            After completion, please check the items above ✓
             
-            > 注：这是自动创建的 issue，完成所有操作后可以关闭此 issue。
+            > Note: This is an automatically created issue. You can close this issue after completing all the operations.
             `;
             
             try {
               const issue = await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: `[Cherry-pick] PR #${prNumber} 需要同步到其他分支`,
+                title: `[Cherry-pick] PR #${prNumber} needs to be synchronized to other branches`,
                 body: issueBody,
                 labels: ['hotfix'],
                 assignees: [prAuthor] // Add PR author as assignee
@@ -322,7 +326,7 @@ jobs:
 
               console.log(`Created issue #${issue.data.number}`);
             } catch (error) {
-              console.log('创建 issue 时发生错误:', error);
+              console.log('Error creating issue:', error);
               core.setFailed(error.message);
             }
 

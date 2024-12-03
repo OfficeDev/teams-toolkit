@@ -283,10 +283,10 @@ jobs:
             const prAuthor = context.payload.pull_request.user.login;
             
             let targetBranches = ['dev'];
-            if (currentTarget !== latestVSCRelease) {
+            if (latestVSCRelease && currentTarget !== latestVSCRelease) {
               targetBranches.push(latestVSCRelease);
             }
-            if (currentTarget !== latestVSRelease) {
+            if (latestVSRelease && currentTarget !== latestVSRelease) {
               targetBranches.push(latestVSRelease);
             }
             

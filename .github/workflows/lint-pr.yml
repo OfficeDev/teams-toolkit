@@ -316,8 +316,11 @@ jobs:
                 repo: context.repo.repo,
                 title: `[Cherry-pick] PR #${prNumber} 需要同步到其他分支`,
                 body: issueBody,
-                labels: ['cherry-pick-required']
+                labels: ['hotfix'],
+                assignees: [prAuthor] // Add PR author as assignee
               });
+
+              console.log(`Created issue #${issue.data.number}`);
               
               // 在 PR 中添加评论，链接到新创建的 issue
               await github.rest.issues.createComment({
@@ -327,7 +330,7 @@ jobs:
                 body: `我已创建了一个 issue (#${issue.data.number}) 来跟踪需要进行的 cherry-pick 操作。`
               });
               
-              console.log(`Created issue #${issue.data.number}`);
+              console.log(`Created comments in PR #${prNumber}`);
             } catch (error) {
               console.log('创建 issue 时发生错误:', error);
               core.setFailed(error.message);

@@ -58,16 +58,6 @@ E2E tests need environment variables that are configured in GitHub Action. To ru
 
 All the environment variables are extracted by the function `extractIntegrationEnvVariables()` defined in `helper.browser.ts` and `helper.ts` under `test/` folder.
 
-### SDK_INTEGRATION_TEST_SQL
-
-1. [Create an Azure SQL database](https://docs.microsoft.com/en-us/azure/azure-sql/database/single-database-create-quickstart?tabs=azure-portal&view=azuresql).
-2. Set the environment variable `SDK_INTEGRATION_TEST_SQL` with the Azure SQL Database you just created, and the configs are separated by semicolons.
-
-```
-# SQL related (NodeJS)
-SDK_INTEGRATION_TEST_SQL = {SQL_ENDPOINT};{SQL_DATABASE_NAME};{SQL_USER_NAME};{SQL_PASSWORD}
-```
-
 ### SDK_INTEGRATION_TEST_ACCOUNT
 
 1. Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar with your test account. After you signed in, create a new Teams `React with Fluent UI template` app. Start debugging the project by hitting the `F5` key in the Visual Studio Code.

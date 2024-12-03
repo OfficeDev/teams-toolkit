@@ -65,7 +65,7 @@ export class FeatureFlags {
   };
   static readonly ChatParticipantUIEntries = {
     name: FeatureFlagName.ChatParticipantUIEntries,
-    defaultValue: "false",
+    defaultValue: "true",
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly ShowDiagnostics = {

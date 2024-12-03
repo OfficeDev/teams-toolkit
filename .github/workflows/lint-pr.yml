@@ -277,7 +277,7 @@ jobs:
           script: |
             const currentTarget = context.payload.pull_request.base.ref;
             const latestVSCRelease = '${{ steps.get-latest-release.outputs.latest_vsc_release }}';
-            const latestVSCRelease = '${{ steps.get-latest-release.outputs.latest_vs_release }}';
+            const latestVSRelease = '${{ steps.get-latest-release.outputs.latest_vs_release }}';
             const prNumber = context.payload.pull_request.number;
             const prTitle = context.payload.pull_request.title;
             const prAuthor = context.payload.pull_request.user.login;

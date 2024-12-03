@@ -18,7 +18,7 @@ import {
 
 import * as cfg from "./common/userPasswordConfig";
 import { AzureScopes } from "@microsoft/teamsfx-core";
-import { ConvertTokenToJson } from "./codeFlowTenantLogin";
+import { ConvertTokenToJson } from "./codeFlowLogin";
 
 dotenv.config();
 

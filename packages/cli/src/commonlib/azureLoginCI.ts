@@ -23,7 +23,7 @@ import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import CLILogProvider from "./log";
-import { ConvertTokenToJson } from "./codeFlowTenantLogin";
+import { ConvertTokenToJson } from "./codeFlowLogin";
 
 /**
  * Prepare for service principal login, not fully implemented

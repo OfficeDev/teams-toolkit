@@ -30,7 +30,6 @@ import * as path from "path";
 import CLIUIInstance from "../userInteraction";
 import { AzureSpCrypto, CryptoCachePlugin, loadTenantId, saveTenantId } from "./cacheAccess";
 import { CodeFlowLogin, ConvertTokenToJson, checkIsOnline } from "./codeFlowLogin";
-import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
 import {
   MFACode,
   changeLoginTenantMessage,
@@ -134,7 +133,6 @@ class TeamsFxTokenCredential implements TokenCredential {
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
-  private static codeFlowTenantInstance: CodeFlowTenantLogin;
   // default tenantId
   private static domain: string | undefined;
   private static username: string | undefined;
@@ -192,10 +190,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const checkCodeFlow =
       AzureAccountManager.codeFlowInstance !== undefined &&
       AzureAccountManager.codeFlowInstance.account;
-    const checkCodeFlowTenant =
-      AzureAccountManager.codeFlowTenantInstance !== undefined &&
-      AzureAccountManager.codeFlowTenantInstance.account;
-    if (AzureAccountManager.statusChange !== undefined && (checkCodeFlow || checkCodeFlowTenant)) {
+    if (AzureAccountManager.statusChange !== undefined && checkCodeFlow) {
       const credential = await this.getIdentityCredentialAsync();
       const accessToken = await credential?.getToken(AzureScopes);
       const accountJson = await this.getJsonObject();

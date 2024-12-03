@@ -246,7 +246,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-cherry-pick-issue:
-    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.base.ref, 'release') }}
+    if: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.base.ref, 'release') && github.event.action == 'opened' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -321,16 +321,6 @@ jobs:
               });
 
               console.log(`Created issue #${issue.data.number}`);
-              
-              // 在 PR 中添加评论，链接到新创建的 issue
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: `我已创建了一个 issue (#${issue.data.number}) 来跟踪需要进行的 cherry-pick 操作。`
-              });
-              
-              console.log(`Created comments in PR #${prNumber}`);
             } catch (error) {
               console.log('创建 issue 时发生错误:', error);
               core.setFailed(error.message);

@@ -267,7 +267,7 @@ jobs:
           LATEST_NUM_RELEASE=$(git branch -r | grep -E '^  origin/release/[0-9]+(\.[0-9]+)?$' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
           # 2. release/VSNUMPNUM 格式
           LATEST_VS_RELEASE=$(git branch -r | grep -E '^  origin/release/VS[0-9]+P[0-9]+$' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
-          echo "latest_num_release=$LATEST_NUM_RELEASE" >> $GITHUB_OUTPUT
+          echo "latest_vsc_release=$LATEST_NUM_RELEASE" >> $GITHUB_OUTPUT
           echo "latest_vs_release=$LATEST_VS_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Create Issue
@@ -276,17 +276,21 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }} # Use a PAT with the required permissions
           script: |
             const currentTarget = context.payload.pull_request.base.ref;
-            const latestRelease = '${{ steps.get-latest-release.outputs.latest_release }}';
+            const latestVSCRelease = '${{ steps.get-latest-release.outputs.latest_vsc_release }}';
+            const latestVSCRelease = '${{ steps.get-latest-release.outputs.latest_vs_release }}';
             const prNumber = context.payload.pull_request.number;
             const prTitle = context.payload.pull_request.title;
             const prAuthor = context.payload.pull_request.user.login;
             
             let targetBranches = ['dev'];
-            if (currentTarget !== latestRelease) {
-              targetBranches.push(latestRelease);
+            if (currentTarget !== latestVSCRelease) {
+              targetBranches.push(latestVSCRelease);
+            }
+            if (currentTarget !== latestVSRelease) {
+              targetBranches.push(latestVSRelease);
             }
             
-            const branchList = targetBranches.map(branch => `- [ ] ${branch}`).join('\n');
+            const branchList = targetBranches.map(branch => `- [ ] cherry-pick #${prNumber} to ${branch}`).join('\n');
             
             const issueBody = `
             ### Cherry-pick Reminder

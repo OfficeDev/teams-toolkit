@@ -262,8 +262,8 @@ jobs:
       - name: Get latest release branch
         id: get-latest-release
         run: |
-          # 找出版本号最大的 release 分支
-          LATEST_RELEASE=$(git branch -r | grep 'origin/release' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
+          # 找出版本号最大的 release 分支，仅包括 release/NUM 或 release/NUM.NUM 格式的分支
+          LATEST_RELEASE=$(git branch -r | grep -E '^  origin/release/[0-9]+(\.[0-9]+)?$' | sed 's/origin\///' | sort -t'/' -k2 -V | tail -n1)
           echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Create Issue

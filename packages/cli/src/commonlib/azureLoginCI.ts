@@ -12,6 +12,7 @@ import {
   AzureAccountProvider,
   ConfigFolderName,
   FxError,
+  ok,
   Result,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
@@ -123,7 +124,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
-    throw new Error("Method not implemented.");
+    return Promise.resolve(ok(AzureAccountManager.tokenCredential));
   }
 
   async getStatus(): Promise<LoginStatus> {

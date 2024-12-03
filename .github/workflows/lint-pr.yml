@@ -318,7 +318,7 @@ jobs:
                 repo: context.repo.repo,
                 title: `[Cherry-pick] PR #${prNumber} needs to be synchronized to other branches`,
                 body: issueBody,
-                labels: ['hotfix'],
+                labels: ['cherry-pick-hotfix'],
                 assignees: [prAuthor] // Add PR author as assignee
               });
 

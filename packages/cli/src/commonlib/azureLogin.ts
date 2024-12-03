@@ -112,12 +112,12 @@ class TeamsFxTokenCredential implements TokenCredential {
     } else {
       myScopes = scopes;
     }
-    let tokenRes: Result<string, FxError>;
-    if (this.tenantId.length > 0) {
-      tokenRes = await this.codeFlowInstance.getTenantTokenByScopes(this.tenantId, myScopes);
-    } else {
-      tokenRes = await this.codeFlowInstance.getTokenByScopes(myScopes);
-    }
+    const tokenRes: Result<string, FxError> = await this.codeFlowInstance.getTokenByScopes(
+      myScopes,
+      true,
+      this.tenantId
+    );
+
     if (tokenRes.isOk()) {
       const tokenJson = ConvertTokenToJson(tokenRes.value);
       return {
@@ -280,7 +280,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await AzureAccountManager.codeFlowInstance.reloadCache();
     }
     if (AzureAccountManager.codeFlowInstance.account) {
-      const loginToken = await AzureAccountManager.codeFlowInstance.getToken(false);
+      const loginToken = await AzureAccountManager.codeFlowInstance.getTokenByScopes(scopes, false);
       if (!loginToken) {
         if (await checkIsOnline()) {
           return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });

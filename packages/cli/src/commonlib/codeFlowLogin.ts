@@ -376,7 +376,7 @@ export class CodeFlowLogin {
         }
         await this.logout();
         if (refresh) {
-          const accessToken = await this.login(scopes);
+          const accessToken = await this.login(scopes, tenantId);
           return ok(accessToken);
         }
         return err(LoginCodeFlowError(error));

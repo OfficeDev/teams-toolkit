@@ -61,6 +61,9 @@ class AccountUtils {
     const tid = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) ? tenantId : undefined;
     const result = await azureProvider.getJsonObject(true, tid);
     if (result) {
+      if (tid) {
+        await azureProvider.switchTenant(tid);
+      }
       const subscriptions = await azureProvider.listSubscriptions();
       const username = (result as any).upn ?? (result as any).unique_name;
       if (commandType === "login") {

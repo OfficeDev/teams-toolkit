@@ -81,9 +81,6 @@ export const accountLoginAzureCommand: CLICommand = {
       args.username as string,
       args.password as string
     );
-    if (res && args.tenant) {
-      await AzureTokenProvider.switchTenant(args.tenant as string);
-    }
     return ok(undefined);
   },
 };

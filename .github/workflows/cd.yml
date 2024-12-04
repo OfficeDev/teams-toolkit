@@ -175,7 +175,7 @@ jobs:
           git commit -m "build: replace sideloading placeholders"
       
       - name: enable prerelease only features
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'alpha' || github.event.inputs.preid == 'beta') }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'alpha' || github.event.inputs.preid == 'beta')) }}
         run: bash .github/scripts/prerelease-feature-control.sh
 
       - name: disable chat participant environment variable

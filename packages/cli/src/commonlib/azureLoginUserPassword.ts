@@ -75,6 +75,10 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
 
+  async getTenant(): Promise<string | undefined> {
+    return Promise.resolve(cfg.AZURE_TENANT_ID);
+  }
+
   public async getStatus(): Promise<LoginStatus> {
     return Promise.resolve({
       status: "SignedIn",

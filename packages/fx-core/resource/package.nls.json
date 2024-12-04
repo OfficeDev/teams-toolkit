@@ -321,7 +321,6 @@
   "core.createProjectQuestion.projectType.copilotHelp.label": "Don't know how to start? Use GitHub Copilot Chat",
   "core.createProjectQuestion.projectType.copilotHelp.detail": "Chat with GitHub Copilot to get started on your Teams app and agent",
   "core.createProjectQuestion.projectType.copilotGroup.title": "Use GitHub Copilot",
-  "core.createProjectQuestion.projectType.createGroup.title": "Create",
   "core.createProjectQuestion.projectType.createGroup.aiAgent": "AI Agent",
   "core.createProjectQuestion.projectType.createGroup.m365Apps": "Apps for Microsoft 365",
   "core.createProjectQuestion.projectType.declarativeAgent.label": "Declarative Agent",

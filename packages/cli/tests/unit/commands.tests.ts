@@ -970,6 +970,15 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenCIProvider, "switchTenant").resolves();
       sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ unique_name: "test" });
       sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
+      sandbox.stub(AzureTokenCIProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(AzureTokenCIProvider, "getIdentityCredentialAsync").resolves({
+        getToken: async () => {
+          return Promise.resolve({ token: "faked_token" });
+        },
+      } as any);
+      sandbox
+        .stub(tools, "listAllTenants")
+        .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tenant_id" }]);
       const res = await accountUtils.outputAzureInfo("login", "faked_tenant_id", true);
       assert.isTrue(res);
       mockedEnvRestore();

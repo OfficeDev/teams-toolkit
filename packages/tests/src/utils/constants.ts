@@ -441,6 +441,7 @@ export enum LocalDebugError {
   WarningError = "Warning",
   WarningCapError = "WARNING",
   DeprecatedError = "npm warn deprecated",
+  CompiledWithWarningError = "Compiled with warnings",
 }
 
 export class LocalDebugTaskInfo {

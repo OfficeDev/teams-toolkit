@@ -2367,6 +2367,7 @@ export async function validateDashboardTab(page: Page) {
         }
       }
     });
+
     console.log("start to verify dashboard tab");
     await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(
@@ -2728,7 +2729,7 @@ export async function validateLargeNotificationBot(
         console.log(e);
       }
       try {
-        await frame?.waitForSelector('p:has-text("Hello World")');
+        await frame?.waitForSelector('p:has-text("New Event Occurred!")');
       } catch (e) {
         throw e;
       }

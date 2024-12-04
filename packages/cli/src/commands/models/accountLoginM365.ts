@@ -5,16 +5,30 @@ import M365TokenProvider from "../../commonlib/m365Login";
 import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { accountUtils } from "./accountShow";
+import { featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 
 export const accountLoginM365Command: CLICommand = {
   name: "m365",
   description: commands["auth.login.m365"].description,
+  options: featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)
+    ? [
+        {
+          name: "tenant",
+          description: commands["auth.login.m365"].options["tenant"],
+          type: "string",
+          default: "",
+        },
+      ]
+    : undefined,
   telemetry: {
     event: TelemetryEvent.AccountLoginM365,
   },
-  handler: async () => {
+  handler: async (ctx) => {
     await M365TokenProvider.signout();
-    await accountUtils.outputM365Info("login");
+    const res = await accountUtils.outputM365Info("login", ctx.optionValues.tenant as string);
+    if (res && ctx.optionValues.tenant) {
+      await M365TokenProvider.switchTenant(ctx.optionValues.tenant as string);
+    }
     return ok(undefined);
   },
 };

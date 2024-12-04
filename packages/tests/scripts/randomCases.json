@@ -35,23 +35,6 @@
             "sample-remotedebug-outlook-signature",
             "sample-localdebug-reddit-link",
             "sample-remotedebug-reddit-link",
-            "sample-localdebug-intelligent-data-chart",
-            "sample-remotedebug-intelligent-data-chart"
-        ]
-    },
-    {
-        "os": {
-            "windows-latest": {
-                "node-18": []
-            },
-            "ubuntu-latest": {
-                "node-18": []
-            },
-            "macos-latest": {
-                "node-18": []
-            }
-        },
-        "cases": [
             "sample-localdebug-chef-bot",
             "sample-remotedebug-chef-bot"
         ]
@@ -73,7 +56,9 @@
             "sample-localdebug-contact-exporter",
             "sample-localdebug-hello-world-meeting",
             "sample-localdebug-food-catalog",
-            "sample-remotedebug-food-catalog"
+            "sample-remotedebug-food-catalog",
+            "sample-localdebug-intelligent-data-chart",
+            "sample-remotedebug-intelligent-data-chart"
         ]
     },
     {

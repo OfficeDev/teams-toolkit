@@ -458,6 +458,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     Correlator.run(copilotChatHandlers.invokeTeamsAgent, args)
   );
   context.subscriptions.push(invokeTeamsAgent);
+
+  const troubleshootWithTeamsAgent = vscode.commands.registerCommand(
+    "fx-extension.teamsAgentTroubleshootSelectedText",
+    (...args) => Correlator.run(copilotChatHandlers.troubleshootSelectedText, args)
+  );
+  context.subscriptions.push(troubleshootWithTeamsAgent);
 }
 
 /**

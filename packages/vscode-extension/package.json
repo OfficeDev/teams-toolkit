@@ -387,7 +387,7 @@
       ],
       "editor/context": [
         {
-          "command": "fx-extension.teamsGitHubCopilotTroubleshoot",
+          "command": "fx-extension.teamsAgentTroubleshootSelectedText",
           "group": "navigation",
           "when": "(resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output'))"
         }
@@ -553,6 +553,10 @@
         },
         {
           "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.teamsAgentTroubleshootSelectedText",
           "when": "false"
         }
       ]
@@ -916,7 +920,7 @@
         "enablement": "fx-extension.isSyncManifestEnabled"
       },
       {
-        "command": "fx-extension.teamsGitHubCopilotTroubleshoot",
+        "command": "fx-extension.teamsAgentTroubleshootSelectedText",
         "title": "Troubleshoot with @teamsapp",
         "enablement": "editor.hasSelection",
         "category": "Teams"

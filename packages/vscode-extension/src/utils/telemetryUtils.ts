@@ -73,6 +73,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other };
     case TelemetryTriggerFrom.CreateAppQuestionFlow:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CreateAppQuestionFlow };
+    case TelemetryTriggerFrom.EditorContextMenu:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.EditorContextMenu };
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }

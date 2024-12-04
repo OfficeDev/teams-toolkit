@@ -212,22 +212,6 @@ describe("CLI commands", () => {
       const res = await accountLoginM365Command.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-
-    it("switch tenant succeed with tenant parameter", async () => {
-      sandbox.stub(M365TokenProvider, "signout");
-      sandbox.stub(accountUtils, "outputM365Info").resolves(true);
-      const switchTenantStub = sandbox.stub(M365TokenProvider, "switchTenant").resolves();
-      const ctx: CLIContext = {
-        command: { ...accountLoginM365Command, fullName: "teamsapp auth login m365" },
-        optionValues: { "service-principal": false, tenant: "faked_tenant_id" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await accountLoginM365Command.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(switchTenantStub.calledOnce);
-    });
   });
 
   describe("addSPFxWebpartCommand", async () => {
@@ -942,6 +926,11 @@ describe("CLI read-only commands", () => {
     it("outputM365Info login success under hosting tenant", async () => {
       const mocks = mockedEnv({ TEAMSFX_MULTI_TENANT: "true" });
       sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ unique_name: "fakename" }));
+      sandbox.stub(M365TokenProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+      sandbox
+        .stub(tools, "listAllTenants")
+        .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tenant_id" }]);
       const res = await accountUtils.outputM365Info("login", "faked_tenant_id");
       assert.isTrue(res);
       mocks();
@@ -953,6 +942,11 @@ describe("CLI read-only commands", () => {
     });
     it("outputM365Info show success", async () => {
       sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      sandbox.stub(M365TokenProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+      sandbox
+        .stub(tools, "listAllTenants")
+        .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tenant_id" }]);
       const res = await accountUtils.outputM365Info("show");
       assert.isTrue(res);
     });

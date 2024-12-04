@@ -939,6 +939,13 @@ describe("CLI read-only commands", () => {
       const res = await accountUtils.outputM365Info("login");
       assert.isTrue(res);
     });
+    it("outputM365Info login success under hosting tenant", async () => {
+      const mocks = mockedEnv({ TEAMSFX_MULTI_TENANT: "true" });
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ unique_name: "fakename" }));
+      const res = await accountUtils.outputM365Info("login", "faked_tenant_id");
+      assert.isTrue(res);
+      mocks();
+    });
     it("outputM365Info login fail", async () => {
       sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(new UserCancelError()));
       const res = await accountUtils.outputM365Info("login");
@@ -967,7 +974,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenCIProvider, "load").resolves();
       sandbox.stub(AzureTokenCIProvider, "init").resolves();
       sandbox.stub(AzureTokenCIProvider, "switchTenant").resolves();
-      sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ upn: "test" });
+      sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ unique_name: "test" });
       sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
       const res = await accountUtils.outputAzureInfo("login", "faked_tenant_id", true);
       assert.isTrue(res);

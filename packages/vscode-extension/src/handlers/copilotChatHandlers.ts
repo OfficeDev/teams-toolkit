@@ -282,17 +282,18 @@ export async function troubleshootSelectedText(args?: any[]): Promise<Result<nul
       new UserError(
         eventName,
         errorNames.NoActiveTextEditor,
-        "No active text. Please select some text for troubleshooting."
+        "No active text. Please select some text for troubleshooting." // TODO: localize.
       )
-    ); // TODO: localize.
+    );
   }
 
-  const query = `@teamsapp I'm encountering the following error in my code. Can you help me diagnose the issue and suggest possible solutions?
+  const query = `@teamsapp I'm encountering the following error in my code.
 \`\`\`
 {
   Error message: ${selectedText}
 }
 \`\`\`
+Can you help me diagnose the issue and suggest possible solutions?
 `;
   const res = await invoke(query, eventName, triggerFromProperty);
 
@@ -308,48 +309,46 @@ export async function troubleshootSelectedText(args?: any[]): Promise<Result<nul
 }
 
 /**
- * Invokes teams agent for troubleshooting based on selected text.
+ * Invokes teams agent for troubleshooting current error.
  * @param args
  * @returns Result
  */
 export async function troubleshootError(args?: any[]): Promise<Result<null, FxError>> {
-  const eventName = TelemetryEvent.TroubleshootSelectedText;
-  const triggerFromProperty = getTriggerFromProperty([TelemetryTriggerFrom.EditorContextMenu]);
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.TroubleshootSelectedTextStart,
-    triggerFromProperty
-  );
-
-  const editor = vscode.window.activeTextEditor;
-  let selectedText = "";
-  if (editor) {
-    const selection = editor.selection;
-    selectedText = editor.document.getText(selection);
-  } else {
-    return err(
-      new UserError(
-        eventName,
-        errorNames.NoActiveTextEditor,
-        "No active text. Please select some text for troubleshooting."
-      )
-    ); // TODO: localize.
+  const eventName = TelemetryEvent.TroubleshootErrorFromNotification;
+  if (!args || args.length !== 2) {
+    // should never happen
+    return ok(null);
   }
 
-  const query = `@teamsapp I'm encountering the following error in my code. Can you help me diagnose the issue and suggest possible solutions?
-\`\`\`
-{
-  Error message: ${selectedText}
-}
-\`\`\`
-`;
+  const currentError = args[1] as FxError;
+  const errorCode = `${currentError.source}.${currentError.name}`;
+  const triggerFromProperty = getTriggerFromProperty(args);
+  const telemtryProperties = {
+    ...triggerFromProperty,
+    [TelemetryProperty.ErrorCode]: errorCode,
+  };
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.TroubleshootErrorFromNotificationStart,
+    telemtryProperties
+  );
+
+  const query = `@teamsapp I'm encountering the following error in Teams Toolkit.
+  \`\`\`
+  {
+    Error code: ${errorCode}
+    Error message: ${currentError.message}
+  }
+  \`\`\`
+  Can you help me diagnose the issue and suggest possible solutions?
+  `;
   const res = await invoke(query, eventName, triggerFromProperty);
 
   if (res.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, res.error, triggerFromProperty);
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, res.error, telemtryProperties);
   } else {
     ExtTelemetry.sendTelemetryEvent(eventName, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...triggerFromProperty,
+      ...telemtryProperties,
     });
   }
   return res;

@@ -283,6 +283,8 @@ export enum TelemetryEvent {
   InvokeTeamsAgent = "invoke-teams-agent",
   TroubleshootSelectedTextStart = "troubleshoot-selected-text-start",
   TroubleshootSelectedText = "troubleshoot-selected-text",
+  TroubleshootErrorFromNotificationStart = "troubleshoot-error-from-notification-start",
+  TroubleshootErrorFromNotification = "troubleshoot-error-from-notification",
 
   // Copilot Chat
   CopilotChatStart = "copilot-chat-start",

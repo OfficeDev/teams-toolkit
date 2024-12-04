@@ -558,6 +558,10 @@
         {
           "command": "fx-extension.teamsAgentTroubleshootSelectedText",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.teamsAgentTroubleshootError",
+          "when": "false"
         }
       ]
     },
@@ -921,8 +925,14 @@
       },
       {
         "command": "fx-extension.teamsAgentTroubleshootSelectedText",
-        "title": "Troubleshoot with @teamsapp",
-        "enablement": "editor.hasSelection",
+        "title": "Troubleshoot selection with @teamsapp",
+        "enablement": "editor.hasSelection && fx-extension.isChatParticipantUIEntriesEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.teamsAgentTroubleshootError",
+        "title": "Troubleshoot error with @teamsapp",
+        "enablement": "fx-extension.isChatParticipantUIEntriesEnabled",
         "category": "Teams"
       }
     ],

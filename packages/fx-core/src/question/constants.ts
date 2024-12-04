@@ -919,9 +919,9 @@ export const NotificationTriggers = {
   TIMER: "timer",
 } as const;
 
-type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
+export type NotificationTrigger = typeof NotificationTriggers[keyof typeof NotificationTriggers];
 
-interface HostTypeTriggerOptionItem extends OptionItem {
+export interface HostTypeTriggerOptionItem extends OptionItem {
   hostType: HostType;
   triggers?: NotificationTrigger[];
 }

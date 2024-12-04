@@ -389,11 +389,7 @@ export abstract class CaseFactory {
                         LocalDebugError.ElementNotInteractableError
                       ) ||
                       // skip timeout
-                      errorMsg.includes(LocalDebugError.TimeoutError) ||
-                      // skip warning error
-                      errorMsg.includes(
-                        LocalDebugError.CompiledWithWarningError
-                      )
+                      errorMsg.includes(LocalDebugError.TimeoutError)
                     ) {
                       console.log("[skip error] ", error);
                     } else {

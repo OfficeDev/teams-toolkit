@@ -389,7 +389,7 @@
         {
           "command": "fx-extension.teamsAgentTroubleshootSelectedText",
           "group": "navigation",
-          "when": "(resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output'))"
+          "when": "(fx-extension.isChatParticipantUIEntriesEnabled && (resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output')))"
         }
       ],
       "editor/title/run": [

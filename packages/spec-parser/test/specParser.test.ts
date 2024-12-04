@@ -1180,7 +1180,7 @@ describe("SpecParser", () => {
             api_key: {
               type: "apiKey",
               name: "api_key",
-              in: "header",
+              in: "cookie",
             },
           },
         },

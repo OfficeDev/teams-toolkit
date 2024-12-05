@@ -278,8 +278,13 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  // Teams Github Copilot UI
   InvokeTeamsAgentStart = "invoke-teams-agent-start",
   InvokeTeamsAgent = "invoke-teams-agent",
+  TroubleshootSelectedTextStart = "troubleshoot-selected-text-start",
+  TroubleshootSelectedText = "troubleshoot-selected-text",
+  TroubleshootErrorFromNotificationStart = "troubleshoot-error-from-notification-start",
+  TroubleshootErrorFromNotification = "troubleshoot-error-from-notification",
 
   // Copilot Chat
   CopilotChatStart = "copilot-chat-start",
@@ -459,6 +464,7 @@ export enum TelemetryTriggerFrom {
   SampleDetailPage = "SampleDetailPage",
   CopilotChat = "CopilotChat",
   CreateAppQuestionFlow = "CreateAppQuestionFlow",
+  EditorContextMenu = "EditorContextMenu",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

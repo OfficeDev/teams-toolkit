@@ -385,6 +385,13 @@
           "group": "inline"
         }
       ],
+      "editor/context": [
+        {
+          "command": "fx-extension.teamsAgentTroubleshootSelectedText",
+          "group": "navigation",
+          "when": "(fx-extension.isChatParticipantUIEntriesEnabled && (resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output')))"
+        }
+      ],
       "editor/title/run": [
         {
           "command": "fx-extension.selectAndDebug",
@@ -546,6 +553,14 @@
         },
         {
           "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.teamsAgentTroubleshootSelectedText",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.teamsAgentTroubleshootError",
           "when": "false"
         }
       ]
@@ -907,6 +922,18 @@
         "title": "%teamstoolkit.commandsTreeViewProvider.syncManifest%",
         "category": "Teams",
         "enablement": "fx-extension.isSyncManifestEnabled"
+      },
+      {
+        "command": "fx-extension.teamsAgentTroubleshootSelectedText",
+        "title": "Troubleshoot selection with @teamsapp",
+        "enablement": "editor.hasSelection && fx-extension.isChatParticipantUIEntriesEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.teamsAgentTroubleshootError",
+        "title": "Troubleshoot error with @teamsapp",
+        "enablement": "fx-extension.isChatParticipantUIEntriesEnabled",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [

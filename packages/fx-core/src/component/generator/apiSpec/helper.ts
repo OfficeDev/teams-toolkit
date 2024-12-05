@@ -9,6 +9,7 @@ import {
   AdaptiveCardGenerator,
   ErrorResult as ApiSpecErrorResult,
   ErrorType as ApiSpecErrorType,
+  ConstantString,
   ErrorType,
   InvalidAPIInfo,
   ListAPIResult,
@@ -1553,10 +1554,8 @@ async function updatePromptSuggestions(specItems: SpecObject[], manifestPath: st
   }
 }
 
-const EnvNamePostfix = "REGISTRATION_ID";
-
 export function getEnvName(authName: string): string {
-  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNamePostfix}`);
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${ConstantString.RegistrationIdPostfix}`);
 }
 
 export async function copyKiotaFolder(specPath: string, projectPath: string): Promise<void> {

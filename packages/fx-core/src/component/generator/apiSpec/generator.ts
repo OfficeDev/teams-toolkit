@@ -279,15 +279,12 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         replaceMap: {
           ...context.templateVariables,
           DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
-          FileFunction: featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc) ? "true" : "",
         },
         filterFn: (fileName: string) => {
           if (fileName.includes(`${defaultDeclarativeCopilotManifestFileName}.tpl`)) {
             return isDeclarativeCopilot;
           } else if (fileName.includes(declarativeCopilotInstructionFileName)) {
-            return (
-              isDeclarativeCopilot && featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc)
-            );
+            return isDeclarativeCopilot;
           }
           {
             return true;

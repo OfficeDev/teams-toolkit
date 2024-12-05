@@ -28,7 +28,6 @@ export class FeatureFlagName {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly SyncManifest = "TEAMSFX_SYNC_MANIFEST";
-  static readonly EnvFileFunc = "TEAMSFX_ENV_FILE_FUNC";
   static readonly KiotaIntegration = "TEAMSFX_KIOTA_INTEGRATION";
   static readonly ApiPluginAAD = "TEAMSFX_API_PLUGIN_AAD";
   static readonly CEAEnabled = "TEAMSFX_CEA_ENABLED";
@@ -65,7 +64,7 @@ export class FeatureFlags {
   };
   static readonly ChatParticipantUIEntries = {
     name: FeatureFlagName.ChatParticipantUIEntries,
-    defaultValue: "true",
+    defaultValue: "false",
   };
   static readonly SMEOAuth = { name: FeatureFlagName.SMEOAuth, defaultValue: "false" };
   static readonly ShowDiagnostics = {
@@ -83,10 +82,6 @@ export class FeatureFlags {
   static readonly SyncManifest = {
     name: FeatureFlagName.SyncManifest,
     defaultValue: "false",
-  };
-  static readonly EnvFileFunc = {
-    name: FeatureFlagName.EnvFileFunc,
-    defaultValue: "true", // Set it to true for dogfooding.
   };
   static readonly KiotaIntegration = {
     name: FeatureFlagName.KiotaIntegration,

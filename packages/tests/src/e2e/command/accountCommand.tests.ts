@@ -16,7 +16,7 @@ describe("account command", function () {
 
   it(
     `auth login help support tenant parameter`,
-    { testPlanCaseId: 15232246, author: "huihuiwu@microsoft.com" },
+    { testPlanCaseId: 30431027, author: "huihuiwu@microsoft.com" },
     async function () {
       stdlog = await execAsync(`teamsapp auth login m365 -h`, {
         env: { ...process.env, TEAMSFX_MULTI_TENANT: "true" },
@@ -30,7 +30,7 @@ describe("account command", function () {
 
   it(
     `auth login to specified tenant`,
-    { testPlanCaseId: 15232246, author: "huihuiwu@microsoft.com" },
+    { testPlanCaseId: 30430995, author: "huihuiwu@microsoft.com" },
     async function () {
       stdlog = await execAsync(`teamsapp auth login m365`, {
         env: { ...process.env, TEAMSFX_MULTI_TENANT: "true" },

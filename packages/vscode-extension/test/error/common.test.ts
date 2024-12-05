@@ -10,6 +10,7 @@ import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { showError } from "../../src/error/common";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import { RecommendedOperations } from "../../src/debug/common/debugConstants";
+import { featureFlagManager } from "@microsoft/teamsfx-core";
 
 describe("common", () => {
   const sandbox = sinon.createSandbox();
@@ -121,9 +122,22 @@ describe("common", () => {
     });
 
     it(`showError - ${type} - recommend test tool`, async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
       sandbox.stub(localizeUtils, "localize").returns("");
       const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
       sandbox.stub(projectChecker, "isTestToolEnabledProject").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+      sandbox.stub(vscode.commands, "executeCommand");
+      const error = buildError();
+      await showError(error);
+      chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
+    });
+
+    it(`showError - ${type} - recommend troubleshoot`, async () => {
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      sandbox.stub(localizeUtils, "localize").returns("");
+      const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
+      sandbox.stub(projectChecker, "isTestToolEnabledProject").returns(false);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(vscode.commands, "executeCommand");
       const error = buildError();

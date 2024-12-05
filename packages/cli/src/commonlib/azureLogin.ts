@@ -186,6 +186,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(ok(AzureAccountManager.teamsFxTokenCredential));
   }
 
+  async getTenant(): Promise<string | undefined> {
+    return await loadTenantId(accountName);
+  }
+
   private async updateLoginStatus(): Promise<void> {
     const checkCodeFlow =
       AzureAccountManager.codeFlowInstance !== undefined &&

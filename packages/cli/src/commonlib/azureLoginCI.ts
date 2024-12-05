@@ -127,6 +127,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(ok(AzureAccountManager.tokenCredential));
   }
 
+  async getTenant(): Promise<string | undefined> {
+    await this.load();
+    return AzureAccountManager.tenantId;
+  }
+
   async getStatus(): Promise<LoginStatus> {
     await this.load();
     if (

@@ -212,22 +212,6 @@ describe("CLI commands", () => {
       const res = await accountLoginM365Command.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-
-    it("switch tenant succeed with tenant parameter", async () => {
-      sandbox.stub(M365TokenProvider, "signout");
-      sandbox.stub(accountUtils, "outputM365Info").resolves(true);
-      const switchTenantStub = sandbox.stub(M365TokenProvider, "switchTenant").resolves();
-      const ctx: CLIContext = {
-        command: { ...accountLoginM365Command, fullName: "teamsapp auth login m365" },
-        optionValues: { "service-principal": false, tenant: "faked_tenant_id" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await accountLoginM365Command.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(switchTenantStub.calledOnce);
-    });
   });
 
   describe("addSPFxWebpartCommand", async () => {
@@ -936,15 +920,50 @@ describe("CLI read-only commands", () => {
     });
     it("outputM365Info login success", async () => {
       sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      sandbox.stub(M365TokenProvider, "getTenant").resolves(undefined);
       const res = await accountUtils.outputM365Info("login");
       assert.isTrue(res);
     });
-    it("outputM365Info login success under hosting tenant", async () => {
-      const mocks = mockedEnv({ TEAMSFX_MULTI_TENANT: "true" });
-      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ unique_name: "fakename" }));
-      const res = await accountUtils.outputM365Info("login", "faked_tenant_id");
-      assert.isTrue(res);
-      mocks();
+    context("outputM365Info login under hosting tenant", () => {
+      let mocks: RestoreFn;
+      beforeEach(() => {
+        mocks = mockedEnv({ TEAMSFX_MULTI_TENANT: "true" });
+        sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ unique_name: "fakename" }));
+        sandbox.stub(M365TokenProvider, "getTenant").resolves("faked_tenant_id");
+      });
+
+      afterEach(() => {
+        mocks();
+      });
+
+      it("specified tenant name displayed", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox
+          .stub(tools, "listAllTenants")
+          .resolves([
+            { tenantId: "faked_tid_1" },
+            { tenantId: "faked_tenant_id", displayName: "Test tenant" },
+          ]);
+        const res = await accountUtils.outputM365Info("login", "faked_tenant_id");
+        assert.isTrue(res);
+      });
+
+      it("specified tenant not match", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox
+          .stub(tools, "listAllTenants")
+          .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tid_2" }]);
+        const res = await accountUtils.outputM365Info("login", "faked_tenant_id");
+        assert.isTrue(res);
+      });
+
+      it("failed to retrieve access token", async () => {
+        sandbox
+          .stub(M365TokenProvider, "getAccessToken")
+          .resolves(err("failed to get access token" as any));
+        const res = await accountUtils.outputM365Info("login", "faked_tenant_id");
+        assert.isTrue(res);
+      });
     });
     it("outputM365Info login fail", async () => {
       sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(new UserCancelError()));
@@ -953,6 +972,11 @@ describe("CLI read-only commands", () => {
     });
     it("outputM365Info show success", async () => {
       sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      sandbox.stub(M365TokenProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+      sandbox
+        .stub(tools, "listAllTenants")
+        .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tenant_id" }]);
       const res = await accountUtils.outputM365Info("show");
       assert.isTrue(res);
     });
@@ -976,6 +1000,48 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenCIProvider, "switchTenant").resolves();
       sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ unique_name: "test" });
       sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
+      sandbox.stub(AzureTokenCIProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(AzureTokenCIProvider, "getIdentityCredentialAsync").resolves({
+        getToken: async () => {
+          return Promise.resolve({ token: "faked_token" });
+        },
+      } as any);
+      sandbox
+        .stub(tools, "listAllTenants")
+        .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tenant_id" }]);
+      const res = await accountUtils.outputAzureInfo("login", "faked_tenant_id", true);
+      assert.isTrue(res);
+      mockedEnvRestore();
+    });
+    it("outputAzureInfo login fail with tenant parameter - invalid token", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_MULTI_TENANT: "true" });
+      sandbox.stub(AzureTokenCIProvider, "load").resolves();
+      sandbox.stub(AzureTokenCIProvider, "init").resolves();
+      sandbox.stub(AzureTokenCIProvider, "switchTenant").resolves();
+      sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ unique_name: "test" });
+      sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
+      sandbox.stub(AzureTokenCIProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(AzureTokenCIProvider, "getIdentityCredentialAsync").resolves(undefined);
+      const res = await accountUtils.outputAzureInfo("login", "faked_tenant_id", true);
+      assert.isTrue(res);
+      mockedEnvRestore();
+    });
+    it("outputAzureInfo login fail with tenant parameter - tenant mismatch", async () => {
+      const mockedEnvRestore = mockedEnv({ TEAMSFX_MULTI_TENANT: "true" });
+      sandbox.stub(AzureTokenCIProvider, "load").resolves();
+      sandbox.stub(AzureTokenCIProvider, "init").resolves();
+      sandbox.stub(AzureTokenCIProvider, "switchTenant").resolves();
+      sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ unique_name: "test" });
+      sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
+      sandbox.stub(AzureTokenCIProvider, "getTenant").resolves("faked_tenant_id");
+      sandbox.stub(AzureTokenCIProvider, "getIdentityCredentialAsync").resolves({
+        getToken: async () => {
+          return Promise.resolve({ token: "faked_token" });
+        },
+      } as any);
+      sandbox
+        .stub(tools, "listAllTenants")
+        .resolves([{ tenantId: "faked_tid_1" }, { tenantId: "faked_tid_2" }]);
       const res = await accountUtils.outputAzureInfo("login", "faked_tenant_id", true);
       assert.isTrue(res);
       mockedEnvRestore();

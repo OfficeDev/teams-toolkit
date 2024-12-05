@@ -3594,7 +3594,7 @@ describe("scaffold question", () => {
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 7);
           assert.equal(
-            getLocalizedString("core.createProjectQuestion.projectType.createGroup.m365App"),
+            getLocalizedString("core.createProjectQuestion.projectType.createGroup.aiAgent"),
             (options as OptionItem[])[0].groupName
           );
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });

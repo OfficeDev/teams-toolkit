@@ -162,7 +162,7 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 6);
-          assert.isUndefined((options as OptionItem[])[0].groupName);
+          assert.isNotEmpty((options as OptionItem[])[0].groupName);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -3594,7 +3594,7 @@ describe("scaffold question", () => {
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 7);
           assert.equal(
-            getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+            getLocalizedString("core.createProjectQuestion.projectType.createGroup.aiAgent"),
             (options as OptionItem[])[0].groupName
           );
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });

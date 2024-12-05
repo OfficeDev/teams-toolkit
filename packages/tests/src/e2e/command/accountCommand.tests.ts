@@ -37,7 +37,7 @@ describe("account command", function () {
         timeout: 0,
       });
 
-      expect(stdlog.stdout).include("utest0");
+      expect(stdlog.stdout).include("xxbdw");
       expect(stdlog.stderr).to.be.empty;
     }
   );
@@ -51,7 +51,7 @@ describe("account command", function () {
         timeout: 0,
       });
 
-      expect(stdlog.stdout).include("utest0");
+      expect(stdlog.stdout).include("xxbdw");
       expect(stdlog.stderr).to.be.empty;
     }
   );

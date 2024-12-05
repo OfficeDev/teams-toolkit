@@ -7,12 +7,12 @@ import * as globalVariables from "../../src/globalVariables";
 import * as projectChecker from "../../src/utils/projectChecker";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
-import { showError } from "../../src/error/common";
+import { notifyOutputTroubleshoot, showError } from "../../src/error/common";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import { RecommendedOperations } from "../../src/debug/common/debugConstants";
 import { featureFlagManager } from "@microsoft/teamsfx-core";
 
-describe("common", () => {
+describe.only("common", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {
@@ -20,6 +20,7 @@ describe("common", () => {
   });
 
   it("showError", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     sandbox.stub(localizeUtils, "localize").returns("");
     const showErrorMessageStub = sandbox
       .stub(vscode.window, "showErrorMessage")
@@ -43,6 +44,7 @@ describe("common", () => {
   });
 
   it("showError with test tool button click", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     sandbox.stub(localizeUtils, "localize").returns("");
     const showErrorMessageStub = sandbox
       .stub(vscode.window, "showErrorMessage")
@@ -68,6 +70,7 @@ describe("common", () => {
   });
 
   it("showError - similar issues", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     sandbox
       .stub(vscode.window, "showErrorMessage")
       .callsFake((title: string, button: unknown, ...items: vscode.MessageItem[]) => {
@@ -81,6 +84,102 @@ describe("common", () => {
 
     chai.assert.isTrue(sendTelemetryEventStub.called);
     chai.assert.isTrue(executeCommandStub.called);
+  });
+
+  describe.only("notify user to troubleshoot output with Teams Agent", async () => {
+    let showInformationMessageStub: sinon.SinonStub;
+    beforeEach(() => {
+      sandbox.stub(vscode.window, "showInformationMessage");
+    });
+
+    afterEach(() => {
+      globalVariables.setOutputTroubleshootNotificationCount(0);
+    });
+    it("showError - notify user to troubleshoot output with Teams Agent", async () => {
+      globalVariables.setOutputTroubleshootNotificationCount(0);
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      const showErrorMessageStub = sandbox
+        .stub(vscode.window, "showErrorMessage")
+        .callsFake((title: string, button: any) => {
+          return Promise.resolve(button);
+        });
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.commands, "executeCommand");
+      const error = new UserError(
+        "test source",
+        "test name",
+        "test message",
+        "test displayMessage"
+      );
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+      sandbox.stub(fs, "pathExistsSync").returns(true);
+
+      await showError(error);
+
+      chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 1);
+      chai.assert.isTrue(showErrorMessageStub.calledTwice);
+    });
+
+    it("showError - not notify user to troubleshoot output with Teams Agent if reaches limit", async () => {
+      globalVariables.setOutputTroubleshootNotificationCount(3);
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      const showErrorMessageStub = sandbox
+        .stub(vscode.window, "showErrorMessage")
+        .callsFake((title: string, button: any) => {
+          return Promise.resolve(button);
+        });
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.commands, "executeCommand");
+      const error = new UserError(
+        "test source",
+        "test name",
+        "test message",
+        "test displayMessage"
+      );
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+      sandbox.stub(fs, "pathExistsSync").returns(true);
+
+      await showError(error);
+
+      chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 3);
+      chai.assert.isTrue(showErrorMessageStub.calledOnce);
+    });
+
+    it("showError - not notify user to troubleshoot output with Teams Agent if userCancelError", async () => {
+      globalVariables.setOutputTroubleshootNotificationCount(0);
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      const showErrorMessageStub = sandbox
+        .stub(vscode.window, "showErrorMessage")
+        .callsFake((title: string, button: any) => {
+          return Promise.resolve(button);
+        });
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.commands, "executeCommand");
+      const error = new UserError(
+        "test source",
+        "User Cancel",
+        "test message",
+        "test displayMessage"
+      );
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+      sandbox.stub(fs, "pathExistsSync").returns(true);
+
+      await showError(error);
+
+      chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 1);
+      chai.assert.isTrue(showErrorMessageStub.calledTwice);
+    });
+
+    it("should execute command when user selects 'Open output panel'", async () => {
+      showInformationMessageStub.resolves("Open output panel");
+      const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
+
+      notifyOutputTroubleshoot("testErrorCode");
+
+      await showInformationMessageStub.firstCall.returnValue;
+
+      chai.assert.isTrue(executeCommandStub.calledOnceWith("fx-extension.showOutputChannel"));
+    });
   });
 
   [

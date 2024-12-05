@@ -292,6 +292,7 @@ export enum TelemetryEvent {
   CopilotChatFeedback = "copilot-chat-feedback",
   CopilotChatClickButton = "copilot-chat-click-button",
   CopilotChatUserAction = "copilot-chat-action",
+  NotifyOutputTroubleshoot = "notify-output-troubleshoot",
 
   //Office add-in related
   validateAddInManifest = "validate-addin-manifest",

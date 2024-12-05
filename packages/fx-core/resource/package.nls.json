@@ -487,7 +487,6 @@
   "core.selectValidateMethodQuestion.validate.appPackageOption": "Validate app package using validation rules",
   "core.selectValidateMethodQuestion.validate.testCasesOption": "Validate all integration test cases before publishing",
   "core.selectValidateMethodQuestion.validate.testCasesOptionDescription": "Comprehensive tests to ensure readiness",
-  "core.selectDeclarativeAgentQuestion.title": "Select Declarative Agent file",
   "core.confirmManifestQuestion.placeholder": "Confirm you've selected the correct manifest file",
   "core.aadAppQuestion.label": "Microsoft Entra app",
   "core.aadAppQuestion.description": "Your Microsoft Entra app for Single Sign On",

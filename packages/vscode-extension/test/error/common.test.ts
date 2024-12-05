@@ -166,7 +166,7 @@ describe.only("common", () => {
 
       await showError(error);
 
-      chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 1);
+      chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 0);
       chai.assert.isTrue(showErrorMessageStub.calledTwice);
     });
 

@@ -282,15 +282,15 @@ export async function troubleshootSelectedText(args?: any[]): Promise<Result<nul
       new UserError(
         eventName,
         errorNames.NoActiveTextEditor,
-        "No active text. Please select some text for troubleshooting." // TODO: localize.
+        localize("teamstoolkit.handlers.teamsAgentTroubleshoot.noActiveEditor")
       )
     );
   }
 
-  const query = `@teamsapp I'm encountering the following error in my code.
+  const query = `@teamsapp I'm encountering an issue in Teams Toolkit.
 \`\`\`
 {
-  Error message: ${selectedText}
+  Error context: ${selectedText}
 }
 \`\`\`
 Can you help me diagnose the issue and suggest possible solutions?

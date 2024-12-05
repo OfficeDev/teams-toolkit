@@ -1959,7 +1959,6 @@ describe("SpecGenerator", async () => {
       }
     });
     it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.EnvFileFunc]: "true" });
       const generator = new SpecGenerator();
       const context = createContext();
       const inputs: Inputs = {
@@ -2023,33 +2022,6 @@ describe("SpecGenerator", async () => {
       }
     });
 
-    it("happy path", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.EnvFileFunc]: "false" });
-      const generator = new SpecGenerator();
-      const context = createContext();
-      const inputs: Inputs = {
-        platform: Platform.CLI,
-        projectPath: "./",
-        [QuestionNames.Capabilities]: CapabilityOptions.declarativeAgent().id,
-        [QuestionNames.ApiPluginType]: ApiPluginStartOptions.apiSpec().id,
-        [QuestionNames.AppName]: "testapp",
-      };
-      inputs[QuestionNames.ApiSpecLocation] = "test.yaml";
-
-      const res = await generator.getTemplateInfos(context, inputs, ".");
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        assert.equal(res.value.length, 1);
-        assert.equal(res.value[0].templateName, "api-plugin-existing-api");
-        assert.equal(res.value[0].replaceMap!["DeclarativeCopilot"], "true");
-
-        let filterResult = res.value[0].filterFn!("declarativeAgent.json.tpl");
-        assert.isTrue(filterResult);
-        filterResult = res.value[0].filterFn!("instruction.txt");
-        assert.isFalse(filterResult);
-      }
-    });
-
     it("succeed even get yaml file failed", async () => {
       const generator = new SpecGenerator();
       const context = createContext();
@@ -2077,7 +2049,6 @@ describe("SpecGenerator", async () => {
 
     it("happy path for kiota integration with auth", async () => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.EnvFileFunc]: "true",
         [FeatureFlagName.KiotaIntegration]: "true",
       });
       const generator = new SpecGenerator();
@@ -2123,7 +2094,6 @@ describe("SpecGenerator", async () => {
 
     it("happy path for kiota integration without auth", async () => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.EnvFileFunc]: "true",
         [FeatureFlagName.KiotaIntegration]: "true",
       });
       const generator = new SpecGenerator();
@@ -2167,7 +2137,6 @@ describe("SpecGenerator", async () => {
 
     it("parse failed for kiota integration", async () => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.EnvFileFunc]: "true",
         [FeatureFlagName.KiotaIntegration]: "true",
       });
       const generator = new SpecGenerator();

@@ -26,6 +26,7 @@ import {
   isValidHttpUrl,
   loadingDefaultPlaceholder,
   loadingOptionsPlaceholder,
+  maskSecret,
 } from "@microsoft/teamsfx-core";
 import { InternalUIError, Localizer, sleep, VSCodeUI } from "@microsoft/vscode-ui";
 import * as packageJson from "../../package.json";
@@ -42,6 +43,18 @@ import { featureFlagManager } from "@microsoft/teamsfx-core";
 import { FeatureFlags } from "@microsoft/teamsfx-core";
 
 export class TTKLocalizer implements Localizer {
+  invalidInputErrorMessage?(name: string, reason: string): string {
+    throw new Error("Method not implemented.");
+  }
+  invalidInputDisplayMessage?(name: string, reason: string): string {
+    throw new Error("Method not implemented.");
+  }
+  missingInputErrorMessage?(name: string): string {
+    throw new Error("Method not implemented.");
+  }
+  missingInputDisplayMessage?(name: string): string {
+    throw new Error("Method not implemented.");
+  }
   loadingOptionsPlaceholder(): string {
     return loadingOptionsPlaceholder();
   }
@@ -79,10 +92,16 @@ export class TTKLocalizer implements Localizer {
     return "VS Code failed to operate: " + action;
   }
   commandTimeoutErrorMessage(command: string): string {
-    return "Execute command timeout: " + command;
+    return "Execute command timeout: " + maskSecret(command, { replace: "***" });
   }
   commandTimeoutErrorDisplayMessage(command: string): string {
-    return "Execute command timeout: " + command;
+    return "Execute command timeout: " + maskSecret(command, { replace: "***" });
+  }
+  commandExecutionErrorMessage(command: string): string {
+    return "Execute command failure: " + maskSecret(command, { replace: "***" });
+  }
+  commandExecutionErrorDisplayMessage(command: string): string {
+    return "Execute command failure: " + maskSecret(command, { replace: "***" });
   }
 }
 

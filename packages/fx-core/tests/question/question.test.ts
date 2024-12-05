@@ -54,9 +54,9 @@ import {
   selectTeamsAppManifestQuestion,
 } from "../../src/question/other";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
-import { MockedAzureTokenProvider } from "../core/other.test";
-import { MockTools, MockUserInteraction } from "../core/utils";
+import { MockedAzureAccountProvider, MockTools, MockUserInteraction } from "../core/utils";
 import { callFuncs } from "./create.test";
+import { TokenCredential } from "@azure/identity";
 
 const ui = new MockUserInteraction();
 
@@ -713,9 +713,12 @@ describe("resourceGroupQuestionNode", async () => {
     sandbox.stub(resourceGroupHelper, "getLocations").resolves(ok(["East US", "Center US"]));
     const mockSubscriptionId = "mockSub";
     const defaultRG = "defaultRG";
-    const accountProvider = new MockedAzureTokenProvider();
+    const accountProvider = new MockedAzureAccountProvider();
     const mockToken = await accountProvider.getIdentityCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
+    const mockRmClient = new ResourceManagementClient(
+      mockToken as TokenCredential,
+      mockSubscriptionId
+    );
     sandbox.stub(resourceGroupHelper, "createRmClient").resolves(mockRmClient);
     const node = resourceGroupQuestionNode(accountProvider, mockSubscriptionId, defaultRG);
     assert.isTrue(node !== undefined);
@@ -763,9 +766,12 @@ describe("resourceGroupQuestionNode", async () => {
     );
     const mockSubscriptionId = "mockSub";
     const defaultRG = "defaultRG";
-    const accountProvider = new MockedAzureTokenProvider();
+    const accountProvider = new MockedAzureAccountProvider();
     const mockToken = await accountProvider.getIdentityCredentialAsync();
-    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
+    const mockRmClient = new ResourceManagementClient(
+      mockToken as TokenCredential,
+      mockSubscriptionId
+    );
     sandbox.stub(resourceGroupHelper, "createRmClient").resolves(mockRmClient);
     const node = resourceGroupQuestionNode(accountProvider, mockSubscriptionId, defaultRG);
     assert.isTrue(node !== undefined);

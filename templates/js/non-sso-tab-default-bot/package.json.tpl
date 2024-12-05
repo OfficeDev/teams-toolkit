@@ -2,7 +2,7 @@
     "name": "{{SafeProjectNameLowerCase}}",
     "version": "0.0.1",
     "engines": {
-        "node": "16 || 18"
+        "node": "18 || 20"
     },
     "author": "Microsoft",
     "license": "MIT",

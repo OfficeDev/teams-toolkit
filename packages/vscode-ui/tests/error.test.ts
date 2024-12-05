@@ -7,6 +7,7 @@ import sinon from "sinon";
 import {
   EmptyOptionsError,
   InternalUIError,
+  ScriptExecutionError,
   ScriptTimeoutError,
   UnhandledError,
   UnsupportedQuestionTypeError,
@@ -50,7 +51,12 @@ describe("Error", () => {
     assert.equal(error.message, "a");
     assert.equal(error.displayMessage, "b");
   });
-
+  it("ScriptExecutionError", async () => {
+    const error = new ScriptExecutionError("a", "b");
+    assert.equal(error.name, "ScriptExecutionError");
+    assert.equal(error.message, "a");
+    assert.equal(error.displayMessage, "b");
+  });
   it("UnhandledError", async () => {
     const error = new UnhandledError("a", "a", "b");
     assert.equal(error.name, "UnhandledError");

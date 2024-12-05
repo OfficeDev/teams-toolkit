@@ -114,4 +114,5 @@ export const AadConstants = {
 export const KiotaLastCommands = {
   createPluginWithManifest: "createPluginWithManifest",
   createDeclarativeCopilotWithManifest: "createDeclarativeCopilotWithManifest",
+  addPlugin: "addPlugin",
 };

@@ -61,6 +61,7 @@ export enum TemplateProject {
   HelloWorldTabDocker = "Containerized Hello World Tab with Backend",
   FoodCatalog = "Ingest Custom API Data into Microsoft 365 with a Microsoft Graph Connector",
   RedditLink = "Format Reddit Link into Adaptive Card",
+  IntelligentDataChart = "Intelligent Data Chart Generator",
 }
 
 export enum TemplateProjectFolder {
@@ -97,6 +98,7 @@ export enum TemplateProjectFolder {
   HelloWorldTabDocker = "hello-world-tab-docker",
   FoodCatalog = "nodejs-typescript-food-catalog",
   RedditLink = "nodejs",
+  IntelligentDataChart = "intelligent-data-chart-generator",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -140,6 +142,8 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
       TemplateProjectFolder.HelloWorldTabDocker,
     [TemplateProject.FoodCatalog]: TemplateProjectFolder.FoodCatalog,
     [TemplateProject.RedditLink]: TemplateProjectFolder.RedditLink,
+    [TemplateProject.IntelligentDataChart]:
+      TemplateProjectFolder.IntelligentDataChart,
   };
 
 export enum Resource {
@@ -178,11 +182,12 @@ export enum Capability {
   Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
   ApiPlugin = "api-plugin",
+  DeclarativeAgent = "declarative-agent",
 }
 
 export enum Trigger {
   Http = "http-functions",
-  Restify = "http-restify",
+  Express = "http-express",
   Timmer = "timer-functions",
 }
 
@@ -349,7 +354,7 @@ export type AppType =
   | "bot"
   | "crbot" // command and response bot (name cannot be too long or it will exceed teams app name limit)
   | "funcnoti" // functions notification bot
-  | "restnoti" // restify notification bot
+  | "expressnoti" // express notification bot
   | "msg"
   | "msgsa"
   | "m365lp"
@@ -406,6 +411,9 @@ export enum LocalDebugTaskLabel {
 
 export class LocalDebugTaskResult {
   static readonly FrontendSuccess = "Compiled successfully";
+  static readonly FrontendReady = "ready";
+  static readonly FrontendNoIssue = "webpack compiled";
+  static readonly FrontendStarted = "Express server listening on";
   static readonly StartSuccess = "started successfully";
   static readonly AzuriteSuccess = "Azurite Table service is successfully";
   static readonly CompiledSuccess = "Found 0 errors";
@@ -418,17 +426,22 @@ export class LocalDebugTaskResult {
   static readonly WebServerSuccess = "press h to show help";
   static readonly DockerFinish = "press any key to close it";
   static readonly DevtunnelSuccess = "Ready to accept connections for tunnel:";
+  static readonly FunctionStarted = "Worker process started and initialized";
 }
 
 export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
   PythonDebugConsole = "Python Debug Console",
+  StartTestTool = "Start Test Tool",
 }
 
 export enum LocalDebugError {
   ElementNotInteractableError = "ElementNotInteractableError",
   TimeoutError = "TimeoutError",
   WarningError = "Warning",
+  WarningCapError = "WARNING",
+  DeprecatedError = "npm warn deprecated",
+  CompiledWithWarningError = "Compiled with warnings",
 }
 
 export class LocalDebugTaskInfo {
@@ -439,6 +452,7 @@ export class LocalDebugTaskInfo {
 
 export class DebugItemSelect {
   static readonly DebugInTeamsUsingChrome = "Debug in Teams (Chrome)";
+  static readonly DebugInTestTool = "Debug in Test Tool";
 }
 
 export class TestFilePath {

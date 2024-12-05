@@ -98,6 +98,7 @@ import {
   openSamplesHandler,
   openWelcomeHandler,
   saveTextDocumentHandler,
+  selectWalkthroughHandler,
 } from "./handlers/controlHandlers";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import {
@@ -200,10 +201,21 @@ import { ExtensionSurvey } from "./utils/survey";
 import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils";
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
+import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
+import { kiotaRegenerate } from "./handlers/kiotaRegenerateHandler";
+import { releaseControlledFeatureSettings } from "./releaseBasedFeatureSettings";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
+
+  // control whether to show chat participant ui entries
+  const shouldEnableChatParticipantUIEntries =
+    releaseControlledFeatureSettings.shouldEnableTeamsCopilotChatUI;
+  featureFlagManager.setBooleanValue(
+    CoreFeatureFlags.ChatParticipantUIEntries,
+    shouldEnableChatParticipantUIEntries
+  );
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
@@ -242,19 +254,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant ui entries
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantUIEntriesEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
-  );
-
-  // Flags for "Build Intelligent Apps" walkthrough.
-  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotExtension)
+    shouldEnableChatParticipantUIEntries
   );
 
   await vscode.commands.executeCommand(
@@ -407,6 +410,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Quick start
   registerInCommandController(context, CommandKeys.OpenWelcome, openWelcomeHandler);
+  registerInCommandController(context, CommandKeys.SelectWalkthrough, selectWalkthroughHandler);
   registerInCommandController(
     context,
     CommandKeys.BuildIntelligentAppsWalkthrough,
@@ -534,9 +538,15 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration)) {
     const createPluginWithManifestCommand = vscode.commands.registerCommand(
       "fx-extension.createprojectfromkiota",
-      () => Correlator.run(createPluginWithManifest)
+      (args) => Correlator.run(createPluginWithManifest, args)
     );
     context.subscriptions.push(createPluginWithManifestCommand);
+
+    const kiotaRegenerateCommand = vscode.commands.registerCommand(
+      "fx-extension.kiotaregenerate",
+      (args) => Correlator.run(kiotaRegenerate, args)
+    );
+    context.subscriptions.push(kiotaRegenerateCommand);
   }
 }
 
@@ -974,9 +984,27 @@ function registerAccountMenuCommands(context: vscode.ExtensionContext) {
       }
     })
   );
+
+  const m365SwitchTenant = vscode.commands.registerCommand(
+    "fx-extension.m365SwitchTenant",
+    (...args) => Correlator.run(onSwitchM365Tenant, [TelemetryTriggerFrom.SideBar])
+  );
+  context.subscriptions.push(m365SwitchTenant);
+
+  const azureSwitchTenant = vscode.commands.registerCommand(
+    "fx-extension.azureSwitchTenant",
+    (...args) => Correlator.run(onSwitchAzureTenant, [TelemetryTriggerFrom.SideBar])
+  );
+  context.subscriptions.push(azureSwitchTenant);
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isMultiTenantEnabled",
+    featureFlagManager.getBooleanValue(CoreFeatureFlags.MultiTenant)
+  );
+
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
   await vscode.commands.executeCommand(

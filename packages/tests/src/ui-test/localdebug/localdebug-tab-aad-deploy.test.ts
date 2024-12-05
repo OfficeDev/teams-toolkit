@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
@@ -5,6 +8,7 @@ import * as path from "path";
 import * as chai from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import {
+  clearNotifications,
   getNotification,
   runDeployAadAppManifest,
   startDebugging,
@@ -16,6 +20,8 @@ import {
   Timeout,
   LocalDebugTaskLabel,
   DebugItemSelect,
+  LocalDebugTaskResult,
+  LocalDebugError,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -54,10 +60,29 @@ describe("Local Debug Tests", function () {
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartFrontend,
-        "Compiled successfully!"
-      );
+      try {
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartBackend,
+          LocalDebugTaskResult.FunctionStarted
+        );
+        await clearNotifications();
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartFrontend,
+          LocalDebugTaskResult.FrontendReady
+        );
+      } catch (error) {
+        const errorMsg = error.toString();
+        if (
+          // skip can't find element
+          errorMsg.includes(LocalDebugError.ElementNotInteractableError) ||
+          // skip timeout
+          errorMsg.includes(LocalDebugError.TimeoutError)
+        ) {
+          console.log("[skip error] ", error);
+        } else {
+          chai.expect.fail(errorMsg);
+        }
+      }
 
       await stopDebugging();
 

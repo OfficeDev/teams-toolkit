@@ -1,5 +1,5 @@
 // Import required packages
-import * as restify from "restify";
+import express from "express";
 import {
   CloudAdapter,
   ConfigurationServiceClientCredentialFactory,
@@ -46,15 +46,16 @@ adapter.onTurnError = onTurnErrorHandler;
 // Create the app that will handle action commands.
 const actionApp = new ActionApp();
 
-// Create HTTP server.
-const server = restify.createServer();
-server.use(restify.plugins.bodyParser());
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
+// Create express application.
+const expressApp = express();
+expressApp.use(express.json());
+
+const server = expressApp.listen(process.env.port || process.env.PORT || 3978, () => {
+  console.log(`\nBot Started, ${expressApp.name} listening to`, server.address());
 });
 
 // Listen for incoming requests.
-server.post("/api/messages", async (req, res) => {
+expressApp.post("/api/messages", async (req, res) => {
   await adapter.process(req, res, async (context) => {
     await actionApp.run(context);
   });

@@ -70,7 +70,7 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     res.projectPath === "" &&
     res.lastCommand
   ) {
-    return handleTriggerKiotaCommand(args, res);
+    return handleTriggerKiotaCommand(args, res, TelemetryEvent.CreateProject);
   }
 
   if (res.shouldInvokeTeamsAgent) {
@@ -121,7 +121,17 @@ export async function addWebpartHandler(...args: unknown[]) {
 
 export async function addPluginHandler(...args: unknown[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddPluginStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.addPlugin);
+  const result = await runCommand(Stage.addPlugin);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+
+  const res = result.value;
+  if (featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) && res.lastCommand) {
+    return handleTriggerKiotaCommand(args, res, TelemetryEvent.AddPlugin, res.projectPath);
+  } else {
+    return result;
+  }
 }
 
 /**
@@ -244,8 +254,10 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
 
 function handleTriggerKiotaCommand(
   args: any[],
-  result: CreateProjectResult
-): Result<CreateProjectResult, FxError> {
+  result: any,
+  event: string,
+  projectPath?: string
+): Result<any, FxError> {
   if (!validateKiotaInstallation()) {
     void vscode.window
       .showInformationMessage(
@@ -271,7 +283,7 @@ function handleTriggerKiotaCommand(
         }
       });
 
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+    ExtTelemetry.sendTelemetryEvent(event, {
       [TelemetryProperty.KiotaInstalled]: "No",
       ...getTriggerFromProperty(args),
     });
@@ -286,9 +298,11 @@ function handleTriggerKiotaCommand(
       source: "ttk",
       ttkContext: {
         lastCommand: result.lastCommand,
+        manifestPath: result.manifestPath,
       },
+      projectPath: projectPath,
     });
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+    ExtTelemetry.sendTelemetryEvent(event, {
       [TelemetryProperty.KiotaInstalled]: "Yes",
       ...getTriggerFromProperty(args),
     });

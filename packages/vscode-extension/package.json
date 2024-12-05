@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "5.8.2-copilot-debug-20241010-004",
+  "version": "5.10.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "private": true,
@@ -99,8 +99,8 @@
           "fontCharacter": "\\E004"
         }
       },
-      "teamsfx-copilot-plugin": {
-        "description": "API Plugin icon in scaffold questions",
+      "teamsfx-agent": {
+        "description": "Agent icon in scaffold questions",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E005"
@@ -130,38 +130,8 @@
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-with-api-copilot-plugin",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
         "view": "teamsfx-empty-project-with-chat",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin.content%",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -217,42 +187,12 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-with-chat-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-chat",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && !fx-extension.isApiCopilotPluginEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled && fx-extension.isApiCopilotPluginEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -337,19 +277,29 @@
       ],
       "view/item/context": [
         {
+          "command": "fx-extension.m365SwitchTenant",
+          "when": "fx-extension.isMultiTenantEnabled && view == teamsfx-accounts && viewItem == signedinM365",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.azureSwitchTenant",
+          "when": "fx-extension.isMultiTenantEnabled && view == teamsfx-accounts && viewItem == signedinAzure",
+          "group": "inline@1"
+        },
+        {
           "command": "fx-extension.signOut",
           "when": "view == teamsfx-accounts && viewItem == signedinM365",
-          "group": "inline@1"
+          "group": "inline@2"
         },
         {
           "command": "fx-extension.azureAccountSignOutHelp",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
-          "group": "inline@1"
+          "group": "inline@2"
         },
         {
           "command": "fx-extension.m365AccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinM365",
-          "group": "inline@2"
+          "group": "inline@3"
         },
         {
           "command": "fx-extension.refreshSideloading",
@@ -374,7 +324,7 @@
         {
           "command": "fx-extension.azureAccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
-          "group": "inline@2"
+          "group": "inline@3"
         },
         {
           "command": "fx-extension.openDocumentLink",
@@ -571,6 +521,14 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.m365SwitchTenant",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.azureSwitchTenant",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.signOut",
           "when": "false"
         },
@@ -594,13 +552,13 @@
     },
     "commands": [
       {
-				"command": "launchBrowserWindowForCopilot.launch",
-				"title": "Launch Browser Window for Copilot"
-			},
-			{
-				"command": "connectToExistingBrowserDebugSessionForCopilot.connect",
-				"title": "Connect to Existing Browser Debug Session for Copilot"
-			},
+        "command": "launchBrowserWindowForCopilot.launch",
+        "title": "Launch Browser Window for Copilot"
+      },
+      {
+        "command": "connectToExistingBrowserDebugSessionForCopilot.connect",
+        "title": "Connect to Existing Browser Debug Session for Copilot"
+      },
       {
         "command": "fx-extension.create",
         "title": "%teamstoolkit.commands.createProject.title%",
@@ -898,6 +856,16 @@
         "command": "fx-extension.checkCopilotAccess",
         "title": "%teamstoolkit.commands.checkCopilotAccess%",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.m365SwitchTenant",
+        "title": "%teamstoolkit.commands.switchTenant.m365.title%",
+        "icon": "$(arrow-swap)"
+      },
+      {
+        "command": "fx-extension.azureSwitchTenant",
+        "title": "%teamstoolkit.commands.switchTenant.azure.title%",
+        "icon": "$(arrow-swap)"
       },
       {
         "command": "fx-extension.signOut",
@@ -1415,8 +1383,7 @@
               "svg": "media/walkthroughs/intelligent-apps/step6.svg"
             }
           }
-        ],
-        "when": "fx-extension.isApiCopilotPluginEnabled"
+        ]
       },
       {
         "id": "teamsToolkitGetStarted",
@@ -1544,11 +1511,6 @@
     "configuration": {
       "title": "Teams Toolkit",
       "properties": {
-        "fx-extension.developCopilotPlugin": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Get more info from [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)."
-        },
         "fx-extension.logLevel": {
           "type": "string",
           "enum": [
@@ -1692,16 +1654,18 @@
     "@azure/identity": "^4.1.0",
     "@azure/ms-rest-azure-env": "^2.0.0",
     "@azure/msal-node": "^2.6.6",
-    "@microsoft/dev-tunnels-connections": "1.1.9",
-    "@microsoft/dev-tunnels-contracts": "1.1.9",
-    "@microsoft/dev-tunnels-management": "1.1.9",
-    "@microsoft/dev-tunnels-ssh": "3.11.36",
+    "@microsoft/dev-tunnels-connections": "1.1.45",
+    "@microsoft/dev-tunnels-contracts": "1.1.45",
+    "@microsoft/dev-tunnels-management": "1.1.45",
+    "@microsoft/dev-tunnels-ssh": "3.12.5",
+    "@microsoft/dev-tunnels-ssh-tcp": "3.12.5",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
     "@microsoft/tiktokenizer": "^1.0.4",
     "@microsoft/tsdoc": "^0.14.2",
     "@microsoft/vscode-ui": "workspace:*",
     "@npmcli/package-json": "^1.0.1",
+    "@types/detect-port": "^1.3.2",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "async-mutex": "^0.3.1",
@@ -1711,7 +1675,9 @@
     "dotenv": "^8.2.0",
     "dree": "^4.7.0",
     "edge-paths": "^3.0.5",
-    "express": "^4.19.2",
+    "detect-port": "^1.3.0",
+    "express": "^4.21.1",
+    "find-process": "^1.4.4",
     "fuse.js": "^6.6.2",
     "glob": "^10",
     "jscodeshift": "^0.14.0",
@@ -1726,6 +1692,7 @@
     "semver": "^7.5.2",
     "string-similarity": "^4.0.4",
     "tmp": "^0.2.1",
+    "tree-kill": "^1.2.2",
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.75"
   },

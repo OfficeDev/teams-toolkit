@@ -5,7 +5,7 @@ import { SubscriptionClient, TenantIdDescription } from "@azure/arm-resources-su
 import { TokenCredential } from "@azure/core-auth";
 import * as vscode from "vscode";
 import * as azureEnv from "@azure/ms-rest-azure-env";
-import { AzureScopes } from "@microsoft/teamsfx-core";
+import { AzureScopes, featureFlagManager, FeatureFlags } from "@microsoft/teamsfx-core";
 import { LoginFailureError } from "./codeFlowLogin";
 import { Environment } from "@azure/ms-rest-azure-env";
 
@@ -72,19 +72,24 @@ export class VSCodeAzureSubscriptionProvider {
   /**
    * Gets a list of Azure subscriptions available to the user.
    */
-  public async getSubscriptions(): Promise<AzureSubscription[]> {
+  public async getSubscriptions(tenantId?: string): Promise<AzureSubscription[]> {
     const results: AzureSubscription[] = [];
 
-    for (const tenant of await this.getTenants()) {
-      try {
-        // Get the list of tenants
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const tenantId = tenant.tenantId!;
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) && tenantId) {
+      results.push(...(await this.getSubscriptionsForTenant(tenantId)));
+    } else {
+      for (const tenant of await this.getTenants()) {
+        try {
+          // Get the list of tenants
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const tenantId = tenant.tenantId!;
 
-        // For each tenant, get the list of subscriptions
-        results.push(...(await this.getSubscriptionsForTenant(tenantId)));
-      } catch (e) {}
+          // For each tenant, get the list of subscriptions
+          results.push(...(await this.getSubscriptionsForTenant(tenantId)));
+        } catch (e) {}
+      }
     }
+
     const sortSubscriptions = (subscriptions: AzureSubscription[]): AzureSubscription[] =>
       subscriptions.sort((a, b) => a.name.localeCompare(b.name));
     return sortSubscriptions(results);

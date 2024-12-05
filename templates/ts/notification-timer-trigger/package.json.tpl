@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample",
     "engines": {
-        "node": "16 || 18"
+        "node": "18 || 20"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -26,9 +26,9 @@
     },
     "dependencies": {
         "adaptivecards-templating": "^2.3.1",
-        "adaptive-expressions": "^4.22.3",
-        "@microsoft/teamsfx": "^2.3.1",
-        "botbuilder": "^4.20.0"
+        "adaptive-expressions": "^4.23.1",
+        "@microsoft/teamsfx": "^3.0.0-alpha",
+        "botbuilder": "^4.23.1"
     },
     "devDependencies": {
         "@azure/functions": "^3.5.0",

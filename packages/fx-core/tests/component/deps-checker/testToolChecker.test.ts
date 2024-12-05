@@ -14,7 +14,6 @@ import * as sinon from "sinon";
 import * as url from "url";
 import { TelemetryProperties } from "../../../src/component/deps-checker/constant/telemetry";
 import { TestToolReleaseType } from "../../../src/component/deps-checker/depsChecker";
-import { DepsCheckerError } from "../../../src/component/deps-checker/depsError";
 import {
   GitHubHelpers,
   TestToolChecker,
@@ -22,6 +21,7 @@ import {
 import { cpUtils } from "../../../src/component/deps-checker/util/cpUtils";
 import * as downloadHelper from "../../../src/component/deps-checker/util/downloadHelper";
 import * as fileHelper from "../../../src/component/deps-checker/util/fileHelper";
+import { DepsCheckerError, NodejsNotFoundError } from "../../../src/error/depCheck";
 
 function isAncesterDir(parent: string, dir: string) {
   const relative = path.relative(parent, dir);
@@ -519,7 +519,7 @@ describe("Test Tool Checker Test (npm version)", () => {
       // Assert
       expect(status.isInstalled).to.be.false;
       expect(status.details.binFolders).to.be.empty;
-      expect(status.error).instanceOf(DepsCheckerError);
+      expect(status.error).instanceOf(NodejsNotFoundError);
       expect(status.telemetryProperties?.[TelemetryProperties.InstallTestToolReleaseType]).to.eq(
         TestToolReleaseType.Npm
       );
@@ -604,7 +604,7 @@ describe("Test Tool Checker Test (npm version)", () => {
       // Assert
       expect(status.isInstalled).to.be.false;
       expect(status.details.binFolders).to.be.empty;
-      expect(status.error).instanceOf(DepsCheckerError);
+      expect(status.error).instanceOf(NodejsNotFoundError);
       expect(status.telemetryProperties?.[TelemetryProperties.InstallTestToolReleaseType]).to.eq(
         TestToolReleaseType.Npm
       );

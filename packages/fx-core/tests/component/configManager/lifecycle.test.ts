@@ -13,9 +13,7 @@ import { Lifecycle } from "../../../src/component/configManager/lifecycle";
 import Container from "typedi";
 import { DriverDefinition } from "../../../src/component/configManager/interface";
 import {
-  MockedAzureAccountProvider,
   MockedLogProvider,
-  MockedM365Provider,
   MockedTelemetryReporter,
   MockedUserInteraction,
 } from "../../plugins/solution/util";
@@ -31,6 +29,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ExecutionResult, StepDriver } from "../../../src/component/driver/interface/stepDriver";
 import { SummaryConstant } from "../../../src/component/configManager/constant";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../core/utils";
 
 const mockedDriverContext: DriverContext = {
   m365TokenProvider: new MockedM365Provider(),

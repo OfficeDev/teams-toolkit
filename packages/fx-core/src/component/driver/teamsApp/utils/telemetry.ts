@@ -15,6 +15,7 @@ export enum TelemetryPropertyKey {
   pluginValidationErrors = "plugin-validation-errors",
   gptValidationErrors = "gpt-validation-errors",
   gptActionValidationErrors = "gpt-action-validation-errors",
+  localizationValidationErrors = "localization-validation-errors",
 }
 
 export enum TelemetryPropertyValue {

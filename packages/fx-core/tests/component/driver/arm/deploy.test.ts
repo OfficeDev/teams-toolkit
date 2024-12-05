@@ -6,13 +6,13 @@ import "mocha";
 import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/common/globalVars";
 import {
-  MockAzureAccountProvider,
+  MockedAzureAccountProvider,
+  MockedM365Provider,
   MockLogProvider,
   MockTelemetryReporter,
   MockTools,
   MockUserInteraction,
 } from "../../../core/utils";
-import { MockedM365Provider } from "../../../plugins/solution/util";
 import { ArmDeployDriver } from "../../../../src/component/driver/arm/deploy";
 import fs from "fs-extra";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
@@ -27,7 +27,7 @@ describe("Arm driver deploy", () => {
   setTools(tools);
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
-    azureAccountProvider: new MockAzureAccountProvider(),
+    azureAccountProvider: new MockedAzureAccountProvider(),
     telemetryReporter: new MockTelemetryReporter(),
     ui: new MockUserInteraction(),
     logProvider: new MockLogProvider(),

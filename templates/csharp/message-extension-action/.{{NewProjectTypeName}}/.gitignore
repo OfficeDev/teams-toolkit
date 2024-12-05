@@ -8,3 +8,6 @@ appsettings.Development.json
 
 # User-specific files
 *.user
+
+# Notification local store
+.notification.localstore

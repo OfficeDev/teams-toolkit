@@ -10,29 +10,50 @@ import {
   ErrorType,
   ImageElement,
   TextBlockElement,
+  WarningResult,
+  WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
+import { JsonDataGenerator } from "./jsonDataGenerator";
 
 export class AdaptiveCardGenerator {
   static generateAdaptiveCard(
     operationItem: OpenAPIV3.OperationObject,
-    allowMultipleMediaType = false
-  ): [AdaptiveCard, string] {
+    allowMultipleMediaType = false,
+    maxElementCount: number = Number.MAX_SAFE_INTEGER
+  ): [AdaptiveCard, string, any, WarningResult[]] {
     try {
       const { json } = Utils.getResponseJson(operationItem, allowMultipleMediaType);
 
       let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
+      let jsonData: any = {};
+      const warnings: WarningResult[] = [];
 
+      const operationId = operationItem.operationId!;
       let schema = json.schema as OpenAPIV3.SchemaObject;
       let jsonPath = "$";
       if (schema && Object.keys(schema).length > 0) {
+        try {
+          jsonData = JsonDataGenerator.generate(schema);
+        } catch (err) {
+          warnings.push({
+            type: WarningType.GenerateJsonDataFailed,
+            content: Utils.format(
+              ConstantString.GenerateJsonDataFailed,
+              operationId,
+              (err as Error).toString()
+            ),
+            data: operationId,
+          });
+        }
+
         jsonPath = AdaptiveCardGenerator.getResponseJsonPathFromSchema(schema);
         if (jsonPath !== "$") {
           schema = schema.properties![jsonPath] as OpenAPIV3.SchemaObject;
         }
 
-        cardBody = AdaptiveCardGenerator.generateCardFromResponse(schema, "");
+        cardBody = AdaptiveCardGenerator.generateCardFromResponse(schema, "", "", maxElementCount);
       }
 
       // if no schema, try to use example value
@@ -64,7 +85,7 @@ export class AdaptiveCardGenerator {
         body: cardBody,
       };
 
-      return [fullCard, jsonPath];
+      return [fullCard, jsonPath, jsonData, warnings];
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.GenerateAdaptiveCardFailed);
     }
@@ -73,11 +94,17 @@ export class AdaptiveCardGenerator {
   static generateCardFromResponse(
     schema: OpenAPIV3.SchemaObject,
     name: string,
-    parentArrayName = ""
+    parentArrayName = "",
+    maxElementCount = Number.MAX_SAFE_INTEGER,
+    counter: { count: number } = { count: 0 }
   ): Array<TextBlockElement | ImageElement | ArrayElement> {
+    if (counter.count >= maxElementCount) {
+      return [];
+    }
     if (schema.type === "array") {
       // schema.items can be arbitrary object: schema { type: array, items: {} }
       if (Object.keys(schema.items).length === 0) {
+        counter.count++;
         return [
           {
             type: ConstantString.TextBlockType,
@@ -90,8 +117,11 @@ export class AdaptiveCardGenerator {
       const obj = AdaptiveCardGenerator.generateCardFromResponse(
         schema.items as OpenAPIV3.SchemaObject,
         "",
-        name
+        name,
+        maxElementCount,
+        counter
       );
+
       const template = {
         type: ConstantString.ContainerType,
         $data: name ? `\${${name}}` : "${$root}",
@@ -101,6 +131,7 @@ export class AdaptiveCardGenerator {
       template.items.push(...obj);
       return [template];
     }
+
     // some schema may not contain type but contain properties
     if (Utils.isObjectSchema(schema)) {
       const { properties } = schema;
@@ -109,7 +140,9 @@ export class AdaptiveCardGenerator {
         const obj = AdaptiveCardGenerator.generateCardFromResponse(
           properties[property] as OpenAPIV3.SchemaObject,
           name ? `${name}.${property}` : property,
-          parentArrayName
+          parentArrayName,
+          maxElementCount,
+          counter
         );
         result.push(...obj);
       }
@@ -127,6 +160,7 @@ export class AdaptiveCardGenerator {
       schema.type === "boolean" ||
       schema.type === "number"
     ) {
+      counter.count++;
       if (!AdaptiveCardGenerator.isImageUrlProperty(schema, name, parentArrayName)) {
         // string in root: "ddd"
         let text = "result: ${$root}";
@@ -150,23 +184,18 @@ export class AdaptiveCardGenerator {
           },
         ];
       } else {
-        if (name) {
-          return [
-            {
-              type: "Image",
-              url: `\${${name}}`,
-              $when: `\${${name} != null && ${name} != ''}`,
-            },
-          ];
-        } else {
-          return [
-            {
-              type: "Image",
-              url: "${$data}",
-              $when: "${$data != null && $data != ''}",
-            },
-          ];
-        }
+        const url = name ? `\${${name}}` : "${$data}";
+        const condition = name
+          ? `\${${name} != null && ${name} != ''}`
+          : "${$data != null && $data != ''}";
+
+        return [
+          {
+            type: "Image",
+            url,
+            $when: condition,
+          },
+        ];
       }
     }
 

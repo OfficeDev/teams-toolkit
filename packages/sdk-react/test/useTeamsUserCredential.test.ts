@@ -10,13 +10,24 @@ import * as useTeams from "../src/useTeams";
 import * as useData from "../src/useData";
 import { useTeamsUserCredential } from "../src/useTeamsUserCredential";
 import { teamsLightTheme } from "@fluentui/react-components";
-import { TeamsUserCredential, TeamsUserCredentialAuthConfig } from "@microsoft/teamsfx";
-import * as teamsfxlib from "@microsoft/teamsfx";
+
+jest.mock("@microsoft/teamsfx", () => {
+  return {
+    TeamsUserCredential: jest.fn().mockImplementation(() => {
+      return {
+        async login(): Promise<void> {},
+        async getToken(): Promise<null> {
+          return null;
+        },
+      };
+    }),
+  };
+});
 
 describe("useTeamsUserCredential() hook tests", () => {
   let spyUseTeams: jest.SpyInstance;
   let spyUseData: jest.SpyInstance;
-  const authConfig: TeamsUserCredentialAuthConfig = {
+  const authConfig = {
     clientId: "fake-client-id",
     initiateLoginEndpoint: "fake-initiate-login-endpoint",
   };
@@ -30,14 +41,6 @@ describe("useTeamsUserCredential() hook tests", () => {
       ];
     });
     spyUseData = jest.spyOn(useData, "useData");
-
-    jest.spyOn(teamsfxlib, "TeamsUserCredential").mockImplementation((): TeamsUserCredential => {
-      return {
-        async login(): Promise<any> {},
-        async getToken(): Promise<any> {},
-        async getUserInfo(): Promise<any> {},
-      };
-    });
   });
 
   afterEach(() => {
@@ -60,7 +63,7 @@ describe("useTeamsUserCredential() hook tests", () => {
         expect(result.current.inTeams).toBe(true);
         expect(result.current.themeString).toBe("default");
       },
-      { interval: 1 }
+      { interval: 1 },
     );
   });
 
@@ -69,7 +72,7 @@ describe("useTeamsUserCredential() hook tests", () => {
       return { error: "useData error", loading: false };
     });
     const { result } = renderHook(() => useTeamsUserCredential(authConfig));
-    expect(result.current.teamsUserCredential).toBeUndefined;
+    expect(result.current.teamsUserCredential).toBe(undefined);
     expect(result.current.error).toBe("useData error");
     expect(result.current.loading).toBe(false);
     expect(result.current.inTeams).toBe(true);

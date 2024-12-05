@@ -12,13 +12,10 @@ import { teamsDevPortalClient } from "../../../../src/client/teamsDevPortalClien
 import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { ConfigureTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
-import {
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { Constants } from "./../../../../src/component/driver/teamsApp/constants";
 import { AppDefinition } from "./../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { MockedM365Provider } from "../../../core/utils";
 
 describe("teamsApp/update", async () => {
   const teamsAppDriver = new ConfigureTeamsAppDriver();

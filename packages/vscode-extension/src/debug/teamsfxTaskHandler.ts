@@ -46,6 +46,7 @@ import {
 } from "./common/localDebugSession";
 import { allRunningDebugSessions } from "./officeTaskHandler";
 import { deleteAad } from "./deleteAadHelper";
+import { processUtil } from "../utils/processUtil";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -232,7 +233,7 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
       const session = getLocalDebugSession();
       if (session.id !== DebugNoSessionId) {
         if (session.failedServices.length > 0) {
-          terminateAllRunningTeamsfxTasks();
+          await terminateAllRunningTeamsfxTasks();
           // TODO: send test tool log file
           await sendDebugAllEvent(
             new UserError({
@@ -248,6 +249,9 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
           return;
         }
         await sendDebugAllEvent(undefined, { [TelemetryProperty.DebugTestTool]: "true" });
+        // Need to endLocalDebugSession() here.
+        // Otherwise, when user stops debugging, or task exits, it will incorrectly send an incorrect debug-all event with success=no
+        endLocalDebugSession();
       }
     }
   }
@@ -283,7 +287,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       // This is the final task for test tool.
       // If this task exits (even exitCode is 0) before being successfully started, the debug fails.
       if (currentSession.id !== DebugNoSessionId) {
-        terminateAllRunningTeamsfxTasks();
+        await terminateAllRunningTeamsfxTasks();
         await sendDebugAllEvent(
           new UserError({
             source: ExtensionSource,
@@ -320,7 +324,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
     event.exitCode !== 0 &&
     event.exitCode !== -1
   ) {
-    terminateAllRunningTeamsfxTasks();
+    await terminateAllRunningTeamsfxTasks();
   } else if (isNpmInstallTask(task)) {
     try {
       const taskInfo = activeNpmInstallTasks.get(task.name);
@@ -440,7 +444,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
             )
           );
         }
-        terminateAllRunningTeamsfxTasks();
+        await terminateAllRunningTeamsfxTasks();
       }
     } catch {
       // ignore any error
@@ -500,7 +504,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         // Handle cases that some services failed immediately after start.
         const currentSession = getLocalDebugSession();
         if (currentSession.id !== DebugNoSessionId && currentSession.failedServices.length > 0) {
-          terminateAllRunningTeamsfxTasks();
+          await terminateAllRunningTeamsfxTasks();
           await vscode.debug.stopDebugging();
           await sendDebugAllEvent(
             new UserError({
@@ -525,11 +529,11 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
   }
 }
 
-export function terminateAllRunningTeamsfxTasks(): void {
+export async function terminateAllRunningTeamsfxTasks(): Promise<void> {
   for (const task of allRunningTeamsfxTasks) {
     try {
       if (task[1] > 0) {
-        process.kill(task[1], "SIGTERM");
+        await processUtil.killProcess(task[1]);
       }
     } catch (e) {
       // ignore and keep killing others
@@ -540,7 +544,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
   void deleteAad();
 }
 
-function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
+async function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (allRunningDebugSessions.has(event.id)) {
     // a valid debug session
     // send stop-debug event telemetry
@@ -548,7 +552,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
       [TelemetryProperty.DebugSessionId]: event.id,
     });
 
-    terminateAllRunningTeamsfxTasks();
+    await terminateAllRunningTeamsfxTasks();
 
     allRunningDebugSessions.delete(event.id);
     if (allRunningDebugSessions.size == 0) {

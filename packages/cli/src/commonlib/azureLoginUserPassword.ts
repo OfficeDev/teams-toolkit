@@ -8,11 +8,17 @@ import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
 import dotenv from "dotenv";
 
-import { AzureAccountProvider, SubscriptionInfo, UserError } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  FxError,
+  Result,
+  SubscriptionInfo,
+  UserError,
+} from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
 import { AzureScopes } from "@microsoft/teamsfx-core";
-import { ConvertTokenToJson } from "./codeFlowTenantLogin";
+import { ConvertTokenToJson } from "./codeFlowLogin";
 
 dotenv.config();
 
@@ -63,6 +69,10 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  public switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
+    throw new Error("Method not implemented.");
   }
 
   public async getStatus(): Promise<LoginStatus> {

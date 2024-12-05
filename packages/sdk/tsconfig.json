@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "ES2015",
     "outDir": "dist",
-    "declarationDir": "./types",
+    "declarationDir": "dist/types",
     "target": "es2016",
     "lib": [
       "es5",
@@ -29,7 +29,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": ["dist/**/*", "config/*"]
 }

@@ -550,5 +550,42 @@ describe("Lifecycle handlers", () => {
 
       sinon.assert.calledOnce(addPluginHanlder);
     });
+
+    it("success: success call kiota", async () => {
+      const mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.KiotaIntegration]: "true",
+      });
+      sandbox.stub(globalVariables, "core").value(new MockCore());
+      sandbox
+        .stub(globalVariables.core, "addPlugin")
+        .resolves(ok({ lastCommand: "addPlugin", manifestPath: "manifest.json" }));
+      sandbox.stub(shared, "runCommand").resolves(
+        ok({
+          projectPath: "",
+          lastCommand: "command",
+        })
+      );
+      sandbox.stub(vscode.extensions, "getExtension").returns({
+        id: "mockedId",
+        extensionUri: vscode.Uri.parse("file://mockedUri"),
+        isActive: true,
+        extensionPath: "mockedPath",
+        extensionKind: vscode.ExtensionKind.UI,
+        exports: {},
+        packageJSON: {
+          version: "1.18.100000002",
+        },
+        activate: () => Promise.resolve(),
+      });
+      const executeCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
+      const logError = sandbox.stub(VsCodeLogInstance, "error").resolves();
+
+      const result = await addPluginHandler();
+
+      assert.isTrue(result.isOk());
+      assert.isTrue(executeCommand.calledOnce);
+      assert.isTrue(logError.notCalled);
+      mockedEnvRestore();
+    });
   });
 });

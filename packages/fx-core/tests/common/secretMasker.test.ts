@@ -28,5 +28,11 @@ describe("secret masker", () => {
       const output = secretMasker.maskSecret("Successfully ran target precommit for project.");
       assert.equal(output, "Successfully ran target precommit for project.");
     });
+    it("white list", async () => {
+      const output = secretMasker.maskSecret("mysql -p password123456", undefined, [
+        "password123456",
+      ]);
+      assert.equal(output, "mysql -p password123456");
+    });
   });
 });

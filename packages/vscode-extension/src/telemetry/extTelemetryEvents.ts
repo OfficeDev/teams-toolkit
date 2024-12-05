@@ -20,6 +20,9 @@ export enum TelemetryEvent {
   SignOutStart = "sign-out-start",
   SignOut = "sign-out",
 
+  SwitchTenantStart = "switch-tenant-start",
+  SwitchTenant = "switch-tenant",
+
   SelectSubscription = "select-subscription",
 
   CreateProjectStart = "create-project-start",
@@ -192,7 +195,8 @@ export enum TelemetryEvent {
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
   OpenCopilotEnroll = "open-copilot-enroll",
-  OpenSideloadingLearnMore = "open-sideloading-learn-more",
+  OpenSideloadingEnable = "open-sideloading-learn-more",
+  OpenTestTenantLink = "open-test-tenant-link",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -274,6 +278,7 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  InvokeTeamsAgentStart = "invoke-teams-agent-start",
   InvokeTeamsAgent = "invoke-teams-agent",
 
   // Copilot Chat
@@ -297,6 +302,11 @@ export enum TelemetryEvent {
   Configuration = "vsc-configuration",
 
   UpdateAddPluginTreeview = "update-add-plugin-tree-view",
+
+  AddPluginWithManifest = "add-plugin-with-manifest",
+
+  KiotaRegenerateStart = "kiota-regenerate-start",
+  KiotaRegenerate = "kiota-regenerate",
 }
 
 export enum TelemetryProperty {
@@ -445,7 +455,6 @@ export enum TelemetryTriggerFrom {
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",
   AccountHelp = "AccountHelp",
-  SideloadingDisabled = "SideloadingDisabled",
   SampleGallery = "SampleGallery",
   SampleDetailPage = "SampleDetailPage",
   CopilotChat = "CopilotChat",

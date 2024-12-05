@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { err, IProgressHandler, ok } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import child_process from "child_process";
 import fs from "fs-extra";
@@ -13,6 +13,7 @@ import * as tools from "../../../../src/common/utils";
 import {
   convertScriptErrorToFxError,
   defaultShell,
+  executeCommand,
   getStderrHandler,
   parseSetOutputCommand,
   scriptDriver,
@@ -20,19 +21,24 @@ import {
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
 import { DefaultEncoding, getSystemEncoding } from "../../../../src/component/utils/charsetUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
-import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import {
+  MockLogProvider,
+  MockUserInteraction,
+  MockedAzureAccountProvider,
+} from "../../../core/utils";
 import { TestLogProvider } from "../../util/logProviderMock";
+import { UserCancelError } from "../../../../src/error";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
+  const ui = new MockUserInteraction();
   beforeEach(() => {
     sandbox.stub(tools, "waitSeconds").resolves();
   });
   afterEach(async () => {
     sandbox.restore();
   });
-  it("execute success: set-output and append to file", async () => {
+  it("ui not provided - execute success: set-output and append to file", async () => {
     const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
     const args = {
       workingDirectory: "./",
@@ -40,9 +46,9 @@ describe("Script Driver test", () => {
       redirectTo: "./log",
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
       progressBar: {
         start: async (detail?: string): Promise<void> => {},
         next: async (detail?: string): Promise<void> => {},
@@ -50,6 +56,7 @@ describe("Script Driver test", () => {
       } as IProgressHandler,
       projectPath: "./",
     } as any;
+    sandbox.stub(ui, "runCommand").value(undefined);
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
@@ -58,20 +65,115 @@ describe("Script Driver test", () => {
     }
     sinon.assert.called(appendFileSyncStub);
   });
-  it("execute failed: child_process.exec return error", async () => {
-    const error = new Error("test error");
-    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
-    sandbox.stub(child_process, "exec").callsArgWith(2, error, "");
+  it("ui not provided - execute success: set-output and not append to file", async () => {
+    const appendFileSyncStub = sandbox.stub(fs, "appendFileSync");
     const args = {
       workingDirectory: "./",
-      run: "abc",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
     };
     const context = {
-      azureAccountProvider: new TestAzureAccountProvider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-      ui: new MockUserInteraction(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
       projectPath: "./",
     } as any;
+    sandbox.stub(ui, "runCommand").value(undefined);
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.equal(output.get("MY_KEY"), "MY_VALUE");
+    }
+    sinon.assert.notCalled(appendFileSyncStub);
+  });
+  it("ui not provided - execute failed: child_process.exec return error", async () => {
+    const error = new Error("test error");
+    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
+    sandbox.stub(child_process, "exec").yields(error);
+    const args = {
+      workingDirectory: "./",
+      run: "echo '::set-output MY_KEY=MY_VALUE'",
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").value(undefined);
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isErr());
+  });
+  it("ui provided - execute - success", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").resolves(ok(""));
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.equal(output.get("MY_KEY"), "MY_VALUE");
+    }
+  });
+  it("ui provided - execute - success no env output", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: `echo 'abc'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").resolves(ok(""));
+    const res = await scriptDriver.execute(args, context);
+    assert.isTrue(res.result.isOk());
+    if (res.result.isOk()) {
+      const output = res.result.value;
+      assert.deepEqual(output, new Map());
+    }
+  });
+  it("ui provided - execute - runCommand Error", async () => {
+    const args = {
+      workingDirectory: "./",
+      run: `echo '::set-output MY_KEY=MY_VALUE'`,
+    };
+    const context = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: ui,
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+      projectPath: "./",
+    } as any;
+    sandbox.stub(ui, "runCommand").resolves(err(new UserCancelError()));
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isErr());
   });
@@ -86,7 +188,54 @@ describe("Script Driver test", () => {
     assert.isTrue(res instanceof ScriptExecutionError);
   });
 });
-
+describe("executeCommand", () => {
+  const ui = new MockUserInteraction();
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("dotnet command", async () => {
+    sandbox.stub(charsetUtils, "getSystemEncoding").resolves("utf-8");
+    const stub = sandbox.stub(child_process, "exec").returns({} as any);
+    stub.yields(null);
+    sandbox.stub(ui, "runCommand").value(undefined);
+    await executeCommand(
+      "dotnet test && echo '::set-output MY_KEY=MY_VALUE'",
+      "./",
+      new TestLogProvider(),
+      ui
+    );
+    assert.isTrue(stub.calledOnce);
+  });
+  // it("call ui.runCommand", async () => {
+  //   const ui = new MockUserInteraction();
+  //   const spyRunCommand = sandbox.spy(ui, "runCommand");
+  //   const stub = sandbox.stub(child_process, "exec").returns({} as any);
+  //   await executeCommand("abc", "./", new TestLogProvider(), ui);
+  //   assert.isTrue(spyRunCommand.calledOnce);
+  //   assert.isFalse(stub.calledOnce);
+  // });
+  it("call ui.runCommand error", async () => {
+    sandbox.stub(ui, "runCommand").resolves(err(new UserCancelError()));
+    sandbox.stub(child_process, "exec").returns({} as any);
+    const res = await executeCommand("abc", "./", new TestLogProvider(), ui);
+    assert.isTrue(res.isErr());
+  });
+  it("call ui.runCommand with output", async () => {
+    sandbox.stub(ui, "runCommand").resolves(ok(""));
+    sandbox.stub(child_process, "exec").returns({} as any);
+    const res = await executeCommand(
+      "echo '::set-teamsfx-env MY_KEY=MY_VALUE'",
+      "./",
+      new TestLogProvider(),
+      ui
+    );
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value[1], { MY_KEY: "MY_VALUE" });
+    }
+  });
+});
 describe("getSystemEncoding", () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {

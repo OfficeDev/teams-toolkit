@@ -51,6 +51,18 @@ export class ScriptTimeoutError extends UserError {
   }
 }
 
+export class ScriptExecutionError extends UserError {
+  constructor(message: string, displayMessage: string) {
+    super({
+      source: "UI",
+      name: "ScriptExecutionError",
+      message: message,
+      displayMessage: displayMessage,
+      categories: ["external"],
+    });
+  }
+}
+
 export class UnsupportedQuestionTypeError extends UserError {
   constructor(message: string, displayMessage: string) {
     super({

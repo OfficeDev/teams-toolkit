@@ -454,7 +454,14 @@ describe("pluginManifestUtils", () => {
 
   describe("getDefaultNextAvailableApiSpecPath", async () => {
     it("Json file: success on second try", async () => {
-      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+      sandbox
+        .stub(fs, "pathExists")
+        .onFirstCall()
+        .resolves(true)
+        .onSecondCall()
+        .resolves(true)
+        .onThirdCall()
+        .resolves(false);
 
       const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
         "testPath.json",
@@ -465,7 +472,7 @@ describe("pluginManifestUtils", () => {
     });
 
     it("Yaml file: success on first try", async () => {
-      sandbox.stub(fs, "pathExists").onFirstCall().resolves(false);
+      sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
 
       const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
         "testPath.yaml",
@@ -484,6 +491,8 @@ describe("pluginManifestUtils", () => {
         .onSecondCall()
         .resolves(true)
         .onThirdCall()
+        .resolves(true)
+        .onCall(4)
         .resolves(false);
 
       const res = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath("testPath", "test");

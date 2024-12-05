@@ -9,19 +9,59 @@ import { NotExtendedToM365Error } from "../../../src/component/m365/errors";
 import { LaunchHelper } from "../../../src/component/m365/launchHelper";
 import { PackageService } from "../../../src/component/m365/packageService";
 import { HubTypes } from "../../../src/question";
-import { MockM365TokenProvider } from "../../core/utils";
 import { outlookCopilotAppId } from "../../../src/component/m365/constants";
+import { MockedM365Provider } from "../../core/utils";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { FeatureFlagName } from "../../../src";
 
 describe("LaunchHelper", () => {
-  const m365TokenProvider = new MockM365TokenProvider();
+  const m365TokenProvider = new MockedM365Provider();
   const launchHelper = new LaunchHelper(m365TokenProvider);
+  let mockedEnvRestore: RestoreFn = () => {};
 
   afterEach(() => {
     sinon.restore();
+    mockedEnvRestore();
+  });
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.MultiTenant]: "true",
+    });
   });
 
   describe("getLaunchUrl", () => {
     it("getLaunchUrl: Teams, signed in", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const properties: ManifestProperties = {
+        capabilities: ["staticTab"],
+        id: "test-id",
+        version: "1.0.0",
+        manifestVersion: "1.16",
+        isApiME: false,
+        isSPFx: false,
+        isApiMeAAD: false,
+      };
+      const result = await launchHelper.getLaunchUrl(HubTypes.teams, "test-id", properties);
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
+    it("getLaunchUrl: Teams, signed in - multi tenant off", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.MultiTenant]: "false",
+      });
       sinon.stub(m365TokenProvider, "getStatus").resolves(
         ok({
           status: "",
@@ -71,7 +111,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/?appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/?tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -98,7 +138,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -125,7 +165,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 
@@ -152,7 +192,7 @@ describe("LaunchHelper", () => {
       chai.assert(result.isOk());
       chai.assert.equal(
         (result as any).value,
-        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&appTenantId=test-tid&login_hint=test-upn"
+        "https://teams.microsoft.com/l/app/test-id?installAppPackage=true&webjoin=true&tenantId=test-tid&appTenantId=test-tid&login_hint=test-upn"
       );
     });
 

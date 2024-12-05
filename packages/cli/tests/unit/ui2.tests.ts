@@ -14,6 +14,9 @@ import { assert } from "chai";
 import "mocha";
 import * as sinon from "sinon";
 import UI from "../../src/userInteraction";
+import child_process from "child_process";
+import { on } from "events";
+import { logger } from "../../src/commonlib/logger";
 
 describe("UserInteraction(CLI) 2", () => {
   const sandbox = sinon.createSandbox();
@@ -114,6 +117,45 @@ describe("UserInteraction(CLI) 2", () => {
       };
       const result = await UI.selectOptions(config);
       assert.isTrue(result.isErr());
+    });
+    it("success with default=all", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          return ["a", "b", "c"];
+        },
+        default: "all",
+      };
+      const result = await UI.selectOptions(config);
+      assert.isTrue(result.isOk());
+    });
+    it("success with default=all", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          return [
+            { id: "a", label: "a" },
+            { id: "b", label: "b" },
+          ];
+        },
+        default: "all",
+      };
+      const result = await UI.selectOptions(config);
+      assert.isTrue(result.isOk());
+    });
+    it("success with default=none", async () => {
+      const config: MultiSelectConfig = {
+        name: "test",
+        title: "test",
+        options: async () => {
+          return ["a", "b", "c"];
+        },
+        default: "none",
+      };
+      const result = await UI.selectOptions(config);
+      assert.isTrue(result.isOk());
     });
   });
 
@@ -250,5 +292,45 @@ describe("UserInteraction(CLI) 2", () => {
       });
       assert.isTrue(res.isErr());
     });
+  });
+});
+
+describe("runCommand", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy path win32", async () => {
+    const mockChildProcess = {
+      on: sandbox.stub().callsFake((event, callback) => {
+        if (event === "close") {
+          callback(0); // Simulate successful execution
+        }
+      }),
+    };
+    sandbox.stub(process, "platform").value("win32");
+    sandbox.stub(logger, "info").returns();
+    const spawnStub = sandbox.stub(child_process, "spawn").returns(mockChildProcess as any);
+    const res = await UI.runCommand({ cmd: 'echo "Hello"' });
+    assert.isTrue(res.isOk());
+    assert.isTrue(spawnStub.calledOnce);
+    assert.equal(spawnStub.firstCall.args[0], "cmd.exe");
+  });
+  it("error linux", async () => {
+    const mockChildProcess = {
+      on: sandbox.stub().callsFake((event, callback) => {
+        if (event === "close") {
+          callback(1); // Simulate successful execution
+        }
+      }),
+    };
+    sandbox.stub(process, "platform").value("linux");
+    sandbox.stub(logger, "info").returns();
+    sandbox.stub(logger, "error").returns();
+    const spawnStub = sandbox.stub(child_process, "spawn").returns(mockChildProcess as any);
+    const res = await UI.runCommand({ cmd: 'echo "Hello"' });
+    assert.isTrue(res.isErr());
+    assert.isTrue(spawnStub.calledOnce);
+    assert.equal(spawnStub.firstCall.args[0], "/bin/bash");
   });
 });

@@ -65,7 +65,9 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
 
     void logger.debug(
-      `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`
+      `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(
+        properties
+      )}, measurements: ${JSON.stringify(measurements)}`
     );
   }
 
@@ -89,7 +91,9 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
 
     void logger.debug(
-      `sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`
+      `sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(
+        properties
+      )}, measurements: ${JSON.stringify(measurements)}`
     );
   }
 

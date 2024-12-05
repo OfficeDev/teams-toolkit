@@ -48,6 +48,7 @@ describe("CLI Engine", () => {
 
   beforeEach(() => {
     sandbox.stub(process, "exit");
+    sandbox.stub(CliTelemetry, "flush").resolves();
   });
 
   afterEach(() => {

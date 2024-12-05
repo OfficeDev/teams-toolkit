@@ -34,7 +34,7 @@ export async function checkAndInstallForTask(
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
         VsCodeLogInstance.info("Terminate all running teamsfx tasks.");
-        terminateAllRunningTeamsfxTasks();
+        await terminateAllRunningTeamsfxTasks();
       }
 
       const res = await _checkAndInstall(
@@ -82,9 +82,9 @@ function addCheckResultsForTelemetry(
   properties: { [key: string]: string },
   errorProps: string[]
 ): void {
-  const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
-  properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
-  properties[TelemetryProperty.DebugCheckResults] = resultRaw;
+  // const [resultRaw, resultSafe] = convertCheckResultsForTelemetry(checkResults);
+  // properties[TelemetryProperty.DebugCheckResultsSafe] = resultSafe;
+  // properties[TelemetryProperty.DebugCheckResults] = maskSecret(resultRaw, { replace: "***" });
   // only the raw event contains error message
   errorProps.push(TelemetryProperty.DebugCheckResults);
 }

@@ -5,6 +5,7 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+// this test case diposed due to cancel local debug
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
@@ -34,6 +35,23 @@ class LargeNotiTestCase extends CaseFactory {
     envFileString += `\nSERVICE_BUS_QUEUE_NAME=${azServiceBusHelper.queueName}`;
     fs.writeFileSync(envFile, envFileString);
     console.log(`add endpoint ${envFileString} to .env.${env} file`);
+
+    // add storage account key
+    const envUserFile = path.resolve(
+      sampledebugContext.projectPath,
+      "env",
+      `.env.${env}.user`
+    );
+    // create envuserfile
+    if (!fs.existsSync(envUserFile)) {
+      fs.writeFileSync(envUserFile, "");
+    }
+    let envUserFileString = fs.readFileSync(envUserFile, "utf-8");
+    envUserFileString += `\nSECRET_STORAGE_ACCOUNT_KEY=${process.env["STORAGE_ACCOUNT_KEY"]}`;
+    fs.writeFileSync(envUserFile, envUserFileString);
+    console.log(
+      `add SECRET_STORAGE_ACCOUNT_KEY ${process.env["STORAGE_ACCOUNT_KEY"]} to .env.${env}.user file`
+    );
 
     // add connect string into local.setting.json
     const configFilePath = path.resolve(
@@ -79,4 +97,4 @@ new LargeNotiTestCase(
   {
     debug: "ttk",
   }
-).test();
+);

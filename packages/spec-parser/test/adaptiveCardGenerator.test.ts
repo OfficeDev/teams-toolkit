@@ -6,6 +6,7 @@ import { Utils } from "../src/utils";
 import { SpecParserError } from "../src/specParserError";
 import { ErrorType } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
+import { JsonDataGenerator } from "../src/jsonDataGenerator";
 
 describe("adaptiveCardGenerator", () => {
   afterEach(() => {
@@ -37,7 +38,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -57,6 +58,69 @@ describe("adaptiveCardGenerator", () => {
 
       expect(actual).to.deep.equal(expected);
       expect(jsonPath).to.equal("$");
+    });
+
+    it("should return warning if generate json data throw exception", () => {
+      const operationItem = {
+        operationId: "getHello",
+        responses: {
+          "200": {
+            description: "OK",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    name: {
+                      type: "string",
+                    },
+                    age: {
+                      type: "number",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const expected = {
+        type: "AdaptiveCard",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
+        version: "1.5",
+        body: [
+          {
+            type: "TextBlock",
+            text: "name: ${if(name, name, 'N/A')}",
+            wrap: true,
+          },
+          {
+            type: "TextBlock",
+            text: "age: ${if(age, age, 'N/A')}",
+            wrap: true,
+          },
+        ],
+      };
+
+      sinon.stub(JsonDataGenerator, "generate").throws(new Error("generate json data failed"));
+
+      const [actual, jsonPath, jsonData, warnings] =
+        AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+
+      expect(actual).to.deep.equal(expected);
+      expect(jsonPath).to.equal("$");
+      expect(jsonData).to.deep.equal({});
+      expect(warnings).to.deep.equal([
+        {
+          type: "generate-json-data-failed",
+          content: Utils.format(
+            ConstantString.GenerateJsonDataFailed,
+            "getHello",
+            new Error("generate json data failed").toString()
+          ),
+          data: "getHello",
+        },
+      ]);
     });
 
     it("should generate a card from a schema object with image url property", () => {
@@ -84,7 +148,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -148,7 +212,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -232,7 +296,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -278,7 +342,7 @@ describe("adaptiveCardGenerator", () => {
       };
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -305,7 +369,7 @@ describe("adaptiveCardGenerator", () => {
       };
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -335,7 +399,7 @@ describe("adaptiveCardGenerator", () => {
       };
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -356,7 +420,7 @@ describe("adaptiveCardGenerator", () => {
       const schema = {};
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -411,7 +475,7 @@ describe("adaptiveCardGenerator", () => {
       } as any;
       const expected = {
         type: "AdaptiveCard",
-        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+        $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
         version: "1.5",
         body: [
           {
@@ -462,11 +526,7 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(
-        schema as any,
-        name,
-        parentArrayName
-      );
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name);
 
       expect(actual).to.deep.equal(expected);
     });

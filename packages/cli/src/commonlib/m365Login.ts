@@ -71,7 +71,10 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   /**
    * Get team access token
    */
-  async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
+  async getAccessToken(
+    tokenRequest: TokenRequest,
+    tenantId?: string
+  ): Promise<Result<string, FxError>> {
     let needLogin = false;
     if (!M365Login.codeFlowInstance.account) {
       await M365Login.codeFlowInstance.reloadCache();
@@ -84,7 +87,11 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
         needLogin = true;
       }
     }
-    const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(tokenRequest.scopes);
+    const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(
+      tokenRequest.scopes,
+      true,
+      tenantId
+    );
     if (needLogin == true && M365Login.codeFlowInstance.account) {
       const regionTokenRes = await M365Login.codeFlowInstance.getTokenByScopes(AuthSvcScopes);
       if (regionTokenRes.isOk()) {
@@ -100,9 +107,10 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   }
 
   async getJsonObject(
-    tokenRequest: TokenRequest
+    tokenRequest: TokenRequest,
+    tenantId?: string
   ): Promise<Result<Record<string, unknown>, FxError>> {
-    const tokenRes = await this.getAccessToken(tokenRequest);
+    const tokenRes = await this.getAccessToken(tokenRequest, tenantId);
     if (tokenRes.isOk()) {
       const tokenJson = ConvertTokenToJson(tokenRes.value);
       return ok(tokenJson);
@@ -115,6 +123,11 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     M365Login.codeFlowInstance.account = undefined;
     await M365Login.codeFlowInstance.logout();
     return true;
+  }
+
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    await M365Login.codeFlowInstance.switchTenant(tenantId);
+    return ok("");
   }
 
   async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
@@ -161,8 +174,11 @@ class MM365TokenProviderWrapper implements M365TokenProvider {
   getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
     return this.getProvider().getAccessToken(tokenRequest);
   }
-  getJsonObject(tokenRequest: TokenRequest): Promise<Result<Record<string, unknown>, FxError>> {
-    return this.getProvider().getJsonObject(tokenRequest);
+  getJsonObject(
+    tokenRequest: TokenRequest,
+    tenantId?: string
+  ): Promise<Result<Record<string, unknown>, FxError>> {
+    return this.getProvider().getJsonObject(tokenRequest, tenantId);
   }
   getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
     return this.getProvider().getStatus(tokenRequest);
@@ -184,6 +200,9 @@ class MM365TokenProviderWrapper implements M365TokenProvider {
   }
   async signout(): Promise<boolean> {
     return await (this.getProvider() as any).signout();
+  }
+  async switchTenant(tenantId: string): Promise<Result<string, FxError>> {
+    return await this.getProvider().switchTenant(tenantId);
   }
 }
 

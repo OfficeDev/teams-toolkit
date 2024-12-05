@@ -5,11 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateAadAppDriver } from "../../../../src/component/driver/aad/create";
-import {
-  MockedM365Provider,
-  MockedTelemetryReporter,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedTelemetryReporter, MockedUserInteraction } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
@@ -25,6 +21,7 @@ import { OutputEnvironmentVariableUndefinedError } from "../../../../src/compone
 import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
 import { MissingServiceManagementReferenceError } from "../../../../src/component/driver/aad/error/missingServiceManagamentReferenceError";
+import { MockedM365Provider } from "../../../core/utils";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

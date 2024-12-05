@@ -22,6 +22,7 @@ import {
   uninstallQuestionNode,
   validateTeamsAppQuestionNode,
   syncManifestQuestionNode,
+  kiotaRegenerateQuestion,
 } from "./other";
 export * from "./constants";
 export * from "./create";
@@ -79,6 +80,9 @@ export class QuestionNodes {
   }
   syncManifest(): IQTreeNode {
     return syncManifestQuestionNode();
+  }
+  kiotaRegenerate(): IQTreeNode {
+    return kiotaRegenerateQuestion();
   }
 }
 

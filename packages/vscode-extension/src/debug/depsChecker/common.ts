@@ -7,6 +7,7 @@
 import {
   FxError,
   M365TokenProvider,
+  OptionItem,
   Result,
   SystemError,
   UserError,
@@ -16,19 +17,21 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
+  CopilotDisabledError,
   DependencyStatus,
   DepsCheckerError,
   DepsManager,
   DepsType,
+  ErrorCategory,
+  FindProcessError,
   LocalEnvManager,
-  NodeNotFoundError,
-  NodeNotLtsError,
+  PackageService,
+  PortsConflictError,
+  SideloadingDisabledError,
   TelemetryContext,
-  V3NodeNotSupportedError,
+  UserCancelError,
   assembleError,
   getSideloadingStatus,
-  ErrorCategory,
-  PackageService,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 import * as util from "util";
@@ -36,36 +39,38 @@ import * as vscode from "vscode";
 import { signedOut } from "../../commonlib/common/constant";
 import VsCodeLogInstance from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
+import { PanelType } from "../../controls/PanelType";
+import { WebviewPanel } from "../../controls/webviewPanel";
 import { ExtensionErrors, ExtensionSource } from "../../error/error";
-import { VS_CODE_UI } from "../../qm/vsc_ui";
-import { tools, workspaceUri } from "../../globalVariables";
+import { LocalDebugPorts, resetLocalDebugPorts, tools, workspaceUri } from "../../globalVariables";
 import { checkCopilotCallback } from "../../handlers/accounts/checkAccessCallback";
-import { ProgressHandler } from "../progressHandler";
+import { VS_CODE_UI } from "../../qm/vsc_ui";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { Step } from "../common/step";
+import { localize } from "../../utils/localizeUtils";
 import { DisplayMessages, RecommendedOperations } from "../common/debugConstants";
-import { doctorConstant } from "./doctorConstant";
-import { vscodeLogger } from "./vscodeLogger";
-import { vscodeTelemetry } from "./vscodeTelemetry";
-import { localTelemetryReporter } from "../localTelemetryReporter";
-import { ProgressHelper } from "../progressHelper";
-import { WebviewPanel } from "../../controls/webviewPanel";
-import { PanelType } from "../../controls/PanelType";
-import {
-  ResultStatus,
-  Checker,
-  ProgressMessage,
-  copilotCheckServiceScope,
-  DepsDisplayName,
-} from "./prerequisitesCheckerConstants";
+import { Step } from "../common/step";
 import {
   CheckResult,
-  PrerequisiteOrderedChecker,
-  PrerequisiteCheckerInfo,
   PortCheckerInfo,
+  PrerequisiteCheckerInfo,
+  PrerequisiteOrderedChecker,
 } from "../common/types";
+import { localTelemetryReporter } from "../localTelemetryReporter";
+import { ProgressHandler } from "../progressHandler";
+import { ProgressHelper } from "../progressHelper";
+import { doctorConstant } from "./doctorConstant";
+import {
+  Checker,
+  DepsDisplayName,
+  ProgressMessage,
+  ResultStatus,
+  copilotCheckServiceScope,
+} from "./prerequisitesCheckerConstants";
+import { vscodeLogger } from "./vscodeLogger";
+import { vscodeTelemetry } from "./vscodeTelemetry";
+import find from "find-process";
+import { processUtil } from "../../utils/processUtil";
 
 export async function _checkAndInstall(
   displayMessages: DisplayMessages,
@@ -146,43 +151,147 @@ async function runWithCheckResultTelemetryProperties(
   );
 }
 
+async function selectPortsToKill(
+  portsInUse: number[]
+): Promise<Result<undefined, UserCancelError>> {
+  const killRes = await VS_CODE_UI.showMessage(
+    "info",
+    portsInUse.length === 1
+      ? util.format(
+          localize("teamstoolkit.localDebug.terminateProcess.notification"),
+          portsInUse[0]
+        )
+      : util.format(
+          localize("teamstoolkit.localDebug.terminateProcess.notification.plural"),
+          portsInUse.join(",")
+        ),
+    true,
+    "Terminate Process",
+    "Learn More"
+  );
+
+  if (killRes.isErr()) {
+    LocalDebugPorts.terminateButton = "Cancel";
+    return err(new UserCancelError(ExtensionSource));
+  }
+
+  const selectButton = killRes.value;
+  LocalDebugPorts.terminateButton = selectButton!;
+
+  if (selectButton === "Terminate Process") {
+    const loadOptions = async () => {
+      try {
+        const process2ports = new Map<number, number[]>();
+        for (const port of portsInUse) {
+          const processList = await find("port", port);
+          if (processList.length > 0) {
+            const process = processList[0];
+            const ports = process2ports.get(process.pid);
+            if (ports) {
+              ports.push(port);
+            } else {
+              process2ports.set(process.pid, [port]);
+            }
+          }
+        }
+        if (process2ports.size > 0) {
+          const options: OptionItem[] = [];
+          for (const processId of process2ports.keys()) {
+            const ports = process2ports.get(processId);
+            LocalDebugPorts.process2conflictPorts[processId] = ports!;
+            const findList = await find("pid", processId);
+            if (findList.length > 0) {
+              const processInfo = findList[0].cmd;
+              options.push({
+                id: `${processId}`,
+                label: `'${String(processInfo)}' (${processId}) occupies port(s): ${ports!.join(
+                  ","
+                )}`,
+                data: processInfo,
+              });
+            }
+          }
+          globalOptions = options;
+          return options;
+        }
+        return [];
+      } catch (e) {
+        throw new FindProcessError(e, ExtensionSource);
+      }
+    };
+
+    let globalOptions: OptionItem[] = [];
+    const res = await VS_CODE_UI.selectOptions({
+      title: "Select process(es) to terminate",
+      name: "select_processes",
+      options: loadOptions,
+      default: "all",
+    });
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    if (res.isOk() && res.value.type === "success") {
+      const processIds = res.value.result as string[];
+      LocalDebugPorts.terminateProcesses = processIds;
+      for (const processId of processIds) {
+        await processUtil.killProcess(parseInt(processId));
+      }
+      if (processIds.length > 0) {
+        const processInfo = globalOptions
+          .filter((o) => processIds.includes(o.id))
+          .map((o) => `'${o.data as string}' (${o.id})`)
+          .join(", ");
+        void VS_CODE_UI.showMessage("info", `Process(es) ${processInfo} have been killed.`, false);
+        return ok(undefined);
+      }
+    }
+  } else if (selectButton === "Learn More") {
+    void VS_CODE_UI.openUrl(
+      "https://github.com/OfficeDev/teams-toolkit/wiki/%7BDebug%7D-FAQ#what-to-do-if-some-port-is-already-in-use"
+    );
+  }
+  return err(new UserCancelError(ExtensionSource));
+}
+
 async function checkPort(
   localEnvManager: LocalEnvManager,
   ports: number[],
   displayMessage: string,
   additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
+  resetLocalDebugPorts();
+  LocalDebugPorts.checkPorts = ports;
   return await runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckPorts,
     additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
-      const portsInUse = await localEnvManager.getPortsInUse(ports);
+      let portsInUse = await localEnvManager.getPortsInUse(ports);
+      LocalDebugPorts.conflictPorts = portsInUse;
+      if (portsInUse.length > 0) {
+        const killRes = await selectPortsToKill(portsInUse);
+        if (killRes.isErr()) {
+          return {
+            checker: Checker.Ports,
+            result: ResultStatus.failed,
+            failureMsg: doctorConstant.Port,
+            error: killRes.error,
+          };
+        }
+        // wait some time
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // recheck
+        portsInUse = await localEnvManager.getPortsInUse(ports);
+      }
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
       if (portsInUse.length > 0) {
         ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
-        const message = util.format(
-          // eslint-disable-next-line no-secrets/no-secrets
-          getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
-        );
-        const displayMessage = util.format(
-          // eslint-disable-next-line no-secrets/no-secrets
-          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
-        );
-
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
           failureMsg: doctorConstant.Port,
-          error: new UserError(
-            ExtensionSource,
-            ExtensionErrors.PortAlreadyInUse,
-            message,
-            displayMessage
-          ),
+          error: new PortsConflictError(ports, portsInUse, ExtensionSource),
         };
       }
       return {
@@ -314,14 +423,7 @@ async function ensureCopilotAccess(
       ctx.properties[TelemetryProperty.DebugHasCopilotAccess] = String(!!hasCopilotAccess);
       if (hasCopilotAccess === false) {
         // copilot disabled
-        return err(
-          new UserError(
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesNoCopilotAccessError,
-            getDefaultString("teamstoolkit.accountTree.copilotWarningTooltip"),
-            localize("teamstoolkit.accountTree.copilotWarningTooltip")
-          )
-        );
+        return err(new CopilotDisabledError(ExtensionSource));
       }
 
       return ok(undefined);
@@ -351,14 +453,7 @@ async function ensureSideloding(
       ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = String(!!isSideloadingEnabled);
       if (isSideloadingEnabled === false) {
         // sideloading disabled
-        return err(
-          new UserError(
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesSideloadingDisabledError,
-            getDefaultString("teamstoolkit.accountTree.sideloadingWarningTooltip"),
-            localize("teamstoolkit.accountTree.sideloadingWarningTooltip")
-          )
-        );
+        return err(new SideloadingDisabledError(ExtensionSource));
       }
 
       return ok(undefined);
@@ -510,36 +605,12 @@ async function checkNode(
 
 function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
   if (dep) {
-    if (error instanceof NodeNotFoundError) {
-      handleNodeNotFoundError(error);
-    }
-    if (error instanceof V3NodeNotSupportedError) {
-      handleNodeNotLtsError(error);
-    }
-    if (error instanceof NodeNotLtsError) {
-      handleV3NodeNotSupportedError(error);
-    }
+    if (error.displayMessage)
+      error.displayMessage = `${error.displayMessage as string}${os.EOL}${
+        doctorConstant.WhiteSpace
+      }${doctorConstant.RestartVSCode}`;
   }
-  return error instanceof DepsCheckerError
-    ? new UserError({
-        error,
-        source: ExtensionSource,
-        name: ExtensionErrors.PrerequisitesValidationError,
-        helpLink: error.helpLink,
-      })
-    : assembleError(error);
-}
-
-function handleNodeNotFoundError(error: NodeNotFoundError) {
-  error.message = `${doctorConstant.NodeNotFound}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
-}
-
-function handleV3NodeNotSupportedError(error: V3NodeNotSupportedError) {
-  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
-}
-
-function handleNodeNotLtsError(error: V3NodeNotSupportedError) {
-  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+  return error instanceof DepsCheckerError ? error : assembleError(error);
 }
 
 async function handleCheckResults(
@@ -598,10 +669,7 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      const message =
-        getDefaultString(displayMessages.errorMessageKey) +
-        " " +
-        displayMessages.showDetailMessage();
+      const message = failures.map((f) => f.error?.message || "").join(", ");
 
       // show failure summary in display message
       const displayMessage =
@@ -612,20 +680,29 @@ async function handleCheckResults(
         localize(displayMessages.errorDisplayMessageKey) +
         " " +
         displayMessages.showDetailDisplayMessage();
-
-      const errorOptions: UserErrorOptions = {
-        source: ExtensionSource,
-        name: displayMessages.errorName,
-        message: message,
-        displayMessage: displayMessage,
-        helpLink: displayMessages.errorHelpLink,
-      };
-      const userError = new UserError(errorOptions);
-      // Recommend to open test tool if M365 account check failed
-      if (failures.find((f) => f.checker === Checker.M365Account)) {
-        userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+      const firstFailure = failures[0];
+      const firstError = firstFailure.error as UserError;
+      if (firstError) {
+        firstError.helpLink = displayMessages.errorHelpLink;
+        if (firstFailure.checker === Checker.M365Account) {
+          firstError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+        }
+        throw firstError;
+      } else {
+        const errorOptions: UserErrorOptions = {
+          source: ExtensionSource,
+          name: displayMessages.errorName,
+          message: message,
+          displayMessage: displayMessage,
+          helpLink: displayMessages.errorHelpLink,
+        };
+        const userError = new UserError(errorOptions);
+        // Recommend to open test tool if M365 account check failed
+        if (failures.find((f) => f.checker === Checker.M365Account)) {
+          userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+        }
+        throw userError;
       }
-      throw userError;
     }
   }
 }

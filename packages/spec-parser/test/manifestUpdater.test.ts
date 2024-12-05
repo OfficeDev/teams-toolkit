@@ -8,12 +8,21 @@ import os from "os";
 import "mocha";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { SpecParserError } from "../src/specParserError";
-import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningType } from "../src/interfaces";
+import {
+  AuthInfo,
+  ErrorType,
+  OperationAuthInfoMap,
+  ParseOptions,
+  ProjectType,
+  WarningType,
+} from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
-import { PluginManifestSchema } from "@microsoft/teams-manifest";
-
+import { PluginManifestSchema, ManifestUtil } from "@microsoft/teams-manifest";
 describe("updateManifestWithAiPlugin", () => {
+  beforeEach(() => {
+    sinon.stub(ManifestUtil, "useCopilotExtensionsInSchema").resolves(false);
+  });
   afterEach(() => {
     sinon.restore();
   });
@@ -62,7 +71,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -74,7 +83,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -114,7 +123,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -122,7 +132,175 @@ describe("updateManifestWithAiPlugin", () => {
       expect(warnings).to.deep.equal([]);
     });
 
-    it("should generate response semantics based on the response", async () => {
+    it("should generate response semantics based on the response - 1", async () => {
+      const spec: any = {
+        openapi: "3.0.2",
+        info: {
+          title: "My API",
+          description: "My API description",
+        },
+        servers: [
+          {
+            url: "/v3",
+          },
+        ],
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "getPets",
+              summary: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              parameters: [
+                {
+                  name: "limit",
+                  description: "Maximum number of pets to return",
+                  required: true,
+                  schema: {
+                    type: "integer",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                          description: {
+                            type: "string",
+                          },
+                          imageUrl: {
+                            type: "string",
+                          },
+                          id: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const manifestPath = "/path/to/your/manifest.json";
+      const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+      const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+      const originalManifest = {
+        name: { short: "Original Name", full: "Original Full Name" },
+        description: { short: "Original Short Description", full: "Original Full Description" },
+      };
+      const expectedManifest = {
+        name: { short: "Original Name", full: "Original Full Name" },
+        description: { short: "My API", full: "My API description" },
+        copilotAgents: {
+          plugins: [
+            {
+              file: "ai-plugin.json",
+              id: "plugin_1",
+            },
+          ],
+        },
+      };
+
+      const expectedPlugins: PluginManifestSchema = {
+        $schema: ConstantString.PluginManifestSchema,
+        schema_version: "v2.2",
+        name_for_human: "Original Name",
+        namespace: "originalname",
+        description_for_human: "My API description",
+        functions: [
+          {
+            name: "getPets",
+            description: "Returns all pets from the system that the user has access to",
+            capabilities: {
+              response_semantics: {
+                data_path: "$",
+                properties: {
+                  subtitle: "$.description",
+                  title: "$.name",
+                  url: "$.imageUrl",
+                },
+                static_template: {
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
+                  body: [
+                    {
+                      text: "name: ${if(name, name, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                    {
+                      text: "description: ${if(description, description, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                    {
+                      $when: "${imageUrl != null && imageUrl != ''}",
+                      type: "Image",
+                      url: "${imageUrl}",
+                    },
+                    {
+                      text: "id: ${if(id, id, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                  ],
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                },
+              },
+            },
+          },
+        ],
+        runtimes: [
+          {
+            type: "OpenApi",
+            auth: {
+              type: "None",
+            },
+            spec: {
+              url: "spec/outputSpec.yaml",
+            },
+            run_for_functions: ["getPets"],
+          },
+        ],
+      };
+      sinon.stub(fs, "readJSON").resolves(originalManifest);
+      sinon
+        .stub(fs, "pathExists")
+        .withArgs(manifestPath)
+        .resolves(true)
+        .withArgs(pluginFilePath)
+        .resolves(false);
+
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+        allowResponseSemantics: true,
+      };
+      const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec,
+        options,
+        {}
+      );
+
+      expect(manifest).to.deep.equal(expectedManifest);
+      expect(apiPlugin).to.deep.equal(expectedPlugins);
+      expect(warnings).to.deep.equal([]);
+    });
+
+    it("should generate response semantics based on the response - 2", async () => {
+      sinon.restore();
+      sinon.stub(ManifestUtil, "useCopilotExtensionsInSchema").resolves(true);
       const spec: any = {
         openapi: "3.0.2",
         info: {
@@ -202,7 +380,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -219,7 +397,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -279,7 +457,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -348,7 +527,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -360,7 +539,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -400,7 +579,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -489,7 +669,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -501,7 +681,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -518,7 +698,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -583,7 +763,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -679,7 +860,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -691,7 +872,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -708,7 +889,7 @@ describe("updateManifestWithAiPlugin", () => {
                   url: "$.imageUrl",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -785,7 +966,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -929,7 +1111,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -941,7 +1123,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -957,7 +1139,7 @@ describe("updateManifestWithAiPlugin", () => {
                   subtitle: "$.id",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       type: "Container",
@@ -1028,7 +1210,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1102,7 +1285,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1114,7 +1297,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1133,7 +1316,7 @@ describe("updateManifestWithAiPlugin", () => {
             type: "OpenApi",
             auth: {
               type: "OAuthPluginVault",
-              reference_id: "${{OAUTH_CONFIGURATION_ID}}",
+              reference_id: "${{OAUTH_REGISTRATION_ID}}",
             },
             spec: {
               url: "spec/outputSpec.yaml",
@@ -1172,6 +1355,10 @@ describe("updateManifestWithAiPlugin", () => {
           },
         },
       };
+      const authMap: OperationAuthInfoMap = {
+        ["getPets"]: authInfo,
+        ["createPet"]: authInfo,
+      };
 
       const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
@@ -1179,7 +1366,7 @@ describe("updateManifestWithAiPlugin", () => {
         pluginFilePath,
         spec,
         options,
-        authInfo
+        authMap
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1251,7 +1438,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1263,7 +1450,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1307,9 +1494,14 @@ describe("updateManifestWithAiPlugin", () => {
         name: "apiKeyAuth",
         authScheme: {
           type: "apiKey",
-          in: "header",
+          in: "cookie",
           name: "Authorization",
         },
+      };
+
+      const authMap: OperationAuthInfoMap = {
+        ["getPets"]: authInfo,
+        ["createPet"]: authInfo,
       };
 
       const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
@@ -1318,7 +1510,7 @@ describe("updateManifestWithAiPlugin", () => {
         pluginFilePath,
         spec,
         options,
-        authInfo
+        authMap
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1390,7 +1582,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1402,7 +1594,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1451,13 +1643,18 @@ describe("updateManifestWithAiPlugin", () => {
         },
       };
 
+      const authMap: OperationAuthInfoMap = {
+        ["getPets"]: authInfo,
+        ["createPet"]: authInfo,
+      };
+
       const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
         spec,
         options,
-        authInfo
+        authMap
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1534,7 +1731,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -1546,7 +1743,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -1585,7 +1782,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -1666,7 +1864,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1678,7 +1876,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1701,12 +1899,6 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "deletePet",
             description: "Delete a pet in the store",
-            capabilities: {
-              confirmation: {
-                type: "AdaptiveCard",
-                title: "Delete a pet in the store",
-              },
-            },
           },
         ],
         runtimes: [
@@ -1739,7 +1931,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1772,6 +1965,20 @@ describe("updateManifestWithAiPlugin", () => {
                   required: true,
                   schema: {
                     type: "integer",
+                  },
+                },
+              ],
+            },
+            delete: {
+              operationId: "deletePet",
+              description: "Delete pets",
+              parameters: [
+                {
+                  name: "name",
+                  description: "Name of the pet",
+                  required: true,
+                  schema: {
+                    type: "string",
                   },
                 },
               ],
@@ -1827,7 +2034,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "My API description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -1839,7 +2046,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -1847,6 +2054,17 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
+          },
+          {
+            name: "deletePet",
+            description: "Delete pets",
+            capabilities: {
+              confirmation: {
+                type: "AdaptiveCard",
+                title: "Delete pets",
+                body: "* **Name**: {{function.parameters.name}}",
+              },
+            },
           },
           {
             name: "createPet",
@@ -1863,7 +2081,7 @@ describe("updateManifestWithAiPlugin", () => {
                   title: "$.name",
                 },
                 static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  $schema: "https://adaptivecards.io/schemas/adaptive-card.json",
                   body: [
                     {
                       text: "name: ${if(name, name, 'N/A')}",
@@ -1887,7 +2105,7 @@ describe("updateManifestWithAiPlugin", () => {
             spec: {
               url: "spec/outputSpec.yaml",
             },
-            run_for_functions: ["getPets", "createPet"],
+            run_for_functions: ["getPets", "deletePet", "createPet"],
           },
         ],
       };
@@ -1901,7 +2119,7 @@ describe("updateManifestWithAiPlugin", () => {
         .resolves(false);
 
       const options: ParseOptions = {
-        allowMethods: ["get", "post"],
+        allowMethods: ["get", "post", "delete"],
         allowConfirmation: true,
         allowResponseSemantics: true,
       };
@@ -1910,7 +2128,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -1983,7 +2202,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -1995,7 +2214,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -2038,7 +2257,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -2110,7 +2330,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2122,7 +2342,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -2166,7 +2386,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -2245,7 +2466,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2257,7 +2478,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -2300,7 +2521,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -2368,7 +2590,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -2380,7 +2602,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "<Please add description of the plugin>",
@@ -2424,7 +2646,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2552,7 +2775,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -2564,7 +2787,7 @@ describe("updateManifestWithAiPlugin", () => {
 
       const expectedPlugins: PluginManifestSchema = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "<Please add description of the plugin>",
@@ -2580,7 +2803,6 @@ describe("updateManifestWithAiPlugin", () => {
               text: "This is a long long long long long description tha",
             },
           ],
-          localization: {},
         },
         functions: [
           {
@@ -2634,7 +2856,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2704,7 +2927,7 @@ describe("updateManifestWithAiPlugin", () => {
       const expectedManifest = {
         name: { short: "Original Name", full: "Original Full Name" },
         description: { short: "My API", full: "Original Full Description" },
-        copilotExtensions: {
+        copilotAgents: {
           plugins: [
             {
               file: "ai-plugin.json",
@@ -2787,7 +3010,8 @@ describe("updateManifestWithAiPlugin", () => {
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
 
       expect(manifest).to.deep.equal(expectedManifest);
@@ -2860,7 +3084,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -2963,7 +3187,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3035,7 +3260,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3099,7 +3324,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3171,7 +3397,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3256,7 +3482,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3337,7 +3564,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3349,7 +3576,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3385,7 +3612,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3469,7 +3697,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3481,7 +3709,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3518,7 +3746,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3557,7 +3786,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3569,7 +3798,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3596,7 +3825,8 @@ describe("updateManifestWithAiPlugin", () => {
       outputSpecPath,
       pluginFilePath,
       spec,
-      options
+      options,
+      {}
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -3618,8 +3848,8 @@ describe("updateManifestWithAiPlugin", () => {
       ],
       paths: {
         "/pets": {
-          get: {
-            operationId: "getPets",
+          post: {
+            operationId: "postPets",
             summary: "Get all pets",
             description: "Returns all pets from the system that the user has access to",
             parameters: [
@@ -3663,20 +3893,22 @@ describe("updateManifestWithAiPlugin", () => {
     try {
       const options: ParseOptions = {
         allowMethods: ["get", "post"],
+        allowConfirmation: true,
       };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
       expect(err.message).to.equal(
-        "Unsupported schema in get /pets: " +
+        "Unsupported schema in post /pets: " +
           JSON.stringify({
             type: "object",
             properties: {
@@ -3742,13 +3974,15 @@ describe("updateManifestWithAiPlugin", () => {
     try {
       const options: ParseOptions = {
         allowMethods: ["get", "post"],
+        allowConfirmation: true,
       };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
         spec,
-        options
+        options,
+        {}
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -3833,7 +4067,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      copilotExtensions: {
+      copilotAgents: {
         plugins: [
           {
             file: "ai-plugin.json",
@@ -3844,7 +4078,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const originalPluginManifest = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3864,7 +4098,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       $schema: ConstantString.PluginManifestSchema,
-      schema_version: "v2.1",
+      schema_version: "v2.2",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -3914,7 +4148,345 @@ describe("updateManifestWithAiPlugin", () => {
       pluginFilePath,
       spec,
       options,
-      undefined,
+      {},
+      {
+        manifestPath: existingPluginManifestPath,
+        specPath: specPath,
+      }
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should update existing manifest and use old copilotExtensions property if it exist", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+    const existingPluginManifestPath = "/path/to/your/pluginManifest.json";
+    const specPath = "/path/to/your/spec.yaml";
+    const relativePath = ManifestUpdater.getRelativePath(existingPluginManifestPath, specPath);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      copilotExtensions: {
+        plugins: [{ file: "ai-plugin-old.json", id: "plugin_1" }],
+      },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      copilotExtensions: {
+        plugins: [
+          {
+            file: "ai-plugin.json",
+            id: "plugin_1",
+          },
+        ],
+      },
+    };
+    const originalPluginManifest = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.2",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: relativePath,
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.2",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").callsFake(async (path) => {
+      if (path === manifestPath) {
+        return Promise.resolve(originalManifest);
+      } else if (path === existingPluginManifestPath) {
+        return Promise.resolve(originalPluginManifest);
+      } else {
+        return Promise.resolve({});
+      }
+    });
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false)
+      .withArgs(existingPluginManifestPath)
+      .resolves(true);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options,
+      {},
+      {
+        manifestPath: existingPluginManifestPath,
+        specPath: specPath,
+      }
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should not change manifest if it is declarative copilot", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+    const existingPluginManifestPath = "/path/to/your/pluginManifest.json";
+    const specPath = "/path/to/your/spec.yaml";
+    const relativePath = ManifestUpdater.getRelativePath(existingPluginManifestPath, specPath);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      copilotExtensions: {
+        declarativeCopilots: [
+          {
+            id: "repairDeclarativeCopilot",
+            file: "repairDeclarativeCopilot.json",
+          },
+        ],
+      },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      copilotExtensions: {
+        declarativeCopilots: [
+          {
+            id: "repairDeclarativeCopilot",
+            file: "repairDeclarativeCopilot.json",
+          },
+        ],
+      },
+    };
+    const originalPluginManifest = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.2",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: relativePath,
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      $schema: ConstantString.PluginManifestSchema,
+      schema_version: "v2.2",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").callsFake(async (path) => {
+      if (path === manifestPath) {
+        return Promise.resolve(originalManifest);
+      } else if (path === existingPluginManifestPath) {
+        return Promise.resolve(originalPluginManifest);
+      } else {
+        return Promise.resolve({});
+      }
+    });
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false)
+      .withArgs(existingPluginManifestPath)
+      .resolves(true);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+      isGptPlugin: true,
+    };
+    const [manifest, apiPlugin, warnings] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options,
+      {},
       {
         manifestPath: existingPluginManifestPath,
         specPath: specPath,
@@ -4617,7 +5189,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "oAuth2.0",
             oAuthConfiguration: {
-              oauthConfigurationId: "${{OAUTH_AUTH_CONFIGURATION_ID}}",
+              oauthConfigurationId: "${{OAUTH_AUTH_REGISTRATION_ID}}",
             },
           },
           commands: [

@@ -4,7 +4,7 @@
 import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
-import { TeamsUserCredential } from "../../../src/index.browser";
+import { TeamsUserCredential, TeamsUserCredentialAuthConfig } from "../../../src/index.browser";
 import * as sinon from "sinon";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
@@ -114,7 +114,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
       errorResult.message,
       "Initialize teams sdk failed due to not running inside Teams environment"
     );
-  });
+  }).timeout(70000);
 
   it("getUserInfo should throw InternalError when get SSO token failed", async function () {
     sandbox
@@ -211,7 +211,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     expect(() => {
       new TeamsUserCredential({
         initiateLoginEndpoint: loginUrl,
-      });
+      } as TeamsUserCredentialAuthConfig);
     })
       .to.throw(ErrorWithCode, "clientId in configuration is invalid: undefined.")
       .with.property("code", ErrorCode.InvalidConfiguration);

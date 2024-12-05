@@ -9,7 +9,6 @@ import chaiAsPromised from "chai-as-promised";
 import { UpdateAadAppDriver } from "../../../../src/component/driver/aad/update";
 import {
   MockedLogProvider,
-  MockedM365Provider,
   MockedTelemetryReporter,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
@@ -28,6 +27,7 @@ import {
   UnhandledError,
 } from "../../../../src/error/common";
 import { Platform, ok, err } from "@microsoft/teamsfx-api";
+import { MockedM365Provider } from "../../../core/utils";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 

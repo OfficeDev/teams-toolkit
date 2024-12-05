@@ -18,7 +18,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import fse from "fs-extra";
 import { toLower } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { convertProject } from "office-addin-project";
@@ -40,6 +39,7 @@ import { TemplateInfo } from "../templates/templateInfo";
 import { convertToLangKey } from "../utils";
 import { HelperMethods } from "./helperMethods";
 import { envUtil } from "../../utils/envUtil";
+import { getUuid } from "../../../common/stringUtils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -106,10 +106,9 @@ export class OfficeAddinGenerator {
     const capability = inputs[QuestionNames.Capabilities];
     const inputHost = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
-    const importProgressStr =
-      projectType === ProjectTypeOptions.officeAddin().id
-        ? getLocalizedString("core.generator.officeAddin.importOfficeProject.title")
-        : getLocalizedString("core.generator.officeAddin.importProject.title");
+    const importProgressStr = getLocalizedString(
+      "core.generator.officeAddin.importOfficeProject.title"
+    );
     const importProgress = context.userInteraction.createProgressBar(importProgressStr, 3);
 
     process.chdir(addinRoot);
@@ -142,7 +141,7 @@ export class OfficeAddinGenerator {
         const projectLink =
           projectType === ProjectTypeOptions.officeMetaOS().id
             ? "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/json-wxpo-preview.zip"
-            : "https://github.com/OfficeDev/Office-Addin-TaskPane/archive/yo-office.zip";
+            : "";
 
         // Copy project template files from project repository
         if (projectLink) {
@@ -179,7 +178,7 @@ export class OfficeAddinGenerator {
         );
         if (manifestFile.endsWith(".xml")) {
           // Need to convert to json project first
-          await convertProject(manifestFile);
+          await convertProject(manifestFile, "./backup.zip", "", true);
           manifestFile = manifestFile.replace(/\.xml$/, ".json");
         }
         inputs[QuestionNames.OfficeAddinHost] = await getHost(manifestFile);
@@ -258,7 +257,9 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
         : lang;
     const res = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
     if (res.isErr()) return err(res.error);
-    return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
+    return Promise.resolve(
+      ok([{ templateName: tplName, language: lang, replaceMap: { manifestId: getUuid() } }])
+    );
   }
 
   async post(

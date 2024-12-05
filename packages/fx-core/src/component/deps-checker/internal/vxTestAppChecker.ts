@@ -1,18 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
-import * as path from "path";
 import * as os from "os";
+import * as path from "path";
 
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { Messages } from "../constant";
-import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
+import { ConfigFolderName, UserError } from "@microsoft/teamsfx-api";
+import {
+  VxTestAppInvalidInstallOptionsError,
+  VxTestAppValidationError,
+} from "../../../error/depCheck";
+import { BaseInstallOptions, DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType, BaseInstallOptions } from "../depsChecker";
 import { isMacOS, isWindows } from "../util";
-import { createSymlink } from "../util/fileHelper";
 import { downloadToTempFile, unzip } from "../util/downloadHelper";
+import { createSymlink } from "../util/fileHelper";
 
 interface InstallOptionsSafe {
   version: string;
@@ -53,7 +55,7 @@ export class VxTestAppChecker implements DepsChecker {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         // documentation no longer exists, replaced with empty string.
-        new VxTestAppCheckError(Messages.failToValidateVxTestAppInstallOptions(), "")
+        new VxTestAppInvalidInstallOptionsError()
       );
     }
 
@@ -77,7 +79,7 @@ export class VxTestAppChecker implements DepsChecker {
     if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         // documentation no longer exists, replaced with empty string.
-        new VxTestAppCheckError(Messages.failToValidateVxTestApp(), "")
+        new VxTestAppValidationError()
       );
     }
 
@@ -99,7 +101,7 @@ export class VxTestAppChecker implements DepsChecker {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         // documentation no longer exists, replaced with empty string.
-        new VxTestAppCheckError(Messages.failToValidateVxTestAppInstallOptions(), "")
+        new VxTestAppValidationError()
       );
     }
 
@@ -175,7 +177,7 @@ export class VxTestAppChecker implements DepsChecker {
   }
 
   private static newDependencyStatusForInstallError(
-    error: DepsCheckerError,
+    error: UserError,
     version?: string
   ): DependencyStatus {
     return {

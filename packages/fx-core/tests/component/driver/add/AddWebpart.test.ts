@@ -9,12 +9,7 @@ import sinon from "sinon";
 import * as path from "path";
 import * as uuid from "uuid";
 
-import {
-  MockedAzureAccountProvider,
-  MockedLogProvider,
-  MockedM365Provider,
-  MockedUserInteraction,
-} from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 import { AddWebPartDriver } from "../../../../src/component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../../../../src/component/driver/add/interface/AddWebPartArgs";
 import { Constants } from "../../../../src/component/driver/add/utility/constants";
@@ -24,6 +19,7 @@ import { ManifestUtils } from "../../../../src/component/driver/teamsApp/utils/M
 import { AppStudioResultFactory } from "../../../../src/component/driver/teamsApp/results";
 import { setTools } from "../../../../src/common/globalVars";
 import { InstallSoftwareError } from "../../../../src/error/common";
+import { MockedAzureAccountProvider, MockedM365Provider } from "../../../core/utils";
 
 describe("Add web part driver", async () => {
   const args: AddWebPartArgs = {

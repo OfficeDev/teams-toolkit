@@ -7,15 +7,23 @@ namespace {{SafeProjectName}}
     public class Repair
     {
         private readonly ILogger _logger;
+        private readonly AuthMiddleware _authMiddleware;
 
-        public Repair(ILoggerFactory loggerFactory)
+        public Repair(ILoggerFactory loggerFactory, AuthMiddleware authMiddleware)
         {
             _logger = loggerFactory.CreateLogger<Repair>();
+            _authMiddleware = authMiddleware;
         }
 
         [Function("repair")]
         public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
+            if (!await _authMiddleware.ValidateTokenAsync(req, _logger))
+            {
+                var unauthorizedResponse = req.CreateResponse(System.Net.HttpStatusCode.Unauthorized);
+                return unauthorizedResponse;
+            }
+            
             // Log that the HTTP trigger function received a request.
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 

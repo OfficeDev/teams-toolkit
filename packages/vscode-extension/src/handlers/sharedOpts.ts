@@ -122,6 +122,10 @@ export async function runCommand(
         result = await core.addPlugin(inputs);
         break;
       }
+      case Stage.kiotaRegenerate: {
+        result = await core.kiotaRegenerate(inputs);
+        break;
+      }
       default:
         throw new SystemError(
           ExtensionSource,

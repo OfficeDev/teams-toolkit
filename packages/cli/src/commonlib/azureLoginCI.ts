@@ -8,7 +8,14 @@ import * as identity from "@azure/identity";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  ConfigFolderName,
+  FxError,
+  ok,
+  Result,
+  SubscriptionInfo,
+} from "@microsoft/teamsfx-api";
 import { LoginStatus, login } from "./common/login";
 
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
@@ -17,7 +24,7 @@ import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import CLILogProvider from "./log";
-import { ConvertTokenToJson } from "./codeFlowTenantLogin";
+import { ConvertTokenToJson } from "./codeFlowLogin";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -115,6 +122,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     await AzureSpCrypto.clearAzureSP();
     return true;
   }
+
+  switchTenant(tenantId: string): Promise<Result<TokenCredential, FxError>> {
+    return Promise.resolve(ok(AzureAccountManager.tokenCredential));
+  }
+
   async getStatus(): Promise<LoginStatus> {
     await this.load();
     if (

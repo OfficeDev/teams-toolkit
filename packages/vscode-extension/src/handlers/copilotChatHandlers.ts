@@ -158,6 +158,8 @@ async function invoke(
   eventName: string,
   triggerFromProperty: { [key: string]: TelemetryTriggerFrom }
 ): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InvokeTeamsAgentStart, triggerFromProperty);
+  let res: Result<null, FxError>;
   const skipRemindInstallTeamsAgent = await globalStateGet(
     GlobalKey.DoNotRemindInstallTeamsAgent,
     false
@@ -241,11 +243,26 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
   const triggerFromProperty = getTriggerFromProperty(args);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InvokeTeamsAgentStart, triggerFromProperty);
 
-  const query =
-    triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView ||
-    triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
-      ? "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development."
-      : "@teamsapp Write your own query message to find relevant templates or samples to build your Teams app and agent as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
+  let query = "";
+  switch (triggerFromProperty[TelemetryProperty.TriggerFrom]) {
+    case TelemetryTriggerFrom.TreeView:
+      query =
+        "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development.";
+      break;
+    case TelemetryTriggerFrom.CommandPalette:
+      query =
+        "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development.";
+      break;
+    case TelemetryTriggerFrom.WalkThroughIntroduction:
+      query = "@teamsapp What is notification bot in Teams?";
+      break;
+    case TelemetryTriggerFrom.WalkThroughCreate:
+      query = "@teamsapp How to create notification bot with Teams Toolkit?";
+      break;
+    default:
+      query =
+        "@teamsapp Write your own query message to find relevant templates or samples to build your Teams app and agent as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";
+  }
   const res = await invoke(query, eventName, triggerFromProperty);
 
   if (res.isErr()) {

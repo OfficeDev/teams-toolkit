@@ -1471,6 +1471,15 @@
         "description": "%teamstoolkit.walkthroughs.withChat.description%",
         "steps": [
           {
+            "id": "teamsToolkitIntroductionWithChat",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitIntroductionWithChat.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitIntroductionWithChat.description%",
+            "media": {
+              "svg": "media/walkthroughs/get-started/introduction.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitIntroductionWithChat.title%"
+            }
+          },
+          {
             "id": "teamsToolkitEnvironment",
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",

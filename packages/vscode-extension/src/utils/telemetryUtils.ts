@@ -75,6 +75,10 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CreateAppQuestionFlow };
     case TelemetryTriggerFrom.EditorContextMenu:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.EditorContextMenu };
+    case TelemetryTriggerFrom.WalkThroughCreate:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThroughCreate };
+    case TelemetryTriggerFrom.WalkThroughIntroduction:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThroughIntroduction };
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }

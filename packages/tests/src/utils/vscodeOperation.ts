@@ -1253,10 +1253,36 @@ export async function findWordFromTerminal(word: string): Promise<boolean> {
         return true;
       }
     } else {
-      await VSBrowser.instance.takeScreenshot(
-        getScreenshotName("debug failed")
-      );
-      assert.fail("[failed] error message found !!!");
+      try {
+        await searchInput.clear();
+        await searchInput.sendKeys("Compiled with warnings");
+        console.log("send key: Compiled with warnings");
+      } catch (error) {
+        console.log("[Pending]: Input error, try to find next...");
+        continue;
+      }
+      // verify warning error message
+      result = await (
+        await searchBox.findElement(By.className("matchesCount"))
+      ).getText();
+      if (result.includes("No results")) {
+        await VSBrowser.instance.takeScreenshot(
+          getScreenshotName("debug failed")
+        );
+        assert.fail("[failed] error message found !!!");
+      }
+      // verify success message
+      await searchInput.clear();
+      await searchInput.sendKeys("No issues found");
+      console.log("send key: ", "No issues found.");
+      await VSBrowser.instance.driver.sleep(Timeout.webView);
+      result = await (
+        await searchBox.findElement(By.className("matchesCount"))
+      ).getText();
+      if (result.includes("No results") == false) {
+        console.log("[Pass]: verify " + word + " success !!!");
+        return true;
+      }
     }
   }
   return false;

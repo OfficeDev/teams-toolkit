@@ -53,7 +53,7 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
   componentName = "copilot-extension-from-scratch-generator";
   public activate(context: Context, inputs: Inputs): boolean {
     return (
-      (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id &&
+      (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id &&
         inputs[QuestionNames.ApiPluginType] !== ApiPluginStartOptions.apiSpec().id) ||
       (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id &&
         inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.newApi().id)
@@ -81,7 +81,6 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
         inputs.placeProjectFileInSolutionDir === "true"
       ),
       DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
-      FileFunction: featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc) ? "true" : "",
       MicrosoftEntra: auth === ApiAuthOptions.microsoftEntra().id ? "true" : "",
     };
 
@@ -89,7 +88,7 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
       if (fileName.toLowerCase().includes("declarativeagent.json")) {
         return isDeclarativeCopilot;
       } else if (fileName.includes(declarativeCopilotInstructionFileName)) {
-        return isDeclarativeCopilot && featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc);
+        return isDeclarativeCopilot;
       } else {
         return true;
       }
@@ -178,5 +177,5 @@ export class CopilotExtensionGenerator extends DefaultTemplateGenerator {
 }
 
 function checkDeclarativeCopilot(inputs: Inputs) {
-  return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+  return inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id;
 }

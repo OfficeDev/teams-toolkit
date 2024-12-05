@@ -101,7 +101,7 @@ class Coordinator {
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id &&
       !inputs[QuestionNames.ApiPluginManifestPath] &&
       (inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id ||
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id)
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id)
     ) {
       const lastCommand =
         inputs[QuestionNames.Capabilities] === CapabilityOptions.apiPlugin().id
@@ -708,11 +708,13 @@ class Coordinator {
       let hasError = false;
       try {
         const steps = projectModel.deploy.driverDefs.length;
-        ctx.progressBar = ctx.ui?.createProgressBar(
-          getLocalizedString("core.progress.deploy"),
-          steps
-        );
-        await ctx.progressBar?.start();
+        if (inputs.platform !== Platform.CLI) {
+          ctx.progressBar = ctx.ui?.createProgressBar(
+            getLocalizedString("core.progress.deploy"),
+            steps
+          );
+          await ctx.progressBar?.start();
+        }
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
@@ -739,7 +741,9 @@ class Coordinator {
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
-        await ctx.progressBar?.end(!hasError);
+        if (inputs.platform !== Platform.CLI) {
+          await ctx.progressBar?.end(!hasError);
+        }
       }
     } else {
       return err(new LifeCycleUndefinedError("deploy"));

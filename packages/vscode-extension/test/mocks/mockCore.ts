@@ -155,4 +155,8 @@ export class MockCore {
   async addPlugin(inputs: Inputs): Promise<Result<undefined, FxError>> {
     return ok(undefined);
   }
+
+  async kiotaRegenerate(inputs: Inputs): Promise<Result<any, FxError>> {
+    return ok(undefined);
+  }
 }

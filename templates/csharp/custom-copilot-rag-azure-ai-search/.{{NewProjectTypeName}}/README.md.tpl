@@ -57,7 +57,8 @@ This app template also demonstrates usage of techniques like:
 
 ### Debug bot app in Teams App Test Tool
 1. Create your Azure AI Search document index as mentioned above.
-1. Select `Teams App Test Tool (browser)` in debug dropdown menu.
+1. Set `Startup Item` as `Teams App Test Tool (browser)`.
+![image](https://github.com/user-attachments/assets/41121a95-5c13-4bda-8f69-3b970a4e8f78)
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
 1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response.
 
@@ -91,6 +92,7 @@ This app template also demonstrates usage of techniques like:
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel.
 1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies.
 1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want to install the app to.
+1. Set `Startup Item` as `Microsoft Teams (browser)`.
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
 1. In the launched browser, select the Add button to load the app in Teams.
 1. In the chat bar, type and send anything to your bot to trigger a response.

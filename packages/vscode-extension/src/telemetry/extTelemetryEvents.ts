@@ -195,7 +195,8 @@ export enum TelemetryEvent {
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
   OpenCopilotEnroll = "open-copilot-enroll",
-  OpenSideloadingLearnMore = "open-sideloading-learn-more",
+  OpenSideloadingEnable = "open-sideloading-learn-more",
+  OpenTestTenantLink = "open-test-tenant-link",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -277,8 +278,13 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  // Teams Github Copilot UI
   InvokeTeamsAgentStart = "invoke-teams-agent-start",
   InvokeTeamsAgent = "invoke-teams-agent",
+  TroubleshootSelectedTextStart = "troubleshoot-selected-text-start",
+  TroubleshootSelectedText = "troubleshoot-selected-text",
+  TroubleshootErrorFromNotificationStart = "troubleshoot-error-from-notification-start",
+  TroubleshootErrorFromNotification = "troubleshoot-error-from-notification",
 
   // Copilot Chat
   CopilotChatStart = "copilot-chat-start",
@@ -303,6 +309,9 @@ export enum TelemetryEvent {
   UpdateAddPluginTreeview = "update-add-plugin-tree-view",
 
   AddPluginWithManifest = "add-plugin-with-manifest",
+
+  KiotaRegenerateStart = "kiota-regenerate-start",
+  KiotaRegenerate = "kiota-regenerate",
 }
 
 export enum TelemetryProperty {
@@ -451,11 +460,11 @@ export enum TelemetryTriggerFrom {
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",
   AccountHelp = "AccountHelp",
-  SideloadingDisabled = "SideloadingDisabled",
   SampleGallery = "SampleGallery",
   SampleDetailPage = "SampleDetailPage",
   CopilotChat = "CopilotChat",
   CreateAppQuestionFlow = "CreateAppQuestionFlow",
+  EditorContextMenu = "EditorContextMenu",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

@@ -2,11 +2,7 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem, Platform } from "@microsoft/teamsfx-api";
-import {
-  FeatureFlags,
-  featureFlagManager,
-  isCopilotExtensionEnabled,
-} from "../common/featureFlags";
+import { FeatureFlags, featureFlagManager } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 
@@ -220,11 +216,9 @@ export class ProjectTypeOptions {
       label: `${platform === Platform.VSCode ? "$(symbol-keyword) " : ""}${getLocalizedString(
         "core.MessageExtensionOption.label"
       )}`,
-      detail: isCopilotExtensionEnabled()
-        ? getLocalizedString(
-            "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
-          )
-        : getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
+      ),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
@@ -270,13 +264,13 @@ export class ProjectTypeOptions {
     ];
   }
 
-  static copilotExtension(platform?: Platform): OptionItem {
+  static Agent(platform?: Platform): OptionItem {
     return {
       id: "copilot-agent-type",
-      label: `${
-        platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
-      }${getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.label")}`,
-      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotExtension.detail"),
+      label: `${platform === Platform.VSCode ? "$(teamsfx-agent) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.declarativeAgent.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.detail"),
       groupName: ProjectTypeOptions.getCreateGroupName(),
     };
   }
@@ -462,9 +456,7 @@ export class CapabilityOptions {
     return {
       id: "search-app",
       label: `${getLocalizedString("core.M365SearchAppOptionItem.label")}`,
-      detail: isCopilotExtensionEnabled()
-        ? getLocalizedString("core.M365SearchAppOptionItem.copilot.detail")
-        : getLocalizedString("core.M365SearchAppOptionItem.detail"),
+      detail: getLocalizedString("core.M365SearchAppOptionItem.copilot.detail"),
     };
   }
 
@@ -522,7 +514,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
       CapabilityOptions.empty(),
-      ...CapabilityOptions.copilotExtensions(inputs),
+      ...CapabilityOptions.agents(),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
@@ -621,17 +613,8 @@ export class CapabilityOptions {
     return items;
   }
 
-  static copilotExtensions(inputs?: Inputs, isStatic?: boolean): OptionItem[] {
-    if (isStatic) {
-      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
-    }
-    if (inputs && getRuntime(inputs) === RuntimeOptions.DotNet().id) {
-      return [CapabilityOptions.apiPlugin()];
-    } else if (isCopilotExtensionEnabled()) {
-      return [CapabilityOptions.apiPlugin(), CapabilityOptions.declarativeCopilot()];
-    } else {
-      return [CapabilityOptions.declarativeCopilot()];
-    }
+  static agents(): OptionItem[] {
+    return [CapabilityOptions.declarativeAgent()];
   }
 
   static customCopilots(): OptionItem[] {
@@ -660,7 +643,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.copilotExtensions(inputs, true),
+      ...CapabilityOptions.agents(),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
@@ -680,7 +663,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
-    capabilityOptions.push(...CapabilityOptions.copilotExtensions());
+    capabilityOptions.push(...CapabilityOptions.agents());
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest)) {
       // test templates that are used by TDP integration only
@@ -743,13 +726,11 @@ export class CapabilityOptions {
   }
 
   // copilot extension - declarative copilot
-  static declarativeCopilot(): OptionItem {
+  static declarativeAgent(): OptionItem {
     return {
       id: "declarative-agent",
-      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeCopilot.label"),
-      detail: getLocalizedString(
-        "core.createProjectQuestion.projectType.declarativeCopilot.detail"
-      ),
+      label: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.label"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.declarativeAgent.detail"),
     };
   }
 
@@ -913,9 +894,7 @@ export class MeArchitectureOptions {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
-      isCopilotExtensionEnabled()
-        ? MeArchitectureOptions.botPlugin()
-        : MeArchitectureOptions.botMe(),
+      MeArchitectureOptions.botPlugin(),
     ];
   }
 
@@ -1299,7 +1278,7 @@ export class ApiPluginStartOptions {
   static all(inputs: Inputs, doesProjectExists?: boolean): OptionItem[] {
     if (doesProjectExists) {
       return [ApiPluginStartOptions.apiSpec(), ApiPluginStartOptions.existingPlugin()];
-    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id) {
+    } else if (inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id) {
       return [
         ApiPluginStartOptions.newApi(),
         ApiPluginStartOptions.apiSpec(),

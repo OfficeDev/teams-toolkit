@@ -7,7 +7,6 @@ import {
   TemplateProjectFolder,
   Capability,
   LocalDebugError,
-  Project,
 } from "./constants";
 import path from "path";
 import fs from "fs-extra";
@@ -19,7 +18,6 @@ import {
 } from "child_process";
 import { expect } from "chai";
 import { Env } from "./env";
-import { on } from "events";
 
 export class Executor {
   static async execute(
@@ -44,12 +42,17 @@ export class Executor {
         const result = await execAsync(command, options);
 
         if (result.stderr) {
-          if (
-            skipErrorMessage &&
-            result.stderr.toLowerCase().includes(skipErrorMessage)
-          ) {
-            console.log(`[Skip Warning] ${result.stderr}`);
-            return { success: true, ...result };
+          if (skipErrorMessage) {
+            if (
+              result.stderr.includes(skipErrorMessage) ||
+              result.stderr.toLowerCase().includes(skipErrorMessage) ||
+              result.stderr
+                .toLowerCase()
+                .includes(LocalDebugError.DeprecatedError)
+            ) {
+              console.log(`[Skip Warning] ${result.stderr}`);
+              return { success: true, ...result };
+            }
           }
           // the command exit with 0
           console.log(
@@ -220,7 +223,15 @@ export class Executor {
   }
 
   static async deploy(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "deploy", env);
+    return this.executeCmd(
+      workspace,
+      "deploy",
+      env,
+      undefined,
+      undefined,
+      undefined,
+      LocalDebugError.WarningCapError
+    );
   }
 
   static async deployWithCustomizedProcessEnv(

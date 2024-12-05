@@ -41,10 +41,18 @@ export async function onSwitchM365Tenant(...args: unknown[]): Promise<void> {
     };
     const result = await VS_CODE_UI.selectOption(config);
     if (result.isOk()) {
+      const progressHandler = VS_CODE_UI.createProgressBar(
+        localize("teamstoolkit.commands.switchTenant.progressbar.title"),
+        1
+      );
+      await progressHandler.start();
+      await progressHandler.next(localize("teamstoolkit.commands.switchTenant.progressbar.detail"));
       const switchRes = await M365TokenInstance.switchTenant(result.value.result as string);
+      await progressHandler.end(switchRes.isOk());
       if (switchRes.isOk()) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
           [TelemetryProperty.AccountType]: AccountType.M365,
+          [TelemetryProperty.TenantId]: result.value.result as string,
           ...getTriggerFromProperty(args),
         });
         return;
@@ -100,10 +108,18 @@ export async function onSwitchAzureTenant(...args: unknown[]): Promise<void> {
   const result = await VS_CODE_UI.selectOption(config);
   let error: any;
   if (result.isOk()) {
+    const progressHandler = VS_CODE_UI.createProgressBar(
+      localize("teamstoolkit.commands.switchTenant.progressbar.title"),
+      1
+    );
+    await progressHandler.start();
+    await progressHandler.next(localize("teamstoolkit.commands.switchTenant.progressbar.detail"));
     const switchRes = await azureAccountManager.switchTenant(result.value.result as string);
+    await progressHandler.end(switchRes.isOk());
     if (switchRes.isOk()) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SwitchTenant, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
+        [TelemetryProperty.TenantId]: result.value.result as string,
         ...getTriggerFromProperty(args),
       });
       return;

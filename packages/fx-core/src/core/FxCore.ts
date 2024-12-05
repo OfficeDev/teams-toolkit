@@ -4,6 +4,7 @@
 import { hooks } from "@feathersjs/hooks";
 import {
   AuthType,
+  ListAPIResult,
   ProjectType,
   SpecParser,
   SpecParserError,
@@ -1679,7 +1680,7 @@ export class FxCore {
 
       const authNames: Set<string> = new Set();
       const serverUrls: Set<string> = new Set();
-      let authScheme: AuthType | undefined = undefined;
+      const authNamesDict: Record<string, AuthType> = {};
       for (const api of operations) {
         const operation = apiResultList.find((op) => op.api === api);
         if (
@@ -1690,26 +1691,24 @@ export class FxCore {
         ) {
           authNames.add(operation.auth.name);
           serverUrls.add(operation.server);
-          authScheme = operation.auth.authScheme;
+          authNamesDict[operation.auth.name] = operation.auth.authScheme;
         }
-      }
-
-      if (authNames.size > 1) {
-        throw new MultipleAuthError(authNames);
       }
 
       if (serverUrls.size > 1) {
         throw new MultipleServerError(serverUrls);
       }
 
-      if (authNames.size === 1 && authScheme) {
-        await injectAuthAction(
-          inputs.projectPath!,
-          [...authNames][0],
-          authScheme,
-          outputApiSpecPath,
-          false
-        );
+      if (authNames.size >= 1) {
+        for (const authName of authNames) {
+          await injectAuthAction(
+            inputs.projectPath!,
+            [...authNames][0],
+            authNamesDict[authName],
+            outputApiSpecPath,
+            false
+          );
+        }
       }
 
       let pluginPath: string | undefined;
@@ -1855,6 +1854,7 @@ export class FxCore {
       !!!inputs[QuestionNames.ApiPluginManifestPath]
     ) {
       return ok({
+        projectPath: inputs.projectPath,
         lastCommand: KiotaLastCommands.addPlugin,
         manifestPath: inputs[QuestionNames.ManifestPath],
       });
@@ -1866,6 +1866,7 @@ export class FxCore {
     const isGenerateFromApiSpec =
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id;
     const isKiotaIntegration =
+      inputs.platform === Platform.VSCode &&
       featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
       !!inputs[QuestionNames.ApiPluginManifestPath];
 
@@ -1912,8 +1913,7 @@ export class FxCore {
 
     // Will be used if generating from API spec
     let specParser: SpecParser | undefined = undefined;
-    let authName: string | undefined = undefined;
-    let authScheme: AuthType | undefined = undefined;
+    let authNameAndSchemes: { authName: string; authScheme: AuthType }[] = [];
 
     if (isGenerateFromApiSpec) {
       specParser = new SpecParser(
@@ -1921,7 +1921,6 @@ export class FxCore {
         getParserOptions(ProjectType.Copilot, true)
       );
       const listResult = await specParser.list();
-      const authApis = listResult.APIs.filter((value) => value.isValid && !!value.auth);
       if (
         inputs.platform === Platform.VSCode &&
         featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
@@ -1932,21 +1931,9 @@ export class FxCore {
           (value) => value.api
         );
       }
-      for (const api of inputs[QuestionNames.ApiOperation] as string[]) {
-        const operation = authApis.find((op) => op.api === api);
-        if (
-          operation &&
-          operation.auth &&
-          (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
-            Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))
-        ) {
-          authName = operation.auth.name;
-          authScheme = operation.auth.authScheme;
-          break; // Only one auth is supported for one plugin for now.
-        }
-      }
+      authNameAndSchemes = this.parseAuthNameAndScheme(listResult, inputs);
 
-      if (authName && authScheme) {
+      if (authNameAndSchemes.length > 0) {
         const doesLocalYamlPathExists = await fs.pathExists(
           path.join(inputs.projectPath, MetadataV3.localConfigFile)
         );
@@ -1993,20 +1980,19 @@ export class FxCore {
     let destinationPluginManifestPath: string;
     // generate files
     if (isGenerateFromApiSpec && specParser) {
-      destinationPluginManifestPath =
-        await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(
-          appPackageFolder,
-          isKiotaIntegration
-            ? path.basename(inputs[QuestionNames.ApiPluginManifestPath])
-            : undefined,
-          isKiotaIntegration
-        );
-      const destinationApiSpecPath = await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
-        inputs[QuestionNames.ApiSpecLocation].trim(),
-        path.join(appPackageFolder, isKiotaIntegration ? "" : DefaultApiSpecFolderName),
-        isKiotaIntegration ? path.basename(inputs[QuestionNames.ApiSpecLocation]) : undefined,
-        isKiotaIntegration
-      );
+      destinationPluginManifestPath = isKiotaIntegration
+        ? inputs[QuestionNames.ApiPluginManifestPath].trim()
+        : await copilotGptManifestUtils.getDefaultNextAvailablePluginManifestPath(
+            appPackageFolder,
+            undefined
+          );
+      const destinationApiSpecPath = isKiotaIntegration
+        ? inputs[QuestionNames.ApiSpecLocation].trim()
+        : await pluginManifestUtils.getDefaultNextAvailableApiSpecPath(
+            inputs[QuestionNames.ApiSpecLocation].trim(),
+            path.join(appPackageFolder, DefaultApiSpecFolderName),
+            undefined
+          );
 
       const generateRes = await generateFromApiSpec(
         specParser,
@@ -2045,27 +2031,14 @@ export class FxCore {
         return err(addActionRes.error);
       }
 
-      // update teamspp.local.yaml and teamsapp.yaml if auth action is needed
-      if (authName && authScheme) {
-        const authInjectRes = await injectAuthAction(
+      for (const authNameAndScheme of authNameAndSchemes) {
+        await this.updateAuthActionInYaml(
+          authNameAndScheme.authName,
+          authNameAndScheme.authScheme,
           inputs.projectPath,
-          authName,
-          authScheme,
           destinationApiSpecPath,
-          true
+          destinationPluginManifestPath
         );
-        if (
-          authInjectRes?.defaultRegistrationIdEnvName &&
-          authInjectRes?.registrationIdEnvName &&
-          authInjectRes.defaultRegistrationIdEnvName !== authInjectRes.registrationIdEnvName
-        ) {
-          const pluginManifestContent = await fs.readFile(destinationPluginManifestPath, "utf-8");
-          const updatedPluginManifestContext = pluginManifestContent.replace(
-            authInjectRes.defaultRegistrationIdEnvName,
-            authInjectRes.registrationIdEnvName
-          );
-          await fs.writeFile(destinationPluginManifestPath, updatedPluginManifestContext);
-        }
       }
     } else {
       const addPluginRes = await addExistingPlugin(
@@ -2108,6 +2081,190 @@ export class FxCore {
     }
 
     return ok(undefined);
+  }
+
+  /**
+   * Kiota regenerate
+   * Need to update da manifest and update teamsapp.yml
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: Stage.addPlugin }),
+    ErrorHandlerMW,
+    QuestionMW("kiotaRegenerate"),
+    ConcurrentLockerMW,
+  ])
+  async kiotaRegenerate(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (!inputs.projectPath) {
+      throw new Error("projectPath is undefined"); // should never happen
+    }
+
+    const teamsManifestPath = inputs[QuestionNames.ManifestPath];
+    const appPackageFolder = path.dirname(teamsManifestPath);
+    const context = createContext();
+
+    // validate the project is valid for adding plugin
+    const manifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+
+    const teamsManifest = manifestRes.value;
+    const declarativeGpt = teamsManifest.copilotExtensions
+      ? teamsManifest.copilotExtensions.declarativeCopilots?.[0]
+      : teamsManifest.copilotAgents?.declarativeAgents?.[0];
+    if (!declarativeGpt?.file) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message(
+            "declarativeCopilots",
+            teamsManifestPath
+          )
+        )
+      );
+    }
+    const gptManifestFilePathRes = await copilotGptManifestUtils.getManifestPath(teamsManifestPath);
+    if (gptManifestFilePathRes.isErr()) {
+      return err(gptManifestFilePathRes.error);
+    }
+
+    const declarativeCopilotManifestPath = gptManifestFilePathRes.value;
+
+    const declarativeCopilotManifesRes = await copilotGptManifestUtils.readCopilotGptManifestFile(
+      declarativeCopilotManifestPath
+    );
+    if (declarativeCopilotManifesRes.isErr()) {
+      return err(declarativeCopilotManifesRes.error);
+    }
+
+    const declarativeCopilotManifest = declarativeCopilotManifesRes.value;
+    const pluginManifestFilePath = inputs[QuestionNames.ApiPluginManifestPath];
+
+    let actionId = "";
+    declarativeCopilotManifest.actions?.forEach((action) => {
+      const actionFilePath = path.normalize(path.join(appPackageFolder, action.file));
+      if (actionFilePath.toLowerCase() === path.normalize(pluginManifestFilePath).toLowerCase()) {
+        actionId = action.id;
+      }
+    });
+
+    // Does not found same plugin manifest in da manifest, so add a new action
+    // Should not happen when regenerate
+    if (!actionId) {
+      let suffix = 1;
+      actionId = `action_${suffix}`;
+      const existingActionIds = declarativeCopilotManifest.actions?.map((action) => action.id);
+      while (existingActionIds?.includes(actionId)) {
+        suffix += 1;
+        actionId = `action_${suffix}`;
+      }
+
+      const addActionRes = await copilotGptManifestUtils.addAction(
+        declarativeCopilotManifestPath,
+        actionId,
+        normalizePath(path.relative(appPackageFolder, pluginManifestFilePath), true)
+      );
+
+      if (addActionRes.isErr()) {
+        return err(addActionRes.error);
+      }
+    }
+
+    // Update teamsapp.local.yaml and teamsapp.yaml if need to add auth action
+    const specPath = inputs[QuestionNames.ApiSpecLocation].trim();
+    const specParser = new SpecParser(specPath, getParserOptions(ProjectType.Copilot, true));
+    const listResult = await specParser.list();
+    inputs[QuestionNames.ApiOperation] = listResult.APIs.filter((value) => value.isValid).map(
+      (value) => value.api
+    );
+
+    const authNameAndSchemes = this.parseAuthNameAndScheme(listResult, inputs);
+    for (const authInfo of authNameAndSchemes) {
+      await this.updateAuthActionInYaml(
+        authInfo.authName,
+        authInfo.authScheme,
+        inputs.projectPath,
+        specPath,
+        pluginManifestFilePath,
+        false
+      );
+    }
+
+    // Add dc to plugin manifest
+    const generateRes = await generateFromApiSpec(
+      specParser,
+      teamsManifestPath,
+      inputs,
+      context,
+      Stage.kiotaRegenerate,
+      ProjectType.Copilot,
+      {
+        destinationApiSpecFilePath: inputs[QuestionNames.ApiSpecLocation].trim(),
+        pluginManifestFilePath: inputs[QuestionNames.ApiPluginManifestPath].trim(),
+      }
+    );
+    if (generateRes.isErr()) {
+      return err(generateRes.error);
+    }
+
+    return ok(undefined);
+  }
+
+  private async updateAuthActionInYaml(
+    authName: string | undefined,
+    authScheme: AuthType | undefined,
+    projectPath: string,
+    apSpecPath: string,
+    pluginManifestPath: string,
+    forceToAddNew = true
+  ): Promise<void> {
+    if (authName && authScheme) {
+      const authInjectRes = await injectAuthAction(
+        projectPath,
+        authName,
+        authScheme,
+        apSpecPath,
+        forceToAddNew
+      );
+      if (
+        authInjectRes?.defaultRegistrationIdEnvName &&
+        authInjectRes?.registrationIdEnvName &&
+        authInjectRes.defaultRegistrationIdEnvName !== authInjectRes.registrationIdEnvName
+      ) {
+        const pluginManifestContent = await fs.readFile(pluginManifestPath, "utf-8");
+        const updatedPluginManifestContext = pluginManifestContent.replace(
+          authInjectRes.defaultRegistrationIdEnvName,
+          authInjectRes.registrationIdEnvName
+        );
+        await fs.writeFile(pluginManifestPath, updatedPluginManifestContext);
+      }
+    }
+  }
+
+  private parseAuthNameAndScheme(
+    listResult: ListAPIResult,
+    inputs: Inputs
+  ): { authName: string; authScheme: AuthType }[] {
+    const authApis = listResult.APIs.filter((value) => value.isValid && !!value.auth);
+    const result: {
+      authName: string;
+      authScheme: AuthType;
+    }[] = [];
+    for (const api of inputs[QuestionNames.ApiOperation] as string[]) {
+      const operation = authApis.find((op) => op.api === api);
+      if (
+        operation &&
+        operation.auth &&
+        (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
+          Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))
+      ) {
+        if (result.find((value) => value.authName === operation.auth!.name)) {
+          continue;
+        }
+        result.push({ authName: operation.auth.name, authScheme: operation.auth.authScheme });
+      }
+    }
+    return result;
   }
 
   /**

@@ -2,7 +2,12 @@
 // Licensed under the MIT license.
 
 import { UserError, SystemError, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import { isUserCancelError, ConcurrentError } from "@microsoft/teamsfx-core";
+import {
+  isUserCancelError,
+  ConcurrentError,
+  featureFlagManager,
+  FeatureFlags as CoreFeatureFlags,
+} from "@microsoft/teamsfx-core";
 import { Uri, commands, window } from "vscode";
 import {
   RecommendedOperations,
@@ -14,7 +19,11 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { anonymizeFilePaths } from "../utils/fileSystemUtils";
 import { localize } from "../utils/localizeUtils";
 import { isTestToolEnabledProject } from "../utils/projectChecker";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
 
@@ -33,6 +42,20 @@ export async function showError(e: UserError | SystemError) {
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&
     workspaceUri?.fsPath &&
     isTestToolEnabledProject(workspaceUri.fsPath);
+
+  const shouldRecommendTeamsAgent = featureFlagManager.getBooleanValue(
+    CoreFeatureFlags.ChatParticipantUIEntries
+  );
+  const troubleshootErrorWithTeamsAgentButton = {
+    title: "Troubleshoot error with @teamsapp", // Localize
+    run: async () => {
+      await commands.executeCommand(
+        "fx-extension.teamsAgentTroubleshootError",
+        TelemetryTriggerFrom.Notification,
+        e
+      );
+    },
+  };
 
   if (recommendTestTool) {
     const recommendTestToolMessage = openTestToolMessage();
@@ -59,6 +82,9 @@ export async function showError(e: UserError | SystemError) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const buttons = recommendTestTool ? [runTestTool, help] : [help];
+    if (shouldRecommendTeamsAgent) {
+      buttons.push(troubleshootErrorWithTeamsAgentButton);
+    }
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       ...buttons
@@ -95,6 +121,9 @@ export async function showError(e: UserError | SystemError) {
     const buttons = recommendTestTool
       ? [runTestTool, issue, similarIssues]
       : [issue, similarIssues];
+    if (shouldRecommendTeamsAgent) {
+      buttons.push(troubleshootErrorWithTeamsAgentButton);
+    }
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       ...buttons
@@ -104,7 +133,13 @@ export async function showError(e: UserError | SystemError) {
     if (!(e instanceof ConcurrentError)) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
-      const buttons = recommendTestTool ? [runTestTool] : [];
+      const buttons: {
+        title: string;
+        run: () => void;
+      }[] = recommendTestTool ? [runTestTool] : [];
+      if (shouldRecommendTeamsAgent) {
+        buttons.push(troubleshootErrorWithTeamsAgentButton);
+      }
       const button = await window.showErrorMessage(
         `[${errorCode}]: ${notificationMessage}`,
         ...buttons

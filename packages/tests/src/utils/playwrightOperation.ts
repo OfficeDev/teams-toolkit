@@ -114,6 +114,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.RedditLink]: async () => {
     await startDebugging("Debug in Teams (Chrome)");
   },
+  [TemplateProject.IntelligentDataChart]: async () => {
+    await startDebugging("Debug (Chrome)");
+  },
 };
 
 export async function initPage(
@@ -404,7 +407,6 @@ export async function initTeamsPage(
         page.waitForNavigation(),
       ]);
       await page.waitForTimeout(Timeout.longTimeWait);
-      console.log("click add button");
 
       try {
         console.log("dismiss message");
@@ -415,13 +417,22 @@ export async function initTeamsPage(
 
       // default
       console.log("click add button");
-      let addInBtn;
+      let addBtn;
       try {
-        addInBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        addBtn = await page?.waitForSelector("button>span:has-text('Add')");
       } catch {
-        throw "error to add app";
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Open')");
+        } catch {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("add_page"),
+            fullPage: true,
+          });
+          throw "error to add app";
+        }
       }
-      await addInBtn?.click();
+      await addBtn?.click();
+
       if (options?.type === "meeting") {
         // select meeting tab in dialog box
         const dialog = await page.waitForSelector("div[role='dialog']");
@@ -567,11 +578,24 @@ export async function reopenTeamsPage(
       }
       if (addApp) {
         await page.waitForTimeout(Timeout.longTimeWait);
-        console.log("click add button");
         // default
-        const addBtn = await page?.waitForSelector(
-          "button>span:has-text('Add')"
-        );
+        console.log("click add button");
+        let addBtn;
+        try {
+          addBtn = await page?.waitForSelector("button>span:has-text('Add')");
+        } catch {
+          try {
+            addBtn = await page?.waitForSelector(
+              "button>span:has-text('Open')"
+            );
+          } catch {
+            await page.screenshot({
+              path: getPlaywrightScreenshotPath("add_page"),
+              fullPage: true,
+            });
+            throw "error to add app";
+          }
+        }
         await addBtn?.click();
       }
       await page.waitForTimeout(Timeout.shortTimeLoading);
@@ -2343,6 +2367,7 @@ export async function validateDashboardTab(page: Page) {
         }
       }
     });
+
     console.log("start to verify dashboard tab");
     await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(
@@ -2704,7 +2729,7 @@ export async function validateLargeNotificationBot(
         console.log(e);
       }
       try {
-        await frame?.waitForSelector('p:has-text("Hello World")');
+        await frame?.waitForSelector('p:has-text("New Event Occurred!")');
       } catch (e) {
         throw e;
       }
@@ -2995,6 +3020,49 @@ export async function validateMeeting(page: Page, name: string) {
     const frame = await frameElementHandle?.contentFrame();
     await frame?.waitForSelector(`#root>div>p:has-text('${name}')`);
     console.log("meeting tab loaded successfully");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateIntelligentDataChart(
+  page: Page,
+  isRealKey: boolean
+) {
+  try {
+    console.log("start to verify Intelligent Data Chart");
+    const frameElementHandle = await page.waitForSelector(
+      `iframe[name="embedded-page-container"]`
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector(
+      "span:has-text('Intelligent Data Chart Generator')"
+    );
+    if (isRealKey) {
+      console.log("fill in: Top 20 selling products");
+      const textarea = await frame?.waitForSelector(
+        ".prompt-textarea textarea"
+      );
+      await RetryHandler.retry(async () => {
+        await textarea?.selectText();
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        await textarea?.press("Backspace");
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        await textarea?.fill("Top 20 selling products");
+        await page.waitForTimeout(Timeout.shortTimeWait);
+        const searchbtn = await frame?.waitForSelector(
+          ".prompt-textarea button"
+        );
+        await searchbtn?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        // TODO: verify the chart
+      }, 5);
+    }
+    console.log("Intelligent Data Chart loaded successfully");
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

@@ -334,7 +334,7 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
         ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
         : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
         ? getLocalizedString("core.copilotPlugin.api.oauth")
-        : "",
+        : getLocalizedString("core.copilotPlugin.api.notSupportedAuth"),
       data: {
         serverUrl: operation.server,
       },
@@ -968,18 +968,12 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
       return getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes");
     case ErrorType.ResponseJsonIsEmpty:
       return getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty");
-    case ErrorType.PostBodySchemaIsNotJson:
-      return getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson");
     case ErrorType.PostBodyContainsRequiredUnsupportedSchema:
       return getLocalizedString(
         "core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"
       );
     case ErrorType.ParamsContainRequiredUnsupportedSchema:
       return getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema");
-    case ErrorType.ParamsContainsNestedObject:
-      return getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject");
-    case ErrorType.RequestBodyContainsNestedObject:
-      return getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject");
     case ErrorType.ExceededRequiredParamsLimit:
       return getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit");
     case ErrorType.NoParameter:
@@ -1525,14 +1519,58 @@ export async function updateForCustomApi(
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
 
+  // 5. add prompt suggestions
+  const manifestPath = path.join(destinationPath, AppPackageFolderName, ManifestTemplateFileName);
+  await updatePromptSuggestions(specItems, manifestPath);
+
   return warnings;
 }
 
-const EnvNameMapping: { [authType: string]: string } = {
-  apiKey: "REGISTRATION_ID",
-  oauth2: "CONFIGURATION_ID",
-};
+async function updatePromptSuggestions(specItems: SpecObject[], manifestPath: string) {
+  const descriptions: string[] = specItems
+    .map((item) => item.item.summary ?? item.item.description)
+    .filter((item): item is string => item !== undefined)
+    .slice(0, 10);
 
-export function getEnvName(authName: string, authType?: string): string {
-  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
+  const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+  if (manifestRes.isOk()) {
+    const manifest = manifestRes.value;
+    manifest.bots![0].commandLists = [
+      {
+        scopes: ["personal"],
+        commands: descriptions.map((des) => {
+          return {
+            title: des.slice(0, 32),
+            description: des.slice(0, 128),
+          };
+        }),
+      },
+    ];
+
+    await manifestUtils._writeAppManifest(manifest, manifestPath);
+  } else {
+    throw manifestRes.error;
+  }
+}
+
+const EnvNamePostfix = "REGISTRATION_ID";
+
+export function getEnvName(authName: string): string {
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNamePostfix}`);
+}
+
+export async function copyKiotaFolder(specPath: string, projectPath: string): Promise<void> {
+  const originKiotaFolder = path.join(path.dirname(specPath), "..", ".kiota");
+  if (!(await fs.pathExists(originKiotaFolder))) {
+    return;
+  }
+
+  const destinationKiotaFolder = path.join(projectPath, ".kiota");
+  if (await fs.pathExists(destinationKiotaFolder)) {
+    return;
+  }
+
+  await fs.ensureDir(destinationKiotaFolder);
+  await fs.copy(originKiotaFolder, destinationKiotaFolder, { recursive: true });
+  return;
 }

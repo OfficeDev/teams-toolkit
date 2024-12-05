@@ -288,4 +288,82 @@ describe("invokeTeamsAgent", async () => {
       chai.assert.isTrue(openUrlStub.notCalled);
     });
   });
+
+  describe("troubleshootSelectedText", async () => {
+    it("can invoke teams agent", async () => {
+      sandbox.stub(vscode.window, "activeTextEditor").value({
+        selection: "current select",
+        document: {
+          getText: (selection: vscode.Selection) => "current select",
+        },
+      } as any);
+      sandbox.stub(globalState, "globalStateGet").resolves(true);
+      sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
+      sandbox.stub(vscode.commands, "executeCommand").resolves();
+      const res = await handlers.troubleshootSelectedText();
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("no active text", async () => {
+      sandbox.stub(vscode.window, "activeTextEditor").value(undefined);
+      const res = await handlers.troubleshootSelectedText();
+      chai.assert.isTrue(res.isErr());
+    });
+
+    it("error", async () => {
+      sandbox.stub(vscode.window, "activeTextEditor").value({
+        selection: "current select",
+        document: {
+          getText: (selection: vscode.Selection) => "current select",
+        },
+      } as any);
+      sandbox.stub(globalState, "globalStateGet").resolves(true);
+      sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
+      sandbox.stub(vscode.extensions, "getExtension").onFirstCall().returns(undefined);
+      const res = await handlers.troubleshootSelectedText();
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+    });
+  });
+
+  describe("troubleshootError", async () => {
+    it("can invoke teams agent", async () => {
+      sandbox.stub(globalState, "globalStateGet").resolves(true);
+      sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
+      sandbox.stub(vscode.commands, "executeCommand").resolves();
+
+      const currentError = new SystemError("test", "test", "test", "test");
+      const res = await handlers.troubleshootError(["triggerFrom", currentError]);
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("missing args", async () => {
+      const res = await handlers.troubleshootError([]);
+      const calledCommand = sandbox.stub(vscode.commands, "executeCommand").resolves();
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isFalse(calledCommand.calledOnce);
+    });
+
+    it("error", async () => {
+      sandbox.stub(globalState, "globalStateGet").resolves(true);
+      sandbox.stub(versionUtils, "isVSCodeInsiderVersion").returns(true);
+      sandbox.stub(vscode.extensions, "getExtension").onFirstCall().returns(undefined);
+      sandbox.stub(vscode.commands, "executeCommand").callsFake(async (command: string) => {
+        if (command === "workbench.extensions.installExtension") {
+          throw new Error("Install Error");
+        } else {
+          return {};
+        }
+      });
+
+      const currentError = new SystemError("test", "test", "test", "test");
+      const res = await handlers.troubleshootError(["triggerFrom", currentError]);
+      chai.assert.isTrue(res.isErr());
+    });
+  });
 });

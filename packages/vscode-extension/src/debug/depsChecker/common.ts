@@ -23,6 +23,7 @@ import {
   DepsManager,
   DepsType,
   ErrorCategory,
+  FindProcessError,
   LocalEnvManager,
   PackageService,
   PortsConflictError,
@@ -68,6 +69,7 @@ import {
 } from "./prerequisitesCheckerConstants";
 import { vscodeLogger } from "./vscodeLogger";
 import { vscodeTelemetry } from "./vscodeTelemetry";
+import find from "find-process";
 import { processUtil } from "../../utils/processUtil";
 
 export async function _checkAndInstall(
@@ -177,59 +179,72 @@ async function selectPortsToKill(
   LocalDebugPorts.terminateButton = selectButton!;
 
   if (selectButton === "Terminate Process") {
-    const process2ports = new Map<string, number[]>();
-    for (const port of portsInUse) {
-      const processId = await processUtil.getProcessId(port);
-      if (processId) {
-        const ports = process2ports.get(processId);
-        if (ports) {
-          ports.push(port);
-        } else {
-          process2ports.set(processId, [port]);
+    const loadOptions = async () => {
+      try {
+        const process2ports = new Map<number, number[]>();
+        for (const port of portsInUse) {
+          const processList = await find("port", port);
+          if (processList.length > 0) {
+            const process = processList[0];
+            const ports = process2ports.get(process.pid);
+            if (ports) {
+              ports.push(port);
+            } else {
+              process2ports.set(process.pid, [port]);
+            }
+          }
         }
+        if (process2ports.size > 0) {
+          const options: OptionItem[] = [];
+          for (const processId of process2ports.keys()) {
+            const ports = process2ports.get(processId);
+            LocalDebugPorts.process2conflictPorts[processId] = ports!;
+            const findList = await find("pid", processId);
+            if (findList.length > 0) {
+              const processInfo = findList[0].cmd;
+              options.push({
+                id: `${processId}`,
+                label: `'${String(processInfo)}' (${processId}) occupies port(s): ${ports!.join(
+                  ","
+                )}`,
+                data: processInfo,
+              });
+            }
+          }
+          globalOptions = options;
+          return options;
+        }
+        return [];
+      } catch (e) {
+        throw new FindProcessError(e, ExtensionSource);
+      }
+    };
+
+    let globalOptions: OptionItem[] = [];
+    const res = await VS_CODE_UI.selectOptions({
+      title: "Select process(es) to terminate",
+      name: "select_processes",
+      options: loadOptions,
+      default: "all",
+    });
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    if (res.isOk() && res.value.type === "success") {
+      const processIds = res.value.result as string[];
+      LocalDebugPorts.terminateProcesses = processIds;
+      for (const processId of processIds) {
+        await processUtil.killProcess(parseInt(processId));
+      }
+      if (processIds.length > 0) {
+        const processInfo = globalOptions
+          .filter((o) => processIds.includes(o.id))
+          .map((o) => `'${o.data as string}' (${o.id})`)
+          .join(", ");
+        void VS_CODE_UI.showMessage("info", `Process(es) ${processInfo} have been killed.`, false);
+        return ok(undefined);
       }
     }
-    if (process2ports.size > 0) {
-      const options: OptionItem[] = [];
-      for (const processId of process2ports.keys()) {
-        const ports = process2ports.get(processId);
-        LocalDebugPorts.process2conflictPorts[processId] = ports!;
-        const processInfo = await processUtil.getProcessInfo(parseInt(processId));
-        options.push({
-          id: processId,
-          label: `'${processInfo}' (${processId}) occupies port(s): ${ports!.join(",")}`,
-          data: processInfo,
-        });
-      }
-      const res = await VS_CODE_UI.selectOptions({
-        title: "Select process(es) to terminate",
-        name: "select_processes",
-        options,
-        default: options.map((o) => o.id),
-      });
-      if (res.isOk() && res.value.type === "success") {
-        const processIds = res.value.result as string[];
-        LocalDebugPorts.terminateProcesses = processIds;
-        for (const processId of processIds) {
-          await processUtil.killProcess(processId);
-        }
-        if (processIds.length > 0) {
-          const processInfo = options
-            .filter((o) => processIds.includes(o.id))
-            .map((o) => `'${o.data as string}' (${o.id})`)
-            .join(", ");
-          void VS_CODE_UI.showMessage(
-            "info",
-            `Process(es) ${processInfo} have been killed.`,
-            false
-          );
-        }
-      } else {
-        LocalDebugPorts.terminateProcesses = [];
-        return err(new UserCancelError(ExtensionSource));
-      }
-    }
-    return ok(undefined);
   } else if (selectButton === "Learn More") {
     void VS_CODE_UI.openUrl(
       "https://github.com/OfficeDev/teams-toolkit/wiki/%7BDebug%7D-FAQ#what-to-do-if-some-port-is-already-in-use"
@@ -255,10 +270,18 @@ async function checkPort(
       LocalDebugPorts.conflictPorts = portsInUse;
       if (portsInUse.length > 0) {
         const killRes = await selectPortsToKill(portsInUse);
-        if (killRes.isOk()) {
-          // recheck
-          portsInUse = await localEnvManager.getPortsInUse(ports);
+        if (killRes.isErr()) {
+          return {
+            checker: Checker.Ports,
+            result: ResultStatus.failed,
+            failureMsg: doctorConstant.Port,
+            error: killRes.error,
+          };
         }
+        // wait some time
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // recheck
+        portsInUse = await localEnvManager.getPortsInUse(ports);
       }
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;

@@ -79,12 +79,12 @@ export async function createPluginWithManifest(args?: any[]): Promise<Result<any
     });
   } else {
     if (lastCommand === KiotaLastCommands.createDeclarativeCopilotWithManifest) {
-      inputs.capabilities = CapabilityOptions.declarativeCopilot().id;
+      inputs.capabilities = CapabilityOptions.declarativeAgent().id;
       inputs[QuestionNames.WithPlugin] = "yes";
     } else {
       inputs.capabilities = CapabilityOptions.apiPlugin().id;
     }
-    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.copilotExtension().id;
+    inputs[QuestionNames.ProjectType] = ProjectTypeOptions.Agent().id;
     inputs[QuestionNames.Folder] = outputFolder;
     result = await runCommand(Stage.create, inputs);
 

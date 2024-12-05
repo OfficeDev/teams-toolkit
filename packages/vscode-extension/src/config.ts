@@ -29,14 +29,6 @@ export class ConfigManager {
       ConfigurationKey.BicepEnvCheckerEnable,
       false
     ).toString();
-    process.env["DEVELOP_COPILOT_EXTENSION"] = this.getConfiguration(
-      ConfigurationKey.CopilotExtensionEnable,
-      false
-    ).toString();
-    process.env["DEVELOP_COPILOT_PLUGIN"] = this.getConfiguration(
-      ConfigurationKey.CopilotExtensionEnable,
-      false
-    ).toString();
     process.env[FeatureFlags.KiotaIntegration.name] = this.getConfiguration(
       ConfigurationKey.EnableMicrosoftKiota,
       false

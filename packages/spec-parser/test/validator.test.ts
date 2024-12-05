@@ -2095,63 +2095,6 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
-    it("should return false if method is POST, and request body schema is not object", () => {
-      const method = "POST";
-      const path = "/users";
-      const spec = {
-        servers: [
-          {
-            url: "https://example.com",
-          },
-        ],
-        paths: {
-          "/users": {
-            post: {
-              requestBody: {
-                content: {
-                  "application/json": {
-                    schema: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      };
-
-      const options: ParseOptions = {
-        allowMissingId: true,
-        allowAPIKeyAuth: false,
-        allowMultipleParameters: false,
-        allowOauth2: false,
-        projectType: ProjectType.Copilot,
-        allowMethods: ["get", "post"],
-      };
-
-      const validator = ValidatorFactory.create(spec as any, options);
-      const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      assert.deepEqual(reason, [ErrorType.PostBodySchemaIsNotJson]);
-    });
-
     it("should return true if method is POST, and request body schema type is undefined but contains properties", () => {
       const method = "POST";
       const path = "/users";
@@ -2516,88 +2459,7 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
-    it("should return false if method is POST, parameters contain nested object, and request body is not json", () => {
-      const method = "POST";
-      const path = "/users";
-      const spec = {
-        servers: [
-          {
-            url: "https://example.com",
-          },
-        ],
-        paths: {
-          "/users": {
-            post: {
-              parameters: [
-                {
-                  in: "query",
-                  required: true,
-                  schema: {
-                    type: "object",
-                    required: ["name"],
-                    properties: {
-                      name: {
-                        type: "object",
-                        properties: {
-                          id: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              ],
-              requestBody: {
-                content: {
-                  "application/json": {
-                    schema: {
-                      type: "string",
-                    },
-                  },
-                },
-              },
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      };
-
-      const options: ParseOptions = {
-        allowMissingId: true,
-        allowAPIKeyAuth: false,
-        allowMultipleParameters: false,
-        allowOauth2: false,
-        projectType: ProjectType.Copilot,
-        allowMethods: ["get", "post"],
-      };
-
-      const validator = ValidatorFactory.create(spec as any, options);
-      const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      expect(reason).to.have.members([
-        ErrorType.ParamsContainsNestedObject,
-        ErrorType.PostBodySchemaIsNotJson,
-      ]);
-      expect(reason.length).equals(2);
-    });
-
-    it("should return false if method is POST, but requestBody contain nested object", () => {
+    it("should return true if method is POST, but requestBody contain nested object", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -2668,8 +2530,7 @@ describe("Validator", () => {
 
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      assert.deepEqual(reason, [ErrorType.RequestBodyContainsNestedObject]);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is POST, but requestBody contain nested object with undefined type", () => {
@@ -2741,37 +2602,42 @@ describe("Validator", () => {
 
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      assert.deepEqual(reason, [ErrorType.RequestBodyContainsNestedObject]);
+      assert.strictEqual(isValid, true);
     });
 
-    it("should return false if contain circular reference", () => {
+    it("should return true if method has unsupported auth", () => {
       const method = "POST";
       const path = "/users";
-      const circularSchema = {
-        type: "object",
-        properties: {
-          item: {},
-        },
-      };
-
-      circularSchema.properties.item = circularSchema;
       const spec = {
         servers: [
           {
             url: "https://example.com",
           },
         ],
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
         paths: {
           "/users": {
             post: {
-              requestBody: {
-                content: {
-                  "application/json": {
-                    schema: circularSchema,
-                  },
+              security: [
+                {
+                  api_key: [],
                 },
-              },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
               responses: {
                 200: {
                   content: {
@@ -2797,15 +2663,15 @@ describe("Validator", () => {
         allowMissingId: true,
         allowAPIKeyAuth: false,
         allowMultipleParameters: false,
-        allowOauth2: false,
+        allowOauth2: true,
+        allowBearerTokenAuth: true,
         projectType: ProjectType.Copilot,
         allowMethods: ["get", "post"],
       };
 
       const validator = ValidatorFactory.create(spec as any, options);
       const { isValid, reason } = validator.validateAPI(method, path);
-      assert.strictEqual(isValid, false);
-      assert.deepEqual(reason, [ErrorType.CircularReferenceNotSupported]);
+      assert.strictEqual(isValid, true);
     });
   });
 

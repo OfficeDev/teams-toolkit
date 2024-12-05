@@ -6,7 +6,7 @@ import "mocha";
 import { Utils } from "../src/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../src/constants";
-import { ErrorType, ProjectType, ParseOptions } from "../src/interfaces";
+import { ErrorType, ProjectType, ParseOptions, AuthInfo } from "../src/interfaces";
 
 describe("utils", () => {
   describe("updateFirstLetter", () => {
@@ -18,6 +18,109 @@ describe("utils", () => {
     it("should return an empty string if the input is empty", () => {
       const result = Utils.updateFirstLetter("");
       expect(result).to.equal("");
+    });
+  });
+
+  describe("isNotSupportedAuth", () => {
+    it("should return false for an empty authSchemeArray", () => {
+      const authSchemeArray: AuthInfo[][] = [];
+      expect(Utils.isNotSupportedAuth(authSchemeArray)).to.equal(false);
+    });
+
+    it("should return true if all authSchemeArray elements have more than one auth", () => {
+      const authSchemeArray: AuthInfo[][] = [
+        [
+          {
+            name: "oauth",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "https://example.com/oauth/authorize",
+                  tokenUrl: "https://example.com/oauth/token",
+                  scopes: {
+                    read: "Grants read access",
+                    write: "Grants write access",
+                    admin: "Grants access to admin operations",
+                  },
+                },
+              },
+            },
+          },
+          {
+            name: "apikey",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        ],
+      ];
+      expect(Utils.isNotSupportedAuth(authSchemeArray)).to.equal(true);
+    });
+
+    it("should return false if any authSchemeArray element has a single OAuth with Auth Code Flow", () => {
+      const authSchemeArray: AuthInfo[][] = [
+        [
+          {
+            name: "oauth",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "https://example.com/oauth/authorize",
+                  tokenUrl: "https://example.com/oauth/token",
+                  scopes: {
+                    read: "Grants read access",
+                    write: "Grants write access",
+                    admin: "Grants access to admin operations",
+                  },
+                },
+              },
+            },
+          },
+        ],
+      ];
+      expect(Utils.isNotSupportedAuth(authSchemeArray)).to.equal(false);
+    });
+
+    it("should return false if any authSchemeArray element has a single Bearer Token Auth", () => {
+      const authSchemeArray: AuthInfo[][] = [
+        [
+          {
+            name: "apikey",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        ],
+      ];
+      expect(Utils.isNotSupportedAuth(authSchemeArray)).to.equals(false);
+    });
+
+    it("should return true if all authSchemeArray elements have unsupported auth schemes", () => {
+      const authSchemeArray: AuthInfo[][] = [
+        [
+          {
+            authScheme: {
+              type: "http" as const,
+              scheme: "basic",
+            },
+            name: "basic_auth1",
+          },
+        ],
+        [
+          {
+            authScheme: {
+              type: "http" as const,
+              scheme: "basic",
+            },
+            name: "basic_auth2",
+          },
+        ],
+      ];
+      expect(Utils.isNotSupportedAuth(authSchemeArray)).to.equals(true);
     });
   });
 
@@ -130,6 +233,12 @@ describe("utils", () => {
           data: servers,
         },
       ]);
+    });
+
+    it("should not return an error if the server URL is http and allowHttp is true", () => {
+      const servers = [{ url: "http://example.com" }];
+      const errors = Utils.checkServerUrl(servers, true);
+      assert.deepStrictEqual(errors, []);
     });
 
     it("should return an error if the server URL protocol is not HTTPS", () => {
@@ -384,38 +493,16 @@ describe("utils", () => {
     });
   });
 
-  describe("hasNestedObjectInSchema", () => {
-    it("should return false if schema type is not object", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "string",
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
-    });
-
-    it("should return false if schema type is object but no nested object property", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-        },
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
-    });
-
-    it("should return true if schema type is object and has nested object property", () => {
-      const schema: OpenAPIV3.SchemaObject = {
-        type: "object",
-        properties: {
-          nestedObject: { type: "object" },
-        },
-      };
-      expect(Utils.hasNestedObjectInSchema(schema)).to.be.true;
-    });
-  });
-
   describe("getResponseJson", () => {
     it("should return an empty object if no JSON response is defined", () => {
       const operationObject = {};
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
+      expect(multipleMediaType).to.be.false;
+    });
+
+    it("should return an empty object if operationObject is undefined", () => {
+      const operationObject = undefined;
       const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
       expect(multipleMediaType).to.be.false;

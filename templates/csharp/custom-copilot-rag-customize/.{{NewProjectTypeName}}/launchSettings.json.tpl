@@ -21,5 +21,12 @@
       "launchUrl": "http://localhost:56150",
     },
 {{/enableTestToolByDefault}}
+{{#CEAEnabled}}
+    // Launch project within M365 Copilot
+    "Microsoft 365 Copilot (browser)": {
+      "commandName": "Project",
+      "launchUrl": "https://www.office.com/chat?auth=2&&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+    },
+{{/CEAEnabled}}
   }
 }

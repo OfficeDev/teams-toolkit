@@ -53,6 +53,7 @@ import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
 import {
   convertSpecParserErrorToFxError,
+  copyKiotaFolder,
   generateFromApiSpec,
   generateScaffoldingSummary,
   getEnvName,
@@ -127,7 +128,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     let templateName = "";
     if (
       (capability === CapabilityOptions.apiPlugin().id ||
-        capability === CapabilityOptions.declarativeCopilot().id) &&
+        capability === CapabilityOptions.declarativeAgent().id) &&
       inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
     ) {
       templateName = apiPluginFromApiSpecTemplateName;
@@ -164,17 +165,17 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       authData = inputs.apiAuthData;
     }
     const isDeclarativeCopilot =
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id;
     merge(actionContext?.telemetryProps, {
       [telemetryProperties.templateName]: getTemplateInfosState.templateName,
       [telemetryProperties.isDeclarativeCopilot]: isDeclarativeCopilot.toString(),
     });
 
     // For Kiota integration, we need to get auth info here
-    if (
+    const isKiotaIntegration =
       featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
-      inputs[QuestionNames.ApiPluginManifestPath]
-    ) {
+      inputs[QuestionNames.ApiPluginManifestPath];
+    if (isKiotaIntegration) {
       const operationsResult = await listOperations(
         context,
         inputs[QuestionNames.ApiSpecLocation],
@@ -183,12 +184,6 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       if (operationsResult.isErr()) {
         const msg = operationsResult.error.map((e) => e.content).join("\n");
         return err(new UserError("generator", "ListOperationsFailed", msg));
-      }
-
-      const operations = operationsResult.value;
-      const authApi = operations.find((api) => !!api.data.authName);
-      if (authApi) {
-        authData = authApi.data;
       }
     }
 
@@ -229,30 +224,43 @@ export class SpecGenerator extends DefaultTemplateGenerator {
       azureOpenAIEndpoint,
       azureOpenAIDeploymentName,
     };
-    if (authData?.authName) {
-      const envName = getEnvName(authData.authName, authData.authType);
-      context.templateVariables = Generator.getDefaultVariables(
-        appName,
-        safeProjectNameFromVS,
-        inputs.targetFramework,
-        inputs.placeProjectFileInSolutionDir === "true",
-        {
-          authName: authData.authName,
-          openapiSpecPath: normalizePath(
-            path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
-          ),
+
+    const auths = [];
+
+    const openapiSpecPath = isKiotaIntegration
+      ? normalizePath(
+          path.join(AppPackageFolderName, path.basename(inputs[QuestionNames.ApiSpecLocation]))
+        )
+      : normalizePath(
+          path.join(AppPackageFolderName, DefaultApiSpecFolderName, openapiSpecFileName)
+        );
+
+    if (authData && authData.length > 0) {
+      for (const auth of authData) {
+        const envName = getEnvName(auth.authName!);
+        auths.push({
+          authName: auth.authName!,
+          openapiSpecPath: openapiSpecPath,
           registrationIdEnvName: envName,
-          authType: authData.authType,
-        },
-        llmServiceData
-      );
+          authType: auth.authType,
+        });
+
+        context.templateVariables = Generator.getDefaultVariables(
+          appName,
+          safeProjectNameFromVS,
+          inputs.targetFramework,
+          inputs.placeProjectFileInSolutionDir === "true",
+          auths,
+          llmServiceData
+        );
+      }
     } else {
       context.templateVariables = Generator.getDefaultVariables(
         appName,
         safeProjectNameFromVS,
         inputs.targetFramework,
         inputs.placeProjectFileInSolutionDir === "true",
-        undefined,
+        [],
         llmServiceData
       );
     }
@@ -261,7 +269,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         getTemplateInfosState.url
       ).toString(),
       [telemetryProperties.generateType]: getTemplateInfosState.type.toString(),
-      [telemetryProperties.authType]: authData?.authName ?? "None",
+      [telemetryProperties.authType]: authData?.map((item) => item.authType).join(",") ?? "None",
     });
     inputs.getTemplateInfosState = getTemplateInfosState;
     return ok([
@@ -271,15 +279,12 @@ export class SpecGenerator extends DefaultTemplateGenerator {
         replaceMap: {
           ...context.templateVariables,
           DeclarativeCopilot: isDeclarativeCopilot ? "true" : "",
-          FileFunction: featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc) ? "true" : "",
         },
         filterFn: (fileName: string) => {
           if (fileName.includes(`${defaultDeclarativeCopilotManifestFileName}.tpl`)) {
             return isDeclarativeCopilot;
           } else if (fileName.includes(declarativeCopilotInstructionFileName)) {
-            return (
-              isDeclarativeCopilot && featureFlagManager.getBooleanValue(FeatureFlags.EnvFileFunc)
-            );
+            return isDeclarativeCopilot;
           }
           {
             return true;
@@ -298,7 +303,7 @@ export class SpecGenerator extends DefaultTemplateGenerator {
     try {
       const getTemplateInfosState = inputs.getTemplateInfosState as TemplateInfosState;
       const isDeclarativeCopilot =
-        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeCopilot().id;
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.declarativeAgent().id;
       const isKiotaIntegration =
         featureFlagManager.getBooleanValue(FeatureFlags.KiotaIntegration) &&
         !!inputs[QuestionNames.ApiPluginManifestPath];
@@ -405,6 +410,10 @@ export class SpecGenerator extends DefaultTemplateGenerator {
             error.message
           );
         }
+      }
+
+      if (isKiotaIntegration) {
+        await copyKiotaFolder(inputs[QuestionNames.ApiPluginManifestPath], destinationPath);
       }
 
       const manifestRes = await manifestUtils._readAppManifest(manifestPath);

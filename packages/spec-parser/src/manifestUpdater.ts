@@ -9,6 +9,8 @@ import {
   AuthInfo,
   ErrorType,
   ExistingPluginManifestInfo,
+  FunctionClassificationMap,
+  OperationAuthInfoMap,
   ParseOptions,
   ProjectType,
   WarningResult,
@@ -36,7 +38,7 @@ export class ManifestUpdater {
     apiPluginFilePath: string,
     spec: OpenAPIV3.Document,
     options: ParseOptions,
-    authInfo?: AuthInfo,
+    authMap: OperationAuthInfoMap,
     existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[TeamsAppManifest, PluginManifestSchema, WarningResult[]]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
@@ -75,7 +77,7 @@ export class ManifestUpdater {
       specRelativePath,
       apiPluginFilePath,
       appName,
-      authInfo,
+      authMap,
       options,
       existingPluginManifestInfo
     );
@@ -115,36 +117,17 @@ export class ManifestUpdater {
     specRelativePath: string,
     apiPluginFilePath: string,
     appName: string,
-    authInfo: AuthInfo | undefined,
+    authMap: OperationAuthInfoMap,
     options: ParseOptions,
     existingPluginManifestInfo?: ExistingPluginManifestInfo
   ): Promise<[PluginManifestSchema, WarningResult[]]> {
     const warnings: WarningResult[] = [];
     const functions: FunctionObject[] = [];
-    const functionNames: string[] = [];
+    const functionNamesMap: FunctionClassificationMap = {};
+
     const conversationStarters: string[] = [];
 
     const paths = spec.paths;
-
-    const pluginAuthObj: AuthObject = {
-      type: "None",
-    };
-
-    if (authInfo) {
-      if (Utils.isOAuthWithAuthCodeFlow(authInfo.authScheme)) {
-        pluginAuthObj.type = "OAuthPluginVault";
-      } else if (Utils.isBearerTokenAuth(authInfo.authScheme)) {
-        pluginAuthObj.type = "ApiKeyPluginVault";
-      }
-
-      if (pluginAuthObj.type !== "None") {
-        const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-          `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
-        );
-
-        pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
-      }
-    }
 
     for (const pathUrl in paths) {
       const pathItem = paths[pathUrl];
@@ -153,45 +136,11 @@ export class ManifestUpdater {
         for (const method in operations) {
           if (options.allowMethods!.includes(method)) {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
-            const confirmationBodies: string[] = [];
             if (operationItem) {
               const operationId = operationItem.operationId!;
               const safeFunctionName = operationId.replace(/[^a-zA-Z0-9]/g, "_");
               const description = operationItem.description ?? "";
               const summary = operationItem.summary;
-              const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
-              const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
-
-              if (paramObject) {
-                for (let i = 0; i < paramObject.length; i++) {
-                  const param = paramObject[i];
-                  const schema = param.schema as OpenAPIV3.SchemaObject;
-                  ManifestUpdater.checkSchema(schema, method, pathUrl);
-                  confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
-                }
-              }
-
-              if (requestBody) {
-                const requestJsonBody = requestBody.content!["application/json"];
-                const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-                if (Utils.isObjectSchema(requestBodySchema)) {
-                  for (const property in requestBodySchema.properties) {
-                    const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
-                    ManifestUpdater.checkSchema(schema, method, pathUrl);
-                    confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
-                  }
-                } else {
-                  throw new SpecParserError(
-                    Utils.format(
-                      ConstantString.UnsupportedSchema,
-                      method,
-                      pathUrl,
-                      JSON.stringify(requestBodySchema)
-                    ),
-                    ErrorType.UpdateManifestFailed
-                  );
-                }
-              }
 
               let funcDescription = operationItem.description || operationItem.summary || "";
               if (funcDescription.length > ConstantString.FunctionDescriptionMaxLens) {
@@ -241,22 +190,86 @@ export class ManifestUpdater {
               }
 
               if (options.allowConfirmation && method !== ConstantString.GetMethod) {
-                if (!funcObj.capabilities) {
-                  funcObj.capabilities = {};
+                const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
+                const requestBody = operationItem.requestBody as OpenAPIV3.RequestBodyObject;
+                const confirmationBodies: string[] = [];
+
+                if (paramObject) {
+                  for (let i = 0; i < paramObject.length; i++) {
+                    const param = paramObject[i];
+                    const schema = param.schema as OpenAPIV3.SchemaObject;
+                    ManifestUpdater.checkSchema(schema, method, pathUrl);
+                    confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
+                  }
                 }
 
-                funcObj.capabilities.confirmation = {
-                  type: "AdaptiveCard",
-                  title: operationItem.summary ?? description,
-                };
+                if (requestBody) {
+                  const requestJsonBody = Utils.getJsonContentType(requestBody);
+
+                  const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+                  if (Utils.isObjectSchema(requestBodySchema)) {
+                    for (const property in requestBodySchema.properties) {
+                      const schema = requestBodySchema.properties[
+                        property
+                      ] as OpenAPIV3.SchemaObject;
+                      ManifestUpdater.checkSchema(schema, method, pathUrl);
+                      confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
+                    }
+                  } else {
+                    throw new SpecParserError(
+                      Utils.format(
+                        ConstantString.UnsupportedSchema,
+                        method,
+                        pathUrl,
+                        JSON.stringify(requestBodySchema)
+                      ),
+                      ErrorType.UpdateManifestFailed
+                    );
+                  }
+                }
 
                 if (confirmationBodies.length > 0) {
+                  if (!funcObj.capabilities) {
+                    funcObj.capabilities = {};
+                  }
+
+                  funcObj.capabilities.confirmation = {
+                    type: "AdaptiveCard",
+                    title: operationItem.summary ?? description,
+                  };
+
                   funcObj.capabilities.confirmation.body = confirmationBodies.join("\n");
                 }
               }
 
               functions.push(funcObj);
-              functionNames.push(safeFunctionName);
+
+              const authInfo = authMap[operationId];
+              let key = "None";
+              let authName = "None";
+
+              if (authInfo) {
+                if (Utils.isOAuthWithAuthCodeFlow(authInfo.authScheme)) {
+                  key = "OAuthPluginVault";
+                  authName = authInfo.name;
+                } else if (
+                  Utils.isBearerTokenAuth(authInfo.authScheme) ||
+                  Utils.isAPIKeyAuthButNotInCookie(authInfo.authScheme)
+                ) {
+                  key = "ApiKeyPluginVault";
+                  authName = authInfo.name;
+                }
+              }
+
+              if (functionNamesMap[key]) {
+                functionNamesMap[key].functionNames.push(safeFunctionName);
+              } else {
+                functionNamesMap[key] = {
+                  functionNames: [safeFunctionName],
+                  authName: authName,
+                };
+              }
+
               const conversationStarterStr = (summary ?? description).slice(
                 0,
                 ConstantString.ConversationStarterMaxLens
@@ -270,6 +283,13 @@ export class ManifestUpdater {
       }
     }
 
+    if (Object.keys(functionNamesMap).length === 0) {
+      functionNamesMap["None"] = {
+        functionNames: [],
+        authName: "None",
+      };
+    }
+
     let apiPlugin: PluginManifestSchema;
     if (await fs.pathExists(apiPluginFilePath)) {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
@@ -281,7 +301,7 @@ export class ManifestUpdater {
     } else {
       apiPlugin = {
         $schema: ConstantString.PluginManifestSchema,
-        schema_version: "v2.1",
+        schema_version: "v2.2",
         name_for_human: "",
         description_for_human: "",
         namespace: "",
@@ -312,23 +332,41 @@ export class ManifestUpdater {
         (runtime) => runtime.spec.url !== relativePath
       );
     }
-    const index = apiPlugin.runtimes.findIndex(
-      (runtime) =>
-        runtime.spec.url === specRelativePath &&
-        runtime.type === "OpenApi" &&
-        (runtime.auth?.type ?? "None") === pluginAuthObj.type
-    );
-    if (index === -1) {
-      apiPlugin.runtimes.push({
-        type: "OpenApi",
-        auth: pluginAuthObj,
-        spec: {
-          url: specRelativePath,
-        },
-        run_for_functions: functionNames,
-      });
-    } else {
-      apiPlugin.runtimes[index].run_for_functions = functionNames;
+
+    for (const authType in functionNamesMap) {
+      const pluginAuthObj: AuthObject = {
+        type: authType as any,
+      };
+
+      const authName = functionNamesMap[authType].authName;
+
+      if (pluginAuthObj.type !== "None") {
+        const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
+          `${authName}_${ConstantString.RegistrationIdPostfix}`
+        );
+
+        pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
+      }
+
+      const functionNamesInfo = functionNamesMap[authType];
+      const index = apiPlugin.runtimes.findIndex(
+        (runtime) =>
+          runtime.spec.url === specRelativePath &&
+          runtime.type === "OpenApi" &&
+          (runtime.auth?.type ?? "None") === authType
+      );
+      if (index === -1) {
+        apiPlugin.runtimes.push({
+          type: "OpenApi",
+          auth: pluginAuthObj,
+          spec: {
+            url: specRelativePath,
+          },
+          run_for_functions: functionNamesInfo.functionNames,
+        });
+      } else {
+        apiPlugin.runtimes[index].run_for_functions = functionNamesInfo.functionNames;
+      }
     }
 
     if (!apiPlugin.name_for_human) {
@@ -346,9 +384,7 @@ export class ManifestUpdater {
 
     if (options.allowConversationStarters && conversationStarters.length > 0) {
       if (!apiPlugin.capabilities) {
-        apiPlugin.capabilities = {
-          localization: {},
-        };
+        apiPlugin.capabilities = {};
       }
       if (!apiPlugin.capabilities.conversation_starters) {
         apiPlugin.capabilities.conversation_starters = conversationStarters
@@ -393,7 +429,7 @@ export class ManifestUpdater {
         if (authInfo) {
           const auth = authInfo.authScheme;
           const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-            `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
+            `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
             (composeExtension as any).authorization = {

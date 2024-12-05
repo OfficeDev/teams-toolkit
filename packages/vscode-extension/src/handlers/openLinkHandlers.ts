@@ -153,8 +153,8 @@ export async function openReportIssues(...args: unknown[]): Promise<Result<boole
 
 export async function openDocumentHandler(...args: unknown[]): Promise<Result<boolean, FxError>> {
   let documentName = "general";
-  if (args && args.length >= 2) {
-    documentName = args[1] as string;
+  if (args && args.length >= 2 && typeof args[1] === "string") {
+    documentName = args[1];
   }
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
     ...getTriggerFromProperty(args),
@@ -163,6 +163,10 @@ export async function openDocumentHandler(...args: unknown[]): Promise<Result<bo
   let url = "https://aka.ms/teamsfx-build-first-app";
   if (documentName === "learnmore") {
     url = "https://aka.ms/teams-toolkit-5.0-upgrade";
+  } else if (documentName === "build-apps") {
+    url = "https://aka.ms/teamstoolkit-build-app";
+  } else if (documentName === "build-agents") {
+    url = "https://aka.ms/teamstoolkit-build-agent";
   }
   return VS_CODE_UI.openUrl(url);
 }

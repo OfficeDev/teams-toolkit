@@ -7,7 +7,7 @@
 
 Teams Toolkit for Visual Studio, Visual Studio Code, and Command Line Interface (CLI) are tools for building Teams apps, fast. Whether you are new to Teams platform or a seasoned developer, Teams Toolkit is the best way to create, build, debug, test, and deploy apps.
 
-<img width="1350" alt="MicrosoftTeams-image" src="https://github.com/OfficeDev/TeamsFx/assets/11220663/103b3f96-40b1-466b-b67c-34db0aab393c">
+<img width="1350" alt="MicrosoftTeams-image" src="./docs/images/vscode-extension/slogan.jpg">
 
 Teams Toolkit provides support for the end-to-end Teams development journey, including:
 

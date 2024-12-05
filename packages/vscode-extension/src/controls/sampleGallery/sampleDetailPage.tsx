@@ -120,7 +120,11 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
   }
 
   private messageHandler = (event: any) => {
-    if ((event.origin as string).startsWith("vscode-webview")) {
+    // Allow client and codespaces.
+    if (
+      (event.origin as string).startsWith("vscode-webview") ||
+      (event.origin as string).endsWith("github.dev")
+    ) {
       const message = event.data.message;
       switch (message) {
         case Commands.LoadSampleReadme:

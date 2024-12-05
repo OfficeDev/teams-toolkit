@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, CopilotStudioScopes } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  AzureScopes,
+  featureFlagManager,
+  CopilotStudioScopes,
+  FeatureFlags,
+} from "@microsoft/teamsfx-core";
 import { TextType, colorize } from "../../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../../commonlib/azureLogin";
 import AzureTokenCIProvider from "../../commonlib/azureLoginCI";
@@ -11,6 +17,7 @@ import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
 import { commands, strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { listAllTenants } from "@microsoft/teamsfx-core/build/common/tools";
 
 class AccountUtils {
   outputAccountInfoOffline(accountType: string, username: string): boolean {
@@ -22,17 +29,41 @@ class AccountUtils {
     return true;
   }
 
-  async outputM365Info(commandType: "login" | "show"): Promise<boolean> {
-    const tokenJsonRes = await M365TokenProvider.getJsonObject({
-      scopes: [...AppStudioScopes, ...CopilotStudioScopes],
-    });
+  async outputM365Info(commandType: "login" | "show", tenantId?: string): Promise<boolean> {
+    const tid = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) ? tenantId : undefined;
+    const tokenJsonRes = await M365TokenProvider.getJsonObject(
+      {
+        scopes: [...AppStudioScopes, ...CopilotStudioScopes],
+      },
+      tid
+    );
     const result = tokenJsonRes.isOk() ? tokenJsonRes.value : undefined;
     if (result) {
-      const username = (result as any).upn;
+      if (tid) {
+        await M365TokenProvider.switchTenant(tid);
+      }
+      const username = (result as any).upn ?? (result as any).unique_name;
       if (commandType === "login") {
         logger.outputSuccess(strings["account.login.m365"]);
       }
-      logger.outputInfo(strings["account.show.m365"], colorize(username, TextType.Important));
+
+      const cachedTenantId = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)
+        ? await M365TokenProvider.getTenant()
+        : undefined;
+      if (cachedTenantId) {
+        const listTenantToken = await M365TokenProvider.getAccessToken({ scopes: AzureScopes });
+        if (listTenantToken.isOk()) {
+          const tenants = await listAllTenants(listTenantToken.value);
+          const curTenant = tenants.find((tenant) => tenant.tenantId === cachedTenantId);
+          logger.outputInfo(
+            strings["account.show.m365.tenant"],
+            colorize(username, TextType.Important),
+            colorize(curTenant?.displayName, TextType.Important)
+          );
+        }
+      } else {
+        logger.outputInfo(strings["account.show.m365"], colorize(username, TextType.Important));
+      }
       return Promise.resolve(true);
     } else {
       if (commandType === "login") {
@@ -54,18 +85,43 @@ class AccountUtils {
       await AzureTokenCIProvider.init(userName, password, tenantId);
       azureProvider = AzureTokenCIProvider;
     }
-    const result = await azureProvider.getJsonObject(true);
+    const tid = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) ? tenantId : undefined;
+    const result = await azureProvider.getJsonObject(true, tid);
     if (result) {
+      if (tid) {
+        await azureProvider.switchTenant(tid);
+      }
       const subscriptions = await azureProvider.listSubscriptions();
-      const username = (result as any).upn;
+      const username = (result as any).upn ?? (result as any).unique_name;
       if (commandType === "login") {
         logger.outputSuccess(strings["account.login.azure"]);
       }
-      logger.outputInfo(
-        strings["account.show.azure"],
-        colorize(username, TextType.Important),
-        JSON.stringify(subscriptions, null, 2)
-      );
+
+      const cachedTenantId = featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant)
+        ? await azureProvider.getTenant()
+        : undefined;
+      if (cachedTenantId) {
+        const identityCredential = await azureProvider.getIdentityCredentialAsync(false);
+        const listTenantToken = identityCredential
+          ? await identityCredential.getToken(AzureScopes)
+          : undefined;
+        if (listTenantToken && listTenantToken.token) {
+          const tenants = await listAllTenants(listTenantToken.token);
+          const curTenant = tenants.find((tenant) => tenant.tenantId === cachedTenantId);
+          logger.outputInfo(
+            strings["account.show.azure.tenant"],
+            colorize(username, TextType.Important),
+            colorize(curTenant?.displayName, TextType.Important),
+            JSON.stringify(subscriptions, null, 2)
+          );
+        }
+      } else {
+        logger.outputInfo(
+          strings["account.show.azure"],
+          colorize(username, TextType.Important),
+          JSON.stringify(subscriptions, null, 2)
+        );
+      }
       return Promise.resolve(true);
     } else {
       if (commandType === "login") {

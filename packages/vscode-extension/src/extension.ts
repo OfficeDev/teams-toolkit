@@ -98,6 +98,7 @@ import {
   openSamplesHandler,
   openWelcomeHandler,
   saveTextDocumentHandler,
+  selectWalkthroughHandler,
 } from "./handlers/controlHandlers";
 import * as copilotChatHandlers from "./handlers/copilotChatHandlers";
 import {
@@ -201,10 +202,20 @@ import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils"
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
 import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
+import { kiotaRegenerate } from "./handlers/kiotaRegenerateHandler";
+import { releaseControlledFeatureSettings } from "./releaseBasedFeatureSettings";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
+
+  // control whether to show chat participant ui entries
+  const shouldEnableChatParticipantUIEntries =
+    releaseControlledFeatureSettings.shouldEnableTeamsCopilotChatUI;
+  featureFlagManager.setBooleanValue(
+    CoreFeatureFlags.ChatParticipantUIEntries,
+    shouldEnableChatParticipantUIEntries
+  );
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
@@ -243,19 +254,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant ui entries
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantUIEntriesEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
-  );
-
-  // Flags for "Build Intelligent Apps" walkthrough.
-  // DEVEOP_COPILOT_PLUGIN: boolean in vscode settings
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isApiCopilotPluginEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.CopilotExtension)
+    shouldEnableChatParticipantUIEntries
   );
 
   await vscode.commands.executeCommand(
@@ -408,6 +410,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Quick start
   registerInCommandController(context, CommandKeys.OpenWelcome, openWelcomeHandler);
+  registerInCommandController(context, CommandKeys.SelectWalkthrough, selectWalkthroughHandler);
   registerInCommandController(
     context,
     CommandKeys.BuildIntelligentAppsWalkthrough,
@@ -455,6 +458,18 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     Correlator.run(copilotChatHandlers.invokeTeamsAgent, args)
   );
   context.subscriptions.push(invokeTeamsAgent);
+
+  const troubleshootSelectedText = vscode.commands.registerCommand(
+    "fx-extension.teamsAgentTroubleshootSelectedText",
+    (...args) => Correlator.run(copilotChatHandlers.troubleshootSelectedText, args)
+  );
+  context.subscriptions.push(troubleshootSelectedText);
+
+  const troubleshootError = vscode.commands.registerCommand(
+    "fx-extension.teamsAgentTroubleshootError",
+    (...args) => Correlator.run(copilotChatHandlers.troubleshootError, args)
+  );
+  context.subscriptions.push(troubleshootError);
 }
 
 /**
@@ -538,6 +553,12 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
       (args) => Correlator.run(createPluginWithManifest, args)
     );
     context.subscriptions.push(createPluginWithManifestCommand);
+
+    const kiotaRegenerateCommand = vscode.commands.registerCommand(
+      "fx-extension.kiotaregenerate",
+      (args) => Correlator.run(kiotaRegenerate, args)
+    );
+    context.subscriptions.push(kiotaRegenerateCommand);
   }
 }
 

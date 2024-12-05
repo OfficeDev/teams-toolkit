@@ -26,7 +26,7 @@
     "plugins": [
       {
         "id": "plugin_1",
-        "file": "ai-plugin.${{TEAMSFX_ENV}}.json"
+        "file": "ai-plugin.json"
       }
     ]
   },

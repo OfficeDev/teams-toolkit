@@ -18,11 +18,11 @@ myRecord["api-auth"] = "oauth";
 
 new DeclarativeAgentWithOAutTestCase(
   Capability.DeclarativeAgent,
-  30032802,
+  30310025,
   "huimaio@microsoft.com",
   ["function"],
   ProgrammingLanguage.JS,
-  { skipValidate: true },
+  {},
   myRecord
 ).test();
 
@@ -32,16 +32,6 @@ new DeclarativeAgentWithOAutTestCase(
   "huimaio@microsoft.com",
   ["function"],
   ProgrammingLanguage.TS,
-  { skipValidate: true },
-  myRecord
-).test();
-
-new DeclarativeAgentWithOAutTestCase(
-  Capability.DeclarativeAgent,
-  30032802,
-  "huimaio@microsoft.com",
-  ["function"],
-  ProgrammingLanguage.CSharp,
-  { skipValidate: true },
+  {},
   myRecord
 ).test();

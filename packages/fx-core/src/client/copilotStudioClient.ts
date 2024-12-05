@@ -2,17 +2,20 @@
 // Licensed under the MIT license.
 
 import { AxiosInstance } from "axios";
+
+import { PowerPlatformApiDiscovery } from "../common/powerPlatformApiDiscovery";
 import { WrappedAxiosClient } from "../common/wrappedAxiosClient";
 import { DeclarativeAgentBotDefinition } from "../component/feature/declarativeAgentDefinition";
 
 export class CopilotStudioClient {
   /**
    * @param {string}  token
+   * @param {string}  tenantId
    * @returns {AxiosInstance}
    */
-  createRequesterWithToken(token: string): AxiosInstance {
+  createRequesterWithToken(token: string, tenantId: string): AxiosInstance {
     const instance = WrappedAxiosClient.create({
-      baseURL: "https://api.copilotstudio.microsoft.com",
+      baseURL: this.getTenantIslandClusterEndpoint(tenantId),
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     instance.defaults.headers.common["Client-Source"] = "teamstoolkit";
@@ -21,12 +24,13 @@ export class CopilotStudioClient {
 
   async createBot(
     token: string,
-    declarativeAgentDefinition: DeclarativeAgentBotDefinition
+    declarativeAgentDefinition: DeclarativeAgentBotDefinition,
+    tenantId: string
   ): Promise<boolean> {
     try {
-      const instance = this.createRequesterWithToken(token);
+      const instance = this.createRequesterWithToken(token, tenantId);
       const response = await instance.post(
-        "/powervirtualagents/api/copilots/provisioning/upsert?api-version=2022-03-01-preview",
+        "/powervirtualagents/api/copilots/provisioning/upsert?api-version=1",
         declarativeAgentDefinition
       );
       return response.status === 200;
@@ -35,9 +39,9 @@ export class CopilotStudioClient {
     }
   }
 
-  async getBot(token: string, declarativeAgentId: string): Promise<string> {
+  async getBot(token: string, declarativeAgentId: string, tenantId: string): Promise<string> {
     try {
-      const instance = this.createRequesterWithToken(token);
+      const instance = this.createRequesterWithToken(token, tenantId);
       let response;
       do {
         response = await instance.get(
@@ -57,6 +61,11 @@ export class CopilotStudioClient {
     } catch (e) {
       throw e;
     }
+  }
+
+  getTenantIslandClusterEndpoint(tenantId: string): string | undefined {
+    const env = process.env.COPILOT_STUDIO_ENV === "test" ? "test" : "prod";
+    return new PowerPlatformApiDiscovery(env).getTenantIslandClusterEndpoint(tenantId);
   }
 }
 

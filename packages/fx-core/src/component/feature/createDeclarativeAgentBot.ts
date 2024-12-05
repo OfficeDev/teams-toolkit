@@ -11,14 +11,15 @@ import { CopilotStudioScopes } from "../../common/constants";
 import { MetadataV3 } from "../../common/versionMetadata";
 import { copilotGptManifestUtils } from "../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../driver/teamsApp/utils/ManifestUtils";
+import { loadStateFromEnv } from "../driver/util/utils";
 import { envUtil } from "../utils/envUtil";
 import { DeclarativeAgentBotContext } from "./declarativeAgentBotContext";
 import { DeclarativeAgentBotDefinition } from "./declarativeAgentDefinition";
-import { loadStateFromEnv } from "../driver/util/utils";
 
 const launchJsonFile = ".vscode/launch.json";
 const defaultOutputNames = {
   m365AppId: "M365_APP_ID",
+  tenantId: "TEAMS_APP_TENANT_ID",
 };
 
 export async function create(context: DeclarativeAgentBotContext): Promise<void> {
@@ -112,8 +113,8 @@ async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> 
   }
 
   const state = loadStateFromEnv(new Map(Object.entries(defaultOutputNames)));
-  if (!state.m365AppId) {
-    throw new Error("M365 app id is not found in .env file");
+  if (!state.m365AppId || !state.tenantId) {
+    throw new Error("M365 app id or tenant id is not found in .env file");
   }
 
   // construct payload for bot provisioning
@@ -123,7 +124,7 @@ async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> 
       name: agentManifest.value.name,
       teams_app_id: state.m365AppId,
     },
-    PersistentModel: 0,
+    PersistenceMode: 0,
     EnableChannels: ["msteams"],
     IsMultiTenant: context.multiTenant,
   };
@@ -137,7 +138,7 @@ async function provisionBot(context: DeclarativeAgentBotContext): Promise<void> 
     throw result.error;
   }
 
-  await copilotStudioClient.createBot(result.value, payload);
+  await copilotStudioClient.createBot(result.value, payload, state.tenantId);
 }
 
 async function getBotId(context: DeclarativeAgentBotContext): Promise<void> {

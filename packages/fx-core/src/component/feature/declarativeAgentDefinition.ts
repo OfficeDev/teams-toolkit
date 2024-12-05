@@ -3,7 +3,7 @@
 
 export interface DeclarativeAgentBotDefinition {
   GptDefinition: DeclarativeAgentDefinition;
-  PersistentModel: number;
+  PersistenceMode: number;
   EnableChannels: string[];
   IsMultiTenant: boolean;
 }

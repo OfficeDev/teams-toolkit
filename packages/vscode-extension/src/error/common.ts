@@ -81,11 +81,7 @@ export async function showError(e: UserError | SystemError) {
     VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}\n Help link: ${e.helpLink}`);
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
-    const buttons = recommendTestTool
-      ? shouldRecommendTeamsAgent
-        ? []
-        : [runTestTool, help]
-      : [help];
+    const buttons = recommendTestTool ? [runTestTool, help] : [help];
     if (shouldRecommendTeamsAgent) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
     }

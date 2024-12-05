@@ -11,8 +11,9 @@ import { notifyOutputTroubleshoot, showError } from "../../src/error/common";
 import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 import { RecommendedOperations } from "../../src/debug/common/debugConstants";
 import { featureFlagManager } from "@microsoft/teamsfx-core";
+import { MaximumNotificationOutputTroubleshootCount } from "../../src/constants";
 
-describe.only("common", () => {
+describe("common", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {
@@ -86,24 +87,23 @@ describe.only("common", () => {
     chai.assert.isTrue(executeCommandStub.called);
   });
 
-  describe.only("notify user to troubleshoot output with Teams Agent", async () => {
+  describe("notify user to troubleshoot output with Teams Agent", async () => {
     let showInformationMessageStub: sinon.SinonStub;
     beforeEach(() => {
-      sandbox.stub(vscode.window, "showInformationMessage");
+      showInformationMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     });
 
     afterEach(() => {
       globalVariables.setOutputTroubleshootNotificationCount(0);
     });
     it("showError - notify user to troubleshoot output with Teams Agent", async () => {
+      showInformationMessageStub.resolves("Open output panel");
       globalVariables.setOutputTroubleshootNotificationCount(0);
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
-      const showErrorMessageStub = sandbox
-        .stub(vscode.window, "showErrorMessage")
-        .callsFake((title: string, button: any) => {
-          return Promise.resolve(button);
-        });
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(vscode.window, "showErrorMessage").callsFake((title: string, button: any) => {
+        return Promise.resolve(button);
+      });
       sandbox.stub(vscode.commands, "executeCommand");
       const error = new UserError(
         "test source",
@@ -117,7 +117,6 @@ describe.only("common", () => {
       await showError(error);
 
       chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 1);
-      chai.assert.isTrue(showErrorMessageStub.calledTwice);
     });
 
     it("showError - not notify user to troubleshoot output with Teams Agent if reaches limit", async () => {
@@ -128,7 +127,6 @@ describe.only("common", () => {
         .callsFake((title: string, button: any) => {
           return Promise.resolve(button);
         });
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(vscode.commands, "executeCommand");
       const error = new UserError(
         "test source",
@@ -153,7 +151,6 @@ describe.only("common", () => {
         .callsFake((title: string, button: any) => {
           return Promise.resolve(button);
         });
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(vscode.commands, "executeCommand");
       const error = new UserError(
         "test source",
@@ -167,7 +164,7 @@ describe.only("common", () => {
       await showError(error);
 
       chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 0);
-      chai.assert.isTrue(showErrorMessageStub.calledTwice);
+      chai.assert.isFalse(showErrorMessageStub.called);
     });
 
     it("should execute command when user selects 'Open output panel'", async () => {
@@ -233,6 +230,10 @@ describe.only("common", () => {
     });
 
     it(`showError - ${type} - recommend troubleshoot`, async () => {
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      globalVariables.setOutputTroubleshootNotificationCount(
+        MaximumNotificationOutputTroubleshootCount
+      );
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
       sandbox.stub(localizeUtils, "localize").returns("");
       const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");

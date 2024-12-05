@@ -72,11 +72,9 @@ export function getAppStudioEndpoint(): string {
 }
 
 export function getCopilotStudioEndpoint(): string {
-  if (process.env.COPILOT_STUDIO_ENV && process.env.COPILOT_STUDIO_ENV === "test") {
-    return "https://api.test.powerplatform.com";
-  } else {
-    return "https://api.powerplatform.com";
-  }
+  return process.env.COPILOT_STUDIO_ENV === "test"
+    ? "https://api.test.powerplatform.com"
+    : "https://api.powerplatform.com";
 }
 
 export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];

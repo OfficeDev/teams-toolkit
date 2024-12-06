@@ -158,8 +158,6 @@ async function invoke(
   eventName: string,
   triggerFromProperty: { [key: string]: TelemetryTriggerFrom }
 ): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InvokeTeamsAgentStart, triggerFromProperty);
-  let res: Result<null, FxError>;
   const skipRemindInstallTeamsAgent = await globalStateGet(
     GlobalKey.DoNotRemindInstallTeamsAgent,
     false

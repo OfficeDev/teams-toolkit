@@ -52,7 +52,7 @@ export async function showError(e: UserError | SystemError) {
     CoreFeatureFlags.ChatParticipantUIEntries
   );
   const troubleshootErrorWithTeamsAgentButton = {
-    title: "Troubleshoot error with @teamsapp", // Localize
+    title: localize("teamstoolkit.commmands.teamsAgentResolve.title"),
     run: async () => {
       await commands.executeCommand(
         "fx-extension.teamsAgentTroubleshootError",
@@ -183,11 +183,10 @@ export function notifyOutputTroubleshoot(errorCode: string) {
       [TelemetryProperty.ErrorCode]: errorCode,
     });
     setOutputTroubleshootNotificationCount(outputTroubleshootNotificationCount + 1);
-    // TODO: update string based on review result and localizae
-    const buttonMessage = "Open output panel";
+    const buttonMessage = localize("teamstoolkit.commmands.teamsAgentResolve.openOutputPanel");
     void window
       .showInformationMessage(
-        'You can select the relevant code under "Output", right-click, and choose to troubleshoot using @teamsapp to better understand the error and find possible solutions',
+        localize("teamstoolkit.commmands.teamsAgentResolve.dialogContent"),
         buttonMessage
       )
       .then((selection) => {

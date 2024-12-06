@@ -168,7 +168,9 @@ describe("common", () => {
     });
 
     it("should execute command when user selects 'Open output panel'", async () => {
-      showInformationMessageStub.resolves("Open output panel");
+      showInformationMessageStub.resolves(
+        localizeUtils.localize("teamstoolkit.commmands.teamsAgentResolve.openOutputPanel")
+      );
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
 
       notifyOutputTroubleshoot("testErrorCode");

@@ -4123,7 +4123,7 @@ describe("copilotPlugin", async () => {
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              configurationId: "OAUTHAUTH_CONFIGURATION_ID",
+              configurationId: "OAUTHAUTH_REGISTRATION_ID",
             },
           },
           {

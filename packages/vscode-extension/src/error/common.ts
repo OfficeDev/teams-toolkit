@@ -192,6 +192,7 @@ export function notifyOutputTroubleshoot(errorCode: string) {
       )
       .then((selection) => {
         if (selection === buttonMessage) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickToOpenOutputForTroubleshoot);
           void commands.executeCommand("fx-extension.showOutputChannel");
         }
       });

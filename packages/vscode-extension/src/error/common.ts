@@ -14,7 +14,11 @@ import {
   openTestToolMessage,
   openTestToolDisplayMessage,
 } from "../debug/common/debugConstants";
-import { workspaceUri } from "../globalVariables";
+import {
+  setOutputTroubleshootNotificationCount,
+  outputTroubleshootNotificationCount,
+  workspaceUri,
+} from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { anonymizeFilePaths } from "../utils/fileSystemUtils";
 import { localize } from "../utils/localizeUtils";
@@ -26,6 +30,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
+import { MaximumNotificationOutputTroubleshootCount } from "../constants";
 
 export async function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
@@ -56,6 +61,10 @@ export async function showError(e: UserError | SystemError) {
       );
     },
   };
+
+  if (shouldRecommendTeamsAgent && !isUserCancelError(e)) {
+    notifyOutputTroubleshoot(errorCode);
+  }
 
   if (recommendTestTool) {
     const recommendTestToolMessage = openTestToolMessage();
@@ -166,4 +175,26 @@ export function wrapError(e: Error): Result<null, FxError> {
 
 export function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
+}
+
+export function notifyOutputTroubleshoot(errorCode: string) {
+  if (outputTroubleshootNotificationCount < MaximumNotificationOutputTroubleshootCount) {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NotifyOutputTroubleshoot, {
+      [TelemetryProperty.ErrorCode]: errorCode,
+    });
+    setOutputTroubleshootNotificationCount(outputTroubleshootNotificationCount + 1);
+    // TODO: update string based on review result and localizae
+    const buttonMessage = "Open output panel";
+    void window
+      .showInformationMessage(
+        'You can select the relevant code under "Output", right-click, and choose to troubleshoot using @teamsapp to better understand the error and find possible solutions',
+        buttonMessage
+      )
+      .then((selection) => {
+        if (selection === buttonMessage) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickToOpenOutputForTroubleshoot);
+          void commands.executeCommand("fx-extension.showOutputChannel");
+        }
+      });
+  }
 }

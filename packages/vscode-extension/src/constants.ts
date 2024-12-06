@@ -76,3 +76,5 @@ export const InstallCopilotChatLink = "https://aka.ms/install-github-copilot-cha
 
 export const KiotaExtensionId = "ms-graph.kiota";
 export const KiotaMinVersion = "1.18.100000002";
+
+export const MaximumNotificationOutputTroubleshootCount = 3;

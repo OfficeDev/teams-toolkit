@@ -549,7 +549,24 @@
   "teamstoolkit.walkthroughs.select.title": "Select a Tutorial to Get Started",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.title": "Build a Declarative Agent",
-  "teamstoolkit.walkthroughs.buildIntelligentApps.description": "Jumpstart your agent development experience with Teams Toolkit",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.description": "Jumpstart your agent development experience with Teams Toolkit.",
+
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsIntroduction.title": "Introduction",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsIntroduction.description": "A declarative agent is a customized version of Microsoft 365 Copilot that allows users to create personalized experiences by declaring specific instructions, actions, and knowledge.\n\nThis guide provides information about how to build a declarative agent by using Teams Toolkit.",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsIntroductionWithChat.description": "A declarative agent is a customized version of Microsoft 365 Copilot that allows users to create personalized experiences by declaring specific instructions, actions, and knowledge.\n\nThis guide provides information about how to build a declarative agent by using Teams Toolkit.\n\nYou can also [chat with GitHub Copilot](command:fx-extension.invokeChat?%5B%22WalkThroughIntelligentAppsIntroduction%22%5D) to learn how to develop agent for Microsoft 365 Copilot.",
+
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsEnvironment.title": "Get your environment ready",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsEnvironment.description": "To extend Microsoft 365 Copilot with declarative agent, in addition to Node.js and NPM requirements, you will also need a valid license to access Microsoft 365 Copilot. [Checkout this document for obtaining developer environment.](https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/prerequisites#prerequisites)\n[Check Copilot License](command:fx-extension.checkCopilotAccess?%5B%22WalkThrough%22%5D)",
+
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsBuildApp.title": "Build a declarative agent",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsBuildApp.description": "Now let’s get you through the steps of creating a declarative agent.\n[Build a declarative agent](command:fx-extension.create?%5B%22SideBar%22%5D)",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsBuildAppWithChat.description": "Now let’s get you through the steps of creating a declarative agent.\n\nLearn more declarative agent knowledge by [chatting with GitHub Copilot.](command:fx-extension.invokeChat?%5B%22WalkThroughIntelligentAppsCreate%22%5D)\n[Build a declarative agent](command:fx-extension.create?%5B%22SideBar%22%5D)",
+
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsPreview.title": "Preview in Microsoft 365 Copilot",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsPreview.description": "To preview your declarative agent, you will need to [Provision](command:fx-extension.provision) it for Microsoft 365 Copilot and then Launch Microsoft 365 Copilot for [Preview](command:fx-extension.localdebug).\n[Provision](command:fx-extension.provision)\n[Preview](command:fx-extension.localdebug)\nTip: You can browse all debug options via [Run and Debug](command:workbench.view.debug) panel on the activity bar.",
+
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsExplore.title": "What is next",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsExplore.description": "You can enhance the user experience of your declarative agent by adding capabilities.\n\nThe capabilities element in the manifest reference provide several options for you to unlock features for your users.",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.twoPathsToIntelligentApps.title": "Two Paths to Intelligent Apps",
   "teamstoolkit.walkthroughs.buildIntelligentApps.twoPathsToIntelligentApps.description": "Build your intelligent apps with Microsoft 365 in two ways:\n🎯 Extend Microsoft Copilot with a plugin, Or\n✨ Build your own Copilot in Teams using Teams AI Library and Azure services",
@@ -566,7 +583,7 @@
   "teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.title": "Build Custom Engine Agent",
   "teamstoolkit.walkthroughs.buildIntelligentApps.buildCustomCopilot.description": "Build an AI agent bot for common tasks or an intelligent chatbot to answer specific questions\n[Build a Basic AI Chatbot](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22custom-copilot-basic%22%2C%20%22project-type%22%3A%20%22custom-copilot-type%22%7D%5D)\n[Build an AI Agent](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22custom-copilot-agent%22%2C%20%22project-type%22%3A%20%22custom-copilot-type%22%7D%5D)\n[Build a Bot to Chat with Your Data](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%2C%20%7B%22capabilities%22%3A%20%22custom-copilot-rag%22%2C%20%22project-type%22%3A%20%22custom-copilot-type%22%7D%5D)",
 
-  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.title": "Intelligent App Resources",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.title": "Resources",
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppResources.description": "Explore these resources to build intelligent apps and enhance your development projects\n🗒️ [Generative AI for Beginners](https://github.com/microsoft/generative-ai-for-beginners/tree/main)\n✨ [Retrieval Augmented Generation (RAG)](https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview)\n📚 [AI Learning and Community Hub](https://learn.microsoft.com/en-us/ai/)",
   "teamstoolkit.m365.needSignIn.message": "You need to sign in your Microsoft 365 account.",
   "teamstoolkit.handler.createPluginWithManifest.error.missingParameter": "Invalid parameter in the createPluginWithManifest command. Usage: createPluginWithManifest(API_SPEC_PATH:string, PLUGIN_MANIFEST_PATH: string, { lastCommand: string }, OUTPUT_FOLDER?: string). Valid values for LAST_COMMAND: createPluginWithManifest, createDeclarativeCopilotWithManifest.",

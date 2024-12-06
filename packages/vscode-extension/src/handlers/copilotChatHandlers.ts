@@ -261,6 +261,12 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
       query =
         "@teamsapp How do I customize and extend the notification bot app template created by Teams Toolkit?";
       break;
+    case TelemetryTriggerFrom.WalkThroughIntelligentAppsIntroduction:
+      query = "@teamsapp What is declarative agent for Microsoft 365 Copilot?";
+      break;
+    case TelemetryTriggerFrom.WalkThroughIntelligentAppsCreate:
+      query = "@teamsapp How to create declarative agent with Teams Toolkit?";
+      break;
     default:
       query =
         "@teamsapp Write your own query message to find relevant templates or samples to build your Teams app and agent as per your description. E.g. @teamsapp create an AI assistant bot that can complete common tasks.";

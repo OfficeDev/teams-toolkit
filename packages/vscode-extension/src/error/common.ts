@@ -32,7 +32,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
 import { MaximumNotificationOutputTroubleshootCount } from "../constants";
 
-export async function showError(e: UserError | SystemError) {
+export function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
   const errorCode = `${e.source}.${e.name}`;
   const runTestTool = {
@@ -62,10 +62,6 @@ export async function showError(e: UserError | SystemError) {
     },
   };
 
-  if (shouldRecommendTeamsAgent && !isUserCancelError(e)) {
-    notifyOutputTroubleshoot(errorCode);
-  }
-
   if (recommendTestTool) {
     const recommendTestToolMessage = openTestToolMessage();
     const recommendTestToolDisplayMessage = openTestToolDisplayMessage();
@@ -94,11 +90,11 @@ export async function showError(e: UserError | SystemError) {
     if (shouldRecommendTeamsAgent) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
     }
-    const button = await window.showErrorMessage(
-      `[${errorCode}]: ${notificationMessage}`,
-      ...buttons
-    );
-    if (button) button.run();
+    void window
+      .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
+      .then((button) => {
+        if (button) button.run();
+      });
   } else if (e instanceof SystemError) {
     const sysError = e;
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -133,11 +129,11 @@ export async function showError(e: UserError | SystemError) {
     if (shouldRecommendTeamsAgent) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
     }
-    const button = await window.showErrorMessage(
-      `[${errorCode}]: ${notificationMessage}`,
-      ...buttons
-    );
-    if (button) button.run();
+    void window
+      .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
+      .then((button) => {
+        if (button) button.run();
+      });
   } else {
     if (!(e instanceof ConcurrentError)) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -149,12 +145,16 @@ export async function showError(e: UserError | SystemError) {
       if (shouldRecommendTeamsAgent) {
         buttons.push(troubleshootErrorWithTeamsAgentButton);
       }
-      const button = await window.showErrorMessage(
-        `[${errorCode}]: ${notificationMessage}`,
-        ...buttons
-      );
-      if (button) void button.run();
+      void window
+        .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
+        .then((button) => {
+          if (button) button.run();
+        });
     }
+  }
+
+  if (shouldRecommendTeamsAgent && !isUserCancelError(e)) {
+    notifyOutputTroubleshoot(errorCode);
   }
 }
 

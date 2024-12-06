@@ -6,6 +6,7 @@ import { Hub, TaskLabel } from "@microsoft/teamsfx-core";
 import { ExtensionErrors } from "../../error/error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { ProductName } from "@microsoft/teamsfx-api";
+import { error } from "console";
 
 export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -251,6 +252,24 @@ export const launchingTeamsClientDisplayMessages = Object.freeze({
   hotReloadingMessage:
     "The app supports hot reloading. If you have any code changes in the project, the app will be reloaded.",
 });
+
+export const launchingBrowserWindowForCopilot = Object.freeze({
+  title: "Launching Web Browser for Copilot.",
+  successfulLaunchMessage: (port: number) =>
+    `Browser launched and connected to DevTools Protocol on port: ${port}.`,
+  unsuccessfulLaunchMessage: (error: string) =>
+    `Failed to connect to Chrome DevTools Protocol: ${error}.`,
+});
+
+export const connectToExistingBrowserDebugSessionForCopilot = Object.freeze({
+  title: "Connecting to Existing Browser Debug Session for Copilot.",
+  successfulConnectionMessage: (port: number) =>
+    `Connected to DevTools Protocol in existing debug session on port: ${port}.`,
+  unsuccessfulConnectionMessage: (error: string) =>
+    `Failed to connect to Chrome DevTools Protocol: ${error}.`,
+});
+
+export const DefaultRemoteDebuggingPort = 9222;
 
 export const DebugSessionExists = "Debug session exists";
 

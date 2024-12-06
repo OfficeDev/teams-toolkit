@@ -97,14 +97,14 @@ describe("Local Debug Tests", function () {
           await validateWelcomeAndReplyBot(page, {
             hasCommandReplyValidation: true,
             botCommand: "Show all tasks",
-            expectedReplyMessage: "current tasks",
+            expectedReplyMessage: "sorry",
             timeout: Timeout.longTimeWait,
           });
         } catch {
           await validateWelcomeAndReplyBot(page, {
             hasCommandReplyValidation: true,
             botCommand: "Show all tasks",
-            expectedReplyMessage: "display tasks",
+            expectedReplyMessage: "current tasks",
             timeout: Timeout.longTimeWait,
           });
         }

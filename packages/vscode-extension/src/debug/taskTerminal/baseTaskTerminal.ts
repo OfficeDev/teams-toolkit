@@ -70,7 +70,9 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       this.writeEmitter.fire(`${fxError.message}\r\n`);
 
       if (outputError) {
-        showError(fxError);
+        showError(fxError).catch(() => {
+          // ignore
+        });
       }
       this.closeEmitter.fire(1);
 

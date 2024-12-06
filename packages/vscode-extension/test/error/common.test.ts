@@ -15,9 +15,13 @@ import { MaximumNotificationOutputTroubleshootCount } from "../../src/constants"
 
 describe("common", async () => {
   const sandbox = sinon.createSandbox();
+  let clock: sinon.SinonFakeTimers;
 
   afterEach(() => {
     sandbox.restore();
+    if (clock) {
+      clock.restore();
+    }
   });
 
   it("showError", async () => {
@@ -33,8 +37,9 @@ describe("common", async () => {
     const error = new UserError("test source", "test name", "test message", "test displayMessage");
     error.helpLink = "test helpLink";
 
-    showError(error);
+    await showError(error);
     await showErrorMessageStub.firstCall.returnValue;
+
     chai.assert.isTrue(
       sendTelemetryEventStub.calledWith(TelemetryEvent.ClickGetHelp, {
         "error-code": "test source.test name",
@@ -59,7 +64,7 @@ describe("common", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
     sandbox.stub(fs, "pathExistsSync").returns(true);
 
-    showError(error);
+    await showError(error);
     await showErrorMessageStub.firstCall.returnValue;
 
     chai.assert.isFalse(
@@ -82,7 +87,7 @@ describe("common", async () => {
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
     const error = new SystemError("Core", "DecryptionError", "test");
 
-    showError(error);
+    await showError(error);
     await showErrorMessageStub.firstCall.returnValue;
 
     chai.assert.isTrue(sendTelemetryEventStub.called);
@@ -101,10 +106,14 @@ describe("common", async () => {
           return Promise.resolve(button);
         });
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      clock = sandbox.useFakeTimers();
     });
 
     afterEach(() => {
       globalVariables.setOutputTroubleshootNotificationCount(0);
+      if (clock) {
+        clock.restore();
+      }
     });
     it("showError - notify user to troubleshoot output with Teams Agent", async () => {
       showInformationMessageStub.resolves("Open output panel");
@@ -119,7 +128,9 @@ describe("common", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(fs, "pathExistsSync").returns(true);
 
-      showError(error);
+      const job = showError(error);
+      await clock.tickAsync(4000);
+      await job;
       await showErrorMessageStub.firstCall.returnValue;
 
       chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 1);
@@ -127,7 +138,6 @@ describe("common", async () => {
 
     it("showError - not notify user to troubleshoot output with Teams Agent if reaches limit", async () => {
       globalVariables.setOutputTroubleshootNotificationCount(3);
-      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
       sandbox.stub(vscode.commands, "executeCommand");
       const error = new UserError(
         "test source",
@@ -138,7 +148,7 @@ describe("common", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(fs, "pathExistsSync").returns(true);
 
-      showError(error);
+      await showError(error);
       await showErrorMessageStub.firstCall.returnValue;
 
       chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 3);
@@ -158,7 +168,7 @@ describe("common", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(fs, "pathExistsSync").returns(true);
 
-      showError(error);
+      await showError(error);
 
       chai.assert.equal(globalVariables.outputTroubleshootNotificationCount, 0);
       chai.assert.isFalse(showErrorMessageStub.called);
@@ -170,7 +180,9 @@ describe("common", async () => {
       });
       const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
 
-      notifyOutputTroubleshoot("testErrorCode");
+      const job = notifyOutputTroubleshoot("testErrorCode");
+      await clock.tickAsync(4000);
+      await job;
       await showInformationMessageStub.firstCall.returnValue;
 
       chai.assert.isTrue(executeCommandStub.calledOnceWith("fx-extension.showOutputChannel"));
@@ -227,12 +239,13 @@ describe("common", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(vscode.commands, "executeCommand");
       const error = buildError();
-      showError(error);
+      await showError(error);
       await showErrorMessageStub.firstCall.returnValue;
       chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
     });
 
     it(`showError - ${type} - recommend troubleshoot`, async () => {
+      clock = sandbox.useFakeTimers();
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       globalVariables.setOutputTroubleshootNotificationCount(
         MaximumNotificationOutputTroubleshootCount
@@ -244,13 +257,19 @@ describe("common", async () => {
         });
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
       sandbox.stub(localizeUtils, "localize").returns("");
-      sandbox.stub(projectChecker, "isTestToolEnabledProject").returns(false);
+      sandbox.stub(projectChecker, "isTestToolEnabledProject").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       sandbox.stub(vscode.commands, "executeCommand");
       const error = buildError();
-      showError(error);
+      const job = showError(error);
+      await clock.tickAsync(4000);
+      await job;
       await showErrorMessageStub.firstCall.returnValue;
-      chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
+      if (type === "system error") {
+        chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
+      } else {
+        chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 2);
+      }
     });
   });
 });

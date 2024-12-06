@@ -31,8 +31,9 @@ import {
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
 import { MaximumNotificationOutputTroubleshootCount } from "../constants";
+import { sleep } from "@microsoft/vscode-ui";
 
-export function showError(e: UserError | SystemError) {
+export async function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
   const errorCode = `${e.source}.${e.name}`;
   const runTestTool = {
@@ -126,8 +127,12 @@ export function showError(e: UserError | SystemError) {
     const buttons = recommendTestTool
       ? [runTestTool, issue, similarIssues]
       : [issue, similarIssues];
-    if (shouldRecommendTeamsAgent) {
+    if (shouldRecommendTeamsAgent && !recommendTestTool) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
+    } else {
+      notificationMessage += `${localize(
+        "teamstoolkit.commmands.teamsAgentResolve.notificationContent"
+      )}`;
     }
     void window
       .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
@@ -154,7 +159,7 @@ export function showError(e: UserError | SystemError) {
   }
 
   if (shouldRecommendTeamsAgent && !isUserCancelError(e)) {
-    notifyOutputTroubleshoot(errorCode);
+    await notifyOutputTroubleshoot(errorCode);
   }
 }
 
@@ -177,8 +182,9 @@ export function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-export function notifyOutputTroubleshoot(errorCode: string) {
+export async function notifyOutputTroubleshoot(errorCode: string) {
   if (outputTroubleshootNotificationCount < MaximumNotificationOutputTroubleshootCount) {
+    await sleep(3000);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NotifyOutputTroubleshoot, {
       [TelemetryProperty.ErrorCode]: errorCode,
     });

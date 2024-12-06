@@ -925,7 +925,7 @@
       },
       {
         "command": "fx-extension.teamsAgentTroubleshootSelectedText",
-        "title": "Troubleshoot selection with @teamsapp",
+        "title": "%teamstoolkit.commmands.teamsAgentTroubleshootSelectedText.title%",
         "enablement": "editor.hasSelection && fx-extension.isChatParticipantUIEntriesEnabled",
         "category": "Teams"
       },

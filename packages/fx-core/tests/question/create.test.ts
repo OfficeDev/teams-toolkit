@@ -2785,10 +2785,11 @@ describe("scaffold question", () => {
                 api: "get operation1",
                 server: "https://server",
                 auth: {
-                  name: "bearerAuth",
+                  name: "apiKey",
                   authScheme: {
-                    type: "http",
-                    scheme: "bearer",
+                    type: "apiKey",
+                    in: "header",
+                    name: "api_key",
                   },
                 },
                 operationId: "getOperation1",
@@ -2848,10 +2849,10 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API Key authentication(Bearer token authentication)",
+              detail: "API Key authentication(In header or query)",
               groupName: "GET",
               data: {
-                authName: "bearerAuth",
+                authName: "apiKey",
                 serverUrl: "https://server",
                 authType: "apiKey",
               },

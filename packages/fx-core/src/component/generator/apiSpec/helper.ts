@@ -335,6 +335,8 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
         ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
         : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
         ? getLocalizedString("core.copilotPlugin.api.oauth")
+        : Utils.isAPIKeyAuthButNotInCookie(operation.auth.authScheme)
+        ? getLocalizedString("core.copilotPlugin.api.apiKeyWithHeaderOrQuery")
         : getLocalizedString("core.copilotPlugin.api.notSupportedAuth"),
       data: {
         serverUrl: operation.server,
@@ -342,7 +344,10 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
     };
 
     if (operation.auth) {
-      if (Utils.isBearerTokenAuth(operation.auth.authScheme)) {
+      if (
+        Utils.isBearerTokenAuth(operation.auth.authScheme) ||
+        Utils.isAPIKeyAuthButNotInCookie(operation.auth.authScheme)
+      ) {
         result.data.authType = "apiKey";
         result.data.authName = operation.auth.name;
       } else if (Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)) {

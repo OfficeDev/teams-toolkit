@@ -267,6 +267,7 @@
   "core.TabNonSso.detail": "A simple implementation of a web app that's ready to customize",
   "core.copilotPlugin.api.noAuth": "No authentication",
   "core.copilotPlugin.api.apiKeyAuth": "API Key authentication(Bearer token authentication)",
+  "core.copilotPlugin.api.apiKeyWithHeaderOrQuery": "API Key authentication(In header or query)",
   "core.copilotPlugin.api.oauth": "OAuth(Authorization code flow)",
   "core.copilotPlugin.api.notSupportedAuth": "Unsupported Authorization type",
   "core.copilotPlugin.validate.apiSpec.summary": "Teams Toolkit has checked your OpenAPI description document:\n\nSummary:\n%s.\n%s\n%s",

@@ -244,9 +244,6 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
   let query = "";
   switch (triggerFromProperty[TelemetryProperty.TriggerFrom]) {
     case TelemetryTriggerFrom.TreeView:
-      query =
-        "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development.";
-      break;
     case TelemetryTriggerFrom.CommandPalette:
       query =
         "@teamsapp Use this GitHub Copilot extension to ask questions about Teams app and agent development.";

@@ -210,8 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
 
   // control whether to show chat participant ui entries
-  const shouldEnableChatParticipantUIEntries =
-    releaseControlledFeatureSettings.shouldEnableTeamsCopilotChatUI;
+  const shouldEnableChatParticipantUIEntries = false;
   featureFlagManager.setBooleanValue(
     CoreFeatureFlags.ChatParticipantUIEntries,
     shouldEnableChatParticipantUIEntries

@@ -1410,6 +1410,15 @@
         "description": "%teamstoolkit.walkthroughs.description%",
         "steps": [
           {
+            "id": "teamsToolkitIntroduction",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitIntroduction.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitIntroduction.description%",
+            "media": {
+              "svg": "media/walkthroughs/get-started/introduction.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitIntroduction.title%"
+            }
+          },
+          {
             "id": "teamsToolkitEnvironment",
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",
@@ -1423,16 +1432,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description%",
             "media": {
-              "svg": "media/walkthroughs/get-started/Create.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
-            }
-          },
-          {
-            "id": "teamsToolkitCreateFreeAccount",
-            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.title%",
-            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description%",
-            "media": {
-              "markdown": "media/itp/itp.md"
+              "markdown": "media/walkthroughs/get-started/create/create.md"
             }
           },
           {
@@ -1440,17 +1440,8 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
             "media": {
-              "svg": "media/walkthroughs/get-started/F5.svg",
+              "svg": "media/walkthroughs/get-started/testtool.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
-            }
-          },
-          {
-            "id": "teamsToolkitDeploy",
-            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
-            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
-            "media": {
-              "svg": "media/walkthroughs/get-started/Deployment.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
             }
           },
           {
@@ -1458,8 +1449,17 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
             "media": {
-              "svg": "media/walkthroughs/get-started/whatsnext.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
+              "svg": "media/walkthroughs/get-started/whatisnext.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitResources",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitResources.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitResources.description%",
+            "media": {
+              "svg": "media/walkthroughs/get-started/resources.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitResources.altText%"
             }
           }
         ],
@@ -1493,16 +1493,7 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildAppWithChat.description%",
             "media": {
-              "svg": "media/walkthroughs/get-started/Create.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
-            }
-          },
-          {
-            "id": "teamsToolkitCreateFreeAccount",
-            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.title%",
-            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description%",
-            "media": {
-              "markdown": "media/itp/itp.md"
+              "markdown": "media/walkthroughs/get-started/create/create_with_chat.md"
             }
           },
           {
@@ -1510,26 +1501,26 @@
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
             "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
             "media": {
-              "svg": "media/walkthroughs/get-started/F5.svg",
+              "svg": "media/walkthroughs/get-started/testtool.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
-            }
-          },
-          {
-            "id": "teamsToolkitDeploy",
-            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
-            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
-            "media": {
-              "svg": "media/walkthroughs/get-started/Deployment.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
             }
           },
           {
             "id": "teamsToolkitExploreMore",
             "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
-            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMoreWithChat.description%",
             "media": {
-              "svg": "media/walkthroughs/get-started/whatsnext.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
+              "svg": "media/walkthroughs/get-started/whatisnext.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitResources",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitResources.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitResources.description%",
+            "media": {
+              "svg": "media/walkthroughs/get-started/resources.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitResources.altText%"
             }
           }
         ],

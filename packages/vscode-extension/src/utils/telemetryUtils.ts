@@ -79,6 +79,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThroughCreate };
     case TelemetryTriggerFrom.WalkThroughIntroduction:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThroughIntroduction };
+    case TelemetryTriggerFrom.WalkThroughWhatIsNext:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThroughWhatIsNext };
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }

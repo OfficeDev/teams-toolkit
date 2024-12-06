@@ -458,6 +458,7 @@ export enum TelemetryTriggerFrom {
   WalkThrough = "WalkThrough",
   WalkThroughIntroduction = "WalkThroughIntroduction",
   WalkThroughCreate = "WalkThroughCreate",
+  WalkThroughWhatIsNext = "WalkThroughWhatIsNext",
   Notification = "Notification",
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",

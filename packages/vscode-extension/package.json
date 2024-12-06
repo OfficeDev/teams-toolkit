@@ -931,7 +931,7 @@
       },
       {
         "command": "fx-extension.teamsAgentTroubleshootError",
-        "title": "Troubleshoot error with @teamsapp",
+        "title": "%teamstoolkit.commmands.teamsAgentResolve.title%",
         "enablement": "fx-extension.isChatParticipantUIEntriesEnabled",
         "category": "Teams"
       }

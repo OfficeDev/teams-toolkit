@@ -103,6 +103,8 @@ export const TaskCommand = Object.freeze({
   deploy: "deploy",
   migrate: "migrate",
   launchDesktopClient: "launch-desktop-client",
+  launchBrowserForCopilot: "launch-browser-for-copilot",
+  connectToExistingBrowserDebugSessionForCopilot: "connect-to-existing-browser-debug-session-for-copilot",
 });
 
 export const TeamsFxNpmCommands = Object.freeze({

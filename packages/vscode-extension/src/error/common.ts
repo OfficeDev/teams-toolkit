@@ -127,12 +127,8 @@ export async function showError(e: UserError | SystemError) {
     const buttons = recommendTestTool
       ? [runTestTool, issue, similarIssues]
       : [issue, similarIssues];
-    if (shouldRecommendTeamsAgent && !recommendTestTool) {
+    if (shouldRecommendTeamsAgent) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
-    } else {
-      notificationMessage += `${localize(
-        "teamstoolkit.commmands.teamsAgentResolve.notificationContent"
-      )}`;
     }
     void window
       .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)

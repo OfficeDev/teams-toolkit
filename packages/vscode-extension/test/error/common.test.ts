@@ -119,6 +119,23 @@ describe("common", async () => {
     chai.assert.isTrue(executeCommandStub.called);
   });
 
+  it("showError - similar issues and no button clicked", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+    const showErrorMessageStub = sandbox
+      .stub(vscode.window, "showErrorMessage")
+      .callsFake((title: string, button: unknown, ...items: vscode.MessageItem[]) => {
+        return Promise.resolve(undefined);
+      });
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+    const error = new SystemError("Core", "DecryptionError", "test");
+
+    await showError(error);
+    await showErrorMessageStub.firstCall.returnValue;
+
+    chai.assert.isTrue(executeCommandStub.notCalled);
+  });
+
   describe("notify user to troubleshoot output with Teams Agent", async () => {
     let showInformationMessageStub: sinon.SinonStub;
     let showErrorMessageStub: sinon.SinonStub;
@@ -290,11 +307,8 @@ describe("common", async () => {
       await clock.tickAsync(4000);
       await job;
       await showErrorMessageStub.firstCall.returnValue;
-      if (type === "system error") {
-        chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
-      } else {
-        chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 2);
-      }
+
+      chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 2);
     });
 
     it(`showError - ${type} - recommend troubleshoot only`, async () => {

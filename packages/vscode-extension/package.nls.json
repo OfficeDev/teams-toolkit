@@ -120,8 +120,6 @@
   "_teamstoolkit.commmands.teamsAgentResolve.title.comment": "@teamsapp is used to call Teams agent in Github Copilot Chat and should not be translated.",
   "teamstoolkit.commmands.teamsAgentResolve.dialogContent": "To better understand the error and explore solutions, select relevant text under \"Output\", right-click, and choose \"Resolve selected text with @teamsapp\".",
   "_teamstoolkit.commmands.teamsAgentResolve.dialogContent.comment": "@teamsapp is used to call Teams agent in Github Copilot Chat and should not be translated.",
-  "teamstoolkit.commmands.teamsAgentResolve.notificationContent": "\nTip: To better understand the error and explore solutions, select relevant text under [\"Output\"](command:fx-extension.showOutputChannel), right-click, and choose \"Resolve selected text with @teamsapp\".",
-  "_teamstoolkit.commmands.teamsAgentResolve.notificationContent.comment": "@teamsapp is used to call Teams agent in Github Copilot Chat and should not be translated.",
   "teamstoolkit.commmands.teamsAgentResolve.openOutputPanel": "Open Output Panel",
   "teamstoolkit.commandsTreeViewProvider.addEnvironmentDescription": "Create a new environment file",
   "teamstoolkit.commandsTreeViewProvider.addEnvironmentTitle": "Add Environment",

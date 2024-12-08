@@ -49,6 +49,31 @@ describe("common", async () => {
     );
   });
 
+  it("showError - if user does not click any button", async () => {
+    sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+    sandbox.stub(localizeUtils, "localize").returns("");
+    const showErrorMessageStub = sandbox
+      .stub(vscode.window, "showErrorMessage")
+      .callsFake((title: string, button: any) => {
+        return Promise.resolve(undefined);
+      });
+    const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(vscode.commands, "executeCommand");
+    const error = new UserError("test source", "test name", "test message", "test displayMessage");
+    error.helpLink = "test helpLink";
+
+    await showError(error);
+    await showErrorMessageStub.firstCall.returnValue;
+
+    chai.assert.isFalse(
+      sendTelemetryEventStub.calledWith(TelemetryEvent.ClickGetHelp, {
+        "error-code": "test source.test name",
+        "err-message": "test displayMessage",
+        "help-link": "test helpLink",
+      })
+    );
+  });
+
   it("showError with test tool button click", async () => {
     sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
     sandbox.stub(localizeUtils, "localize").returns("");
@@ -270,6 +295,31 @@ describe("common", async () => {
       } else {
         chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 2);
       }
+    });
+
+    it(`showError - ${type} - recommend troubleshoot only`, async () => {
+      clock = sandbox.useFakeTimers();
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      globalVariables.setOutputTroubleshootNotificationCount(
+        MaximumNotificationOutputTroubleshootCount
+      );
+      const showErrorMessageStub = sandbox
+        .stub(vscode.window, "showErrorMessage")
+        .callsFake((title: string, button: any) => {
+          return Promise.resolve(button);
+        });
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      sandbox.stub(localizeUtils, "localize").returns("");
+      sandbox.stub(projectChecker, "isTestToolEnabledProject").returns(false);
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+      sandbox.stub(vscode.commands, "executeCommand");
+      const error = buildError();
+      const job = showError(error);
+      await clock.tickAsync(4000);
+      await job;
+      await showErrorMessageStub.firstCall.returnValue;
+
+      chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
     });
   });
 });

@@ -13,12 +13,21 @@ const hexToCssVarMap: { [key: string]: string } = {
   "#CCCCCC": "var(--vscode-menu-foreground, #CCCCCC)",
   "#D2ECFF": "var(--vscode-chat-slashCommandBackground, #D2ECFF)",
   "#3B3B3B": "var(--vscode-icon-foreground, #3B3B3B)",
+  "#3C3C3C": "var(--vscode-titleBar-activeBackground, #3C3C3C)",
+  "#333333": "var(--vscode-titleBar-activeBackground, #333333)",
   "#E7E7E7": "var(--vscode-editorGroupHeader-tabsBorder, #E7E7E7)",
   "#ADD6FF": "var(--vscode-editor-selectionHighlightBackground, #ADD6FF)",
   "#DDDDDD": "var(--vscode-actionBar-toggledBackground, #DDDDDD)",
   "#F85149": "var(--vscode-errorForeground, #F85149)",
   "#2c2c2d": "var(--vscode-notificationCenterHeader-background, #2c2c2d)",
   "#252526": "var(--vscode-editorWidget-background, #252526)",
+  "#292929": "var(--vscode-editor-background, #292929)",
+  "#007ACC": "var(--vscode-button-background, #007ACC)",
+  "#1E1E1E": "var(--vscode-editor-background, #1E1E1E)",
+  "#007FD4": "var(--vscode-button-background, #007FD4)",
+  "#9D9D9D": "var(--vscode-input-placeholderForeground, #9D9D9D)",
+  "#062F4A": "var(--vscode-list-activeSelectionBackground, #062F4A)",
+  "#E3E3E3": "var(--vscode-checkbox-foreground, #E3E3E3)",
 };
 
 function replaceHexWithCssVar(content: string): string {

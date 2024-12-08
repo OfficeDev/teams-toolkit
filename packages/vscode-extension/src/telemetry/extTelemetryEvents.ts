@@ -157,7 +157,7 @@ export enum TelemetryEvent {
   LaunchDesktopClientTask = "launch-desktop-client",
 
   LaunchBrowserForCopilot = "launch-browser-for-copilot",
-  ConnectToExistingBrowserDebugSessionForCopilot = "connect-to-existing-browser-debug-session-for-copilot",
+  ConnectToExistingBrowserDebugSessionForCopilot = "connect-copilot-browser",
 
   StartDeleteAadAfterDebug = "start-delete-aad-after-debug",
   SuccessDeleteAadAfterDebug = "success-delete-aad-after-debug",

@@ -31,6 +31,7 @@ import {
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
 import { MaximumNotificationOutputTroubleshootCount } from "../constants";
+import { sleep } from "@microsoft/vscode-ui";
 
 export async function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
@@ -62,10 +63,6 @@ export async function showError(e: UserError | SystemError) {
     },
   };
 
-  if (shouldRecommendTeamsAgent && !isUserCancelError(e)) {
-    notifyOutputTroubleshoot(errorCode);
-  }
-
   if (recommendTestTool) {
     const recommendTestToolMessage = openTestToolMessage();
     const recommendTestToolDisplayMessage = openTestToolDisplayMessage();
@@ -94,11 +91,11 @@ export async function showError(e: UserError | SystemError) {
     if (shouldRecommendTeamsAgent) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
     }
-    const button = await window.showErrorMessage(
-      `[${errorCode}]: ${notificationMessage}`,
-      ...buttons
-    );
-    if (button) button.run();
+    void window
+      .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
+      .then((button) => {
+        if (button) button.run();
+      });
   } else if (e instanceof SystemError) {
     const sysError = e;
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
@@ -133,11 +130,11 @@ export async function showError(e: UserError | SystemError) {
     if (shouldRecommendTeamsAgent) {
       buttons.push(troubleshootErrorWithTeamsAgentButton);
     }
-    const button = await window.showErrorMessage(
-      `[${errorCode}]: ${notificationMessage}`,
-      ...buttons
-    );
-    if (button) button.run();
+    void window
+      .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
+      .then((button) => {
+        if (button) button.run();
+      });
   } else {
     if (!(e instanceof ConcurrentError)) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -149,12 +146,16 @@ export async function showError(e: UserError | SystemError) {
       if (shouldRecommendTeamsAgent) {
         buttons.push(troubleshootErrorWithTeamsAgentButton);
       }
-      const button = await window.showErrorMessage(
-        `[${errorCode}]: ${notificationMessage}`,
-        ...buttons
-      );
-      if (button) void button.run();
+      void window
+        .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
+        .then((button) => {
+          if (button) button.run();
+        });
     }
+  }
+
+  if (shouldRecommendTeamsAgent && !isUserCancelError(e)) {
+    await notifyOutputTroubleshoot(errorCode);
   }
 }
 
@@ -177,8 +178,9 @@ export function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-export function notifyOutputTroubleshoot(errorCode: string) {
+export async function notifyOutputTroubleshoot(errorCode: string) {
   if (outputTroubleshootNotificationCount < MaximumNotificationOutputTroubleshootCount) {
+    await sleep(3000);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.NotifyOutputTroubleshoot, {
       [TelemetryProperty.ErrorCode]: errorCode,
     });

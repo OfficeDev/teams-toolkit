@@ -7,6 +7,9 @@ import { WebSocketEventHandler } from "./webSocketEventHandler";
 
 export const DEFAULT_PORT = 9222;
 
+export let cdpClient: CDP.Client;
+export let cdpSessionClient: CDP.Client;
+
 export const connectWithBackoff = async (
   debugPort: number,
   target = "",
@@ -18,6 +21,7 @@ export const connectWithBackoff = async (
   for (let i = 0; i < retries; i++) {
     try {
       const client = await CDP.default({ port: debugPort, target });
+      cdpClient = client;
       return client;
     } catch (error) {
       void vscode.window.showInformationMessage(
@@ -58,6 +62,7 @@ const launchTeamsChatListener = ({ Target }: CDP.Client) => {
           const { targetId } = copilotIframeTarget;
           const sessionClient: CDP.Client = await connectWithBackoff(DEFAULT_PORT, targetId);
           if (sessionClient) {
+            cdpSessionClient = sessionClient;
             await sessionClient.Network.enable();
             await sessionClient.Page.enable();
             sessionClient.Network.webSocketFrameReceived(({ response }) => {

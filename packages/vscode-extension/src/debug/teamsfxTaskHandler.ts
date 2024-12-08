@@ -47,6 +47,7 @@ import {
 import { allRunningDebugSessions } from "./officeTaskHandler";
 import { deleteAad } from "./deleteAadHelper";
 import { processUtil } from "../utils/processUtil";
+import { cdpClient, cdpSessionClient } from "../pluginDebugger/cdpClient";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -540,8 +541,26 @@ export async function terminateAllRunningTeamsfxTasks(): Promise<void> {
     }
   }
   allRunningTeamsfxTasks.clear();
-  BaseTunnelTaskTerminal.stopAll();
   void deleteAad();
+  BaseTunnelTaskTerminal.stopAll();
+
+  /// terminate cdp related session, terminal, and clients
+  if (cdpClient) {
+    await cdpClient.close();
+  }
+  if (cdpSessionClient) {
+    await cdpSessionClient.close();
+  }
+  const terminalName = "Connect to existing browser debug session for Copilot";
+  const terminal = vscode.window.terminals.find((t) => t.name === terminalName);
+  if (terminal) {
+    terminal.dispose();
+  }
+  const debugSessionName = "Connect to existing browser debug session";
+  const debugSession = vscode.debug.activeDebugSession;
+  if (debugSession && debugSession.name === debugSessionName) {
+    await vscode.debug.stopDebugging(debugSession);
+  }
 }
 
 async function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): Promise<void> {

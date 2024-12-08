@@ -5,6 +5,10 @@ import * as process from "process";
 const hexToCssVarMap: { [key: string]: string } = {
   white: "var(--vscode-editor-background, white)",
   black: "var(--vscode-editor-foreground, black)",
+  "#505050": "var(--vscode-editor-foreground, #505050)",
+  "#242424": "var(--vscode-editor-foreground, #242424)",
+  "#EEECEC": "var(--vscode-editorGroupHeader-tabsBackground, #EEECEC)",
+  "#D9D9D9": "var(--vscode-editorGroupHeader-tabsBackground, #D9D9D9)",
   "#FFFFFF": "var(--vscode-editor-foreground, #FFFFFF)",
   "#F8F8F8": "var(--vscode-editorGroupHeader-tabsBackground, #F8F8F8)",
   "#E5E5E5": "var(--vscode-activityBar-border, #E5E5E5)",

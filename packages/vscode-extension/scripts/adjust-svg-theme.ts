@@ -3,20 +3,21 @@ import * as path from "path";
 import * as process from "process";
 
 const hexToCssVarMap: { [key: string]: string } = {
-  white: "var(--vscode-editor-foreground, white)",
-  "#FFFFFF": "var(--vscode-editor-foreground, white)",
+  white: "var(--vscode-editor-background, white)",
+  black: "var(--vscode-editor-foreground, black)",
+  "#FFFFFF": "var(--vscode-editor-foreground, #FFFFFF)",
   "#F8F8F8": "var(--vscode-editorGroupHeader-tabsBackground, #F8F8F8)",
   "#E5E5E5": "var(--vscode-activityBar-border, #E5E5E5)",
   "#616161": "var(--vscode-badge-background, #616161)",
   "#005FB8": "var(--vscode-panelTitle-activeBorder, #005FB8)",
   "#868686": "var(--vscode-input-placeholderForeground, #868686)",
-  "#CCCCCC": "var(--vscode-menu-foreground, #CCCCCC)",
+  "#CCCCCC": "var(--vscode-badge-background, #CCCCCC)",
   "#D2ECFF": "var(--vscode-chat-slashCommandBackground, #D2ECFF)",
   "#3B3B3B": "var(--vscode-icon-foreground, #3B3B3B)",
   "#3C3C3C": "var(--vscode-titleBar-activeBackground, #3C3C3C)",
   "#333333": "var(--vscode-titleBar-activeBackground, #333333)",
-  "#E7E7E7": "var(--vscode-editorGroupHeader-tabsBorder, #E7E7E7)",
-  "#ADD6FF": "var(--vscode-editor-selectionHighlightBackground, #ADD6FF)",
+  "#E7E7E7": "var(--vscode-activityBar-border, #E7E7E7)",
+  "#ADD6FF": "var(--vscode-badge-background, #ADD6FF)",
   "#DDDDDD": "var(--vscode-actionBar-toggledBackground, #DDDDDD)",
   "#F85149": "var(--vscode-errorForeground, #F85149)",
   "#2c2c2d": "var(--vscode-notificationCenterHeader-background, #2c2c2d)",
@@ -28,6 +29,9 @@ const hexToCssVarMap: { [key: string]: string } = {
   "#9D9D9D": "var(--vscode-input-placeholderForeground, #9D9D9D)",
   "#062F4A": "var(--vscode-list-activeSelectionBackground, #062F4A)",
   "#E3E3E3": "var(--vscode-checkbox-foreground, #E3E3E3)",
+  "#979797": "var(--vscode-activityBar-border, #979797)",
+  "#C4C4C4": "var(--vscode-activityBar-border, #C4C4C4)",
+  "#0078D4": "var(--vscode-button-background, #0078D4)",
 };
 
 function replaceHexWithCssVar(content: string): string {

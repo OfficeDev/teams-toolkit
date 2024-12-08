@@ -3,8 +3,8 @@ import * as path from "path";
 import * as process from "process";
 
 const hexToCssVarMap: { [key: string]: string } = {
-  white: "var(--vscode-editor-background, white)",
-  "#FFFFFF": "var(--vscode-editor-background, white)",
+  white: "var(--vscode-editor-foreground, white)",
+  "#FFFFFF": "var(--vscode-editor-foreground, white)",
   "#F8F8F8": "var(--vscode-editorGroupHeader-tabsBackground, #F8F8F8)",
   "#E5E5E5": "var(--vscode-activityBar-border, #E5E5E5)",
   "#616161": "var(--vscode-badge-background, #616161)",

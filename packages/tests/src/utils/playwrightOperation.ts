@@ -215,11 +215,12 @@ export async function initPage(
     }
     try {
       // teams app add
-      const dialog = await page.waitForSelector("div[role='dialog']");
-      const openBtn = await dialog?.waitForSelector("button:has-text('Open')");
+      const openApp = await page?.waitForSelector(
+        "button[data-testid='open-app'][data-tid='open-app']"
+      );
       console.log("click 'open' button");
       await RetryHandler.retry(async () => {
-        await openBtn?.click();
+        await openApp?.click();
         await page.waitForTimeout(Timeout.shortTimeLoading);
         await page?.waitForSelector("div[role='dialog']", {
           state: "detached",
@@ -332,13 +333,12 @@ export async function reopenPage(
       }
       try {
         // teams app add
-        const dialog = await page.waitForSelector("div[role='dialog']");
-        const openBtn = await dialog?.waitForSelector(
-          "button:has-text('Open')"
+        const openApp = await page?.waitForSelector(
+          "button[data-testid='open-app'][data-tid='open-app']"
         );
         console.log("click 'open' button");
         await RetryHandler.retry(async () => {
-          await openBtn?.click();
+          await openApp?.click();
           await page.waitForTimeout(Timeout.shortTimeLoading);
           await page?.waitForSelector("div[role='dialog']", {
             state: "detached",

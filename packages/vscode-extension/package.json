@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "6.0.0-debugger-preview-001",
+  "version": "5.10.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "private": true,
@@ -945,14 +945,6 @@
         "properties": {
           "command": {
             "anyOf": [
-              {
-                "const": "launch-browser-window-for-copilot",
-                "description": "Launch Browser Window for Copilot"
-              },
-              {
-                "const": "connect-to-existing-browser-debug-session-for-copilot",
-                "description": "Connect to Existing Browser Debug Session for Copilot"
-              },
               {
                 "const": "debug-check-prerequisites",
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"

@@ -244,10 +244,10 @@ export class Timeout {
    */
   public static readonly chromiumLaunchTimeout: number = 1 * 60 * 1000;
   public static readonly playwrightDefaultTimeout: number = 2 * 60 * 1000;
-  public static readonly playwrightConsentPageReload: number = 500;
+  public static readonly playwrightConsentPageReload: number = 3000;
   public static readonly playwrightBotConsentContinueButton: number =
     2 * 60 * 1000;
-  public static readonly playwrightConsentPopupPage: number = 10 * 1000;
+  public static readonly playwrightConsentPopupPage: number = 30 * 1000;
   public static readonly playwrightAddAppButton: number = 180 * 1000;
 
   // mocha

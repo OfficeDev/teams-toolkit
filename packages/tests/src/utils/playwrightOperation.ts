@@ -213,23 +213,18 @@ export async function initPage(
         state: "detached",
       });
     }
-    try {
+    await RetryHandler.retry(async () => {
       // teams app add
       const openApp = await page?.waitForSelector(
         "button[data-testid='open-app'][data-tid='open-app']"
       );
       console.log("click 'open' button");
-      await RetryHandler.retry(async () => {
-        await openApp?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        await page?.waitForSelector("div[role='dialog']", {
-          state: "detached",
-        });
+      await openApp?.click();
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      await page?.waitForSelector("div[role='dialog']", {
+        state: "detached",
       });
-      console.log("successful to add teams app!!!");
-    } catch (error) {
-      console.log("no need to add to a team step");
-    }
+    });
     console.log("[success] app loaded");
   });
 
@@ -331,23 +326,19 @@ export async function reopenPage(
           state: "detached",
         });
       }
-      try {
+      await RetryHandler.retry(async () => {
         // teams app add
         const openApp = await page?.waitForSelector(
           "button[data-testid='open-app'][data-tid='open-app']"
         );
         console.log("click 'open' button");
-        await RetryHandler.retry(async () => {
-          await openApp?.click();
-          await page.waitForTimeout(Timeout.shortTimeLoading);
-          await page?.waitForSelector("div[role='dialog']", {
-            state: "detached",
-          });
+        await openApp?.click();
+        await page.waitForTimeout(Timeout.shortTimeLoading);
+        await page?.waitForSelector("div[role='dialog']", {
+          state: "detached",
         });
-        console.log("successful to add teams app!!!");
-      } catch (error) {
-        console.log("no need to add to a team step");
-      }
+      });
+      console.log("[success] app loaded");
     }
     await page.waitForTimeout(Timeout.longTimeWait);
   });
@@ -471,13 +462,13 @@ export async function initTeamsPage(
       }
 
       try {
-        // teams app add
-        const dialog = await page.waitForSelector("div[role='dialog']");
-        const openBtn = await dialog?.waitForSelector(
-          "button:has-text('Open')"
-        );
-        console.log("click 'open' button");
         await RetryHandler.retry(async () => {
+          // teams app add
+          const dialog = await page.waitForSelector("div[role='dialog']");
+          const openBtn = await dialog?.waitForSelector(
+            "button:has-text('Open')"
+          );
+          console.log("click 'open' button");
           await openBtn?.click();
           await page.waitForTimeout(Timeout.shortTimeLoading);
           await page?.waitForSelector("div[role='dialog']", {

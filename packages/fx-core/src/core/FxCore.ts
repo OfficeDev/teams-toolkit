@@ -2273,6 +2273,7 @@ export class FxCore {
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: Stage.createDeclarativeAgentBot }),
     ErrorHandlerMW,
+    EnvLoaderMW(true, true),
     QuestionMW("declarativeAgentToBot"),
     ConcurrentLockerMW,
   ])
@@ -2283,7 +2284,7 @@ export class FxCore {
     const context = createContext();
     const teamsManifestPath = inputs[QuestionNames.ManifestPath];
 
-    // validate the project is valid for creating declarative agent bot
+    // Validate the project is valid for creating declarative agent bot
     const teamsManifestRes = await manifestUtils._readAppManifest(teamsManifestPath);
     if (teamsManifestRes.isErr()) {
       return err(teamsManifestRes.error);
@@ -2295,7 +2296,19 @@ export class FxCore {
       return err(declarativeAgentManifesRes.error);
     }
 
-    // user confirm
+    // Check if there is M365_APP_ID in .env file
+    if (!process.env.M365_APP_ID) {
+      return err(
+        new UserError(
+          "FxCore",
+          "NoM365AppId",
+          getLocalizedString("core.createDeclarativeAgentBot.noM365AppId"),
+          getLocalizedString("core.createDeclarativeAgentBot.noM365AppId")
+        )
+      );
+    }
+
+    // User confirm
     const confirmRes = await context.userInteraction.showMessage(
       "warn",
       getLocalizedString("core.createDeclarativeAgentBot.confirm", inputs.projectPath),
@@ -2309,7 +2322,7 @@ export class FxCore {
       return err(new UserCancelError());
     }
 
-    // create a context for creating declarative agent bot
+    // Create a context for creating declarative agent bot
     const declarativeAgentBotContext = await DeclarativeAgentBotContext.create(
       inputs.env,
       inputs.projectPath,

@@ -65,6 +65,7 @@
   "core.collaboration.Undefined": "undefined",
   "core.collaboration.ResourceName": ", Resource Name: ",
   "core.collaboration.Permission": ", Permission: ",
+  "core.createDeclarativeAgentBot.noM365AppId": "Please run \"teamsapp provision\" first.",
   "core.createDeclarativeAgentBot.confirm": "Teams Toolkit will modify files in your \"%s\" folder to create a Teams bot based on the declarative agent manifest you provided. To avoid losing unexpected changes, back up your files or use git for change tracking before proceeding.",
   "core.createDeclarativeAgentBot.continue": "Continue",
   "core.createDeclarativeAgentBot.success": "Your bot %s created successfully. Please run \"teamsapp provision\" first, and then \"teamsapp preview\" to preview your bot in Teams.",

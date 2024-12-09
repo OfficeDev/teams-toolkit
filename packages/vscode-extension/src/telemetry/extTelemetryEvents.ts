@@ -149,15 +149,11 @@ export enum TelemetryEvent {
   DebugStartLocalTunnelTaskStarted = "debug-start-local-tunnel-task-started",
   DebugLifecycleTask = "debug-lifecycle-task",
   LaunchWebClientTask = "launch-web-client",
-
   DebugDevTunnelCleanNotificationStart = "debug-dev-tunnel-clean-notification-start",
   DebugDevTunnelCleanNotification = "debug-dev-tunnel-clean-notification",
   DebugDevTunnelOperationStart = "debug-dev-tunnel-operation-start",
   DebugDevTunnelOperation = "debug-dev-tunnel-operation",
   LaunchDesktopClientTask = "launch-desktop-client",
-
-  LaunchBrowserForCopilot = "launch-browser-for-copilot",
-  ConnectToExistingBrowserDebugSessionForCopilot = "connect-copilot-browser",
 
   StartDeleteAadAfterDebug = "start-delete-aad-after-debug",
   SuccessDeleteAadAfterDebug = "success-delete-aad-after-debug",

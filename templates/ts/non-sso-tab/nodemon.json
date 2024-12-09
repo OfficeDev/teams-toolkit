@@ -1,0 +1,9 @@
+{  
+  "watch": ["src"],  
+  "ext": "*",
+  "exec": "node --import ./ts-node.register.mjs --inspect=9239 src/app.ts",  
+  "signal": "SIGINT",
+  "events": {  
+    "restart": "npm run build"  
+  } 
+}  

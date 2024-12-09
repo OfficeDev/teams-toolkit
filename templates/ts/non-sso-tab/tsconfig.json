@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "target": "es2017",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
     "outDir": "./lib",
     "rootDir": "./src",
     "sourceMap": true,
@@ -10,5 +11,7 @@
     "tsBuildInfoFile": "./lib/.tsbuildinfo",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

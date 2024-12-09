@@ -309,7 +309,7 @@ jobs:
       
       - name: Download TestPlan
         if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: testplan
           path: ./packages/tests
@@ -376,7 +376,7 @@ jobs:
         run: |
           sudo apt install dateutils
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           path: ~/artifacts
 

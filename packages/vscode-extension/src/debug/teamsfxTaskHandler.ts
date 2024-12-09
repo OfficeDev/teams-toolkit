@@ -120,9 +120,6 @@ function isTeamsFxTransparentTask(task: vscode.Task): boolean {
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
   if (task) {
-    if (task.definition.command.includes("connect-to-existing-browser-debug-session-for-copilot")) {
-      return true;
-    }
     if (
       task.source === ProductName &&
       (task.name.trim().toLocaleLowerCase().endsWith("start") ||

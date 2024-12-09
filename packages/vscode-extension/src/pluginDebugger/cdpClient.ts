@@ -12,7 +12,9 @@ import {
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
 
-export const DEFAULT_PORT = 9222;
+export const CDPModule = {
+  build: CDP.default,
+};
 
 class CDPClient {
   cdpClients: CDP.Client[] = [];
@@ -20,7 +22,7 @@ class CDPClient {
   cid: string | undefined;
 
   build(options: CDP.Options): Promise<CDP.Client> {
-    return CDP.default(options);
+    return CDPModule.build(options);
   }
   async connectWithBackoff(
     debugPort: number,
@@ -28,10 +30,10 @@ class CDPClient {
     retries = 5,
     delay = 2000
   ): Promise<CDP.Client> {
-    await new Promise((resolve) => setTimeout(resolve, delay)); // initial delay
     let recentError;
     for (let i = 0; i < retries; i++) {
       try {
+        await new Promise((resolve) => setTimeout(resolve, delay)); // initial delay
         const client = await this.build({ port: debugPort, target });
         this.cdpClients.push(client);
         return client;
@@ -41,7 +43,6 @@ class CDPClient {
         void vscode.window.showInformationMessage(
           `Attempt ${i + 1} failed. Retrying in ${delay}ms...`
         );
-        await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 2; // double the delay for the next attempt
       }
     }
@@ -73,7 +74,10 @@ class CDPClient {
           );
           if (copilotIframeTarget) {
             const { targetId } = copilotIframeTarget;
-            const sessionClient: CDP.Client = await this.connectWithBackoff(DEFAULT_PORT, targetId);
+            const sessionClient: CDP.Client = await this.connectWithBackoff(
+              DefaultRemoteDebuggingPort,
+              targetId
+            );
             if (sessionClient) {
               await sessionClient.Network.enable();
               await sessionClient.Page.enable();

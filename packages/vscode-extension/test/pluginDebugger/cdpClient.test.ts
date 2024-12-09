@@ -1,7 +1,7 @@
 import { featureFlagManager } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import sinon, { SinonFakeTimers, useFakeTimers } from "sinon";
-import { cdpClient } from "../../src/pluginDebugger/cdpClient";
+import { cdpClient, CDPModule } from "../../src/pluginDebugger/cdpClient";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 
 describe("cdpClient", () => {
@@ -15,6 +15,26 @@ describe("cdpClient", () => {
   afterEach(() => {
     sandbox.restore();
     clock.restore();
+  });
+  describe("build", () => {
+    it("happy", async () => {
+      sandbox.stub(CDPModule, "build").resolves({} as any);
+      const client = await cdpClient.build({ port: 9222 });
+      chai.assert.isDefined(client);
+    });
+  });
+  describe("connectWithBackoff", () => {
+    it("build fail", async () => {
+      sandbox.stub(cdpClient, "build").rejects(new Error());
+      try {
+        const p = cdpClient.connectWithBackoff(9222, "", 1, 1);
+        clock.tick(1);
+        await p;
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isDefined(e);
+      }
+    });
   });
   describe("start", () => {
     it("happy", async () => {

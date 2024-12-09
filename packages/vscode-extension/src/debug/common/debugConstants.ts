@@ -254,14 +254,6 @@ export const launchingTeamsClientDisplayMessages = Object.freeze({
     "The app supports hot reloading. If you have any code changes in the project, the app will be reloaded.",
 });
 
-export const launchingBrowserWindowForCopilot = Object.freeze({
-  title: "Launching Web Browser for Copilot.",
-  successfulLaunchMessage: (port: number) =>
-    `Browser launched and connected to DevTools Protocol on port: ${port}.`,
-  unsuccessfulLaunchMessage: (error: string) =>
-    `Failed to connect to Chrome DevTools Protocol: ${error}.`,
-});
-
 export const connectToExistingBrowserDebugSessionForCopilot = Object.freeze({
   title: "Connecting to Existing Browser Debug Session for Copilot.",
   successfulConnectionMessage: (port: number) =>

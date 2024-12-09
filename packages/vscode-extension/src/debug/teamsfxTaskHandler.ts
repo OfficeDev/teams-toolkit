@@ -18,7 +18,7 @@ import {
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../error/error";
 import * as globalVariables from "../globalVariables";
-import { startCdpClients, stopCdpClients } from "../pluginDebugger/cdpClient";
+import { cdpClient } from "../pluginDebugger/cdpClient";
 import { VS_CODE_UI } from "../qm/vsc_ui";
 import {
   TelemetryEvent,
@@ -459,7 +459,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
 async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (isM365CopilotChatDebugSession(event)) {
-    void startCdpClients();
+    void cdpClient.start();
   }
   if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;
@@ -550,7 +550,7 @@ export async function terminateAllRunningTeamsfxTasks(): Promise<void> {
   allRunningTeamsfxTasks.clear();
   void deleteAad();
   BaseTunnelTaskTerminal.stopAll();
-  await stopCdpClients();
+  await cdpClient.stop();
 }
 
 export function isM365CopilotChatDebugSession(event: vscode.DebugSession): boolean {
@@ -568,7 +568,7 @@ export function isM365CopilotChatDebugSession(event: vscode.DebugSession): boole
 
 async function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (isM365CopilotChatDebugSession(event)) {
-    await stopCdpClients();
+    await cdpClient.stop();
   }
   if (allRunningDebugSessions.has(event.id)) {
     // a valid debug session

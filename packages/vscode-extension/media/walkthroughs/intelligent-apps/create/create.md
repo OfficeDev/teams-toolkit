@@ -1,4 +1,4 @@
-| Step Summary        | Where it's located              |
+| Step summary        | Where it's located              |
 |----------|----------------|
 | 1. Click "Create a New App" | ![Image1](step1.png) |
 | 2. Select Declarative Agent | ![Image2](step2.png) |

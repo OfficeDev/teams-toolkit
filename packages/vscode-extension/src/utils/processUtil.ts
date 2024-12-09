@@ -8,11 +8,11 @@ export const killModule = {
 
 class ProcessUtil {
   // kill process and its child processes
-  async killProcess(pid: number, timeout = 5000): Promise<void> {
+  async killProcess(pid: number, timeout = 5000, silent = true): Promise<void> {
     const tPromise = timeoutPromise(timeout);
     const killPromise = new Promise<void>((resolve, reject) => {
       killModule.killTree(pid, "SIGTERM", (err) => {
-        if (err) {
+        if (err && !silent) {
           reject(err);
         } else {
           resolve();
@@ -23,10 +23,11 @@ class ProcessUtil {
   }
 }
 
-export function timeoutPromise(timeout: number): Promise<void> {
+export function timeoutPromise(timeout: number, silent = true): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     setTimeout(() => {
-      reject(new Error("Operation timeout"));
+      if (silent) resolve();
+      else reject(new Error("Operation timeout"));
     }, timeout);
   });
 }

@@ -10,13 +10,24 @@ import * as useTeams from "../src/useTeams";
 import * as useData from "../src/useData";
 import { useTeamsUserCredential } from "../src/useTeamsUserCredential";
 import { teamsLightTheme } from "@fluentui/react-components";
-import { TeamsUserCredential, TeamsUserCredentialAuthConfig } from "@microsoft/teamsfx";
-import * as teamsfxlib from "@microsoft/teamsfx";
+
+jest.mock("@microsoft/teamsfx", () => {
+  return {
+    TeamsUserCredential: jest.fn().mockImplementation(() => {
+      return {
+        async login(): Promise<void> {},
+        async getToken(): Promise<null> {
+          return null;
+        },
+      };
+    }),
+  };
+});
 
 describe("useTeamsUserCredential() hook tests", () => {
   let spyUseTeams: jest.SpyInstance;
   let spyUseData: jest.SpyInstance;
-  const authConfig: TeamsUserCredentialAuthConfig = {
+  const authConfig = {
     clientId: "fake-client-id",
     initiateLoginEndpoint: "fake-initiate-login-endpoint",
   };
@@ -30,18 +41,6 @@ describe("useTeamsUserCredential() hook tests", () => {
       ];
     });
     spyUseData = jest.spyOn(useData, "useData");
-
-    jest.spyOn(teamsfxlib, "TeamsUserCredential").mockImplementation((): TeamsUserCredential => {
-      return {
-        async login(): Promise<void> {},
-        async getToken(): Promise<null> {
-          return null;
-        },
-        async getUserInfo(): Promise<teamsfxlib.UserInfo> {
-          return {} as teamsfxlib.UserInfo;
-        },
-      };
-    });
   });
 
   afterEach(() => {

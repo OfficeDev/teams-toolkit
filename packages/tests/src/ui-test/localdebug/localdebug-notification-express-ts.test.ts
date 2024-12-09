@@ -59,7 +59,7 @@ describe("Express Notification Bot Local Debug Tests", function () {
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(
         LocalDebugTaskLabel.StartBotApp,
-        LocalDebugTaskInfo.StartBotAppInfo
+        LocalDebugTaskInfo.StartBotInfo
       );
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();

@@ -560,7 +560,9 @@ export function isM365CopilotChatDebugSession(event: vscode.DebugSession): boole
     event.configuration.runtimeArgs.includes(
       `--remote-debugging-port=${DefaultRemoteDebuggingPort}`
     ) &&
-    event.configuration.url === "https://www.office.com/chat?auth=2&developerMode=Basic"
+    (event.configuration.url === "https://www.office.com/chat?auth=2&developerMode=Basic" ||
+      (event.configuration.url.startsWith("https://m365.cloud.microsoft/chat") &&
+        event.configuration.url.includes("developerMode=Basic")))
   );
 }
 

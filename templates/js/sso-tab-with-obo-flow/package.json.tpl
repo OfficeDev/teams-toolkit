@@ -8,9 +8,9 @@
     "private": true,
     "dependencies": {
         "@fluentui/react-components": "^9.55.1",
-        "@microsoft/teams-js": "^2.22.0",
-        "@microsoft/teamsfx": "^3.0.0-rc",
-        "@microsoft/teamsfx-react": "^4.0.0-rc",
+        "@microsoft/teams-js": "^2.31.1",
+        "@microsoft/teamsfx": "^3.0.0-alpha",
+        "@microsoft/teamsfx-react": "^4.0.0-alpha",
         "axios": "^0.21.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

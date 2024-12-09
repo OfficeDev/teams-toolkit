@@ -81,16 +81,16 @@ const launchTeamsChatListener = ({ Target }: CDP.Client) => {
           }
         }
       } catch (error) {
-        vscode.debug.activeDebugConsole.appendLine(
-          `${RED} (×) Error: ${WHITE} Error in setInterval callback: ${(error as Error).message}`
-        );
+        // vscode.debug.activeDebugConsole.appendLine(
+        //   `${RED} (×) Error: ${WHITE} Error in setInterval callback: ${(error as Error).message}`
+        // );
         cdpErrors.push(error);
       }
     })();
   }, 3000);
 };
 let cid = "";
-let stopCheck: () => void = () => {};
+// let stopCheck: () => void = () => {};
 export async function startCdpClients(): Promise<void> {
   if (!featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginDebug)) return;
   cid = uuid.v4();
@@ -99,7 +99,7 @@ export async function startCdpClients(): Promise<void> {
     try {
       const client: CDP.Client = await connectWithBackoff(DefaultRemoteDebuggingPort);
       await subscribeToWebSocketEvents(client);
-      stopCheck = startConnectionCheck(client);
+      // stopCheck = startConnectionCheck(client, 30000);
       vscode.debug.activeDebugConsole.appendLine(
         connectToExistingBrowserDebugSessionForCopilot.successfulConnectionMessage(
           DefaultRemoteDebuggingPort
@@ -127,7 +127,7 @@ export async function stopCdpClients(): Promise<void> {
       await client.close();
     }
     cdpClients = [];
-    stopCheck();
+    // stopCheck();
     ExtTelemetry.sendTelemetryEvent("cdp-client-end");
   });
 }

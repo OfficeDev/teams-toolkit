@@ -13,7 +13,7 @@ describe("ProcessUtil", () => {
       const killStub = sandbox.stub(killModule, "killTree");
       killStub.yields(new Error());
       try {
-        await processUtil.killProcess(-1);
+        await processUtil.killProcess(-1, 5000, false);
         chai.assert.fail("Expected promise to reject, but it resolved.");
       } catch (error) {
         chai.assert.isTrue(error instanceof Error);
@@ -42,13 +42,23 @@ describe("timeoutPromise", () => {
   it("timeoutPromise", async () => {
     try {
       const timeout = 1000;
-      const promise = timeoutPromise(timeout);
+      const promise = timeoutPromise(timeout, false);
       clock.tick(timeout);
       await promise;
       chai.assert.fail("Expected promise to reject, but it resolved.");
     } catch (error) {
       chai.assert.isTrue(error instanceof Error);
       chai.assert.equal(error.message, "Operation timeout");
+    }
+  });
+  it("timeoutPromise - silent", async () => {
+    try {
+      const timeout = 1000;
+      const promise = timeoutPromise(timeout, true);
+      clock.tick(timeout);
+      await promise;
+    } catch (error) {
+      chai.assert.fail("Expected promise to resolve, but it rejected.");
     }
   });
 });

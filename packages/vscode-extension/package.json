@@ -126,22 +126,12 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-api-copilot-plugin.content%",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project.content%",
         "enablement": "fx-extension.initialized"
       },
       {
         "view": "teamsfx-empty-project-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-api-copilot-plugin.content%",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-new-user-with-chat",
-        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat-with-api-copilot-plugin.content%",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat.content%",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -197,22 +187,12 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-empty-project-with-chat",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantUIEntriesEnabled"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-with-chat",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantUIEntriesEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -405,6 +385,13 @@
           "group": "inline"
         }
       ],
+      "editor/context": [
+        {
+          "command": "fx-extension.teamsAgentTroubleshootSelectedText",
+          "group": "navigation",
+          "when": "(fx-extension.isChatParticipantUIEntriesEnabled && (resourceFilename =~ /.*Teams Toolkit\\.log$/ || (activeOutputChannel =~ /^extension-output-TeamsDevApp\\.ms-teams-vscode-extension.*/ && view == 'workbench.panel.output')))"
+        }
+      ],
       "editor/title/run": [
         {
           "command": "fx-extension.selectAndDebug",
@@ -566,6 +553,14 @@
         },
         {
           "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.teamsAgentTroubleshootSelectedText",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.teamsAgentTroubleshootError",
           "when": "false"
         }
       ]
@@ -927,6 +922,18 @@
         "title": "%teamstoolkit.commandsTreeViewProvider.syncManifest%",
         "category": "Teams",
         "enablement": "fx-extension.isSyncManifestEnabled"
+      },
+      {
+        "command": "fx-extension.teamsAgentTroubleshootSelectedText",
+        "title": "%teamstoolkit.commmands.teamsAgentTroubleshootSelectedText.title%",
+        "enablement": "editor.hasSelection && fx-extension.isChatParticipantUIEntriesEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.teamsAgentTroubleshootError",
+        "title": "%teamstoolkit.commmands.teamsAgentResolve.title%",
+        "enablement": "fx-extension.isChatParticipantUIEntriesEnabled",
+        "category": "Teams"
       }
     ],
     "taskDefinitions": [

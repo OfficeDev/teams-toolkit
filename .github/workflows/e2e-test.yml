@@ -30,6 +30,12 @@ on:
         type: boolean
         default: false
 
+      cli-version:
+        description: "cli version"
+        required: false
+        type: string
+        default: ""
+
   schedule:
     - cron: "0 22 * * *"
 
@@ -207,8 +213,18 @@ jobs:
         run: |
           npm run setup
 
-      - name: Link CLI
-        if: ${{  github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'  }}
+      - name: install cli with specific version
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.cli-version != '' }}
+        run: |
+          npm install -g @microsoft/teamsapp-cli@${{ github.event.inputs.cli-version }}
+
+      - name: install cli for schedule
+        if: ${{  github.event_name == 'schedule' || ( github.event.ref == 'refs/heads/dev' && github.event_name == 'workflow_dispatch' && github.event.inputs.cli-version == '' ) }}
+        run: |
+          npm install -g @microsoft/teamsapp-cli@alpha
+      
+      - name: link cli for workflow_dispatch
+        if: ${{  github.event_name == 'workflow_dispatch' && github.event.ref != 'refs/heads/dev' && github.event.inputs.cli-version == '' }}
         run: |
           pnpm link --global
 
@@ -293,7 +309,7 @@ jobs:
       
       - name: Download TestPlan
         if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: testplan
           path: ./packages/tests
@@ -360,7 +376,7 @@ jobs:
         run: |
           sudo apt install dateutils
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4.1.7
         with:
           path: ~/artifacts
 

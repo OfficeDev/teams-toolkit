@@ -235,7 +235,7 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen",
-            "perScriptSourcemaps": "yes",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Launch App in Teams (Chrome)",
@@ -250,7 +250,7 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen",
-            "perScriptSourcemaps": "yes",
+            "perScriptSourcemaps": "yes"
         },
         {
             "name": "Preview in Copilot (Edge)",

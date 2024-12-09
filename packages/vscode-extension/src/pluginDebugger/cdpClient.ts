@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
 import * as CDP from "chrome-remote-interface";
+import * as vscode from "vscode";
+import {
+  connectToExistingBrowserDebugSessionForCopilot,
+  DefaultRemoteDebuggingPort,
+} from "../debug/common/debugConstants";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
 
 export const DEFAULT_PORT = 9222;
 
-export let cdpClient: CDP.Client;
-export let cdpSessionClient: CDP.Client;
+export let cdpClients: CDP.Client[] = [];
 
 export const connectWithBackoff = async (
   debugPort: number,
@@ -21,7 +24,7 @@ export const connectWithBackoff = async (
   for (let i = 0; i < retries; i++) {
     try {
       const client = await CDP.default({ port: debugPort, target });
-      cdpClient = client;
+      cdpClients.push(client);
       return client;
     } catch (error) {
       void vscode.window.showInformationMessage(
@@ -62,7 +65,6 @@ const launchTeamsChatListener = ({ Target }: CDP.Client) => {
           const { targetId } = copilotIframeTarget;
           const sessionClient: CDP.Client = await connectWithBackoff(DEFAULT_PORT, targetId);
           if (sessionClient) {
-            cdpSessionClient = sessionClient;
             await sessionClient.Network.enable();
             await sessionClient.Page.enable();
             sessionClient.Network.webSocketFrameReceived(({ response }) => {
@@ -77,3 +79,20 @@ const launchTeamsChatListener = ({ Target }: CDP.Client) => {
     })();
   }, 3000);
 };
+
+export async function startCdpClients(): Promise<void> {
+  const client: CDP.Client = await connectWithBackoff(DefaultRemoteDebuggingPort);
+  await subscribeToWebSocketEvents(client);
+  vscode.debug.activeDebugConsole.appendLine(
+    connectToExistingBrowserDebugSessionForCopilot.successfulConnectionMessage(
+      DefaultRemoteDebuggingPort
+    )
+  );
+}
+
+export async function stopCdpClients(): Promise<void> {
+  for (const client of cdpClients) {
+    await client.close();
+  }
+  cdpClients = [];
+}

@@ -24,7 +24,6 @@ export class WebSocketEventHandler {
         if (parsedObject.item && parsedObject.item.messages) {
           const botTextMessages = this.selectBotTextMessages(parsedObject);
           for (const botTextMessage of botTextMessages) {
-            const channelOutputJson = this.convertBotMessageToChannelOutputJson(botTextMessage);
             this.convertBotMessageToChannelOutput(botTextMessage);
           }
         } else {

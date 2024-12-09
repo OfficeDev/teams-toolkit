@@ -36,6 +36,23 @@ describe("cdpClient", () => {
       }
     });
   });
+  describe("subscribeToWebSocketEvents", () => {
+    it("happy", async () => {
+      sandbox.stub(cdpClient, "launchTeamsChatListener").resolves();
+      const client = {
+        Network: { enable: () => {}, webSocketFrameReceived: () => {} },
+        Page: { enable: () => {} },
+        Target: {
+          getTargets: () => {
+            return { targetInfos: [] };
+          },
+        },
+      } as any;
+      const webSocketFrameReceived = sandbox.stub(client.Network, "webSocketFrameReceived");
+      await cdpClient.subscribeToWebSocketEvents(client);
+      chai.assert.isTrue(webSocketFrameReceived.called);
+    });
+  });
   describe("start", () => {
     it("happy", async () => {
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");

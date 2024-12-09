@@ -26,7 +26,9 @@ export const startConnectionCheck = (client: CDP.Client, interval = 3000): (() =
       }
     };
 
-    return setInterval(() => checkConnection, interval);
+    return setInterval(() => {
+      void checkConnection(); // Ensures the promise is handled properly
+    }, interval);
   })();
 
   return () => {

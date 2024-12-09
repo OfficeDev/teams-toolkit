@@ -12,6 +12,7 @@ import {
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { RED, WHITE } from "./copilotDebugLogOutput";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
+import { startConnectionCheck } from "./connectionChecks";
 
 export const DEFAULT_PORT = 9222;
 export let cdpClients: CDP.Client[] = [];
@@ -89,6 +90,7 @@ const launchTeamsChatListener = ({ Target }: CDP.Client) => {
   }, 3000);
 };
 let cid = "";
+let stopCheck: () => void = () => {};
 export async function startCdpClients(): Promise<void> {
   if (!featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginDebug)) return;
   cid = uuid.v4();
@@ -97,7 +99,7 @@ export async function startCdpClients(): Promise<void> {
     try {
       const client: CDP.Client = await connectWithBackoff(DefaultRemoteDebuggingPort);
       await subscribeToWebSocketEvents(client);
-      startConnectionCheck(client);
+      stopCheck = startConnectionCheck(client);
       vscode.debug.activeDebugConsole.appendLine(
         connectToExistingBrowserDebugSessionForCopilot.successfulConnectionMessage(
           DefaultRemoteDebuggingPort
@@ -125,6 +127,7 @@ export async function stopCdpClients(): Promise<void> {
       await client.close();
     }
     cdpClients = [];
+    stopCheck();
     ExtTelemetry.sendTelemetryEvent("cdp-client-end");
   });
 }

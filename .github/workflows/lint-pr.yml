@@ -8,7 +8,7 @@ on:
       - synchronize
   push:
     branches:
-      - release/*
+      - release/**
   schedule:
     - cron: "0 8 * * *"
 

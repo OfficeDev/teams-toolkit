@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import fs from "fs-extra";
 import { LogLevel } from "@microsoft/teamsfx-api";
 import { defaultExtensionLogPath } from "../globalVariables";
 

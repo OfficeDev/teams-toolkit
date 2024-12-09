@@ -3,7 +3,7 @@
 
 import * as vscode from "vscode";
 import { Protocol } from "devtools-protocol";
-import { CopilotDebugLog } from "./copilotDebugLogOutput";
+import { CopilotDebugLog, RED, WHITE } from "./copilotDebugLogOutput";
 
 interface BotTextMessage {
   messageType: string | undefined;
@@ -32,6 +32,9 @@ export class WebSocketEventHandler {
       }
     } catch (error) {
       void vscode.window.showErrorMessage(`Error parsing response, ${(error as Error).message}`);
+      vscode.debug.activeDebugConsole.appendLine(
+        `${RED} (×) Error: ${WHITE} Error parsing response: ${(error as Error).message}`
+      );
     }
   }
 

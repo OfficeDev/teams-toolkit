@@ -14,8 +14,6 @@ import { DevTunnelTaskTerminal } from "./taskTerminal/devTunnelTaskTerminal";
 import { LaunchTeamsClientTerminal } from "./taskTerminal/launchTeamsClientTerminal";
 import { MigrateTaskTerminal } from "./taskTerminal/migrateTaskTerminal";
 import { LaunchDesktopClientTerminal } from "./taskTerminal/launchDesktopClientTerminal";
-import { LaunchBrowserWindowForCopilot } from "./taskTerminal/launchBrowserForCopilotTaskTerminal";
-import { ConnectToExistingBrowserDebugSessionForCopilot } from "./taskTerminal/connectToExistingBrowserDebugSessionForCopilot";
 import { DebugNoSessionId, TeamsFxTaskType } from "./common/debugConstants";
 import { getLocalDebugSessionId } from "./common/localDebugSession";
 
@@ -80,20 +78,6 @@ const customTasks = Object.freeze({
     presentationReveal: vscode.TaskRevealKind.Silent,
     presentationEcho: true,
     presentationshowReuseMessage: true,
-  },
-  [TaskCommand.launchBrowserWindowForCopilot]: {
-    createTerminal: (d: vscode.TaskDefinition) =>
-      Promise.resolve(new LaunchBrowserWindowForCopilot(d)),
-    presentationReveal: vscode.TaskRevealKind.Always,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
-  },
-  [TaskCommand.connectToExistingBrowserDebugSessionForCopilot]: {
-    createTerminal: (d: vscode.TaskDefinition) =>
-      Promise.resolve(new ConnectToExistingBrowserDebugSessionForCopilot(d)),
-    presentationReveal: vscode.TaskRevealKind.Always,
-    presentationEcho: false,
-    presentationshowReuseMessage: false,
   },
 });
 

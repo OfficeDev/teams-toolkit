@@ -32,12 +32,12 @@ interface FunctionExecution {
   errorMessage: string;
 }
 
-const RED = "\u001b[31m";
+export const RED = "\u001b[31m";
 const GREEN = "\u001b[32m";
 const YELLOW = "\u001b[33m";
 const BLUE = "\u001b[34m";
 const MAGENTA = "\u001b[35m";
-const WHITE = "\u001b[37m";
+export const WHITE = "\u001b[37m";
 const GRAY = "\u001b[38;5;244m";
 
 /**

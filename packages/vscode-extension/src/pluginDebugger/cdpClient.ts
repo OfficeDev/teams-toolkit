@@ -1,17 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Correlator, featureFlagManager, FeatureFlags, maskSecret } from "@microsoft/teamsfx-core";
 import * as CDP from "chrome-remote-interface";
+import * as uuid from "uuid";
 import * as vscode from "vscode";
 import {
   connectToExistingBrowserDebugSessionForCopilot,
   DefaultRemoteDebuggingPort,
 } from "../debug/common/debugConstants";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { RED, WHITE } from "./copilotDebugLogOutput";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
 
 export const DEFAULT_PORT = 9222;
-
 export let cdpClients: CDP.Client[] = [];
+export const cdpErrors: Error[] = [];
 
 export const connectWithBackoff = async (
   debugPort: number,
@@ -20,13 +24,15 @@ export const connectWithBackoff = async (
   delay = 2000
 ): Promise<CDP.Client> => {
   await new Promise((resolve) => setTimeout(resolve, delay)); // initial delay
-
+  let recentError;
   for (let i = 0; i < retries; i++) {
     try {
       const client = await CDP.default({ port: debugPort, target });
       cdpClients.push(client);
       return client;
     } catch (error) {
+      cdpErrors.push(error);
+      recentError = error;
       void vscode.window.showInformationMessage(
         `Attempt ${i + 1} failed. Retrying in ${delay}ms...`
       );
@@ -35,7 +41,7 @@ export const connectWithBackoff = async (
     }
   }
   void vscode.window.showErrorMessage("All attempts to connect have failed");
-  throw new Error("All attempts to connect have failed");
+  throw recentError;
 };
 
 export const subscribeToWebSocketEvents = async (client: CDP.Client): Promise<void> => {
@@ -74,25 +80,51 @@ const launchTeamsChatListener = ({ Target }: CDP.Client) => {
           }
         }
       } catch (error) {
-        console.error("Error in setInterval callback:", error);
+        vscode.debug.activeDebugConsole.appendLine(
+          `${RED} (×) Error: ${WHITE} Error in setInterval callback: ${(error as Error).message}`
+        );
+        cdpErrors.push(error);
       }
     })();
   }, 3000);
 };
-
+let cid = "";
 export async function startCdpClients(): Promise<void> {
-  const client: CDP.Client = await connectWithBackoff(DefaultRemoteDebuggingPort);
-  await subscribeToWebSocketEvents(client);
-  vscode.debug.activeDebugConsole.appendLine(
-    connectToExistingBrowserDebugSessionForCopilot.successfulConnectionMessage(
-      DefaultRemoteDebuggingPort
-    )
-  );
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginDebug)) return;
+  cid = uuid.v4();
+  await Correlator.runWithId(cid, async () => {
+    ExtTelemetry.sendTelemetryEvent("cdp-client-start");
+    try {
+      const client: CDP.Client = await connectWithBackoff(DefaultRemoteDebuggingPort);
+      await subscribeToWebSocketEvents(client);
+      startConnectionCheck(client);
+      vscode.debug.activeDebugConsole.appendLine(
+        connectToExistingBrowserDebugSessionForCopilot.successfulConnectionMessage(
+          DefaultRemoteDebuggingPort
+        )
+      );
+      ExtTelemetry.sendTelemetryEvent("cdp-client-start-success", {
+        errors: maskSecret(
+          cdpErrors.map((e) => JSON.stringify(e, Object.getOwnPropertyNames(e))).join(",")
+        ),
+      });
+    } catch (error) {
+      ExtTelemetry.sendTelemetryErrorEvent("cdp-client-start-fail", error, {
+        errors: maskSecret(
+          cdpErrors.map((e) => JSON.stringify(e, Object.getOwnPropertyNames(e))).join(",")
+        ),
+      });
+    }
+  });
 }
 
 export async function stopCdpClients(): Promise<void> {
-  for (const client of cdpClients) {
-    await client.close();
-  }
-  cdpClients = [];
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginDebug)) return;
+  await Correlator.runWithId(cid, async () => {
+    for (const client of cdpClients) {
+      await client.close();
+    }
+    cdpClients = [];
+    ExtTelemetry.sendTelemetryEvent("cdp-client-end");
+  });
 }

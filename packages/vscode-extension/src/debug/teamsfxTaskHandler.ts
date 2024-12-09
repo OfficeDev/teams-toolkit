@@ -17,15 +17,17 @@ import {
 
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../error/error";
-import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
+import { startCdpClients, stopCdpClients } from "../pluginDebugger/cdpClient";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import {
   TelemetryEvent,
   TelemetryMeasurements,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { localize } from "../utils/localizeUtils";
 import { getNpmInstallLogInfo, getTestToolLogInfo } from "../utils/localEnvManagerUtils";
+import { localize } from "../utils/localizeUtils";
+import { processUtil } from "../utils/processUtil";
 import {
   clearAADAfterLocalDebugHelpLink,
   DebugNoSessionId,
@@ -36,24 +38,17 @@ import {
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
 } from "./common/debugConstants";
-import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
-import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
-import { TeamsfxDebugConfiguration } from "./common/teamsfxDebugConfiguration";
 import { allRunningTeamsfxTasks } from "./common/globalVariables";
 import {
-  getLocalDebugSession,
   endLocalDebugSession,
+  getLocalDebugSession,
   getLocalDebugSessionId,
 } from "./common/localDebugSession";
-import { allRunningDebugSessions } from "./officeTaskHandler";
+import { TeamsfxDebugConfiguration } from "./common/teamsfxDebugConfiguration";
 import { deleteAad } from "./deleteAadHelper";
-import { processUtil } from "../utils/processUtil";
-import {
-  cdpClient,
-  cdpSessionClient,
-  startCdpClients,
-  stopCdpClients,
-} from "../pluginDebugger/cdpClient";
+import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
+import { allRunningDebugSessions } from "./officeTaskHandler";
+import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
 
 class NpmInstallTaskInfo {
   private startTime: number;

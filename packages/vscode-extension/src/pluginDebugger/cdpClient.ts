@@ -10,9 +10,7 @@ import {
   DefaultRemoteDebuggingPort,
 } from "../debug/common/debugConstants";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { RED, WHITE } from "./copilotDebugLogOutput";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
-import { startConnectionCheck } from "./connectionChecks";
 
 export const DEFAULT_PORT = 9222;
 export let cdpClients: CDP.Client[] = [];

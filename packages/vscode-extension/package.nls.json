@@ -557,7 +557,7 @@
   "teamstoolkit.walkthroughs.select.title": "Select a Tutorial to Get Started",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.title": "Build a Declarative Agent",
-  "teamstoolkit.walkthroughs.buildIntelligentApps.description": "Jumpstart your agent development experience with Teams Toolkit.",
+  "teamstoolkit.walkthroughs.buildIntelligentApps.description": "Jumpstart your agent development experience with Teams Toolkit",
 
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsIntroduction.title": "Introduction",
   "teamstoolkit.walkthroughs.buildIntelligentApps.intelligentAppsIntroduction.description": "A declarative agent is a customized version of Microsoft 365 Copilot that allows users to create personalized experiences by declaring specific instructions, actions, and knowledge.\n\nThis guide provides information about how to build a declarative agent by using Teams Toolkit.",

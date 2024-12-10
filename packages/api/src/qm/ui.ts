@@ -39,7 +39,7 @@ export interface UIConfig<T> {
   /**
    * default input value
    */
-  default?: T | (() => Promise<T>);
+  default?: T | (() => Promise<T>) | string;
 
   /**
    * A function that will be called to validate input and to give a hint to the user.
@@ -110,7 +110,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
    */
   options: StaticOptions | (() => Promise<StaticOptions>);
 
-  default?: string[] | (() => Promise<string[]>);
+  default?: string[] | (() => Promise<string[]>) | "none" | "all";
 
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an array of `OptionItem` objects; otherwise, the answer value is an array of `id` strings.

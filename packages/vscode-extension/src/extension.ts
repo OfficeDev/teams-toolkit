@@ -201,10 +201,19 @@ import { getSettingsVersion, projectVersionCheck } from "./utils/telemetryUtils"
 import { createPluginWithManifest } from "./handlers/createPluginWithManifestHandler";
 import { manifestListener } from "./manifestListener";
 import { onSwitchAzureTenant, onSwitchM365Tenant } from "./handlers/accounts/switchTenantHandler";
+import { releaseControlledFeatureSettings } from "./releaseBasedFeatureSettings";
 
 export async function activate(context: vscode.ExtensionContext) {
   const value = IsChatParticipantEnabled && semver.gte(vscode.version, "1.90.0");
   featureFlagManager.setBooleanValue(FeatureFlags.ChatParticipant, value);
+
+  // control whether to show chat participant ui entries
+  const shouldEnableChatParticipantUIEntries =
+    releaseControlledFeatureSettings.shouldEnableTeamsCopilotChatUI;
+  featureFlagManager.setBooleanValue(
+    CoreFeatureFlags.ChatParticipantUIEntries,
+    shouldEnableChatParticipantUIEntries
+  );
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
@@ -243,11 +252,10 @@ export async function activate(context: vscode.ExtensionContext) {
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
 
-  // control whether to show chat participant ui entries
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isChatParticipantUIEntriesEnabled",
-    featureFlagManager.getBooleanValue(CoreFeatureFlags.ChatParticipantUIEntries)
+    shouldEnableChatParticipantUIEntries
   );
 
   // Flags for "Build Intelligent Apps" walkthrough.

@@ -335,6 +335,11 @@ jobs:
         run: |
           npx playwright install
 
+      - name: check working directory files
+        working-directory: packages/tests
+        run: |
+          ls -a
+
       - name: Download TTK
         uses: actions/download-artifact@v4.1.7
         with:

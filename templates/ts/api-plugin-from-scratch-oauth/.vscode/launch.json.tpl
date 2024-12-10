@@ -20,7 +20,7 @@
                 "--remote-debugging-port=9222",
                 "--no-first-run",
                 "--user-data-dir=${env:TEMP}/copilot-edge-user-data-dir"
-            ],
+            ]
         },
         {
             "name": "Launch App in the Microsoft 365 app (Chrome)",
@@ -40,7 +40,7 @@
                 "--remote-debugging-port=9222",
                 "--no-first-run",
                 "--user-data-dir=${env:TEMP}/copilot-chrome-user-data-dir"
-            ],
+            ]
         },
         {
             "name": "Launch App in Teams (Edge)",
@@ -131,7 +131,7 @@
                 "--remote-debugging-port=9222",
                 "--no-first-run",
                 "--user-data-dir=${env:TEMP}/copilot-edge-user-data-dir"
-            ],
+            ]
         },
         {
             "name": "Preview in the Microsoft 365 app (Chrome)",
@@ -147,7 +147,7 @@
                 "--remote-debugging-port=9222",
                 "--no-first-run",
                 "--user-data-dir=${env:TEMP}/copilot-chrome-user-data-dir"
-            ],
+            ]
         }
     ],
     "compounds": [
@@ -226,7 +226,7 @@
             "name": "Launch App in Teams (Edge)",
             "type": "msedge",
             "request": "launch",
-            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2",
+            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2&developerMode=Basic",
             "cascadeTerminateToConfigurations": [
                 "Attach to Backend"
             ],
@@ -235,13 +235,18 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen",
-            "perScriptSourcemaps": "yes"
+            "perScriptSourcemaps": "yes",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "--no-first-run",
+                "--user-data-dir=${env:TEMP}/copilot-msedge-user-data-dir"
+            ]
         },
         {
             "name": "Launch App in Teams (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2",
+            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2&developerMode=Basic",
             "cascadeTerminateToConfigurations": [
                 "Attach to Backend"
             ],
@@ -250,29 +255,44 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen",
-            "perScriptSourcemaps": "yes"
+            "perScriptSourcemaps": "yes",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "--no-first-run",
+                "--user-data-dir=${env:TEMP}/copilot-chrome-user-data-dir"
+            ]
         },
         {
             "name": "Preview in Copilot (Edge)",
             "type": "msedge",
             "request": "launch",
-            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2",
+            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2&developerMode=Basic",
             "presentation": {
                 "group": "remote",
                 "order": 1
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "--no-first-run",
+                "--user-data-dir=${env:TEMP}/copilot-msedge-user-data-dir"
+            ]
         },
         {
             "name": "Preview in Copilot (Chrome)",
             "type": "chrome",
             "request": "launch",
-            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2",
+            "url": "https://m365.cloud.microsoft/chat/entity1-d870f6cd-4aa5-4d42-9626-ab690c041429/${agent-hint}?auth=2&developerMode=Basic",
             "presentation": {
                 "group": "remote",
                 "order": 2
             },
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222",
+                "--no-first-run",
+                "--user-data-dir=${env:TEMP}/copilot-chrome-user-data-dir"
+            ]
         },
         {
             "name": "Attach to Backend",

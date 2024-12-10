@@ -456,7 +456,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 
 async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (isM365CopilotChatDebugSession(event)) {
-    void cdpClient.start();
+    void cdpClient.start(event.configuration.url);
   }
   if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;

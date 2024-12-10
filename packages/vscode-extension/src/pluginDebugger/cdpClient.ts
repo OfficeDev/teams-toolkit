@@ -12,12 +12,14 @@ import {
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
 import { Protocol } from "devtools-protocol";
+import logger from "../commonlib/log";
 
 export const CDPModule = {
   build: CDP.default,
 };
 
 class CDPClient {
+  url = "";
   cdpClients: CDP.Client[] = [];
   cdpErrors: Error[] = [];
   cid: string | undefined;
@@ -51,28 +53,25 @@ class CDPClient {
     throw recentError;
   }
   async subscribeToWebSocketEvents(client: CDP.Client): Promise<void> {
-    const { Network, Page } = client;
-
-    // Enable the necessary domains
-    await Network.enable();
-    await Page.enable();
-    this.launchTeamsChatListener(client);
-    // listen to websocket messages and show them as information messages
-    Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
+    if (this.url.includes("m365.cloud.microsoft/chat")) {
+      // only m365.cloud.microsoft need listen to sub target iframe
+      void this.launchTeamsChatListener(client);
+    } else {
+      // Enable the necessary domains
+      await client.Network.enable();
+      await client.Page.enable();
+      client.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
+    }
   }
 
-  launchTeamsChatListener(client: CDP.Client) {
-    const intervalID = setInterval(() => {
-      this.connectToTargetIframe(client)
-        .then((success) => {
-          if (success) {
-            clearInterval(intervalID);
-          }
-        })
-        .catch((error) => {
-          this.cdpErrors.push(error);
-        });
-    }, 3000);
+  async launchTeamsChatListener(client: CDP.Client) {
+    while (true) {
+      const res = await this.connectToTargetIframe(client);
+      if (res) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
   }
 
   isCopilotChatUrl(url: string): boolean {
@@ -82,35 +81,33 @@ class CDPClient {
 
   async connectToTargetIframe(client: CDP.Client): Promise<boolean> {
     const targets = await client.Target.getTargets();
-    const iframeTarget = targets.targetInfos.find(
+    const iframeTargets = targets.targetInfos.filter(
       ({ type, url }) =>
-        type === "iframe" && url.toLowerCase().includes("copilotstudio.preview.microsoft.com")
+        type === "iframe" && url.includes("outlook.office.com/hosted/semanticoverview/Users")
     );
-
-    if (!iframeTarget) return false;
-
-    const sessionClient = await this.connectWithBackoff(
-      DefaultRemoteDebuggingPort,
-      iframeTarget.targetId
-    );
-
-    if (sessionClient) {
-      await sessionClient.Network.enable();
-      await sessionClient.Page.enable();
-
-      sessionClient.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
-
-      return true;
+    for (const iframeTarget of iframeTargets) {
+      logger.info(`Connecting to iframe target to receive copilot debug info: ${iframeTarget.url}`);
+      const sessionClient = await this.connectWithBackoff(
+        DefaultRemoteDebuggingPort,
+        iframeTarget.targetId
+      );
+      if (sessionClient) {
+        await sessionClient.Network.enable();
+        await sessionClient.Page.enable();
+        sessionClient.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
+        return true;
+      }
     }
     return false;
   }
 
-  async start() {
+  async start(url: string) {
     if (!featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginDebug)) return;
     if (this.cdpClients.length > 0) {
       // already started
       return;
     }
+    this.url = url;
     this.cid = uuid.v4();
     await Correlator.runWithId(this.cid, async () => {
       ExtTelemetry.sendTelemetryEvent("cdp-client-start");

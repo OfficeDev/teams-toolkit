@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
 import { Protocol } from "devtools-protocol";
-import { CopilotDebugLog } from "./copilotDebugLogOutput";
+import * as vscode from "vscode";
 import { ANSIColors } from "../debug/common/debugConstants";
-
+import { CopilotDebugLog } from "./copilotDebugLogOutput";
 interface BotTextMessage {
   messageType: string | undefined;
   text: string;
@@ -19,6 +18,7 @@ export class WebSocketEventHandler {
     }
 
     try {
+      // logger.info(`Get WebSocket response from: ${url}`);
       const objects = this.splitObjects(response);
       for (const object of objects) {
         const parsedObject = JSON.parse(object) as { item: { messages: BotTextMessage[] } };

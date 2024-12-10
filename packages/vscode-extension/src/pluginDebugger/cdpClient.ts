@@ -61,6 +61,7 @@ class CDPClient {
       await client.Network.enable();
       await client.Page.enable();
       client.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
+      logger.info(`Connecting to browser to receive copilot debugging info: ${this.url}`);
     }
   }
 
@@ -100,7 +101,7 @@ class CDPClient {
         await sessionClient.Page.enable();
         sessionClient.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
         logger.info(
-          `Connecting to iframe target to receive copilot debug info: ${iframeTarget.url}`
+          `Connecting to iframe target to receive copilot debugging info: ${iframeTarget.url}`
         );
         return true;
       }

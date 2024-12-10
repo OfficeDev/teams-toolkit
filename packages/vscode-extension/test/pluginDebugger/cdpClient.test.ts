@@ -43,7 +43,7 @@ describe("cdpClient", () => {
   });
   describe("subscribeToWebSocketEvents", () => {
     it("happy", async () => {
-      sandbox.stub(cdpClient, "launchTeamsChatListener").resolves();
+      sandbox.stub(cdpClient, "url").value("xxx");
       const client = {
         Network: { enable: () => {}, webSocketFrameReceived: () => {} },
         Page: { enable: () => {} },
@@ -56,6 +56,22 @@ describe("cdpClient", () => {
       const webSocketFrameReceived = sandbox.stub(client.Network, "webSocketFrameReceived");
       await cdpClient.subscribeToWebSocketEvents(client);
       chai.assert.isTrue(webSocketFrameReceived.called);
+    });
+    it("connect to iframe target", async () => {
+      sandbox.stub(cdpClient, "launchTeamsChatListener").resolves();
+      const client = {
+        Network: { enable: () => {}, webSocketFrameReceived: () => {} },
+        Page: { enable: () => {} },
+        Target: {
+          getTargets: () => {
+            return { targetInfos: [] };
+          },
+        },
+      } as any;
+      sandbox.stub(cdpClient, "url").value("m365.cloud.microsoft/chat");
+      const webSocketFrameReceived = sandbox.stub(client.Network, "webSocketFrameReceived");
+      await cdpClient.subscribeToWebSocketEvents(client);
+      chai.assert.isTrue(webSocketFrameReceived.notCalled);
     });
   });
   describe("start", () => {
@@ -72,7 +88,7 @@ describe("cdpClient", () => {
         },
       } as any);
       sandbox.stub(cdpClient, "subscribeToWebSocketEvents").resolves();
-      const startPromise = cdpClient.start();
+      const startPromise = cdpClient.start("");
       clock.tick(2000);
       await startPromise;
       chai.assert.isTrue(sendTelemetryEvent.called);
@@ -92,7 +108,7 @@ describe("cdpClient", () => {
         },
       } as any);
       sandbox.stub(cdpClient, "subscribeToWebSocketEvents").rejects(new Error());
-      const startPromise = cdpClient.start();
+      const startPromise = cdpClient.start("");
       clock.tick(2000);
       await startPromise;
       chai.assert.isTrue(sendTelemetryEvent.called);
@@ -101,14 +117,14 @@ describe("cdpClient", () => {
     it("feature flag disabled", async () => {
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
-      await cdpClient.start();
+      await cdpClient.start("");
       chai.assert.isTrue(sendTelemetryEvent.notCalled);
     });
     it("already started", async () => {
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(cdpClient, "cdpClients").value([{} as any]);
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
-      await cdpClient.start();
+      await cdpClient.start("");
       chai.assert.isTrue(sendTelemetryEvent.notCalled);
     });
   });
@@ -145,15 +161,13 @@ describe("cdpClient", () => {
       const client = {} as any;
       stub.resolves(true);
       cdpClient.launchTeamsChatListener(client);
-      clock.tick(3000);
       chai.assert.isTrue(stub.calledOnce);
     });
     it("error", async () => {
       sandbox.stub(cdpClient, "connectToTargetIframe").rejects(new Error());
       const client = {} as any;
       cdpClient.cdpErrors = [];
-      cdpClient.launchTeamsChatListener(client);
-      clock.tick(3000);
+      await cdpClient.launchTeamsChatListener(client, 1);
     });
   });
 
@@ -181,7 +195,7 @@ describe("cdpClient", () => {
               targetInfos: [
                 {
                   type: "iframe",
-                  url: "office.com",
+                  url: "outlook.office.com/hosted/semanticoverview/Users",
                 },
               ],
             };
@@ -202,7 +216,7 @@ describe("cdpClient", () => {
               targetInfos: [
                 {
                   type: "iframe",
-                  url: "office.com",
+                  url: "outlook.office.com/hosted/semanticoverview/Users",
                 },
               ],
             };

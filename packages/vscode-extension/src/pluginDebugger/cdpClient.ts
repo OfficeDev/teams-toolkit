@@ -64,12 +64,17 @@ class CDPClient {
     }
   }
 
-  async launchTeamsChatListener(client: CDP.Client) {
-    while (true) {
-      const res = await this.connectToTargetIframe(client);
-      if (res) {
-        break;
+  async launchTeamsChatListener(client: CDP.Client, retries = 10): Promise<void> {
+    for (let i = 0; i < retries; ++i) {
+      try {
+        const res = await this.connectToTargetIframe(client);
+        if (res) {
+          break;
+        }
+      } catch (error) {
+        this.cdpErrors.push(error);
       }
+      if (i + 1 === retries) break;
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
@@ -86,7 +91,6 @@ class CDPClient {
         type === "iframe" && url.includes("outlook.office.com/hosted/semanticoverview/Users")
     );
     for (const iframeTarget of iframeTargets) {
-      logger.info(`Connecting to iframe target to receive copilot debug info: ${iframeTarget.url}`);
       const sessionClient = await this.connectWithBackoff(
         DefaultRemoteDebuggingPort,
         iframeTarget.targetId
@@ -95,6 +99,9 @@ class CDPClient {
         await sessionClient.Network.enable();
         await sessionClient.Page.enable();
         sessionClient.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
+        logger.info(
+          `Connecting to iframe target to receive copilot debug info: ${iframeTarget.url}`
+        );
         return true;
       }
     }

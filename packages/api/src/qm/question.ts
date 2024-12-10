@@ -285,7 +285,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
   /**
    * The default selected `id` array of the option item
    */
-  default?: string[] | LocalFunc<string[] | undefined>;
+  default?: string[] | LocalFunc<string[] | undefined> | "none" | "all";
 
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an array of `OptionItem` objects; otherwise, the answer value is an array of `id` strings.

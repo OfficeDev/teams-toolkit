@@ -1582,6 +1582,7 @@
     "watch:vite": "vite build --config vite.config.mts --watch",
     "build:test": "tsc --project tsconfig.test.json --incremental",
     "test:unit": "npm run build:test && nyc mocha --config .mocharc.json \"test/**/*.test.ts\"",
+    "test:debug": "npm run build:test && nyc mocha --config .mocharc.json \"test/pluginDebugger/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
     "check-format": "prettier --list-different --config .prettierrc.js --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",

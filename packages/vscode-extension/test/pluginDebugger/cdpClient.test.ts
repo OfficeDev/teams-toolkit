@@ -3,6 +3,7 @@ import * as chai from "chai";
 import sinon, { SinonFakeTimers, useFakeTimers } from "sinon";
 import { cdpClient, CDPModule } from "../../src/pluginDebugger/cdpClient";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import "../setup";
 
 describe("cdpClient", () => {
   const sandbox = sinon.createSandbox();
@@ -76,6 +77,7 @@ describe("cdpClient", () => {
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      sandbox.stub(cdpClient, "cdpClients").value([]);
       sandbox.stub(cdpClient, "build").resolves({
         Network: { enable: () => {}, webSocketFrameReceived: () => {} },
         Page: { enable: () => {} },
@@ -95,6 +97,13 @@ describe("cdpClient", () => {
     it("feature flag disabled", async () => {
       const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      await cdpClient.start();
+      chai.assert.isTrue(sendTelemetryEvent.notCalled);
+    });
+    it("already started", async () => {
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(cdpClient, "cdpClients").value([{} as any]);
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
       await cdpClient.start();
       chai.assert.isTrue(sendTelemetryEvent.notCalled);
     });

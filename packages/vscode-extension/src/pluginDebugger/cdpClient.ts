@@ -99,6 +99,10 @@ class CDPClient {
 
   async start() {
     if (!featureFlagManager.getBooleanValue(FeatureFlags.ApiPluginDebug)) return;
+    if (this.cdpClients.length > 0) {
+      // already started
+      return;
+    }
     this.cid = uuid.v4();
     await Correlator.runWithId(this.cid, async () => {
       ExtTelemetry.sendTelemetryEvent("cdp-client-start");

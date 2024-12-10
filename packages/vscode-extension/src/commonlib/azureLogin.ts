@@ -111,6 +111,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async isUserLogin(tenantId?: string): Promise<boolean> {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.MultiTenant) && !tenantId) {
+      tenantId = await loadTenantId(azureCacheName);
+    }
     const session = await getSessionFromVSCode(AzureScopes, tenantId, {
       createIfNone: false,
       silent: true,

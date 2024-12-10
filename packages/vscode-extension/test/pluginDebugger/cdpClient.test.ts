@@ -1,9 +1,14 @@
 import { featureFlagManager } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import sinon, { SinonFakeTimers, useFakeTimers } from "sinon";
-import { cdpClient, CDPModule } from "../../src/pluginDebugger/cdpClient";
+import {
+  cdpClient,
+  CDPModule,
+  webSocketFrameReceivedHandler,
+} from "../../src/pluginDebugger/cdpClient";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import "../setup";
+import { WebSocketEventHandler } from "../../src/pluginDebugger/webSocketEventHandler";
 
 describe("cdpClient", () => {
   const sandbox = sinon.createSandbox();
@@ -106,6 +111,108 @@ describe("cdpClient", () => {
       sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
       await cdpClient.start();
       chai.assert.isTrue(sendTelemetryEvent.notCalled);
+    });
+  });
+  describe("stop", () => {
+    it("feature flag disabled", async () => {
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(false);
+      await cdpClient.stop();
+      chai.assert.isTrue(sendTelemetryEvent.notCalled);
+    });
+    it("happy", async () => {
+      const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(featureFlagManager, "getBooleanValue").returns(true);
+      sandbox.stub(cdpClient, "cdpClients").value([
+        {
+          close: () => {},
+        } as any,
+      ]);
+      await cdpClient.stop();
+      chai.assert.isTrue(sendTelemetryEvent.called);
+    });
+  });
+  describe("webSocketFrameReceivedHandler", () => {
+    it("happy", async () => {
+      const stub = sandbox.stub(WebSocketEventHandler, "handleEvent");
+      webSocketFrameReceivedHandler({} as any);
+      chai.assert.isTrue(stub.called);
+    });
+  });
+
+  describe("launchTeamsChatListener", () => {
+    it("happy", async () => {
+      const stub = sandbox.stub(cdpClient, "connectToTargetIframe");
+      const client = {} as any;
+      stub.resolves(true);
+      cdpClient.launchTeamsChatListener(client);
+      clock.tick(3000);
+      chai.assert.isTrue(stub.calledOnce);
+    });
+    it("error", async () => {
+      sandbox.stub(cdpClient, "connectToTargetIframe").rejects(new Error());
+      const client = {} as any;
+      cdpClient.cdpErrors = [];
+      cdpClient.launchTeamsChatListener(client);
+      clock.tick(3000);
+    });
+  });
+
+  describe("connectToTargetIframe", () => {
+    it("no targetInfo", async () => {
+      const client = {
+        Network: { enable: () => {}, webSocketFrameReceived: () => {} },
+        Page: { enable: () => {} },
+        Target: {
+          getTargets: () => {
+            return { targetInfos: [] };
+          },
+        },
+      } as any;
+      const res = await cdpClient.connectToTargetIframe(client);
+      chai.assert.isFalse(res);
+    });
+    it("no sessionClient", async () => {
+      const client = {
+        Network: { enable: () => {}, webSocketFrameReceived: () => {} },
+        Page: { enable: () => {} },
+        Target: {
+          getTargets: () => {
+            return {
+              targetInfos: [
+                {
+                  type: "iframe",
+                  url: "office.com",
+                },
+              ],
+            };
+          },
+        },
+      } as any;
+      sandbox.stub(cdpClient, "connectWithBackoff").resolves(undefined);
+      const res = await cdpClient.connectToTargetIframe(client);
+      chai.assert.isFalse(res);
+    });
+    it("happy path", async () => {
+      const client = {
+        Network: { enable: () => {}, webSocketFrameReceived: () => {} },
+        Page: { enable: () => {} },
+        Target: {
+          getTargets: () => {
+            return {
+              targetInfos: [
+                {
+                  type: "iframe",
+                  url: "office.com",
+                },
+              ],
+            };
+          },
+        },
+      } as any;
+      sandbox.stub(cdpClient, "connectWithBackoff").resolves(client);
+      const res = await cdpClient.connectToTargetIframe(client);
+      chai.assert.isTrue(res);
     });
   });
 });

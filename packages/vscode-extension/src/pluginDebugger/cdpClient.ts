@@ -11,6 +11,7 @@ import {
 } from "../debug/common/debugConstants";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { WebSocketEventHandler } from "./webSocketEventHandler";
+import { Protocol } from "devtools-protocol";
 
 export const CDPModule = {
   build: CDP.default,
@@ -57,44 +58,45 @@ class CDPClient {
     await Page.enable();
     this.launchTeamsChatListener(client);
     // listen to websocket messages and show them as information messages
-    Network.webSocketFrameReceived(({ response }) => {
-      WebSocketEventHandler.handleEvent(response);
-    });
+    Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
   }
-  launchTeamsChatListener({ Target }: CDP.Client) {
-    const teamsChatIntervalID = setInterval(() => {
-      void (async () => {
-        try {
-          const targets = await Target.getTargets();
 
-          // Teams chat is launched in an iframe, so we need to find the iframe target
-          const copilotIframeTarget = targets.targetInfos.find(
-            (target) =>
-              target.type === "iframe" && target.url.toLocaleLowerCase().includes("office")
-          );
-          if (copilotIframeTarget) {
-            const { targetId } = copilotIframeTarget;
-            const sessionClient: CDP.Client = await this.connectWithBackoff(
-              DefaultRemoteDebuggingPort,
-              targetId
-            );
-            if (sessionClient) {
-              await sessionClient.Network.enable();
-              await sessionClient.Page.enable();
-              sessionClient.Network.webSocketFrameReceived(({ response }) => {
-                WebSocketEventHandler.handleEvent(response);
-              });
-              clearInterval(teamsChatIntervalID);
-            }
+  launchTeamsChatListener(client: CDP.Client) {
+    const intervalID = setInterval(() => {
+      this.connectToTargetIframe(client)
+        .then((success) => {
+          if (success) {
+            clearInterval(intervalID);
           }
-        } catch (error) {
-          // vscode.debug.activeDebugConsole.appendLine(
-          //   `${RED} (×) Error: ${WHITE} Error in setInterval callback: ${(error as Error).message}`
-          // );
+        })
+        .catch((error) => {
           this.cdpErrors.push(error);
-        }
-      })();
+        });
     }, 3000);
+  }
+
+  async connectToTargetIframe(client: CDP.Client): Promise<boolean> {
+    const targets = await client.Target.getTargets();
+    const iframeTarget = targets.targetInfos.find(
+      ({ type, url }) => type === "iframe" && url.toLowerCase().includes("office")
+    );
+
+    if (!iframeTarget) return false;
+
+    const sessionClient = await this.connectWithBackoff(
+      DefaultRemoteDebuggingPort,
+      iframeTarget.targetId
+    );
+
+    if (sessionClient) {
+      await sessionClient.Network.enable();
+      await sessionClient.Page.enable();
+
+      sessionClient.Network.webSocketFrameReceived(webSocketFrameReceivedHandler);
+
+      return true;
+    }
+    return false;
   }
 
   async start() {
@@ -141,5 +143,7 @@ class CDPClient {
     });
   }
 }
-
+export function webSocketFrameReceivedHandler(event: Protocol.Network.WebSocketFrameReceivedEvent) {
+  WebSocketEventHandler.handleEvent(event.response);
+}
 export const cdpClient = new CDPClient();

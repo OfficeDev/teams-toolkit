@@ -11,8 +11,8 @@
         "@fluentui/react-components": "^9.55.1",
         "@fluentui/react-icons": "^2.0.186",
         "@microsoft/teams-js": "^2.22.0",
-        "@microsoft/teamsfx": "^3.0.0-alpha",
-        "@microsoft/teamsfx-react": "^4.0.0-alpha",
+        "@microsoft/teamsfx": "^3.0.0-rc.1",
+        "@microsoft/teamsfx-react": "^4.0.0-rc.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.8.0"

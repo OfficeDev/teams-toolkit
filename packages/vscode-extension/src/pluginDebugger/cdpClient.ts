@@ -75,10 +75,16 @@ class CDPClient {
     }, 3000);
   }
 
+  isCopilotChatUrl(url: string): boolean {
+    const low = url.toLowerCase();
+    return low.includes("office.com/chat") || low.includes("m365.cloud.microsoft/chat");
+  }
+
   async connectToTargetIframe(client: CDP.Client): Promise<boolean> {
     const targets = await client.Target.getTargets();
     const iframeTarget = targets.targetInfos.find(
-      ({ type, url }) => type === "iframe" && url.toLowerCase().includes("office")
+      ({ type, url }) =>
+        type === "iframe" && url.toLowerCase().includes("copilotstudio.preview.microsoft.com")
     );
 
     if (!iframeTarget) return false;

@@ -46,6 +46,16 @@ export enum Host {
   office = "www.office.com",
 }
 
+export enum ANSIColors {
+  RED = "\u001b[31m",
+  GREEN = "\u001b[32m",
+  YELLOW = "\u001b[33m",
+  BLUE = "\u001b[34m",
+  MAGENTA = "\u001b[35m",
+  WHITE = "\u001b[37m",
+  GRAY = "\u001b[38;5;244m",
+}
+
 export const accountHintPlaceholder = "${account-hint}";
 export const agentHintPlaceholder = "${agent-hint}";
 export const m365AppIdEnv = "M365_APP_ID";
@@ -253,6 +263,16 @@ export const launchingTeamsClientDisplayMessages = Object.freeze({
   hotReloadingMessage:
     "The app supports hot reloading. If you have any code changes in the project, the app will be reloaded.",
 });
+
+export const connectToExistingBrowserDebugSessionForCopilot = Object.freeze({
+  title: "Connecting to Existing Browser Debug Session for Copilot.",
+  successfulConnectionMessage: (port: number) =>
+    `Connected to DevTools Protocol in existing debug session on port: ${port}.`,
+  unsuccessfulConnectionMessage: (error: string) =>
+    `Failed to connect to Chrome DevTools Protocol: ${error}.`,
+});
+
+export const DefaultRemoteDebuggingPort = 9222;
 
 export const DebugSessionExists = "Debug session exists";
 

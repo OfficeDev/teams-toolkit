@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/m365-spec-parser",
-  "version": "0.2.3",
+  "version": "0.2.4-rc.0",
   "description": "OpenAPI specification files Parser for M365 Apps",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -38,9 +38,9 @@
   "homepage": "https://github.com/OfficeDev/TeamsFx",
   "sideEffects": false,
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.7.2",
     "@apidevtools/swagger-parser": "^10.1.0",
     "@microsoft/teams-manifest": "workspace:*",
-    "@apidevtools/json-schema-ref-parser": "^11.7.2",
     "fs-extra": "^11.2.0",
     "js-yaml": "^4.1.0",
     "openapi-types": "^7.2.3",

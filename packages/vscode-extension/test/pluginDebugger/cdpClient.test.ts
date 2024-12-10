@@ -7,7 +7,6 @@ import {
   webSocketFrameReceivedHandler,
 } from "../../src/pluginDebugger/cdpClient";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import "../setup";
 import { WebSocketEventHandler } from "../../src/pluginDebugger/webSocketEventHandler";
 
 describe("cdpClient", () => {

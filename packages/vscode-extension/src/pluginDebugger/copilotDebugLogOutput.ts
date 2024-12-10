@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as vscode from "vscode";
-import fs from "fs-extra";
 import { LogLevel } from "@microsoft/teamsfx-api";
-import { defaultExtensionLogPath } from "../globalVariables";
+import * as vscode from "vscode";
 import { ANSIColors } from "../debug/common/debugConstants";
+import { defaultExtensionLogPath } from "../globalVariables";
 
 interface Plugin {
   name: string;

@@ -145,7 +145,7 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Upload TTK to artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ttk
           path: |
@@ -341,7 +341,7 @@ jobs:
           ls -a
 
       - name: Download TTK
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: ttk
           path: ./packages/tests

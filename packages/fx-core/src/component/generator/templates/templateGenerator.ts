@@ -18,6 +18,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../question/constants";
 import { botTriggerQuestion, meArchitectureQuestion } from "../../../question/create";
+import { TemplateNames, Templates } from "../../../question/templates";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
@@ -25,9 +26,7 @@ import { Generator, templateDefaultOnActionError } from "../generator";
 import { GeneratorContext, TemplateActionSeq } from "../generatorAction";
 import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
 import { TemplateInfo } from "./templateInfo";
-import { getTemplateName, tryGetTemplateName } from "./templateNames";
 import { getTemplateReplaceMap } from "./templateReplaceMap";
-import { Templates } from "../../../question/templates";
 
 export class DefaultTemplateGenerator implements IGenerator {
   // override this property to send telemetry event with different component name
@@ -35,7 +34,8 @@ export class DefaultTemplateGenerator implements IGenerator {
 
   // override this method to determine whether to run this generator
   public activate(context: Context, inputs: Inputs): boolean {
-    return tryGetTemplateName(inputs) !== undefined;
+    // return tryGetTemplateName(inputs) !== undefined;
+    return inputs[QuestionNames.TemplateName] === TemplateNames.NotificationExpress;
   }
 
   // The main entry of the generator. Do not override this method.
@@ -74,7 +74,8 @@ export class DefaultTemplateGenerator implements IGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
-    const templateName = getTemplateName(inputs);
+    // const templateName = getTemplateName(inputs);
+    const templateName = inputs[QuestionNames.TemplateName];
     const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
     return Promise.resolve(ok([{ templateName, language }]));
   }

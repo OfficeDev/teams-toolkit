@@ -12,8 +12,8 @@ import {
   WarningResult,
 } from "@microsoft/m365-spec-parser";
 import {
+  ApiOperation,
   AppPackageFolderName,
-  AuthInfo,
   Context,
   DefaultApiSpecFolderName,
   DefaultApiSpecJsonFileName,
@@ -21,11 +21,14 @@ import {
   DefaultPluginManifestFileName,
   FxError,
   GeneratorResult,
+  IQTreeNode,
   Inputs,
   ManifestTemplateFileName,
+  MultiSelectQuestion,
   Platform,
   ResponseTemplatesFolderName,
   Result,
+  SingleFileOrInputQuestion,
   SystemError,
   UserError,
   Warning,
@@ -35,19 +38,26 @@ import {
 import * as fs from "fs-extra";
 import { merge } from "lodash";
 import path from "path";
+import { Correlator } from "../../../common/correlator";
 import { FeatureFlags, featureFlagManager } from "../../../common/featureFlags";
+import { createContext } from "../../../common/globalVars";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { isValidHttpUrl } from "../../../common/stringUtils";
-import { assembleError } from "../../../error";
+import { isJsonSpecFile } from "../../../common/utils";
+import { EmptyOptionError, assembleError } from "../../../error";
 import {
   ApiPluginStartOptions,
   CapabilityOptions,
-  CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProgrammingLanguage,
+  ProjectTypeOptions,
   QuestionNames,
 } from "../../../question/constants";
+import { TemplateNames } from "../../../question/templates";
+import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import { ActionContext } from "../../middleware/actionExecutionMW";
+import { declarativeCopilotInstructionFileName } from "../constant";
 import { Generator } from "../generator";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
@@ -61,9 +71,6 @@ import {
   listOperations,
   updateForCustomApi,
 } from "./helper";
-import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
-import { declarativeCopilotInstructionFileName } from "../constant";
-import { isJsonSpecFile } from "../../../common/utils";
 
 const defaultDeclarativeCopilotActionId = "action_1";
 // const fromApiSpecComponentName = "copilot-plugin-existing-api";
@@ -109,38 +116,223 @@ export class SpecGenerator extends DefaultTemplateGenerator {
   // url = "";
   // isPlugin = false;
   // type = -1;
+  private apiSpecLocationQuestion(): SingleFileOrInputQuestion {
+    const maximumLengthOfDetailsErrorMessageInInputBox = 90;
+    const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
+    const validationOnAccept = async (
+      input: string,
+      inputs?: Inputs
+    ): Promise<string | undefined> => {
+      try {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+        const context = createContext();
+        const res = await listOperations(context, input.trim(), inputs, true, false, correlationId);
+        if (res.isOk()) {
+          inputs.supportedApisFromApiSpec = res.value;
+        } else {
+          const errors = res.error;
+          if (
+            errors.length === 1 &&
+            errors[0].content.length <= maximumLengthOfDetailsErrorMessageInInputBox
+          ) {
+            return errors[0].content;
+          } else {
+            return getLocalizedString(
+              "core.createProjectQuestion.apiSpec.multipleValidationErrors.vscode.message"
+            );
+          }
+        }
+      } catch (e) {
+        const error = assembleError(e);
+        throw error;
+      }
+    };
+    return {
+      type: "singleFileOrText",
+      name: QuestionNames.ApiSpecLocation,
+      cliShortName: "a",
+      cliDescription: "OpenAPI description document location.",
+      title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
+      forgetLastValue: true,
+      inputBoxConfig: {
+        type: "innerText",
+        title: getLocalizedString("core.createProjectQuestion.apiSpec.title"),
+        placeholder: getLocalizedString("core.createProjectQuestion.apiSpec.placeholder"),
+        name: "input-api-spec-url",
+        step: 2, // Add "back" button
+        validation: {
+          validFunc: (input: string, inputs?: Inputs): Promise<string | undefined> => {
+            const result = isValidHttpUrl(input.trim())
+              ? undefined
+              : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
+            return Promise.resolve(result);
+          },
+        },
+      },
+      inputOptionItem: {
+        id: "input",
+        label: `$(cloud) ` + getLocalizedString("core.createProjectQuestion.apiSpecInputUrl.label"),
+      },
+      filters: {
+        files: ["json", "yml", "yaml"],
+      },
+      validation: {
+        validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
+          if (!isValidHttpUrl(input.trim()) && !(await fs.pathExists(input.trim()))) {
+            return "Please enter a valid HTTP URL without authentication to access your OpenAPI description document or enter a file path of your local OpenAPI description document.";
+          }
 
+          return await validationOnAccept(input, inputs);
+        },
+      },
+    };
+  }
+
+  private apiOperationQuestion(): MultiSelectQuestion {
+    let placeholder = "";
+
+    const isPlugin = (inputs?: Inputs): boolean => {
+      return !!inputs && inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id;
+    };
+
+    return {
+      type: "multiSelect",
+      name: QuestionNames.ApiOperation,
+      title: (inputs: Inputs) => {
+        return isPlugin(inputs)
+          ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
+          : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
+      },
+      placeholder: (inputs: Inputs) => {
+        const isPlugin = inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id;
+        if (isPlugin) {
+          placeholder = getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.plugin.placeholder"
+          );
+        } else {
+          placeholder = getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
+          );
+        }
+        return placeholder;
+      },
+      forgetLastValue: true,
+      staticOptions: [],
+      validation: {
+        validFunc: (input: string[], inputs?: Inputs): string | undefined => {
+          if (!inputs) {
+            throw new Error("inputs is undefined"); // should never happen
+          }
+          if (
+            input.length < 1 ||
+            (input.length > 10 &&
+              inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.Agent().id)
+          ) {
+            return getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.invalidMessage",
+              input.length,
+              10
+            );
+          }
+          const operations: ApiOperation[] = inputs.supportedApisFromApiSpec as ApiOperation[];
+
+          const authNames: Set<string> = new Set();
+          const serverUrls: Set<string> = new Set();
+          for (const inputItem of input) {
+            const operation = operations.find((op) => op.id === inputItem);
+            if (operation) {
+              if (operation.data.authName) {
+                authNames.add(operation.data.authName);
+                serverUrls.add(operation.data.serverUrl);
+              }
+            }
+          }
+
+          if (authNames.size > 1) {
+            return getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+              Array.from(authNames).join(", ")
+            );
+          }
+
+          if (serverUrls.size > 1) {
+            return getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.multipleServer",
+              Array.from(serverUrls).join(", ")
+            );
+          }
+
+          const authApi = operations.find((api) => !!api.data.authName && input.includes(api.id));
+          if (authApi) {
+            inputs.apiAuthData = authApi.data;
+          }
+        },
+      },
+      dynamicOptions: (inputs: Inputs) => {
+        if (!inputs.supportedApisFromApiSpec) {
+          throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
+        }
+
+        const operations = inputs.supportedApisFromApiSpec as ApiOperation[];
+
+        return operations;
+      },
+    };
+  }
+
+  public getQuestionTreeNode(): IQTreeNode {
+    return {
+      condition: { equals: ApiPluginStartOptions.apiSpec().id },
+      // data: specGenerator.getQuestions(),
+      data: { type: "group", name: QuestionNames.FromExistingApi },
+      children: [
+        {
+          data: this.apiSpecLocationQuestion(),
+        },
+        {
+          data: this.apiOperationQuestion(),
+          condition: (inputs: Inputs) => {
+            return !inputs[QuestionNames.ApiPluginManifestPath];
+          },
+        },
+      ],
+    };
+  }
   // activation condition
   public activate(context: Context, inputs: Inputs): boolean {
-    const capability = inputs.capabilities as string;
-    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-    return (
-      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
-      meArchitecture === MeArchitectureOptions.apiSpec().id ||
-      (capability === CapabilityOptions.customCopilotRag().id &&
-        inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
-    );
+    // const capability = inputs.capabilities as string;
+    // const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    // return (
+    //   inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id ||
+    //   meArchitecture === MeArchitectureOptions.apiSpec().id ||
+    //   (capability === CapabilityOptions.customCopilotRag().id &&
+    //     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id)
+    // );
+    return inputs[QuestionNames.TemplateName] === TemplateNames.DeclarativeAgentWithApiSpec;
   }
 
   getTemplateName(inputs: Inputs): string {
-    const capability = inputs.capabilities as string;
-    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-    let templateName = "";
-    if (
-      (capability === CapabilityOptions.apiPlugin().id ||
-        capability === CapabilityOptions.declarativeAgent().id) &&
-      inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
-    ) {
-      templateName = apiPluginFromApiSpecTemplateName;
-    } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
-      templateName = fromApiSpecTemplateName;
-    } else if (
-      capability === CapabilityOptions.customCopilotRag().id &&
-      inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
-    ) {
-      templateName = forCustomCopilotRagCustomApi;
-    }
-    return templateName;
+    // const capability = inputs.capabilities as string;
+    // const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+    // let templateName = "";
+    // if (
+    //   (capability === CapabilityOptions.apiPlugin().id ||
+    //     capability === CapabilityOptions.declarativeAgent().id) &&
+    //   inputs[QuestionNames.ApiPluginType] === ApiPluginStartOptions.apiSpec().id
+    // ) {
+    //   templateName = apiPluginFromApiSpecTemplateName;
+    // } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+    //   templateName = fromApiSpecTemplateName;
+    // } else if (
+    //   capability === CapabilityOptions.customCopilotRag().id &&
+    //   inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id
+    // ) {
+    //   templateName = forCustomCopilotRagCustomApi;
+    // }
+    // return templateName;
+    return apiPluginFromApiSpecTemplateName;
   }
 
   public async getTemplateInfos(

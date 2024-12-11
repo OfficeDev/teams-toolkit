@@ -31,3 +31,4 @@ export * from "./publish";
 export * from "./root";
 export * from "./upgrade";
 export * from "./validate";
+export * from "./declarativeAgentToBot";

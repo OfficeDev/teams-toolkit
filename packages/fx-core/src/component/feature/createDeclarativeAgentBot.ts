@@ -150,9 +150,18 @@ async function getBotId(context: DeclarativeAgentBotContext): Promise<void> {
     return;
   }
 
+  const state = loadStateFromEnv(new Map(Object.entries(defaultOutputNames)));
+  if (!state.m365AppId || !state.tenantId) {
+    throw new Error("M365 app id or tenant id is not found in .env file");
+  }
+
   const accessToken = result.value;
   if (context.declarativeAgentId) {
-    const botId = await copilotStudioClient.getBot(accessToken, context.declarativeAgentId);
+    const botId = await copilotStudioClient.getBot(
+      accessToken,
+      context.declarativeAgentId,
+      state.tenantId
+    );
     context.teamsBotId = botId;
   }
 }

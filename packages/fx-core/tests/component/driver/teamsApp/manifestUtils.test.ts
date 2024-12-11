@@ -520,3 +520,53 @@ describe("trimManifestShortName", () => {
     assert.isTrue(writeFileStub.notCalled);
   });
 });
+
+describe("resolveLocFile", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("returns error when loc file doesn't exist", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+
+    const locFile = await manifestUtils.resolveLocFile("loc_file_path");
+
+    assert.isTrue(locFile.isErr());
+    if (locFile.isErr()) {
+      assert.equal(locFile.error.name, "FileNotFoundError");
+    }
+  });
+
+  it("returns error when there're unresolved env variables", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const fakedLocManifest = new TeamsAppManifest();
+    fakedLocManifest.name.short = "shortname ${{APP_NAME_SUFFIX}}";
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(fakedLocManifest) as any);
+
+    const locFile = await manifestUtils.resolveLocFile("loc_file_path");
+
+    assert.isTrue(locFile.isErr());
+    if (locFile.isErr()) {
+      assert.equal(locFile.error.name, "MissingEnvironmentVariablesError");
+    }
+  });
+
+  it("happy pass", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const fakedLocManifest = new TeamsAppManifest();
+    fakedLocManifest.name.short = "shortname ${{APP_NAME_SUFFIX}}";
+    process.env.APP_NAME_SUFFIX = "- hello world";
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(fakedLocManifest) as any);
+
+    const locFile = await manifestUtils.resolveLocFile("loc_file_path");
+
+    assert.isTrue(locFile.isOk());
+    if (locFile.isOk()) {
+      assert.equal(
+        (JSON.parse(locFile.value) as TeamsAppManifest).name.short,
+        "shortname - hello world"
+      );
+    }
+  });
+});

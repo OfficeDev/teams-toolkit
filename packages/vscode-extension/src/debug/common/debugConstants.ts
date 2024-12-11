@@ -272,8 +272,6 @@ export const connectToExistingBrowserDebugSessionForCopilot = Object.freeze({
     `Failed to connect to Chrome DevTools Protocol: ${error}.`,
 });
 
-export const DefaultRemoteDebuggingPort = 9222;
-
 export const DebugSessionExists = "Debug session exists";
 
 export const RecommendedOperations = Object.freeze({

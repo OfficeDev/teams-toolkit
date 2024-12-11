@@ -12,9 +12,10 @@ interface BotTextMessage {
 }
 
 export class WebSocketEventHandler {
-  static handleEvent(response: Protocol.Network.WebSocketFrame): void {
+  static handleEvent(response: Protocol.Network.WebSocketFrame): number {
+    let num = 0;
     if (!this.isWebSocketDataRelevant(response)) {
-      return;
+      return num;
     }
 
     try {
@@ -26,6 +27,7 @@ export class WebSocketEventHandler {
           const botTextMessages = this.selectBotTextMessages(parsedObject);
           for (const botTextMessage of botTextMessages) {
             this.convertBotMessageToChannelOutput(botTextMessage);
+            num++;
           }
         } else {
           console.warn("Parsed response object does not contain item or messages:", parsedObject);
@@ -39,6 +41,7 @@ export class WebSocketEventHandler {
         }`
       );
     }
+    return num;
   }
 
   // only type 2 messages contain developer logs

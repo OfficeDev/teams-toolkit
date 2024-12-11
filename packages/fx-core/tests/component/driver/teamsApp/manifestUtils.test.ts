@@ -27,6 +27,7 @@ import {
 } from "../../../../src/component/driver/teamsApp/constants";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
 import { FileNotFoundError, JSONSyntaxError, ReadFileError } from "../../../../src/error";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const latestManifestVersion = "1.17";
 const oldManifestVersion = "1.16";
@@ -523,7 +524,12 @@ describe("trimManifestShortName", () => {
 
 describe("resolveLocFile", () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn;
+
   afterEach(() => {
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
     sandbox.restore();
   });
 
@@ -556,7 +562,9 @@ describe("resolveLocFile", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     const fakedLocManifest = new TeamsAppManifest();
     fakedLocManifest.name.short = "shortname ${{APP_NAME_SUFFIX}}";
-    process.env.APP_NAME_SUFFIX = "- hello world";
+    mockedEnvRestore = mockedEnv({
+      ["APP_NAME_SUFFIX"]: "- hello world",
+    });
     sandbox.stub(fs, "readFile").resolves(JSON.stringify(fakedLocManifest) as any);
 
     const locFile = await manifestUtils.resolveLocFile("loc_file_path");

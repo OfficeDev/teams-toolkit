@@ -1476,7 +1476,7 @@ describe("teamsApp/createAppPackage", async () => {
       }
     });
 
-    it("resolve localization file error", async () => {
+    it("resolve additional localization file error", async () => {
       const args: CreateAppPackageArgs = {
         manifestPath:
           "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
@@ -1507,6 +1507,48 @@ describe("teamsApp/createAppPackage", async () => {
       sinon
         .stub(manifestUtils, "resolveLocFile")
         .resolves(err(new FileNotFoundError("teamsapp", "faked_loc_path")));
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof FileNotFoundError);
+      }
+    });
+
+    it("resolve default localization file error", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputFolder: "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.localizationInfo = {
+        defaultLanguageTag: "en",
+        additionalLanguages: [
+          {
+            languageTag: "de",
+            file: "migrate.manifest.json",
+          },
+        ],
+        defaultLanguageFile: "de.json",
+      };
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+      sinon.stub(manifestUtils, "resolveLocFile").callsFake(async (path) => {
+        if (path.includes("migrate.manifest.json")) {
+          return ok("{}");
+        } else {
+          return err(new FileNotFoundError("teamsapp", "faked_loc_path"));
+        }
+      });
 
       const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
       if (result.isErr()) {

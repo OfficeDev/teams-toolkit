@@ -6,9 +6,7 @@ on:
       - opened
       - edited
       - synchronize
-  push:
-    branches:
-      - release/**
+      - closed
   schedule:
     - cron: "0 8 * * *"
 
@@ -19,7 +17,7 @@ permissions:
 
 jobs: 
   pr-title:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
     runs-on: ubuntu-latest
     steps:
       # Please look up the latest version from
@@ -48,7 +46,7 @@ jobs:
             }
 
   check-format:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -100,7 +98,7 @@ jobs:
           CI: true
           
   check-yaml-lint:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -140,7 +138,7 @@ jobs:
           fi
 
   check-sensitive-content:
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
+    if: ${{ (github.event_name == 'pull_request' && github.event.action != 'closed') || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - shell: bash
@@ -174,76 +172,8 @@ jobs:
           head: ${{ github.ref_name }}
           extra_args: --only-verified
 
-  attension-on-version:
-    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout branch
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.pull_request.head.ref }}
-      - name: Get branch name
-        id: branch-name
-        uses: tj-actions/branch-names@v7
-      - name: check origin or remote
-        id: remote
-        run: |
-          if [ ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }} ]
-          then
-            echo "target=origin" >> $GITHUB_OUTPUT
-          else
-            echo "target=remote" >> $GITHUB_OUTPUT
-          fi
-      - name: check feature history
-        id: description
-        shell: "/bin/bash {0}"
-        run: |
-          head=${{steps.remote.outputs.target}}/${{ github.event.pull_request.base.ref }}
-          echo $head
-          history_cli_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^feat")
-          echo $history_cli_feat
-          history_toolkit_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^feat")
-          echo $history_toolkit_feat
-          history_core_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/fx-core | grep "^feat")
-          echo $history_core_feat
-          history_sdk_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/sdk | grep "^feat")
-          echo $history_sdk_feat
-          history_sdk_react_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/sdk-react | grep "^feat")
-          echo $history_sdk_react_feat
-          history_dotnet_sdk_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/dotnet-sdk | grep "^feat")
-          echo $history_dotnet_sdk_feat
-          echo -e '\nFx-core feat commits:\n' "$history_core_feat" '\n\nCLI feat commits:\n' "$history_cli_feat" '\n\nExtension-toolkit feat commits:\n' "$history_toolkit_feat" '\n\nSDK feat commits:\n' "$history_sdk_feat" '\n\nSDK React feat commits:\n' "$history_sdk_react_feat" '\n\n.Net SDK feat commits:\n' "$history_dotnet_sdk_feat" '\n'> feat_history.txt
-          history_cli_fix=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/cli | grep "^fix")
-          echo $history_cli_fix
-          history_toolkit_fix=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/vscode-extension | grep "^fix")
-          echo $history_toolkit_fix
-          history_core_fix=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/fx-core | grep "^fix")
-          echo $history_core_fix
-          history_sdk_fix=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/sdk | grep "^fix")
-          echo $history_sdk_fix
-          history_sdk_react_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/sdk-react | grep "^fix")
-          echo $history_sdk_react_fix
-          history_dotnet_sdk_feat=$(git log --pretty=format:"%s %h" $head...HEAD -- packages/dotnet-sdk | grep "^fix")
-          echo $history_dotnet_sdk_fix
-          echo -e '\nFx-core fix commits:\n' "$history_core_fix" '\n\nCLI fix commits:\n' "$history_cli_fix" '\n\nExtension-toolkit fix commits:\n' "$history_toolkit_fix" '\n\nSDK fix commits:\n' "$history_sdk_fix"  '\n\nSDK React fix commits:\n' "$history_sdk_react_fix" '\n\n.Net SDK fix commits:\n' "$history_dotnet_sdk_fix" '\n'> fix_history.txt
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - name: list history
-        if: ${{ github.event.pull_request.base.ref == 'main' }}
-        run: |
-          cat feat_history.txt > version_info.txt
-          cat fix_history.txt >> version_info.txt
-      - uses: JoseThen/comment-pr@v1.2.0
-        with:
-          file_path: './version_info.txt'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   create-cherry-pick-issue:
-    if: ${{ github.event_name == 'push' && !contains(github.event.pull_request.labels.*.name, 'cherry-pick-hotfix') }}
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && startsWith(github.event.pull_request.base.ref, 'release') && !contains(github.event.pull_request.labels.*.name, 'cherry-pick-hotfix') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read

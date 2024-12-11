@@ -2,11 +2,7 @@
 // Licensed under the MIT license.
 
 import { IQTreeNode } from "@microsoft/teamsfx-api";
-import {
-  createProjectCliHelpNode,
-  createProjectQuestionNode,
-  createSampleProjectQuestionNode,
-} from "./create";
+import { createProjectCliHelpNode, createSampleProjectQuestionNode } from "./create";
 import {
   addPluginQuestionNode,
   addWebPartQuestionNode,
@@ -15,15 +11,16 @@ import {
   createNewEnvQuestionNode,
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
+  kiotaRegenerateQuestion,
   listCollaboratorQuestionNode,
   oauthQuestion,
   previewWithTeamsAppManifestQuestionNode,
   selectTeamsAppManifestQuestionNode,
+  syncManifestQuestionNode,
   uninstallQuestionNode,
   validateTeamsAppQuestionNode,
-  syncManifestQuestionNode,
-  kiotaRegenerateQuestion,
 } from "./other";
+import { scaffoldQuestionForVSCode } from "./refactor/createVsc";
 export * from "./constants";
 export * from "./create";
 export * from "./inputs";
@@ -31,7 +28,8 @@ export * from "./options";
 
 export class QuestionNodes {
   createProject(): IQTreeNode {
-    return createProjectQuestionNode();
+    // return createProjectQuestionNode();
+    return scaffoldQuestionForVSCode();
   }
   createSampleProject(): IQTreeNode {
     return createSampleProjectQuestionNode();

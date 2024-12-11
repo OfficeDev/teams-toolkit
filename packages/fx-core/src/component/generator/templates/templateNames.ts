@@ -3,11 +3,9 @@
 import { Inputs } from "@microsoft/teamsfx-api";
 import {
   ApiAuthOptions,
-  ApiPluginStartOptions,
   CapabilityOptions,
   CustomCopilotAssistantOptions,
   CustomCopilotRagOptions,
-  DeclarativeCopilotTypeOptions,
   MeArchitectureOptions,
   NotificationTriggerOptions,
   ProgrammingLanguage,

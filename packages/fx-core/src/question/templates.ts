@@ -9,8 +9,6 @@ export interface Template {
   link?: string;
 }
 
-export const Templates: Template[] = [];
-
 export enum TemplateNames {
   Empty = "empty",
   Tab = "non-sso-tab",
@@ -55,4 +53,20 @@ export enum TemplateNames {
   CustomCopilotAssistantAssistantsApi = "custom-copilot-assistant-assistants-api",
   BasicGpt = "copilot-gpt-basic",
   GptWithPluginFromScratch = "copilot-gpt-from-scratch-plugin",
+  DeclarativeAgentWithApiSpec = "declarative-agent-with-api-spec",
 }
+
+export const Templates: Template[] = [
+  {
+    id: "notification-express-ts",
+    name: TemplateNames.NotificationExpress,
+    language: "typescript",
+    description: "Notification Express",
+  },
+  {
+    id: "api-plugin-existing-api",
+    name: "api-plugin-existing-api",
+    language: "none",
+    description: "Declarative agent with api spec",
+  },
+];

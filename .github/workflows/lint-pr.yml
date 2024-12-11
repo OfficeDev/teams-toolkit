@@ -138,7 +138,7 @@ jobs:
           fi
 
   check-sensitive-content:
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' }}
+    if: ${{ (github.event_name == 'pull_request' && github.event.action != 'closed') || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     steps:
       - shell: bash

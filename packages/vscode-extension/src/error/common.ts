@@ -32,6 +32,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "./error";
 import { MaximumNotificationOutputTroubleshootCount } from "../constants";
 import { sleep } from "@microsoft/vscode-ui";
+import * as util from "util";
 
 export async function showError(e: UserError | SystemError) {
   let notificationMessage = e.displayMessage ?? e.message;
@@ -111,25 +112,36 @@ export async function showError(e: UserError | SystemError) {
         void commands.executeCommand("vscode.open", issueLink);
       },
     };
-    const similarIssueLink = Uri.parse(
-      `https://github.com/OfficeDev/TeamsFx/issues?q=is:issue+in:title+${errorCode}`
-    );
+
     const similarIssues = {
       title: localize("teamstoolkit.handlers.similarIssues"),
       run: async (): Promise<void> => {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.FindSimilarIssues);
-        await commands.executeCommand("vscode.open", similarIssueLink);
+        await commands.executeCommand("fx-extension.findSimilarIssue", errorCode);
       },
     };
+    const buttons = recommendTestTool ? [runTestTool, issue] : [issue];
+    if (shouldRecommendTeamsAgent) {
+      if (buttons.length >= 2) {
+        buttons.push(troubleshootErrorWithTeamsAgentButton);
+        notificationMessage += util.format(
+          localize("teamstoolkit.handlers.similarIssues.message"),
+          errorCode
+        );
+        e.message += util.format(
+          localize("teamstoolkit.handlers.similarIssues.message"),
+          errorCode
+        );
+      } else {
+        buttons.push(similarIssues);
+        buttons.push(troubleshootErrorWithTeamsAgentButton);
+      }
+    } else {
+      buttons.push(similarIssues);
+    }
     VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}`);
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
-    const buttons = recommendTestTool
-      ? [runTestTool, issue, similarIssues]
-      : [issue, similarIssues];
-    if (shouldRecommendTeamsAgent) {
-      buttons.push(troubleshootErrorWithTeamsAgentButton);
-    }
+
     void window
       .showErrorMessage(`[${errorCode}]: ${notificationMessage}`, ...buttons)
       .then((button) => {

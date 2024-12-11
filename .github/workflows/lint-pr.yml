@@ -6,9 +6,7 @@ on:
       - opened
       - edited
       - synchronize
-  push:
-    branches:
-      - release/**
+      - closed
   schedule:
     - cron: "0 8 * * *"
 
@@ -243,7 +241,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-cherry-pick-issue:
-    if: ${{ github.event_name == 'push' && !contains(github.event.pull_request.labels.*.name, 'cherry-pick-hotfix') }}
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'cherry-pick-hotfix') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
